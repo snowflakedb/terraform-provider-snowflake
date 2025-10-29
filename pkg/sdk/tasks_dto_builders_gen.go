@@ -2,8 +2,6 @@
 
 package sdk
 
-import ()
-
 func NewCreateTaskRequest(
 	name SchemaObjectIdentifier,
 	sql string,
@@ -21,11 +19,6 @@ func (s *CreateTaskRequest) WithOrReplace(OrReplace bool) *CreateTaskRequest {
 
 func (s *CreateTaskRequest) WithIfNotExists(IfNotExists bool) *CreateTaskRequest {
 	s.IfNotExists = &IfNotExists
-	return s
-}
-
-func (s *CreateTaskRequest) WithWarehouse(Warehouse CreateTaskWarehouseRequest) *CreateTaskRequest {
-	s.Warehouse = &Warehouse
 	return s
 }
 
@@ -89,8 +82,23 @@ func (s *CreateTaskRequest) WithUserTaskMinimumTriggerIntervalInSeconds(UserTask
 	return s
 }
 
-func (s *CreateTaskRequest) WithAfter(After []SchemaObjectIdentifier) *CreateTaskRequest {
-	s.After = After
+func (s *CreateTaskRequest) WithTargetCompletionInterval(TargetCompletionInterval string) *CreateTaskRequest {
+	s.TargetCompletionInterval = &TargetCompletionInterval
+	return s
+}
+
+func (s *CreateTaskRequest) WithServerlessTaskMinStatementSize(ServerlessTaskMinStatementSize WarehouseSize) *CreateTaskRequest {
+	s.ServerlessTaskMinStatementSize = &ServerlessTaskMinStatementSize
+	return s
+}
+
+func (s *CreateTaskRequest) WithServerlessTaskMaxStatementSize(ServerlessTaskMaxStatementSize WarehouseSize) *CreateTaskRequest {
+	s.ServerlessTaskMaxStatementSize = &ServerlessTaskMaxStatementSize
+	return s
+}
+
+func (s *CreateTaskRequest) WithAFTER(AFTER []SchemaObjectIdentifier) *CreateTaskRequest {
+	s.After = AFTER
 	return s
 }
 
@@ -99,12 +107,17 @@ func (s *CreateTaskRequest) WithWhen(When string) *CreateTaskRequest {
 	return s
 }
 
+func (s *CreateTaskRequest) WithWarehouse(Warehouse CreateTaskWarehouseRequest) *CreateTaskRequest {
+	s.Warehouse = &Warehouse
+	return s
+}
+
 func NewCreateTaskWarehouseRequest() *CreateTaskWarehouseRequest {
 	return &CreateTaskWarehouseRequest{}
 }
 
-func (s *CreateTaskWarehouseRequest) WithWarehouse(Warehouse AccountObjectIdentifier) *CreateTaskWarehouseRequest {
-	s.Warehouse = &Warehouse
+func (s *CreateTaskWarehouseRequest) WithWarehouse(Warehouse *AccountObjectIdentifier) *CreateTaskWarehouseRequest {
+	s.Warehouse = Warehouse
 	return s
 }
 
@@ -121,11 +134,6 @@ func NewCreateOrAlterTaskRequest(
 	s.name = name
 	s.sql = sql
 	return &s
-}
-
-func (s *CreateOrAlterTaskRequest) WithWarehouse(Warehouse CreateTaskWarehouseRequest) *CreateOrAlterTaskRequest {
-	s.Warehouse = &Warehouse
-	return s
 }
 
 func (s *CreateOrAlterTaskRequest) WithSchedule(Schedule string) *CreateOrAlterTaskRequest {
@@ -178,13 +186,18 @@ func (s *CreateOrAlterTaskRequest) WithTaskAutoRetryAttempts(TaskAutoRetryAttemp
 	return s
 }
 
-func (s *CreateOrAlterTaskRequest) WithAfter(After []SchemaObjectIdentifier) *CreateOrAlterTaskRequest {
-	s.After = After
+func (s *CreateOrAlterTaskRequest) WithAFTER(AFTER []SchemaObjectIdentifier) *CreateOrAlterTaskRequest {
+	s.After = AFTER
 	return s
 }
 
 func (s *CreateOrAlterTaskRequest) WithWhen(When string) *CreateOrAlterTaskRequest {
 	s.When = &When
+	return s
+}
+
+func (s *CreateOrAlterTaskRequest) WithWarehouse(Warehouse CreateTaskWarehouseRequest) *CreateOrAlterTaskRequest {
+	s.Warehouse = &Warehouse
 	return s
 }
 
@@ -350,6 +363,11 @@ func (s *TaskSetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(UserTaskMin
 	return s
 }
 
+func (s *TaskSetRequest) WithTargetCompletionInterval(TargetCompletionInterval string) *TaskSetRequest {
+	s.TargetCompletionInterval = &TargetCompletionInterval
+	return s
+}
+
 func NewTaskUnsetRequest() *TaskUnsetRequest {
 	return &TaskUnsetRequest{}
 }
@@ -406,6 +424,11 @@ func (s *TaskUnsetRequest) WithTaskAutoRetryAttempts(TaskAutoRetryAttempts bool)
 
 func (s *TaskUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(UserTaskMinimumTriggerIntervalInSeconds bool) *TaskUnsetRequest {
 	s.UserTaskMinimumTriggerIntervalInSeconds = &UserTaskMinimumTriggerIntervalInSeconds
+	return s
+}
+
+func (s *TaskUnsetRequest) WithTargetCompletionInterval(TargetCompletionInterval bool) *TaskUnsetRequest {
+	s.TargetCompletionInterval = &TargetCompletionInterval
 	return s
 }
 
