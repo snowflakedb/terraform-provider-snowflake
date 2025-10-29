@@ -632,9 +632,9 @@ func (s *CreateTableCloneRequest) toOpts() *createTableCloneOptions {
 
 func (v *StageFileFormatRequest) toOpts() *StageFileFormat {
 	return &StageFileFormat{
-		FormatName: v.FormatName,
-		Type:       v.Type,
-		Options:    v.Options.toOpts(),
+		FormatName:     v.FormatName,
+		FileFormatType: v.FileFormatType,
+		Options:        v.Options.toOpts(),
 	}
 }
 
@@ -653,7 +653,7 @@ func (v *StageCopyOptionsRequest) toOpts() *StageCopyOptions {
 
 func (v *StageCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
 	return &StageCopyOnErrorOptions{
-		Continue:       v.Continue,
+		Continue_:      v.Continue_,
 		SkipFile:       v.SkipFile,
 		AbortStatement: v.AbortStatement,
 	}
@@ -667,9 +667,9 @@ func convertStageFileFormatOptions(stageFileFormatRequests []StageFileFormatRequ
 			options = request.Options.toOpts()
 		}
 		format := StageFileFormat{
-			FormatName: request.FormatName,
-			Type:       request.Type,
-			Options:    options,
+			FormatName:     request.FormatName,
+			FileFormatType: request.FileFormatType,
+			Options:        options,
 		}
 		fileFormats = append(fileFormats, format)
 	}

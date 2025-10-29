@@ -43,12 +43,12 @@ func TestInt_Stages(t *testing.T) {
 	createBasicS3Stage := func(t *testing.T, stageId sdk.SchemaObjectIdentifier) {
 		t.Helper()
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithCredentials(sdk.NewExternalStageS3CredentialsRequest().
-				WithAwsKeyId(&awsKeyId).
-				WithAwsSecretKey(&awsSecretKey))
+			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
+				WithAwsKeyId(awsKeyId).
+				WithAwsSecretKey(awsSecretKey))
 		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(stageId).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(s3Req))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithExternalStageParams(*s3Req))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
@@ -56,9 +56,9 @@ func TestInt_Stages(t *testing.T) {
 	createBasicGcsStage := func(t *testing.T, stageId sdk.SchemaObjectIdentifier) {
 		t.Helper()
 		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(stageId).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-				WithStorageIntegration(sdk.Pointer(ids.PrecreatedGcpStorageIntegration))))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
@@ -66,9 +66,9 @@ func TestInt_Stages(t *testing.T) {
 	createBasicAzureStage := func(t *testing.T, stageId sdk.SchemaObjectIdentifier) {
 		t.Helper()
 		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(stageId).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithCredentials(sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+				WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
@@ -95,8 +95,8 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateInternal(ctx, sdk.NewCreateInternalStageRequest(id).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithComment(sdk.String("some comment")))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
 
@@ -109,9 +109,9 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateInternal(ctx, sdk.NewCreateInternalStageRequest(id).
-			WithTemporary(sdk.Bool(true)).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithComment(sdk.String("some comment")))
+			WithTemporary(true).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
 
@@ -124,13 +124,13 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithCredentials(sdk.NewExternalStageS3CredentialsRequest().
-				WithAwsKeyId(&awsKeyId).
-				WithAwsSecretKey(&awsSecretKey))
+			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
+				WithAwsKeyId(awsKeyId).
+				WithAwsSecretKey(awsSecretKey))
 		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(s3Req).
-			WithComment(sdk.String("some comment")))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithExternalStageParams(*s3Req).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
 
@@ -143,12 +143,12 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithStorageIntegration(sdk.Pointer(ids.PrecreatedS3StorageIntegration))
+			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
 		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id).
-			WithTemporary(sdk.Bool(true)).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(s3Req).
-			WithComment(sdk.String("some comment")))
+			WithTemporary(true).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithExternalStageParams(*s3Req).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
 
@@ -161,10 +161,10 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(id).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-				WithStorageIntegration(sdk.Pointer(ids.PrecreatedGcpStorageIntegration))).
-			WithComment(sdk.String("some comment")))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
 
@@ -177,10 +177,10 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithStorageIntegration(sdk.Pointer(ids.PrecreatedAzureStorageIntegration))).
-			WithComment(sdk.String("some comment")))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+				WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
 
@@ -193,10 +193,10 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithCredentials(sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))).
-			WithComment(sdk.String("some comment")))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+				WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
 
@@ -227,8 +227,8 @@ func TestInt_Stages(t *testing.T) {
 		})
 
 		err = client.Stages.Alter(ctx, sdk.NewAlterStageRequest(id).
-			WithIfExists(sdk.Bool(true)).
-			WithRenameTo(&newId))
+			WithIfExists(true).
+			WithRenameTo(newId))
 		require.NoError(t, err)
 		renamed = true
 
@@ -241,9 +241,9 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateInternal(ctx, sdk.NewCreateInternalStageRequest(id).
-			WithCopyOptions(sdk.NewStageCopyOptionsRequest().WithSizeLimit(sdk.Int(100))).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeJSON)).
-			WithComment(sdk.String("some comment")))
+			WithCopyOptions(*sdk.NewStageCopyOptionsRequest().WithSizeLimit(100)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		t.Cleanup(func() {
 			err := client.Stages.Drop(ctx, sdk.NewDropStageRequest(id))
@@ -272,10 +272,10 @@ func TestInt_Stages(t *testing.T) {
 		})
 
 		err = client.Stages.AlterInternalStage(ctx, sdk.NewAlterInternalStageStageRequest(id).
-			WithIfExists(sdk.Bool(true)).
-			WithCopyOptions(sdk.NewStageCopyOptionsRequest().WithSizeLimit(sdk.Int(200))).
-			WithFileFormat(sdk.NewStageFileFormatRequest().WithType(&sdk.FileFormatTypeCSV)).
-			WithComment(sdk.String("altered comment")))
+			WithIfExists(true).
+			WithCopyOptions(*sdk.NewStageCopyOptionsRequest().WithSizeLimit(200)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeCSV)).
+			WithComment("altered comment"))
 		require.NoError(t, err)
 
 		stage, err = client.Stages.ShowByID(ctx, id)
@@ -305,9 +305,9 @@ func TestInt_Stages(t *testing.T) {
 		createBasicS3Stage(t, id)
 
 		err := client.Stages.AlterExternalS3Stage(ctx, sdk.NewAlterExternalS3StageStageRequest(id).
-			WithExternalStageParams(sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-				WithStorageIntegration(sdk.Pointer(ids.PrecreatedS3StorageIntegration))).
-			WithComment(sdk.String("Updated comment")))
+			WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+				WithStorageIntegration(ids.PrecreatedS3StorageIntegration)).
+			WithComment("Updated comment"))
 		require.NoError(t, err)
 
 		stage, err := client.Stages.ShowByID(ctx, id)
@@ -325,9 +325,9 @@ func TestInt_Stages(t *testing.T) {
 		createBasicGcsStage(t, id)
 
 		err := client.Stages.AlterExternalGCSStage(ctx, sdk.NewAlterExternalGCSStageStageRequest(id).
-			WithExternalStageParams(sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-				WithStorageIntegration(sdk.Pointer(ids.PrecreatedGcpStorageIntegration))).
-			WithComment(sdk.String("Updated comment")))
+			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)).
+			WithComment("Updated comment"))
 		require.NoError(t, err)
 
 		stage, err := client.Stages.ShowByID(ctx, id)
@@ -340,9 +340,9 @@ func TestInt_Stages(t *testing.T) {
 		createBasicAzureStage(t, id)
 
 		err := client.Stages.AlterExternalAzureStage(ctx, sdk.NewAlterExternalAzureStageStageRequest(id).
-			WithExternalStageParams(sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithStorageIntegration(sdk.Pointer(ids.PrecreatedAzureStorageIntegration))).
-			WithComment(sdk.String("Updated comment")))
+			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+				WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)).
+			WithComment("Updated comment"))
 		require.NoError(t, err)
 
 		stage, err := client.Stages.ShowByID(ctx, id)
@@ -365,11 +365,11 @@ func TestInt_Stages(t *testing.T) {
 		})
 
 		err = client.Stages.AlterDirectoryTable(ctx, sdk.NewAlterDirectoryTableStageRequest(id).
-			WithSetDirectory(sdk.NewDirectoryTableSetRequest(true)))
+			WithSetDirectory(*sdk.NewDirectoryTableSetRequest(true)))
 		require.NoError(t, err)
 
 		err = client.Stages.AlterDirectoryTable(ctx, sdk.NewAlterDirectoryTableStageRequest(id).
-			WithRefresh(sdk.NewDirectoryTableRefreshRequest().WithSubpath(sdk.String("/"))))
+			WithRefresh(*sdk.NewDirectoryTableRefreshRequest().WithSubpath("/")))
 		require.NoError(t, err)
 
 		stageProperties, err = client.Stages.Describe(ctx, id)
@@ -496,8 +496,8 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateInternal(ctx, sdk.NewCreateInternalStageRequest(id).
-			WithDirectoryTableOptions(sdk.NewInternalDirectoryTableOptionsRequest().WithEnable(sdk.Bool(true))).
-			WithComment(sdk.String("some comment")))
+			WithDirectoryTableOptions(*sdk.NewInternalDirectoryTableOptionsRequest().WithEnable(true)).
+			WithComment("some comment"))
 		require.NoError(t, err)
 		t.Cleanup(func() {
 			err := client.Stages.Drop(ctx, sdk.NewDropStageRequest(id))

@@ -178,7 +178,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeRowAccessPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).RowAccessPolicies.Drop, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTag, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tags.Drop, sdk.NewDropTagRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeSecret, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Secrets.Drop, sdk.NewDropSecretRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeStage, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Stages.Drop, sdk.NewDropStageRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeStage, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Stages.Drop, sdk.NewDropStageRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
@@ -255,7 +255,7 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeRowAccessPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).RowAccessPolicies.Drop, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTag, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tags.Drop, sdk.NewDropTagRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeSecret, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Secrets.Drop, sdk.NewDropSecretRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeStage, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Stages.Drop, sdk.NewDropStageRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeStage, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Stages.Drop, sdk.NewDropStageRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
