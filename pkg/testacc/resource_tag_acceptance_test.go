@@ -151,11 +151,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(
-						sdk.NewTagSetRequest().
-							WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()}).
-							WithComment(comment),
-					))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(sdk.NewTagSetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()})))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(sdk.NewTagSetRequest().WithComment(comment)))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
