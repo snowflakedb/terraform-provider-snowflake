@@ -33,6 +33,26 @@ In this version we reworked the `authentication_policy` resource. This includes 
 We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
 - `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
+ 
+### *(bugfix)* Fixed reading the value of `oauth_refresh_token_validity` in `snowflake_oauth_integration_for_custom_clients` resource
+
+Previously, whenever we detected an external change in the `oauth_refresh_token_validity` field,
+we were trying to set it with inappropriate type causing errors like:
+```
+panic: oauth_refresh_token_validity: '' expected type 'int', got unconvertible type 'string', value: '86400'
+```
+
+No changes in configuration and state are required.
+
+### *(bugfix)* Fixed updating the value of `enabled` in `snowflake_oauth_integration_for_partner_applications` resource
+
+Previously, whenever we detected change for the `enabled` field,
+we were wrongly checking the state of the `oauth_issue_refresh_tokens` field.
+Although the fields' logic is connected (see the note in https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake#additional-optional-parameters-partner-applications), it didn't matter in this context.
+This could cause issues like infinite loops in plans when only the `enabled` field was changed,
+but couldn't because the state of the `oauth_issue_refresh_tokens` prevented from it.
+
+No changes in configuration and state are required.
 
 ### *(new feature)* snowflake_semantic_view resource
 Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
