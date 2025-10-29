@@ -223,9 +223,10 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			},
 			// Empty config - ensure schema is destroyed
 			{
-				Config: " ",
+				Destroy: true,
+				Config:  accconfig.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.DatabaseIsMissing(t, id),
+					objectassert.DatabaseDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
