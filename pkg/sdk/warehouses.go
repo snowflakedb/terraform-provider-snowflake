@@ -758,7 +758,10 @@ func (c *warehouses) ShowByIDExperimental(ctx context.Context, id AccountObjectI
 		Like: &Like{
 			Pattern: String(id.Name()),
 		},
-		// TODO [this PR]: add limit and starts with
+		StartsWith: String(id.Name()),
+		LimitFrom: &LimitFrom{
+			Rows: Int(1),
+		},
 	})
 	if err != nil {
 		return nil, err
