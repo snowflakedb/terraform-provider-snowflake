@@ -24,7 +24,7 @@ func (w *tagNonExistenceCheck) ToTerraformTestCheckFunc(t *testing.T, testClient
 		if testClient == nil {
 			return errors.New("testClient must not be nil")
 		}
-		_, err := testClient.Streamlit.Show(t, w.id)
+		_, err := testClient.Tag.Show(t, w.id)
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				return nil
