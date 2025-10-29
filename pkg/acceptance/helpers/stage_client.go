@@ -100,6 +100,26 @@ func (c *StageClient) PutOnStage(t *testing.T, id sdk.SchemaObjectIdentifier, fi
 	require.NoError(t, err)
 }
 
+func (c *StageClient) PutOnStageWithPath(t *testing.T, id sdk.SchemaObjectIdentifier, filename string) string {
+	t.Helper()
+	ctx := context.Background()
+
+	filePath := filepath.Join("./testdata/", filename)
+	absPath, err := filepath.Abs(filePath)
+	require.NoError(t, err)
+
+	_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s @%s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, absPath, id.FullyQualifiedName()))
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf(`REMOVE @%s/%s`, id.FullyQualifiedName(), absPath))
+		if !errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+			require.NoError(t, err)
+		}
+	})
+
+	return filePath
+}
+
 func (c *StageClient) PutOnUserStageWithContent(t *testing.T, filename string, content string) string {
 	t.Helper()
 	ctx := context.Background()
