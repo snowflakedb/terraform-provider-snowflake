@@ -480,10 +480,13 @@ variable "oauth_token_request_url" {
 
 Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
 
+
 ### Workload Identity Federation (WIF) authenticator flow
 
 To setup WIF authentication, follow [this guide](https://docs.snowflake.com/user-guide/workload-identity-federation)
 in the official Snowflake documentation.
+
+Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
 
 The TF configuration should e.g. look like this:
 
@@ -520,8 +523,6 @@ Alternatively, the token can be provided with the environment variable `SNOWFLAK
 ```bash
 export SNOWFLAKE_TOKEN=$(cat <token_file_path>)
 ```
-
-Please also see our [manual tests examples](https://github.com/snowflakedb/terraform-provider-snowflake/tree/main/pkg/manual_tests/authentication_methods) for more details.
 
 ## Common issues
 

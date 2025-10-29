@@ -181,7 +181,7 @@ The Snowflake provider supports multiple ways to authenticate:
 * Config File
 * Oauth with Client Credentials
 * Oauth with Authorization Code
-* Workload Identity Federation
+* Workload Identity Federation (WIF)
 
 In all cases `organization_name`, and `account_name` are required. In all cases except for Oauth with Client Credentials, `user` is required.
 

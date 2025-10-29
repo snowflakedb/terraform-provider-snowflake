@@ -87,13 +87,23 @@ The `oauth_authorization_code_snowflake_idp` directory contains setup and test r
 
 To test the [WIF + EKS OIDC setup]
 (https://docs.snowflake.com/en/user-guide/workload-identity-federation#authenticate-to-snowflake-using-openid-connect-oidc-issuer-from-aws-kubernetes),
-some additional manual steps are required to create the necessary resources in a k8s cluster and Snowflake.
+some additional manual steps are required to create the necessary resources in a k8s cluster and Snowflake. See also the Terraform setup [here](./workload_identity_provider_aws_eks/main.tf).
 
 Pre-requisites:
 - An existing AWS EKS cluster with OIDC provider enabled.
 
 1. Create a Kubernetes service account.
-2. Create a `main.tf` file with the following provider configuration:
+2. Create a user in Snowflake with
+   ```sql
+   CREATE OR REPLACE USER USER_NAME
+     WORKLOAD_IDENTITY = (
+       TYPE = OIDC
+       ISSUER = 'https://oidc.eks.<region>.amazonaws.com/id/<oidc-provider-id>'
+       SUBJECT = 'system:serviceaccount:<namespace>:<service-account-name>'
+     )
+     TYPE = SERVICE;
+   ```
+3. Create a `main.tf` file with the following provider configuration:
    ```hcl
    provider "snowflake" {
      organization_name          = "ORGANIZATION_NAME"
@@ -104,15 +114,40 @@ Pre-requisites:
      workload_identity_provider = "OIDC"
    }
    ```
-3. Build a container with terraform installed. Mount/copy the terraform files incl. the above provider configuration into the image.
-4. Create a user in Snowflake with
-   ```sql
-   CREATE OR REPLACE USER USER_NAME
-     WORKLOAD_IDENTITY = (
-       TYPE = OIDC
-       ISSUER = 'https://oidc.eks.<region>.amazonaws.com/id/<oidc-provider-id>'
-       SUBJECT = 'system:serviceaccount:<namespace>:<service-account-name>'
-     )
-     TYPE = SERVICE;
-   ```
+4. Build a container with terraform installed. Mount/copy the terraform files incl. the above provider configuration into the image.
 5. Start a pod/job/deployment in the EKS cluster. The pod/job/deployment must link the above created service account.
+
+## WIF + Custom OIDC authenticator test
+
+To test the [WIF + Custom OIDC setup]
+(https://docs.snowflake.com/en/user-guide/workload-identity-federation#authenticate-to-snowflake-using-a-custom-openid-connect-oidc-provider),
+a few additional manual steps are required to create the necessary resources. In this example, we use Okta as a custom OIDC provider. See also the Terraform setup [here](./workload_identity_provider_oidc/main.tf).
+
+Pre-requisites:
+- An Okta setup, you can follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-okta).
+
+1. Get a token from Okta - see [Okta documentation](https://developer.okta.com/docs/guides/tokens/). For example,
+2. Store the token in a safe file, or set it in environmental variables.
+3. Create a user in Snowflake with
+   ```sql
+  CREATE OR REPLACE USER USER_NAME
+    WORKLOAD_IDENTITY = (
+      TYPE = OIDC
+      ISSUER = '<okta_issuer>'
+      SUBJECT = '<okta_subject>'
+      OIDC_AUDIENCE_LIST = ('<okta_audience_list>')
+    )
+    TYPE = SERVICE;
+   ```
+4. Create a `main.tf` file with the following provider configuration:
+   ```hcl
+   provider "snowflake" {
+     organization_name          = "ORGANIZATION_NAME"
+     account_name               = "ACCOUNT_NAME"
+     user                       = "USER_NAME"
+     authenticator              = "WORKLOAD_IDENTITY"
+     token                      = file("<token_file_path>") # Or, read it from SNOWFLAKE_TOKEN env.
+     workload_identity_provider = "OIDC"
+   }
+   ```
+5. You can now use WIF authentication in the provider.

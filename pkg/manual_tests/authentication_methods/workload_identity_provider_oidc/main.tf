@@ -22,8 +22,9 @@ resource "snowflake_execute" "workload_identity_federation_oidc" {
     ALTER USER ${snowflake_service_user.auth_test.name}
       SET WORKLOAD_IDENTITY = (
         TYPE = OIDC
-        ISSUER = '${var.workload_identity_oidc.oidc_issuer_url}'
-        SUBJECT = 'system:serviceaccount:${var.workload_identity_oidc.namespace}:${var.workload_identity_oidc.service_account}'
+        ISSUER = '${var.workload_identity_oidc.issuer}'
+        SUBJECT = '${var.workload_identity_oidc.subject}'
+        OIDC_AUDIENCE_LIST = ('${var.workload_identity_oidc.oidc_audience}')
       )
   SQL
   revert  = <<-SQL
@@ -36,24 +37,24 @@ resource "snowflake_execute" "workload_identity_federation_oidc" {
 
 variable "workload_identity_oidc" {
   type = object({
-    oidc_issuer_url = string
-    namespace       = string
-    service_account = string
+    issuer        = string
+    subject       = string
+    oidc_audience = string
   })
   sensitive = true
 }
 
 # Step 2: check the authentication
-# usually this needs to run in an environment which has access to the infrastructure of the cloud provider, e.g. in a gitlab runner running in an EKS cluster
-# for the `AWS EKS Workload Identity Federation with OIDC` case, the token from the token_file has to be provided as an envvar or through the token field.
+# You need to have the token from the OIDC provider. This token must match the values in the user object.
+# The token from the token_file has to be provided as an envvar or through the token field.
 provider "snowflake" {
   alias                      = "wif_auth"
-  organization_name          = "auxmoney"
-  account_name               = "terraformtest"
+  organization_name          = "ORGANIZATION_NAME"
+  account_name               = "ACCOUNT_NAME"
   user                       = snowflake_service_user.auth_test.name
   authenticator              = "WORKLOAD_IDENTITY"
   workload_identity_provider = "OIDC"
-  role                       = "ACCOUNTADMIN"
+  role                       = "ROLE_NAME"
   token                      = file("<token_file_path>")
 }
 
