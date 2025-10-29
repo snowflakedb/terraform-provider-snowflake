@@ -35,19 +35,20 @@ func TestAcc_SecretWithOauthAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	oauthRefreshToken := random.String()
 	oauthRefreshTokenExpiryTime := time.Now().Add(24 * time.Hour).Format(time.DateTime)
+	currentRole := testClient().Context.CurrentRole(t).Name()
 
 	basic := model.SecretWithAuthorizationCodeGrant("test", id.DatabaseName(), id.SchemaName(), id.Name(), apiIntegration.Name, oauthRefreshToken, oauthRefreshTokenExpiryTime)
-
 	complete := model.SecretWithAuthorizationCodeGrant("test", id.DatabaseName(), id.SchemaName(), id.Name(), apiIntegration.Name, oauthRefreshToken+"_updated", oauthRefreshTokenExpiryTime).
 		WithComment(comment)
+
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.Secret(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypeOAuth2)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
-			HasComment(""),
+			HasOwner(currentRole).
+			HasNoComment(),
 
 		resourceassert.SecretWithAuthorizationCodeGrantResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
@@ -66,7 +67,7 @@ func TestAcc_SecretWithOauthAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypeOAuth2)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment("").
 			HasOwnerRoleType("ROLE"),
 
@@ -82,13 +83,14 @@ func TestAcc_SecretWithOauthAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.integration_name", apiIntegration.Name)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
 	}
+
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.Secret(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypeOAuth2)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment(comment),
 
 		resourceassert.SecretWithAuthorizationCodeGrantResource(t, complete.ResourceReference()).
@@ -108,7 +110,7 @@ func TestAcc_SecretWithOauthAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypeOAuth2)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE"),
 
@@ -124,6 +126,7 @@ func TestAcc_SecretWithOauthAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.integration_name", apiIntegration.Name)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
 	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -205,10 +208,9 @@ func TestAcc_SecretWithOauthAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
 			},
 			// Create - with optionals
 			{
-				Taint: []string{complete.ResourceReference()},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: config.FromModels(t, complete),

@@ -23,6 +23,7 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	secretString := random.String()
+	currentRole := testClient().Context.CurrentRole(t).Name()
 
 	basic := model.SecretWithGenericString("test", id.DatabaseName(), id.SchemaName(), id.Name(), secretString)
 
@@ -35,7 +36,7 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypeGenericString)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasNoComment(),
 
 		resourceassert.SecretWithGenericStringResource(t, basic.ResourceReference()).
@@ -53,7 +54,7 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypeGenericString)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment("").
 			HasOwnerRoleType("ROLE"),
 
@@ -76,7 +77,7 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypeGenericString)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment(comment),
 
 		resourceassert.SecretWithGenericStringResource(t, complete.ResourceReference()).
@@ -94,7 +95,7 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypeGenericString)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE"),
 

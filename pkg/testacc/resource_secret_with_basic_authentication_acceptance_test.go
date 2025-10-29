@@ -24,18 +24,20 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	username := random.String()
 	password := random.String()
+	currentRole := testClient().Context.CurrentRole(t).Name()
 
 	basic := model.SecretWithBasicAuthentication("test", id.DatabaseName(), id.SchemaName(), id.Name(), password, username)
 
 	complete := model.SecretWithBasicAuthentication("test", id.DatabaseName(), id.SchemaName(), id.Name(), password+"_updated", username+"_updated").
 		WithComment(comment)
+
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.Secret(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypePassword)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasNoComment(),
 
 		resourceassert.SecretWithBasicAuthenticationResource(t, basic.ResourceReference()).
@@ -54,7 +56,7 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypePassword)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment("").
 			HasOwnerRoleType("ROLE"),
 
@@ -70,13 +72,14 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.integration_name", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
 	}
+
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.Secret(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypePassword)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment(comment),
 
 		resourceassert.SecretWithBasicAuthenticationResource(t, complete.ResourceReference()).
@@ -95,7 +98,7 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
 			HasSecretType(string(sdk.SecretTypePassword)).
-			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasOwner(currentRole).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE"),
 
@@ -111,6 +114,7 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.integration_name", "")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
 	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
