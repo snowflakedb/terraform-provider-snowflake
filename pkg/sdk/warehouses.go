@@ -552,7 +552,7 @@ type ShowWarehouseOptions struct {
 	show       bool  `ddl:"static" sql:"SHOW"`
 	warehouses bool  `ddl:"static" sql:"WAREHOUSES"`
 	Like       *Like `ddl:"keyword" sql:"LIKE"`
-	// TODO [this PR]: document these values missing from the docs and link an issue here
+	// TODO [SNOW-2472289]: they are currently missing from the docs; confirm their state and adjust the provider
 	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 	LimitFrom  *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
