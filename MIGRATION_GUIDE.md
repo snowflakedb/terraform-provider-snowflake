@@ -44,7 +44,7 @@ The provider does not validate these fields.
 
 This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
 
-See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on Oauth authentication.
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
 
 ### *(new feature)* snowflake_semantic_view resource
 Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
