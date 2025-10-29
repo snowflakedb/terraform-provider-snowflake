@@ -41,8 +41,8 @@ var RowAccessPoliciesDef = g.NewInterface(
 			ListQueryStructField(
 				"args",
 				g.NewQueryStruct("CreateRowAccessPolicyArgs").
-					Text("Name", g.KeywordOptions().NoQuotes().Required()).
-					PredefinedQueryStructField("Type", "DataType", g.KeywordOptions().NoQuotes().Required()),
+					Text("Name", g.KeywordOptions().DoubleQuotes().Required()).
+					PredefinedQueryStructField("DataType", "datatypes.DataType", g.ParameterOptions().NoEquals().Required()),
 				g.ParameterOptions().Parentheses().NoEquals().Required(),
 			).
 			SQL("RETURNS BOOLEAN").
@@ -102,7 +102,7 @@ var RowAccessPoliciesDef = g.NewInterface(
 			Field("body", "string"),
 		g.PlainStruct("RowAccessPolicyDescription").
 			Field("Name", "string").
-			Field("Signature", "string").
+			Field("Signature", "[]TableColumnSignature").
 			Field("ReturnType", "string").
 			Field("Body", "string"),
 		g.NewQueryStruct("DescribeRowAccessPolicy").

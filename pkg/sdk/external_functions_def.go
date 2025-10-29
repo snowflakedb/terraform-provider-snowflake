@@ -115,7 +115,7 @@ var ExternalFunctionsDef = g.NewInterface(
 		Field("max_num_arguments", "int").
 		Field("arguments", "string").
 		Field("description", "string").
-		Field("schema_name", "sql.NullString").
+		Field("catalog_name", "sql.NullString").
 		Field("is_table_function", "string").
 		Field("valid_for_clustering", "string").
 		Field("is_secure", "sql.NullString").
@@ -132,7 +132,8 @@ var ExternalFunctionsDef = g.NewInterface(
 		Field("IsAnsi", "bool").
 		Field("MinNumArguments", "int").
 		Field("MaxNumArguments", "int").
-		Field("Arguments", "string").
+		Field("Arguments", "[]DataType").
+		Field("ArgumentsRaw", "string").
 		Field("Description", "string").
 		Field("CatalogName", "string").
 		Field("IsTableFunction", "bool").

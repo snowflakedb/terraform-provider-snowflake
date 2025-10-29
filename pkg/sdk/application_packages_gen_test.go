@@ -38,7 +38,7 @@ func TestApplicationPackages_Create(t *testing.T) {
 		opts.MaxDataExtensionTimeInDays = Int(1)
 		opts.DefaultDdlCollation = String("en_US")
 		opts.Comment = String("comment")
-		opts.Distribution = DistributionPointer(DistributionInternal)
+		opts.Distribution = Pointer(DistributionInternal)
 		t1 := randomSchemaObjectIdentifier()
 		opts.Tag = []TagAssociation{
 			{
@@ -103,7 +103,7 @@ func TestApplicationPackages_Alter(t *testing.T) {
 			MaxDataExtensionTimeInDays: Int(1),
 			DefaultDdlCollation:        String("en_US"),
 			Comment:                    String("comment"),
-			Distribution:               DistributionPointer(DistributionInternal),
+			Distribution:               Pointer(DistributionInternal),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' COMMENT = 'comment' DISTRIBUTION = INTERNAL`, id.FullyQualifiedName())
 	})
