@@ -134,19 +134,19 @@ func TestInt_MaterializedViews(t *testing.T) {
 		t.Cleanup(tagCleanup)
 
 		request := createMaterializedViewBasicRequest(t).
-			WithOrReplace(sdk.Bool(true)).
-			WithSecure(sdk.Bool(true)).
+			WithOrReplace(true).
+			WithSecure(true).
 			WithColumns([]sdk.MaterializedViewColumnRequest{
-				*sdk.NewMaterializedViewColumnRequest("COLUMN_WITH_COMMENT").WithComment(sdk.String("column comment")),
+				*sdk.NewMaterializedViewColumnRequest("COLUMN_WITH_COMMENT").WithComment("column comment"),
 			}).
-			WithCopyGrants(sdk.Bool(true)).
-			WithComment(sdk.String("comment")).
-			WithRowAccessPolicy(sdk.NewMaterializedViewRowAccessPolicyRequest(rowAccessPolicy.ID(), []string{"column_with_comment"})).
+			WithCopyGrants(true).
+			WithComment("comment").
+			WithRowAccessPolicy(*sdk.NewMaterializedViewRowAccessPolicyRequest(rowAccessPolicy.ID(), []string{"column_with_comment"})).
 			WithTag([]sdk.TagAssociation{{
 				Name:  tag.ID(),
 				Value: "v2",
 			}}).
-			WithClusterBy(sdk.NewMaterializedViewClusterByRequest().WithExpressions([]sdk.MaterializedViewClusterByExpressionRequest{{Name: "COLUMN_WITH_COMMENT"}}))
+			WithClusterBy(*sdk.NewMaterializedViewClusterByRequest().WithExpressions([]sdk.MaterializedViewClusterByExpressionRequest{{Name: "COLUMN_WITH_COMMENT"}}))
 
 		id := request.GetName()
 
@@ -189,7 +189,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		require.NoError(t, err)
 
 		newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithRenameTo(&newId)
+		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithRenameTo(newId)
 
 		err = client.MaterializedViews.Alter(ctx, alterRequest)
 		if err != nil {
@@ -212,7 +212,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		view := createMaterializedView(t)
 		id := view.ID()
 
-		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithClusterBy(sdk.NewMaterializedViewClusterByRequest().WithExpressions([]sdk.MaterializedViewClusterByExpressionRequest{{Name: "ID"}}))
+		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithClusterBy(*sdk.NewMaterializedViewClusterByRequest().WithExpressions([]sdk.MaterializedViewClusterByExpressionRequest{{Name: "ID"}}))
 		err := client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -223,13 +223,13 @@ func TestInt_MaterializedViews(t *testing.T) {
 	})
 
 	t.Run("alter materialized view: recluster suspend and resume", func(t *testing.T) {
-		request := createMaterializedViewBasicRequest(t).WithClusterBy(sdk.NewMaterializedViewClusterByRequest().WithExpressions([]sdk.MaterializedViewClusterByExpressionRequest{{Name: "ID"}}))
+		request := createMaterializedViewBasicRequest(t).WithClusterBy(*sdk.NewMaterializedViewClusterByRequest().WithExpressions([]sdk.MaterializedViewClusterByExpressionRequest{{Name: "ID"}}))
 		view := createMaterializedViewWithRequest(t, request)
 		id := view.ID()
 
 		assert.True(t, view.AutomaticClustering)
 
-		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithSuspendRecluster(sdk.Bool(true))
+		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithSuspendRecluster(true)
 		err := client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -238,7 +238,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 
 		assert.False(t, alteredView.AutomaticClustering)
 
-		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithResumeRecluster(sdk.Bool(true))
+		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithResumeRecluster(true)
 		err = client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -254,7 +254,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 
 		assert.False(t, view.Invalid)
 
-		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithSuspend(sdk.Bool(true))
+		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithSuspend(true)
 		err := client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -263,7 +263,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 
 		assert.True(t, alteredView.Invalid)
 
-		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithResume(sdk.Bool(true))
+		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithResume(true)
 		err = client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -278,7 +278,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		id := view.ID()
 
 		alterRequest := sdk.NewAlterMaterializedViewRequest(id).WithSet(
-			sdk.NewMaterializedViewSetRequest().WithSecure(sdk.Bool(true)),
+			*sdk.NewMaterializedViewSetRequest().WithSecure(true),
 		)
 		err := client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
@@ -289,7 +289,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		assert.True(t, alteredView.IsSecure)
 
 		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithSet(
-			sdk.NewMaterializedViewSetRequest().WithComment(sdk.String("comment")),
+			*sdk.NewMaterializedViewSetRequest().WithComment("comment"),
 		)
 		err = client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
@@ -300,7 +300,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		assert.Equal(t, "comment", alteredView.Comment)
 
 		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithUnset(
-			sdk.NewMaterializedViewUnsetRequest().WithComment(sdk.Bool(true)),
+			*sdk.NewMaterializedViewUnsetRequest().WithComment(true),
 		)
 		err = client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
@@ -311,7 +311,7 @@ func TestInt_MaterializedViews(t *testing.T) {
 		assert.Equal(t, "", alteredView.Comment)
 
 		alterRequest = sdk.NewAlterMaterializedViewRequest(id).WithUnset(
-			sdk.NewMaterializedViewUnsetRequest().WithSecure(sdk.Bool(true)),
+			*sdk.NewMaterializedViewUnsetRequest().WithSecure(true),
 		)
 		err = client.MaterializedViews.Alter(ctx, alterRequest)
 		require.NoError(t, err)
