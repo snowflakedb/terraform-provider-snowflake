@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -41,7 +42,7 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModel.ResourceReference()).
 						HasNameString(warehouseId.Name()),
-					invokeactionassert.QueryHistoryEntry(t, secondaryTestClient(), expectedWarehouseQuery, 100),
+					invokeactionassert.QueryHistoryEntry(t, secondaryTestClient(), expectedWarehouseQuery, tracking.CreateOperation, 100),
 				),
 			},
 			{
@@ -51,7 +52,7 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(warehouseId)).
 						HasNameString(warehouseId.Name()),
-					invokeactionassert.QueryHistoryEntryInImport(t, secondaryTestClient(), expectedWarehouseQuery, 100),
+					invokeactionassert.QueryHistoryEntryInImport(t, secondaryTestClient(), expectedWarehouseQuery, tracking.ImportOperation, 100),
 				),
 			},
 		},
