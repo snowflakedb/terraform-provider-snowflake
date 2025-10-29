@@ -23,7 +23,7 @@ go test --tags=non_account_level_tests,account_level_tests -run TestAcc_GrantPri
 1> ./pkg/scripts/test_output_processor/output.csv
 ```
 
-The script parts were grouped by new liens for clarity:
+The script parts were grouped by new lines for clarity:
 1. We set the necessary environment variables for the test run.
 2. We run the `go test` command with the required tags, test name, verbosity, timeout, and JSON output.
 3. We pipe (notice the `|`) the JSON output to the `test_output_processor.go` script.

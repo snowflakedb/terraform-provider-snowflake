@@ -29,6 +29,10 @@ func main() {
 		}
 		testResults = append(testResults, entry)
 	}
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("error reading input: %v", err)
+		os.Exit(1)
+	}
 
 	csvWriter := csv.NewWriter(os.Stdout)
 
