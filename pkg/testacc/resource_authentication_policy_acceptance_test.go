@@ -13,6 +13,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	acchelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -233,8 +234,8 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.client_types", "[SNOWFLAKE_CLI]")),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.security_integrations", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_enrollment", "REQUIRED_PASSWORD_ONLY")),
-					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[PASSWORD, SAML]")),
-					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
+					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[PASSWORD]")),
+					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[TOTP], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=2, MAX_EXPIRY_IN_DAYS=40, NETWORK_POLICY_EVALUATION=ENFORCED_NOT_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[444455556666], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v3.0], ALLOWED_OIDC_ISSUERS=[https://example2.com]}")),
 				),
@@ -280,8 +281,8 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.client_types", "[SNOWFLAKE_CLI]")),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.security_integrations", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_enrollment", "REQUIRED_PASSWORD_ONLY")),
-					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[PASSWORD, SAML]")),
-					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
+					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[PASSWORD]")),
+					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[TOTP], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=2, MAX_EXPIRY_IN_DAYS=40, NETWORK_POLICY_EVALUATION=ENFORCED_NOT_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")),
 					assert.Check(resource.TestCheckResourceAttr(completeModelWithDifferentValues.ResourceReference(), "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[444455556666], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v3.0], ALLOWED_OIDC_ISSUERS=[https://example2.com]}")),
 				),
@@ -440,6 +441,37 @@ func TestAcc_AuthenticationPolicy_complete(t *testing.T) {
 	})
 }
 
+func TestAcc_AuthenticationPolicy_enumSetCustomDiff(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	modelWithEnumSets := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithAuthenticationMethods(sdk.AuthenticationMethodsPassword).
+		WithClientTypes(sdk.ClientTypesSnowflakeUi)
+	modelWithLowercaseEnumSets := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithAuthenticationMethods(acchelpers.EnumToLower(sdk.AuthenticationMethodsPassword)).
+		WithClientTypes(acchelpers.EnumToLower(sdk.ClientTypesSnowflakeUi))
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.AuthenticationPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelWithEnumSets),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithEnumSets.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, modelWithLowercaseEnumSets),
+			},
+		},
+	})
+}
+
 func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	modelWithBasicLists := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -471,9 +503,6 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
 			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
 				{Provider: sdk.AllowedProviderAzure},
-			}).
-			WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://two.com"},
 			}),
 		)
 	modelWithSwappedLists := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -573,7 +602,7 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_authentication_methods", "[PASSWORD]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")),
-					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[https://two.com]}")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}")),
 				),
 			},
 			{
@@ -696,7 +725,34 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 		WithMfaEnrollmentEnum("invalid")
 	modelInvalidClientTypes := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithClientTypes("invalid")
-
+	modelInvalidEnforceMfaOnExternalAuthentication := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+			WithEnforceMfaOnExternalAuthentication("invalid"),
+		)
+	modelInvalidAllowedMethods := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+				{Method: "invalid"},
+			}),
+		)
+	modelInvalidDefaultExpiryInDays := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
+			WithDefaultExpiryInDays(0),
+		)
+	modelInvalidMaxExpiryInDays := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
+			WithMaxExpiryInDays(0),
+		)
+	modelInvalidNetworkPolicyEvaluation := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
+			WithNetworkPolicyEvaluation("invalid"),
+		)
+	modelInvalidAllowedProviders := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+				{Provider: "invalid"},
+			}),
+		)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -718,6 +774,36 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelInvalidClientTypes),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`invalid client type: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidEnforceMfaOnExternalAuthentication),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid enforce MFA on external authentication option: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidAllowedMethods),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid MFA policy allowed methods option: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidDefaultExpiryInDays),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected default_expiry_in_days to be at least \(1\), got 0`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidMaxExpiryInDays),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected max_expiry_in_days to be at least \(1\), got 0`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidNetworkPolicyEvaluation),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid network policy evaluation option: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidAllowedProviders),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid allowed provider: INVALID`),
 			},
 		},
 	})

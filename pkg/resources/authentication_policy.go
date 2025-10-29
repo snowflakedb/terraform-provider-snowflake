@@ -47,8 +47,9 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: sdkValidation(sdk.ToAuthenticationMethodsOption),
 		},
-		Optional:    true,
-		Description: fmt.Sprintf("A list of authentication methods that are allowed during login. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllAuthenticationMethods)),
+		Optional:         true,
+		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("authentication_methods", sdk.ToAuthenticationMethodsOption),
+		Description:      fmt.Sprintf("A list of authentication methods that are allowed during login. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllAuthenticationMethods)),
 	},
 	"mfa_authentication_methods": {
 		Type: schema.TypeSet,
@@ -56,9 +57,10 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: sdkValidation(sdk.ToMfaAuthenticationMethodsOption),
 		},
-		Optional:    true,
-		Description: fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethods)),
-		Deprecated:  "This field is deprecated and will be removed in the future. The new field `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` will be added in the next versions of the provider. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
+		Optional:         true,
+		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("mfa_authentication_methods", sdk.ToMfaAuthenticationMethodsOption),
+		Description:      fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethods)),
+		Deprecated:       "This field is deprecated and will be removed in the future. The new field `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` will be added in the next versions of the provider. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
 	},
 	"mfa_enrollment": {
 		Type:             schema.TypeString,
@@ -73,9 +75,9 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: sdkValidation(sdk.ToClientTypesOption),
 		},
-		// TODO(next PR): add diff suppression for enum sets.
-		Optional:    true,
-		Description: fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): %s. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypes)),
+		Optional:         true,
+		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("client_types", sdk.ToClientTypesOption),
+		Description:      fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): %s. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypes)),
 	},
 	"security_integrations": {
 		Type: schema.TypeSet,
@@ -85,7 +87,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		},
 		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("security_integrations"),
 		Optional:         true,
-		Description:      "A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `all` as parameter.",
+		Description:      "A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `ALL` as parameter.",
 	},
 	"mfa_policy": {
 		Type:     schema.TypeList,
@@ -103,7 +105,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 				"allowed_methods": {
 					Type:        schema.TypeSet,
 					Optional:    true,
-					Description: fmt.Sprintf("Specifies the allowed methods for the MFA policy. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllMfaPolicyOptions)),
+					Description: fmt.Sprintf("Specifies the allowed methods for the MFA policy. Valid values are: %s. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.", possibleValuesListed(sdk.AllMfaPolicyOptions)),
 					Elem: &schema.Schema{
 						Type:             schema.TypeString,
 						ValidateDiagFunc: sdkValidation(sdk.ToMfaPolicyAllowedMethodsOption),
@@ -159,7 +161,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 						Type:             schema.TypeString,
 						ValidateDiagFunc: sdkValidation(sdk.ToAllowedProviderOption),
 					},
-					Description: "Specifies the allowed providers for the workload identity policy.",
+					Description: fmt.Sprintf("Specifies the allowed providers for the workload identity policy. Valid values are: %s. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.", possibleValuesListed(sdk.AllAllowedProviderOptions)),
 				},
 				"allowed_aws_accounts": {
 					Type:     schema.TypeSet,
@@ -381,7 +383,7 @@ func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionReq
 	for i, v := range raw {
 		securityIntegrations[i] = sdk.NewAccountObjectIdentifier(v)
 	}
-	// TODO(next PR): handle ALL separately
+	// ALL is handled as a single-elem list - a pseudoidentifier.
 	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
 }
 
@@ -392,14 +394,14 @@ func ToMfaPolicyRequest(value any) (sdk.AuthenticationPolicyMfaPolicyRequest, er
 	}
 	mfaConfig := mfaPolicyRaw[0].(map[string]any)
 	mfaPolicy := sdk.NewAuthenticationPolicyMfaPolicyRequest()
-	if v, ok := mfaConfig["enforce_mfa_on_external_authentication"]; ok {
+	if v := mfaConfig["enforce_mfa_on_external_authentication"]; v.(string) != "" {
 		enforceMfaOnExternalAuthentication, err := sdk.ToEnforceMfaOnExternalAuthenticationOption(v.(string))
 		if err != nil {
 			return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract enforce MFA on external authentication, input is either nil or non expected type (%T): %v", v, v)
 		}
 		mfaPolicy.WithEnforceMfaOnExternalAuthentication(enforceMfaOnExternalAuthentication)
 	}
-	if v, ok := mfaConfig["allowed_methods"]; ok {
+	if v := mfaConfig["allowed_methods"]; v != nil {
 		allowedMethods := v.(*schema.Set).List()
 		values, err := collections.MapErr(allowedMethods, func(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
 			enum, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
@@ -423,13 +425,13 @@ func ToPatPolicyRequest(value any) (sdk.AuthenticationPolicyPatPolicyRequest, er
 	}
 	patConfig := patPolicyRaw[0].(map[string]any)
 	patPolicy := sdk.NewAuthenticationPolicyPatPolicyRequest()
-	if v, ok := patConfig["default_expiry_in_days"]; ok {
+	if v := patConfig["default_expiry_in_days"]; v.(int) != 0 {
 		patPolicy.WithDefaultExpiryInDays(v.(int))
 	}
-	if v, ok := patConfig["max_expiry_in_days"]; ok {
+	if v := patConfig["max_expiry_in_days"]; v.(int) != 0 {
 		patPolicy.WithMaxExpiryInDays(v.(int))
 	}
-	if v, ok := patConfig["network_policy_evaluation"]; ok {
+	if v := patConfig["network_policy_evaluation"]; v.(string) != "" {
 		networkPolicyEvaluation, err := sdk.ToNetworkPolicyEvaluationOption(v.(string))
 		if err != nil {
 			return sdk.AuthenticationPolicyPatPolicyRequest{}, err
@@ -447,7 +449,7 @@ func ToWorkloadIdentityPolicyRequest(value any) (sdk.AuthenticationPolicyWorkloa
 	}
 	workloadIdentityPolicyConfig := workloadIdentityPolicyRaw[0].(map[string]any)
 	workloadIdentityPolicy := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
-	if v, ok := workloadIdentityPolicyConfig["allowed_providers"]; ok {
+	if v := workloadIdentityPolicyConfig["allowed_providers"]; v != nil {
 		allowedProviders := v.(*schema.Set).List()
 		values, err := collections.MapErr(allowedProviders, func(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
 			enum, err := sdk.ToAllowedProviderOption(v.(string))
@@ -461,7 +463,7 @@ func ToWorkloadIdentityPolicyRequest(value any) (sdk.AuthenticationPolicyWorkloa
 		}
 		workloadIdentityPolicy.WithAllowedProviders(values)
 	}
-	if v, ok := workloadIdentityPolicyConfig["allowed_aws_accounts"]; ok {
+	if v := workloadIdentityPolicyConfig["allowed_aws_accounts"]; v != nil {
 		allowedAwsAccounts := v.(*schema.Set).List()
 		values, err := collections.MapErr(allowedAwsAccounts, func(v any) (sdk.StringListItemWrapper, error) {
 			return sdk.StringListItemWrapper{Value: v.(string)}, nil
@@ -471,7 +473,7 @@ func ToWorkloadIdentityPolicyRequest(value any) (sdk.AuthenticationPolicyWorkloa
 		}
 		workloadIdentityPolicy.WithAllowedAwsAccounts(values)
 	}
-	if v, ok := workloadIdentityPolicyConfig["allowed_azure_issuers"]; ok {
+	if v := workloadIdentityPolicyConfig["allowed_azure_issuers"]; v != nil {
 		allowedAzureIssuers := v.(*schema.Set).List()
 		values, err := collections.MapErr(allowedAzureIssuers, func(v any) (sdk.StringListItemWrapper, error) {
 			return sdk.StringListItemWrapper{Value: v.(string)}, nil
@@ -481,7 +483,7 @@ func ToWorkloadIdentityPolicyRequest(value any) (sdk.AuthenticationPolicyWorkloa
 		}
 		workloadIdentityPolicy.WithAllowedAzureIssuers(values)
 	}
-	if v, ok := workloadIdentityPolicyConfig["allowed_oidc_issuers"]; ok {
+	if v := workloadIdentityPolicyConfig["allowed_oidc_issuers"]; v != nil {
 		allowedOidcIssuers := v.(*schema.Set).List()
 		values, err := collections.MapErr(allowedOidcIssuers, func(v any) (sdk.StringListItemWrapper, error) {
 			return sdk.StringListItemWrapper{Value: v.(string)}, nil
@@ -677,9 +679,6 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	if err := errors.Join(
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		attributeMappedValueUpdate(d, "security_integrations", &set.SecurityIntegrations, &unset.SecurityIntegrations, ToSecurityIntegrationsRequest),
-		// attributeMappedValueUpdate(d, "mfa_policy", &set.MfaPolicy, &unset.MfaPolicy, ToMfaPolicyRequest),
-		// attributeMappedValueUpdate(d, "pat_policy", &set.PatPolicy, &unset.PatPolicy, ToPatPolicyRequest),
-		// attributeMappedValueUpdate(d, "workload_identity_policy", &set.WorkloadIdentityPolicy, &unset.WorkloadIdentityPolicy, ToWorkloadIdentityPolicyRequest),
 		ToMfaPolicyRequestUpdate(d, &set.MfaPolicy, &unset.MfaPolicy),
 		ToPatPolicyRequestUpdate(d, &set.PatPolicy, &unset.PatPolicy),
 		ToWorkloadIdentityPolicyRequestUpdate(d, &set.WorkloadIdentityPolicy, &unset.WorkloadIdentityPolicy),
@@ -709,11 +708,11 @@ func ToMfaPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 		return nil
 	}
 	_, mfaConfigRaw := d.GetChange("mfa_policy")
-	if mfaConfigRaw == nil {
+	mfaConfigList := mfaConfigRaw.([]any)
+	if len(mfaConfigList) == 0 {
 		*unset = sdk.Bool(true)
 		return nil
 	}
-	mfaConfigList := mfaConfigRaw.([]any)
 	mfaConfig := mfaConfigList[0].(map[string]any)
 	req := sdk.NewAuthenticationPolicyMfaPolicyRequest()
 	if d.HasChange("mfa_policy.0.allowed_methods") {
@@ -760,15 +759,14 @@ func ToMfaPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 
 func ToPatPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPolicyPatPolicyRequest, unset **bool) error {
 	if !d.HasChange("pat_policy") {
-		*unset = sdk.Bool(true)
 		return nil
 	}
 	_, patPolicyRaw := d.GetChange("pat_policy")
-	if patPolicyRaw == nil {
+	patConfigList := patPolicyRaw.([]any)
+	if len(patConfigList) == 0 {
 		*unset = sdk.Bool(true)
 		return nil
 	}
-	patConfigList := patPolicyRaw.([]any)
 	patConfig := patConfigList[0].(map[string]any)
 	req := sdk.NewAuthenticationPolicyPatPolicyRequest()
 	if d.HasChange("pat_policy.0.default_expiry_in_days") {
@@ -807,11 +805,11 @@ func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.Aut
 		return nil
 	}
 	_, workloadIdentityPolicyRaw := d.GetChange("workload_identity_policy")
-	if workloadIdentityPolicyRaw == nil {
+	workloadIdentityPolicyConfigList := workloadIdentityPolicyRaw.([]any)
+	if len(workloadIdentityPolicyConfigList) == 0 {
 		*unset = sdk.Bool(true)
 		return nil
 	}
-	workloadIdentityPolicyConfigList := workloadIdentityPolicyRaw.([]any)
 	workloadIdentityPolicyConfig := workloadIdentityPolicyConfigList[0].(map[string]any)
 	req := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
 	if d.HasChange("workload_identity_policy.0.allowed_providers") {
