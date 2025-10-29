@@ -33,8 +33,3 @@ test.env
 
 # Test sensitive values
 *.tfvars
-
-# IDE specific files
-.idea/
-*.iml
-.vscode/
