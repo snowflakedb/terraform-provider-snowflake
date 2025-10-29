@@ -8,23 +8,33 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func DatabaseRoleIsMissing(t *testing.T, id sdk.DatabaseObjectIdentifier) *DatabaseRoleAssert {
+// TODO [SNOW-1501905]: generalize this type of assertion
+type databaseRoleNonExistenceCheck struct {
+	id sdk.DatabaseObjectIdentifier
+}
+
+func (w *databaseRoleNonExistenceCheck) ToTerraformTestCheckFunc(t *testing.T, testClient *helpers.TestClient) resource.TestCheckFunc {
 	t.Helper()
-	return &DatabaseRoleAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeDatabaseRole, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.DatabaseRole, sdk.DatabaseObjectIdentifier] {
-			return func(t *testing.T, id sdk.DatabaseObjectIdentifier) (*sdk.DatabaseRole, error) {
-				t.Helper()
-				databaseRole, err := testClient.DatabaseRole.Show(t, id)
-				if err != nil {
-					if errors.Is(err, sdk.ErrObjectNotFound) {
-						return databaseRole, nil
-					}
-					return databaseRole, nil
-				}
-				return databaseRole, fmt.Errorf("expected database role %s to be missing, but it exists", id)
+	return func(_ *terraform.State) error {
+		if testClient == nil {
+			return errors.New("testClient must not be nil")
+		}
+		_, err := testClient.DatabaseRole.Show(t, w.id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				return nil
 			}
-		}),
+			return err
+		}
+		return fmt.Errorf("expected database role %s to be missing, but it exists", w.id.FullyQualifiedName())
 	}
+}
+
+func DatabaseRoleDoesNotExist(t *testing.T, id sdk.DatabaseObjectIdentifier) assert.TestCheckFuncProvider {
+	t.Helper()
+	return &databaseRoleNonExistenceCheck{id: id}
 }

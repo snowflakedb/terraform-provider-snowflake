@@ -176,9 +176,10 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 			},
 			// Empty config - ensure database role is destroyed
 			{
-				Config: " ",
+				Destroy: true,
+				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.DatabaseRoleIsMissing(t, id),
+					objectassert.DatabaseRoleDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
