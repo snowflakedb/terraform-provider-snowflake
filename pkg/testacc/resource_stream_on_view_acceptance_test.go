@@ -31,16 +31,6 @@ import (
 )
 
 func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
-	// Schema analysis (from pkg/resources/stream_common.go and stream_on_view.go):
-	// - name: ForceNew: true (cannot be renamed)
-	// - database: ForceNew: true (cannot be changed)
-	// - schema: ForceNew: true (cannot be changed)
-	// - view: NOT force-new (can be updated)
-	// - append_only: Optional, NOT force-new
-	// - show_initial_rows: Optional, NOT force-new
-	// - comment: Optional, NOT force-new
-	// Result: Use same identifiers for basic/complete (name, database, schema are force-new), no additional force-new fields to handle
-
 	database, databaseCleanup := testClient().Database.CreateDatabase(t)
 	t.Cleanup(databaseCleanup)
 
@@ -92,7 +82,6 @@ func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
 			HasInvalidReason("N/A").
 			HasOwnerRoleType("ROLE"),
 
-		// Describe output assertions
 		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.created_on")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.name", id.Name())),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -138,7 +127,6 @@ func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
 			HasInvalidReason("N/A").
 			HasOwnerRoleType("ROLE"),
 
-		// Describe output assertions
 		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.created_on")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
@@ -217,274 +205,23 @@ func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Create - with optionals (from scratch via taint)
+			// Destroy - ensure stream is destroyed before the next step
 			{
-				Taint: []string{complete.ResourceReference()},
+				Destroy: true,
+				Config:  config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.StreamDoesNotExist(t, id),
+				),
+			},
+			// Create - with optionals
+			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
-			},
-		},
-	})
-}
-
-func TestAcc_StreamOnView_Basic(t *testing.T) {
-	table, cleanupTable := testClient().Table.CreateWithChangeTracking(t)
-	t.Cleanup(cleanupTable)
-
-	statement := fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName())
-	view, cleanupView := testClient().View.CreateView(t, statement)
-	t.Cleanup(cleanupView)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	baseModel := model.StreamOnViewBase("test", id, view.ID())
-
-	modelWithExtraFields := model.StreamOnViewBase("test", id, view.ID()).
-		WithCopyGrants(false).
-		WithComment("foo").
-		WithAppendOnly(r.BooleanTrue).
-		WithShowInitialRows(r.BooleanTrue).
-		WithAtValue(pluginconfig.MapVariable(map[string]pluginconfig.Variable{
-			"offset": pluginconfig.StringVariable("0"),
-		}))
-
-	modelWithExtraFieldsDefaultMode := model.StreamOnViewBase("test", id, view.ID()).
-		WithCopyGrants(false).
-		WithComment("foo").
-		WithAppendOnly(r.BooleanFalse).
-		WithShowInitialRows(r.BooleanTrue).
-		WithAtValue(pluginconfig.MapVariable(map[string]pluginconfig.Variable{
-			"offset": pluginconfig.StringVariable("0"),
-		}))
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.StreamOnView),
-		Steps: []resource.TestStep{
-			// without optionals
-			{
-				Config: config.FromModels(t, baseModel),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, baseModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasAppendOnlyString(r.BooleanDefault).
-					HasViewString(view.ID().FullyQualifiedName()),
-					resourceshowoutputassert.StreamShowOutput(t, baseModel.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(view.ID().FullyQualifiedName()).
-						HasSourceType(sdk.StreamSourceTypeView).
-						HasBaseTables(table.ID()).
-						HasType("DELTA").
-						HasStale(false).
-						HasMode(sdk.StreamModeDefault).
-						HasStaleAfterNotEmpty().
-						HasInvalidReason("N/A").
-						HasOwnerRoleType("ROLE"),
-					assert.Check(resource.TestCheckResourceAttrSet(baseModel.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.comment", "")),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.table_name", view.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.source_type", string(sdk.StreamSourceTypeView))),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.base_tables.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.base_tables.0", table.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.type", "DELTA")),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.stale", "false")),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.mode", string(sdk.StreamModeDefault))),
-					assert.Check(resource.TestCheckResourceAttrSet(baseModel.ResourceReference(), "describe_output.0.stale_after")),
-					assert.Check(resource.TestCheckResourceAttr(baseModel.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
-				),
-			},
-			// import without optionals
-			{
-				Config:       config.FromModels(t, baseModel),
-				ResourceName: baseModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedStreamOnViewResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasAppendOnlyString(r.BooleanFalse).
-						HasViewString(view.ID().FullyQualifiedName()),
-				),
-			},
-			// set all fields
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/at"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithExtraFields),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithExtraFields.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasAppendOnlyString(r.BooleanTrue).
-					HasViewString(view.ID().FullyQualifiedName()),
-					resourceshowoutputassert.StreamShowOutput(t, modelWithExtraFields.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(view.ID().FullyQualifiedName()).
-						HasSourceType(sdk.StreamSourceTypeView).
-						HasBaseTables(table.ID()).
-						HasType("DELTA").
-						HasStale(false).
-						HasMode(sdk.StreamModeAppendOnly).
-						HasStaleAfterNotEmpty().
-						HasInvalidReason("N/A").
-						HasComment("foo").
-						HasOwnerRoleType("ROLE"),
-					assert.Check(resource.TestCheckResourceAttrSet(modelWithExtraFields.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.comment", "foo")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.table_name", view.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.source_type", string(sdk.StreamSourceTypeView))),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.base_tables.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.base_tables.0", table.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.type", "DELTA")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.stale", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.mode", string(sdk.StreamModeAppendOnly))),
-					assert.Check(resource.TestCheckResourceAttrSet(modelWithExtraFields.ResourceReference(), "describe_output.0.stale_after")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
-				),
-			},
-			// external change
-			{
-				PreConfig: func() {
-					testClient().Stream.Alter(t, sdk.NewAlterStreamRequest(id).WithSetComment("bar"))
-				},
-				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/at"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithExtraFields),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithExtraFields.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithExtraFields.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasAppendOnlyString(r.BooleanTrue).
-					HasViewString(view.ID().FullyQualifiedName()),
-					resourceshowoutputassert.StreamShowOutput(t, modelWithExtraFields.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(view.ID().FullyQualifiedName()).
-						HasSourceType(sdk.StreamSourceTypeView).
-						HasBaseTables(table.ID()).
-						HasType("DELTA").
-						HasStale(false).
-						HasMode(sdk.StreamModeAppendOnly).
-						HasStaleAfterNotEmpty().
-						HasInvalidReason("N/A").
-						HasComment("foo").
-						HasOwnerRoleType("ROLE"),
-					assert.Check(resource.TestCheckResourceAttrSet(modelWithExtraFields.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.comment", "foo")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.table_name", view.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.source_type", string(sdk.StreamSourceTypeView))),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.base_tables.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.base_tables.0", table.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.type", "DELTA")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.stale", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.mode", string(sdk.StreamModeAppendOnly))),
-					assert.Check(resource.TestCheckResourceAttrSet(modelWithExtraFields.ResourceReference(), "describe_output.0.stale_after")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFields.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
-				),
-			},
-			// update fields that recreate the object
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/at"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithExtraFieldsDefaultMode),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelWithExtraFieldsDefaultMode.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithExtraFieldsDefaultMode.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasAppendOnlyString(r.BooleanFalse).
-					HasViewString(view.ID().FullyQualifiedName()),
-					resourceshowoutputassert.StreamShowOutput(t, modelWithExtraFieldsDefaultMode.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(view.ID().FullyQualifiedName()).
-						HasSourceType(sdk.StreamSourceTypeView).
-						HasBaseTables(table.ID()).
-						HasType("DELTA").
-						HasStale(false).
-						HasMode(sdk.StreamModeDefault).
-						HasStaleAfterNotEmpty().
-						HasInvalidReason("N/A").
-						HasComment("foo").
-						HasOwnerRoleType("ROLE"),
-					assert.Check(resource.TestCheckResourceAttrSet(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.comment", "foo")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.table_name", view.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.source_type", string(sdk.StreamSourceTypeView))),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.base_tables.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.base_tables.0", table.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.type", "DELTA")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.stale", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.mode", string(sdk.StreamModeDefault))),
-					assert.Check(resource.TestCheckResourceAttrSet(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.stale_after")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithExtraFieldsDefaultMode.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
-				),
-			},
-			// import
-			{
-				Config:       config.FromModels(t, modelWithExtraFieldsDefaultMode),
-				ResourceName: modelWithExtraFieldsDefaultMode.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedStreamOnViewResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasAppendOnlyString(r.BooleanFalse).
-						HasViewString(view.ID().FullyQualifiedName()),
-				),
 			},
 		},
 	})
