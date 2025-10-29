@@ -203,7 +203,7 @@ func CreateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 
 	// Set optionals
 	if v, ok := d.GetOk("comment"); ok {
-		createRequest.WithComment(sdk.String(v.(string)))
+		createRequest.WithComment(v.(string))
 	}
 
 	err = client.RowAccessPolicies.Create(ctx, createRequest)
@@ -280,7 +280,7 @@ func UpdateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(id).WithRenameTo(&newId))
+		err := client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming view %v err = %w", d.Id(), err))
 		}
@@ -292,12 +292,12 @@ func UpdateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 	if d.HasChange("comment") {
 		comment := d.Get("comment")
 		if c := comment.(string); c == "" {
-			err := client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(id).WithUnsetComment(sdk.Bool(true)))
+			err := client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(id).WithUnsetComment(true))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting comment for row access policy on %v err = %w", d.Id(), err))
 			}
 		} else {
-			err := client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(id).WithSetComment(sdk.String(c)))
+			err := client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(id).WithSetComment(c))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating comment for row access policy on %v err = %w", d.Id(), err))
 			}
@@ -306,7 +306,7 @@ func UpdateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 
 	if d.HasChange("body") {
 		rowAccessExpression := d.Get("body").(string)
-		err := client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody(sdk.String(rowAccessExpression)))
+		err := client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody(rowAccessExpression))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating row access policy expression on %v err = %w", d.Id(), err))
 		}

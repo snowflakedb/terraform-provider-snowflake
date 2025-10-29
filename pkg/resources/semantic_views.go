@@ -6,7 +6,9 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -374,10 +376,10 @@ func SemanticView() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: CreateSemanticView,
-		ReadContext:   ReadSemanticView,
-		UpdateContext: UpdateSemanticView,
-		DeleteContext: deleteFunc,
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingCreateWrapper(resources.SemanticView, CreateSemanticView)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.SemanticViewResource), TrackingReadWrapper(resources.SemanticView, ReadSemanticView)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.SemanticViewResource), TrackingUpdateWrapper(resources.SemanticView, UpdateSemanticView)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.SemanticViewResource), TrackingDeleteWrapper(resources.SemanticView, deleteFunc)),
 		Description:   "Resource used to manage semantic views. For more information, check [semantic views documentation](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SemanticView, customdiff.All(
@@ -551,8 +553,11 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 			var ukRequests []sdk.UniqueKeysRequest
 			for _, ukSet := range uniqueKeys {
 				var uniqueKeyColumns []sdk.SemanticViewColumn
-				for _, uk := range ukSet.([]any) {
-					uniqueKeyColumns = append(uniqueKeyColumns, sdk.SemanticViewColumn{Name: uk.(string)})
+				values, ok := ukSet.(map[string]any)["values"].([]any)
+				if ok {
+					for _, uk := range values {
+						uniqueKeyColumns = append(uniqueKeyColumns, sdk.SemanticViewColumn{Name: uk.(string)})
+					}
 				}
 				ukRequest := sdk.UniqueKeysRequest{Unique: uniqueKeyColumns}
 				ukRequests = append(ukRequests, ukRequest)
@@ -562,14 +567,10 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 	}
 
 	if c["synonym"] != nil {
-		synonyms, ok := c["synonym"].([]any)
-		if ok && len(synonyms) > 0 {
-			var syns []sdk.Synonym
-			for _, s := range synonyms {
-				syns = append(syns, sdk.Synonym{Synonym: s.(string)})
-			}
-			sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
-			logicalTableRequest = logicalTableRequest.WithSynonyms(sRequest)
+		synonyms := c["synonym"].(*schema.Set).List()
+		if len(synonyms) > 0 {
+			synonymList := collections.Map(synonyms, func(s any) sdk.Synonym { return sdk.Synonym{Synonym: s.(string)} })
+			logicalTableRequest = logicalTableRequest.WithSynonyms(*sdk.NewSynonymsRequest().WithWithSynonyms(synonymList))
 		}
 	}
 
@@ -579,7 +580,9 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) {
 	c := from.(map[string]any)
 	metricDefinitionRequest := sdk.NewMetricDefinitionRequest()
-	if len(c["semantic_expression"].([]any)) > 0 {
+
+	switch {
+	case len(c["semantic_expression"].([]any)) > 0:
 		semanticExpression := c["semantic_expression"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
 			WithQualifiedExpressionName(semanticExpression["qualified_expression_name"].(string))
@@ -602,7 +605,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 			}
 		}
 		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
-	} else if len(c["window_function"].([]any)) > 0 {
+	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
 		windowFunction := windowFunctionDefinition["window_function"].(string)
 		metric := windowFunctionDefinition["metric"].(string)
@@ -624,7 +627,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 			}
 		}
 		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest), nil
-	} else {
+	default:
 		return nil, fmt.Errorf("either semantic expression or window function is required")
 	}
 }
@@ -668,36 +671,38 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 	tableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
 	if len(c["table_name_or_alias"].([]any)) > 0 {
 		tableNameOrAlias := c["table_name_or_alias"].([]any)[0].(map[string]any)
-		if tableNameOrAlias["table_name"] != nil && tableNameOrAlias["table_name"].(string) != "" {
+		switch {
+		case tableNameOrAlias["table_name"] != nil && tableNameOrAlias["table_name"].(string) != "":
 			tableName, err := sdk.ParseSchemaObjectIdentifier(tableNameOrAlias["table_name"].(string))
 			if err != nil {
 				return nil, err
 			}
 			tableNameOrAliasRequest.WithRelationshipTableName(tableName)
-		} else if tableNameOrAlias["table_alias"] != nil && tableNameOrAlias["table_alias"].(string) != "" {
+		case tableNameOrAlias["table_alias"] != nil && tableNameOrAlias["table_alias"].(string) != "":
 			tableNameOrAliasRequest.WithRelationshipTableAlias(tableNameOrAlias["table_alias"].(string))
-		} else {
+		default:
 			return nil, fmt.Errorf("exactly one of table_name or table_alias is required in a relationship")
 		}
 	}
 
-	var relationshipColumnRequests []sdk.SemanticViewColumnRequest
-	for _, relationshipColumn := range c["relationship_columns"].([]any) {
-		relationshipColumnRequests = append(relationshipColumnRequests, *sdk.NewSemanticViewColumnRequest(relationshipColumn.(string)))
+	relationshipColumnRequests := make([]sdk.SemanticViewColumnRequest, len(c["relationship_columns"].([]any)))
+	for i, relationshipColumn := range c["relationship_columns"].([]any) {
+		relationshipColumnRequests[i] = *sdk.NewSemanticViewColumnRequest(relationshipColumn.(string))
 	}
 
 	refTableNameOrAliasRequest := sdk.NewRelationshipTableAliasRequest()
 	if len(c["referenced_table_name_or_alias"].([]any)) > 0 {
 		refTableNameOrAlias := c["referenced_table_name_or_alias"].([]any)[0].(map[string]any)
-		if refTableNameOrAlias["table_name"] != nil && refTableNameOrAlias["table_name"].(string) != "" {
+		switch {
+		case refTableNameOrAlias["table_name"] != nil && refTableNameOrAlias["table_name"].(string) != "":
 			tableName, err := sdk.ParseSchemaObjectIdentifier(refTableNameOrAlias["table_name"].(string))
 			if err != nil {
 				return nil, err
 			}
 			refTableNameOrAliasRequest.WithRelationshipTableName(tableName)
-		} else if refTableNameOrAlias["table_alias"] != nil && refTableNameOrAlias["table_alias"].(string) != "" {
+		case refTableNameOrAlias["table_alias"] != nil && refTableNameOrAlias["table_alias"].(string) != "":
 			refTableNameOrAliasRequest.WithRelationshipTableAlias(refTableNameOrAlias["table_alias"].(string))
-		} else {
+		default:
 			return nil, fmt.Errorf("exactly one of table_name or table_alias is required in a relationship")
 		}
 	}

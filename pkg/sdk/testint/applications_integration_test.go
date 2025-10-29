@@ -81,11 +81,11 @@ func TestInt_Applications(t *testing.T) {
 		stage, applicationPackage := createApplicationPackageHandle(t, version, patch, false)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		vr := sdk.NewApplicationVersionRequest().WithVersionAndPatch(sdk.NewVersionAndPatchRequest(version, &patch))
+		vr := sdk.NewApplicationVersionRequest().WithVersionAndPatch(*sdk.NewVersionAndPatchRequest(version, &patch))
 		if versionDirectory {
-			vr = sdk.NewApplicationVersionRequest().WithVersionDirectory(sdk.String("@" + stage.ID().FullyQualifiedName()))
+			vr = sdk.NewApplicationVersionRequest().WithVersionDirectory("@" + stage.ID().FullyQualifiedName())
 		}
-		request := sdk.NewCreateApplicationRequest(id, applicationPackage.ID()).WithVersion(vr).WithDebugMode(&debug)
+		request := sdk.NewCreateApplicationRequest(id, applicationPackage.ID()).WithVersion(*vr).WithDebugMode(debug)
 		err := client.Applications.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(cleanupApplicationHandle(id))
@@ -133,7 +133,7 @@ func TestInt_Applications(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		comment := random.Comment()
 		request := sdk.NewCreateApplicationRequest(id, applicationPackage.ID()).
-			WithComment(&comment).
+			WithComment(comment).
 			WithTag([]sdk.TagAssociation{
 				{
 					Name:  tagTest.ID(),
@@ -160,12 +160,12 @@ func TestInt_Applications(t *testing.T) {
 		_, applicationPackage := createApplicationPackageHandle(t, version, patch, false)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		vr := sdk.NewApplicationVersionRequest().WithVersionAndPatch(sdk.NewVersionAndPatchRequest(version, &patch))
+		vr := sdk.NewApplicationVersionRequest().WithVersionAndPatch(*sdk.NewVersionAndPatchRequest(version, &patch))
 		comment := random.Comment()
 		request := sdk.NewCreateApplicationRequest(id, applicationPackage.ID()).
-			WithDebugMode(sdk.Bool(true)).
-			WithComment(&comment).
-			WithVersion(vr)
+			WithDebugMode(true).
+			WithComment(comment).
+			WithVersion(*vr)
 		err := client.Applications.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(cleanupApplicationHandle(id))
@@ -178,12 +178,12 @@ func TestInt_Applications(t *testing.T) {
 		stage, applicationPackage := createApplicationPackageHandle(t, version, patch, false)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		vr := sdk.NewApplicationVersionRequest().WithVersionDirectory(sdk.String("@" + stage.ID().FullyQualifiedName()))
+		vr := sdk.NewApplicationVersionRequest().WithVersionDirectory("@" + stage.ID().FullyQualifiedName())
 		comment := random.Comment()
 		request := sdk.NewCreateApplicationRequest(id, applicationPackage.ID()).
-			WithDebugMode(sdk.Bool(true)).
-			WithComment(&comment).
-			WithVersion(vr).
+			WithDebugMode(true).
+			WithComment(comment).
+			WithVersion(*vr).
 			WithTag([]sdk.TagAssociation{
 				{
 					Name:  tagTest.ID(),
@@ -211,11 +211,11 @@ func TestInt_Applications(t *testing.T) {
 		_, e, _ := createApplicationHandle(t, version, patch, false, true, false)
 		id := e.ID()
 
-		comment, mode := random.Comment(), true
+		comment := random.Comment()
 		set := sdk.NewApplicationSetRequest().
-			WithComment(&comment).
-			WithDebugMode(&mode)
-		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithSet(set))
+			WithComment(comment).
+			WithDebugMode(true)
+		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithSet(*set))
 		require.NoError(t, err)
 
 		details, err := client.Applications.Describe(ctx, id)
@@ -229,7 +229,7 @@ func TestInt_Applications(t *testing.T) {
 		require.Equal(t, e.Version, pairs["version"])
 		require.Equal(t, strconv.Itoa(e.Patch), pairs["patch"])
 		require.Equal(t, comment, pairs["comment"])
-		require.Equal(t, strconv.FormatBool(mode), pairs["debug_mode"])
+		require.Equal(t, strconv.FormatBool(true), pairs["debug_mode"])
 	})
 
 	t.Run("alter application: unset", func(t *testing.T) {
@@ -237,8 +237,8 @@ func TestInt_Applications(t *testing.T) {
 		_, e, _ := createApplicationHandle(t, version, patch, false, true, false)
 		id := e.ID()
 
-		unset := sdk.NewApplicationUnsetRequest().WithComment(sdk.Bool(true)).WithDebugMode(sdk.Bool(true))
-		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUnset(unset))
+		unset := sdk.NewApplicationUnsetRequest().WithComment(true).WithDebugMode(true)
+		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUnset(*unset))
 		require.NoError(t, err)
 
 		o, err := client.Applications.ShowByID(ctx, id)
@@ -260,8 +260,8 @@ func TestInt_Applications(t *testing.T) {
 		id := e.ID()
 
 		vr := sdk.NewVersionAndPatchRequest(version, sdk.Int(patch+1))
-		av := sdk.NewApplicationVersionRequest().WithVersionAndPatch(vr)
-		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUpgradeVersion(av))
+		av := sdk.NewApplicationVersionRequest().WithVersionAndPatch(*vr)
+		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUpgradeVersion(*av))
 		require.NoError(t, err)
 		assertApplication(t, id, applicationPackage.Name, version, patch+1, "")
 	})
@@ -271,8 +271,8 @@ func TestInt_Applications(t *testing.T) {
 		s, e, applicationPackage := createApplicationHandle(t, version, patch, true, true, false)
 		id := e.ID()
 
-		av := sdk.NewApplicationVersionRequest().WithVersionDirectory(sdk.String("@" + s.ID().FullyQualifiedName()))
-		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUpgradeVersion(av))
+		av := sdk.NewApplicationVersionRequest().WithVersionDirectory("@" + s.ID().FullyQualifiedName())
+		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUpgradeVersion(*av))
 		require.NoError(t, err)
 		assertApplication(t, id, applicationPackage.Name, "UNVERSIONED", patch+1, "")
 	})
@@ -282,7 +282,7 @@ func TestInt_Applications(t *testing.T) {
 		_, e, applicationPackage := createApplicationHandle(t, version, patch, false, true, false)
 		id := e.ID()
 
-		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUnsetReferences(sdk.NewApplicationReferencesRequest()))
+		err := client.Applications.Alter(ctx, sdk.NewAlterApplicationRequest(id).WithUnsetReferences(*sdk.NewApplicationReferencesRequest()))
 		require.NoError(t, err)
 		assertApplication(t, id, applicationPackage.Name, version, patch, "")
 	})

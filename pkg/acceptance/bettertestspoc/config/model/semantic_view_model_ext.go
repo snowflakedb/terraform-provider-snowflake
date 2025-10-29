@@ -6,6 +6,17 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+func SemanticViewWithMetrics(
+	resourceName string,
+	database string,
+	schema string,
+	name string,
+	tables []sdk.LogicalTable,
+	metrics []sdk.MetricDefinition,
+) *SemanticViewModel {
+	return SemanticView(resourceName, database, schema, name, tables).WithMetrics(metrics)
+}
+
 func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewModel {
 	maps := make([]tfconfig.Variable, len(tables))
 	for i, v := range tables {

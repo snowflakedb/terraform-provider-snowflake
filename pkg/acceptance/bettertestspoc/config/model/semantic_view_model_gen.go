@@ -16,12 +16,12 @@ type SemanticViewModel struct {
 	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	Name               tfconfig.Variable `json:"name,omitempty"`
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Tables             tfconfig.Variable `json:"tables,omitempty"`
-	Relationships      tfconfig.Variable `json:"relationships,omitempty"`
-	Facts              tfconfig.Variable `json:"facts,omitempty"`
 	Dimensions         tfconfig.Variable `json:"dimensions,omitempty"`
+	Facts              tfconfig.Variable `json:"facts,omitempty"`
+	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Metrics            tfconfig.Variable `json:"metrics,omitempty"`
+	Relationships      tfconfig.Variable `json:"relationships,omitempty"`
+	Tables             tfconfig.Variable `json:"tables,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -37,15 +37,13 @@ func SemanticView(
 	database string,
 	schema string,
 	name string,
-	tables []sdk.LogicalTable, // manually adjusted
-	metrics []sdk.MetricDefinition, // manually adjusted
+	tables []sdk.LogicalTable,
 ) *SemanticViewModel {
 	s := &SemanticViewModel{ResourceModelMeta: config.Meta(resourceName, resources.SemanticView)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
-	s.WithTables(tables)   // manually adjusted
-	s.WithMetrics(metrics) //manually adjusted
+	s.WithTables(tables)
 	return s
 }
 
@@ -53,15 +51,13 @@ func SemanticViewWithDefaultMeta(
 	database string,
 	schema string,
 	name string,
-	tables []sdk.LogicalTable, // manually adjusted
-	metrics []sdk.MetricDefinition, // manually adjusted
+	tables []sdk.LogicalTable,
 ) *SemanticViewModel {
 	s := &SemanticViewModel{ResourceModelMeta: config.DefaultMeta(resources.SemanticView)}
 	s.WithDatabase(database)
 	s.WithSchema(schema)
 	s.WithName(name)
-	s.WithTables(tables)   // manually adjusted
-	s.WithMetrics(metrics) //manually adjusted
+	s.WithTables(tables)
 	return s
 }
 
@@ -114,10 +110,18 @@ func (s *SemanticViewModel) WithComment(comment string) *SemanticViewModel {
 	return s
 }
 
+// dimensions attribute type is not yet supported, so WithDimensions can't be generated
+
+// facts attribute type is not yet supported, so WithFacts can't be generated
+
 func (s *SemanticViewModel) WithFullyQualifiedName(fullyQualifiedName string) *SemanticViewModel {
 	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return s
 }
+
+// metrics attribute type is not yet supported, so WithMetrics can't be generated
+
+// relationships attribute type is not yet supported, so WithRelationships can't be generated
 
 // tables attribute type is not yet supported, so WithTables can't be generated
 
@@ -145,23 +149,8 @@ func (s *SemanticViewModel) WithCommentValue(value tfconfig.Variable) *SemanticV
 	return s
 }
 
-func (s *SemanticViewModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *SemanticViewModel {
-	s.FullyQualifiedName = value
-	return s
-}
-
-func (s *SemanticViewModel) WithTablesValue(value tfconfig.Variable) *SemanticViewModel {
-	s.Tables = value
-	return s
-}
-
-func (s *SemanticViewModel) WithRelationshipsValue(value tfconfig.Variable) *SemanticViewModel {
-	s.Relationships = value
-	return s
-}
-
-func (s *SemanticViewModel) WithMetricsValue(value tfconfig.Variable) *SemanticViewModel {
-	s.Metrics = value
+func (s *SemanticViewModel) WithDimensionsValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Dimensions = value
 	return s
 }
 
@@ -170,7 +159,22 @@ func (s *SemanticViewModel) WithFactsValue(value tfconfig.Variable) *SemanticVie
 	return s
 }
 
-func (s *SemanticViewModel) WithDimensionsValue(value tfconfig.Variable) *SemanticViewModel {
-	s.Dimensions = value
+func (s *SemanticViewModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *SemanticViewModel {
+	s.FullyQualifiedName = value
+	return s
+}
+
+func (s *SemanticViewModel) WithMetricsValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Metrics = value
+	return s
+}
+
+func (s *SemanticViewModel) WithRelationshipsValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Relationships = value
+	return s
+}
+
+func (s *SemanticViewModel) WithTablesValue(value tfconfig.Variable) *SemanticViewModel {
+	s.Tables = value
 	return s
 }

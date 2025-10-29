@@ -58,7 +58,7 @@ func (c *ApplicationPackageClient) DropApplicationPackageFunc(t *testing.T, id s
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropApplicationPackageRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropApplicationPackageRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }
@@ -69,7 +69,7 @@ func (c *ApplicationPackageClient) AddApplicationPackageVersion(t *testing.T, id
 
 	using := "@" + stageId.FullyQualifiedName()
 
-	err := c.client().Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithAddVersion(sdk.NewAddVersionRequest(using).WithVersionIdentifier(sdk.String(versionName))))
+	err := c.client().Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithAddVersion(*sdk.NewAddVersionRequest(using).WithVersionIdentifier(versionName)))
 	require.NoError(t, err)
 }
 
@@ -78,7 +78,7 @@ func (c *ApplicationPackageClient) SetDefaultReleaseDirective(t *testing.T, id s
 	ctx := context.Background()
 
 	err := c.client().Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithSetDefaultReleaseDirective(
-		sdk.NewSetDefaultReleaseDirectiveRequest(version, 0),
+		*sdk.NewSetDefaultReleaseDirectiveRequest(version, 0),
 	))
 	require.NoError(t, err)
 }
