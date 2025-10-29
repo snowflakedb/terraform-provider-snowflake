@@ -400,7 +400,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 				Type:             schema.TypeString,
 				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AllExperimentalFeatures, true),
 			},
-			Description: fmt.Sprintf("A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(experimentalfeatures.AllExperimentalFeatures)),
+			Description: fmt.Sprintf("A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(experimentalfeatures.AllExperimentalFeatures)),
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
