@@ -85,7 +85,7 @@ Details:
 Feedback:
 - If you have a lot of warehouses, and you have performance concerns when managing them, this experiment may be the solution.
 - If you discover that the performance is boosted when the experiment is enabled, please reach out to us and share it! Your feedback is crucial in making the experiment an official feature of the provider.
-- In case of any issues, reach out to us through GitHub or you account representative.
+- In case of any issues, reach out to us through GitHub or your account representative.
 
 ## v2.8.x ➞ v2.9.0
 
