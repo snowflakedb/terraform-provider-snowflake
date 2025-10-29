@@ -123,6 +123,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["experimental_features_enabled"].Description,
 		Optional:    true,
 		Sensitive:   false,
+		ElementType: types.StringType, // edited manually
 	},
 	"external_browser_timeout": schema.Int64Attribute{
 		Description: existingSchema["external_browser_timeout"].Description,
