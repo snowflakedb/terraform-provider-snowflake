@@ -1,5 +1,5 @@
 services:
-  run-build-verification-tests:
+  test-main-terraform-use-cases:
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,5 +9,19 @@ services:
     volumes:
       - ./../:/terraform-provider-snowflake
       - ${SNOWFLAKE_CONFIG_PATH}:/root/.snowflake/config
+      - shared_data:/shared
     working_dir: /terraform-provider-snowflake
-    command: [ "make", "test-main-terraform-use-cases" ]
+    command: sh -c "make --silent test-main-terraform-use-cases > /shared/test_output.json"
+  process-test-output:
+    depends_on:
+      - test-main-terraform-use-cases
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./../:/terraform-provider-snowflake
+      - shared_data:/shared
+    command: sh -c "go run /terraform-provider-snowflake/pkg/scripts/test_output_processor/test_output_processor.go < /shared/test_output.json"
+
+volumes:
+  shared_data:
