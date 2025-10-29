@@ -9,10 +9,6 @@ import (
 	"os"
 )
 
-// TODO: Describe script and create a short Readme?
-// TODO: Example usage: TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run TestAcc_GrantPrivilegesToAccountRole_OnSchema_ExactlyOneOf -v -timeout=20m ./pkg/testacc -json | go run ./pkg/scripts/test_output_processor/test_output_processor.go 1> ./pkg/scripts/test_output_processor/output.csv
-// TODO: make test-acceptance-GrantPrivilegesToAccountRole_OnSchema_ExactlyOneOf | go run ./pkg/scripts/test_output_processor/test_output_processor.go 1> ./pkg/scripts/test_output_processor/output.csv
-
 type TestResultEntry struct {
 	Package string  `json:"Package"`
 	Test    string  `json:"Test"`

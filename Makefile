@@ -91,12 +91,8 @@ test-acceptance-%: ## run acceptance tests (both non-account and account level o
 test-main-terraform-use-cases: ## run test for main terraform use cases
 	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_Schema_basic|TestAcc_Schema_complete)$$" -v -cover -json -timeout=20m ./pkg/testacc
 
-TEST_WORKFLOW_ID := 1
-test-main-terraform-use-cases-wrapper:
-	TEST_SF_TF_TEST_WORKFLOW_ID=$(TEST_WORKFLOW_ID) TEST_SF_TF_TEST_RESULTS_OUTPUT_PATH=./output.csv TEST_SF_TF_TEST_TYPE=main_terraform_use_cases go run ./pkg/scripts/test_runner/test_runner.go
-
-test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests for docker compose
-	docker compose -f ./packaging/docker-compose.yml run --rm run-test-main-terraform-use-cases-wrapper
+test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests within docker environment
+	docker compose -f ./packaging/docker-compose.yml run --rm run-build-verification-tests
 
 build-local: ## build the binary locally
 	go build -o $(BASE_BINARY_NAME) .
