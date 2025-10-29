@@ -70,7 +70,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 	})
 
 	t.Run("create row access policy: full", func(t *testing.T) {
-		request := createRowAccessPolicyBasicRequest(t).WithComment(sdk.Pointer("some comment"))
+		request := createRowAccessPolicyBasicRequest(t).WithComment("some comment")
 
 		rowAccessPolicy, cleanup := testClientHelper().RowAccessPolicy.CreateRowAccessPolicyWithRequest(t, *request)
 		t.Cleanup(cleanup)
@@ -105,7 +105,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		alterRequest := sdk.NewAlterRowAccessPolicyRequest(id).WithRenameTo(&newId)
+		alterRequest := sdk.NewAlterRowAccessPolicyRequest(id).WithRenameTo(newId)
 
 		err = client.RowAccessPolicies.Alter(ctx, alterRequest)
 		if err != nil {
@@ -129,7 +129,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 		t.Cleanup(cleanup)
 		id := rowAccessPolicy.ID()
 
-		alterRequest := sdk.NewAlterRowAccessPolicyRequest(id).WithSetComment(sdk.String("new comment"))
+		alterRequest := sdk.NewAlterRowAccessPolicyRequest(id).WithSetComment("new comment")
 		err := client.RowAccessPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -138,7 +138,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 
 		assert.Equal(t, "new comment", alteredRowAccessPolicy.Comment)
 
-		alterRequest = sdk.NewAlterRowAccessPolicyRequest(id).WithUnsetComment(sdk.Bool(true))
+		alterRequest = sdk.NewAlterRowAccessPolicyRequest(id).WithUnsetComment(true)
 		err = client.RowAccessPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -153,7 +153,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 		t.Cleanup(cleanup)
 		id := rowAccessPolicy.ID()
 
-		alterRequest := sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody(sdk.String("false"))
+		alterRequest := sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody("false")
 		err := client.RowAccessPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -162,7 +162,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 
 		assert.Equal(t, "false", alteredRowAccessPolicyDescription.Body)
 
-		alterRequest = sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody(sdk.String("true"))
+		alterRequest = sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody("true")
 		err = client.RowAccessPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -195,7 +195,7 @@ func TestInt_RowAccessPolicies(t *testing.T) {
 		showRequest := sdk.NewShowRowAccessPolicyRequest().
 			WithLike(sdk.Like{Pattern: &rowAccessPolicy1.Name}).
 			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: testClientHelper().Ids.SchemaId()}}).
-			WithLimit(&sdk.LimitFrom{Rows: sdk.Int(5)})
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(5)})
 		returnedRowAccessPolicies, err := client.RowAccessPolicies.Show(ctx, showRequest)
 
 		require.NoError(t, err)
@@ -346,7 +346,7 @@ func TestInt_RowAccessPoliciesDescribe(t *testing.T) {
 		require.NoError(t, err)
 		wantArgs := make([]sdk.TableColumnSignature, len(args))
 		for i, arg := range args {
-			wantType, err := datatypes.ParseDataType(arg.Type.ToLegacyDataTypeSql())
+			wantType, err := datatypes.ParseDataType(arg.DataType.ToLegacyDataTypeSql())
 			require.NoError(t, err)
 			wantArgs[i] = sdk.TableColumnSignature{
 				Name: arg.Name,

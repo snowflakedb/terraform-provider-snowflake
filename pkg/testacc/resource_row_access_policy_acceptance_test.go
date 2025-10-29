@@ -136,7 +136,7 @@ func TestAcc_RowAccessPolicy(t *testing.T) {
 				PreConfig: func() {
 					arg := sdk.NewCreateRowAccessPolicyArgsRequest("A", testdatatypes.DataTypeBoolean)
 					createRequest := sdk.NewCreateRowAccessPolicyRequest(id, []sdk.CreateRowAccessPolicyArgsRequest{*arg}, "case when current_role() in ('ANALYST') then false else true end")
-					testClient().RowAccessPolicy.CreateRowAccessPolicyWithRequest(t, *createRequest.WithOrReplace(sdk.Pointer(true)))
+					testClient().RowAccessPolicy.CreateRowAccessPolicyWithRequest(t, *createRequest.WithOrReplace(true))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -158,7 +158,7 @@ func TestAcc_RowAccessPolicy(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, changedArgumentPolicyModel),
 				PreConfig: func() {
-					testClient().RowAccessPolicy.Alter(t, *sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody(sdk.Pointer("case when current_role() in ('EXTERNAL') then false else true end")))
+					testClient().RowAccessPolicy.Alter(t, *sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody("case when current_role() in ('EXTERNAL') then false else true end"))
 				},
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, changedArgumentPolicyModel.ResourceReference()).
 					HasNameString(id.Name()).
@@ -181,7 +181,7 @@ func TestAcc_RowAccessPolicy(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, noCommentPolicyModel),
 				PreConfig: func() {
-					testClient().RowAccessPolicy.Alter(t, *sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody(sdk.Pointer("case when current_role() in ('EXTERNAL') then false else true end")))
+					testClient().RowAccessPolicy.Alter(t, *sdk.NewAlterRowAccessPolicyRequest(id).WithSetBody("case when current_role() in ('EXTERNAL') then false else true end"))
 				},
 				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, noCommentPolicyModel.ResourceReference()).
 					HasNameString(id.Name()).

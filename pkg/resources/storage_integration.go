@@ -335,7 +335,7 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		if _, ok := d.GetOk("storage_aws_external_id"); ok {
 			s3Params.WithStorageAwsExternalId(d.Get("storage_aws_external_id").(string))
 		}
-		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", s3Params.WithUsePrivateLinkEndpoint); err != nil {
+		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", s3Params.WithUsePrivatelinkEndpoint); err != nil {
 			return diag.FromErr(err)
 		}
 		req.WithS3StorageProviderParams(*s3Params)
@@ -345,7 +345,7 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(fmt.Errorf("if you use the Azure storage provider you must specify an azure_tenant_id"))
 		}
 		azureParams := sdk.NewAzureStorageParamsRequest(sdk.String(v.(string)))
-		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivateLinkEndpoint); err != nil {
+		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivatelinkEndpoint); err != nil {
 			return diag.FromErr(err)
 		}
 		req.WithAzureStorageProviderParams(*azureParams)
@@ -435,7 +435,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		}
 
 		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
-		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", s3SetParams.WithUsePrivateLinkEndpoint, false); err != nil {
+		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", s3SetParams.WithUsePrivatelinkEndpoint, false); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -450,7 +450,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		azureParams := sdk.NewSetAzureStorageParamsRequest(azureTenantID.(string))
 
 		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
-		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivateLinkEndpoint, false); err != nil {
+		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivatelinkEndpoint, false); err != nil {
 			return diag.FromErr(err)
 		}
 

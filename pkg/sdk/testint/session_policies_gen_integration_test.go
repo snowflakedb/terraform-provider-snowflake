@@ -68,10 +68,10 @@ func TestInt_SessionPolicies(t *testing.T) {
 		comment := random.Comment()
 
 		request := sdk.NewCreateSessionPolicyRequest(id).
-			WithSessionIdleTimeoutMins(sdk.Int(5)).
-			WithSessionUiIdleTimeoutMins(sdk.Int(34)).
-			WithComment(&comment).
-			WithIfNotExists(sdk.Bool(true))
+			WithSessionIdleTimeoutMins(5).
+			WithSessionUiIdleTimeoutMins(34).
+			WithComment(comment).
+			WithIfNotExists(true)
 
 		err := client.SessionPolicies.Create(ctx, request)
 		require.NoError(t, err)
@@ -123,7 +123,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupSessionPolicyProvider(id))
 
-		alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithSet(sdk.NewSessionPolicySetRequest().WithComment(sdk.String("new comment")))
+		alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithSet(*sdk.NewSessionPolicySetRequest().WithComment("new comment"))
 		err = client.SessionPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -132,7 +132,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 
 		assert.Equal(t, "new comment", alteredSessionPolicy.Comment)
 
-		alterRequest = sdk.NewAlterSessionPolicyRequest(id).WithUnset(sdk.NewSessionPolicyUnsetRequest().WithComment(sdk.Bool(true)))
+		alterRequest = sdk.NewAlterSessionPolicyRequest(id).WithUnset(*sdk.NewSessionPolicyUnsetRequest().WithComment(true))
 		err = client.SessionPolicies.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -149,7 +149,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithRenameTo(&newId)
+		alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithRenameTo(newId)
 
 		err = client.SessionPolicies.Alter(ctx, alterRequest)
 		if err != nil {

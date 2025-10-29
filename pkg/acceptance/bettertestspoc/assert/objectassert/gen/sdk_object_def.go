@@ -19,6 +19,16 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Database{},
 	},
 	{
+		IdType:       "sdk.DatabaseObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeSchema,
+		ObjectStruct: sdk.Schema{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeRole,
+		ObjectStruct: sdk.Role{},
+	},
+	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeConnection,
 		ObjectStruct: sdk.Connection{},
@@ -52,6 +62,11 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeResourceMonitor,
 		ObjectStruct: sdk.ResourceMonitor{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeNetworkPolicy,
+		ObjectStruct: sdk.NetworkPolicy{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -147,6 +162,11 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeStorageIntegration,
 		ObjectStruct: sdk.StorageIntegration{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeNotebook,
+		ObjectStruct: sdk.Notebook{},
 	},
 }
 

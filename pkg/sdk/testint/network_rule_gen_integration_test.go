@@ -55,16 +55,16 @@ func TestInt_NetworkRules(t *testing.T) {
 		setReq := sdk.NewNetworkRuleSetRequest([]sdk.NetworkRuleValue{
 			{Value: "0.0.0.0"},
 			{Value: "1.1.1.1"},
-		}).WithComment(sdk.String("some comment"))
-		err = client.NetworkRules.Alter(ctx, sdk.NewAlterNetworkRuleRequest(id).WithSet(setReq))
+		}).WithComment("some comment")
+		err = client.NetworkRules.Alter(ctx, sdk.NewAlterNetworkRuleRequest(id).WithSet(*setReq))
 		require.NoError(t, err)
 
 		assertValuesAndComment(id, []string{"0.0.0.0", "1.1.1.1"}, "some comment")
 
 		unsetReq := sdk.NewNetworkRuleUnsetRequest().
-			WithValueList(sdk.Bool(true)).
-			WithComment(sdk.Bool(true))
-		err = client.NetworkRules.Alter(ctx, sdk.NewAlterNetworkRuleRequest(id).WithUnset(unsetReq))
+			WithValueList(true).
+			WithComment(true)
+		err = client.NetworkRules.Alter(ctx, sdk.NewAlterNetworkRuleRequest(id).WithUnset(*unsetReq))
 		require.NoError(t, err)
 
 		assertValuesAndComment(id, []string{}, "")
@@ -87,7 +87,7 @@ func TestInt_NetworkRules(t *testing.T) {
 
 	t.Run("Show", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.NetworkRules.Create(ctx, sdk.NewCreateNetworkRuleRequest(id, sdk.NetworkRuleTypeIpv4, []sdk.NetworkRuleValue{}, sdk.NetworkRuleModeIngress).WithComment(sdk.String("some comment")))
+		err := client.NetworkRules.Create(ctx, sdk.NewCreateNetworkRuleRequest(id, sdk.NetworkRuleTypeIpv4, []sdk.NetworkRuleValue{}, sdk.NetworkRuleModeIngress).WithComment("some comment"))
 		require.NoError(t, err)
 
 		t.Cleanup(func() {
@@ -117,7 +117,7 @@ func TestInt_NetworkRules(t *testing.T) {
 
 	t.Run("Describe", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.NetworkRules.Create(ctx, sdk.NewCreateNetworkRuleRequest(id, sdk.NetworkRuleTypeIpv4, []sdk.NetworkRuleValue{}, sdk.NetworkRuleModeIngress).WithComment(sdk.String("some comment")))
+		err := client.NetworkRules.Create(ctx, sdk.NewCreateNetworkRuleRequest(id, sdk.NetworkRuleTypeIpv4, []sdk.NetworkRuleValue{}, sdk.NetworkRuleModeIngress).WithComment("some comment"))
 		require.NoError(t, err)
 
 		t.Cleanup(func() {

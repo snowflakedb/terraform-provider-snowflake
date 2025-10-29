@@ -23,7 +23,7 @@ func (c *DataMetricFunctionReferencesClient) GetDataMetricFunctionReferences(t *
 	t.Helper()
 	ctx := context.Background()
 
-	refs, err := c.context.client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequest(id, domain))
+	refs, err := c.context.client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequestCustom(id, domain))
 	require.NoError(t, err)
 
 	return refs

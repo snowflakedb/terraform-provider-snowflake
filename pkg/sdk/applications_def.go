@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 /*
  * 	todo: add definition for `CREATE APPLICATION <name> FROM LISTING <listing_name> [ COMMENT = '<string_literal>' ] [ WITH TAG ( <tag_name> = '<tag_value>' [ , ... ] ) ]`
  */

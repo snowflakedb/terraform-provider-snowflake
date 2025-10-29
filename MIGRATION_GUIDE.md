@@ -54,6 +54,18 @@ The state is migrated automatically.
 - Improved importing - now, `authentication_methods`, `mfa_enrollment`, `client_types`, and `security_integrations` are set in import.
 - Improved detecting of external changes.
 
+### *(new feature)* New Workload Identity Federation authentication option
+
+We added new `WORKLOAD_IDENTITY` option to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
+  - `workload_identity_provider` - required,
+  - `token` - optional (not relevant for all the flows),
+  - `workload_identity_entra_resource` - optional (only relevant for the WIF authentication on Azure environment case),
+The provider does not validate these fields.
+
+This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
+
 ## v2.8.x ➞ v2.9.0
 
 ### *(preview feature/deprecation)* Deprecated `mfa_authentication_methods` field in authentication policies

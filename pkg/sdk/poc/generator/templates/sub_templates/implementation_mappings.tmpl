@@ -3,7 +3,7 @@
 {{ range .Operations }}
     {{- if .OptsField }}
         func (r *{{ .OptsField.DtoDecl }}) toOpts() *{{ .OptsField.KindNoPtr }} {
-            opts := &{{ template "toOptsMapping" .OptsField -}}
+            opts := &{{ template "toOptsMapping" .OptsField }}
             return opts
         }
 
