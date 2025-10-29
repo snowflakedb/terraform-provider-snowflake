@@ -37,7 +37,6 @@ var AuthenticationPolicyNames = []string{
 func AuthenticationPolicyDescriptionToSchema(authenticationPolicyDescription []sdk.AuthenticationPolicyDescription) map[string]any {
 	authenticationPolicySchema := make(map[string]any)
 	for _, property := range authenticationPolicyDescription {
-		property := property
 		if slices.Contains(AuthenticationPolicyNames, property.Property) {
 			authenticationPolicySchema[strings.ToLower(property.Property)] = property.Value
 		} else {

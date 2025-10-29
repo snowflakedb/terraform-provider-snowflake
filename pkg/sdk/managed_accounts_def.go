@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 var managedAccountDbRow = g.DbStruct("managedAccountDBRow").
 	OptionalText("name").
 	OptionalText("account_name").

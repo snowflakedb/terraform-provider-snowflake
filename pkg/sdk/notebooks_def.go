@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 var notebookDbRow = g.DbStruct("notebookRow").
 	Time("created_on").
 	Text("name").
@@ -67,7 +65,7 @@ var notebookDetails = g.PlainStruct("NotebookDetails").
 	Text("DefaultPackages").
 	OptionalText("UserPackages").
 	OptionalText("RuntimeName").
-	OptionalText("ComputePool").
+	Field("ComputePool", "*AccountObjectIdentifier").
 	Text("Owner").
 	Text("ImportUrls").
 	Text("ExternalAccessIntegrations").
