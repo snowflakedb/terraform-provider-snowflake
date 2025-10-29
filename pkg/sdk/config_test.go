@@ -162,6 +162,8 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		{name: "OauthRedirectURI", fieldName: "oauth_redirect_uri", wantType: "*string"},
 		{name: "OauthScope", fieldName: "oauth_scope", wantType: "*string"},
 		{name: "EnableSingleUseRefreshTokens", fieldName: "enable_single_use_refresh_tokens", wantType: "*bool"},
+		{name: "WorkloadIdentityProvider", fieldName: "workload_identity_provider", wantType: "*string"},
+		{name: "WorkloadIdentityEntraResource", fieldName: "workload_identity_entra_resource", wantType: "*string"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -320,7 +322,9 @@ func TestProfileConfig(t *testing.T) {
 		WithOauthAuthorizationURL("oauth_authorization_url").
 		WithOauthRedirectURI("oauth_redirect_uri").
 		WithOauthScope("oauth_scope").
-		WithEnableSingleUseRefreshTokens(true),
+		WithEnableSingleUseRefreshTokens(true).
+		WithWorkloadIdentityProvider("workload_identity_provider").
+		WithWorkloadIdentityEntraResource("workload_identity_entra_resource"),
 		"securityadmin",
 	)
 	bytes, err := cfg.MarshalToml()
@@ -386,6 +390,8 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 		assert.Equal(t, "oauth_scope", config.OauthScope)
 		assert.True(t, config.EnableSingleUseRefreshTokens)
+		assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+		assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -471,6 +477,8 @@ func Test_MergeConfig(t *testing.T) {
 		OauthRedirectURI:               "oauth_redirect_uri1",
 		OauthScope:                     "oauth_scope1",
 		EnableSingleUseRefreshTokens:   false,
+		WorkloadIdentityProvider:       "workload_identity_provider1",
+		WorkloadIdentityEntraResource:  "workload_identity_entra_resource1",
 	}
 
 	config2 := &gosnowflake.Config{
@@ -518,6 +526,8 @@ func Test_MergeConfig(t *testing.T) {
 		OauthRedirectURI:               "oauth_redirect_uri2",
 		OauthScope:                     "oauth_scope2",
 		EnableSingleUseRefreshTokens:   true,
+		WorkloadIdentityProvider:       "workload_identity_provider2",
+		WorkloadIdentityEntraResource:  "workload_identity_entra_resource2",
 	}
 
 	t.Run("base config empty", func(t *testing.T) {
@@ -608,6 +618,7 @@ func Test_ToAuthenticationType(t *testing.T) {
 		{input: "USERNAMEPASSWORDMFA", want: gosnowflake.AuthTypeUsernamePasswordMFA},
 		{input: "OAUTH_CLIENT_CREDENTIALS", want: gosnowflake.AuthTypeOAuthClientCredentials},
 		{input: "OAUTH_AUTHORIZATION_CODE", want: gosnowflake.AuthTypeOAuthAuthorizationCode},
+		{input: "WORKLOAD_IDENTITY", want: gosnowflake.AuthTypeWorkloadIdentityFederation},
 	}
 
 	invalid := []test{
@@ -652,6 +663,7 @@ func Test_ToExtendedAuthenticatorType(t *testing.T) {
 		{input: "PROGRAMMATIC_ACCESS_TOKEN", want: gosnowflake.AuthTypePat},
 		{input: "OAUTH_CLIENT_CREDENTIALS", want: gosnowflake.AuthTypeOAuthClientCredentials},
 		{input: "OAUTH_AUTHORIZATION_CODE", want: gosnowflake.AuthTypeOAuthAuthorizationCode},
+		{input: "WORKLOAD_IDENTITY", want: gosnowflake.AuthTypeWorkloadIdentityFederation},
 		{input: "", want: GosnowflakeAuthTypeEmpty},
 	}
 
@@ -862,7 +874,9 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithOauthAuthorizationURL("oauth_authorization_url").
 				WithOauthRedirectURI("oauth_redirect_uri").
 				WithOauthScope("oauth_scope").
-				WithEnableSingleUseRefreshTokens(true),
+				WithEnableSingleUseRefreshTokens(true).
+				WithWorkloadIdentityProvider("workload_identity_provider").
+				WithWorkloadIdentityEntraResource("workload_identity_entra_resource"),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -907,6 +921,8 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "oauth_redirect_uri", got.OauthRedirectURI)
 				assert.Equal(t, "oauth_scope", got.OauthScope)
 				assert.True(t, got.EnableSingleUseRefreshTokens)
+				assert.Equal(t, "workload_identity_provider", got.WorkloadIdentityProvider)
+				assert.Equal(t, "workload_identity_entra_resource", got.WorkloadIdentityEntraResource)
 
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
