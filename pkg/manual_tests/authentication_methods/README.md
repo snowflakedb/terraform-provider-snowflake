@@ -126,7 +126,16 @@ a few additional manual steps are required to create the necessary resources. In
 Pre-requisites:
 - An Okta setup, you can follow [this guide](https://docs.snowflake.com/en/user-guide/oauth-okta).
 
-1. Get a token from Okta - see [Okta documentation](https://developer.okta.com/docs/guides/tokens/). For example,
+1. Get a token from Okta - see [Okta documentation](https://developer.okta.com/docs/guides/tokens/). For example, you can make a request like
+```
+curl --request POST \
+  --url https://<deployment>.okta.com/oauth2/<issuer>/v1/token \
+  --header 'accept: application/json' \
+  --header 'authorization: Basic <encoded credentials>' \
+  --header 'cache-control: no-cache' \
+  --header 'content-type: application/x-www-form-urlencoded' \
+  --data 'grant_type=client_credentials&scope=session:role:<role_name>'
+```
 2. Store the token in a safe file, or set it in environmental variables.
 3. Create a user in Snowflake with
    ```sql
