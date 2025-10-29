@@ -548,10 +548,11 @@ func (c *warehouses) DropSafely(ctx context.Context, id AccountObjectIdentifier)
 
 // ShowWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-warehouses.
 type ShowWarehouseOptions struct {
-	show       bool  `ddl:"static" sql:"SHOW"`
-	warehouses bool  `ddl:"static" sql:"WAREHOUSES"`
-	Like       *Like `ddl:"keyword" sql:"LIKE"`
-	// TODO [this PR]: add limit and starts with; add integration tests
+	show       bool       `ddl:"static" sql:"SHOW"`
+	warehouses bool       `ddl:"static" sql:"WAREHOUSES"`
+	Like       *Like      `ddl:"keyword" sql:"LIKE"`
+	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	LimitFrom  *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 func (opts *ShowWarehouseOptions) validate() error {

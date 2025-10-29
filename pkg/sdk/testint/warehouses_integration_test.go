@@ -83,6 +83,21 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Len(t, warehouses, 0)
 	})
 
+	t.Run("show: with starts with, and limit", func(t *testing.T) {
+		showOptions := &sdk.ShowWarehouseOptions{
+			StartsWith: sdk.String(precreatedWarehouseId.Name()),
+			LimitFrom: &sdk.LimitFrom{
+				Rows: sdk.Int(1),
+			},
+		}
+
+		warehouses, err := client.Warehouses.Show(ctx, showOptions)
+		require.NoError(t, err)
+
+		require.Len(t, warehouses, 1)
+		require.Equal(t, precreatedWarehouseId.Name(), warehouses[0].Name)
+	})
+
 	t.Run("create: with resource constraint", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
