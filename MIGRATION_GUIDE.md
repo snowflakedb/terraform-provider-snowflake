@@ -54,6 +54,18 @@ but couldn't because the state of the `oauth_issue_refresh_tokens` prevented fro
 
 No changes in configuration and state are required.
 
+### *(new feature)* New Workload Identity Federation authentication option
+
+We added new `WORKLOAD_IDENTITY` option to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
+  - `workload_identity_provider` - required,
+  - `token` - optional (not relevant for all the flows),
+  - `workload_identity_entra_resource` - optional (only relevant for the WIF authentication on Azure environment case),
+The provider does not validate these fields.
+
+This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
+
 ### *(new feature)* snowflake_semantic_view resource
 Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
 
