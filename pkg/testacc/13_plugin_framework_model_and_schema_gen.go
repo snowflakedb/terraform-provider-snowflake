@@ -59,6 +59,8 @@ type pluginFrameworkPocProviderModelV0 struct {
 	User                               types.String `tfsdk:"user"`
 	ValidateDefaultParameters          types.String `tfsdk:"validate_default_parameters"`
 	Warehouse                          types.String `tfsdk:"warehouse"`
+	WorkloadIdentityEntraResource      types.String `tfsdk:"workload_identity_entra_resource"`
+	WorkloadIdentityProvider           types.String `tfsdk:"workload_identity_provider"`
 }
 
 var existingSchema = provider.GetProviderSchema()
@@ -315,6 +317,16 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	},
 	"warehouse": schema.StringAttribute{
 		Description: existingSchema["warehouse"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"workload_identity_entra_resource": schema.StringAttribute{
+		Description: existingSchema["workload_identity_entra_resource"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"workload_identity_provider": schema.StringAttribute{
+		Description: existingSchema["workload_identity_provider"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
