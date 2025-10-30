@@ -26,7 +26,6 @@ func (w *nonExistenceCheck[T, ID]) ToTerraformTestCheckFunc(t *testing.T, testCl
 			return errors.New("testClient must not be nil")
 		}
 		_, err := w.ShowCommand(testClient)(t, w.id)
-
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				return nil
