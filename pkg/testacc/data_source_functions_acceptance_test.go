@@ -22,7 +22,7 @@ func TestAcc_Functions(t *testing.T) {
 	dataSourceName := "data.snowflake_functions.functions"
 	resource.Test(t, resource.TestCase{
 		// TODO [SNOW-2324320]: warehouse needed?
-		ProtoV6ProviderFactories: providerFactoryWithoutCache,
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
