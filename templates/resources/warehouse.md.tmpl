@@ -12,6 +12,8 @@ description: |-
 <!-- TODO(SNOW-1642723): Remove or adjust this note.-->
 -> **Note** Assigning resource monitors to warehouses requires ACCOUNTADMIN role. To do this, either manage the warehouse resource with ACCOUNTADMIN role, or use [execute](./execute) instead. See [this issue](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3019) for more details.
 
+-> **Note** Since [2025_07 BCR](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2110), `describe_output` field is different from Snowflake. Now, in Snowflake always `resource_constraint` and `generation` are present. The provider, always takes the value from `resource_constraint` and dispatches it based on the warehouse type: for Standard warehouses, it sets `generation`, for Snowpark-optimized warehouses, it sets `resource_constraint`. This will be adjusted later.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
