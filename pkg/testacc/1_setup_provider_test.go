@@ -150,15 +150,8 @@ func providerFactoryUsingCache(key string) map[string]func() (tfprotov6.Provider
 
 func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
-		// TODO [SNOW-2312385]: do we still keep this guard if this configure func override is only used in the acceptance tests already?
-		accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
-		if err != nil {
-			accTestEnabled = false
-			accTestLog.Printf("[ERROR] TF_ACC environmental variable has incorrect format: %v, using %v as a default value", err, accTestEnabled)
-		}
-
 		// check if we cached initialized provider context with the key already
-		if cached, ok := providerInitializationCache[key]; accTestEnabled && ok {
+		if cached, ok := providerInitializationCache[key]; ok {
 			accTestLog.Printf("[DEBUG] Returning cached provider configuration result for key %s", key)
 			if cached.providerCtx != nil {
 				accTestLog.Printf("[DEBUG] Returning cached provider configuration context")
@@ -172,7 +165,7 @@ func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, 
 
 		providerCtx, clientErrorDiag := provider.ConfigureProvider(ctx, d)
 
-		if providerCtx != nil && accTestEnabled && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
+		if providerCtx != nil && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
 			providerCtx.(*internalprovider.Context).EnabledFeatures = previewfeatures.AllPreviewFeatures
 		}
 
