@@ -35,7 +35,7 @@ func TestAcc_AuthenticationPolicies_AccountLevel(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.AuthenticationPolicy),
 		// TODO [SNOW-2324320]: secondary
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, providerModel, basicModel),
