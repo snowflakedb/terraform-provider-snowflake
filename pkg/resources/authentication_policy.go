@@ -716,7 +716,7 @@ func ToMfaPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 	mfaConfig := mfaConfigList[0].(map[string]any)
 	req := sdk.NewAuthenticationPolicyMfaPolicyRequest()
 	if d.HasChange("mfa_policy.0.allowed_methods") {
-		allowedMethods := make([]sdk.AuthenticationPolicyMfaPolicyListItem, 0)
+		var allowedMethods []sdk.AuthenticationPolicyMfaPolicyListItem
 		if v, ok := mfaConfig["allowed_methods"]; ok && len(v.(*schema.Set).List()) > 0 {
 			allowedMethodsRaw := v.(*schema.Set).List()
 			values, err := collections.MapErr(allowedMethodsRaw, func(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
@@ -813,7 +813,7 @@ func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.Aut
 	workloadIdentityPolicyConfig := workloadIdentityPolicyConfigList[0].(map[string]any)
 	req := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
 	if d.HasChange("workload_identity_policy.0.allowed_providers") {
-		allowedProviders := make([]sdk.AuthenticationPolicyAllowedProviderListItem, 0)
+		var allowedProviders []sdk.AuthenticationPolicyAllowedProviderListItem
 		if v, ok := workloadIdentityPolicyConfig["allowed_providers"]; ok && len(v.(*schema.Set).List()) > 0 {
 			allowedProvidersRaw := v.(*schema.Set).List()
 			values, err := collections.MapErr(allowedProvidersRaw, func(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
@@ -835,7 +835,7 @@ func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.Aut
 		req.WithAllowedProviders(allowedProviders)
 	}
 	if d.HasChange("workload_identity_policy.0.allowed_aws_accounts") {
-		allowedAwsAccounts := make([]sdk.StringListItemWrapper, 0)
+		var allowedAwsAccounts []sdk.StringListItemWrapper
 		if v, ok := workloadIdentityPolicyConfig["allowed_aws_accounts"]; ok && len(v.(*schema.Set).List()) > 0 {
 			allowedAwsAccountsRaw := v.(*schema.Set).List()
 			values, err := collections.MapErr(allowedAwsAccountsRaw, func(v any) (sdk.StringListItemWrapper, error) {
@@ -853,7 +853,7 @@ func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.Aut
 		req.WithAllowedAwsAccounts(allowedAwsAccounts)
 	}
 	if d.HasChange("workload_identity_policy.0.allowed_azure_issuers") {
-		allowedAzureIssuers := make([]sdk.StringListItemWrapper, 0)
+		var allowedAzureIssuers []sdk.StringListItemWrapper
 		if v, ok := workloadIdentityPolicyConfig["allowed_azure_issuers"]; ok && len(v.(*schema.Set).List()) > 0 {
 			allowedAzureIssuersRaw := v.(*schema.Set).List()
 			values, err := collections.MapErr(allowedAzureIssuersRaw, func(v any) (sdk.StringListItemWrapper, error) {
@@ -871,7 +871,7 @@ func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.Aut
 		req.WithAllowedAzureIssuers(allowedAzureIssuers)
 	}
 	if d.HasChange("workload_identity_policy.0.allowed_oidc_issuers") {
-		allowedOidcIssuers := make([]sdk.StringListItemWrapper, 0)
+		var allowedOidcIssuers []sdk.StringListItemWrapper
 		if v, ok := workloadIdentityPolicyConfig["allowed_oidc_issuers"]; ok && len(v.(*schema.Set).List()) > 0 {
 			allowedOidcIssuersRaw := v.(*schema.Set).List()
 			values, err := collections.MapErr(allowedOidcIssuersRaw, func(v any) (sdk.StringListItemWrapper, error) {

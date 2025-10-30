@@ -9,7 +9,7 @@ description: |-
 
 !> **Note** According to Snowflake [docs](https://docs.snowflake.com/en/sql-reference/sql/drop-authentication-policy#usage-notes), an authentication policy cannot be dropped successfully if it is currently assigned to another object. Currently, the provider does not unassign such objects automatically. Before dropping the resource, first unassign the policy from the relevant objects. See [guide](../guides/unassigning_policies) for more details.
 
--> **Note** External changes are not detected for the following fields: `mfa_policy`, `pat_policy`, `workload_identity_policy`. Also, these values are not propagated as field values during the import. They are only available through the `describe_output` field.
+-> **Note** External changes are not detected for the following fields: `mfa_policy`, `pat_policy`, `workload_identity_policy`. Also, they cannot be imported and should be manually set to the correct values during the import operation.
 
 # snowflake_authentication_policy (Resource)
 
@@ -77,7 +77,7 @@ resource "snowflake_authentication_policy" "complete" {
 - `mfa_enrollment` (String) Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): `REQUIRED` | `REQUIRED_PASSWORD_ONLY` | `OPTIONAL`. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).
 - `mfa_policy` (Block List, Max: 1) Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication. (see [below for nested schema](#nestedblock--mfa_policy))
 - `pat_policy` (Block List, Max: 1) Specifies the policy for programmatic access tokens. (see [below for nested schema](#nestedblock--pat_policy))
-- `security_integrations` (Set of String) A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `all` as parameter.
+- `security_integrations` (Set of String) A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `ALL` as parameter.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `workload_identity_policy` (Block List, Max: 1) Specifies the policy for workload identity federation. (see [below for nested schema](#nestedblock--workload_identity_policy))
 
@@ -93,7 +93,7 @@ resource "snowflake_authentication_policy" "complete" {
 
 Optional:
 
-- `allowed_methods` (Set of String) Specifies the allowed methods for the MFA policy. Valid values are (case-insensitive): `ALL` | `PASSKEY` | `TOTP` | `DUO`.
+- `allowed_methods` (Set of String) Specifies the allowed methods for the MFA policy. Valid values are: `ALL` | `PASSKEY` | `TOTP` | `DUO`. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.
 - `enforce_mfa_on_external_authentication` (String) Determines whether multi-factor authentication (MFA) is enforced on external authentication. Valid values are (case-insensitive): `ALL` | `NONE`.
 
 
@@ -123,10 +123,10 @@ Optional:
 
 Optional:
 
-- `allowed_aws_accounts` (List of String) Specifies the list of AWS account IDs allowed by the authentication policy during workload identity authentication of type `AWS`.
-- `allowed_azure_issuers` (List of String) Specifies the list of Azure Entra ID issuers allowed by the authentication policy during workload identity authentication of type `AZURE`.
-- `allowed_oidc_issuers` (List of String) Specifies the list of OIDC issuers allowed by the authentication policy during workload identity authentication of type `OIDC`.
-- `allowed_providers` (Set of String) Specifies the allowed providers for the workload identity policy.
+- `allowed_aws_accounts` (Set of String) Specifies the list of AWS account IDs allowed by the authentication policy during workload identity authentication of type `AWS`.
+- `allowed_azure_issuers` (Set of String) Specifies the list of Azure Entra ID issuers allowed by the authentication policy during workload identity authentication of type `AZURE`.
+- `allowed_oidc_issuers` (Set of String) Specifies the list of OIDC issuers allowed by the authentication policy during workload identity authentication of type `OIDC`.
+- `allowed_providers` (Set of String) Specifies the allowed providers for the workload identity policy. Valid values are: `ALL` | `AWS` | `AZURE` | `GCP` | `OIDC`. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.
 
 
 <a id="nestedatt--describe_output"></a>
