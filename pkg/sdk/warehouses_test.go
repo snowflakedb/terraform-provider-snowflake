@@ -263,6 +263,19 @@ func TestWarehouseShow(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW WAREHOUSES LIKE 'mywarehouse'`)
 	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := &ShowWarehouseOptions{}
+		opts.Like = &Like{
+			Pattern: String("pattern"),
+		}
+		opts.StartsWith = String("A")
+		opts.LimitFrom = &LimitFrom{
+			Rows: Int(1),
+			From: String("B"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW WAREHOUSES LIKE 'pattern' STARTS WITH 'A' LIMIT 1 FROM 'B'`)
+	})
 }
 
 func TestWarehouseDescribe(t *testing.T) {
