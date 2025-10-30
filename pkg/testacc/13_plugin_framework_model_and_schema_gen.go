@@ -20,6 +20,7 @@ type pluginFrameworkPocProviderModelV0 struct {
 	DisableTelemetry                   types.Bool   `tfsdk:"disable_telemetry"`
 	DriverTracing                      types.String `tfsdk:"driver_tracing"`
 	EnableSingleUseRefreshTokens       types.Bool   `tfsdk:"enable_single_use_refresh_tokens"`
+	ExperimentalFeaturesEnabled        types.Set    `tfsdk:"experimental_features_enabled"`
 	ExternalBrowserTimeout             types.Int64  `tfsdk:"external_browser_timeout"`
 	Host                               types.String `tfsdk:"host"`
 	IncludeRetryReason                 types.String `tfsdk:"include_retry_reason"`
@@ -58,6 +59,8 @@ type pluginFrameworkPocProviderModelV0 struct {
 	User                               types.String `tfsdk:"user"`
 	ValidateDefaultParameters          types.String `tfsdk:"validate_default_parameters"`
 	Warehouse                          types.String `tfsdk:"warehouse"`
+	WorkloadIdentityEntraResource      types.String `tfsdk:"workload_identity_entra_resource"`
+	WorkloadIdentityProvider           types.String `tfsdk:"workload_identity_provider"`
 }
 
 var existingSchema = provider.GetProviderSchema()
@@ -117,6 +120,12 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["enable_single_use_refresh_tokens"].Description,
 		Optional:    true,
 		Sensitive:   false,
+	},
+	"experimental_features_enabled": schema.SetAttribute{
+		Description: existingSchema["experimental_features_enabled"].Description,
+		Optional:    true,
+		Sensitive:   false,
+		ElementType: types.StringType, // edited manually
 	},
 	"external_browser_timeout": schema.Int64Attribute{
 		Description: existingSchema["external_browser_timeout"].Description,
@@ -308,6 +317,16 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	},
 	"warehouse": schema.StringAttribute{
 		Description: existingSchema["warehouse"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"workload_identity_entra_resource": schema.StringAttribute{
+		Description: existingSchema["workload_identity_entra_resource"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"workload_identity_provider": schema.StringAttribute{
+		Description: existingSchema["workload_identity_provider"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},

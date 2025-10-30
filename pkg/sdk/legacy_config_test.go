@@ -108,6 +108,8 @@ func TestLoadConfigFileWithInvalidFieldTypeFailsLegacy(t *testing.T) {
 		{name: "OauthAuthorizationURL", fieldName: "oauthauthorizationurl", wantType: "*string"},
 		{name: "OauthRedirectURI", fieldName: "oauthredirecturi", wantType: "*string"},
 		{name: "OauthScope", fieldName: "oauthscope", wantType: "*string"},
+		{name: "WorkloadIdentityProvider", fieldName: "workloadidentityprovider", wantType: "*string"},
+		{name: "WorkloadIdentityEntraResource", fieldName: "workloadidentityentraresource", wantType: "*string"},
 		{name: "EnableSingleUseRefreshTokens", fieldName: "enablesingleuserefreshtokens", wantType: "*bool"},
 	}
 	for _, tt := range tests {
@@ -266,6 +268,8 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithOauthAuthorizationURL("oauth_authorization_url").
 			WithOauthRedirectURI("oauth_redirect_uri").
 			WithOauthScope("oauth_scope").
+			WithWorkloadIdentityProvider("workload_identity_provider").
+			WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 			WithEnableSingleUseRefreshTokens(true),
 	})
 	bytes, err := cfg.MarshalToml()
@@ -331,6 +335,8 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 		assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 		assert.Equal(t, "oauth_scope", config.OauthScope)
+		assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+		assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 		assert.True(t, config.EnableSingleUseRefreshTokens)
 	})
 
@@ -437,6 +443,8 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				WithOauthAuthorizationURL("oauth_authorization_url").
 				WithOauthRedirectURI("oauth_redirect_uri").
 				WithOauthScope("oauth_scope").
+				WithWorkloadIdentityProvider("workload_identity_provider").
+				WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 				WithEnableSingleUseRefreshTokens(true),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
@@ -481,6 +489,8 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "oauth_authorization_url", got.OauthAuthorizationURL)
 				assert.Equal(t, "oauth_redirect_uri", got.OauthRedirectURI)
 				assert.Equal(t, "oauth_scope", got.OauthScope)
+				assert.Equal(t, "workload_identity_provider", got.WorkloadIdentityProvider)
+				assert.Equal(t, "workload_identity_entra_resource", got.WorkloadIdentityEntraResource)
 				assert.True(t, got.EnableSingleUseRefreshTokens)
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)

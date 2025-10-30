@@ -13,7 +13,7 @@ Please follow [creating issues guidelines](https://github.com/snowflakedb/terraf
 
 # Snowflake Provider
 
-~> **Disclaimer** The project is in GA version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+~> **Disclaimer** The project is in GA version, but some features are in preview. Such resources and data sources are considered preview features in the provider, regardless of their state in Snowflake. We do not guarantee their stability. They will be reworked and marked as a stable feature in future releases. Breaking changes in these features are expected, even without bumping the major version. They are disabled by default. To use them, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). The list of preview features is available below. Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions. You can also use [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) to alter the provider's behavior. **It's still considered a preview feature, even when applied to the stable resources.**
 
 ~> **Note** Please check the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md) when changing the version of the provider.
 
@@ -106,7 +106,7 @@ provider "snowflake" {
 ### Optional
 
 - `account_name` (String) Specifies your Snowflake account name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#account-name). Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_ACCOUNT_NAME` environment variable.
-- `authenticator` (String) Specifies the [authentication type](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#AuthType) to use when connecting to Snowflake. Valid options are: `SNOWFLAKE` | `OAUTH` | `EXTERNALBROWSER` | `OKTA` | `SNOWFLAKE_JWT` | `TOKENACCESSOR` | `USERNAMEPASSWORDMFA` | `PROGRAMMATIC_ACCESS_TOKEN` | `OAUTH_CLIENT_CREDENTIALS` | `OAUTH_AUTHORIZATION_CODE`. Can also be sourced from the `SNOWFLAKE_AUTHENTICATOR` environment variable.
+- `authenticator` (String) Specifies the [authentication type](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#AuthType) to use when connecting to Snowflake. Valid options are: `SNOWFLAKE` | `OAUTH` | `EXTERNALBROWSER` | `OKTA` | `SNOWFLAKE_JWT` | `TOKENACCESSOR` | `USERNAMEPASSWORDMFA` | `PROGRAMMATIC_ACCESS_TOKEN` | `OAUTH_CLIENT_CREDENTIALS` | `OAUTH_AUTHORIZATION_CODE` | `WORKLOAD_IDENTITY`. Can also be sourced from the `SNOWFLAKE_AUTHENTICATOR` environment variable.
 - `client_ip` (String) IP address for network checks. Can also be sourced from the `SNOWFLAKE_CLIENT_IP` environment variable.
 - `client_request_mfa_token` (String) When true the MFA token is cached in the credential manager. True by default in Windows/OSX. False for Linux. Can also be sourced from the `SNOWFLAKE_CLIENT_REQUEST_MFA_TOKEN` environment variable.
 - `client_store_temporary_credential` (String) When true the ID token is cached in the credential manager. True by default in Windows/OSX. False for Linux. Can also be sourced from the `SNOWFLAKE_CLIENT_STORE_TEMPORARY_CREDENTIAL` environment variable.
@@ -116,6 +116,7 @@ provider "snowflake" {
 - `disable_telemetry` (Boolean) Disables telemetry in the driver. Can also be sourced from the `DISABLE_TELEMETRY` environment variable.
 - `driver_tracing` (String) Specifies the logging level to be used by the driver. Valid options are: `trace` | `debug` | `info` | `print` | `warning` | `error` | `fatal` | `panic`. Can also be sourced from the `SNOWFLAKE_DRIVER_TRACING` environment variable.
 - `enable_single_use_refresh_tokens` (Boolean) Enables single use refresh tokens for Snowflake IdP. Can also be sourced from the `SNOWFLAKE_ENABLE_SINGLE_USE_REFRESH_TOKENS` environment variable.
+- `experimental_features_enabled` (Set of String) A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Valid options are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`.
 - `external_browser_timeout` (Number) The timeout in seconds for the external browser to complete the authentication. Can also be sourced from the `SNOWFLAKE_EXTERNAL_BROWSER_TIMEOUT` environment variable.
 - `host` (String) Specifies a custom host value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_HOST` environment variable.
 - `include_retry_reason` (String) Should retried request contain retry reason. Can also be sourced from the `SNOWFLAKE_INCLUDE_RETRY_REASON` environment variable.
@@ -154,6 +155,8 @@ provider "snowflake" {
 - `user` (String) Username. Required unless using `profile`. Can also be sourced from the `SNOWFLAKE_USER` environment variable.
 - `validate_default_parameters` (String) True by default. If false, disables the validation checks for Database, Schema, Warehouse and Role at the time a connection is established. Can also be sourced from the `SNOWFLAKE_VALIDATE_DEFAULT_PARAMETERS` environment variable.
 - `warehouse` (String) Specifies the virtual warehouse to use by default for queries, loading, etc. in the client session. Can also be sourced from the `SNOWFLAKE_WAREHOUSE` environment variable.
+- `workload_identity_entra_resource` (String) The resource to use for WIF authentication on Azure environment. Can also be sourced from the `SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE` environment variable.
+- `workload_identity_provider` (String) The workload identity provider to use for WIF authentication. Can also be sourced from the `SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER` environment variable.
 
 <a id="nestedblock--token_accessor"></a>
 ### Nested Schema for `token_accessor`
@@ -179,6 +182,7 @@ The Snowflake provider supports multiple ways to authenticate:
 * Config File
 * Oauth with Client Credentials
 * Oauth with Authorization Code
+* Workload Identity Federation (WIF)
 
 In all cases `organization_name`, and `account_name` are required. In all cases except for Oauth with Client Credentials, `user` is required.
 
@@ -281,6 +285,16 @@ export SNOWFLAKE_OAUTH_TOKEN_REQUEST_URL='...'
 export SNOWFLAKE_OAUTH_REDIRECT_URI='...'
 export SNOWFLAKE_OAUTH_SCOPE='...'
 ```
+
+### Workload Identity Federation (WIF) Authentication
+
+If you choose to use Workload Identity Federation (WIF) Authentication, export these credentials:
+
+```shell
+export SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER='...'
+export SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE='...'
+```
+
 ## Order Precedence
 
 Currently, the provider can be configured in three ways:
@@ -406,6 +420,8 @@ oauth_token_request_url = 'oauth_token_request_url'
 oauth_authorization_url = 'oauth_authorization_url'
 oauth_redirect_uri = 'oauth_redirect_uri'
 oauth_scope = 'oauth_scope'
+workload_identity_provider = 'azure'
+workload_identity_entra_resource = 'workload_identity_entra_resource'
 enable_single_use_refresh_tokens = true
 
 [example.params]
@@ -452,6 +468,8 @@ oauthtokenrequesturl = 'oauth_token_request_url'
 oauthauthorizationurl = 'oauth_authorization_url'
 oauthredirecturi = 'oauth_redirect_uri'
 oauthscope = 'oauth_scope'
+workloadidentityprovider = 'azure'
+workloadidentityentraresource = 'workload_identity_entra_resource'
 enablesingleuserefreshtokens = true
 
 [example.params]
@@ -498,6 +516,8 @@ provider "snowflake" {
 	oauth_authorization_url = var.oauth_authorization_url
 	oauth_redirect_uri = var.oauth_redirect_uri
 	oauth_scope = "session:role:PUBLIC"
+	workload_identity_provider = "azure"
+	workload_identity_entra_resource = "workload_identity_entra_resource"
 	enable_single_use_refresh_tokens = true
 
 	params = {
