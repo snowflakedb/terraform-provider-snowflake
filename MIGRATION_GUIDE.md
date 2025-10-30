@@ -69,23 +69,6 @@ The state is migrated automatically.
 - Improved importing - now, `authentication_methods`, `mfa_enrollment`, `client_types`, and `security_integrations` are set in import.
 - Improved detecting of external changes.
 
-### *(new feature)* New Workload Identity Federation authentication option
-
-We added new `WORKLOAD_IDENTITY` option to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
-  - `workload_identity_provider` - required,
-  - `token` - optional (not relevant for all the flows),
-  - `workload_identity_entra_resource` - optional (only relevant for the WIF authentication on Azure environment case),
-The provider does not validate these fields.
-
-This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
-
-See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
-
-### *(new feature)* snowflake_semantic_view resource
-Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
-
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_semantic_view_resource` to `preview_features_enabled` field in the provider configuration.
-
 ### *(new experiment)* Improved show query for warehouses
 
 In this version we introduce a new attribute on the provider level: [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#experimental_features_enabled-1). It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#preview_features_enabled-1). Instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior. **It's still considered a preview feature, even when applied to the stable resources.**
