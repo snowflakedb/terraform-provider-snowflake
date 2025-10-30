@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 )
 
@@ -17,11 +16,8 @@ func init() {
 		"snowflake": func() (tfprotov6.ProviderServer, error) {
 			ctx := context.Background()
 
-			upgradedSdkServer, err := tf5to6server.UpgradeServer(
-				ctx,
-				// using the test acc one, as it has the modified configure method (cache)
-				TestAccProvider.GRPCProvider,
-			)
+			// creating a separate cache for all plugin framework tests
+			p, err := providerFactoryUsingCache("TerraformPluginFrameworkPoC")["snowflake"]()
 			if err != nil {
 				return nil, err
 			}
@@ -29,7 +25,7 @@ func init() {
 			providers := []func() tfprotov6.ProviderServer{
 				providerserver.NewProtocol6(New("dev")),
 				func() tfprotov6.ProviderServer {
-					return upgradedSdkServer
+					return p
 				},
 			}
 

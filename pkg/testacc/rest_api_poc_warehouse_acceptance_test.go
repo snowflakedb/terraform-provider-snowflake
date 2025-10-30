@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -19,8 +18,6 @@ import (
 )
 
 func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
