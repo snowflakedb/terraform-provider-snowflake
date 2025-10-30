@@ -26,6 +26,29 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.9.x ➞ v2.10.0
 
+### *(bugfix)* Fixed setting comment in secret resources
+
+Previously, when external changes were detected on comment field, the secret resources were failing to update it due to incorrect internal update operation handling.
+The resources were throwing errors like:
+```text
+Error: 001003 (42000): SQL compilation error:
+syntax error line 1 at position 248 unexpected '<EOF>'.
+```
+
+or
+
+```text
+Error: Saved plan is stale
+```
+
+Now, this behavior is fixed. Here's the list of affected resources:
+- `snowflake_secret_with_generic_string`
+- `snowflake_secret_with_basic_authentication`
+- `snowflake_secret_with_oauth_authorization_code`
+- `snowflake_secret_with_client_credentials`
+
+No changes in configuration and state are required.
+
 ### *(new feature)* Reworked `authentication_policy` resource
 In this version we reworked the `authentication_policy` resource. This includes adding missing features, and fixing bugs. The object has been adjusted to our [design decisions](./v1-preparations/CHANGES_BEFORE_V1.md). Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
 

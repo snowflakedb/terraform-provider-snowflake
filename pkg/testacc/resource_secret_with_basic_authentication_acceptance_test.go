@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -163,38 +164,34 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// TODO(SNOW-2457144; next prs): see why is this step failing with Error: Saved plan is stale
-			// Update - detect external changes (temporarily disabled due to SQL compilation error)
-			// {
-			//	PreConfig: func() {
-			//		testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
-			//			*sdk.NewSecretSetRequest().WithComment(comment),
-			//		))
-			// testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).
-			//	WithSet(*sdk.NewSecretSetRequest().
-			//		WithComment("test_comment").
-			//		WithSetForFlow(*sdk.NewSetForFlowRequest().
-			//			WithSetForBasicAuthentication(*sdk.NewSetForBasicAuthenticationRequest().
-			//				WithUsername("test_username"),
-			//			),
-			//		),
-			//	),
-			// )
-			//	},
-			//	ConfigPlanChecks: resource.ConfigPlanChecks{
-			//		PreApply: []plancheck.PlanCheck{
-			//			plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-			//		},
-			//	},
-			//	Config: config.FromModels(t, basic),
-			//	Check:  assertThat(t, assertBasic...),
-			// },
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).
+						WithSet(*sdk.NewSecretSetRequest().
+							WithComment(comment).
+							WithSetForFlow(*sdk.NewSetForFlowRequest().
+								WithSetForBasicAuthentication(*sdk.NewSetForBasicAuthenticationRequest().
+									WithUsername("test_username"),
+								),
+							),
+						),
+					)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
 			// Destroy - ensure secret is destroyed before the next step
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.SecretDoesNotExist(t, id),
+					invokeactionassert.SecretDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
@@ -211,7 +208,7 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 	})
 }
 
-func TestAcc_SecretWithBasicAuthentication_CompleteUseCase_CreateWithEmptyCredentials(t *testing.T) {
+func TestAcc_SecretWithBasicAuthentication_CreateWithEmptyCredentials(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 	secretModelEmptyCredentials := model.SecretWithBasicAuthentication("s", id.DatabaseName(), id.SchemaName(), name, "", "")

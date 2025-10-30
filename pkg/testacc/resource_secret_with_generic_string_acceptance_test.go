@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -160,28 +161,27 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// TODO(SNOW-2457144; next prs): see why is this step failing
-			// Update - detect external changes (temporarily disabled due to SQL compilation error)
-			// {
-			// 	PreConfig: func() {
-			// 		testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
-			// 			*sdk.NewSecretSetRequest().WithComment("external_comment"),
-			// 		))
-			// 	},
-			// 	ConfigPlanChecks: resource.ConfigPlanChecks{
-			// 		PreApply: []plancheck.PlanCheck{
-			// 			plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-			// 		},
-			// 	},
-			// 	Config: config.FromModels(t, basic),
-			// 	Check:  assertThat(t, assertBasic...),
-			// },
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
+						*sdk.NewSecretSetRequest().WithComment(comment),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
 			// Destroy - ensure secret is destroyed before the next step
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.SecretDoesNotExist(t, id),
+					invokeactionassert.SecretDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
@@ -198,7 +198,7 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 	})
 }
 
-func TestAcc_SecretWithGenericString_CompleteUseCase_EmptySecretString(t *testing.T) {
+func TestAcc_SecretWithGenericString_EmptySecretString(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	emptySecretModel := model.SecretWithGenericString("test", id.DatabaseName(), id.SchemaName(), id.Name(), "")
@@ -266,7 +266,7 @@ func TestAcc_SecretWithGenericString_CompleteUseCase_EmptySecretString(t *testin
 	})
 }
 
-func TestAcc_SecretWithGenericString_CompleteUseCase_ExternalSecretTypeChange(t *testing.T) {
+func TestAcc_SecretWithGenericString_ExternalSecretTypeChange(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 

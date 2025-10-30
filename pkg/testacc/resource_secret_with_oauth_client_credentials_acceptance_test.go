@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -24,12 +26,6 @@ import (
 )
 
 func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
@@ -37,7 +33,7 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 	)
 	t.Cleanup(apiIntegrationCleanup)
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	oauthScopes := []string{"scope1", "scope2"}
 	currentRole := testClient().Context.CurrentRole(t).Name()
@@ -182,28 +178,33 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// TODO(SNOW-2457144; next prs): see why is this step failing
-			// Update - detect external changes (temporarily disabled due to SQL compilation error)
-			// {
-			//	PreConfig: func() {
-			//		testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
-			//			*sdk.NewSecretSetRequest().WithComment(comment),
-			//		))
-			//	},
-			//	ConfigPlanChecks: resource.ConfigPlanChecks{
-			//		PreApply: []plancheck.PlanCheck{
-			//			plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-			//		},
-			//	},
-			//	Config: config.FromModels(t, basic),
-			//	Check:  assertThat(t, assertBasic...),
-			// },
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
+						*sdk.NewSecretSetRequest().
+							WithComment(comment).
+							WithSetForFlow(*sdk.NewSetForFlowRequest().
+								WithSetForOAuthClientCredentials(*sdk.NewSetForOAuthClientCredentialsRequest().
+									WithOauthScopes(*sdk.NewOauthScopesListRequest(collections.Map(oauthScopes, func(s string) sdk.ApiIntegrationScope { return sdk.ApiIntegrationScope{Scope: s} }))),
+								),
+							),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
 			// Destroy - ensure secret is destroyed before the next step
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.SecretDoesNotExist(t, id),
+					invokeactionassert.SecretDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
@@ -220,7 +221,7 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 	})
 }
 
-func TestAcc_SecretWithClientCredentials_CompleteUseCase_EmptyScopesList(t *testing.T) {
+func TestAcc_SecretWithClientCredentials_EmptyScopesList(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
@@ -298,7 +299,7 @@ func TestAcc_SecretWithClientCredentials_CompleteUseCase_EmptyScopesList(t *test
 	})
 }
 
-func TestAcc_SecretWithClientCredentials_CompleteUseCase_ExternalSecretTypeChange(t *testing.T) {
+func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChange(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
@@ -356,7 +357,7 @@ func TestAcc_SecretWithClientCredentials_CompleteUseCase_ExternalSecretTypeChang
 	})
 }
 
-func TestAcc_SecretWithClientCredentials_CompleteUseCase_ExternalSecretTypeChangeToOAuthAuthCodeGrant(t *testing.T) {
+func TestAcc_SecretWithClientCredentials_ExternalSecretTypeChangeToOAuthAuthCodeGrant(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
