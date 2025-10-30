@@ -19,7 +19,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -433,12 +432,7 @@ func TestAcc_View_recursive(t *testing.T) {
 	})
 }
 
-// TODO [SNOW-2298268]: currently, this test is always skipped, try to fix the set up
 func TestAcc_View_temporary(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-	// we use one configured client, so a temporary view should be visible after creation
-	_ = testenvs.GetOrSkipTest(t, testenvs.ConfigureClientOnce)
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 
