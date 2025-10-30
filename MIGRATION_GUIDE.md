@@ -94,6 +94,9 @@ We recommend upgrading to this version because setting generation through the `r
 
 No changes in the configuration are necessary.
 
+### *(new feature)* New instance families in the compute_pool resource
+Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
+
 ## v2.8.x ➞ v2.9.0
 
 ### *(preview feature/deprecation)* Deprecated `mfa_authentication_methods` field in authentication policies

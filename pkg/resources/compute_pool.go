@@ -52,7 +52,8 @@ var computePoolSchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToComputePoolInstanceFamily),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToComputePoolInstanceFamily)),
-		Description:      fmt.Sprintf("Identifies the type of machine you want to provision for the nodes in the compute pool. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllComputePoolInstanceFamilies)),
+		Description: fmt.Sprintf("Identifies the type of machine you want to provision for the nodes in the compute pool. Valid values are (case-insensitive): %s."+
+			" Not all instance families are supported in all regions. Run `SHOW COMPUTE POOL INSTANCE FAMILIES` to see the list of supported instance families in your region.", possibleValuesListed(sdk.AllComputePoolInstanceFamilies)),
 	},
 	"auto_resume": {
 		Type:             schema.TypeString,
