@@ -26,6 +26,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.9.x ➞ v2.10.0
 
+### *(new feature)* New Workload Identity Federation authentication option
+We added new `WORKLOAD_IDENTITY` option to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
+  - `workload_identity_provider` - required,
+  - `token` - optional (not relevant for all the flows),
+  - `workload_identity_entra_resource` - optional (only relevant for the WIF authentication on Azure environment case),
+The provider does not validate these fields.
+
+This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
+
+### *(new feature)* snowflake_semantic_view resource
+Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_semantic_view_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* Reworked `authentication_policy` resource
 In this version we reworked the `authentication_policy` resource. This includes adding missing features, and fixing bugs. The object has been adjusted to our [design decisions](./v1-preparations/CHANGES_BEFORE_V1.md). Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
 
