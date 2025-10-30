@@ -10,6 +10,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -26,14 +27,8 @@ import (
 )
 
 func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
 	argument := []sdk.TableColumnSignature{
@@ -50,16 +45,16 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 	body := "case when current_role() in ('ANALYST') then true else false end"
 	changedBody := "case when current_role() in ('CHANGED') then true else false end"
 
-	basic := model.RowAccessPolicy("test", database.ID().Name(), schema.ID().Name(), id.Name(), argument, body)
+	basic := model.RowAccessPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), argument, body)
 
-	complete := model.RowAccessPolicy("test", database.ID().Name(), schema.ID().Name(), newId.Name(), argument, changedBody).
+	complete := model.RowAccessPolicy("test", newId.DatabaseName(), newId.SchemaName(), newId.Name(), argument, changedBody).
 		WithComment(comment)
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.RowAccessPolicy(t, id).
 			HasName(id.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -69,8 +64,8 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		resourceassert.RowAccessPolicyResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasDatabaseString(database.ID().Name()).
-			HasSchemaString(schema.ID().Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
 			HasBodyString(body).
 			HasCommentString("").
 			HasArguments(argument),
@@ -78,8 +73,8 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.RowAccessPolicyShowOutput(t, basic.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -100,8 +95,8 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.RowAccessPolicy(t, newId).
 			HasName(newId.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
 			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -111,8 +106,8 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		resourceassert.RowAccessPolicyResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
 			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
-			HasDatabaseString(database.ID().Name()).
-			HasSchemaString(schema.ID().Name()).
+			HasDatabaseString(newId.DatabaseName()).
+			HasSchemaString(newId.SchemaName()).
 			HasBodyString(changedBody).
 			HasCommentString(comment).
 			HasArguments(argument),
@@ -120,8 +115,8 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.RowAccessPolicyShowOutput(t, complete.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(newId.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
 			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -204,7 +199,7 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.RowAccessPolicyDoesNotExist(t, id),
+					invokeactionassert.RowAccessPolicyDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
@@ -222,13 +217,7 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 }
 
 func TestAcc_RowAccessPolicy_CompleteUseCase_ExternalChangeDetectionForArguments(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	body := "case when current_role() in ('ANALYST') then true else false end"
 
 	// Original arguments
@@ -249,7 +238,7 @@ func TestAcc_RowAccessPolicy_CompleteUseCase_ExternalChangeDetectionForArguments
 		*sdk.NewCreateRowAccessPolicyArgsRequest("D", testdatatypes.DataTypeNumber),
 	}
 
-	policyModel := model.RowAccessPolicy("test", database.ID().Name(), schema.ID().Name(), id.Name(), originalArgs, body)
+	policyModel := model.RowAccessPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), originalArgs, body)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -264,8 +253,8 @@ func TestAcc_RowAccessPolicy_CompleteUseCase_ExternalChangeDetectionForArguments
 				Check: assertThat(t,
 					objectassert.RowAccessPolicy(t, id).
 						HasName(id.Name()).
-						HasDatabaseName(database.ID().Name()).
-						HasSchemaName(schema.ID().Name()),
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()),
 
 					resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -288,8 +277,8 @@ func TestAcc_RowAccessPolicy_CompleteUseCase_ExternalChangeDetectionForArguments
 				Check: assertThat(t,
 					objectassert.RowAccessPolicy(t, id).
 						HasName(id.Name()).
-						HasDatabaseName(database.ID().Name()).
-						HasSchemaName(schema.ID().Name()),
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()),
 
 					resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
 						HasNameString(id.Name()).

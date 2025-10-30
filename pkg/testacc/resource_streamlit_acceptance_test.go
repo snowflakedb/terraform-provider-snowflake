@@ -10,6 +10,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -24,12 +25,6 @@ import (
 )
 
 func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
@@ -44,8 +39,8 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 	externalAccessIntegrationId, externalAccessIntegrationCleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
 	t.Cleanup(externalAccessIntegrationCleanup)
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	title := random.AlphaN(4)
 	directoryLocation := "abc"
@@ -64,8 +59,8 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.Streamlit(t, id).
 			HasName(id.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasTitle("").
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment("").
@@ -75,8 +70,8 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 		resourceassert.StreamlitResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasDatabaseString(database.ID().Name()).
-			HasSchemaString(schema.ID().Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
 			HasStageString(stage.ID().FullyQualifiedName()).
 			HasMainFileString(mainFile).
 			HasDirectoryLocationString("").
@@ -88,8 +83,8 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.StreamlitShowOutput(t, basic.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasTitle("").
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment("").
@@ -114,8 +109,8 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.Streamlit(t, newId).
 			HasName(newId.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
 			HasTitle(title).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
@@ -125,8 +120,8 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 		resourceassert.StreamlitResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
 			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
-			HasDatabaseString(database.ID().Name()).
-			HasSchemaString(schema.ID().Name()).
+			HasDatabaseString(newId.DatabaseName()).
+			HasSchemaString(newId.SchemaName()).
 			HasStageString(stage.ID().FullyQualifiedName()).
 			HasMainFileString(mainFile).
 			HasDirectoryLocationString(directoryLocation).
@@ -138,8 +133,8 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.StreamlitShowOutput(t, complete.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(newId.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
 			HasTitle(title).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
@@ -233,7 +228,7 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.StreamlitDoesNotExist(t, id),
+					invokeactionassert.StreamlitDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals

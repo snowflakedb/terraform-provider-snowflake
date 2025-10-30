@@ -9,6 +9,7 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -24,17 +25,11 @@ import (
 )
 
 func TestAcc_Tag_BasicUseCase(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
 	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicy(t)
 	t.Cleanup(maskingPolicyCleanup)
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
-	newId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
 	basic := model.TagBase("test", id)
@@ -47,8 +42,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.Tag(t, id).
 			HasName(id.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment("").
 			HasAllowedValues(),
@@ -56,8 +51,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 		resourceassert.TagResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasDatabaseString(database.ID().Name()).
-			HasSchemaString(schema.ID().Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
 			HasCommentString("").
 			HasAllowedValuesEmpty().
 			HasMaskingPoliciesEmpty(),
@@ -65,8 +60,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.TagShowOutput(t, basic.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment("").
 			HasOwnerRoleType("ROLE").
@@ -76,8 +71,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.Tag(t, newId).
 			HasName(newId.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
 			HasAllowedValuesUnordered("value1", "value2"),
@@ -85,8 +80,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 		resourceassert.TagResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
 			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
-			HasDatabaseString(database.ID().Name()).
-			HasSchemaString(schema.ID().Name()).
+			HasDatabaseString(newId.DatabaseName()).
+			HasSchemaString(newId.SchemaName()).
 			HasCommentString(comment).
 			HasAllowedValues("value1", "value2").
 			HasMaskingPolicies(maskingPolicy.ID().FullyQualifiedName()),
@@ -94,8 +89,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.TagShowOutput(t, complete.ResourceReference()).
 			HasCreatedOnNotEmpty().
 			HasName(newId.Name()).
-			HasDatabaseName(database.ID().Name()).
-			HasSchemaName(schema.ID().Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE").
@@ -167,7 +162,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.TagDoesNotExist(t, id),
+					invokeactionassert.TagDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
@@ -185,13 +180,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 }
 
 func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	basic := model.TagBase("test", id).WithAllowedValues("foo", "", "bar")
 	basicWithDifferentValues := model.TagBase("test", id).WithAllowedValues("", "bar", "foo")
@@ -209,8 +198,8 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 				Check: assertThat(t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
-						HasDatabaseName(database.ID().Name()).
-						HasSchemaName(schema.ID().Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
 						HasAllowedValuesUnordered("", "bar", "foo"),
 
 					resourceassert.TagResource(t, basic.ResourceReference()).
@@ -219,8 +208,8 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 
 					resourceshowoutputassert.TagShowOutput(t, basic.ResourceReference()).
 						HasName(id.Name()).
-						HasDatabaseName(database.ID().Name()).
-						HasSchemaName(schema.ID().Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
 						HasAllowedValues("", "bar", "foo"),
 				),
 			},
@@ -242,8 +231,8 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 				Check: assertThat(t,
 					objectassert.Tag(t, id).
 						HasName(id.Name()).
-						HasDatabaseName(database.ID().Name()).
-						HasSchemaName(schema.ID().Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
 						HasAllowedValuesUnordered("", "bar", "foo"),
 
 					resourceassert.TagResource(t, basicWithDifferentValues.ResourceReference()).
@@ -252,8 +241,8 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 
 					resourceshowoutputassert.TagShowOutput(t, basicWithDifferentValues.ResourceReference()).
 						HasName(id.Name()).
-						HasDatabaseName(database.ID().Name()).
-						HasSchemaName(schema.ID().Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
 						HasAllowedValues("", "bar", "foo"),
 				),
 			},
