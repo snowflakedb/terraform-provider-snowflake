@@ -11,6 +11,7 @@ import (
 	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -68,7 +69,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasOauthEnforcePkceString(resources.BooleanDefault).
 			HasOauthIssueRefreshTokensString(resources.BooleanDefault).
 			HasOauthAllowNonTlsRedirectUriString(resources.BooleanDefault).
-			HasPreAuthorizedRolesListLen(0).
+			HasPreAuthorizedRolesList().
 			HasRelatedParametersNotEmpty().
 			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList(resources.BooleanTrue).
 			HasBlockedRolesListEmpty(),
@@ -121,8 +122,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 			HasOauthRefreshTokenValidityString("86400").
 			HasOauthUseSecondaryRolesString("IMPLICIT").
-			HasPreAuthorizedRolesListLen(1).
-			HasPreAuthorizedRolesListElem(0, preAuthorizedRole.ID().Name()).
+			HasPreAuthorizedRolesList(preAuthorizedRole.ID().Name()).
 			HasNetworkPolicyString(networkPolicy.ID().Name()).
 			HasOauthClientRsaPublicKeyString(key).
 			HasOauthClientRsaPublicKey2String(key).
@@ -251,7 +251,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.SecurityIntegrationDoesNotExist(t, id),
+					invokeactionassert.SecurityIntegrationDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
@@ -322,8 +322,7 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 						HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 						HasOauthRefreshTokenValidityString("86400").
 						HasOauthUseSecondaryRolesString("IMPLICIT").
-						HasPreAuthorizedRolesListLen(1).
-						HasPreAuthorizedRolesListElem(0, preAuthorizedRole.ID().Name()).
+						HasPreAuthorizedRolesList(preAuthorizedRole.ID().Name()).
 						HasNetworkPolicyString(networkPolicy.ID().Name()).
 						HasOauthClientRsaPublicKeyString(key).
 						HasOauthClientRsaPublicKey2String(key).

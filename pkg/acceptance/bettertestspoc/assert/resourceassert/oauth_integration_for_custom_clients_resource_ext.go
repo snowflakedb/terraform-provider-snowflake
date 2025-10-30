@@ -6,13 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
 
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesListLen(len int) *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("pre_authorized_roles_list.#", fmt.Sprintf("%d", len)))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesListElem(index int, value string) *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet(fmt.Sprintf("pre_authorized_roles_list.%d", index), value))
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesList(values ...string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.AddAssertion(assert.ValueSet("pre_authorized_roles_list.#", fmt.Sprintf("%d", len(values))))
+	for i, value := range values {
+		o.AddAssertion(assert.ValueSet(fmt.Sprintf("pre_authorized_roles_list.%d", i), value))
+	}
 	return o
 }
 

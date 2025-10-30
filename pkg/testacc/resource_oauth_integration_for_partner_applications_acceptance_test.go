@@ -13,11 +13,11 @@ import (
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -27,6 +27,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -142,7 +143,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			// Create - without optionals
 			{
@@ -219,7 +220,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.SecurityIntegrationDoesNotExist(t, id),
+					invokeactionassert.SecurityIntegrationDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
@@ -252,7 +253,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_CompleteUseCase(t *testing.T
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			// Create - with all optionals (including optional ForceNew parameters)
 			{
@@ -348,7 +349,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicTableauDesktop(t *testi
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			// create with empty optionals
 			{
@@ -596,7 +597,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_Complete(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel),
@@ -699,7 +700,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_migrateFromV0941_ensureSmoot
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
 				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
@@ -734,7 +735,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithQuotedName(t *testing.T)
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
 				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
@@ -782,7 +783,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_DetectExternalChangesForOaut
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForPartnerApplications),
+		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, configModel),
