@@ -13,6 +13,7 @@ import (
 	pluginconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -30,19 +31,13 @@ import (
 )
 
 func TestAcc_StreamOnExternalTable_BasicUseCase(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
 	stage, stageCleanup := testClient().Stage.CreateStageWithURL(t)
 	t.Cleanup(stageCleanup)
 
 	externalTable, externalTableCleanup := testClient().ExternalTable.CreateWithLocation(t, stage.Location())
 	t.Cleanup(externalTableCleanup)
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
 	basic := model.StreamOnExternalTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), externalTable.ID().FullyQualifiedName()).
@@ -206,7 +201,7 @@ func TestAcc_StreamOnExternalTable_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.StreamDoesNotExist(t, id),
+					invokeactionassert.StreamDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals

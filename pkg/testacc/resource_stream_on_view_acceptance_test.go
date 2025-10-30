@@ -13,6 +13,7 @@ import (
 	pluginconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -31,20 +32,14 @@ import (
 )
 
 func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
-	table, tableCleanup := testClient().Table.CreateWithChangeTrackingInSchema(t, schema.ID())
+	table, tableCleanup := testClient().Table.CreateWithChangeTracking(t)
 	t.Cleanup(tableCleanup)
 
 	statement := fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName())
-	view, viewCleanup := testClient().View.CreateViewInSchema(t, statement, schema.ID())
+	view, viewCleanup := testClient().View.CreateView(t, statement)
 	t.Cleanup(viewCleanup)
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
 	basic := model.StreamOnView("test", id.DatabaseName(), id.SchemaName(), id.Name(), view.ID().FullyQualifiedName())
@@ -210,7 +205,7 @@ func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.StreamDoesNotExist(t, id),
+					invokeactionassert.StreamDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals

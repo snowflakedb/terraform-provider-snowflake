@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -25,16 +25,10 @@ import (
 )
 
 func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
-	t.Cleanup(schemaCleanup)
-
 	stage, stageCleanup := testClient().Stage.CreateStageWithDirectory(t)
 	t.Cleanup(stageCleanup)
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
 	basic := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
@@ -194,7 +188,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.StreamDoesNotExist(t, id),
+					invokeactionassert.StreamDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
