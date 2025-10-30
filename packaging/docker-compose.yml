@@ -19,7 +19,7 @@ services:
     volumes:
       - ./../:/terraform-provider-snowflake
       - shared_data:/shared
-    command: sh -c "go run /terraform-provider-snowflake/pkg/scripts/test_output_processor/test_output_processor.go < /shared/test_output.json"
+    command: go run /terraform-provider-snowflake/pkg/scripts/test_output_processor/test_output_processor.go < /shared/test_output.json
 
 volumes:
   shared_data:
