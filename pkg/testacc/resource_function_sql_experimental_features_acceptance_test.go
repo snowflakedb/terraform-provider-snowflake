@@ -5,6 +5,7 @@ package testacc
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -54,13 +55,15 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasLogLevelString(string(sdk.LogLevelWarn)),
+					// modifying the parameter as assertion, as this is the moment in-between apply and refresh
+					invokeactionassert.Invoke(t, func() error {
+						secondaryTestClient().Schema.UpdateLogLevel(t, schema.ID(), sdk.LogLevelInfo)
+						return nil
+					}),
 				),
 			},
-			// Change value on schema level
+			// Value changed on schema level
 			{
-				PreConfig: func() {
-					secondaryTestClient().Schema.UpdateLogLevel(t, schema.ID(), sdk.LogLevelInfo)
-				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionNoop),
@@ -71,13 +74,15 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasLogLevelString(string(sdk.LogLevelInfo)),
+					// modifying the parameter as assertion, as this is the moment in-between apply and refresh
+					invokeactionassert.Invoke(t, func() error {
+						secondaryTestClient().Schema.UnsetLogLevel(t, schema.ID())
+						return nil
+					}),
 				),
 			},
 			// Unset on schema level, fallback to database
 			{
-				PreConfig: func() {
-					secondaryTestClient().Schema.UnsetLogLevel(t, schema.ID())
-				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionNoop),
