@@ -406,11 +406,7 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		resourceConstraint, err := generation.ToWarehouseResourceConstraint()
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createOptions.ResourceConstraint = &resourceConstraint
+		createOptions.Generation = &generation
 	}
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
 		createOptions.MaxConcurrencyLevel = v
@@ -706,13 +702,9 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				resourceConstraint, err := generation.ToWarehouseResourceConstraint()
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				set.ResourceConstraint = &resourceConstraint
+				set.Generation = &generation
 			} else {
-				unset.ResourceConstraint = sdk.Bool(true)
+				unset.Generation = sdk.Bool(true)
 			}
 		} else {
 			log.Printf("[DEBUG] generation is not supported for %s warehouses, ignoring", warehouseTypeRaw)
