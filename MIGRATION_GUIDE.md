@@ -87,6 +87,13 @@ Feedback:
 - If you discover that the performance is boosted when the experiment is enabled, please reach out to us and share it! Your feedback is crucial in making the experiment an official feature of the provider.
 - In case of any issues, reach out to us through GitHub or your account representative.
 
+### *(improvement)* Handling generation attribute in warehouses
+
+Previously, when the `generation` field was set for a given resource, the provider used the `RESOURCE_CONSTRAINT` field available in Snowflake syntax, with a proper value conversion. Now, the `GENERATION` syntax is available in Snowflake. The provider uses the new `GENERATION` syntax for the `generation` field. The behavior of `resource_constraint` field is the same.
+We recommend upgrading to this version because setting generation through the `resource_constraint` field may be not supported by Snowflake in future.
+
+No changes in the configuration are necessary.
+
 ## v2.8.x ➞ v2.9.0
 
 ### *(preview feature/deprecation)* Deprecated `mfa_authentication_methods` field in authentication policies
