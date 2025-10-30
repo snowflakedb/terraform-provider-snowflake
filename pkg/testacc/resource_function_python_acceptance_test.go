@@ -14,7 +14,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -25,8 +24,6 @@ import (
 )
 
 func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	funcName := "some_function"
 	argName := "x"
 	dataType := testdatatypes.DataTypeNumber_36_2
@@ -42,7 +39,8 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -111,8 +109,6 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 }
 
 func TestAcc_FunctionPython_InlineFull(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	secretId := testClient().Ids.RandomSchemaObjectIdentifier()
 	secretId2 := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -175,7 +171,8 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 		})
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

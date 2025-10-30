@@ -6,15 +6,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 // TODO [SNOW-1423486]: Fix using warehouse; remove unsetting testenvs.ConfigureClientOnce
 func TestAcc_UserPasswordPolicyAttachment(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	user1, user1Cleanup := testClient().User.CreateUser(t)
 	t.Cleanup(user1Cleanup)
 
@@ -27,7 +24,8 @@ func TestAcc_UserPasswordPolicyAttachment(t *testing.T) {
 	newPasswordPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		CheckDestroy:             CheckUserPasswordPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
 			// CREATE

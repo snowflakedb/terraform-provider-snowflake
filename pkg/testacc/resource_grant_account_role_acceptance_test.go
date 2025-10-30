@@ -11,7 +11,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -218,8 +217,6 @@ resource "snowflake_grant_account_role" "test" {
 
 // proves that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3629 (UBAC) doesn't affect the grant account role resource
 func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	accountRole, accountRoleCleanup := secondaryTestClient().Role.CreateRole(t)
 	t.Cleanup(accountRoleCleanup)
 
@@ -236,7 +233,8 @@ func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: secondary
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {

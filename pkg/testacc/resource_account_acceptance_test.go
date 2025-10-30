@@ -19,7 +19,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -600,17 +599,15 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 	name := random.AdminName()
 	key, _ := random.GenerateRSAPublicKey(t)
 
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-	t.Setenv(snowflakeenvs.Role, snowflakeroles.Accountadmin.Name())
-
-	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
+	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Accountadmin.Name())
 
 	configModel := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: accountadmin role explicit
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
