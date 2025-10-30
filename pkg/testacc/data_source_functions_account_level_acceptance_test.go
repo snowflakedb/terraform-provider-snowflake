@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -19,8 +18,6 @@ import (
 func TestAcc_Functions_gh3822_bcr2025_03(t *testing.T) {
 	// TODO(SNOW-2196333): Resolve these tests after the change rollout is clarified.
 	t.Skip("Skipping because the changes have been reverted from the BCR")
-
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	schema, schemaCleanup := secondaryTestClient().Schema.CreateSchema(t)
 	t.Cleanup(schemaCleanup)
@@ -58,7 +55,8 @@ func TestAcc_Functions_gh3822_bcr2025_03(t *testing.T) {
 				ExpectError: regexp.MustCompile("could not parse arguments"),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				// TODO [SNOW-2324320]: warehouse needed?
+				ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 				Config:                   config.FromModels(t, providerModel, functionsModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(functionsModel.DatasourceReference(), "database", schema.ID().DatabaseName()),

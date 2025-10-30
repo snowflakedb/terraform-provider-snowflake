@@ -13,7 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -128,8 +127,6 @@ resource "snowflake_object_parameter" "p" {
 }
 
 func TestAcc_ObjectParameter_ReplicableWithFailoverGroups(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
 	t.Cleanup(schemaCleanup)
 
@@ -159,7 +156,7 @@ func TestAcc_ObjectParameter_ReplicableWithFailoverGroups(t *testing.T) {
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   accconfig.FromModels(t, providerModel) + schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
+				Config:                   schemaReplicableWithFailoverGroupsConfig(schema.ID(), "NO"),
 				// destroy done at the end of the test and CheckDestroy verifies the value of the parameter
 			},
 		},
