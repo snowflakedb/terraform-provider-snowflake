@@ -641,6 +641,11 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 				),
 			},
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithSwappedLists.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
 				Config: accconfig.FromModels(t, modelWithSwappedLists),
 				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, ref).
 					HasNameString(id.Name()).
@@ -711,6 +716,204 @@ func TestAcc_AuthenticationPolicy_migrateFromV2_9_0(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, completeModel),
+			},
+		},
+	})
+}
+
+func TestAcc_AuthenticationPolicy_migrateFromV2_9_0_setNewFields(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.AuthenticationPolicyResource))
+
+	basicModel := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name())
+	modelWithNewFields := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
+			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+				{Method: sdk.MfaPolicyAllowedMethodPassKey},
+				{Method: sdk.MfaPolicyAllowedMethodDuo},
+			}),
+		).
+		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
+			WithDefaultExpiryInDays(1).
+			WithMaxExpiryInDays(30).
+			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
+		).
+		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+				{Provider: sdk.AllowedProviderAll},
+			}).
+			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+				{Value: "111122223333"},
+			}).
+			WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+				{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
+			}).
+			WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+				{Value: "https://example.com"},
+			}),
+		)
+	ref := modelWithNewFields.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.AuthenticationPolicy),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.9.0"),
+				Config:            accconfig.FromModels(t, providerModel, basicModel),
+				// This happens because the mfa_authentication_methods is not set in the config,
+				// and the value returned from Snowflake is non-empty.
+				ExpectNonEmptyPlan: true,
+				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, ref).
+					HasNameString(id.Name()).
+					HasDatabaseString(id.DatabaseName()).
+					HasSchemaString(id.SchemaName()).
+					HasCommentString("").
+					HasAuthenticationMethodsEmpty().
+					HasMfaEnrollmentString(string(sdk.MfaEnrollmentRequiredPasswordOnly)).
+					HasClientTypesEmpty().
+					HasSecurityIntegrationsEmpty(),
+					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, ref).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasNoKind().
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComment("").
+						HasOwnerRoleType("ROLE").
+						HasOptions(""),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.comment", "null")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.authentication_methods", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.client_types", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.security_integrations", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", "REQUIRED_PASSWORD_ONLY")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_authentication_methods", "[PASSWORD]")),
+					assert.Check(resource.TestCheckNoResourceAttr(ref, "describe_output.0.mfa_policy")),
+					assert.Check(resource.TestCheckNoResourceAttr(ref, "describe_output.0.pat_policy")),
+					assert.Check(resource.TestCheckNoResourceAttr(ref, "describe_output.0.workload_identity_policy")),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				// These assertions are commented out because in `Before` objects inside plan checks, the values are nil.
+				// This happens because the planchecks assume that the object schema trees are "roughly" the same.
+				// Once the planchecks support having different hierarchies, we can uncomment these assertions.
+				// ConfigPlanChecks: resource.ConfigPlanChecks{
+				// 	PreApply: []plancheck.PlanCheck{
+				// 		plancheck.ExpectResourceAction(modelWithNewFields.ResourceReference(), plancheck.ResourceActionUpdate),
+				// 		planchecks.PrintPlanDetails(ref, "mfa_policy.0.enforce_mfa_on_external_authentication"),
+				// 		planchecks.ExpectNoChangeOnField(ref, "pat_policy"),
+				// 		planchecks.ExpectNoChangeOnField(ref, "workload_identity_policy"),
+				// 	},
+				// },
+				Config: accconfig.FromModels(t, modelWithNewFields),
+				// The values are the same as in the previous step, but the mfa_policy is set.
+				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, ref).
+					HasNameString(id.Name()).
+					HasDatabaseString(id.DatabaseName()).
+					HasSchemaString(id.SchemaName()).
+					HasCommentString("").
+					HasAuthenticationMethodsEmpty().
+					HasMfaEnrollmentString("").
+					HasClientTypesEmpty().
+					HasSecurityIntegrationsEmpty(),
+					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, ref).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasKind(string(sdk.PolicyKindAuthenticationPolicy)).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComment("").
+						HasOwnerRoleType("ROLE").
+						HasOptions(""),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.comment", "null")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.authentication_methods", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.client_types", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.security_integrations", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", "REQUIRED_PASSWORD_ONLY")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_authentication_methods", "[PASSWORD, SAML]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_AuthenticationPolicy_migrateFromV2_9_0_setOldFields(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+	basicModel := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name())
+	completeModel := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithComment(comment).
+		WithAuthenticationMethods(sdk.AuthenticationMethodsPassword).
+		WithMfaEnrollmentEnum(sdk.MfaEnrollmentRequired).
+		WithClientTypes(sdk.ClientTypesSnowflakeUi).
+		WithSecurityIntegrations("ALL")
+	ref := completeModel.ResourceReference()
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.AuthenticationPolicyResource))
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.AuthenticationPolicy),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.9.0"),
+				Config:            accconfig.FromModels(t, providerModel, basicModel),
+				// This happens because the mfa_authentication_methods is not set in the config,
+				// and the value returned from Snowflake is non-empty.
+				ExpectNonEmptyPlan: true,
+				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, ref).
+					HasNameString(id.Name()).
+					HasDatabaseString(id.DatabaseName()).
+					HasSchemaString(id.SchemaName()).
+					HasCommentString("").
+					HasAuthenticationMethodsEmpty().
+					HasMfaEnrollmentString(string(sdk.MfaEnrollmentRequiredPasswordOnly)).
+					HasClientTypesEmpty().
+					HasSecurityIntegrationsEmpty(),
+					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, ref).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasNoKind().
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComment("").
+						HasOwnerRoleType("ROLE").
+						HasOptions(""),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.comment", "null")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.authentication_methods", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.client_types", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.security_integrations", "[ALL]")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", "REQUIRED_PASSWORD_ONLY")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_authentication_methods", "[PASSWORD]")),
+					assert.Check(resource.TestCheckNoResourceAttr(ref, "describe_output.0.mfa_policy")),
+					assert.Check(resource.TestCheckNoResourceAttr(ref, "describe_output.0.pat_policy")),
+					assert.Check(resource.TestCheckNoResourceAttr(ref, "describe_output.0.workload_identity_policy")),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, completeModel),
 			},
 		},
 	})
