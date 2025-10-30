@@ -11,6 +11,7 @@
 - [snowflake_database_role](./docs/resources/database_role)
 - [snowflake_execute](./docs/resources/execute)
 - [snowflake_external_oauth_integration](./docs/resources/external_oauth_integration)
+- [snowflake_git_repository](./docs/resources/git_repository)
 - [snowflake_grant_account_role](./docs/resources/grant_account_role)
 - [snowflake_grant_application_role](./docs/resources/grant_application_role)
 - [snowflake_grant_database_role](./docs/resources/grant_database_role)

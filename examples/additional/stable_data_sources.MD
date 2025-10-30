@@ -6,6 +6,7 @@
 - [snowflake_connections](./docs/data-sources/connections)
 - [snowflake_database_roles](./docs/data-sources/database_roles)
 - [snowflake_databases](./docs/data-sources/databases)
+- [snowflake_git_repositories](./docs/data-sources/git_repositories)
 - [snowflake_grants](./docs/data-sources/grants)
 - [snowflake_masking_policies](./docs/data-sources/masking_policies)
 - [snowflake_network_policies](./docs/data-sources/network_policies)

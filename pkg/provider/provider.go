@@ -389,9 +389,13 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional: true,
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,
-				ValidateDiagFunc: validators.StringInSlice(previewfeatures.AllPreviewFeatures, true),
+				ValidateDiagFunc: validators.StringInSlice(previewfeatures.ValidPreviewFeatures, true),
 			},
-			Description: fmt.Sprintf("A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(previewfeatures.AllPreviewFeatures)),
+			Description: fmt.Sprintf("A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md)."+
+				" Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables."+
+				" Preview features that can be enabled are: %v. Promoted features that are stable and are enabled by default are: %v. Promoted features can be safely removed from this field. They will be removed in the next major version.",
+				docs.PossibleValuesListed(previewfeatures.AllPreviewFeatures), docs.PossibleValuesListed(previewfeatures.PromotedFeatures),
+			),
 		},
 		"experimental_features_enabled": {
 			Type:     schema.TypeSet,

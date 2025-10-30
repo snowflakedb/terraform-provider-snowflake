@@ -22,7 +22,6 @@
 - [snowflake_function_python](./docs/resources/function_python)
 - [snowflake_function_scala](./docs/resources/function_scala)
 - [snowflake_function_sql](./docs/resources/function_sql)
-- [snowflake_git_repository](./docs/resources/git_repository)
 - [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_job_service](./docs/resources/job_service)
 - [snowflake_listing](./docs/resources/listing)

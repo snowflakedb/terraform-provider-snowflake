@@ -128,8 +128,6 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
-	GitRepositoryResource,
-	GitRepositoriesDatasource,
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
 	JobServiceResource,
@@ -181,6 +179,14 @@ var allPreviewFeatures = []feature{
 	UserProgrammaticAccessTokensDatasource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
+
+var promotedFeatures = []feature{
+	GitRepositoryResource,
+	GitRepositoriesDatasource,
+}
+var PromotedFeatures = sdk.AsStringList(promotedFeatures)
+
+var ValidPreviewFeatures = append(AllPreviewFeatures, PromotedFeatures...)
 
 func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 	if !slices.ContainsFunc(enabledFeatures, func(s string) bool {
