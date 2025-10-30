@@ -25,9 +25,6 @@ var (
 	v5Server tfprotov5.ProviderServer
 	v6Server tfprotov6.ProviderServer
 
-	configureClientErrorDiag diag.Diagnostics
-	configureProviderCtx     *internalprovider.Context
-
 	providerInitializationCache map[string]cacheEntry
 
 	// temporary unsafe way to get the last configuration for the provider (to verify in tests);
@@ -48,7 +45,7 @@ func setUpProvider() error {
 	TestAccProvider = provider.Provider()
 	TestAccProvider.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	TestAccProvider.DataSourcesMap["snowflake_semantic_views"] = datasources.SemanticViews()
-	TestAccProvider.ConfigureContextFunc = configureProviderWithConfigCache
+	TestAccProvider.ConfigureContextFunc = configureProviderWithConfigCacheFunc("AcceptanceTestDefault")
 
 	var err error
 	v5Server = TestAccProvider.GRPCProvider()
@@ -84,53 +81,6 @@ var testAccProtoV6ProviderFactoriesNew = map[string]func() (tfprotov6.ProviderSe
 	},
 }
 
-// TODO [SNOW-2312385]: remove this function and use configureProviderWithConfigCacheFunc
-func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
-	accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
-	if err != nil {
-		accTestEnabled = false
-		accTestLog.Printf("[ERROR] TF_ACC environmental variable has incorrect format: %v, using %v as a default value", err, accTestEnabled)
-	}
-	configureClientOnceEnabled, err := oswrapper.GetenvBool("SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE")
-	if err != nil {
-		configureClientOnceEnabled = false
-		accTestLog.Printf("[ERROR] SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE environmental variable has incorrect format: %v, using %v as a default value", err, configureClientOnceEnabled)
-	}
-	// hacky way to speed up our acceptance tests
-	if accTestEnabled && configureClientOnceEnabled {
-		accTestLog.Printf("[DEBUG] Returning cached provider configuration result")
-		if configureProviderCtx != nil {
-			accTestLog.Printf("[DEBUG] Returning cached provider configuration context")
-			return configureProviderCtx, nil
-		}
-		if configureClientErrorDiag.HasError() {
-			accTestLog.Printf("[DEBUG] Returning cached provider configuration error")
-			return nil, configureClientErrorDiag
-		}
-	}
-	accTestLog.Printf("[DEBUG] No cached provider configuration found or caching is not enabled; configuring a new provider")
-
-	providerCtx, clientErrorDiag := provider.ConfigureProvider(ctx, d)
-
-	if providerCtx != nil && accTestEnabled && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
-		providerCtx.(*internalprovider.Context).EnabledFeatures = previewfeatures.AllPreviewFeatures
-	}
-
-	// needed for tests verifying different provider setups
-	if accTestEnabled && configureClientOnceEnabled {
-		configureProviderCtx = providerCtx.(*internalprovider.Context)
-		configureClientErrorDiag = clientErrorDiag
-	} else {
-		configureProviderCtx = nil
-		configureClientErrorDiag = make(diag.Diagnostics, 0)
-	}
-	if v, ok := providerCtx.(*internalprovider.Context); ok {
-		lastConfiguredProviderContext = v
-	}
-
-	return providerCtx, clientErrorDiag
-}
-
 var taskDedicatedProviderFactory = providerFactoryUsingCache("task")
 
 // TODO [SNOW-2312385]: we could keep the cache of provider per cache key
@@ -150,6 +100,7 @@ func providerFactoryUsingCache(key string) map[string]func() (tfprotov6.Provider
 
 func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
+		// TODO [SNOW-2312385]: lock access to cache map
 		// check if we cached initialized provider context with the key already
 		if cached, ok := providerInitializationCache[key]; ok {
 			accTestLog.Printf("[DEBUG] Returning cached provider configuration result for key %s", key)
@@ -174,11 +125,42 @@ func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, 
 			clientErrorDiag: clientErrorDiag,
 		}
 
-		// TODO [SNOW-2312385]: what do we want to do with this?
+		// TODO [SNOW-2312385]: what do we want to do with this? - get from cache?
 		if v, ok := providerCtx.(*internalprovider.Context); ok {
 			lastConfiguredProviderContext = v
 		}
 
 		return providerCtx, clientErrorDiag
 	}
+}
+
+func providerFactoryWithoutCache() map[string]func() (tfprotov6.ProviderServer, error) {
+	p := provider.Provider()
+	p.ConfigureContextFunc = configureProviderWithoutCache
+
+	return map[string]func() (tfprotov6.ProviderServer, error){
+		"snowflake": func() (tfprotov6.ProviderServer, error) {
+			return tf5to6server.UpgradeServer(
+				context.Background(),
+				p.GRPCProvider,
+			)
+		},
+	}
+}
+
+func configureProviderWithoutCache(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
+	accTestLog.Printf("[DEBUG] TODO")
+
+	providerCtx, clientErrorDiag := provider.ConfigureProvider(ctx, d)
+
+	if providerCtx != nil && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
+		providerCtx.(*internalprovider.Context).EnabledFeatures = previewfeatures.AllPreviewFeatures
+	}
+
+	// TODO [SNOW-2312385]: what do we want to do with this when used without cache?
+	if v, ok := providerCtx.(*internalprovider.Context); ok {
+		lastConfiguredProviderContext = v
+	}
+
+	return providerCtx, clientErrorDiag
 }
