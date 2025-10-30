@@ -81,6 +81,7 @@ var testAccProtoV6ProviderFactoriesNew = map[string]func() (tfprotov6.ProviderSe
 	},
 }
 
+// TODO [SNOW-2312385]: add dedicated factories (authentication, views tests, functions tests, procedure tests, secondary tests), address all SNOW-2324320
 var taskDedicatedProviderFactory = providerFactoryUsingCache("task")
 
 // TODO [SNOW-2312385]: we could keep the cache of provider per cache key
