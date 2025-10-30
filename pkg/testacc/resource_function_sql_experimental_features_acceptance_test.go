@@ -40,7 +40,7 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 	functionModel := model.FunctionSqlBasicInline("test", id, definition, dataType.ToLegacyDataTypeSql()).
 		WithArgument(argName, dataType)
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithExperimentalFeaturesEnabled(string(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel))
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

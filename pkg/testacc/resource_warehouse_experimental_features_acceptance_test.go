@@ -26,7 +26,7 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithExperimentalFeaturesEnabled(string(experimentalfeatures.WarehouseShowImprovedPerformance))
+		WithExperimentalFeaturesEnabled(experimentalfeatures.WarehouseShowImprovedPerformance)
 	warehouseModel := model.Warehouse("test", warehouseId.Name())
 
 	expectedWarehouseQuery := fmt.Sprintf("SHOW WAREHOUSES LIKE '%[1]s' STARTS WITH '%[1]s' LIMIT 1", warehouseId.Name())
