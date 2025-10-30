@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
@@ -20,16 +21,18 @@ import (
 )
 
 func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithExperimentalFeaturesEnabled(experimentalfeatures.WarehouseShowImprovedPerformance)
+		WithExperimentalFeaturesEnabled(string(experimentalfeatures.WarehouseShowImprovedPerformance))
 	warehouseModel := model.Warehouse("test", warehouseId.Name())
 
 	expectedWarehouseQuery := fmt.Sprintf("SHOW WAREHOUSES LIKE '%[1]s' STARTS WITH '%[1]s' LIMIT 1", warehouseId.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_Experimental_Warehouse_ShowImprovedPerformance"),
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
