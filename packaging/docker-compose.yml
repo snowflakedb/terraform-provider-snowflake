@@ -13,8 +13,6 @@ services:
     working_dir: /terraform-provider-snowflake
     command: sh -c "make --silent test-main-terraform-use-cases > /shared/test_output.json"
   process-test-output:
-    depends_on:
-      - test-main-terraform-use-cases
     build:
       context: .
       dockerfile: Dockerfile
