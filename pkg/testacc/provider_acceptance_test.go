@@ -37,14 +37,12 @@ import (
 )
 
 func TestAcc_Provider_configHierarchy(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
 	incorrectConfig := testClient().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		PreCheck: func() {
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
 			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
@@ -167,46 +165,6 @@ func TestAcc_Provider_configHierarchy(t *testing.T) {
 					testenvs.AssertEnvSet(t, snowflakeenvs.Role)
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithAuthenticatorType(sdk.AuthenticationTypeJwt), datasourceModel()),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Provider_configureClientOnceSwitching(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
-	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
-	incorrectConfig := testClient().TempIncorrectTomlConfigForServiceUser(t, tmpServiceUser)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		PreCheck: func() {
-			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
-			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
-		},
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			// client setup is incorrect
-			{
-				PreConfig: func() {
-					t.Setenv(snowflakeenvs.ConfigPath, incorrectConfig.Path)
-				},
-				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(incorrectConfig.Profile), datasourceModel()),
-				ExpectError: regexp.MustCompile("JWT token is invalid"),
-			},
-			// in this step we simulate the situation when we want to use client configured once, but it was faulty last time
-			{
-				PreConfig: func() {
-					t.Setenv(string(testenvs.ConfigureClientOnce), "true")
-					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
-				},
-				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
 				),
