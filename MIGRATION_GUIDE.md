@@ -97,7 +97,9 @@ No changes in the configuration are necessary.
 ### *(new feature)* New instance families in the compute_pool resource
 Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
 
-### *(improvement) Stabilized features
+### *(improvement)* Features promotion
+
+[//]: # (TODO [this PR]: rephrase this section with all the resources)
 We marked `git_repository` resource and `git_repositories` data source as stable. These features are enabled by default: to run these features, enabling them in the provider configuration is no longer required. If you use them, please remove the relevant features from the `preview_features` list. These values will be removed in the next major version.
 
 Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
