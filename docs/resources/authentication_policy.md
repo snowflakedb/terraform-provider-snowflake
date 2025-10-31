@@ -9,7 +9,7 @@ description: |-
 
 !> **Note** According to Snowflake [docs](https://docs.snowflake.com/en/sql-reference/sql/drop-authentication-policy#usage-notes), an authentication policy cannot be dropped successfully if it is currently assigned to another object. Currently, the provider does not unassign such objects automatically. Before dropping the resource, first unassign the policy from the relevant objects. See [guide](../guides/unassigning_policies) for more details.
 
--> **Note** This resource is not yet adjusted to the changes in BCR 2025_06 (see our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#bundle-2025_06)). As a workaround, please use the [execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.
+-> **Note** External changes are not detected for the following fields: `mfa_policy`, `pat_policy`, `workload_identity_policy`. Also, they cannot be imported and should be manually set to the correct values during the import operation.
 
 # snowflake_authentication_policy (Resource)
 
@@ -34,7 +34,23 @@ resource "snowflake_authentication_policy" "complete" {
   mfa_enrollment         = "OPTIONAL"
   client_types           = ["ALL"]
   security_integrations  = ["ALL"]
-  comment                = "My authentication policy."
+
+  mfa_policy {
+    allowed_methods                        = ["PASSKEY", "DUO"]
+    enforce_mfa_on_external_authentication = "ALL"
+  }
+  pat_policy {
+    default_expiry_in_days    = 1
+    max_expiry_in_days        = 30
+    network_policy_evaluation = "NOT_ENFORCED"
+  }
+  workload_identity_policy {
+    allowed_providers     = ["ALL"]
+    allowed_aws_accounts  = ["111122223333"]
+    allowed_azure_issuers = ["https://login.microsoftonline.com/tenantid/v2.0"]
+    allowed_oidc_issuers  = ["https://example.com"]
+  }
+  comment = "My authentication policy."
 }
 ```
 
@@ -59,8 +75,11 @@ resource "snowflake_authentication_policy" "complete" {
 - `comment` (String) Specifies a comment for the authentication policy.
 - `mfa_authentication_methods` (Set of String, Deprecated) A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are `ALL` | `SAML` | `PASSWORD`.
 - `mfa_enrollment` (String) Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): `REQUIRED` | `REQUIRED_PASSWORD_ONLY` | `OPTIONAL`. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).
-- `security_integrations` (Set of String) A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `all` as parameter.
+- `mfa_policy` (Block List, Max: 1) Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication. (see [below for nested schema](#nestedblock--mfa_policy))
+- `pat_policy` (Block List, Max: 1) Specifies the policy for programmatic access tokens. (see [below for nested schema](#nestedblock--pat_policy))
+- `security_integrations` (Set of String) A list of security integrations the authentication policy is associated with. This parameter has no effect when `saml` or `oauth` are not in the `authentication_methods` list. All values in the `security_integrations` list must be compatible with the values in the `authentication_methods` list. For example, if `security_integrations` contains a SAML security integration, and `authentication_methods` contains OAUTH, then you cannot create the authentication policy. To allow all security integrations use `ALL` as parameter.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `workload_identity_policy` (Block List, Max: 1) Specifies the policy for workload identity federation. (see [below for nested schema](#nestedblock--workload_identity_policy))
 
 ### Read-Only
 
@@ -68,6 +87,25 @@ resource "snowflake_authentication_policy" "complete" {
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW AUTHENTICATION POLICIES` for the given policy. (see [below for nested schema](#nestedatt--show_output))
+
+<a id="nestedblock--mfa_policy"></a>
+### Nested Schema for `mfa_policy`
+
+Optional:
+
+- `allowed_methods` (Set of String) Specifies the allowed methods for the MFA policy. Valid values are: `ALL` | `PASSKEY` | `TOTP` | `DUO`. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.
+- `enforce_mfa_on_external_authentication` (String) Determines whether multi-factor authentication (MFA) is enforced on external authentication. Valid values are (case-insensitive): `ALL` | `NONE`.
+
+
+<a id="nestedblock--pat_policy"></a>
+### Nested Schema for `pat_policy`
+
+Optional:
+
+- `default_expiry_in_days` (Number) Specifies the default expiration time (in days) for a programmatic access token.
+- `max_expiry_in_days` (Number) Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.
+- `network_policy_evaluation` (String) Specifies the network policy evaluation for the PAT.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -80,6 +118,17 @@ Optional:
 - `update` (String)
 
 
+<a id="nestedblock--workload_identity_policy"></a>
+### Nested Schema for `workload_identity_policy`
+
+Optional:
+
+- `allowed_aws_accounts` (Set of String) Specifies the list of AWS account IDs allowed by the authentication policy during workload identity authentication of type `AWS`.
+- `allowed_azure_issuers` (Set of String) Specifies the list of Azure Entra ID issuers allowed by the authentication policy during workload identity authentication of type `AZURE`.
+- `allowed_oidc_issuers` (Set of String) Specifies the list of OIDC issuers allowed by the authentication policy during workload identity authentication of type `OIDC`.
+- `allowed_providers` (Set of String) Specifies the allowed providers for the workload identity policy. Valid values are: `ALL` | `AWS` | `AZURE` | `GCP` | `OIDC`. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.
+
+
 <a id="nestedatt--describe_output"></a>
 ### Nested Schema for `describe_output`
 
@@ -90,9 +139,12 @@ Read-Only:
 - `comment` (String)
 - `mfa_authentication_methods` (String)
 - `mfa_enrollment` (String)
+- `mfa_policy` (String)
 - `name` (String)
 - `owner` (String)
+- `pat_policy` (String)
 - `security_integrations` (String)
+- `workload_identity_policy` (String)
 
 
 <a id="nestedatt--show_output"></a>

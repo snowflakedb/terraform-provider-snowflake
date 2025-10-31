@@ -1,6 +1,8 @@
 package sdk
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+)
 
 type AuthenticationPolicyDetails []AuthenticationPolicyDescription
 
