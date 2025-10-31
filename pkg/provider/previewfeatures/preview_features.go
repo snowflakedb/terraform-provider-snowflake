@@ -199,7 +199,7 @@ func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 
 func StringToFeature(featRaw string) (feature, error) {
 	feat := feature(strings.ToLower(featRaw))
-	if !slices.Contains(allPreviewFeatures, feat) {
+	if !slices.Contains(ValidPreviewFeatures, string(feat)) {
 		return "", fmt.Errorf("invalid feature: %s", featRaw)
 	}
 	return feat, nil
