@@ -28,7 +28,7 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 	providerModel := providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
+		ProtoV6ProviderFactories: providerFactoryPluginPocUsingCache("TerraformPluginFrameworkRestApiPoC"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

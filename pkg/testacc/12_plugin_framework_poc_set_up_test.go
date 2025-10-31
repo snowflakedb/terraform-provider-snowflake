@@ -12,18 +12,22 @@ var testAccProtoV6ProviderFactoriesWithPluginPoc map[string]func() (tfprotov6.Pr
 
 func init() {
 	// based on https://developer.hashicorp.com/terraform/plugin/framework/migrating/mux#protocol-version-6
-	testAccProtoV6ProviderFactoriesWithPluginPoc = map[string]func() (tfprotov6.ProviderServer, error){
+	testAccProtoV6ProviderFactoriesWithPluginPoc = providerFactoryPluginPocUsingCache("TerraformPluginFrameworkPoC")
+}
+
+func providerFactoryPluginPocUsingCache(key string) map[string]func() (tfprotov6.ProviderServer, error) {
+	return map[string]func() (tfprotov6.ProviderServer, error){
 		"snowflake": func() (tfprotov6.ProviderServer, error) {
 			ctx := context.Background()
 
 			// creating a separate cache for all plugin framework tests
-			p, err := providerFactoryUsingCache("TerraformPluginFrameworkPoC")["snowflake"]()
+			p, err := providerFactoryUsingCache(key)["snowflake"]()
 			if err != nil {
 				return nil, err
 			}
 
 			providers := []func() tfprotov6.ProviderServer{
-				providerserver.NewProtocol6(New("dev")),
+				providerserver.NewProtocol6(NewWithCacheKey("dev", key)),
 				func() tfprotov6.ProviderServer {
 					return p
 				},
