@@ -15,6 +15,7 @@
 - [snowflake_schemas](./docs/data-sources/schemas)
 - [snowflake_secrets](./docs/data-sources/secrets)
 - [snowflake_security_integrations](./docs/data-sources/security_integrations)
+- [snowflake_services](./docs/data-sources/services)
 - [snowflake_streamlits](./docs/data-sources/streamlits)
 - [snowflake_streams](./docs/data-sources/streams)
 - [snowflake_tags](./docs/data-sources/tags)

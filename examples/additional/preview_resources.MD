@@ -39,7 +39,6 @@
 - [snowflake_procedure_scala](./docs/resources/procedure_scala)
 - [snowflake_procedure_sql](./docs/resources/procedure_sql)
 - [snowflake_sequence](./docs/resources/sequence)
-- [snowflake_service](./docs/resources/service)
 - [snowflake_share](./docs/resources/share)
 - [snowflake_stage](./docs/resources/stage)
 - [snowflake_storage_integration](./docs/resources/storage_integration)

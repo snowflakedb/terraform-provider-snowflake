@@ -7,7 +7,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -67,10 +66,10 @@ func Service() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ServiceResource), TrackingCreateWrapper(resources.Service, CreateService)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ServiceResource), TrackingReadWrapper(resources.Service, ReadServiceFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ServiceResource), TrackingUpdateWrapper(resources.Service, UpdateService)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ServiceResource), TrackingDeleteWrapper(resources.Service, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.Service, CreateService),
+		ReadContext:   TrackingReadWrapper(resources.Service, ReadServiceFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.Service, UpdateService),
+		DeleteContext: TrackingDeleteWrapper(resources.Service, deleteFunc),
 		Description: joinWithSpace(
 			"Resource used to manage services. For more information, check [services documentation](https://docs.snowflake.com/en/sql-reference/sql/create-service).",
 			"A long-running service is like a web service that does not end automatically. After you create a service, Snowflake manages the running service.",

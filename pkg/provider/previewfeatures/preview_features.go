@@ -147,8 +147,6 @@ var allPreviewFeatures = []feature{
 	// TODO(SNOW-2108211): Uncomment after adjusting resource and data source
 	// SemanticViewResource,
 	// SemanticViewDatasource,
-	ServiceResource,
-	ServicesDatasource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,
@@ -183,6 +181,8 @@ var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 var promotedFeatures = []feature{
 	GitRepositoryResource,
 	GitRepositoriesDatasource,
+	ServiceResource,
+	ServicesDatasource,
 }
 var PromotedFeatures = sdk.AsStringList(promotedFeatures)
 
