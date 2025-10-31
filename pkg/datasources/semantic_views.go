@@ -53,7 +53,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 
 func SemanticViews() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.SemanticViewDatasource), TrackingReadWrapper(datasources.Pipes, ReadSemanticViews)),
+		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.SemanticViewDatasource), TrackingReadWrapper(datasources.SemanticViews, ReadSemanticViews)),
 		Schema:      semanticViewsSchema,
 		Description: "Data source used to get details of filtered semantic views. Filtering is aligned with the current possibilities for [SHOW SEMANTIC VIEWS](https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views) query." +
 			" The results of SHOW and DESCRIBE are encapsulated in one output collection `semantic_views`.",

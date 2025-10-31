@@ -22,8 +22,6 @@ import (
 )
 
 func TestAcc_SemanticView_basic(t *testing.T) {
-	t.Skip("TODO(SNOW-2108211): Skipping until semantic view resource and data source is adjusted")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := "comment 1", "comment 2"
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
