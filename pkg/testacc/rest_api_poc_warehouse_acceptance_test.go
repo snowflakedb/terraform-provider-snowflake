@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TODO [SNOW-2312385]: make sure it uses a different provider than cached (needs rest api client)
 func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 

@@ -367,10 +367,11 @@ func TestAcc_GrantPrivilegesToShare_OnTag(t *testing.T) {
 		}
 		return variables
 	}
-
 	resourceName := "snowflake_grant_privileges_to_share.test"
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
