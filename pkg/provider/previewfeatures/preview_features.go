@@ -103,8 +103,6 @@ var allPreviewFeatures = []feature{
 	AlertsDatasource,
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
-	ComputePoolResource,
-	ComputePoolsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
