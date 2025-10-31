@@ -140,7 +140,7 @@ func UpdateContextSecretWithGenericString(ctx context.Context, d *schema.Resourc
 		setForGenericString.WithSecretString(secretString)
 	}
 
-	if !reflect.DeepEqual(setForGenericString, sdk.SetForGenericStringRequest{}) {
+	if !reflect.DeepEqual(*setForGenericString, sdk.SetForGenericStringRequest{}) {
 		set.WithSetForFlow(sdk.SetForFlowRequest{SetForGenericString: setForGenericString})
 	}
 
