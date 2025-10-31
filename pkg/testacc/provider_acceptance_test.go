@@ -1245,10 +1245,11 @@ func TestAcc_Provider_HandlingPromotedFeatures(t *testing.T) {
 	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	t.Setenv(string(testenvs.EnableAllPreviewFeatures), "")
 
-	datasourceModel := datasourcemodel.GitRepositories("t")
+	gitRepositoriesModel := datasourcemodel.GitRepositories("t")
 
-	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Default)
-	providerModelWithPreviewFeaturesEnabled := providermodel.SnowflakeProvider().WithProfile(testprofiles.Default).WithPreviewFeaturesEnabled(string(previewfeatures.GitRepositoriesDatasource))
+	providerModel := providermodel.SnowflakeProvider()
+	providerModelWithPreviewFeaturesEnabled := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.GitRepositoriesDatasource))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1257,15 +1258,15 @@ func TestAcc_Provider_HandlingPromotedFeatures(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, providerModel, datasourceModel),
+				Config: config.FromModels(t, providerModelWithPreviewFeaturesEnabled, gitRepositoriesModel),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(datasourceModel.DatasourceReference(), "git_repositories.#"),
+					resource.TestCheckResourceAttrSet(gitRepositoriesModel.DatasourceReference(), "git_repositories.#"),
 				),
 			},
 			{
-				Config: config.FromModels(t, providerModelWithPreviewFeaturesEnabled, datasourceModel),
+				Config: config.FromModels(t, providerModel, gitRepositoriesModel),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(datasourceModel.DatasourceReference(), "git_repositories.#"),
+					resource.TestCheckResourceAttrSet(gitRepositoriesModel.DatasourceReference(), "git_repositories.#"),
 				),
 			},
 		},
