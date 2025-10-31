@@ -96,6 +96,9 @@ See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-authen
 This feature will be marked as a stable feature in future releases.
 Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_authentication_policies_datasource` to `preview_features_enabled` field in the provider configuration.
 
+### *(new feature)* New instance families in the compute_pool resource
+Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
+
 ### *(new experiment)* Improved show query for warehouses
 
 In this version we introduce a new attribute on the provider level: [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#experimental_features_enabled-1). It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#preview_features_enabled-1). Instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior. **It's still considered a preview feature, even when applied to the stable resources.**
@@ -120,9 +123,6 @@ Previously, when the `generation` field was set for a given resource, the provid
 We recommend upgrading to this version because setting generation through the `resource_constraint` field may be not supported by Snowflake in future.
 
 No changes in the configuration are necessary.
-
-### *(new feature)* New instance families in the compute_pool resource
-Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
 
 ## v2.8.x ➞ v2.9.0
 
