@@ -195,6 +195,7 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 			{
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithUseLegacyTomlFile(true), datasourceModel()),
 				Check: func(s *terraform.State) error {
+					// TODO [SNOW-2312385]: TestAccProvider.Meta() may be problematic now
 					config := TestAccProvider.Meta().(*internalprovider.Context).Client.GetConfig()
 					assert.Equal(t, tmpServiceUser.OrgAndAccount(), config.Account)
 					assert.Equal(t, tmpServiceUser.UserId.Name(), config.User)
