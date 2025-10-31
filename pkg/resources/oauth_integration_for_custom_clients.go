@@ -497,11 +497,17 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 				return diag.FromErr(err)
 			}
 
+			var oauthRefreshTokenValidityValue int
 			oauthRefreshTokenValidity, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
 				return property.Name == "OAUTH_REFRESH_TOKEN_VALIDITY"
 			})
 			if err != nil {
 				return diag.FromErr(err)
+			} else {
+				oauthRefreshTokenValidityValue, err = strconv.Atoi(oauthRefreshTokenValidity.Value)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 
 			blockedRolesList, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
@@ -516,7 +522,7 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 				describeMapping{"oauth_enforce_pkce", "oauth_enforce_pkce", oauthEnforcePkce.Value, oauthEnforcePkce.Value, nil},
 				describeMapping{"oauth_use_secondary_roles", "oauth_use_secondary_roles", oauthUseSecondaryRoles.Value, oauthUseSecondaryRoles.Value, nil},
 				describeMapping{"oauth_issue_refresh_tokens", "oauth_issue_refresh_tokens", oauthIssueRefreshTokens.Value, oauthIssueRefreshTokens.Value, nil},
-				describeMapping{"oauth_refresh_token_validity", "oauth_refresh_token_validity", oauthRefreshTokenValidity.Value, oauthRefreshTokenValidity.Value, nil},
+				describeMapping{"oauth_refresh_token_validity", "oauth_refresh_token_validity", oauthRefreshTokenValidity.Value, oauthRefreshTokenValidityValue, nil},
 				describeMapping{"blocked_roles_list", "blocked_roles_list", blockedRolesList.Value, sdk.ParseCommaSeparatedStringArray(blockedRolesList.Value, false), nil},
 			); err != nil {
 				return diag.FromErr(err)

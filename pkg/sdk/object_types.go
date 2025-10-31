@@ -86,11 +86,14 @@ const (
 	ObjectTypeModelMonitor         ObjectType = "MODEL MONITOR"
 	ObjectTypeService              ObjectType = "SERVICE"
 	ObjectTypeStorageIntegration   ObjectType = "STORAGE INTEGRATION"
+	ObjectTypeListing              ObjectType = "LISTING"
+	ObjectTypeSemanticView         ObjectType = "SEMANTIC VIEW"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
-	ObjectTypeListing                 ObjectType = "LISTING"
-	ObjectTypeSemanticView            ObjectType = "SEMANTIC VIEW"
+	// ObjectTypeSecurityIntegration is a pseudo-object, only used in object and invoke action assertions.
+	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
+	ObjectTypeSecurityIntegration ObjectType = "SECURITY INTEGRATION"
 )
 
 func (o ObjectType) String() string {

@@ -168,6 +168,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeNotebook,
 		ObjectStruct: sdk.Notebook{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeSecurityIntegration,
+		ObjectStruct: sdk.SecurityIntegration{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

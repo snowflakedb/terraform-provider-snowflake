@@ -12,6 +12,7 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -252,7 +253,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.DatabaseDoesNotExist(t, id),
+					invokeactionassert.DatabaseDoesNotExist(t, id),
 				),
 			},
 			// Create - with optionals
