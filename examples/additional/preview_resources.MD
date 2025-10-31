@@ -6,7 +6,6 @@
 - [snowflake_alert](./docs/resources/alert)
 - [snowflake_api_integration](./docs/resources/api_integration)
 - [snowflake_authentication_policy](./docs/resources/authentication_policy)
-- [snowflake_compute_pool](./docs/resources/compute_pool)
 - [snowflake_cortex_search_service](./docs/resources/cortex_search_service)
 - [snowflake_current_account](./docs/resources/current_account)
 - [snowflake_current_organization_account](./docs/resources/current_organization_account)

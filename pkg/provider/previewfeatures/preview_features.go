@@ -102,8 +102,6 @@ var allPreviewFeatures = []feature{
 	AlertsDatasource,
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
-	ComputePoolResource,
-	ComputePoolsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -179,6 +177,8 @@ var allPreviewFeatures = []feature{
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 
 var promotedFeatures = []feature{
+	ComputePoolResource,
+	ComputePoolsDatasource,
 	GitRepositoryResource,
 	GitRepositoriesDatasource,
 	ServiceResource,

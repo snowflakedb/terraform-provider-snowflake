@@ -3,6 +3,7 @@
 
 - [snowflake_account_roles](./docs/data-sources/account_roles)
 - [snowflake_accounts](./docs/data-sources/accounts)
+- [snowflake_compute_pools](./docs/data-sources/compute_pools)
 - [snowflake_connections](./docs/data-sources/connections)
 - [snowflake_database_roles](./docs/data-sources/database_roles)
 - [snowflake_databases](./docs/data-sources/databases)

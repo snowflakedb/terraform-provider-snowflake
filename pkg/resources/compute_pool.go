@@ -6,17 +6,14 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 var computePoolSchema = map[string]*schema.Schema{
@@ -113,10 +110,10 @@ func ComputePool() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ComputePoolResource), TrackingCreateWrapper(resources.ComputePool, CreateComputePool)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ComputePoolResource), TrackingReadWrapper(resources.ComputePool, ReadComputePoolFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ComputePoolResource), TrackingUpdateWrapper(resources.ComputePool, UpdateComputePool)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ComputePoolResource), TrackingDeleteWrapper(resources.ComputePool, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.ComputePool, CreateComputePool),
+		ReadContext:   TrackingReadWrapper(resources.ComputePool, ReadComputePoolFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.ComputePool, UpdateComputePool),
+		DeleteContext: TrackingDeleteWrapper(resources.ComputePool, deleteFunc),
 		Description: joinWithSpace(
 			"Resource used to manage compute pools. For more information, check [compute pools documentation](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool).",
 			"A compute pool is a collection of one or more virtual machine (VM) nodes on which Snowflake runs your Snowpark Container Services services (including job services).",
