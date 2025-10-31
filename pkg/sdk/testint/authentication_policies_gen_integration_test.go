@@ -93,7 +93,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
 				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-					{Method: sdk.MfaPolicyPassAllowedMethodPassKey},
+					{Method: sdk.MfaPolicyAllowedMethodPassKey},
 					{Method: sdk.MfaPolicyAllowedMethodDuo},
 				}),
 			).
@@ -165,7 +165,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 					WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationAll).
 					WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-						{Method: sdk.MfaPolicyPassAllowedMethodPassKey},
+						{Method: sdk.MfaPolicyAllowedMethodPassKey},
 						{Method: sdk.MfaPolicyAllowedMethodDuo},
 					}),
 				).

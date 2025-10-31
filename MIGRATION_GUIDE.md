@@ -64,6 +64,11 @@ The state is migrated automatically.
 - Improved importing - now, `authentication_methods`, `mfa_enrollment`, `client_types`, and `security_integrations` are set in import.
 - Improved detecting of external changes.
 
+### *(new feature)* New snowflake_authentication_policies data source
+Added a new preview data source for authentication policies. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_authentication_policies_datasource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new experiment)* Improved show query for warehouses
 
 In this version we introduce a new attribute on the provider level: [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#experimental_features_enabled-1). It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#preview_features_enabled-1). Instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior. **It's still considered a preview feature, even when applied to the stable resources.**
