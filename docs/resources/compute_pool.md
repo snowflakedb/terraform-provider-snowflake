@@ -1,6 +1,6 @@
 ---
 page_title: "snowflake_compute_pool Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage compute pools. For more information, check compute pools documentation https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool. A compute pool is a collection of one or more virtual machine (VM) nodes on which Snowflake runs your Snowpark Container Services services (including job services). See Working with compute pools https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool developer guide for more details.
 ---

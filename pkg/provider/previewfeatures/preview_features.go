@@ -126,8 +126,6 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
-	ImageRepositoryResource,
-	ImageRepositoriesDatasource,
 	JobServiceResource,
 	ListingResource,
 	ManagedAccountResource,
@@ -181,6 +179,8 @@ var promotedFeatures = []feature{
 	ComputePoolsDatasource,
 	GitRepositoryResource,
 	GitRepositoriesDatasource,
+	ImageRepositoryResource,
+	ImageRepositoriesDatasource,
 	ServiceResource,
 	ServicesDatasource,
 }
