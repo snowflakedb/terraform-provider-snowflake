@@ -637,7 +637,7 @@ func getDataSources() map[string]*schema.Resource {
 	}
 }
 
-func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
+func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
 	config, err := getDriverConfigFromTerraform(s)
 	if err != nil {
 		return nil, diag.FromErr(err)
@@ -677,15 +677,24 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 		providerCtx.Client = client
 	}
 
+	diags := make([]diag.Diagnostic, 0)
 	if v, ok := s.GetOk("preview_features_enabled"); ok {
 		providerCtx.EnabledFeatures = expandStringList(v.(*schema.Set).List())
+		promotedFeatures := previewfeatures.GetPromotedFeatures(providerCtx.EnabledFeatures)
+		for _, pf := range promotedFeatures {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Stable feature used on preview feature list.",
+				Detail:   fmt.Sprintf("Preview feature %s was already promoted to stable feature. Please remove it from your preview_features_enabled configuration", pf),
+			})
+		}
 	}
 
 	if v, ok := s.GetOk("experimental_features_enabled"); ok {
 		providerCtx.EnabledExperiments = expandStringList(v.(*schema.Set).List())
 	}
 
-	return providerCtx, nil
+	return providerCtx, diags
 }
 
 // TODO: reuse with the function from resources package

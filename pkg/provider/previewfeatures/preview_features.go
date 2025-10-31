@@ -204,3 +204,24 @@ func StringToFeature(featRaw string) (feature, error) {
 	}
 	return feat, nil
 }
+
+// TODO [next PR]: unit test
+func GetPromotedFeatures(enabledFeatures []string) []string {
+	containedPromotedFeatures := make([]string, 0)
+	if enabledFeatures == nil {
+		return containedPromotedFeatures
+	}
+	for _, enabledFeature := range enabledFeatures {
+		if IsPromotedFeature(enabledFeature) {
+			containedPromotedFeatures = append(containedPromotedFeatures, enabledFeature)
+		}
+	}
+	return containedPromotedFeatures
+}
+
+// TODO [next PR]: unit test
+func IsPromotedFeature(rawFeature string) bool {
+	return slices.ContainsFunc(PromotedFeatures, func(s string) bool {
+		return strings.EqualFold(rawFeature, s)
+	})
+}
