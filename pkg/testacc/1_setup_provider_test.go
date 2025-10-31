@@ -136,6 +136,12 @@ func configureProviderWithConfigCacheFunc(key string) func(ctx context.Context, 
 }
 
 func providerFactoryWithoutCache() map[string]func() (tfprotov6.ProviderServer, error) {
+	factory, _ := providerFactoryWithoutCacheReturningProvider()
+	return factory
+}
+
+// TODO [SNOW-2312385]: use everywhere where providerFactoryWithoutCache was used?
+func providerFactoryWithoutCacheReturningProvider() (map[string]func() (tfprotov6.ProviderServer, error), *schema.Provider) {
 	p := provider.Provider()
 	p.ConfigureContextFunc = configureProviderWithoutCache
 
@@ -146,7 +152,7 @@ func providerFactoryWithoutCache() map[string]func() (tfprotov6.ProviderServer, 
 				p.GRPCProvider,
 			)
 		},
-	}
+	}, p
 }
 
 func configureProviderWithoutCache(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
