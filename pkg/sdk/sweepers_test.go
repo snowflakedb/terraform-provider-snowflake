@@ -255,7 +255,7 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 				}
 
 				log.Printf("[DEBUG] Dropping warehouse %s, created at: %s", wh.ID().FullyQualifiedName(), wh.CreatedOn.String())
-				// to handle identifiers with containing `"` - we do not escape them currently in the SDK SQL generation
+				// to handle identifiers containing `"` - we do not escape them currently in the SDK SQL generation
 				whId := wh.ID()
 				if strings.Contains(whId.Name(), `"`) {
 					whId = sdk.NewAccountObjectIdentifier(strings.ReplaceAll(whId.Name(), `"`, `""`))
@@ -333,7 +333,12 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 				}
 
 				log.Printf("[DEBUG] Dropping database %s, created at: %s", db.ID().FullyQualifiedName(), db.CreatedOn.String())
-				if err := client.Databases.DropSafely(ctx, db.ID()); err != nil {
+				// to handle identifiers containing `"` - we do not escape them currently in the SDK SQL generation
+				dbId := db.ID()
+				if strings.Contains(dbId.Name(), `"`) {
+					dbId = sdk.NewAccountObjectIdentifier(strings.ReplaceAll(dbId.Name(), `"`, `""`))
+				}
+				if err := client.Databases.DropSafely(ctx, dbId); err != nil {
 					if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
 						log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", db.ID().FullyQualifiedName(), err)
 						continue

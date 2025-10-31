@@ -22,6 +22,8 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_alert_resource", want: AlertResource},
 		{input: "snowflake_alerts_datasource", want: AlertsDatasource},
 		{input: "snowflake_api_integration_resource", want: ApiIntegrationResource},
+		{input: "snowflake_authentication_policy_resource", want: AuthenticationPolicyResource},
+		{input: "snowflake_authentication_policies_datasource", want: AuthenticationPoliciesDatasource},
 		{input: "snowflake_compute_pool_resource", want: ComputePoolResource},
 		{input: "snowflake_compute_pools_datasource", want: ComputePoolsDatasource},
 		{input: "snowflake_cortex_search_service_resource", want: CortexSearchServiceResource},
