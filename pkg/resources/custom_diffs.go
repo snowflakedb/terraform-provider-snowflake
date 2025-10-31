@@ -10,7 +10,9 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/sdkv2enhancements"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -30,6 +32,7 @@ func BoolParameterValueComputedIf[T ~string](key string, params []*sdk.Parameter
 
 func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter, objectParameterLevel sdk.ParameterType, parameterName T, valueToString func(v any) string) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+		providerCtx := meta.(*provider.Context)
 		foundParameter, err := collections.FindFirst(parameters, func(parameter *sdk.Parameter) bool { return parameter.Key == string(parameterName) })
 		if err != nil {
 			log.Printf("[WARN] failed to find parameter: %s", parameterName)
@@ -51,11 +54,19 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 			return nil
 		}
 
-		// If the configuration is not set, perform SetNewComputed for cases like:
-		// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
-		// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
-		if parameter.Value != valueToString(d.Get(key)) || parameter.Level == objectParameterLevel {
-			return d.SetNewComputed(key)
+		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel, providerCtx.EnabledExperiments) {
+			// If the configuration is not set, perform SetNewComputed only for parameter being set on the object level (if so, it means that it was set externally, and we have to unset it).
+			// The value change is handled through read.
+			if parameter.Level == objectParameterLevel {
+				return d.SetNewComputed(key)
+			}
+		} else {
+			// If the configuration is not set, perform SetNewComputed for cases like:
+			// 1. Check if the parameter value differs from the one saved in state (if they differ, we'll update the computed value).
+			// 2. Check if the parameter is set on the object level (if so, it means that it was set externally, and we have to unset it).
+			if parameter.Value != valueToString(d.Get(key)) || parameter.Level == objectParameterLevel {
+				return d.SetNewComputed(key)
+			}
 		}
 
 		return nil

@@ -14,10 +14,12 @@ import (
 type ExperimentalFeature string
 
 const (
-	WarehouseShowImprovedPerformance ExperimentalFeature = "WAREHOUSE_SHOW_IMPROVED_PERFORMANCE"
+	ParametersIgnoreValueChangesIfNotOnObjectLevel ExperimentalFeature = "PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL"
+	WarehouseShowImprovedPerformance               ExperimentalFeature = "WAREHOUSE_SHOW_IMPROVED_PERFORMANCE"
 )
 
 var allExperimentalFeatures = []ExperimentalFeature{
+	ParametersIgnoreValueChangesIfNotOnObjectLevel,
 	WarehouseShowImprovedPerformance,
 }
 
