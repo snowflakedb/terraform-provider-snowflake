@@ -127,7 +127,6 @@ var allPreviewFeatures = []feature{
 	FunctionSqlResource,
 	FunctionsDatasource,
 	JobServiceResource,
-	ListingResource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
@@ -181,6 +180,7 @@ var promotedFeatures = []feature{
 	GitRepositoriesDatasource,
 	ImageRepositoryResource,
 	ImageRepositoriesDatasource,
+	ListingResource,
 	ServiceResource,
 	ServicesDatasource,
 }

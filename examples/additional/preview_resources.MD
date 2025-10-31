@@ -22,7 +22,6 @@
 - [snowflake_function_scala](./docs/resources/function_scala)
 - [snowflake_function_sql](./docs/resources/function_sql)
 - [snowflake_job_service](./docs/resources/job_service)
-- [snowflake_listing](./docs/resources/listing)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
 - [snowflake_network_policy_attachment](./docs/resources/network_policy_attachment)

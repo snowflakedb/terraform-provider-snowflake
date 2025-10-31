@@ -22,6 +22,7 @@
 - [snowflake_grant_privileges_to_share](./docs/resources/grant_privileges_to_share)
 - [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_legacy_service_user](./docs/resources/legacy_service_user)
+- [snowflake_listing](./docs/resources/listing)
 - [snowflake_masking_policy](./docs/resources/masking_policy)
 - [snowflake_network_policy](./docs/resources/network_policy)
 - [snowflake_oauth_integration_for_custom_clients](./docs/resources/oauth_integration_for_custom_clients)
