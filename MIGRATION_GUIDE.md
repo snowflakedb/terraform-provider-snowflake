@@ -26,6 +26,25 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.9.x ➞ v2.10.0
 
+### *(improvement)* Features promoted to stable
+
+The following resources/data sources were marked stable:
+- `snowflake_compute_pool_resource`
+- `snowflake_compute_pools_datasource`
+- `snowflake_git_repository_resource`
+- `snowflake_git_repositories_datasource`
+- `snowflake_image_repository_resource`
+- `snowflake_image_repositories_datasource`
+- `snowflake_listing_resource`
+- `snowflake_service_resource`
+- `snowflake_services_datasource`
+- `snowflake_user_programmatic_access_token_resource`
+- `snowflake_user_programmatic_access_tokens_datasource`
+
+Since this version, these features are enabled by default: enabling them in the provider configuration is no longer required. Please remove them from the `preview_features` list. Provider will issue a warning if a stable feature is still used on the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
 ### *(new feature)* Reworked `authentication_policy` resource
 In this version we reworked the `authentication_policy` resource. This includes adding missing features, and fixing bugs. The object has been adjusted to our [design decisions](./v1-preparations/CHANGES_BEFORE_V1.md). Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
 
@@ -96,13 +115,6 @@ No changes in the configuration are necessary.
 
 ### *(new feature)* New instance families in the compute_pool resource
 Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
-
-### *(improvement)* Features promotion
-
-[//]: # (TODO [this PR]: rephrase this section with all the resources)
-We marked `git_repository` resource and `git_repositories` data source as stable. These features are enabled by default: to run these features, enabling them in the provider configuration is no longer required. If you use them, please remove the relevant features from the `preview_features` list. These values will be removed in the next major version.
-
-Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
 
 ## v2.8.x ➞ v2.9.0
 
