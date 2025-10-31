@@ -140,7 +140,7 @@ provider "snowflake" {
 - `passcode_in_password` (Boolean) False by default. Set to true if the MFA passcode is embedded to the configured password. Can also be sourced from the `SNOWFLAKE_PASSCODE_IN_PASSWORD` environment variable.
 - `password` (String, Sensitive) Password for user + password or [token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens#generating-a-programmatic-access-token) for [PAT auth](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens). Cannot be used with `private_key` and `private_key_passphrase`. Can also be sourced from the `SNOWFLAKE_PASSWORD` environment variable.
 - `port` (Number) Specifies a custom port value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_PORT` environment variable.
-- `preview_features_enabled` (Set of String) A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Valid options are: `snowflake_account_authentication_policy_attachment_resource` | `snowflake_account_password_policy_attachment_resource` | `snowflake_alert_resource` | `snowflake_alerts_datasource` | `snowflake_api_integration_resource` | `snowflake_authentication_policy_resource` | `snowflake_authentication_policies_datasource` | `snowflake_compute_pool_resource` | `snowflake_compute_pools_datasource` | `snowflake_cortex_search_service_resource` | `snowflake_cortex_search_services_datasource` | `snowflake_current_account_resource` | `snowflake_current_account_datasource` | `snowflake_current_organization_account_resource` | `snowflake_database_datasource` | `snowflake_database_role_datasource` | `snowflake_dynamic_table_resource` | `snowflake_dynamic_tables_datasource` | `snowflake_external_function_resource` | `snowflake_external_functions_datasource` | `snowflake_external_table_resource` | `snowflake_external_tables_datasource` | `snowflake_external_volume_resource` | `snowflake_failover_group_resource` | `snowflake_failover_groups_datasource` | `snowflake_file_format_resource` | `snowflake_file_formats_datasource` | `snowflake_function_java_resource` | `snowflake_function_javascript_resource` | `snowflake_function_python_resource` | `snowflake_function_scala_resource` | `snowflake_function_sql_resource` | `snowflake_functions_datasource` | `snowflake_git_repository_resource` | `snowflake_git_repositories_datasource` | `snowflake_image_repository_resource` | `snowflake_image_repositories_datasource` | `snowflake_job_service_resource` | `snowflake_listing_resource` | `snowflake_managed_account_resource` | `snowflake_materialized_view_resource` | `snowflake_materialized_views_datasource` | `snowflake_network_policy_attachment_resource` | `snowflake_network_rule_resource` | `snowflake_email_notification_integration_resource` | `snowflake_notification_integration_resource` | `snowflake_object_parameter_resource` | `snowflake_password_policy_resource` | `snowflake_pipe_resource` | `snowflake_pipes_datasource` | `snowflake_current_role_datasource` | `snowflake_service_resource` | `snowflake_services_datasource` | `snowflake_sequence_resource` | `snowflake_sequences_datasource` | `snowflake_share_resource` | `snowflake_shares_datasource` | `snowflake_parameters_datasource` | `snowflake_procedure_java_resource` | `snowflake_procedure_javascript_resource` | `snowflake_procedure_python_resource` | `snowflake_procedure_scala_resource` | `snowflake_procedure_sql_resource` | `snowflake_procedures_datasource` | `snowflake_stage_resource` | `snowflake_stages_datasource` | `snowflake_storage_integration_resource` | `snowflake_storage_integrations_datasource` | `snowflake_system_generate_scim_access_token_datasource` | `snowflake_system_get_aws_sns_iam_policy_datasource` | `snowflake_system_get_privatelink_config_datasource` | `snowflake_system_get_snowflake_platform_info_datasource` | `snowflake_table_column_masking_policy_application_resource` | `snowflake_table_constraint_resource` | `snowflake_table_resource` | `snowflake_tables_datasource` | `snowflake_user_authentication_policy_attachment_resource` | `snowflake_user_public_keys_resource` | `snowflake_user_password_policy_attachment_resource` | `snowflake_user_programmatic_access_token_resource` | `snowflake_user_programmatic_access_tokens_datasource`.
+- `preview_features_enabled` (Set of String) A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Preview features that can be enabled are: `snowflake_account_authentication_policy_attachment_resource` | `snowflake_account_password_policy_attachment_resource` | `snowflake_alert_resource` | `snowflake_alerts_datasource` | `snowflake_api_integration_resource` | `snowflake_authentication_policy_resource` | `snowflake_authentication_policies_datasource` | `snowflake_cortex_search_service_resource` | `snowflake_cortex_search_services_datasource` | `snowflake_current_account_resource` | `snowflake_current_account_datasource` | `snowflake_current_organization_account_resource` | `snowflake_database_datasource` | `snowflake_database_role_datasource` | `snowflake_dynamic_table_resource` | `snowflake_dynamic_tables_datasource` | `snowflake_external_function_resource` | `snowflake_external_functions_datasource` | `snowflake_external_table_resource` | `snowflake_external_tables_datasource` | `snowflake_external_volume_resource` | `snowflake_failover_group_resource` | `snowflake_failover_groups_datasource` | `snowflake_file_format_resource` | `snowflake_file_formats_datasource` | `snowflake_function_java_resource` | `snowflake_function_javascript_resource` | `snowflake_function_python_resource` | `snowflake_function_scala_resource` | `snowflake_function_sql_resource` | `snowflake_functions_datasource` | `snowflake_job_service_resource` | `snowflake_managed_account_resource` | `snowflake_materialized_view_resource` | `snowflake_materialized_views_datasource` | `snowflake_network_policy_attachment_resource` | `snowflake_network_rule_resource` | `snowflake_email_notification_integration_resource` | `snowflake_notification_integration_resource` | `snowflake_object_parameter_resource` | `snowflake_password_policy_resource` | `snowflake_pipe_resource` | `snowflake_pipes_datasource` | `snowflake_current_role_datasource` | `snowflake_sequence_resource` | `snowflake_sequences_datasource` | `snowflake_share_resource` | `snowflake_shares_datasource` | `snowflake_parameters_datasource` | `snowflake_procedure_java_resource` | `snowflake_procedure_javascript_resource` | `snowflake_procedure_python_resource` | `snowflake_procedure_scala_resource` | `snowflake_procedure_sql_resource` | `snowflake_procedures_datasource` | `snowflake_stage_resource` | `snowflake_stages_datasource` | `snowflake_storage_integration_resource` | `snowflake_storage_integrations_datasource` | `snowflake_system_generate_scim_access_token_datasource` | `snowflake_system_get_aws_sns_iam_policy_datasource` | `snowflake_system_get_privatelink_config_datasource` | `snowflake_system_get_snowflake_platform_info_datasource` | `snowflake_table_column_masking_policy_application_resource` | `snowflake_table_constraint_resource` | `snowflake_table_resource` | `snowflake_tables_datasource` | `snowflake_user_authentication_policy_attachment_resource` | `snowflake_user_public_keys_resource` | `snowflake_user_password_policy_attachment_resource`. Promoted features that are stable and are enabled by default are: `snowflake_compute_pool_resource` | `snowflake_compute_pools_datasource` | `snowflake_git_repository_resource` | `snowflake_git_repositories_datasource` | `snowflake_image_repository_resource` | `snowflake_image_repositories_datasource` | `snowflake_listing_resource` | `snowflake_service_resource` | `snowflake_services_datasource` | `snowflake_user_programmatic_access_token_resource` | `snowflake_user_programmatic_access_tokens_datasource`. Promoted features can be safely removed from this field. They will be removed in the next major version.
 - `private_key` (String, Sensitive) Private Key for username+private-key auth. Cannot be used with `password`. Can also be sourced from the `SNOWFLAKE_PRIVATE_KEY` environment variable.
 - `private_key_passphrase` (String, Sensitive) Supports the encryption ciphers aes-128-cbc, aes-128-gcm, aes-192-cbc, aes-192-gcm, aes-256-cbc, aes-256-gcm, and des-ede3-cbc. Can also be sourced from the `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE` environment variable.
 - `profile` (String) Sets the profile to read from ~/.snowflake/config file. Can also be sourced from the `SNOWFLAKE_PROFILE` environment variable.
@@ -626,10 +626,12 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_api_authentication_integration_with_authorization_code_grant](./docs/resources/api_authentication_integration_with_authorization_code_grant)
 - [snowflake_api_authentication_integration_with_client_credentials](./docs/resources/api_authentication_integration_with_client_credentials)
 - [snowflake_api_authentication_integration_with_jwt_bearer](./docs/resources/api_authentication_integration_with_jwt_bearer)
+- [snowflake_compute_pool](./docs/resources/compute_pool)
 - [snowflake_database](./docs/resources/database)
 - [snowflake_database_role](./docs/resources/database_role)
 - [snowflake_execute](./docs/resources/execute)
 - [snowflake_external_oauth_integration](./docs/resources/external_oauth_integration)
+- [snowflake_git_repository](./docs/resources/git_repository)
 - [snowflake_grant_account_role](./docs/resources/grant_account_role)
 - [snowflake_grant_application_role](./docs/resources/grant_application_role)
 - [snowflake_grant_database_role](./docs/resources/grant_database_role)
@@ -637,7 +639,9 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_grant_privileges_to_account_role](./docs/resources/grant_privileges_to_account_role)
 - [snowflake_grant_privileges_to_database_role](./docs/resources/grant_privileges_to_database_role)
 - [snowflake_grant_privileges_to_share](./docs/resources/grant_privileges_to_share)
+- [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_legacy_service_user](./docs/resources/legacy_service_user)
+- [snowflake_listing](./docs/resources/listing)
 - [snowflake_masking_policy](./docs/resources/masking_policy)
 - [snowflake_network_policy](./docs/resources/network_policy)
 - [snowflake_oauth_integration_for_custom_clients](./docs/resources/oauth_integration_for_custom_clients)
@@ -654,6 +658,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_secret_with_basic_authentication](./docs/resources/secret_with_basic_authentication)
 - [snowflake_secret_with_client_credentials](./docs/resources/secret_with_client_credentials)
 - [snowflake_secret_with_generic_string](./docs/resources/secret_with_generic_string)
+- [snowflake_service](./docs/resources/service)
 - [snowflake_service_user](./docs/resources/service_user)
 - [snowflake_shared_database](./docs/resources/shared_database)
 - [snowflake_stream_on_directory_table](./docs/resources/stream_on_directory_table)
@@ -665,6 +670,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_tag_association](./docs/resources/tag_association)
 - [snowflake_task](./docs/resources/task)
 - [snowflake_user](./docs/resources/user)
+- [snowflake_user_programmatic_access_token](./docs/resources/user_programmatic_access_token)
 - [snowflake_view](./docs/resources/view)
 - [snowflake_warehouse](./docs/resources/warehouse)
 
@@ -673,10 +679,13 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 
 - [snowflake_account_roles](./docs/data-sources/account_roles)
 - [snowflake_accounts](./docs/data-sources/accounts)
+- [snowflake_compute_pools](./docs/data-sources/compute_pools)
 - [snowflake_connections](./docs/data-sources/connections)
 - [snowflake_database_roles](./docs/data-sources/database_roles)
 - [snowflake_databases](./docs/data-sources/databases)
+- [snowflake_git_repositories](./docs/data-sources/git_repositories)
 - [snowflake_grants](./docs/data-sources/grants)
+- [snowflake_image_repositories](./docs/data-sources/image_repositories)
 - [snowflake_masking_policies](./docs/data-sources/masking_policies)
 - [snowflake_network_policies](./docs/data-sources/network_policies)
 - [snowflake_resource_monitors](./docs/data-sources/resource_monitors)
@@ -684,10 +693,12 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_schemas](./docs/data-sources/schemas)
 - [snowflake_secrets](./docs/data-sources/secrets)
 - [snowflake_security_integrations](./docs/data-sources/security_integrations)
+- [snowflake_services](./docs/data-sources/services)
 - [snowflake_streamlits](./docs/data-sources/streamlits)
 - [snowflake_streams](./docs/data-sources/streams)
 - [snowflake_tags](./docs/data-sources/tags)
 - [snowflake_tasks](./docs/data-sources/tasks)
+- [snowflake_user_programmatic_access_tokens](./docs/data-sources/user_programmatic_access_tokens)
 - [snowflake_users](./docs/data-sources/users)
 - [snowflake_views](./docs/data-sources/views)
 - [snowflake_warehouses](./docs/data-sources/warehouses)
@@ -700,7 +711,6 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_alert](./docs/resources/alert)
 - [snowflake_api_integration](./docs/resources/api_integration)
 - [snowflake_authentication_policy](./docs/resources/authentication_policy)
-- [snowflake_compute_pool](./docs/resources/compute_pool)
 - [snowflake_cortex_search_service](./docs/resources/cortex_search_service)
 - [snowflake_current_account](./docs/resources/current_account)
 - [snowflake_current_organization_account](./docs/resources/current_organization_account)
@@ -716,10 +726,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_function_python](./docs/resources/function_python)
 - [snowflake_function_scala](./docs/resources/function_scala)
 - [snowflake_function_sql](./docs/resources/function_sql)
-- [snowflake_git_repository](./docs/resources/git_repository)
-- [snowflake_image_repository](./docs/resources/image_repository)
 - [snowflake_job_service](./docs/resources/job_service)
-- [snowflake_listing](./docs/resources/listing)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
 - [snowflake_network_policy_attachment](./docs/resources/network_policy_attachment)
@@ -734,7 +741,6 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_procedure_scala](./docs/resources/procedure_scala)
 - [snowflake_procedure_sql](./docs/resources/procedure_sql)
 - [snowflake_sequence](./docs/resources/sequence)
-- [snowflake_service](./docs/resources/service)
 - [snowflake_share](./docs/resources/share)
 - [snowflake_stage](./docs/resources/stage)
 - [snowflake_storage_integration](./docs/resources/storage_integration)
@@ -743,7 +749,6 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_table_constraint](./docs/resources/table_constraint)
 - [snowflake_user_authentication_policy_attachment](./docs/resources/user_authentication_policy_attachment)
 - [snowflake_user_password_policy_attachment](./docs/resources/user_password_policy_attachment)
-- [snowflake_user_programmatic_access_token](./docs/resources/user_programmatic_access_token)
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
 
 <!-- Section of preview data sources -->
@@ -751,7 +756,6 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_authentication_policies](./docs/data-sources/authentication_policies)
-- [snowflake_compute_pools](./docs/data-sources/compute_pools)
 - [snowflake_cortex_search_services](./docs/data-sources/cortex_search_services)
 - [snowflake_current_account](./docs/data-sources/current_account)
 - [snowflake_current_role](./docs/data-sources/current_role)
@@ -763,14 +767,11 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)
-- [snowflake_git_repositories](./docs/data-sources/git_repositories)
-- [snowflake_image_repositories](./docs/data-sources/image_repositories)
 - [snowflake_materialized_views](./docs/data-sources/materialized_views)
 - [snowflake_parameters](./docs/data-sources/parameters)
 - [snowflake_pipes](./docs/data-sources/pipes)
 - [snowflake_procedures](./docs/data-sources/procedures)
 - [snowflake_sequences](./docs/data-sources/sequences)
-- [snowflake_services](./docs/data-sources/services)
 - [snowflake_shares](./docs/data-sources/shares)
 - [snowflake_stages](./docs/data-sources/stages)
 - [snowflake_storage_integrations](./docs/data-sources/storage_integrations)
@@ -779,4 +780,3 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_system_get_privatelink_config](./docs/data-sources/system_get_privatelink_config)
 - [snowflake_system_get_snowflake_platform_info](./docs/data-sources/system_get_snowflake_platform_info)
 - [snowflake_tables](./docs/data-sources/tables)
-- [snowflake_user_programmatic_access_tokens](./docs/data-sources/user_programmatic_access_tokens)

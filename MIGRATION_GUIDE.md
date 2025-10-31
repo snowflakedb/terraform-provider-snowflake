@@ -26,6 +26,25 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.9.x ➞ v2.10.0
 
+### *(improvement)* Features promoted to stable
+
+The following resources/data sources were marked stable:
+- `snowflake_compute_pool_resource`
+- `snowflake_compute_pools_datasource`
+- `snowflake_git_repository_resource`
+- `snowflake_git_repositories_datasource`
+- `snowflake_image_repository_resource`
+- `snowflake_image_repositories_datasource`
+- `snowflake_listing_resource`
+- `snowflake_service_resource`
+- `snowflake_services_datasource`
+- `snowflake_user_programmatic_access_token_resource`
+- `snowflake_user_programmatic_access_tokens_datasource`
+
+Since this version, these features are enabled by default: enabling them in the provider configuration is no longer required. Please remove them from the `preview_features` list. Provider will issue a warning if a stable feature is still used on the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
 ### *(new feature)* New Workload Identity Federation authentication option
 We added new `WORKLOAD_IDENTITY` option to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
   - `workload_identity_provider` - required,
@@ -36,10 +55,13 @@ The provider does not validate these fields.
 This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
 See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
 
-### *(new feature)* Reworked `authentication_policy` resource
-In this version we reworked the `authentication_policy` resource. This includes adding missing features, and fixing bugs. The object has been adjusted to our [design decisions](./v1-preparations/CHANGES_BEFORE_V1.md). Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
+### *(new feature)* Reworked authentication policies
+In this version we reworked the `authentication_policy` resource and added missing `authentication_policies` data source.
+This includes adding missing features, and fixing bugs.
+The object has been adjusted to our [design decisions](./v1-preparations/CHANGES_BEFORE_V1.md).
+Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
 
-#### Missing values
+#### Missing values in resource
 We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
 - `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
@@ -47,9 +69,12 @@ We added missing values to the following fields:
 Also, we added support for the following features: `pat_policy`, `mfa_policy` and `workload_identity_policy`. Check the resource documentation for more details.
 
 #### Handling deprecated `mfa_authentication_methods` field
-As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods are handled in a different way. Now, the provider does not cause a permadiff caused by the `mfa_authentication_methods` field. If you used the `ignore_changes` attribute, you may now remove it. Configuring this field is still possible, but only with disabled 2025_06.
+As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods are handled in a different way.
+Now, the provider does not cause a permadiff caused by the `mfa_authentication_methods` field.
+If you used the `ignore_changes` attribute, you may now remove it.
+Configuring this field is still possible, but only with disabled 2025_06.
 
-#### Fixed renaming
+#### Fixed renaming in resource
 This object supports renaming. It was also available in the provider, but did not work correctly due to a bug in name parsing. This has been fixed.
 
 #### Changes in output fields
@@ -64,10 +89,15 @@ The state is migrated automatically.
 - Improved importing - now, `authentication_methods`, `mfa_enrollment`, `client_types`, and `security_integrations` are set in import.
 - Improved detecting of external changes.
 
-### *(new feature)* New snowflake_authentication_policies data source
-Added a new preview data source for authentication policies. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies).
+#### Added data source
+Added a new preview data source for authentication policies.
+See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies).
 
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_authentication_policies_datasource` to `preview_features_enabled` field in the provider configuration.
+This feature will be marked as a stable feature in future releases.
+Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_authentication_policies_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* New instance families in the compute_pool resource
+Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
 
 ### *(new experiment)* Improved show query for warehouses
 
@@ -93,9 +123,6 @@ Previously, when the `generation` field was set for a given resource, the provid
 We recommend upgrading to this version because setting generation through the `resource_constraint` field may be not supported by Snowflake in future.
 
 No changes in the configuration are necessary.
-
-### *(new feature)* New instance families in the compute_pool resource
-Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
 
 ## v2.8.x ➞ v2.9.0
 

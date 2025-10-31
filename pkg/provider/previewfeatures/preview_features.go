@@ -104,8 +104,6 @@ var allPreviewFeatures = []feature{
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
-	ComputePoolResource,
-	ComputePoolsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -130,12 +128,7 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
-	GitRepositoryResource,
-	GitRepositoriesDatasource,
-	ImageRepositoryResource,
-	ImageRepositoriesDatasource,
 	JobServiceResource,
-	ListingResource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
@@ -151,8 +144,6 @@ var allPreviewFeatures = []feature{
 	// TODO(SNOW-2108211): Uncomment after adjusting resource and data source
 	// SemanticViewResource,
 	// SemanticViewDatasource,
-	ServiceResource,
-	ServicesDatasource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,
@@ -179,10 +170,25 @@ var allPreviewFeatures = []feature{
 	UserAuthenticationPolicyAttachmentResource,
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+}
+var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
+
+var promotedFeatures = []feature{
+	ComputePoolResource,
+	ComputePoolsDatasource,
+	GitRepositoryResource,
+	GitRepositoriesDatasource,
+	ImageRepositoryResource,
+	ImageRepositoriesDatasource,
+	ListingResource,
+	ServiceResource,
+	ServicesDatasource,
 	UserProgrammaticAccessTokenResource,
 	UserProgrammaticAccessTokensDatasource,
 }
-var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
+var PromotedFeatures = sdk.AsStringList(promotedFeatures)
+
+var ValidPreviewFeatures = append(AllPreviewFeatures, PromotedFeatures...)
 
 func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 	if !slices.ContainsFunc(enabledFeatures, func(s string) bool {
@@ -195,8 +201,27 @@ func EnsurePreviewFeatureEnabled(feat feature, enabledFeatures []string) error {
 
 func StringToFeature(featRaw string) (feature, error) {
 	feat := feature(strings.ToLower(featRaw))
-	if !slices.Contains(allPreviewFeatures, feat) {
+	if !slices.Contains(ValidPreviewFeatures, string(feat)) {
 		return "", fmt.Errorf("invalid feature: %s", featRaw)
 	}
 	return feat, nil
+}
+
+func GetPromotedFeatures(enabledFeatures []string) []string {
+	containedPromotedFeatures := make([]string, 0)
+	if enabledFeatures == nil {
+		return containedPromotedFeatures
+	}
+	for _, enabledFeature := range enabledFeatures {
+		if IsPromotedFeature(enabledFeature) {
+			containedPromotedFeatures = append(containedPromotedFeatures, enabledFeature)
+		}
+	}
+	return containedPromotedFeatures
+}
+
+func IsPromotedFeature(rawFeature string) bool {
+	return slices.ContainsFunc(PromotedFeatures, func(s string) bool {
+		return strings.EqualFold(rawFeature, s)
+	})
 }

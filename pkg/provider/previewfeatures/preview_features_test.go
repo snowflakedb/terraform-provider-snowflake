@@ -1,6 +1,7 @@
 package previewfeatures
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -102,6 +103,65 @@ func Test_StringToFeature(t *testing.T) {
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := StringToFeature(tc.input)
 			require.ErrorContains(t, err, "invalid feature")
+		})
+	}
+}
+
+func Test_GetPromotedFeatures(t *testing.T) {
+	type test struct {
+		enabledList []string
+		expected    []string
+	}
+
+	promotedFeature1 := string(GitRepositoryResource)
+	promotedFeature2 := string(GitRepositoriesDatasource)
+	previewFeature1 := string(TableResource)
+	previewFeature2 := string(TablesDatasource)
+
+	previewOnly := []string{previewFeature1, previewFeature2}
+	promotedOnly := []string{promotedFeature1, promotedFeature2}
+	mixed1 := []string{promotedFeature1, previewFeature2, promotedFeature2}
+	mixed2 := []string{previewFeature1, promotedFeature1, previewFeature2}
+	var empty []string
+
+	valid := []test{
+		{enabledList: nil, expected: empty},
+		{enabledList: empty, expected: empty},
+		{enabledList: previewOnly, expected: empty},
+		{enabledList: promotedOnly, expected: promotedOnly},
+		{enabledList: mixed1, expected: promotedOnly},
+		{enabledList: mixed2, expected: []string{promotedFeature1}},
+	}
+
+	for _, tc := range valid {
+		t.Run(fmt.Sprintf("Enabled list: %v, expected promoted list: %v", tc.enabledList, tc.expected), func(t *testing.T) {
+			promoted := GetPromotedFeatures(tc.enabledList)
+			require.ElementsMatch(t, tc.expected, promoted)
+		})
+	}
+}
+
+func Test_IsPromotedFeature(t *testing.T) {
+	type test struct {
+		input    string
+		expected bool
+	}
+
+	promotedFeature1 := string(GitRepositoryResource)
+	previewFeature1 := string(TableResource)
+	unknownFeature := string(TableResource)
+
+	valid := []test{
+		{input: promotedFeature1, expected: true},
+		{input: previewFeature1, expected: false},
+		{input: unknownFeature, expected: false},
+		{input: "", expected: false},
+	}
+
+	for _, tc := range valid {
+		t.Run(fmt.Sprintf("Feature: %s, expected: %t", tc.input, tc.expected), func(t *testing.T) {
+			got := IsPromotedFeature(tc.input)
+			require.Equal(t, tc.expected, got)
 		})
 	}
 }
