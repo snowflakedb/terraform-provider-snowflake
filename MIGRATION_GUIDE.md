@@ -26,6 +26,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.9.x ➞ v2.10.0
 
+### *(new feature)* New Workload Identity Federation authentication option
+We added new `WORKLOAD_IDENTITY` option to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
+  - `workload_identity_provider` - required,
+  - `token` - optional (not relevant for all the flows),
+  - `workload_identity_entra_resource` - optional (only relevant for the WIF authentication on Azure environment case),
+The provider does not validate these fields.
+
+This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
+
+### *(new feature)* snowflake_semantic_view resource
+Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_semantic_view_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* Reworked `authentication_policy` resource
 In this version we reworked the `authentication_policy` resource. This includes adding missing features, and fixing bugs. The object has been adjusted to our [design decisions](./v1-preparations/CHANGES_BEFORE_V1.md). Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
 
@@ -34,22 +49,7 @@ We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
 - `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
 
-### *(new feature)* New Workload Identity Federation authentication option
-
-We added new `WORKLOAD_IDENTITY` option to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
-  - `workload_identity_provider` - required,
-  - `token` - optional (not relevant for all the flows),
-  - `workload_identity_entra_resource` - optional (only relevant for the WIF authentication on Azure environment case),
-The provider does not validate these fields.
-
-This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
-
-See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
-
-### *(new feature)* snowflake_semantic_view resource
-Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
-
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_semantic_view_resource` to `preview_features_enabled` field in the provider configuration.
+Also, we added support for the following features: `pat_policy`, `mfa_policy` and `workload_identity_policy`. Check the resource documentation for more details.
 
 #### Handling deprecated `mfa_authentication_methods` field
 As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods are handled in a different way. Now, the provider does not cause a permadiff caused by the `mfa_authentication_methods` field. If you used the `ignore_changes` attribute, you may now remove it. Configuring this field is still possible, but only with disabled 2025_06.
@@ -58,7 +58,7 @@ As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATIO
 This object supports renaming. It was also available in the provider, but did not work correctly due to a bug in name parsing. This has been fixed.
 
 #### Changes in output fields
-We adjusted the `show_output` by adding the missing `kind` field.
+We adjusted the `show_output` by adding the missing `kind` field. Also, we adjusted the `describe_output` by adding the missing `mfa_policy`, `pat_policy`, and `workload_identity_policy` fields.
 
 The state is migrated automatically.
 

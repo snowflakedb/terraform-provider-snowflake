@@ -20,7 +20,10 @@ type AuthenticationPolicyModel struct {
 	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MfaAuthenticationMethods tfconfig.Variable `json:"mfa_authentication_methods,omitempty"`
 	MfaEnrollment            tfconfig.Variable `json:"mfa_enrollment,omitempty"`
+	MfaPolicy                tfconfig.Variable `json:"mfa_policy,omitempty"`
+	PatPolicy                tfconfig.Variable `json:"pat_policy,omitempty"`
 	SecurityIntegrations     tfconfig.Variable `json:"security_integrations,omitempty"`
+	WorkloadIdentityPolicy   tfconfig.Variable `json:"workload_identity_policy,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -121,7 +124,13 @@ func (a *AuthenticationPolicyModel) WithMfaEnrollment(mfaEnrollment string) *Aut
 	return a
 }
 
+// mfa_policy attribute type is not yet supported, so WithMfaPolicy can't be generated
+
+// pat_policy attribute type is not yet supported, so WithPatPolicy can't be generated
+
 // security_integrations attribute type is not yet supported, so WithSecurityIntegrations can't be generated
+
+// workload_identity_policy attribute type is not yet supported, so WithWorkloadIdentityPolicy can't be generated
 
 //////////////////////////////////////////
 // below it's possible to set any value //
@@ -172,7 +181,22 @@ func (a *AuthenticationPolicyModel) WithMfaEnrollmentValue(value tfconfig.Variab
 	return a
 }
 
+func (a *AuthenticationPolicyModel) WithMfaPolicyValue(value tfconfig.Variable) *AuthenticationPolicyModel {
+	a.MfaPolicy = value
+	return a
+}
+
+func (a *AuthenticationPolicyModel) WithPatPolicyValue(value tfconfig.Variable) *AuthenticationPolicyModel {
+	a.PatPolicy = value
+	return a
+}
+
 func (a *AuthenticationPolicyModel) WithSecurityIntegrationsValue(value tfconfig.Variable) *AuthenticationPolicyModel {
 	a.SecurityIntegrations = value
+	return a
+}
+
+func (a *AuthenticationPolicyModel) WithWorkloadIdentityPolicyValue(value tfconfig.Variable) *AuthenticationPolicyModel {
+	a.WorkloadIdentityPolicy = value
 	return a
 }

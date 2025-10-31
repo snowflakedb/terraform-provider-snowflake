@@ -97,7 +97,7 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
 			EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationAll),
 			AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-				{Method: MfaPolicyPassAllowedMethodPassKey},
+				{Method: MfaPolicyAllowedMethodPassKey},
 			},
 		}
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
@@ -239,7 +239,7 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 			MfaPolicy: &AuthenticationPolicyMfaPolicy{
 				EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationAll),
 				AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-					{Method: MfaPolicyPassAllowedMethodPassKey},
+					{Method: MfaPolicyAllowedMethodPassKey},
 				},
 			},
 			PatPolicy: &AuthenticationPolicyPatPolicy{
@@ -644,6 +644,39 @@ func Test_ToEnforceMfaOnExternalAuthenticationOption(t *testing.T) {
 	for _, tt := range invalid {
 		t.Run(tt.input, func(t *testing.T) {
 			_, err := ToEnforceMfaOnExternalAuthenticationOption(tt.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ToMfaPolicyAllowedMethodsOption(t *testing.T) {
+	type test struct {
+		input string
+		want  MfaPolicyAllowedMethodsOption
+	}
+	valid := []test{
+		// case insensitive.
+		{input: "all", want: MfaPolicyAllowedMethodAll},
+
+		// supported values.
+		{input: "ALL", want: MfaPolicyAllowedMethodAll},
+		{input: "PASSKEY", want: MfaPolicyAllowedMethodPassKey},
+		{input: "TOTP", want: MfaPolicyAllowedMethodTotp},
+		{input: "DUO", want: MfaPolicyAllowedMethodDuo},
+	}
+	invalid := []test{
+		{input: "foo"},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToMfaPolicyAllowedMethodsOption(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToMfaPolicyAllowedMethodsOption(tt.input)
 			require.Error(t, err)
 		})
 	}
