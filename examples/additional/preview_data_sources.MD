@@ -26,4 +26,3 @@
 - [snowflake_system_get_privatelink_config](./docs/data-sources/system_get_privatelink_config)
 - [snowflake_system_get_snowflake_platform_info](./docs/data-sources/system_get_snowflake_platform_info)
 - [snowflake_tables](./docs/data-sources/tables)
-- [snowflake_user_programmatic_access_tokens](./docs/data-sources/user_programmatic_access_tokens)

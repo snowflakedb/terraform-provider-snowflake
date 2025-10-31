@@ -22,6 +22,7 @@
 - [snowflake_streams](./docs/data-sources/streams)
 - [snowflake_tags](./docs/data-sources/tags)
 - [snowflake_tasks](./docs/data-sources/tasks)
+- [snowflake_user_programmatic_access_tokens](./docs/data-sources/user_programmatic_access_tokens)
 - [snowflake_users](./docs/data-sources/users)
 - [snowflake_views](./docs/data-sources/views)
 - [snowflake_warehouses](./docs/data-sources/warehouses)

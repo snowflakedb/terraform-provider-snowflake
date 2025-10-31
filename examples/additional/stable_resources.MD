@@ -51,5 +51,6 @@
 - [snowflake_tag_association](./docs/resources/tag_association)
 - [snowflake_task](./docs/resources/task)
 - [snowflake_user](./docs/resources/user)
+- [snowflake_user_programmatic_access_token](./docs/resources/user_programmatic_access_token)
 - [snowflake_view](./docs/resources/view)
 - [snowflake_warehouse](./docs/resources/warehouse)

@@ -168,8 +168,6 @@ var allPreviewFeatures = []feature{
 	UserAuthenticationPolicyAttachmentResource,
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
-	UserProgrammaticAccessTokenResource,
-	UserProgrammaticAccessTokensDatasource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 
@@ -183,6 +181,8 @@ var promotedFeatures = []feature{
 	ListingResource,
 	ServiceResource,
 	ServicesDatasource,
+	UserProgrammaticAccessTokenResource,
+	UserProgrammaticAccessTokensDatasource,
 }
 var PromotedFeatures = sdk.AsStringList(promotedFeatures)
 
