@@ -34,6 +34,9 @@ var _ provider.Provider = &pluginFrameworkPocProvider{}
 type pluginFrameworkPocProvider struct {
 	// TODO [SNOW-2234579]: fill version automatically like tracking
 	version string
+
+	// used for acceptance test provider initialization caching
+	cacheKey string
 }
 
 func (p *pluginFrameworkPocProvider) Metadata(_ context.Context, _ provider.MetadataRequest, response *provider.MetadataResponse) {
@@ -91,6 +94,7 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 
 // The logic for caching is based on the caching we have for the current acceptance tests set.
 // TODO [SNOW-2312385]: create a separate cache (different context type) and use it here - wait for the acc test impl
+// TODO [SNOW-2312385]: use pluginFrameworkPocProvider.cacheKey
 func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) {
 	// hacky way to speed up our acceptance tests
 	accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration result")
@@ -192,5 +196,12 @@ func (p *pluginFrameworkPocProvider) Resources(_ context.Context) []func() resou
 func New(version string) provider.Provider {
 	return &pluginFrameworkPocProvider{
 		version: version,
+	}
+}
+
+func NewWithCacheKey(version string, cacheKey string) provider.Provider {
+	return &pluginFrameworkPocProvider{
+		version:  version,
+		cacheKey: cacheKey,
 	}
 }
