@@ -85,14 +85,14 @@ func CreateEmailNotificationIntegration(ctx context.Context, d *schema.ResourceD
 	createRequest := sdk.NewCreateNotificationIntegrationRequest(id, enabled)
 
 	if v, ok := d.GetOk("comment"); ok {
-		createRequest.WithComment(sdk.String(v.(string)))
+		createRequest.WithComment(v.(string))
 	}
 
 	emailParamsRequest := sdk.NewEmailParamsRequest()
 	if v, ok := d.GetOk("allowed_recipients"); ok {
 		emailParamsRequest.WithAllowedRecipients(toAllowedRecipients(expandStringList(v.(*schema.Set).List())))
 	}
-	createRequest.WithEmailParams(emailParamsRequest)
+	createRequest.WithEmailParams(*emailParamsRequest)
 
 	err := client.NotificationIntegrations.Create(ctx, createRequest)
 	if err != nil {
@@ -181,38 +181,38 @@ func UpdateEmailNotificationIntegration(ctx context.Context, d *schema.ResourceD
 		v := d.Get("comment").(string)
 		if v == "" {
 			runUnsetStatement = true
-			unsetRequest.WithComment(sdk.Bool(true))
+			unsetRequest.WithComment(true)
 		} else {
 			runSetStatement = true
-			setRequest.WithComment(sdk.String(d.Get("comment").(string)))
+			setRequest.WithComment(d.Get("comment").(string))
 		}
 	}
 
 	if d.HasChange("enabled") {
 		runSetStatement = true
-		setRequest.WithEnabled(sdk.Bool(d.Get("enabled").(bool)))
+		setRequest.WithEnabled(d.Get("enabled").(bool))
 	}
 
 	if d.HasChange("allowed_recipients") {
 		v := d.Get("allowed_recipients").(*schema.Set).List()
 		if len(v) == 0 {
 			runUnsetStatement = true
-			unsetRequest.WithAllowedRecipients(sdk.Bool(true))
+			unsetRequest.WithAllowedRecipients(true)
 		} else {
 			runSetStatement = true
-			setRequest.WithSetEmailParams(sdk.NewSetEmailParamsRequest(toAllowedRecipients(expandStringList(v))))
+			setRequest.WithSetEmailParams(*sdk.NewSetEmailParamsRequest(toAllowedRecipients(expandStringList(v))))
 		}
 	}
 
 	if runSetStatement {
-		err := client.NotificationIntegrations.Alter(ctx, sdk.NewAlterNotificationIntegrationRequest(id).WithSet(setRequest))
+		err := client.NotificationIntegrations.Alter(ctx, sdk.NewAlterNotificationIntegrationRequest(id).WithSet(*setRequest))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating notification integration: %w", err))
 		}
 	}
 
 	if runUnsetStatement {
-		err := client.NotificationIntegrations.Alter(ctx, sdk.NewAlterNotificationIntegrationRequest(id).WithUnsetEmailParams(unsetRequest))
+		err := client.NotificationIntegrations.Alter(ctx, sdk.NewAlterNotificationIntegrationRequest(id).WithUnsetEmailParams(*unsetRequest))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating notification integration: %w", err))
 		}

@@ -351,6 +351,8 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+					assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 					assert.True(t, config.EnableSingleUseRefreshTokens)
 
 					return nil
@@ -551,6 +553,8 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.OauthAuthorizationUrl, "oauth_authorization_url")
 					t.Setenv(snowflakeenvs.OauthRedirectUri, "oauth_redirect_uri")
 					t.Setenv(snowflakeenvs.OauthScope, "oauth_scope")
+					t.Setenv(snowflakeenvs.WorkloadIdentityProvider, "workload_identity_provider")
+					t.Setenv(snowflakeenvs.WorkloadIdentityEntraResource, "workload_identity_entra_resource")
 					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
@@ -599,6 +603,8 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+					assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
@@ -670,6 +676,8 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.OauthAuthorizationUrl, "oauth_authorization_url")
 					t.Setenv(snowflakeenvs.OauthRedirectUri, "oauth_redirect_uri")
 					t.Setenv(snowflakeenvs.OauthScope, "oauth_scope")
+					t.Setenv(snowflakeenvs.WorkloadIdentityProvider, "workload_identity_provider")
+					t.Setenv(snowflakeenvs.WorkloadIdentityEntraResource, "workload_identity_entra_resource")
 					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
@@ -718,6 +726,8 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
 					assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 					assert.Equal(t, "oauth_scope", config.OauthScope)
+					assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+					assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 					assert.True(t, config.EnableSingleUseRefreshTokens)
 					return nil
 				},
@@ -1174,7 +1184,7 @@ func TestAcc_Provider_invalidConfigurations(t *testing.T) {
 				ExpectError: regexp.MustCompile(fmt.Sprintf(`profile "non-existing" not found in file %s`, tmpServiceUserConfig.Path)),
 			},
 			{
-				Config:      providerConfigWithDatasourcePreviewFeatureEnabled(testprofiles.Default, "snowflake_invalid_feature"),
+				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled("snowflake_invalid_feature"), datasourceModel()),
 				ExpectError: regexp.MustCompile(`expected .* preview_features_enabled.* to be one of((.|\n)*), got snowflake_invalid_feature`),
 			},
 		},
@@ -1231,14 +1241,36 @@ func TestAcc_Provider_PreviewFeaturesDisabled(t *testing.T) {
 	})
 }
 
-func providerConfigWithDatasourcePreviewFeatureEnabled(profile, feature string) string {
-	return fmt.Sprintf(`
-provider "snowflake" {
-	profile = "%[1]s"
-	preview_features_enabled = ["%[2]s_datasource"]
-}
-data %[2]s t {}
-`, profile, feature)
+func TestAcc_Provider_HandlingPromotedFeatures(t *testing.T) {
+	t.Setenv(string(testenvs.ConfigureClientOnce), "")
+	t.Setenv(string(testenvs.EnableAllPreviewFeatures), "")
+
+	gitRepositoriesModel := datasourcemodel.GitRepositories("t")
+
+	providerModel := providermodel.SnowflakeProvider()
+	providerModelWithPreviewFeaturesEnabled := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.GitRepositoriesDatasource))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModelWithPreviewFeaturesEnabled, gitRepositoriesModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(gitRepositoriesModel.DatasourceReference(), "git_repositories.#"),
+				),
+			},
+			{
+				Config: config.FromModels(t, providerModel, gitRepositoriesModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(gitRepositoriesModel.DatasourceReference(), "git_repositories.#"),
+				),
+			},
+		},
+	})
 }
 
 func datasourceModel() config.DatasourceModel {

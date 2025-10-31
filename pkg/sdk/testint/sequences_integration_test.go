@@ -36,7 +36,7 @@ func TestInt_Sequences(t *testing.T) {
 		t.Helper()
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		sr := sdk.NewCreateSequenceRequest(id).WithStart(sdk.Int(1)).WithIncrement(sdk.Int(1))
+		sr := sdk.NewCreateSequenceRequest(id).WithStart(1).WithIncrement(1)
 		err := client.Sequences.Create(ctx, sr)
 		require.NoError(t, err)
 		t.Cleanup(cleanupSequenceHandle(t, id))
@@ -68,11 +68,11 @@ func TestInt_Sequences(t *testing.T) {
 
 		comment := random.Comment()
 		request := sdk.NewCreateSequenceRequest(id).
-			WithStart(sdk.Int(1)).
-			WithIncrement(sdk.Int(1)).
-			WithIfNotExists(sdk.Bool(true)).
-			WithValuesBehavior(sdk.ValuesBehaviorPointer(sdk.ValuesBehaviorOrder)).
-			WithComment(&comment)
+			WithStart(1).
+			WithIncrement(1).
+			WithIfNotExists(true).
+			WithValuesBehavior(sdk.ValuesBehaviorOrder).
+			WithComment(comment)
 		err := client.Sequences.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(cleanupSequenceHandle(t, id))
@@ -130,8 +130,8 @@ func TestInt_Sequences(t *testing.T) {
 		id := e.ID()
 
 		comment := random.Comment()
-		set := sdk.NewSequenceSetRequest().WithComment(&comment).WithValuesBehavior(sdk.ValuesBehaviorPointer(sdk.ValuesBehaviorNoOrder))
-		err := client.Sequences.Alter(ctx, sdk.NewAlterSequenceRequest(id).WithSet(set))
+		set := sdk.NewSequenceSetRequest().WithComment(comment).WithValuesBehavior(sdk.ValuesBehaviorNoOrder)
+		err := client.Sequences.Alter(ctx, sdk.NewAlterSequenceRequest(id).WithSet(*set))
 		require.NoError(t, err)
 
 		assertSequence(t, id, 1, false, comment)
@@ -141,8 +141,7 @@ func TestInt_Sequences(t *testing.T) {
 		e := createSequenceHandle(t)
 		id := e.ID()
 
-		increment := 2
-		err := client.Sequences.Alter(ctx, sdk.NewAlterSequenceRequest(id).WithSetIncrement(&increment))
+		err := client.Sequences.Alter(ctx, sdk.NewAlterSequenceRequest(id).WithSetIncrement(2))
 		require.NoError(t, err)
 		assertSequence(t, id, 2, false, "")
 	})
@@ -153,7 +152,7 @@ func TestInt_Sequences(t *testing.T) {
 		err := client.Sequences.Create(ctx, sdk.NewCreateSequenceRequest(id))
 		require.NoError(t, err)
 		nid := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err = client.Sequences.Alter(ctx, sdk.NewAlterSequenceRequest(id).WithRenameTo(&nid))
+		err = client.Sequences.Alter(ctx, sdk.NewAlterSequenceRequest(id).WithRenameTo(nid))
 		if err != nil {
 			t.Cleanup(cleanupSequenceHandle(t, id))
 		} else {
@@ -186,7 +185,7 @@ func TestInt_SequencesShowByID(t *testing.T) {
 	createSequenceHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
 		t.Helper()
 
-		sr := sdk.NewCreateSequenceRequest(id).WithStart(sdk.Int(1)).WithIncrement(sdk.Int(1))
+		sr := sdk.NewCreateSequenceRequest(id).WithStart(1).WithIncrement(1)
 		err := client.Sequences.Create(ctx, sr)
 		require.NoError(t, err)
 		t.Cleanup(cleanupSequenceHandle(t, id))

@@ -32,7 +32,7 @@ func TestInt_DataMetricFunctionReferences(t *testing.T) {
 		}})))
 		require.NoError(t, err)
 
-		dmfs, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequest(view.ID(), sdk.DataMetricFunctionRefEntityDomainView))
+		dmfs, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequestCustom(view.ID(), sdk.DataMetricFunctionRefEntityDomainView))
 		require.NoError(t, err)
 		require.Len(t, dmfs, 1)
 		dmf := dmfs[0]

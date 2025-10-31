@@ -43,7 +43,7 @@ func (c *EventTableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier)
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropEventTableRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropEventTableRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

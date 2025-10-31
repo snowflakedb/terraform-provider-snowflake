@@ -4,8 +4,6 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
-//go:generate go run ./poc/main.go
-
 var alterServiceSet = g.NewQueryStruct("CortexSearchServiceSet").
 	// Fields
 	OptionalTextAssignment("TARGET_LAG", g.ParameterOptions().SingleQuotes()).

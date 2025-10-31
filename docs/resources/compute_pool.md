@@ -1,11 +1,9 @@
 ---
 page_title: "snowflake_compute_pool Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage compute pools. For more information, check compute pools documentation https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool. A compute pool is a collection of one or more virtual machine (VM) nodes on which Snowflake runs your Snowpark Container Services services (including job services). See Working with compute pools https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool developer guide for more details.
 ---
-
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Identifiers with special or lower-case characters are not supported. This limitation in the provider follows the limitation in Snowflake (see [docs](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool)).
 
@@ -50,7 +48,7 @@ resource "snowflake_compute_pool" "complete" {
 
 ### Required
 
-- `instance_family` (String) Identifies the type of machine you want to provision for the nodes in the compute pool. Valid values are (case-insensitive): `CPU_X64_XS` | `CPU_X64_S` | `CPU_X64_M` | `CPU_X64_L` | `HIGHMEM_X64_S` | `HIGHMEM_X64_M` | `HIGHMEM_X64_L` | `HIGHMEM_X64_SL` | `GPU_NV_S` | `GPU_NV_M` | `GPU_NV_L` | `GPU_NV_XS` | `GPU_NV_SM` | `GPU_NV_2M` | `GPU_NV_3M` | `GPU_NV_SL`.
+- `instance_family` (String) Identifies the type of machine you want to provision for the nodes in the compute pool. Valid values are (case-insensitive): `CPU_X64_XS` | `CPU_X64_S` | `CPU_X64_M` | `CPU_X64_SL` | `CPU_X64_L` | `HIGHMEM_X64_S` | `HIGHMEM_X64_M` | `HIGHMEM_X64_L` | `HIGHMEM_X64_SL` | `GPU_NV_S` | `GPU_NV_M` | `GPU_NV_L` | `GPU_NV_XS` | `GPU_NV_SM` | `GPU_NV_2M` | `GPU_NV_3M` | `GPU_NV_SL` | `GPU_GCP_NV_L4_1_24G` | `GPU_GCP_NV_L4_4_24G` | `GPU_GCP_NV_A100_8_40G`. Not all instance families are supported in all regions. Run `SHOW COMPUTE POOL INSTANCE FAMILIES` to see the list of supported instance families in your region.
 - `max_nodes` (Number) Specifies the maximum number of nodes for the compute pool.
 - `min_nodes` (Number) Specifies the minimum number of nodes for the compute pool.
 - `name` (String) Specifies the identifier for the compute pool; must be unique for the account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.

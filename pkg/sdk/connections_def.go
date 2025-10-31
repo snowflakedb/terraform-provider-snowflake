@@ -1,7 +1,5 @@
 package sdk
 
-//go:generate go run ./poc/main.go
-
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )

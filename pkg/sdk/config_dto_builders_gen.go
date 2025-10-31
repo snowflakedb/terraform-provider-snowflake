@@ -235,6 +235,16 @@ func (s *ConfigDTO) WithOauthScope(OauthScope string) *ConfigDTO {
 	return s
 }
 
+func (s *ConfigDTO) WithWorkloadIdentityProvider(WorkloadIdentityProvider string) *ConfigDTO {
+	s.WorkloadIdentityProvider = &WorkloadIdentityProvider
+	return s
+}
+
+func (s *ConfigDTO) WithWorkloadIdentityEntraResource(WorkloadIdentityEntraResource string) *ConfigDTO {
+	s.WorkloadIdentityEntraResource = &WorkloadIdentityEntraResource
+	return s
+}
+
 func (s *ConfigDTO) WithEnableSingleUseRefreshTokens(EnableSingleUseRefreshTokens bool) *ConfigDTO {
 	s.EnableSingleUseRefreshTokens = &EnableSingleUseRefreshTokens
 	return s

@@ -29,6 +29,10 @@ var ShowAuthenticationPolicySchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"kind": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"owner": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -47,11 +51,12 @@ var _ = ShowAuthenticationPolicySchema
 
 func AuthenticationPolicyToSchema(authenticationPolicy *sdk.AuthenticationPolicy) map[string]any {
 	authenticationPolicySchema := make(map[string]any)
-	authenticationPolicySchema["created_on"] = authenticationPolicy.CreatedOn
+	authenticationPolicySchema["created_on"] = authenticationPolicy.CreatedOn.String()
 	authenticationPolicySchema["name"] = authenticationPolicy.Name
 	authenticationPolicySchema["comment"] = authenticationPolicy.Comment
 	authenticationPolicySchema["database_name"] = authenticationPolicy.DatabaseName
 	authenticationPolicySchema["schema_name"] = authenticationPolicy.SchemaName
+	authenticationPolicySchema["kind"] = authenticationPolicy.Kind
 	authenticationPolicySchema["owner"] = authenticationPolicy.Owner
 	authenticationPolicySchema["owner_role_type"] = authenticationPolicy.OwnerRoleType
 	authenticationPolicySchema["options"] = authenticationPolicy.Options

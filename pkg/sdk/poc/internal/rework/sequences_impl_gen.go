@@ -59,7 +59,7 @@ func (v *sequences) Describe(ctx context.Context, id SchemaObjectIdentifier) (*S
 	if err != nil {
 		return nil, err
 	}
-	return result.convert()
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *sequences) Drop(ctx context.Context, request *DropSequenceRequest) error {

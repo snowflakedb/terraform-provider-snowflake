@@ -276,7 +276,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 							WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).
 								WithStorageAwsExternalId(awsExternalId).
 								WithStorageAwsObjectAcl("bucket-owner-full-control").
-								WithUsePrivateLinkEndpoint(true)).
+								WithUsePrivatelinkEndpoint(true)).
 							WithStorageBlockedLocations([]sdk.StorageLocation{
 								{Path: "s3://external-blocked/"},
 							}))
@@ -642,7 +642,7 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateWithoutValue_Updat
 			},
 			{
 				PreConfig: func() {
-					testClient().StorageIntegration.Alter(t, sdk.NewAlterStorageIntegrationRequest(id).WithSet(*sdk.NewStorageIntegrationSetRequest().WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).WithUsePrivateLinkEndpoint(true))))
+					testClient().StorageIntegration.Alter(t, sdk.NewAlterStorageIntegrationRequest(id).WithSet(*sdk.NewStorageIntegrationSetRequest().WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).WithUsePrivatelinkEndpoint(true))))
 				},
 				Config:                   config.FromModels(t, s3Model),
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
