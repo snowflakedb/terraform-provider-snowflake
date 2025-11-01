@@ -20,11 +20,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
+func init() {
+	pluginPocProviderInitializationCache = make(map[string]pluginPocCacheEntry)
+}
+
 // our test acc needed variables
-var (
-	configurePluginFrameworkProviderCtx     *Context
-	configureClientErrorPluginFrameworkDiag diag.Diagnostics
-)
+var pluginPocProviderInitializationCache map[string]pluginPocCacheEntry
+
+type pluginPocCacheEntry struct {
+	clientErrorDiag diag.Diagnostics
+	providerCtx     *Context
+}
 
 // ------ provider interface implementation ------
 
@@ -34,6 +40,9 @@ var _ provider.Provider = &pluginFrameworkPocProvider{}
 type pluginFrameworkPocProvider struct {
 	// TODO [SNOW-2234579]: fill version automatically like tracking
 	version string
+
+	// used for acceptance test provider initialization caching
+	cacheKey string
 }
 
 func (p *pluginFrameworkPocProvider) Metadata(_ context.Context, _ provider.MetadataRequest, response *provider.MetadataResponse) {
@@ -90,52 +99,44 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 }
 
 // The logic for caching is based on the caching we have for the current acceptance tests set.
+// TODO [SNOW-2312385]: create a separate cache (different context type) and use it here - wait for the acc test impl
 func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) {
-	accTestEnabled, err := oswrapper.GetenvBool("TF_ACC")
-	if err != nil {
-		accTestEnabled = false
-		accTestLog.Printf("[ERROR] TF_ACC environmental variable has incorrect format: %v, using %v as a default value", err, accTestEnabled)
+	// TODO [SNOW-2312385]: handle empty on the framework level
+	key := p.cacheKey
+	if key == "" {
+		key = "TerraformPluginFrameworkPoC"
 	}
-	configureClientOnceEnabled, err := oswrapper.GetenvBool("SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE")
-	if err != nil {
-		configureClientOnceEnabled = false
-		accTestLog.Printf("[ERROR] SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE environmental variable has incorrect format: %v, using %v as a default value", err, configureClientOnceEnabled)
-	}
-	// hacky way to speed up our acceptance tests
-	if accTestEnabled && configureClientOnceEnabled {
-		accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration result")
-		if configurePluginFrameworkProviderCtx != nil {
+
+	// TODO [SNOW-2312385]: lock access to cache map
+	// check if we cached initialized provider context with the key already
+	if cached, ok := pluginPocProviderInitializationCache[key]; ok {
+		accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration result for key %s", key)
+		if cached.providerCtx != nil {
 			accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration context")
-			response.DataSourceData = configurePluginFrameworkProviderCtx
-			response.ResourceData = configurePluginFrameworkProviderCtx
+			response.DataSourceData = cached.providerCtx
+			response.ResourceData = cached.providerCtx
 			return
-		}
-		if configureClientErrorPluginFrameworkDiag.HasError() {
+		} else if cached.clientErrorDiag.HasError() {
 			accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration error")
-			response.Diagnostics.Append(configureClientErrorPluginFrameworkDiag...)
+			response.Diagnostics.Append(cached.clientErrorDiag...)
 			return
 		}
 	}
-	accTestLog.Printf("[DEBUG] No cached terraform plugin framework PoC provider configuration found or caching is not enabled; configuring a new provider")
+	accTestLog.Printf("[DEBUG] No cached terraform plugin framework PoC provider configuration found for key %s or caching is not enabled; configuring a new provider", key)
 
 	providerCtx, clientErrorDiag := p.configureWithoutCache(ctx, request, response)
 	if clientErrorDiag.HasError() {
 		response.Diagnostics.Append(clientErrorDiag...)
 	}
 
-	if providerCtx != nil && accTestEnabled && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
+	if providerCtx != nil && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
 		providerCtx.EnabledFeatures = previewfeatures.AllPreviewFeatures
 	}
 
-	// needed for tests verifying different provider setups
-	if accTestEnabled && configureClientOnceEnabled {
-		configurePluginFrameworkProviderCtx = providerCtx
-		configureClientErrorPluginFrameworkDiag = clientErrorDiag
-	} else {
-		configurePluginFrameworkProviderCtx = nil
-		configureClientErrorPluginFrameworkDiag = make(diag.Diagnostics, 0)
+	pluginPocProviderInitializationCache[key] = pluginPocCacheEntry{
+		providerCtx:     providerCtx,
+		clientErrorDiag: clientErrorDiag,
 	}
-	// no last configured provider
 }
 
 func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) (*Context, diag.Diagnostics) {
@@ -207,5 +208,12 @@ func (p *pluginFrameworkPocProvider) Resources(_ context.Context) []func() resou
 func New(version string) provider.Provider {
 	return &pluginFrameworkPocProvider{
 		version: version,
+	}
+}
+
+func NewWithCacheKey(version string, cacheKey string) provider.Provider {
+	return &pluginFrameworkPocProvider{
+		version:  version,
+		cacheKey: cacheKey,
 	}
 }

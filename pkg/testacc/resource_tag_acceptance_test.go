@@ -14,7 +14,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -333,8 +332,6 @@ func TestAcc_Tag_Rename(t *testing.T) {
 }
 
 func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	tagModel := model.TagBase("test", id).

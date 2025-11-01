@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 )
 
@@ -13,23 +12,24 @@ var testAccProtoV6ProviderFactoriesWithPluginPoc map[string]func() (tfprotov6.Pr
 
 func init() {
 	// based on https://developer.hashicorp.com/terraform/plugin/framework/migrating/mux#protocol-version-6
-	testAccProtoV6ProviderFactoriesWithPluginPoc = map[string]func() (tfprotov6.ProviderServer, error){
+	testAccProtoV6ProviderFactoriesWithPluginPoc = providerFactoryPluginPocUsingCache("TerraformPluginFrameworkPoC")
+}
+
+func providerFactoryPluginPocUsingCache(key string) map[string]func() (tfprotov6.ProviderServer, error) {
+	return map[string]func() (tfprotov6.ProviderServer, error){
 		"snowflake": func() (tfprotov6.ProviderServer, error) {
 			ctx := context.Background()
 
-			upgradedSdkServer, err := tf5to6server.UpgradeServer(
-				ctx,
-				// using the test acc one, as it has the modified configure method (cache)
-				TestAccProvider.GRPCProvider,
-			)
+			// creating a separate cache for all plugin framework tests
+			p, err := providerFactoryUsingCache(key)["snowflake"]()
 			if err != nil {
 				return nil, err
 			}
 
 			providers := []func() tfprotov6.ProviderServer{
-				providerserver.NewProtocol6(New("dev")),
+				providerserver.NewProtocol6(NewWithCacheKey("dev", key)),
 				func() tfprotov6.ProviderServer {
-					return upgradedSdkServer
+					return p
 				},
 			}
 
