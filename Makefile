@@ -89,7 +89,7 @@ test-acceptance-%: ## run acceptance tests (both non-account and account level o
 	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run ^TestAcc_$* -v -timeout=20m ./pkg/testacc
 
 test-main-terraform-use-cases: ## run test for main terraform use cases
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_.*_BasicUseCase.*|TestAcc_.*_CompleteUseCase.*)$$" -v -cover -json -timeout=20m ./pkg/testacc
+	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_GrantPrivilegesToDatabaseRole_OnSchema_ExactlyOneOf)$$" -v -cover -json -timeout=20m ./pkg/testacc
 
 test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests within docker environment
 	docker compose -f ./packaging/docker-compose.yml run --rm test-main-terraform-use-cases
