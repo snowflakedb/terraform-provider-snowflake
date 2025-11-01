@@ -1001,6 +1001,7 @@ Read-Only:
 - `has_mfa` (Boolean)
 - `has_password` (Boolean)
 - `has_rsa_public_key` (Boolean)
+- `has_workload_identity` (Boolean)
 - `last_name` (String)
 - `last_success_login` (String)
 - `locked_until_time` (String)
