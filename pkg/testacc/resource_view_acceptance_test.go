@@ -31,7 +31,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TODO(SNOW-1423486): Fix using warehouse in all tests and remove unsetting testenvs.ConfigureClientOnce
+// TODO(SNOW-1423486): Fix using warehouse in all tests
 func TestAcc_View_basic(t *testing.T) {
 	rowAccessPolicy, rowAccessPolicyCleanup := testClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(rowAccessPolicyCleanup)

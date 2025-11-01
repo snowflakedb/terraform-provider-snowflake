@@ -1172,7 +1172,6 @@ func TestAcc_Provider_PreviewFeaturesDisabled(t *testing.T) {
 }
 
 func TestAcc_Provider_HandlingPromotedFeatures(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	t.Setenv(string(testenvs.EnableAllPreviewFeatures), "")
 
 	gitRepositoriesModel := datasourcemodel.GitRepositories("t")
@@ -1182,7 +1181,7 @@ func TestAcc_Provider_HandlingPromotedFeatures(t *testing.T) {
 		WithPreviewFeaturesEnabled(string(previewfeatures.GitRepositoriesDatasource))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
