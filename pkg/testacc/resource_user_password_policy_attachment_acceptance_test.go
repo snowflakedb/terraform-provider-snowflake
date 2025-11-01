@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// TODO [SNOW-1423486]: Fix using warehouse; remove unsetting testenvs.ConfigureClientOnce
+// TODO [SNOW-1423486]: Fix using warehouse
 func TestAcc_UserPasswordPolicyAttachment(t *testing.T) {
 	user1, user1Cleanup := testClient().User.CreateUser(t)
 	t.Cleanup(user1Cleanup)
