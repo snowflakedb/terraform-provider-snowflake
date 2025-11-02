@@ -41,7 +41,8 @@ func TestAcc_ProcedurePython_InlineBasic(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -178,7 +179,8 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 		WithComment("some other comment")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -288,7 +290,8 @@ func TestAcc_ProcedurePython_ImportsDiffSuppression(t *testing.T) {
 		WithIsSecure("false")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -384,7 +387,8 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 		WithIsSecure("false")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

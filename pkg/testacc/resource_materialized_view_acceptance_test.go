@@ -27,7 +27,8 @@ func TestAcc_MaterializedView(t *testing.T) {
 	otherComment := random.Comment()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -107,7 +108,8 @@ func TestAcc_MaterializedView_Tags(t *testing.T) {
 	queryEscaped := fmt.Sprintf("SELECT ID FROM \\\"%s\\\"", tableId.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -151,7 +153,8 @@ func TestAcc_MaterializedView_Rename(t *testing.T) {
 	comment := random.Comment()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

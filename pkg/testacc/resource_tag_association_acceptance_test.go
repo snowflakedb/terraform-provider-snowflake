@@ -520,7 +520,8 @@ func TestAcc_TagAssociationIssue1926(t *testing.T) {
 		WithDependsOn(tagModel.ResourceReference(), tableModel3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		// TODO [SNOW-2324320]: warehouse needed?
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
