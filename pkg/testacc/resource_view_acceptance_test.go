@@ -440,7 +440,7 @@ func TestAcc_View_temporary(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		// TODO [SNOW-2324320]: warehouse needed?
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		ProtoV6ProviderFactories: providerFactoryUsingCache("taskViewTemporary"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
