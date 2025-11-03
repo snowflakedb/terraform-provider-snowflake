@@ -3,41 +3,69 @@
 package testacc
 
 import (
-	"maps"
 	"regexp"
 	"testing"
 
-	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_RowAccessPolicies(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
+func TestAcc_RowAccessPolicies_BasicUseCase_DifferentFiltering(t *testing.T) {
+	prefix := random.AlphaN(4)
+	rowAccessPolicyId1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	rowAccessPolicyId2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	rowAccessPolicyId3 := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
-	policyModel := model.RowAccessPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
-		{
-			Name: "a",
-			Type: testdatatypes.DataTypeVarchar,
-		},
-		{
-			Name: "b",
-			Type: testdatatypes.DataTypeVarchar,
-		},
-	}, body).WithComment("foo")
 
-	dsName := "data.snowflake_row_access_policies.test"
+	columnSignature := func(colName string) []sdk.TableColumnSignature {
+		return []sdk.TableColumnSignature{
+			{
+				Name: colName,
+				Type: testdatatypes.DataTypeVarchar,
+			},
+		}
+	}
+	rowAccessPolicyModel1 := model.RowAccessPolicy("test", rowAccessPolicyId1.DatabaseName(), rowAccessPolicyId1.SchemaName(), rowAccessPolicyId1.Name(), columnSignature("a"), body)
+	rowAccessPolicyModel2 := model.RowAccessPolicy("test1", rowAccessPolicyId2.DatabaseName(), rowAccessPolicyId2.SchemaName(), rowAccessPolicyId2.Name(), columnSignature("b"), body)
+	rowAccessPolicyModel3 := model.RowAccessPolicy("test2", rowAccessPolicyId3.DatabaseName(), rowAccessPolicyId3.SchemaName(), rowAccessPolicyId3.Name(), columnSignature("c"), body)
+
+	datasourceModelLikeExact := datasourcemodel.RowAccessPolicies("test").
+		WithLike(rowAccessPolicyId1.Name()).
+		WithDependsOn(rowAccessPolicyModel1.ResourceReference(), rowAccessPolicyModel2.ResourceReference(), rowAccessPolicyModel3.ResourceReference())
+
+	datasourceModelLikePrefix := datasourcemodel.RowAccessPolicies("test").
+		WithLike(prefix+"%").
+		WithDependsOn(rowAccessPolicyModel1.ResourceReference(), rowAccessPolicyModel2.ResourceReference(), rowAccessPolicyModel3.ResourceReference())
+
+	datasourceModelInDatabase := datasourcemodel.RowAccessPolicies("test").
+		WithInDatabase(rowAccessPolicyId1.DatabaseId()).
+		WithDependsOn(rowAccessPolicyModel1.ResourceReference(), rowAccessPolicyModel2.ResourceReference(), rowAccessPolicyModel3.ResourceReference())
+
+	datasourceModelInSchema := datasourcemodel.RowAccessPolicies("test").
+		WithInSchema(rowAccessPolicyId1.SchemaId()).
+		WithDependsOn(rowAccessPolicyModel1.ResourceReference(), rowAccessPolicyModel2.ResourceReference(), rowAccessPolicyModel3.ResourceReference())
+
+	datasourceModelLikeInDatabase := datasourcemodel.RowAccessPolicies("test").
+		WithLike(prefix+"%").
+		WithInDatabase(rowAccessPolicyId1.DatabaseId()).
+		WithDependsOn(rowAccessPolicyModel1.ResourceReference(), rowAccessPolicyModel2.ResourceReference(), rowAccessPolicyModel3.ResourceReference())
+
+	datasourceModelLikeInSchema := datasourcemodel.RowAccessPolicies("test").
+		WithLike(prefix+"%").
+		WithInSchema(rowAccessPolicyId1.SchemaId()).
+		WithDependsOn(rowAccessPolicyModel1.ResourceReference(), rowAccessPolicyModel2.ResourceReference(), rowAccessPolicyModel3.ResourceReference())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -45,88 +73,91 @@ func TestAcc_RowAccessPolicies(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.RowAccessPolicy),
 		Steps: []resource.TestStep{
+			// like (exact)
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicies/optionals_set"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.#", "1")),
-
-					resourceshowoutputassert.RowAccessPoliciesDatasourceShowOutput(t, "snowflake_row_access_policies.test").
-						HasCreatedOnNotEmpty().
-						HasDatabaseName(id.DatabaseName()).
-						HasKind(string(sdk.PolicyKindRowAccessPolicy)).
-						HasName(id.Name()).
-						HasOptions("").
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE").
-						HasSchemaName(id.SchemaName()).
-						HasComment("foo"),
-
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.body", "case when current_role() in ('ANALYST') then true else false end")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.return_type", "BOOLEAN")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.#", "2")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.0.name", "a")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.1.name", "b")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
+				Config: config.FromModels(t, rowAccessPolicyModel1, rowAccessPolicyModel2, rowAccessPolicyModel3, datasourceModelLikeExact),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikeExact.DatasourceReference(), "row_access_policies.#", "1"),
+					resource.TestCheckResourceAttr(datasourceModelLikeExact.DatasourceReference(), "row_access_policies.0.show_output.0.name", rowAccessPolicyId1.Name()),
 				),
 			},
+			// like (prefix)
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicies/optionals_unset"),
-				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, policyModel),
-
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.#", "1")),
-
-					resourceshowoutputassert.RowAccessPoliciesDatasourceShowOutput(t, "snowflake_row_access_policies.test").
-						HasCreatedOnNotEmpty().
-						HasDatabaseName(id.DatabaseName()).
-						HasKind(string(sdk.PolicyKindRowAccessPolicy)).
-						HasName(id.Name()).
-						HasOptions("").
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE").
-						HasSchemaName(id.SchemaName()).
-						HasComment("foo"),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "row_access_policies.0.describe_output.#", "0")),
+				Config: config.FromModels(t, rowAccessPolicyModel1, rowAccessPolicyModel2, rowAccessPolicyModel3, datasourceModelLikePrefix),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikePrefix.DatasourceReference(), "row_access_policies.#", "2"),
+				),
+			},
+			// in database
+			{
+				Config: config.FromModels(t, rowAccessPolicyModel1, rowAccessPolicyModel2, rowAccessPolicyModel3, datasourceModelInDatabase),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelInDatabase.DatasourceReference(), "row_access_policies.#", "3"),
+				),
+			},
+			// in schema
+			{
+				Config: config.FromModels(t, rowAccessPolicyModel1, rowAccessPolicyModel2, rowAccessPolicyModel3, datasourceModelInSchema),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelInSchema.DatasourceReference(), "row_access_policies.#", "3"),
+				),
+			},
+			// like + in database
+			{
+				Config: config.FromModels(t, rowAccessPolicyModel1, rowAccessPolicyModel2, rowAccessPolicyModel3, datasourceModelLikeInDatabase),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikeInDatabase.DatasourceReference(), "row_access_policies.#", "2"),
+				),
+			},
+			// like + in schema
+			{
+				Config: config.FromModels(t, rowAccessPolicyModel1, rowAccessPolicyModel2, rowAccessPolicyModel3, datasourceModelLikeInSchema),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikeInSchema.DatasourceReference(), "row_access_policies.#", "2"),
 				),
 			},
 		},
 	})
 }
 
-func TestAcc_RowAccessPolicies_Filtering(t *testing.T) {
-	prefix := random.AlphaN(4)
-	idOne := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
-	idTwo := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
-	idThree := testClient().Ids.RandomAccountObjectIdentifier()
-	databaseId := testClient().Ids.DatabaseId()
-	schemaId := testClient().Ids.SchemaId()
-	commonVariables := config.Variables{
-		"name_1":   config.StringVariable(idOne.Name()),
-		"name_2":   config.StringVariable(idTwo.Name()),
-		"name_3":   config.StringVariable(idThree.Name()),
-		"schema":   config.StringVariable(schemaId.Name()),
-		"database": config.StringVariable(databaseId.Name()),
-		"arguments": config.SetVariable(
-			config.MapVariable(map[string]config.Variable{
-				"name": config.StringVariable("a"),
-				"type": config.StringVariable(string(sdk.DataTypeVARCHAR)),
-			}),
-		),
-		"body": config.StringVariable("case when current_role() in ('ANALYST') then true else false end"),
-	}
+func TestAcc_RowAccessPolicies_CompleteUseCase(t *testing.T) {
+	objectNamePrefix := random.AlphaN(10)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(objectNamePrefix + "1")
+	_ = testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(objectNamePrefix + "2")
+	_ = testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
 
-	likeConfig := config.Variables{
-		"like": config.StringVariable(idOne.Name()),
-	}
-	maps.Copy(likeConfig, commonVariables)
+	body := "case when current_role() in ('ANALYST') then true else false end"
 
-	likeConfig2 := config.Variables{
-		"like": config.StringVariable(prefix + "%"),
+	rowAccessPolicyModel := model.RowAccessPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
+		{
+			Name: "a",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+	}, body).WithComment(comment)
+
+	datasourceModelWithoutDescribe := datasourcemodel.RowAccessPolicies("test").
+		WithLike(id.Name()).
+		WithWithDescribe(false).
+		WithDependsOn(rowAccessPolicyModel.ResourceReference())
+
+	datasourceModelWithDescribe := datasourcemodel.RowAccessPolicies("test").
+		WithLike(id.Name()).
+		WithWithDescribe(true).
+		WithDependsOn(rowAccessPolicyModel.ResourceReference())
+
+	commonShowOutputAsserts := func(t *testing.T, datasourceReference string) *resourceshowoutputassert.RowAccessPolicyShowOutputAssert {
+		return resourceshowoutputassert.RowAccessPoliciesDatasourceShowOutput(t, datasourceModelWithoutDescribe.DatasourceReference()).
+			HasCreatedOnNotEmpty().
+			HasDatabaseName(id.DatabaseName()).
+			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
+			HasName(id.Name()).
+			HasOptions("").
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasSchemaName(id.SchemaName()).
+			HasComment(comment)
 	}
-	maps.Copy(likeConfig2, commonVariables)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -136,17 +167,27 @@ func TestAcc_RowAccessPolicies_Filtering(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.RowAccessPolicy),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicies/like"),
-				ConfigVariables: likeConfig,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_row_access_policies.test", "row_access_policies.#", "1"),
+				Config: config.FromModels(t, rowAccessPolicyModel, datasourceModelWithoutDescribe),
+				Check: assertThat(t,
+					commonShowOutputAsserts(t, datasourceModelWithoutDescribe.DatasourceReference()),
+
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutDescribe.DatasourceReference(), "row_access_policies.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutDescribe.DatasourceReference(), "row_access_policies.0.describe_output.#", "0")),
 				),
 			},
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicies/like"),
-				ConfigVariables: likeConfig2,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_row_access_policies.test", "row_access_policies.#", "2"),
+				Config: config.FromModels(t, rowAccessPolicyModel, datasourceModelWithDescribe),
+				Check: assertThat(t,
+					commonShowOutputAsserts(t, datasourceModelWithDescribe.DatasourceReference()),
+
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.0.describe_output.0.body", body)),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.0.describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.0.describe_output.0.return_type", "BOOLEAN")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.0.describe_output.0.signature.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.0.describe_output.0.signature.0.name", "a")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.0.describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 				),
 			},
 		},

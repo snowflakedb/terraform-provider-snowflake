@@ -22,96 +22,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_MaskingPolicies(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{
-		{
-			Name: "a",
-			Type: testdatatypes.DataTypeVarchar,
-		},
-		{
-			Name: "b",
-			Type: testdatatypes.DataTypeVarchar,
-		},
-	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns()).WithComment("foo")
-
-	dsName := "data.snowflake_masking_policies.test"
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.MaskingPolicy),
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicies/optionals_set"),
-				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.#", "1")),
-
-					resourceshowoutputassert.MaskingPoliciesDatasourceShowOutput(t, "snowflake_masking_policies.test").
-						HasCreatedOnNotEmpty().
-						HasDatabaseName(id.DatabaseName()).
-						HasKind(string(sdk.PolicyKindMaskingPolicy)).
-						HasName(id.Name()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE").
-						HasSchemaName(id.SchemaName()).
-						HasExemptOtherPolicies(false).
-						HasComment("foo"),
-
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.body", body)),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.return_type", testdatatypes.DefaultVarcharAsString)),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.#", "2")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.0.name", "a")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.1.name", "b")),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
-				),
-			},
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicies/optionals_unset"),
-				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
-
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.#", "1")),
-
-					resourceshowoutputassert.MaskingPoliciesDatasourceShowOutput(t, "snowflake_masking_policies.test").
-						HasCreatedOnNotEmpty().
-						HasDatabaseName(id.DatabaseName()).
-						HasKind(string(sdk.PolicyKindMaskingPolicy)).
-						HasName(id.Name()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE").
-						HasSchemaName(id.SchemaName()).
-						HasExemptOtherPolicies(false).
-						HasComment("foo"),
-					assert.Check(resource.TestCheckResourceAttr(dsName, "masking_policies.0.describe_output.#", "0")),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_MaskingPolicies_Filtering(t *testing.T) {
+func TestAcc_MaskingPolicies_BasicUseCase_DifferentFiltering(t *testing.T) {
 	prefix := random.AlphaN(4)
-	idOne := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	idTwo := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	idThree := testClient().Ids.RandomSchemaObjectIdentifier()
+	maskingPolicyId1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	maskingPolicyId2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	maskingPolicyId3 := testClient().Ids.RandomSchemaObjectIdentifier()
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 
-	maskingPolicyModel1 := model.MaskingPolicyDynamicArguments("test_1", idOne, body, sdk.DataTypeVARCHAR)
-	maskingPolicyModel2 := model.MaskingPolicyDynamicArguments("test_2", idTwo, body, sdk.DataTypeVARCHAR)
-	maskingPolicyModel3 := model.MaskingPolicyDynamicArguments("test_3", idThree, body, sdk.DataTypeVARCHAR)
-	maskingPoliciesModelLikeFirstOne := datasourcemodel.MaskingPolicies("test").
-		WithLike(idOne.Name()).
-		WithDependsOn(maskingPolicyModel1.ResourceReference(), maskingPolicyModel2.ResourceReference(), maskingPolicyModel3.ResourceReference())
-	maskingPoliciesModelLikePrefix := datasourcemodel.MaskingPolicies("test").
-		WithLike(prefix+"%").
-		WithDependsOn(maskingPolicyModel1.ResourceReference(), maskingPolicyModel2.ResourceReference(), maskingPolicyModel3.ResourceReference())
+	maskingPolicyModel1 := model.MaskingPolicyDynamicArguments("test_1", maskingPolicyId1, body, sdk.DataTypeVARCHAR)
+	maskingPolicyModel2 := model.MaskingPolicyDynamicArguments("test_2", maskingPolicyId2, body, sdk.DataTypeVARCHAR)
+	maskingPolicyModel3 := model.MaskingPolicyDynamicArguments("test_3", maskingPolicyId3, body, sdk.DataTypeVARCHAR)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -123,6 +43,80 @@ func TestAcc_MaskingPolicies_Filtering(t *testing.T) {
 		),
 	}
 
+	datasourceModelLikePrefix := datasourcemodel.MaskingPolicies("test").
+		WithLike(prefix+"%").
+		WithDependsOn(maskingPolicyModel1.ResourceReference(), maskingPolicyModel2.ResourceReference(), maskingPolicyModel3.ResourceReference())
+
+	datasourceModelInSchema := datasourcemodel.MaskingPolicies("test").
+		WithInSchema(maskingPolicyId1.SchemaId()).
+		WithDependsOn(maskingPolicyModel1.ResourceReference(), maskingPolicyModel2.ResourceReference(), maskingPolicyModel3.ResourceReference())
+
+	datasourceModelLimitFrom := datasourcemodel.MaskingPolicies("test").
+		WithInSchema(maskingPolicyId1.SchemaId()).
+		WithRowsAndFrom(1, maskingPolicyId1.Name()).
+		WithDependsOn(maskingPolicyModel1.ResourceReference(), maskingPolicyModel2.ResourceReference(), maskingPolicyModel3.ResourceReference())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.MaskingPolicy),
+		Steps: []resource.TestStep{
+			// like (prefix)
+			{
+				Config:          accconfig.FromModels(t, variableModel, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, datasourceModelLikePrefix),
+				ConfigVariables: commonVariables,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikePrefix.DatasourceReference(), "masking_policies.#", "2"),
+				),
+			},
+			// in (schema)
+			{
+				Config:          accconfig.FromModels(t, variableModel, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, datasourceModelInSchema),
+				ConfigVariables: commonVariables,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelInSchema.DatasourceReference(), "masking_policies.#", "3"),
+				),
+			},
+			// limit rows from (scoped to schema)
+			{
+				Config:          accconfig.FromModels(t, variableModel, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, datasourceModelLimitFrom),
+				ConfigVariables: commonVariables,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLimitFrom.DatasourceReference(), "masking_policies.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_MaskingPolicies_CompleteUseCase(t *testing.T) {
+	maskingPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
+	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
+	comment := random.Comment()
+
+	maskingPolicyModel := model.MaskingPolicy("test", maskingPolicyId.DatabaseName(), maskingPolicyId.SchemaName(), maskingPolicyId.Name(), []sdk.TableColumnSignature{
+		{
+			Name: "a",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+		{
+			Name: "b",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns()).WithComment(comment)
+
+	withoutDescribe := datasourcemodel.MaskingPolicies("test").
+		WithWithDescribe(false).
+		WithLike(maskingPolicyId.Name()).
+		WithDependsOn(maskingPolicyModel.ResourceReference())
+
+	withDescribe := datasourcemodel.MaskingPolicies("test").
+		WithWithDescribe(true).
+		WithLike(maskingPolicyId.Name()).
+		WithDependsOn(maskingPolicyModel.ResourceReference())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -131,17 +125,45 @@ func TestAcc_MaskingPolicies_Filtering(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.MaskingPolicy),
 		Steps: []resource.TestStep{
 			{
-				Config:          accconfig.FromModels(t, variableModel, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, maskingPoliciesModelLikeFirstOne),
-				ConfigVariables: commonVariables,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.#", "1"),
+				Config: accconfig.FromModels(t, maskingPolicyModel, withoutDescribe),
+				Check: assertThat(t,
+					resourceshowoutputassert.MaskingPoliciesDatasourceShowOutput(t, withoutDescribe.DatasourceReference()).
+						HasCreatedOnNotEmpty().
+						HasDatabaseName(maskingPolicyId.DatabaseName()).
+						HasKind(string(sdk.PolicyKindMaskingPolicy)).
+						HasName(maskingPolicyId.Name()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleTypeNotEmpty().
+						HasSchemaName(maskingPolicyId.SchemaName()).
+						HasExemptOtherPolicies(false).
+						HasComment(comment),
+
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.#", "0")),
 				),
 			},
 			{
-				Config:          accconfig.FromModels(t, variableModel, maskingPolicyModel1, maskingPolicyModel2, maskingPolicyModel3, maskingPoliciesModelLikePrefix),
-				ConfigVariables: commonVariables,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.#", "2"),
+				Config: accconfig.FromModels(t, maskingPolicyModel, withDescribe),
+				Check: assertThat(t,
+					resourceshowoutputassert.MaskingPoliciesDatasourceShowOutput(t, withDescribe.DatasourceReference()).
+						HasCreatedOnNotEmpty().
+						HasDatabaseName(maskingPolicyId.DatabaseName()).
+						HasKind(string(sdk.PolicyKindMaskingPolicy)).
+						HasName(maskingPolicyId.Name()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleTypeNotEmpty().
+						HasSchemaName(maskingPolicyId.SchemaName()).
+						HasExemptOtherPolicies(false).
+						HasComment(comment),
+
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.0.body", body)),
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.0.name", maskingPolicyId.Name())),
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.0.return_type", testdatatypes.DefaultVarcharAsString)),
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.0.signature.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.0.signature.0.name", "a")),
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.0.signature.1.name", "b")),
+					assert.Check(resource.TestCheckResourceAttr("data.snowflake_masking_policies.test", "masking_policies.0.describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
 				),
 			},
 		},
