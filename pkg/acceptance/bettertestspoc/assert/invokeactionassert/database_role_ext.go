@@ -8,12 +8,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func ViewDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.TestCheckFuncProvider {
+func DatabaseRoleDoesNotExist(t *testing.T, id sdk.DatabaseObjectIdentifier) assert.TestCheckFuncProvider {
 	t.Helper()
 	return newNonExistenceCheck(
-		sdk.ObjectTypeView,
+		sdk.ObjectTypeDatabaseRole,
 		id,
-		func(testClient *helpers.TestClient) showByIDFunc[*sdk.View, sdk.SchemaObjectIdentifier] {
-			return testClient.View.Show
+		func(testClient *helpers.TestClient) showByIDFunc[*sdk.DatabaseRole, sdk.DatabaseObjectIdentifier] {
+			return testClient.DatabaseRole.Show
 		})
 }
