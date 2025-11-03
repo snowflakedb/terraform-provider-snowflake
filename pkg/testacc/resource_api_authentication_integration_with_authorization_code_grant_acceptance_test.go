@@ -140,7 +140,6 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"oauth_access_token_validity",
-					"oauth_access_token_validity",
 					"oauth_authorization_endpoint",
 					"oauth_client_auth_method",
 					"oauth_client_secret",
@@ -165,7 +164,6 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"oauth_access_token_validity",
 					"oauth_access_token_validity",
 					"oauth_authorization_endpoint",
 					"oauth_client_auth_method",
