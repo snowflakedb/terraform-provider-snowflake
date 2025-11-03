@@ -12,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -23,9 +22,6 @@ var (
 	TestAccProvider                 *schema.Provider
 	TestAccProtoV6ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 
-	v5Server tfprotov5.ProviderServer
-	v6Server tfprotov6.ProviderServer
-
 	acceptanceTestsProviderCache *providerInitializationCache[cacheEntry]
 )
 
@@ -34,55 +30,32 @@ type cacheEntry struct {
 	providerCtx     *internalprovider.Context
 }
 
-// TODO [SNOW-2312385]: rework this when improving the caching logic
 func setUpProvider() error {
 	acceptanceTestsProviderCache = newProviderInitializationCache[cacheEntry]()
 
-	TestAccProvider = provider.Provider()
-	TestAccProvider.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
-	TestAccProvider.DataSourcesMap["snowflake_semantic_views"] = datasources.SemanticViews()
-	TestAccProvider.ConfigureContextFunc = configureAcceptanceTestProviderWithCacheFunc("AcceptanceTestDefault")
-
-	var err error
-	v5Server = TestAccProvider.GRPCProvider()
-	v6Server, err = tf5to6server.UpgradeServer(
-		context.Background(),
-		func() tfprotov5.ProviderServer {
-			return v5Server
-		},
-	)
-	if err != nil {
-		return fmt.Errorf("cannot upgrade server from proto v5 to proto v6, failing, err: %w", err)
-	}
-
-	TestAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-		"snowflake": func() (tfprotov6.ProviderServer, error) {
-			return v6Server, nil
-		},
-	}
-	_ = testAccProtoV6ProviderFactoriesNew
+	TestAccProtoV6ProviderFactories, TestAccProvider = providerFactoryUsingCacheReturningProvider("AcceptanceTestDefault")
 
 	return nil
-}
-
-// TODO [SNOW-2298291]: investigate this (it was moved from the old testing.go file)
-// if we do not reuse the created objects there is no `Previously configured provider being re-configured.` warning
-// currently left for possible usage after other improvements
-var testAccProtoV6ProviderFactoriesNew = map[string]func() (tfprotov6.ProviderServer, error){
-	"snowflake": func() (tfprotov6.ProviderServer, error) {
-		return tf5to6server.UpgradeServer(
-			context.Background(),
-			provider.Provider().GRPCProvider,
-		)
-	},
 }
 
 // TODO [SNOW-2312385]: add dedicated factories (authentication, views tests, functions tests, procedure tests, secondary tests), address all SNOW-2324320
 var taskDedicatedProviderFactory = providerFactoryUsingCache("task")
 
+func acceptanceTestsProvider() *schema.Provider {
+	p := provider.Provider()
+	p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
+	p.DataSourcesMap["snowflake_semantic_views"] = datasources.SemanticViews()
+	return p
+}
+
 // TODO [SNOW-2312385]: we could keep the cache of provider per cache key
 func providerFactoryUsingCache(key string) map[string]func() (tfprotov6.ProviderServer, error) {
-	p := provider.Provider()
+	factory, _ := providerFactoryUsingCacheReturningProvider(key)
+	return factory
+}
+
+func providerFactoryUsingCacheReturningProvider(key string) (map[string]func() (tfprotov6.ProviderServer, error), *schema.Provider) {
+	p := acceptanceTestsProvider()
 	p.ConfigureContextFunc = configureAcceptanceTestProviderWithCacheFunc(key)
 
 	return map[string]func() (tfprotov6.ProviderServer, error){
@@ -92,7 +65,7 @@ func providerFactoryUsingCache(key string) map[string]func() (tfprotov6.Provider
 				p.GRPCProvider,
 			)
 		},
-	}
+	}, p
 }
 
 func providerFactoryWithoutCache() map[string]func() (tfprotov6.ProviderServer, error) {
@@ -102,7 +75,7 @@ func providerFactoryWithoutCache() map[string]func() (tfprotov6.ProviderServer, 
 
 // TODO [SNOW-2312385]: use everywhere where providerFactoryWithoutCache was used?
 func providerFactoryWithoutCacheReturningProvider() (map[string]func() (tfprotov6.ProviderServer, error), *schema.Provider) {
-	p := provider.Provider()
+	p := acceptanceTestsProvider()
 	p.ConfigureContextFunc = configureAcceptanceTestProvider
 
 	return map[string]func() (tfprotov6.ProviderServer, error){
