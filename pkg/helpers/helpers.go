@@ -273,24 +273,32 @@ func ParseRootLocation(location string) (sdk.SchemaObjectIdentifier, string, err
 // in cases where the identifier parts are upper-cased and returned without quotes by snowflake, e.g. "OBJECT" == "\"OBJECT\"" (true)
 // which is correct (the same ids).
 func ContainsIdentifierIgnoringQuotes(ids []string, id string) bool {
-	if len(ids) == 0 || len(id) == 0 {
+	return containsValue(ids, id, DecodeSnowflakeParameterID, func(a, b sdk.ObjectIdentifier) bool { return a.FullyQualifiedName() == b.FullyQualifiedName() })
+}
+
+// ContainsEnum checks if the needle is contained within the haystack using the enumNormalizer to normalize the values.
+func ContainsEnum[T ~string](haystack []string, needle string, enumNormalizer func(string) (T, error)) bool {
+	return containsValue(haystack, needle, enumNormalizer, func(a, b T) bool { return a == b })
+}
+
+func containsValue[T comparable](haystack []string, needle string, normalize func(string) (T, error), cmp func(T, T) bool) bool {
+	if len(haystack) == 0 || len(needle) == 0 {
 		return false
 	}
 
-	idToCompare, err := DecodeSnowflakeParameterID(id)
+	needleNormalized, err := normalize(needle)
 	if err != nil {
 		return false
 	}
 
-	for _, stringId := range ids {
-		objectIdentifier, err := DecodeSnowflakeParameterID(stringId)
+	for _, haystackItem := range haystack {
+		haystackItemNormalized, err := normalize(haystackItem)
 		if err != nil {
 			return false
 		}
-		if idToCompare.FullyQualifiedName() == objectIdentifier.FullyQualifiedName() {
+		if cmp(haystackItemNormalized, needleNormalized) {
 			return true
 		}
 	}
-
 	return false
 }
