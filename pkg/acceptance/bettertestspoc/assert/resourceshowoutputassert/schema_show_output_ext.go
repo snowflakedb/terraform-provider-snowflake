@@ -14,6 +14,11 @@ func (s *SchemaShowOutputAssert) HasOwnerNotEmpty() *SchemaShowOutputAssert {
 	return s
 }
 
+func (s *SchemaShowOutputAssert) HasRetentionTimeNotEmpty() *SchemaShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValuePresent("retention_time"))
+	return s
+}
+
 func (s *SchemaShowOutputAssert) HasOwnerRoleTypeNotEmpty() *SchemaShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValuePresent("owner_role_type"))
 	return s

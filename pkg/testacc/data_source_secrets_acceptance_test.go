@@ -7,166 +7,55 @@ import (
 	"testing"
 	"time"
 
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Secrets_WithClientCredentials(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
+func TestAcc_Secrets_BasicUseCase_DifferentFiltering(t *testing.T) {
+	prefix := random.AlphaN(4)
+	secretId1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	secretId2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	secretId3 := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
-		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_oauth_client_id", "test_oauth_client_secret").
-			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "username"}, {Scope: "test_scope"}}),
-	)
-	t.Cleanup(apiIntegrationCleanup)
+	secretModel1 := model.SecretWithGenericString("test", secretId1.DatabaseName(), secretId1.SchemaName(), secretId1.Name(), "test_secret_string1")
+	secretModel2 := model.SecretWithGenericString("test1", secretId2.DatabaseName(), secretId2.SchemaName(), secretId2.Name(), "test_secret_string2")
+	secretModel3 := model.SecretWithGenericString("test2", secretId3.DatabaseName(), secretId3.SchemaName(), secretId3.Name(), "test_secret_string3")
 
-	secretModel := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), []string{"username", "test_scope"})
-	secretsModel := datasourcemodel.Secrets("test").
-		WithInDatabase(id.DatabaseId()).
-		WithDependsOn(secretModel.ResourceReference())
+	datasourceModelLikeExact := datasourcemodel.Secrets("test").
+		WithLike(secretId1.Name()).
+		WithInDatabase(secretId1.DatabaseId()).
+		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.SecretWithClientCredentials),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, secretModel, secretsModel),
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.#", "1")),
-					resourceshowoutputassert.SecretsDatasourceShowOutput(t, "snowflake_secrets.test").
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasComment("").
-						HasSecretType(string(sdk.SecretTypeOAuth2)),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.show_output.0.oauth_scopes.#", "2")),
-					assert.Check(resource.TestCheckTypeSetElemAttr(secretsModel.DatasourceReference(), "secrets.0.show_output.0.oauth_scopes.*", "username")),
-					assert.Check(resource.TestCheckTypeSetElemAttr(secretsModel.DatasourceReference(), "secrets.0.show_output.0.oauth_scopes.*", "test_scope")),
+	datasourceModelLikePrefix := datasourcemodel.Secrets("test").
+		WithLike(prefix+"%").
+		WithInDatabase(secretId1.DatabaseId()).
+		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.secret_type", string(sdk.SecretTypeOAuth2))),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.username", "")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.comment", "")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.#", "2")),
-					assert.Check(resource.TestCheckTypeSetElemAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.*", "username")),
-					assert.Check(resource.TestCheckTypeSetElemAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.*", "test_scope")),
-				),
-			},
-		},
-	})
-}
+	datasourceModelInDatabase := datasourcemodel.Secrets("test").
+		WithInDatabase(secretId1.DatabaseId()).
+		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
-func TestAcc_Secrets_WithAuthorizationCodeGrant(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	datasourceModelInSchema := datasourcemodel.Secrets("test").
+		WithInSchema(secretId1.SchemaId()).
+		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
-	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
-		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_oauth_client_id", "test_oauth_client_secret").
-			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "username"}, {Scope: "test_scope"}}),
-	)
-	t.Cleanup(apiIntegrationCleanup)
+	datasourceModelLikeInDatabase := datasourcemodel.Secrets("test").
+		WithLike(prefix+"%").
+		WithInDatabase(secretId1.DatabaseId()).
+		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
-	secretModel := model.SecretWithAuthorizationCodeGrant("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), "test_token", time.Now().Add(24*time.Hour).Format(time.DateTime)).WithComment("test_comment")
-	secretsModel := datasourcemodel.Secrets("test").
-		WithInDatabase(id.DatabaseId()).
-		WithDependsOn(secretModel.ResourceReference())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.SecretWithAuthorizationCodeGrant),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, secretModel, secretsModel),
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.#", "1")),
-					resourceshowoutputassert.SecretsDatasourceShowOutput(t, "snowflake_secrets.test").
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasComment("test_comment").
-						HasSecretType(string(sdk.SecretTypeOAuth2)),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.show_output.0.oauth_scopes.#", "0")),
-
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.secret_type", string(sdk.SecretTypeOAuth2))),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.username", "")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.comment", "test_comment")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.#", "0")),
-					assert.Check(resource.TestCheckResourceAttrSet(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.oauth_refresh_token_expiry_time")),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Secrets_WithBasicAuthentication(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	secretModel := model.SecretWithBasicAuthentication("test", id.DatabaseName(), id.SchemaName(), id.Name(), "test_passwd", "test_username")
-	secretsModel := datasourcemodel.Secrets("test").
-		WithInDatabase(id.DatabaseId()).
-		WithDependsOn(secretModel.ResourceReference())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.SecretWithBasicAuthentication),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, secretModel, secretsModel),
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.#", "1")),
-					resourceshowoutputassert.SecretsDatasourceShowOutput(t, "snowflake_secrets.test").
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasComment("").
-						HasSecretType(string(sdk.SecretTypePassword)),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.show_output.0.oauth_scopes.#", "0")),
-
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.secret_type", string(sdk.SecretTypePassword))),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.username", "test_username")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.comment", "")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.#", "0")),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Secrets_WithGenericString(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	secretModel := model.SecretWithGenericString("test", id.DatabaseName(), id.SchemaName(), id.Name(), "test_secret_string")
-	secretsModel := datasourcemodel.Secrets("test").
-		WithInDatabase(id.DatabaseId()).
-		WithDependsOn(secretModel.ResourceReference())
+	datasourceModelLikeInSchema := datasourcemodel.Secrets("test").
+		WithLike(prefix+"%").
+		WithInSchema(secretId1.SchemaId()).
+		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -175,124 +64,201 @@ func TestAcc_Secrets_WithGenericString(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.SecretWithGenericString),
 		Steps: []resource.TestStep{
+			// like (exact)
 			{
-				Config: accconfig.FromModels(t, secretModel, secretsModel),
-				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.#", "1")),
-					resourceshowoutputassert.SecretsDatasourceShowOutput(t, "snowflake_secrets.test").
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasComment("").
-						HasSecretType(string(sdk.SecretTypeGenericString)),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.show_output.0.oauth_scopes.#", "0")),
-
-					assert.Check(resource.TestCheckResourceAttrSet(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.secret_type", string(sdk.SecretTypeGenericString))),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.username", "")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.comment", "")),
-					assert.Check(resource.TestCheckResourceAttr(secretsModel.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.#", "0")),
+				Config: config.FromModels(t, secretModel1, secretModel2, secretModel3, datasourceModelLikeExact),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikeExact.DatasourceReference(), "secrets.#", "1"),
+					resource.TestCheckResourceAttr(datasourceModelLikeExact.DatasourceReference(), "secrets.0.show_output.0.name", secretId1.Name()),
+				),
+			},
+			// like (prefix)
+			{
+				Config: config.FromModels(t, secretModel1, secretModel2, secretModel3, datasourceModelLikePrefix),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikePrefix.DatasourceReference(), "secrets.#", "2"),
+				),
+			},
+			// in database
+			{
+				Config: config.FromModels(t, secretModel1, secretModel2, secretModel3, datasourceModelInDatabase),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelInDatabase.DatasourceReference(), "secrets.#", "3"),
+				),
+			},
+			// in schema
+			{
+				Config: config.FromModels(t, secretModel1, secretModel2, secretModel3, datasourceModelInSchema),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelInSchema.DatasourceReference(), "secrets.#", "3"),
+				),
+			},
+			// like + in database
+			{
+				Config: config.FromModels(t, secretModel1, secretModel2, secretModel3, datasourceModelLikeInDatabase),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikeInDatabase.DatasourceReference(), "secrets.#", "2"),
+				),
+			},
+			// like + in schema
+			{
+				Config: config.FromModels(t, secretModel1, secretModel2, secretModel3, datasourceModelLikeInSchema),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikeInSchema.DatasourceReference(), "secrets.#", "2"),
 				),
 			},
 		},
 	})
 }
 
-func TestAcc_Secrets_Filtering(t *testing.T) {
-	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
+func TestAcc_Secrets_CompleteUseCase(t *testing.T) {
+	prefix := random.AlphaN(6)
+	comment := random.Comment()
+
+	apiIntegrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
-		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_oauth_client_id", "test_oauth_client_secret").
-			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "first_scope"}, {Scope: "second_scope"}}),
+		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(apiIntegrationId, true, "test_oauth_client_id", "test_oauth_client_secret").
+			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}}),
 	)
 	t.Cleanup(apiIntegrationCleanup)
 
-	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
-	t.Cleanup(schemaCleanup)
+	genericId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "_gen")
+	basicId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "_bas")
+	clientCredsId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "_cli")
+	authCodeId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "_aut")
 
-	prefix := random.AlphaN(4)
-	idOne := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "1")
-	idTwo := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "2")
-	idThree := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "3")
-	idFour := testClient().Ids.RandomSchemaObjectIdentifier()
-	idFive := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	genericModel := model.SecretWithGenericString("gen", genericId.DatabaseName(), genericId.SchemaName(), genericId.Name(), "generic_value").WithComment(comment)
+	basicModel := model.SecretWithBasicAuthentication("bas", basicId.DatabaseName(), basicId.SchemaName(), basicId.Name(), "pwd", "user1")
+	clientCredsModel := model.SecretWithClientCredentials("cli", clientCredsId.DatabaseName(), clientCredsId.SchemaName(), clientCredsId.Name(), apiIntegrationId.Name(), []string{"scope1", "scope2"})
+	authCodeModel := model.SecretWithAuthorizationCodeGrant("aut", authCodeId.DatabaseName(), authCodeId.SchemaName(), authCodeId.Name(), apiIntegrationId.Name(), "refresh_token_value", time.Now().Add(24*time.Hour).Format(time.DateTime)).WithComment(comment)
 
-	pass := random.Password()
+	genericSecretNoDescribe := datasourcemodel.Secrets("test").
+		WithLike(genericId.Name()).
+		WithInDatabase(genericId.DatabaseId()).
+		WithWithDescribe(false).
+		WithDependsOn(genericModel.ResourceReference())
 
-	secretModelBasicAuth := model.SecretWithBasicAuthentication("s", idOne.DatabaseName(), idOne.SchemaName(), idOne.Name(), pass, "test_username")
-	secretModelGenericString := model.SecretWithGenericString("s2", idTwo.DatabaseName(), idTwo.SchemaName(), idTwo.Name(), pass)
-	secretModelClientCredentials := model.SecretWithClientCredentials("s3", idThree.DatabaseName(), idThree.SchemaName(), idThree.Name(), integrationId.Name(), []string{"first_scope", "second_scope"})
-	secretModelAuthorizationCodeGrant := model.SecretWithAuthorizationCodeGrant("s4", idFour.DatabaseName(), idFour.SchemaName(), idFour.Name(), integrationId.Name(), pass, time.Now().Add(24*time.Hour).Format(time.DateTime))
-	secretModelInDifferentSchema := model.SecretWithBasicAuthentication("s5", idFive.DatabaseName(), idFive.SchemaName(), idFive.Name(), pass, "test_username")
-	allSecretModels := []accconfig.ResourceModel{secretModelBasicAuth, secretModelGenericString, secretModelClientCredentials, secretModelAuthorizationCodeGrant, secretModelInDifferentSchema}
-	allReferences := collections.Map(allSecretModels, func(resourceModel accconfig.ResourceModel) string { return resourceModel.ResourceReference() })
+	genericSecretWithDescribe := datasourcemodel.Secrets("test").
+		WithLike(genericId.Name()).
+		WithInDatabase(genericId.DatabaseId()).
+		WithWithDescribe(true).
+		WithDependsOn(genericModel.ResourceReference())
 
-	secretsModelWithLike := datasourcemodel.Secrets("test").
-		WithLike(idOne.Name()).
-		WithInDatabase(idOne.DatabaseId()).
-		WithDependsOn(allReferences...)
-	secretsModelWithLikePrefix := datasourcemodel.Secrets("test").
-		WithLike(prefix + "%").
-		WithInDatabase(idOne.DatabaseId()).
-		WithDependsOn(allReferences...)
-	secretsModelInSchema := datasourcemodel.Secrets("test").
-		WithInSchema(idFive.SchemaId()).
-		WithDependsOn(allReferences...)
-	secretsModelInDatabase := datasourcemodel.Secrets("test").
-		WithInDatabase(idFive.DatabaseId()).
-		WithDependsOn(allReferences...)
-	secretsModelInAccount := datasourcemodel.Secrets("test").
-		WithInAccount().
-		WithLike(prefix + "%").
-		WithDependsOn(allReferences...)
+	basicSecretWithDescribe := datasourcemodel.Secrets("test").
+		WithLike(basicId.Name()).
+		WithInDatabase(basicId.DatabaseId()).
+		WithWithDescribe(true).
+		WithDependsOn(basicModel.ResourceReference())
+
+	clientCredsSecretWithDescribe := datasourcemodel.Secrets("test").
+		WithLike(clientCredsId.Name()).
+		WithInDatabase(clientCredsId.DatabaseId()).
+		WithWithDescribe(true).
+		WithDependsOn(clientCredsModel.ResourceReference())
+
+	authCodeSecretWithDescribe := datasourcemodel.Secrets("test").
+		WithLike(authCodeId.Name()).
+		WithInDatabase(authCodeId.DatabaseId()).
+		WithWithDescribe(true).
+		WithDependsOn(authCodeModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		CheckDestroy: ComposeCheckDestroy(t,
-			resources.SecretWithClientCredentials,
-			resources.SecretWithAuthorizationCodeGrant,
-			resources.SecretWithBasicAuthentication,
-			resources.SecretWithGenericString,
-		),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
+		CheckDestroy: ComposeCheckDestroy(t,
+			resources.SecretWithGenericString,
+			resources.SecretWithBasicAuthentication,
+			resources.SecretWithClientCredentials,
+			resources.SecretWithAuthorizationCodeGrant,
+		),
 		Steps: []resource.TestStep{
-			// like with one type
+			// Generic string without describe
 			{
-				Config: accconfig.FromModels(t, secretModelBasicAuth, secretModelGenericString, secretModelClientCredentials, secretModelAuthorizationCodeGrant, secretModelInDifferentSchema, secretsModelWithLike),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(secretsModelWithLike.DatasourceReference(), "secrets.#", "1"),
+				Config: config.FromModels(t, genericModel, genericSecretNoDescribe),
+				Check: assertThat(t,
+					resourceshowoutputassert.SecretsDatasourceShowOutput(t, genericSecretNoDescribe.DatasourceReference()).
+						HasName(genericId.Name()).
+						HasDatabaseName(genericId.DatabaseName()).
+						HasSchemaName(genericId.SchemaName()).
+						HasComment(comment).
+						HasSecretType(string(sdk.SecretTypeGenericString)),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretNoDescribe.DatasourceReference(), "secrets.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretNoDescribe.DatasourceReference(), "secrets.0.describe_output.#", "0")),
 				),
 			},
-			// like with prefix
+			// Generic string with describe
 			{
-				Config: accconfig.FromModels(t, secretModelBasicAuth, secretModelGenericString, secretModelClientCredentials, secretModelAuthorizationCodeGrant, secretModelInDifferentSchema, secretsModelWithLikePrefix),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(secretsModelWithLikePrefix.DatasourceReference(), "secrets.#", "3"),
+				Config: config.FromModels(t, genericModel, genericSecretWithDescribe),
+				Check: assertThat(t,
+					resourceshowoutputassert.SecretsDatasourceShowOutput(t, genericSecretWithDescribe.DatasourceReference()).
+						HasName(genericId.Name()).
+						HasDatabaseName(genericId.DatabaseName()).
+						HasSchemaName(genericId.SchemaName()).
+						HasComment(comment).
+						HasSecretType(string(sdk.SecretTypeGenericString)),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.name", genericId.Name())),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.database_name", genericId.DatabaseName())),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.schema_name", genericId.SchemaName())),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.secret_type", string(sdk.SecretTypeGenericString))),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.username", "")),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.comment", comment)),
+					assert.Check(resource.TestCheckResourceAttr(genericSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.#", "0")),
 				),
 			},
-			// In schema
+			// Basic authentication with describe
 			{
-				Config: accconfig.FromModels(t, secretModelBasicAuth, secretModelGenericString, secretModelClientCredentials, secretModelAuthorizationCodeGrant, secretModelInDifferentSchema, secretsModelInSchema),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(secretsModelInSchema.DatasourceReference(), "secrets.#", "1"),
+				Config: config.FromModels(t, basicModel, basicSecretWithDescribe),
+				Check: assertThat(t,
+					resourceshowoutputassert.SecretsDatasourceShowOutput(t, basicSecretWithDescribe.DatasourceReference()).
+						HasName(basicId.Name()).
+						HasDatabaseName(basicId.DatabaseName()).
+						HasSchemaName(basicId.SchemaName()).
+						HasComment("").
+						HasSecretType(string(sdk.SecretTypePassword)),
+					assert.Check(resource.TestCheckResourceAttr(basicSecretWithDescribe.DatasourceReference(), "secrets.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(basicSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(basicSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.secret_type", string(sdk.SecretTypePassword))),
+					assert.Check(resource.TestCheckResourceAttr(basicSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.username", "user1")),
 				),
 			},
-			// In Database
+			// OAuth2 client credentials with describe
 			{
-				Config: accconfig.FromModels(t, secretModelBasicAuth, secretModelGenericString, secretModelClientCredentials, secretModelAuthorizationCodeGrant, secretModelInDifferentSchema, secretsModelInDatabase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(secretsModelInDatabase.DatasourceReference(), "secrets.#", "5"),
+				Config: config.FromModels(t, clientCredsModel, clientCredsSecretWithDescribe),
+				Check: assertThat(t,
+					resourceshowoutputassert.SecretsDatasourceShowOutput(t, clientCredsSecretWithDescribe.DatasourceReference()).
+						HasName(clientCredsId.Name()).
+						HasDatabaseName(clientCredsId.DatabaseName()).
+						HasSchemaName(clientCredsId.SchemaName()).
+						HasComment("").
+						HasSecretType(string(sdk.SecretTypeOAuth2)),
+					assert.Check(resource.TestCheckResourceAttr(clientCredsSecretWithDescribe.DatasourceReference(), "secrets.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(clientCredsSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(clientCredsSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.secret_type", string(sdk.SecretTypeOAuth2))),
+					assert.Check(resource.TestCheckResourceAttr(clientCredsSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.#", "2")),
+					assert.Check(resource.TestCheckTypeSetElemAttr(clientCredsSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.*", "scope1")),
+					assert.Check(resource.TestCheckTypeSetElemAttr(clientCredsSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.*", "scope2")),
 				),
 			},
-			// In Account
+			// OAuth2 authorization code grant with describe
 			{
-				Config: accconfig.FromModels(t, secretModelBasicAuth, secretModelGenericString, secretModelClientCredentials, secretModelAuthorizationCodeGrant, secretModelInDifferentSchema, secretsModelInAccount),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(secretsModelInAccount.DatasourceReference(), "secrets.#", "3"),
+				Config: config.FromModels(t, authCodeModel, authCodeSecretWithDescribe),
+				Check: assertThat(t,
+					resourceshowoutputassert.SecretsDatasourceShowOutput(t, authCodeSecretWithDescribe.DatasourceReference()).
+						HasName(authCodeId.Name()).
+						HasDatabaseName(authCodeId.DatabaseName()).
+						HasSchemaName(authCodeId.SchemaName()).
+						HasComment(comment).
+						HasSecretType(string(sdk.SecretTypeOAuth2)),
+					assert.Check(resource.TestCheckResourceAttr(authCodeSecretWithDescribe.DatasourceReference(), "secrets.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(authCodeSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(authCodeSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.secret_type", string(sdk.SecretTypeOAuth2))),
+					assert.Check(resource.TestCheckResourceAttr(authCodeSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.oauth_scopes.#", "0")),
+					assert.Check(resource.TestCheckResourceAttrSet(authCodeSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.oauth_refresh_token_expiry_time")),
+					assert.Check(resource.TestCheckResourceAttr(authCodeSecretWithDescribe.DatasourceReference(), "secrets.0.describe_output.0.comment", comment)),
 				),
 			},
 		},

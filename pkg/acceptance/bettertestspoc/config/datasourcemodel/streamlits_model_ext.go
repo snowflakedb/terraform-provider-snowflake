@@ -13,3 +13,11 @@ func (s *StreamlitsModel) WithInDatabase(databaseId sdk.AccountObjectIdentifier)
 		}),
 	)
 }
+
+func (s *StreamlitsModel) WithInSchema(schemaId sdk.DatabaseObjectIdentifier) *StreamlitsModel {
+	return s.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"schema": tfconfig.StringVariable(schemaId.FullyQualifiedName()),
+		}),
+	)
+}
