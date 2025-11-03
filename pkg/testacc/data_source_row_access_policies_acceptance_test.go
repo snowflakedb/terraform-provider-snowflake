@@ -147,7 +147,7 @@ func TestAcc_RowAccessPolicies_CompleteUseCase(t *testing.T) {
 		WithDependsOn(rowAccessPolicyModel.ResourceReference())
 
 	commonShowOutputAsserts := func(t *testing.T, datasourceReference string) *resourceshowoutputassert.RowAccessPolicyShowOutputAssert {
-		return resourceshowoutputassert.RowAccessPoliciesDatasourceShowOutput(t, datasourceModelWithoutDescribe.DatasourceReference()).
+		return resourceshowoutputassert.RowAccessPoliciesDatasourceShowOutput(t, datasourceReference).
 			HasCreatedOnNotEmpty().
 			HasDatabaseName(id.DatabaseName()).
 			HasKind(string(sdk.PolicyKindRowAccessPolicy)).
