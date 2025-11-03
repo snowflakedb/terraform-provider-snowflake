@@ -27,11 +27,6 @@ var (
 	v6Server tfprotov6.ProviderServer
 
 	acceptanceTestsProviderCache *providerInitializationCache[cacheEntry]
-
-	// temporary unsafe way to get the last configuration for the provider (to verify in tests);
-	// should be used with caution as it is not prepared for the parallel tests
-	// should be replaced in the future (e.g. map with test name as key)
-	lastConfiguredProviderContext *internalprovider.Context
 )
 
 type cacheEntry struct {
