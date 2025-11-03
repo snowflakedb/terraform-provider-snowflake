@@ -5,17 +5,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 var imageRepositorySchema = map[string]*schema.Schema{
@@ -64,10 +61,10 @@ func ImageRepository() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingCreateWrapper(resources.ImageRepository, CreateImageRepository)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingReadWrapper(resources.ImageRepository, ReadImageRepository)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingUpdateWrapper(resources.ImageRepository, UpdateImageRepository)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ImageRepositoryResource), TrackingDeleteWrapper(resources.ImageRepository, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.ImageRepository, CreateImageRepository),
+		ReadContext:   TrackingReadWrapper(resources.ImageRepository, ReadImageRepository),
+		UpdateContext: TrackingUpdateWrapper(resources.ImageRepository, UpdateImageRepository),
+		DeleteContext: TrackingDeleteWrapper(resources.ImageRepository, deleteFunc),
 		Description: joinWithSpace(
 			"Resource used to manage image repositories. For more information, check [image repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-image-repository).",
 			"Snowpark Container Services provides an OCIv2-compliant image registry service and a storage unit call repository to store images.",

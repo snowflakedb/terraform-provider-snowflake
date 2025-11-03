@@ -169,6 +169,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Notebook{},
 	},
 	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeSecurityIntegration,
+		ObjectStruct: sdk.SecurityIntegration{},
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeStreamlit,
 		ObjectStruct: sdk.Streamlit{},

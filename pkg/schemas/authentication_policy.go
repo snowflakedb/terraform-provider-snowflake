@@ -19,6 +19,9 @@ var AuthenticationPolicyDescribeSchema = map[string]*schema.Schema{
 	"client_types":               {Type: schema.TypeString, Computed: true},
 	"security_integrations":      {Type: schema.TypeString, Computed: true},
 	"comment":                    {Type: schema.TypeString, Computed: true},
+	"mfa_policy":                 {Type: schema.TypeString, Computed: true},
+	"pat_policy":                 {Type: schema.TypeString, Computed: true},
+	"workload_identity_policy":   {Type: schema.TypeString, Computed: true},
 }
 
 var _ = AuthenticationPolicyDescribeSchema
@@ -32,6 +35,9 @@ var AuthenticationPolicyNames = []string{
 	"SECURITY_INTEGRATIONS",
 	"MFA_ENROLLMENT",
 	"MFA_AUTHENTICATION_METHODS",
+	"MFA_POLICY",
+	"PAT_POLICY",
+	"WORKLOAD_IDENTITY_POLICY",
 }
 
 func AuthenticationPolicyDescriptionToSchema(authenticationPolicyDescription []sdk.AuthenticationPolicyDescription) map[string]any {

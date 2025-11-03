@@ -35,13 +35,11 @@ Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bu
 ## [Bundle 2025_06](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06_bundle)
 
 ### Changes in authentication policies
-<!-- TODO(SNOW-2187814): Update this entry. -->
-
 > [!IMPORTANT]
 > The [BCR-2086](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06/bcr-2086) change has been rolled back from the BCR 2025_04 and was moved to 2025_06.
 
 > [!IMPORTANT]
-> These changes are partially addressed in the v2.10.0 version.
+> These changes are addressed in the v2.10.0 version.
 > If you use an older version, please upgrade to v2.10.0, or use the instructions below as a workaround.
 
 #### `MFA_AUTHENTICATION_METHODS` property deprecation

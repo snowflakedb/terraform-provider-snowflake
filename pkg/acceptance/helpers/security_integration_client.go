@@ -210,3 +210,9 @@ func (c *SecurityIntegrationClient) DropSecurityIntegrationFunc(t *testing.T, id
 		require.NoError(t, err)
 	}
 }
+
+func (c *SecurityIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SecurityIntegration, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
+}
