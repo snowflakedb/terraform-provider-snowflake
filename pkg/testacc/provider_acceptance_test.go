@@ -810,6 +810,8 @@ func TestAcc_Provider_triValueBooleanTransitions(t *testing.T) {
 		WithIncludeRetryReasonBool(true).
 		WithClientStoreTemporaryCredentialBool(false)
 
+	factory, p := providerFactoryWithoutCacheReturningProvider()
+
 	printConfigBool := func(cb gosnowflake.ConfigBool) string {
 		var s string
 		switch cb {
@@ -833,7 +835,7 @@ func TestAcc_Provider_triValueBooleanTransitions(t *testing.T) {
 		}
 
 		return func(state *terraform.State) error {
-			cfg := lastConfiguredProviderContext.Client.GetConfig()
+			cfg := p.Meta().(*internalprovider.Context).Client.GetConfig()
 			return errors.Join(
 				validateConfigBoolField("ClientRequestMfaToken", cfg.ClientRequestMfaToken, gosnowflake.ConfigBoolFalse),
 				validateConfigBoolField("DisableConsoleLogin", cfg.DisableConsoleLogin, sdk.GosnowflakeBoolConfigDefault),
@@ -852,7 +854,7 @@ func TestAcc_Provider_triValueBooleanTransitions(t *testing.T) {
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 				},
-				ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+				ProtoV6ProviderFactories: factory,
 				Config:                   config.FromModels(t, providerConfigModel, datasourceModel()),
 				Check:                    verifyDriverConfig(t),
 			},
