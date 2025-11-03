@@ -63,12 +63,16 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		Deprecated:       "This field is deprecated and will be removed in the future. The new field `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` will be added in the next versions of the provider. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
 	},
 	"mfa_enrollment": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      fmt.Sprintf("Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): %s. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).", possibleValuesListed(sdk.AllMfaEnrollmentOptions)),
+		Type:     schema.TypeString,
+		Optional: true,
+		Description: fmt.Sprintf("Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): %s. When REQUIRED is specified, Enforces users to enroll in MFA."+
+			" If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA)."+
+			" Note that when you set this value to OPTIONAL, and your account setup forces users to enroll in MFA, then Snowflake may set quietly this value to `REQUIRED_PASSWORD_ONLY`, which may cause permadiff."+
+			" In this case, you may want to adjust this field value.", possibleValuesListed(sdk.AllMfaEnrollmentOptions)),
 		ValidateDiagFunc: sdkValidation(sdk.ToMfaEnrollmentOption),
 		DiffSuppressFunc: SuppressIfAny(
 			NormalizeAndCompare(sdk.ToMfaEnrollmentOption),
+			// We need a custom diff because when this field is set to OPTIONAL, the value is returned as REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY.
 			func(_, oldRaw, newRaw string, _ *schema.ResourceData) bool {
 				old, err := sdk.ToMfaEnrollmentReadOption(oldRaw)
 				if err != nil {
