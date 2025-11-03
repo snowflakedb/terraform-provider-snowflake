@@ -58,6 +58,22 @@ var AllMfaEnrollmentOptions = []MfaEnrollmentOption{
 	MfaEnrollmentOptional,
 }
 
+type MfaEnrollmentReadOption string
+
+const (
+	MfaEnrollmentReadRequired                        MfaEnrollmentReadOption = "REQUIRED"
+	MfaEnrollmentReadRequiredPasswordOnly            MfaEnrollmentReadOption = "REQUIRED_PASSWORD_ONLY"
+	MfaEnrollmentReadOptional                        MfaEnrollmentReadOption = "OPTIONAL"
+	MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly MfaEnrollmentReadOption = "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"
+)
+
+var AllMfaEnrollmentReadOptions = []MfaEnrollmentReadOption{
+	MfaEnrollmentReadRequired,
+	MfaEnrollmentReadRequiredPasswordOnly,
+	MfaEnrollmentReadOptional,
+	MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly,
+}
+
 type ClientTypesOption string
 
 const (
@@ -328,6 +344,14 @@ func ToMfaEnrollmentOption(s string) (MfaEnrollmentOption, error) {
 		return "", fmt.Errorf("invalid MFA enrollment option: %s", s)
 	}
 	return MfaEnrollmentOption(s), nil
+}
+
+func ToMfaEnrollmentReadOption(s string) (MfaEnrollmentReadOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllMfaEnrollmentReadOptions, MfaEnrollmentReadOption(s)) {
+		return "", fmt.Errorf("invalid MFA enrollment read option: %s", s)
+	}
+	return MfaEnrollmentReadOption(s), nil
 }
 
 func ToClientTypesOption(s string) (ClientTypesOption, error) {

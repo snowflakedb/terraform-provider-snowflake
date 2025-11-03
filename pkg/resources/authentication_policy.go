@@ -67,7 +67,19 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		Optional:         true,
 		Description:      fmt.Sprintf("Determines whether a user must enroll in multi-factor authentication. Valid values are (case-insensitive): %s. When REQUIRED is specified, Enforces users to enroll in MFA. If this value is used, then the `client_types` parameter must include `snowflake_ui`, because Snowsight is the only place users can enroll in multi-factor authentication (MFA).", possibleValuesListed(sdk.AllMfaEnrollmentOptions)),
 		ValidateDiagFunc: sdkValidation(sdk.ToMfaEnrollmentOption),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToMfaEnrollmentOption),
+		DiffSuppressFunc: SuppressIfAny(
+			NormalizeAndCompare(sdk.ToMfaEnrollmentOption),
+			func(_, oldRaw, newRaw string, _ *schema.ResourceData) bool {
+				old, err := sdk.ToMfaEnrollmentReadOption(oldRaw)
+				if err != nil {
+					return false
+				}
+				new, err := sdk.ToMfaEnrollmentOption(newRaw)
+				if err != nil {
+					return false
+				}
+				return old == sdk.MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly && new == sdk.MfaEnrollmentOptional
+			}),
 	},
 	"client_types": {
 		Type: schema.TypeSet,
