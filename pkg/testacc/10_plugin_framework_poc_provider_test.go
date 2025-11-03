@@ -20,12 +20,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-func init() {
-	pluginPocProviderInitializationCache = make(map[string]pluginPocCacheEntry)
-}
-
 // our test acc needed variables
-var pluginPocProviderInitializationCache map[string]pluginPocCacheEntry
+var pluginPocProviderCache *providerInitializationCache[pluginPocCacheEntry]
+
+func init() {
+	pluginPocProviderCache = newProviderInitializationCache[pluginPocCacheEntry]()
+}
 
 type pluginPocCacheEntry struct {
 	clientErrorDiag diag.Diagnostics
@@ -99,7 +99,6 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 }
 
 // The logic for caching is based on the caching we have for the current acceptance tests set.
-// TODO [SNOW-2312385]: create a separate cache (different context type) and use it here - wait for the acc test impl
 func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) {
 	// TODO [SNOW-2312385]: handle empty on the framework level
 	key := p.cacheKey
@@ -107,39 +106,37 @@ func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request prov
 		key = "TerraformPluginFrameworkPoC"
 	}
 
-	// TODO [SNOW-2312385]: lock access to cache map
-	// check if we cached initialized provider context with the key already
-	if cached, ok := pluginPocProviderInitializationCache[key]; ok {
-		accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration result for key %s", key)
-		if cached.providerCtx != nil {
-			accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration context")
-			response.DataSourceData = cached.providerCtx
-			response.ResourceData = cached.providerCtx
-			return
-		} else if cached.clientErrorDiag.HasError() {
-			accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration error")
-			response.Diagnostics.Append(cached.clientErrorDiag...)
-			return
+	entry := pluginPocProviderCache.getOrInit(key, func() pluginPocCacheEntry {
+		providerCtx, clientErrorDiag := p.configurePluginPocProvider(ctx, request, response)
+		return pluginPocCacheEntry{
+			providerCtx:     providerCtx,
+			clientErrorDiag: clientErrorDiag,
 		}
-	}
-	accTestLog.Printf("[DEBUG] No cached terraform plugin framework PoC provider configuration found for key %s or caching is not enabled; configuring a new provider", key)
+	})
 
-	providerCtx, clientErrorDiag := p.configureWithoutCache(ctx, request, response)
-	if clientErrorDiag.HasError() {
-		response.Diagnostics.Append(clientErrorDiag...)
+	if entry.providerCtx != nil {
+		accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration context")
+		response.DataSourceData = entry.providerCtx
+		response.ResourceData = entry.providerCtx
+	} else if entry.clientErrorDiag.HasError() {
+		accTestLog.Printf("[DEBUG] Returning cached terraform plugin framework PoC provider configuration error")
+		response.Diagnostics.Append(entry.clientErrorDiag...)
 	}
+}
+
+func (p *pluginFrameworkPocProvider) configurePluginPocProvider(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) (*Context, diag.Diagnostics) {
+	accTestLog.Printf("[DEBUG] Initializing terraform plugin framework PoC provider provider")
+
+	providerCtx, clientErrorDiag := p.configure(ctx, request, response)
 
 	if providerCtx != nil && oswrapper.Getenv(fmt.Sprintf("%v", testenvs.EnableAllPreviewFeatures)) == "true" {
 		providerCtx.EnabledFeatures = previewfeatures.AllPreviewFeatures
 	}
 
-	pluginPocProviderInitializationCache[key] = pluginPocCacheEntry{
-		providerCtx:     providerCtx,
-		clientErrorDiag: clientErrorDiag,
-	}
+	return providerCtx, clientErrorDiag
 }
 
-func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) (*Context, diag.Diagnostics) {
+func (p *pluginFrameworkPocProvider) configure(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) (*Context, diag.Diagnostics) {
 	var configModel pluginFrameworkPocProviderModelV0
 	diags := diag.Diagnostics{}
 
@@ -149,6 +146,7 @@ func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, 
 		return nil, diags
 	}
 
+	// TODO [SNOW-2234579]: set preview_features_enabled
 	config, err := p.getDriverConfigFromTerraform(configModel)
 	if err != nil {
 		diags.AddError("Could not read the Terraform config", err.Error())
@@ -182,11 +180,7 @@ func (p *pluginFrameworkPocProvider) configureWithoutCache(ctx context.Context, 
 		providerCtx.RestApiPocClient = restApiPocClient
 	}
 
-	// TODO [SNOW-2234579]: set preview_features_enabled
-	response.DataSourceData = providerCtx
-	response.ResourceData = providerCtx
-
-	return providerCtx, nil
+	return providerCtx, diags
 }
 
 func (p *pluginFrameworkPocProvider) DataSources(_ context.Context) []func() datasource.DataSource {
