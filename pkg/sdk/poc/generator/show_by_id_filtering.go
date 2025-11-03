@@ -31,6 +31,8 @@ func identifierStringToPrefix(s string) idPrefix {
 		return DatabaseIdentifierPrefix
 	case "SchemaObjectIdentifier":
 		return SchemaIdentifierPrefix
+	case "SchemaObjectIdentifierWithArguments":
+		return SchemaIdentifierPrefix
 	default:
 		return ""
 	}

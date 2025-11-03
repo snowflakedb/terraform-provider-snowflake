@@ -24,15 +24,127 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.10.0 ➞ v2.10.1
+
+### *(bugfix)* Fixed reading the value of `oauth_refresh_token_validity` in `snowflake_oauth_integration_for_custom_clients` resource
+
+Previously, whenever we detected an external change in the `oauth_refresh_token_validity` field,
+we were trying to set it with inappropriate type causing errors like:
+```
+panic: oauth_refresh_token_validity: '' expected type 'int', got unconvertible type 'string', value: '86400'
+```
+
+No changes in configuration and state are required.
+
+### *(bugfix)* Fixed updating the value of `enabled` in `snowflake_oauth_integration_for_partner_applications` resource
+
+Previously, whenever we detected change for the `enabled` field,
+we were wrongly checking the state of the `oauth_issue_refresh_tokens` field.
+Although the fields' logic is connected (see the note in https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake#additional-optional-parameters-partner-applications), it didn't matter in this context.
+This could cause issues like infinite loops in plans when only the `enabled` field was changed,
+but couldn't because the state of the `oauth_issue_refresh_tokens` prevented from it.
+
+No changes in configuration and state are required.
+
 ## v2.9.x ➞ v2.10.0
 
-### *(new feature)* Reworked `authentication_policy` resource
-In this version we reworked the `authentication_policy` resource. This includes adding missing features. Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
+### *(improvement)* Features promoted to stable
 
-#### Missing values
+The following resources/data sources were marked stable:
+- `snowflake_compute_pool_resource`
+- `snowflake_compute_pools_datasource`
+- `snowflake_git_repository_resource`
+- `snowflake_git_repositories_datasource`
+- `snowflake_image_repository_resource`
+- `snowflake_image_repositories_datasource`
+- `snowflake_listing_resource`
+- `snowflake_service_resource`
+- `snowflake_services_datasource`
+- `snowflake_user_programmatic_access_token_resource`
+- `snowflake_user_programmatic_access_tokens_datasource`
+
+Since this version, these features are enabled by default: enabling them in the provider configuration is no longer required. Please remove them from the `preview_features` list. Provider will issue a warning if a stable feature is still used on the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
+### *(new feature)* New Workload Identity Federation authentication option
+We added new `WORKLOAD_IDENTITY` option to the `authenticator` field in the provider. Additionally, the provider has new fields that directly pass the values to the Go driver:
+  - `workload_identity_provider` - required,
+  - `token` - optional (not relevant for all the flows),
+  - `workload_identity_entra_resource` - optional (only relevant for the WIF authentication on Azure environment case),
+The provider does not validate these fields.
+
+This feature enables authentication with the `WORKLOAD_IDENTITY` authenticator in the Go driver. Read more in our [Authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) guide.
+See [Snowflake official documentation](https://docs.snowflake.com/en/user-guide/workload-identity-federation) for more information on WIF authentication.
+
+### *(new feature)* Reworked authentication policies
+In this version we reworked the `authentication_policy` resource and added missing `authentication_policies` data source.
+This includes adding missing features, and fixing bugs.
+The object has been adjusted to our [design decisions](./v1-preparations/CHANGES_BEFORE_V1.md).
+Note that this resource is not yet stable. We are planning to mark it as stable in the upcoming months.
+
+#### Missing values in resource
 We added missing values to the following fields:
 - `authentication_methods` now allows setting `PROGRAMMATIC_ACCESS_TOKEN` and `WORKLOAD_IDENTITY`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/4006,
 - `client_types` now allows setting `SNOWFLAKE_CLI`, references https://github.com/snowflakedb/terraform-provider-snowflake/issues/3391.
+
+Also, we added support for the following features: `pat_policy`, `mfa_policy` and `workload_identity_policy`. Check the resource documentation for more details.
+
+#### Handling deprecated `mfa_authentication_methods` field
+As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods are handled in a different way.
+Now, the provider does not cause a permadiff caused by the `mfa_authentication_methods` field.
+If you used the `ignore_changes` attribute, you may now remove it.
+Configuring this field is still possible, but only with disabled 2025_06.
+
+#### Fixed renaming in resource
+This object supports renaming. It was also available in the provider, but did not work correctly due to a bug in name parsing. This has been fixed.
+
+#### Changes in output fields
+We adjusted the `show_output` by adding the missing `kind` field. Also, we adjusted the `describe_output` by adding the missing `mfa_policy`, `pat_policy`, and `workload_identity_policy` fields.
+
+The state is migrated automatically.
+
+#### Miscellaneous changes
+- Improved the resource documentation.
+- Added a diff suppression on `mfa_enrollment` field. This field is now case-insensitive.
+- Added a trigger for showing changes `show_output`, `describe_output` and `fully_qualified_name` fields. Now, when a related field is changed in the plan, the output field may be shown as `known after apply`.
+- Improved importing - now, `authentication_methods`, `mfa_enrollment`, `client_types`, and `security_integrations` are set in import.
+- Improved detecting of external changes.
+
+#### Added data source
+Added a new preview data source for authentication policies.
+See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies).
+
+This feature will be marked as a stable feature in future releases.
+Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_authentication_policies_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* New instance families in the compute_pool resource
+Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
+
+### *(new experiment)* Improved show query for warehouses
+
+In this version we introduce a new attribute on the provider level: [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#experimental_features_enabled-1). It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#preview_features_enabled-1). Instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior. **It's still considered a preview feature, even when applied to the stable resources.**
+
+We treat the available values as experiments, that may become stable feature/behavior in the future provider releases if successful.
+
+Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses.
+
+Details:
+- The query after enabling the experiment should look like this: `SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`.
+- For the implementation reasons, it may not improve the performance when warehouse identifier contains `_` or `%` sign.
+- The optimization should work correctly independently of the identifier casing.
+
+Feedback:
+- If you have a lot of warehouses, and you have performance concerns when managing them, this experiment may be the solution.
+- If you discover that the performance is boosted when the experiment is enabled, please reach out to us and share it! Your feedback is crucial in making the experiment an official feature of the provider.
+- In case of any issues, reach out to us through GitHub or your account representative.
+
+### *(improvement)* Handling generation attribute in warehouses
+
+Previously, when the `generation` field was set for a given resource, the provider used the `RESOURCE_CONSTRAINT` field available in Snowflake syntax, with a proper value conversion. Now, the `GENERATION` syntax is available in Snowflake. The provider uses the new `GENERATION` syntax for the `generation` field. The behavior of `resource_constraint` field is the same.
+We recommend upgrading to this version because setting generation through the `resource_constraint` field may be not supported by Snowflake in future.
+
+No changes in the configuration are necessary.
 
 ## v2.8.x ➞ v2.9.0
 

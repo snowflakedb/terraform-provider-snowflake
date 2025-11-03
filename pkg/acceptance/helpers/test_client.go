@@ -51,6 +51,7 @@ type TestClient struct {
 	MaterializedView             *MaterializedViewClient
 	NetworkPolicy                *NetworkPolicyClient
 	NetworkRule                  *NetworkRuleClient
+	Notebook                     *NotebookClient
 	NotificationIntegration      *NotificationIntegrationClient
 	OrganizationAccount          *OrganizationAccountClient
 	PackagesPolicy               *PackagesPolicyClient
@@ -136,6 +137,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
 		NetworkRule:                  NewNetworkRuleClient(context, idsGenerator),
+		Notebook:                     NewNotebookClient(context, idsGenerator),
 		NotificationIntegration:      NewNotificationIntegrationClient(context, idsGenerator),
 		OrganizationAccount:          NewOrganizationAccountClient(context, idsGenerator),
 		PackagesPolicy:               NewPackagesPolicyClient(context, idsGenerator),

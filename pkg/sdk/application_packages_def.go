@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 var applicationPackageModifyReleaseDirective = g.NewQueryStruct("ModifyReleaseDirective").
 	Text("ReleaseDirective", g.KeywordOptions().NoQuotes().Required()).
 	TextAssignment("VERSION", g.ParameterOptions().NoQuotes().Required()).
@@ -129,6 +127,7 @@ var ApplicationPackagesDef = g.NewInterface(
 	g.NewQueryStruct("DropApplicationPackage").
 		Drop().
 		SQL("APPLICATION PACKAGE").
+		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowOperation(

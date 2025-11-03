@@ -128,11 +128,7 @@ func configureProviderWithConfigCache(ctx context.Context, d *schema.ResourceDat
 		lastConfiguredProviderContext = v
 	}
 
-	if clientErrorDiag.HasError() {
-		return nil, clientErrorDiag
-	}
-
-	return providerCtx, nil
+	return providerCtx, clientErrorDiag
 }
 
 var taskDedicatedProviderFactory = providerFactoryUsingCache("task")

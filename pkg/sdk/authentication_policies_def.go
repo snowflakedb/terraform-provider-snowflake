@@ -8,8 +8,6 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
-//go:generate go run ./poc/main.go
-
 type AuthenticationMethodsOption string
 
 const (
@@ -81,15 +79,15 @@ var AllClientTypes = []ClientTypesOption{
 type MfaPolicyAllowedMethodsOption string
 
 const (
-	MfaPolicyAllowedMethodAll         MfaPolicyAllowedMethodsOption = "ALL"
-	MfaPolicyPassAllowedMethodPassKey MfaPolicyAllowedMethodsOption = "PASSKEY"
-	MfaPolicyAllowedMethodTotp        MfaPolicyAllowedMethodsOption = "TOTP"
-	MfaPolicyAllowedMethodDuo         MfaPolicyAllowedMethodsOption = "DUO"
+	MfaPolicyAllowedMethodAll     MfaPolicyAllowedMethodsOption = "ALL"
+	MfaPolicyAllowedMethodPassKey MfaPolicyAllowedMethodsOption = "PASSKEY"
+	MfaPolicyAllowedMethodTotp    MfaPolicyAllowedMethodsOption = "TOTP"
+	MfaPolicyAllowedMethodDuo     MfaPolicyAllowedMethodsOption = "DUO"
 )
 
 var AllMfaPolicyOptions = []MfaPolicyAllowedMethodsOption{
 	MfaPolicyAllowedMethodAll,
-	MfaPolicyPassAllowedMethodPassKey,
+	MfaPolicyAllowedMethodPassKey,
 	MfaPolicyAllowedMethodTotp,
 	MfaPolicyAllowedMethodDuo,
 }
@@ -362,4 +360,12 @@ func ToEnforceMfaOnExternalAuthenticationOption(s string) (EnforceMfaOnExternalA
 		return "", fmt.Errorf("invalid enforce MFA on external authentication option: %s", s)
 	}
 	return EnforceMfaOnExternalAuthenticationOption(s), nil
+}
+
+func ToMfaPolicyAllowedMethodsOption(s string) (MfaPolicyAllowedMethodsOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllMfaPolicyOptions, MfaPolicyAllowedMethodsOption(s)) {
+		return "", fmt.Errorf("invalid MFA policy allowed methods option: %s", s)
+	}
+	return MfaPolicyAllowedMethodsOption(s), nil
 }

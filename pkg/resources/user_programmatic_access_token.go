@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -102,10 +101,10 @@ var userProgrammaticAccessTokenSchema = map[string]*schema.Schema{
 
 func UserProgrammaticAccessToken() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.UserProgrammaticAccessTokenResource), TrackingCreateWrapper(resources.UserProgrammaticAccessToken, CreateUserProgrammaticAccessToken)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.UserProgrammaticAccessTokenResource), TrackingReadWrapper(resources.UserProgrammaticAccessToken, ReadUserProgrammaticAccessToken(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.UserProgrammaticAccessTokenResource), TrackingUpdateWrapper(resources.UserProgrammaticAccessToken, UpdateUserProgrammaticAccessToken)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.UserProgrammaticAccessTokenResource), TrackingDeleteWrapper(resources.UserProgrammaticAccessToken, DeleteUserProgrammaticAccessToken)),
+		CreateContext: TrackingCreateWrapper(resources.UserProgrammaticAccessToken, CreateUserProgrammaticAccessToken),
+		ReadContext:   TrackingReadWrapper(resources.UserProgrammaticAccessToken, ReadUserProgrammaticAccessToken(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.UserProgrammaticAccessToken, UpdateUserProgrammaticAccessToken),
+		DeleteContext: TrackingDeleteWrapper(resources.UserProgrammaticAccessToken, DeleteUserProgrammaticAccessToken),
 		Description: joinWithSpace(
 			"Resource used to manage user programmatic access tokens. For more information, check [user programmatic access tokens documentation](https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token).",
 			"A programmatic access token is a token that can be used to authenticate to an endpoint.",
