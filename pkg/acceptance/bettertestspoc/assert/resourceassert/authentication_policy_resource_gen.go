@@ -77,8 +77,23 @@ func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollmentString(expected str
 	return a
 }
 
+func (a *AuthenticationPolicyResourceAssert) HasMfaPolicyString(expected string) *AuthenticationPolicyResourceAssert {
+	a.AddAssertion(assert.ValueSet("mfa_policy", expected))
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasPatPolicyString(expected string) *AuthenticationPolicyResourceAssert {
+	a.AddAssertion(assert.ValueSet("pat_policy", expected))
+	return a
+}
+
 func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrationsString(expected string) *AuthenticationPolicyResourceAssert {
 	a.AddAssertion(assert.ValueSet("security_integrations", expected))
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasWorkloadIdentityPolicyString(expected string) *AuthenticationPolicyResourceAssert {
+	a.AddAssertion(assert.ValueSet("workload_identity_policy", expected))
 	return a
 }
 
@@ -150,8 +165,23 @@ func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollmentEmpty() *Authentica
 	return a
 }
 
+func (a *AuthenticationPolicyResourceAssert) HasMfaPolicyEmpty() *AuthenticationPolicyResourceAssert {
+	a.AddAssertion(assert.ValueSet("mfa_policy.#", "0"))
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasPatPolicyEmpty() *AuthenticationPolicyResourceAssert {
+	a.AddAssertion(assert.ValueSet("pat_policy.#", "0"))
+	return a
+}
+
 func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrationsEmpty() *AuthenticationPolicyResourceAssert {
 	a.AddAssertion(assert.ValueSet("security_integrations.#", "0"))
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasWorkloadIdentityPolicyEmpty() *AuthenticationPolicyResourceAssert {
+	a.AddAssertion(assert.ValueSet("workload_identity_policy.#", "0"))
 	return a
 }
 

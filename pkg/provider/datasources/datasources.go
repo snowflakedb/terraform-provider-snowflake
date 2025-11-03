@@ -6,6 +6,7 @@ const (
 	Accounts                       datasource = "snowflake_accounts"
 	AccountRoles                   datasource = "snowflake_account_roles"
 	Alerts                         datasource = "snowflake_alerts"
+	AuthenticationPolicies         datasource = "snowflake_authentication_policies"
 	ComputePools                   datasource = "snowflake_compute_pools"
 	Connections                    datasource = "snowflake_connections"
 	CortexSearchServices           datasource = "snowflake_cortex_search_services"

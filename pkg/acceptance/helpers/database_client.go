@@ -167,6 +167,18 @@ func (c *DatabaseClient) UpdateDataRetentionTime(t *testing.T, id sdk.AccountObj
 	require.NoError(t, err)
 }
 
+func (c *DatabaseClient) UpdateLogLevel(t *testing.T, id sdk.AccountObjectIdentifier, level sdk.LogLevel) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, id, &sdk.AlterDatabaseOptions{
+		Set: &sdk.DatabaseSet{
+			LogLevel: &level,
+		},
+	})
+	require.NoError(t, err)
+}
+
 func (c *DatabaseClient) UnsetCatalog(t *testing.T, id sdk.AccountObjectIdentifier) {
 	t.Helper()
 	ctx := context.Background()

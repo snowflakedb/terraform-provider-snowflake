@@ -1,11 +1,9 @@
 ---
 page_title: "snowflake_user_programmatic_access_token Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage user programmatic access tokens. For more information, check user programmatic access tokens documentation https://docs.snowflake.com/en/sql-reference/sql/alter-user-add-programmatic-access-token. A programmatic access token is a token that can be used to authenticate to an endpoint. See Using programmatic access tokens for authentication https://docs.snowflake.com/en/user-guide/programmatic-access-tokens user guide for more details.
 ---
-
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Read more about PAT support in the provider in our [Authentication Methods guide](../guides/authentication_methods#managing-pats).
 

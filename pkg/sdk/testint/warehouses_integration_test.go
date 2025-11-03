@@ -83,7 +83,22 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Len(t, warehouses, 0)
 	})
 
-	t.Run("create: with resource constraint", func(t *testing.T) {
+	t.Run("show: with starts with, and limit", func(t *testing.T) {
+		showOptions := &sdk.ShowWarehouseOptions{
+			StartsWith: sdk.String(precreatedWarehouseId.Name()),
+			LimitFrom: &sdk.LimitFrom{
+				Rows: sdk.Int(1),
+			},
+		}
+
+		warehouses, err := client.Warehouses.Show(ctx, showOptions)
+		require.NoError(t, err)
+
+		require.Len(t, warehouses, 1)
+		require.Equal(t, precreatedWarehouseId.Name(), warehouses[0].Name)
+	})
+
+	t.Run("create: with resource constraint & generation", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
 			ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintMemory1X),
@@ -122,6 +137,8 @@ func TestInt_Warehouses(t *testing.T) {
 			MaxConcurrencyLevel:             sdk.Int(10),
 			StatementQueuedTimeoutInSeconds: sdk.Int(2000),
 			StatementTimeoutInSeconds:       sdk.Int(3000),
+			ResourceConstraint:              sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen1),
+			Generation:                      sdk.Pointer(sdk.WarehouseGenerationStandardGen1),
 			Tag: []sdk.TagAssociation{
 				{
 					Name:  tag.ID(),
@@ -482,7 +499,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 	})
 
-	t.Run("alter: set and unset generation", func(t *testing.T) {
+	t.Run("alter: set and unset generation (old resource constraint syntax)", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
@@ -519,6 +536,100 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, returnedWarehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
+	})
+
+	t.Run("alter: set and unset generation (new generation syntax)", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		// new warehouse created on purpose
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
+		t.Cleanup(warehouseCleanup)
+
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
+		assert.Nil(t, returnedWarehouse.ResourceConstraint)
+		assert.NotNil(t, returnedWarehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
+
+		alterOptions := &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{Generation: sdk.Pointer(sdk.WarehouseGenerationStandardGen2)},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+			HasGeneration(sdk.WarehouseGenerationStandardGen2).
+			HasNoResourceConstraint().
+			HasType(sdk.WarehouseTypeStandard),
+		)
+
+		alterOptions = &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{Generation: sdk.Bool(true)},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.NotNil(t, returnedWarehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
+	})
+
+	t.Run("alter: set and unset generation (both at the same time)", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		// new warehouse created on purpose
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
+		t.Cleanup(warehouseCleanup)
+
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
+		assert.Nil(t, returnedWarehouse.ResourceConstraint)
+		assert.NotNil(t, returnedWarehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
+
+		alterOptions := &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{
+				Generation:         sdk.Pointer(sdk.WarehouseGenerationStandardGen2),
+				ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen2),
+			},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+			HasGeneration(sdk.WarehouseGenerationStandardGen2).
+			HasNoResourceConstraint().
+			HasType(sdk.WarehouseTypeStandard),
+		)
+
+		alterOptions = &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{
+				Generation:         sdk.Bool(true),
+				ResourceConstraint: sdk.Bool(true),
+			},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.NotNil(t, returnedWarehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
+
+		// setting incompatible values should fail
+		alterOptions = &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{
+				Generation:         sdk.Pointer(sdk.WarehouseGenerationStandardGen2),
+				ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen1),
+			},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.ErrorContains(t, err, "invalid property combination 'RESOURCE_CONSTRAINT'='STANDARD_GEN_1' and 'GENERATION'='2'")
 	})
 
 	t.Run("alter: prove problems with unset auto suspend", func(t *testing.T) {
@@ -796,5 +907,64 @@ func TestInt_Warehouses(t *testing.T) {
 	t.Run("drop: when warehouse does not exist", func(t *testing.T) {
 		err := client.Warehouses.Drop(ctx, NonExistingAccountObjectIdentifier, nil)
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+}
+
+func TestInt_Warehouses_Experimental(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	prefix := random.StringN(6) + "_"
+	warehouseId1 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	warehouseId2 := testClientHelper().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	warehouseId3 := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	_, warehouse1Cleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, warehouseId1, nil)
+	t.Cleanup(warehouse1Cleanup)
+	_, warehouse2Cleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, warehouseId2, nil)
+	t.Cleanup(warehouse2Cleanup)
+	_, warehouse3Cleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, warehouseId3, nil)
+	t.Cleanup(warehouse3Cleanup)
+
+	t.Run("show experimental", func(t *testing.T) {
+		wh, err := client.Warehouses.ShowByIDExperimental(ctx, warehouseId1)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId1.Name(), wh.Name)
+
+		wh, err = client.Warehouses.ShowByIDExperimental(ctx, warehouseId2)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId2.Name(), wh.Name)
+
+		wh, err = client.Warehouses.ShowByIDExperimental(ctx, warehouseId3)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId3.Name(), wh.Name)
+	})
+
+	t.Run("show experimental safely", func(t *testing.T) {
+		wh, err := client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId1)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId1.Name(), wh.Name)
+
+		wh, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId2)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId2.Name(), wh.Name)
+
+		wh, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, warehouseId3)
+		require.NoError(t, err)
+		assert.Equal(t, warehouseId3.Name(), wh.Name)
+	})
+
+	t.Run("show using starts with prefix", func(t *testing.T) {
+		showOptions := &sdk.ShowWarehouseOptions{
+			Like:       &sdk.Like{Pattern: sdk.String(warehouseId2.Name())},
+			StartsWith: sdk.String(prefix),
+			LimitFrom: &sdk.LimitFrom{
+				Rows: sdk.Int(1),
+			},
+		}
+
+		warehouses, err := client.Warehouses.Show(ctx, showOptions)
+		require.NoError(t, err)
+		require.Len(t, warehouses, 1)
+		assert.Equal(t, warehouseId2.Name(), warehouses[0].Name)
 	})
 }

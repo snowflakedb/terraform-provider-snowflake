@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -76,6 +77,15 @@ func (m *SnowflakeModel) WithPreviewFeaturesEnabled(previewFeaturesEnabled ...st
 		previewFeaturesEnabledStringVariables[i] = tfconfig.StringVariable(v)
 	}
 	m.PreviewFeaturesEnabled = tfconfig.SetVariable(previewFeaturesEnabledStringVariables...)
+	return m
+}
+
+func (m *SnowflakeModel) WithExperimentalFeaturesEnabled(experimentalFeatures ...experimentalfeatures.ExperimentalFeature) *SnowflakeModel {
+	experimentalFeaturesEnabledStringVariables := make([]tfconfig.Variable, len(experimentalFeatures))
+	for i, v := range experimentalFeatures {
+		experimentalFeaturesEnabledStringVariables[i] = tfconfig.StringVariable(string(v))
+	}
+	m.ExperimentalFeaturesEnabled = tfconfig.SetVariable(experimentalFeaturesEnabledStringVariables...)
 	return m
 }
 

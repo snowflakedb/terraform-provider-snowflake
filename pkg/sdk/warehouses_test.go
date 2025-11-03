@@ -40,6 +40,8 @@ func TestWarehouseCreate(t *testing.T) {
 			Comment:                         String("hello"),
 			EnableQueryAcceleration:         Bool(true),
 			QueryAccelerationMaxScaleFactor: Int(62),
+			ResourceConstraint:              Pointer(WarehouseResourceConstraintStandardGen1),
+			Generation:                      Pointer(WarehouseGenerationStandardGen1),
 
 			MaxConcurrencyLevel:             Int(7),
 			StatementQueuedTimeoutInSeconds: Int(29),
@@ -55,7 +57,7 @@ func TestWarehouseCreate(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE IF NOT EXISTS "completewarehouse" WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`, resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE IF NOT EXISTS "completewarehouse" WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'STANDARD_GEN_1' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`, resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 }
 
@@ -119,9 +121,11 @@ func TestWarehouseAlter(t *testing.T) {
 				ResourceMonitor:                 NewAccountObjectIdentifier("resmon"),
 				EnableQueryAcceleration:         Bool(false),
 				StatementQueuedTimeoutInSeconds: Int(1200),
+				ResourceConstraint:              Pointer(WarehouseResourceConstraintStandardGen1),
+				Generation:                      Pointer(WarehouseGenerationStandardGen1),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET WAREHOUSE_TYPE = 'SNOWPARK-OPTIMIZED' WAIT_FOR_COMPLETION = false MAX_CLUSTER_COUNT = 5 MIN_CLUSTER_COUNT = 4 AUTO_SUSPEND = 200 RESOURCE_MONITOR = "resmon" ENABLE_QUERY_ACCELERATION = false STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 1200`)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET WAREHOUSE_TYPE = 'SNOWPARK-OPTIMIZED' WAIT_FOR_COMPLETION = false MAX_CLUSTER_COUNT = 5 MIN_CLUSTER_COUNT = 4 AUTO_SUSPEND = 200 RESOURCE_MONITOR = "resmon" ENABLE_QUERY_ACCELERATION = false RESOURCE_CONSTRAINT = 'STANDARD_GEN_1' GENERATION = '1' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 1200`)
 	})
 
 	t.Run("with set tag", func(t *testing.T) {
@@ -158,11 +162,13 @@ func TestWarehouseAlter(t *testing.T) {
 		opts := &AlterWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
 			Unset: &WarehouseUnset{
-				MaxClusterCount: Bool(true),
-				AutoResume:      Bool(true),
+				MaxClusterCount:    Bool(true),
+				AutoResume:         Bool(true),
+				ResourceConstraint: Bool(true),
+				Generation:         Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" UNSET MAX_CLUSTER_COUNT, AUTO_RESUME`)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" UNSET MAX_CLUSTER_COUNT, AUTO_RESUME, RESOURCE_CONSTRAINT, GENERATION`)
 	})
 
 	t.Run("rename", func(t *testing.T) {
@@ -262,6 +268,19 @@ func TestWarehouseShow(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW WAREHOUSES LIKE 'mywarehouse'`)
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := &ShowWarehouseOptions{}
+		opts.Like = &Like{
+			Pattern: String("pattern"),
+		}
+		opts.StartsWith = String("A")
+		opts.LimitFrom = &LimitFrom{
+			Rows: Int(1),
+			From: String("B"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW WAREHOUSES LIKE 'pattern' STARTS WITH 'A' LIMIT 1 FROM 'B'`)
 	})
 }
 
