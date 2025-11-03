@@ -20,10 +20,16 @@ func newProviderInitializationCache[V any]() *providerInitializationCache[V] {
 // getOrInit provides the already existing initialization for the given key or creates a new one given the initFn.
 // It's using a mutex to achieve a safe parallel execution.
 func (c *providerInitializationCache[V]) getOrInit(key string, initFn func() V) V {
+	// Return existing if present without locking
+	if v, ok := c.data[key]; ok {
+		accTestLog.Printf("[DEBUG] Returning cached provider configuration result for key %s", key)
+		return v
+	}
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// Return existing if present
+	// Return existing if present (it could be added in the meantime)
 	if v, ok := c.data[key]; ok {
 		accTestLog.Printf("[DEBUG] Returning cached provider configuration result for key %s", key)
 		return v
