@@ -57,6 +57,11 @@ but couldn't because the state of the `oauth_issue_refresh_tokens` prevented fro
 
 No changes in configuration and state are required.
 
+### New Go version and conflicts with Suricata-based firewalls (like AWS Network Firewall) - changes caused by Go 1.24
+Previously, when we bumped the Go version to v1.23.6 in provider version v1.0.4, it caused problems for certain firewall setups - read the [v1.0.4 migration guide](#new-go-version-and-conflicts-with-suricata-based-firewalls-like-aws-network-firewall).
+
+In this version we bumped our underlying Go version to v1.24.9. To mitigate this issue, the GODEBUG environment variable must be set to `GODEBUG=tlsmlkem=0`, instead of `GODEBUG=tlskyber=0`. Read GODEBUG [documentation](https://go.dev/doc/godebug#go-124) for more details.
+
 ## v2.9.x ➞ v2.10.0
 
 ### *(improvement)* Features promoted to stable
