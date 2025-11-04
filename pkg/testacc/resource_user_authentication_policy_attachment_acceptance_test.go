@@ -13,8 +13,8 @@ import (
 )
 
 func TestAcc_UserAuthenticationPolicyAttachment(t *testing.T) {
-	// TODO [SNOW-1423486]: unskip
-	t.Skipf("Skip because error %s; will be fixed in SNOW-1423486", "Error: 000606 (57P03): No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.")
+	// TODO [SNOW-2661409]: unskip
+	t.Skipf("Skip because error %s; will be fixed in SNOW-2661409", "Error: 000606 (57P03): No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.")
 
 	user1, user1Cleanup := testClient().User.CreateUser(t)
 	t.Cleanup(user1Cleanup)
