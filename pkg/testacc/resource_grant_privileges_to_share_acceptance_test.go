@@ -310,8 +310,7 @@ func TestAcc_GrantPrivilegesToShare_OnView(t *testing.T) {
 
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
-		// TODO [SNOW-2324320]: warehouse needed?
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -370,8 +369,7 @@ func TestAcc_GrantPrivilegesToShare_OnTag(t *testing.T) {
 	resourceName := "snowflake_grant_privileges_to_share.test"
 
 	resource.Test(t, resource.TestCase{
-		// TODO [SNOW-2324320]: warehouse needed?
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
