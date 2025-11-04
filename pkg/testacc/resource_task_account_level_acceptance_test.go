@@ -48,7 +48,7 @@ func TestAcc_Task_ProveSessionParameterBehavior(t *testing.T) {
 		WithDependsOn(taskModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: taskDedicatedProviderFactory,
+		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_Task_ProveSessionParameterBehavior"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

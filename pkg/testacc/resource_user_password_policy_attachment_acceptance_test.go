@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-// TODO [SNOW-1423486]: Fix using warehouse
 func TestAcc_UserPasswordPolicyAttachment(t *testing.T) {
 	user1, user1Cleanup := testClient().User.CreateUser(t)
 	t.Cleanup(user1Cleanup)
@@ -24,8 +23,7 @@ func TestAcc_UserPasswordPolicyAttachment(t *testing.T) {
 	newPasswordPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		// TODO [SNOW-2324320]: warehouse needed?
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		ProtoV6ProviderFactories: userPasswordPoliciesProviderFactory,
 		CheckDestroy:             CheckUserPasswordPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
 			// CREATE

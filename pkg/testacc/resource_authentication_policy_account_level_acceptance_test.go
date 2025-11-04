@@ -33,9 +33,8 @@ func TestAcc_AuthenticationPolicies_AccountLevel(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.AuthenticationPolicy),
-		// TODO [SNOW-2324320]: secondary
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		CheckDestroy:             CheckDestroy(t, resources.AuthenticationPolicy),
+		ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, providerModel, basicModel),

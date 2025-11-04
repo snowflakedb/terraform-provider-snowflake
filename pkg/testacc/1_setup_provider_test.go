@@ -39,12 +39,15 @@ func setUpProvider() error {
 	return nil
 }
 
-// TODO [SNOW-2312385]: add dedicated factories (authentication, secondary tests), address all SNOW-2324320
-var taskDedicatedProviderFactory = providerFactoryUsingCache("task")
 var functionsAndProceduresProviderFactory = providerFactoryUsingCache("FunctionsAndProcedures")
 var viewsProviderFactory = providerFactoryUsingCache("Views")
 var tagsProviderFactory = providerFactoryUsingCache("Tags")
 var servicesProviderFactory = providerFactoryUsingCache("Services")
+var userPasswordPoliciesProviderFactory = providerFactoryUsingCache("UserPasswordPolicies")
+var explicitAccountAdminRoleProviderFactory = providerFactoryUsingCache("ExplicitAccountAdminRole")
+
+// TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate
+var secondaryAccountProviderFactory = providerFactoryUsingCache("SecondaryAccount")
 
 func acceptanceTestsProvider() *schema.Provider {
 	p := provider.Provider()
@@ -73,6 +76,7 @@ func providerFactoryUsingCacheReturningProvider(key string) (map[string]func() (
 	}, p
 }
 
+// TODO [SNOW-2661409]: check which of the usages wants to really be without cache and which could utilize a dedicated cache entry
 func providerFactoryWithoutCache() map[string]func() (tfprotov6.ProviderServer, error) {
 	factory, _ := providerFactoryWithoutCacheReturningProvider()
 	return factory

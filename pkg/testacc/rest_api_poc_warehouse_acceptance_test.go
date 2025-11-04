@@ -27,7 +27,6 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 	providerModel := providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile)
 
 	resource.Test(t, resource.TestCase{
-		// TODO [SNOW-2324320]: rest api poc
 		ProtoV6ProviderFactories: providerFactoryPluginPocUsingCache("TerraformPluginFrameworkRestApiPoC"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),

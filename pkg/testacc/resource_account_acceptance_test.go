@@ -606,8 +606,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 		WithAdminRsaPublicKey(key)
 
 	resource.Test(t, resource.TestCase{
-		// TODO [SNOW-2324320]: accountadmin role explicit
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		ProtoV6ProviderFactories: explicitAccountAdminRoleProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

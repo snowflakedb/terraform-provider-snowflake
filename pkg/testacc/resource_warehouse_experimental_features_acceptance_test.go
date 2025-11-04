@@ -29,8 +29,7 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
 	expectedWarehouseQuery := fmt.Sprintf("SHOW WAREHOUSES LIKE '%[1]s' STARTS WITH '%[1]s' LIMIT 1", warehouseId.Name())
 
 	resource.Test(t, resource.TestCase{
-		// TODO [SNOW-2324320]: secondary + experiment
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_Experimental_Warehouse_ShowImprovedPerformance"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

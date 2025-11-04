@@ -233,8 +233,7 @@ func TestAcc_GrantAccountRole_Issue_3629(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		// TODO [SNOW-2324320]: secondary
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
