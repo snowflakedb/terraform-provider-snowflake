@@ -40,7 +40,7 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 		WithExperimentalFeaturesEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
