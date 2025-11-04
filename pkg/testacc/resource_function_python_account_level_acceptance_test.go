@@ -116,8 +116,7 @@ func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
 				),
 			},
 			{
-				// TODO [SNOW-2324320]: warehouse needed?
-				ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+				ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 				PreConfig: func() {
 					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2025_03")
 				},

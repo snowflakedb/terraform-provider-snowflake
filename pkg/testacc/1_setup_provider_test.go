@@ -41,6 +41,7 @@ func setUpProvider() error {
 
 // TODO [SNOW-2312385]: add dedicated factories (authentication, views tests, functions tests, procedure tests, secondary tests), address all SNOW-2324320
 var taskDedicatedProviderFactory = providerFactoryUsingCache("task")
+var functionsAndProceduresProviderFactory = providerFactoryUsingCache("functionsAndProcedures")
 
 func acceptanceTestsProvider() *schema.Provider {
 	p := provider.Provider()

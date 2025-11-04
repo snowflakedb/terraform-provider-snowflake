@@ -55,8 +55,7 @@ func TestAcc_Procedures_gh3822_bcr2025_03(t *testing.T) {
 				ExpectError: regexp.MustCompile("could not parse arguments"),
 			},
 			{
-				// TODO [SNOW-2324320]: warehouse needed?
-				ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+				ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 				Config:                   config.FromModels(t, providerModel, proceduresModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(proceduresModel.DatasourceReference(), "database", schema.ID().DatabaseName()),

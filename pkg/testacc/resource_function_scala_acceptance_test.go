@@ -43,7 +43,7 @@ func TestAcc_FunctionScala_InlineBasic(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -184,8 +184,7 @@ func TestAcc_FunctionScala_InlineFull(t *testing.T) {
 		WithComment("some other comment")
 
 	resource.Test(t, resource.TestCase{
-		// TODO [SNOW-2324320]: warehouse needed?
-		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
