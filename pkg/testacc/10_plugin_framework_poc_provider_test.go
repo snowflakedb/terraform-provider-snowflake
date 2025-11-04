@@ -100,13 +100,7 @@ func (p *pluginFrameworkPocProvider) Schema(_ context.Context, _ provider.Schema
 
 // The logic for caching is based on the caching we have for the current acceptance tests set.
 func (p *pluginFrameworkPocProvider) Configure(ctx context.Context, request provider.ConfigureRequest, response *provider.ConfigureResponse) {
-	// TODO [SNOW-2312385]: handle empty on the framework level
-	key := p.cacheKey
-	if key == "" {
-		key = "TerraformPluginFrameworkPoC"
-	}
-
-	entry := pluginPocProviderCache.getOrInit(key, func() pluginPocCacheEntry {
+	entry := pluginPocProviderCache.getOrInit(p.cacheKey, func() pluginPocCacheEntry {
 		providerCtx, clientErrorDiag := p.configurePluginPocProvider(ctx, request, response)
 		return pluginPocCacheEntry{
 			providerCtx:     providerCtx,
@@ -201,7 +195,8 @@ func (p *pluginFrameworkPocProvider) Resources(_ context.Context) []func() resou
 
 func New(version string) provider.Provider {
 	return &pluginFrameworkPocProvider{
-		version: version,
+		version:  version,
+		cacheKey: TerraformPluginFrameworkPocDefaultCacheKey,
 	}
 }
 

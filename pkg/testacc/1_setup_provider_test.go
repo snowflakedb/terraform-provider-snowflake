@@ -19,6 +19,7 @@ import (
 )
 
 var (
+	// TODO [SNOW-2661409]: check all the places using TestAccProvider directly
 	TestAccProvider                 *schema.Provider
 	TestAccProtoV6ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 
@@ -48,7 +49,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	return p
 }
 
-// TODO [SNOW-2312385]: we could keep the cache of provider per cache key
+// TODO [SNOW-2661409]: we could keep the cache of provider configuration/provider per cache key
 func providerFactoryUsingCache(key string) map[string]func() (tfprotov6.ProviderServer, error) {
 	factory, _ := providerFactoryUsingCacheReturningProvider(key)
 	return factory
@@ -73,7 +74,6 @@ func providerFactoryWithoutCache() map[string]func() (tfprotov6.ProviderServer, 
 	return factory
 }
 
-// TODO [SNOW-2312385]: use everywhere where providerFactoryWithoutCache was used?
 func providerFactoryWithoutCacheReturningProvider() (map[string]func() (tfprotov6.ProviderServer, error), *schema.Provider) {
 	p := acceptanceTestsProvider()
 	p.ConfigureContextFunc = configureAcceptanceTestProvider

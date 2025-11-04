@@ -10,9 +10,11 @@ import (
 
 var testAccProtoV6ProviderFactoriesWithPluginPoc map[string]func() (tfprotov6.ProviderServer, error)
 
+const TerraformPluginFrameworkPocDefaultCacheKey = "TerraformPluginFrameworkPoC"
+
 func init() {
 	// based on https://developer.hashicorp.com/terraform/plugin/framework/migrating/mux#protocol-version-6
-	testAccProtoV6ProviderFactoriesWithPluginPoc = providerFactoryPluginPocUsingCache("TerraformPluginFrameworkPoC")
+	testAccProtoV6ProviderFactoriesWithPluginPoc = providerFactoryPluginPocUsingCache(TerraformPluginFrameworkPocDefaultCacheKey)
 }
 
 func providerFactoryPluginPocUsingCache(key string) map[string]func() (tfprotov6.ProviderServer, error) {
