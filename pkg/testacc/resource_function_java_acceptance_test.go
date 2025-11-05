@@ -20,7 +20,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -50,7 +49,7 @@ func TestAcc_FunctionJava_InlineBasic(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -133,7 +132,7 @@ func TestAcc_FunctionJava_InlineEmptyArgs(t *testing.T) {
 	functionModel := model.FunctionJavaBasicInline("w", id, returnDataType, handler, definition)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -170,7 +169,7 @@ func TestAcc_FunctionJava_InlineBasicDefaultArg(t *testing.T) {
 		WithArgumentWithDefaultValue(argName, dataType, defaultValue)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -195,8 +194,6 @@ func TestAcc_FunctionJava_InlineBasicDefaultArg(t *testing.T) {
 }
 
 func TestAcc_FunctionJava_InlineFull(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
@@ -271,7 +268,7 @@ func TestAcc_FunctionJava_InlineFull(t *testing.T) {
 		WithComment("some other comment")
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -363,7 +360,7 @@ func TestAcc_FunctionJava_StagedBasic(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -412,7 +409,7 @@ func TestAcc_FunctionJava_AllParameters(t *testing.T) {
 		WithTraceLevel(string(sdk.TraceLevelAlways))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -515,7 +512,7 @@ func TestAcc_FunctionJava_handleExternalLanguageChange(t *testing.T) {
 		WithArgument(argName, dataType)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

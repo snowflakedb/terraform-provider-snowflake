@@ -247,7 +247,7 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 			if err != nil {
 				return nil, err
 			}
-			return sdk.NewCreateTaskWarehouseRequest().WithWarehouse(&warehouseId), nil
+			return sdk.NewCreateTaskWarehouseRequest().WithWarehouse(warehouseId), nil
 		}),
 		attributeMappedValueCreate(d, "schedule", &req.Schedule, func(v any) (*string, error) {
 			if len(v.([]any)) > 0 {
@@ -307,7 +307,7 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 			}
 			precedingTasks = append(precedingTasks, parentTaskId)
 		}
-		req.WithAFTER(precedingTasks)
+		req.WithAfter(precedingTasks)
 	}
 
 	if parameterCreateDiags := handleTaskParametersCreate(d, req); len(parameterCreateDiags) > 0 {

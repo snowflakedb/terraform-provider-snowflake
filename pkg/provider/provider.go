@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -388,9 +389,22 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional: true,
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,
-				ValidateDiagFunc: validators.StringInSlice(previewfeatures.AllPreviewFeatures, true),
+				ValidateDiagFunc: validators.StringInSlice(previewfeatures.ValidPreviewFeatures, true),
 			},
-			Description: fmt.Sprintf("A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(previewfeatures.AllPreviewFeatures)),
+			Description: fmt.Sprintf("A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md)."+
+				" Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables."+
+				" Preview features that can be enabled are: %v. Promoted features that are stable and are enabled by default are: %v. Promoted features can be safely removed from this field. They will be removed in the next major version.",
+				docs.PossibleValuesListed(previewfeatures.AllPreviewFeatures), docs.PossibleValuesListed(previewfeatures.PromotedFeatures),
+			),
+		},
+		"experimental_features_enabled": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AllExperimentalFeatures, true),
+			},
+			Description: fmt.Sprintf("A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(experimentalfeatures.AllExperimentalFeatures)),
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
@@ -573,6 +587,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_accounts":                           datasources.Accounts(),
 		"snowflake_account_roles":                      datasources.AccountRoles(),
 		"snowflake_alerts":                             datasources.Alerts(),
+		"snowflake_authentication_policies":            datasources.AuthenticationPolicies(),
 		"snowflake_compute_pools":                      datasources.ComputePools(),
 		"snowflake_connections":                        datasources.Connections(),
 		"snowflake_cortex_search_services":             datasources.CortexSearchServices(),
@@ -623,7 +638,7 @@ func getDataSources() map[string]*schema.Resource {
 	}
 }
 
-func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
+func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
 	config, err := getDriverConfigFromTerraform(s)
 	if err != nil {
 		return nil, diag.FromErr(err)
@@ -663,11 +678,24 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 		providerCtx.Client = client
 	}
 
+	diags := make([]diag.Diagnostic, 0)
 	if v, ok := s.GetOk("preview_features_enabled"); ok {
 		providerCtx.EnabledFeatures = expandStringList(v.(*schema.Set).List())
+		promotedFeatures := previewfeatures.GetPromotedFeatures(providerCtx.EnabledFeatures)
+		for _, pf := range promotedFeatures {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Stable feature used on preview feature list.",
+				Detail:   fmt.Sprintf("Preview feature %s was already promoted to stable feature. Please remove it from your preview_features_enabled configuration", pf),
+			})
+		}
 	}
 
-	return providerCtx, nil
+	if v, ok := s.GetOk("experimental_features_enabled"); ok {
+		providerCtx.EnabledExperiments = expandStringList(v.(*schema.Set).List())
+	}
+
+	return providerCtx, diags
 }
 
 // TODO: reuse with the function from resources package

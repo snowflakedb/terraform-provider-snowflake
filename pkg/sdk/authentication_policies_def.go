@@ -58,6 +58,22 @@ var AllMfaEnrollmentOptions = []MfaEnrollmentOption{
 	MfaEnrollmentOptional,
 }
 
+type MfaEnrollmentReadOption string
+
+const (
+	MfaEnrollmentReadRequired                        MfaEnrollmentReadOption = "REQUIRED"
+	MfaEnrollmentReadRequiredPasswordOnly            MfaEnrollmentReadOption = "REQUIRED_PASSWORD_ONLY"
+	MfaEnrollmentReadOptional                        MfaEnrollmentReadOption = "OPTIONAL"
+	MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly MfaEnrollmentReadOption = "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"
+)
+
+var AllMfaEnrollmentReadOptions = []MfaEnrollmentReadOption{
+	MfaEnrollmentReadRequired,
+	MfaEnrollmentReadRequiredPasswordOnly,
+	MfaEnrollmentReadOptional,
+	MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly,
+}
+
 type ClientTypesOption string
 
 const (
@@ -79,15 +95,15 @@ var AllClientTypes = []ClientTypesOption{
 type MfaPolicyAllowedMethodsOption string
 
 const (
-	MfaPolicyAllowedMethodAll         MfaPolicyAllowedMethodsOption = "ALL"
-	MfaPolicyPassAllowedMethodPassKey MfaPolicyAllowedMethodsOption = "PASSKEY"
-	MfaPolicyAllowedMethodTotp        MfaPolicyAllowedMethodsOption = "TOTP"
-	MfaPolicyAllowedMethodDuo         MfaPolicyAllowedMethodsOption = "DUO"
+	MfaPolicyAllowedMethodAll     MfaPolicyAllowedMethodsOption = "ALL"
+	MfaPolicyAllowedMethodPassKey MfaPolicyAllowedMethodsOption = "PASSKEY"
+	MfaPolicyAllowedMethodTotp    MfaPolicyAllowedMethodsOption = "TOTP"
+	MfaPolicyAllowedMethodDuo     MfaPolicyAllowedMethodsOption = "DUO"
 )
 
 var AllMfaPolicyOptions = []MfaPolicyAllowedMethodsOption{
 	MfaPolicyAllowedMethodAll,
-	MfaPolicyPassAllowedMethodPassKey,
+	MfaPolicyAllowedMethodPassKey,
 	MfaPolicyAllowedMethodTotp,
 	MfaPolicyAllowedMethodDuo,
 }
@@ -330,6 +346,14 @@ func ToMfaEnrollmentOption(s string) (MfaEnrollmentOption, error) {
 	return MfaEnrollmentOption(s), nil
 }
 
+func ToMfaEnrollmentReadOption(s string) (MfaEnrollmentReadOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllMfaEnrollmentReadOptions, MfaEnrollmentReadOption(s)) {
+		return "", fmt.Errorf("invalid MFA enrollment read option: %s", s)
+	}
+	return MfaEnrollmentReadOption(s), nil
+}
+
 func ToClientTypesOption(s string) (ClientTypesOption, error) {
 	s = strings.ToUpper(s)
 	if !slices.Contains(AllClientTypes, ClientTypesOption(s)) {
@@ -360,4 +384,12 @@ func ToEnforceMfaOnExternalAuthenticationOption(s string) (EnforceMfaOnExternalA
 		return "", fmt.Errorf("invalid enforce MFA on external authentication option: %s", s)
 	}
 	return EnforceMfaOnExternalAuthenticationOption(s), nil
+}
+
+func ToMfaPolicyAllowedMethodsOption(s string) (MfaPolicyAllowedMethodsOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllMfaPolicyOptions, MfaPolicyAllowedMethodsOption(s)) {
+		return "", fmt.Errorf("invalid MFA policy allowed methods option: %s", s)
+	}
+	return MfaPolicyAllowedMethodsOption(s), nil
 }

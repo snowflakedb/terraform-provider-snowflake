@@ -32,5 +32,12 @@ func v2_9_0_AuthenticationPolicyStateUpgrader(ctx context.Context, rawState map[
 	rawState[ShowOutputAttributeName] = []any{showOutput}
 	delete(rawState, "mfa_authentication_methods")
 
+	describeOutput, err := client.AuthenticationPolicies.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	describeOutputState := schemas.AuthenticationPolicyDescriptionToSchema(describeOutput)
+	rawState[DescribeOutputAttributeName] = []any{describeOutputState}
+
 	return rawState, nil
 }
