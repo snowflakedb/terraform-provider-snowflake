@@ -57,6 +57,29 @@ but couldn't because the state of the `oauth_issue_refresh_tokens` prevented fro
 
 No changes in configuration and state are required.
 
+### *(bugfix)* Fixed setting comment in secret resources
+
+Previously, when external changes were detected on comment field, the secret resources were failing to update it due to incorrect internal update operation handling.
+The resources were throwing errors like:
+```text
+Error: 001003 (42000): SQL compilation error:
+syntax error line 1 at position 248 unexpected '<EOF>'.
+```
+
+or
+
+```text
+Error: Saved plan is stale
+```
+
+Now, this behavior is fixed. Here's the list of affected resources:
+- `snowflake_secret_with_generic_string`
+- `snowflake_secret_with_basic_authentication`
+- `snowflake_secret_with_oauth_authorization_code`
+- `snowflake_secret_with_client_credentials`
+
+No changes in configuration and state are required.
+
 ## v2.9.x ➞ v2.10.0
 
 ### *(improvement)* Features promoted to stable
