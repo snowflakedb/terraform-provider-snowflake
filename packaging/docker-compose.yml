@@ -11,7 +11,7 @@ services:
       - ${SNOWFLAKE_CONFIG_PATH}:/root/.snowflake/config
       - shared_data:/shared
     working_dir: /terraform-provider-snowflake
-    command: sh -c "make --silent test-main-terraform-use-cases 1> /shared/test_output.json"
+    command: sh -c "make --silent test-main-terraform-use-cases | tee /shared/test_output.json"
   process-test-output:
     build:
       context: .
