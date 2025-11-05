@@ -27,12 +27,12 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Accounts().Schema,
 	},
 	{
-		name:   "AuthenticationPolicies",
-		schema: datasources.AuthenticationPolicies().Schema,
-	},
-	{
 		name:   "AccountRoles",
 		schema: datasources.AccountRoles().Schema,
+	},
+	{
+		name:   "AuthenticationPolicies",
+		schema: datasources.AuthenticationPolicies().Schema,
 	},
 	{
 		name:   "ComputePools",

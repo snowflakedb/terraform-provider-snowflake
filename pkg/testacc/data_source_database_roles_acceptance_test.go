@@ -102,7 +102,7 @@ func TestAcc_DatabaseRoles_BasicUseCase_DifferentFiltering(t *testing.T) {
 				Config: accconfig.FromModels(t, databaseRoleModel1, databaseRoleModel2, databaseRoleModel3, datasourceModelLimitRowsFrom),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceModelLimitRowsFrom.DatasourceReference(), "database_roles.#", "1"),
-					resource.TestCheckResourceAttr(datasourceModelLimitRowsFrom.DatasourceReference(), "database_roles.0.show_output.0.name", databaseRoleId1.Name()),
+					resource.TestCheckResourceAttr(datasourceModelLimitRowsFrom.DatasourceReference(), "database_roles.0.show_output.0.name", databaseRoleId2.Name()),
 				),
 			},
 		},
@@ -117,8 +117,8 @@ func TestAcc_DatabaseRoles_CompleteUseCase(t *testing.T) {
 	databaseRoleModel := model.DatabaseRole("test", databaseRoleId.DatabaseName(), databaseRoleId.Name()).WithComment(comment)
 
 	databaseRolesModel := datasourcemodel.DatabaseRoles("test", databaseRoleId.DatabaseName()).
-		WithLike(prefix+"%").
-		WithRowsAndFrom(1, databaseRoleId.Name()).
+		WithInDatabase(databaseRoleId.DatabaseName()).
+		WithLike(databaseRoleId.Name()).
 		WithDependsOn(databaseRoleModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
