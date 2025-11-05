@@ -31,11 +31,3 @@ func (s *TagShowOutputAssert) HasAllowedValues(expected ...string) *TagShowOutpu
 	}
 	return s
 }
-
-func (s *TagShowOutputAssert) HasAllowedValuesUnordered(expected ...string) *TagShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("allowed_values.#", strconv.FormatInt(int64(len(expected)), 10)))
-	for i := range expected {
-		s.AddAssertion(assert.ResourceShowOutputValueSet(fmt.Sprintf("allowed_values.%d", i), expected[i]))
-	}
-	return s
-}

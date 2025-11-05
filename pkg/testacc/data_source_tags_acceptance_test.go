@@ -137,7 +137,7 @@ func TestAcc_Tags_CompleteUseCase(t *testing.T) {
 						HasComment(comment).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
-						HasAllowedValuesUnordered("foo", "bar"),
+						HasAllowedValues("bar", "foo"),
 				),
 			},
 		},

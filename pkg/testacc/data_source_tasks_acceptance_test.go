@@ -35,23 +35,23 @@ func TestAcc_Tasks_BasicUseCase_DifferentFiltering(t *testing.T) {
 	_, standaloneTaskCleanup := testClient().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(standaloneTaskId, "SELECT 1"))
 	t.Cleanup(standaloneTaskCleanup)
 
-	datasourceModel1 := datasourcemodel.Tasks("test").
+	tasksLikeExact := datasourcemodel.Tasks("test").
 		WithLike(rootTaskId.Name()).
 		WithInDatabase(rootTaskId.DatabaseId())
 
-	datasourceModel2 := datasourcemodel.Tasks("test").
+	tasksLikePrefix := datasourcemodel.Tasks("test").
 		WithLike(prefix + "%").
 		WithInDatabase(rootTaskId.DatabaseId())
 
-	datasourceModel3 := datasourcemodel.Tasks("test").
+	tasksStartsWithPrefix := datasourcemodel.Tasks("test").
 		WithStartsWith(prefix).
 		WithInDatabase(rootTaskId.DatabaseId())
 
-	datasourceModel4 := datasourcemodel.Tasks("test").
+	tasksLimitRows := datasourcemodel.Tasks("test").
 		WithLimitRows(1).
 		WithInDatabase(rootTaskId.DatabaseId())
 
-	datasourceModel5 := datasourcemodel.Tasks("test").
+	tasksRootOnlyLikePrefix := datasourcemodel.Tasks("test").
 		WithLike(prefix + "%").
 		WithInDatabase(rootTaskId.DatabaseId()).
 		WithRootOnly(true)
@@ -63,35 +63,35 @@ func TestAcc_Tasks_BasicUseCase_DifferentFiltering(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, datasourceModel1),
+				Config: accconfig.FromModels(t, tasksLikeExact),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceModel1.DatasourceReference(), "tasks.#", "1"),
-					resource.TestCheckResourceAttr(datasourceModel1.DatasourceReference(), "tasks.0.show_output.0.name", rootTaskId.Name()),
+					resource.TestCheckResourceAttr(tasksLikeExact.DatasourceReference(), "tasks.#", "1"),
+					resource.TestCheckResourceAttr(tasksLikeExact.DatasourceReference(), "tasks.0.show_output.0.name", rootTaskId.Name()),
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, datasourceModel2),
+				Config: accconfig.FromModels(t, tasksLikePrefix),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceModel2.DatasourceReference(), "tasks.#", "2"),
+					resource.TestCheckResourceAttr(tasksLikePrefix.DatasourceReference(), "tasks.#", "2"),
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, datasourceModel3),
+				Config: accconfig.FromModels(t, tasksStartsWithPrefix),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceModel3.DatasourceReference(), "tasks.#", "2"),
+					resource.TestCheckResourceAttr(tasksStartsWithPrefix.DatasourceReference(), "tasks.#", "2"),
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, datasourceModel4),
+				Config: accconfig.FromModels(t, tasksLimitRows),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceModel4.DatasourceReference(), "tasks.#", "1"),
+					resource.TestCheckResourceAttr(tasksLimitRows.DatasourceReference(), "tasks.#", "1"),
 				),
 			},
 			{
-				Config: accconfig.FromModels(t, datasourceModel5),
+				Config: accconfig.FromModels(t, tasksRootOnlyLikePrefix),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceModel5.DatasourceReference(), "tasks.#", "1"),
-					resource.TestCheckResourceAttr(datasourceModel5.DatasourceReference(), "tasks.0.show_output.0.name", rootTaskId.Name()),
+					resource.TestCheckResourceAttr(tasksRootOnlyLikePrefix.DatasourceReference(), "tasks.#", "1"),
+					resource.TestCheckResourceAttr(tasksRootOnlyLikePrefix.DatasourceReference(), "tasks.0.show_output.0.name", rootTaskId.Name()),
 				),
 			},
 		},
