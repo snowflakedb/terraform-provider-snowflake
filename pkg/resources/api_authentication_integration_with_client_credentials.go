@@ -40,6 +40,7 @@ func ApiAuthenticationIntegrationWithClientCredentials() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ApiAuthenticationIntegrationWithClientCredentials, customdiff.All(
 			ForceNewIfChangeToEmptyString("oauth_token_endpoint"),
 			ForceNewIfChangeToEmptyString("oauth_client_auth_method"),
+			ForceNewIfChangeToEmptySet("oauth_allowed_scopes"),
 			ComputedIfAnyAttributeChanged(apiAuthClientCredentialsSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(apiAuthClientCredentialsSchema, DescribeOutputAttributeName, "enabled", "comment", "oauth_access_token_validity", "oauth_refresh_token_validity",
 				"oauth_client_auth_method", "oauth_token_endpoint", "oauth_allowed_scopes"),
