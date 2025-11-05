@@ -25,8 +25,8 @@ import (
 
 func TestAcc_Users_BasicUseCase_DifferentFiltering(t *testing.T) {
 	prefix := random.AlphaN(4)
-	id := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
-	id2 := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	id := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix + "1")
+	id2 := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix + "2")
 	id3 := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModel := model.User("u", id.Name())
@@ -34,14 +34,20 @@ func TestAcc_Users_BasicUseCase_DifferentFiltering(t *testing.T) {
 	user3Model := model.User("u3", id3.Name())
 
 	usersModelLikeFirstOne := datasourcemodel.Users("test").
+		WithWithDescribe(false).
+		WithWithParameters(false).
 		WithLike(id.Name()).
 		WithDependsOn(userModel.ResourceReference(), user2Model.ResourceReference(), user3Model.ResourceReference())
 
 	usersModelStartsWithPrefix := datasourcemodel.Users("test").
+		WithWithDescribe(false).
+		WithWithParameters(false).
 		WithStartsWith(prefix).
 		WithDependsOn(userModel.ResourceReference(), user2Model.ResourceReference(), user3Model.ResourceReference())
 
 	usersModelLimitRowsAndFrom := datasourcemodel.Users("test").
+		WithWithDescribe(false).
+		WithWithParameters(false).
 		WithLimitRowsAndFrom(1, prefix).
 		WithDependsOn(userModel.ResourceReference(), user2Model.ResourceReference(), user3Model.ResourceReference())
 

@@ -32,10 +32,14 @@ func TestAcc_Warehouses_BaseUseCase_DifferentFiltering(t *testing.T) {
 	warehouseModel3 := model.Warehouse("test3", idThree.Name())
 
 	warehousesModelLikeFirstOne := datasourcemodel.Warehouses("test").
+		WithWithDescribe(false).
+		WithWithParameters(false).
 		WithLike(idOne.Name()).
 		WithDependsOn(warehouseModel1.ResourceReference(), warehouseModel2.ResourceReference(), warehouseModel3.ResourceReference())
 
 	warehousesModelLikePrefix := datasourcemodel.Warehouses("test").
+		WithWithDescribe(false).
+		WithWithParameters(false).
 		WithLike(prefix+"%").
 		WithDependsOn(warehouseModel1.ResourceReference(), warehouseModel2.ResourceReference(), warehouseModel3.ResourceReference())
 

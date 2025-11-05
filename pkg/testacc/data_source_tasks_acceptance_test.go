@@ -36,22 +36,27 @@ func TestAcc_Tasks_BasicUseCase_DifferentFiltering(t *testing.T) {
 	t.Cleanup(standaloneTaskCleanup)
 
 	tasksLikeExact := datasourcemodel.Tasks("test").
+		WithWithParameters(false).
 		WithLike(rootTaskId.Name()).
 		WithInDatabase(rootTaskId.DatabaseId())
 
 	tasksLikePrefix := datasourcemodel.Tasks("test").
+		WithWithParameters(false).
 		WithLike(prefix + "%").
 		WithInDatabase(rootTaskId.DatabaseId())
 
 	tasksStartsWithPrefix := datasourcemodel.Tasks("test").
+		WithWithParameters(false).
 		WithStartsWith(prefix).
 		WithInDatabase(rootTaskId.DatabaseId())
 
 	tasksLimitRows := datasourcemodel.Tasks("test").
+		WithWithParameters(false).
 		WithLimitRows(1).
 		WithInDatabase(rootTaskId.DatabaseId())
 
 	tasksRootOnlyLikePrefix := datasourcemodel.Tasks("test").
+		WithWithParameters(false).
 		WithLike(prefix + "%").
 		WithInDatabase(rootTaskId.DatabaseId()).
 		WithRootOnly(true)
