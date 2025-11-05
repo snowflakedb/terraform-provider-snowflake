@@ -24,8 +24,8 @@ import (
 
 func TestAcc_MaskingPolicies_BasicUseCase_DifferentFiltering(t *testing.T) {
 	prefix := random.AlphaN(4)
-	maskingPolicyId1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	maskingPolicyId2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	maskingPolicyId1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "1")
+	maskingPolicyId2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "2")
 	maskingPolicyId3 := testClient().Ids.RandomSchemaObjectIdentifier()
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 

@@ -18,8 +18,8 @@ import (
 
 func TestAcc_DatabaseRoles_BasicUseCase_DifferentFiltering(t *testing.T) {
 	prefix := random.AlphaN(4)
-	databaseRoleId1 := testClient().Ids.RandomDatabaseObjectIdentifierWithPrefix(prefix)
-	databaseRoleId2 := testClient().Ids.RandomDatabaseObjectIdentifierWithPrefix(prefix)
+	databaseRoleId1 := testClient().Ids.RandomDatabaseObjectIdentifierWithPrefix(prefix + "1")
+	databaseRoleId2 := testClient().Ids.RandomDatabaseObjectIdentifierWithPrefix(prefix + "2")
 	databaseRoleId3 := testClient().Ids.RandomDatabaseObjectIdentifier()
 	comment := random.Comment()
 

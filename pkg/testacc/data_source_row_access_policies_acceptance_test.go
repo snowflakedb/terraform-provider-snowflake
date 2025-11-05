@@ -22,8 +22,8 @@ import (
 
 func TestAcc_RowAccessPolicies_BasicUseCase_DifferentFiltering(t *testing.T) {
 	prefix := random.AlphaN(4)
-	rowAccessPolicyId1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	rowAccessPolicyId2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	rowAccessPolicyId1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "1")
+	rowAccessPolicyId2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "2")
 	rowAccessPolicyId3 := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
