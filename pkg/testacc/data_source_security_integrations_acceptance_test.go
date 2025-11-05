@@ -35,10 +35,12 @@ func TestAcc_SecurityIntegrations_BasicUseCase_DifferentFiltering(t *testing.T) 
 	scimModel3 := model.ScimSecurityIntegration("test3", idThree.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
 	securityIntegrationsModelLikeFirst := datasourcemodel.SecurityIntegrations("test").
+		WithWithDescribe(false).
 		WithLike(idOne.Name()).
 		WithDependsOn(scimModel1.ResourceReference(), scimModel2.ResourceReference(), scimModel3.ResourceReference())
 
 	securityIntegrationsModelLikePrefix := datasourcemodel.SecurityIntegrations("test").
+		WithWithDescribe(false).
 		WithLike(prefix+"%").
 		WithDependsOn(scimModel1.ResourceReference(), scimModel2.ResourceReference(), scimModel3.ResourceReference())
 

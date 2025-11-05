@@ -35,27 +35,33 @@ func TestAcc_Streamlits_BasicUseCase_DifferentFiltering(t *testing.T) {
 	streamlitModel3 := model.StreamlitWithIds("test2", streamlitId3, mainFile, stage.ID())
 
 	datasourceModelLikeExact := datasourcemodel.Streamlits("test").
+		WithWithDescribe(false).
 		WithLike(streamlitId1.Name()).
 		WithDependsOn(streamlitModel1.ResourceReference(), streamlitModel2.ResourceReference(), streamlitModel3.ResourceReference())
 
 	datasourceModelLikePrefix := datasourcemodel.Streamlits("test").
+		WithWithDescribe(false).
 		WithLike(prefix+"%").
 		WithDependsOn(streamlitModel1.ResourceReference(), streamlitModel2.ResourceReference(), streamlitModel3.ResourceReference())
 
 	datasourceModelInDatabase := datasourcemodel.Streamlits("test").
+		WithWithDescribe(false).
 		WithInDatabase(streamlitId1.DatabaseId()).
 		WithDependsOn(streamlitModel1.ResourceReference(), streamlitModel2.ResourceReference(), streamlitModel3.ResourceReference())
 
 	datasourceModelInSchema := datasourcemodel.Streamlits("test").
+		WithWithDescribe(false).
 		WithInSchema(streamlitId1.SchemaId()).
 		WithDependsOn(streamlitModel1.ResourceReference(), streamlitModel2.ResourceReference(), streamlitModel3.ResourceReference())
 
 	datasourceModelLikeAndInDatabase := datasourcemodel.Streamlits("test").
+		WithWithDescribe(false).
 		WithLike(prefix+"%").
 		WithInDatabase(streamlitId1.DatabaseId()).
 		WithDependsOn(streamlitModel1.ResourceReference(), streamlitModel2.ResourceReference(), streamlitModel3.ResourceReference())
 
 	datasourceModelLikeAndInSchema := datasourcemodel.Streamlits("test").
+		WithWithDescribe(false).
 		WithLike(prefix+"%").
 		WithInSchema(streamlitId1.SchemaId()).
 		WithDependsOn(streamlitModel1.ResourceReference(), streamlitModel2.ResourceReference(), streamlitModel3.ResourceReference())

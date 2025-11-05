@@ -30,29 +30,35 @@ func TestAcc_Secrets_BasicUseCase_DifferentFiltering(t *testing.T) {
 	secretModel3 := model.SecretWithGenericString("test2", secretId3.DatabaseName(), secretId3.SchemaName(), secretId3.Name(), "test_secret_string3")
 
 	datasourceModelLikeExact := datasourcemodel.Secrets("test").
+		WithWithDescribe(false).
 		WithLike(secretId1.Name()).
 		WithInDatabase(secretId1.DatabaseId()).
 		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
 	datasourceModelLikePrefix := datasourcemodel.Secrets("test").
+		WithWithDescribe(false).
 		WithLike(prefix+"%").
 		WithInDatabase(secretId1.DatabaseId()).
 		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
 	datasourceModelInDatabase := datasourcemodel.Secrets("test").
+		WithWithDescribe(false).
 		WithInDatabase(secretId1.DatabaseId()).
 		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
 	datasourceModelInSchema := datasourcemodel.Secrets("test").
+		WithWithDescribe(false).
 		WithInSchema(secretId1.SchemaId()).
 		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
 	datasourceModelLikeInDatabase := datasourcemodel.Secrets("test").
+		WithWithDescribe(false).
 		WithLike(prefix+"%").
 		WithInDatabase(secretId1.DatabaseId()).
 		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
 
 	datasourceModelLikeInSchema := datasourcemodel.Secrets("test").
+		WithWithDescribe(false).
 		WithLike(prefix+"%").
 		WithInSchema(secretId1.SchemaId()).
 		WithDependsOn(secretModel1.ResourceReference(), secretModel2.ResourceReference(), secretModel3.ResourceReference())
