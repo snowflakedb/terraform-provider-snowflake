@@ -134,6 +134,17 @@ Now, this behavior is fixed. Here's the list of affected resources:
 
 No changes in configuration and state are required.
 
+### *(improvement)* Handling show_output in warehouses
+
+In v2.7.0 ([migration guide](./MIGRATION_GUIDE.md#new-feature-added-support-for-generation-2-standard-warehouses-and-resource-constraints-for-snowpark-optimized-warehouses)),
+we added support for gen2 warehouses. In this change, we added new fields to `show_output`: `generation`, and `resource_constraint`. Before the 2025_07 bundle, the `generation` column was not available in `SHOW WAREHOUSES`. Internally, we dispatched
+`resource_constraint` value based on the warehouse type, and filled the values in the resource state.
+
+The 2025_07 bundle adds the `generation` column (read our [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#new-generation-column-in-output-in-show-warehouses)). Now, instead of dispatching the `resource_constraint` value, the provider simply passes the `generation` field from Snowflake to the `show_output`.
+If the bundle is disabled, then the `generation` column is not present in Snowflake, and the providers behaves in the old way.
+
+No changes in the configuration are necessary.
+
 ## v2.9.x ➞ v2.10.0
 
 ### *(improvement)* Features promoted to stable
