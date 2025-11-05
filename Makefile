@@ -92,10 +92,11 @@ test-main-terraform-use-cases: ## run test for main terraform use cases
 	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_.*_BasicUseCase.*|TestAcc_.*_CompleteUseCase.*)$$" -v -cover -json -timeout=20m ./pkg/testacc
 
 test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests within docker environment
-	docker compose -f ./packaging/docker-compose.yml run --rm test-main-terraform-use-cases
+	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
+	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm test-main-terraform-use-cases
 
 process-test-output-docker-compose: ## run test output processor within docker environment
-	docker compose -f ./packaging/docker-compose.yml run --rm process-test-output
+	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm process-test-output
 
 build-local: ## build the binary locally
 	go build -o $(BASE_BINARY_NAME) .
