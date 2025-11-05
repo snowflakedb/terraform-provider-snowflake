@@ -40,12 +40,13 @@ func setUpProvider() error {
 }
 
 var (
-	functionsAndProceduresProviderFactory   = providerFactoryUsingCache("FunctionsAndProcedures")
-	viewsProviderFactory                    = providerFactoryUsingCache("Views")
-	tagsProviderFactory                     = providerFactoryUsingCache("Tags")
-	servicesProviderFactory                 = providerFactoryUsingCache("Services")
-	userPasswordPoliciesProviderFactory     = providerFactoryUsingCache("UserPasswordPolicies")
-	explicitAccountAdminRoleProviderFactory = providerFactoryUsingCache("ExplicitAccountAdminRole")
+	functionsAndProceduresProviderFactory     = providerFactoryUsingCache("FunctionsAndProcedures")
+	viewsProviderFactory                      = providerFactoryUsingCache("Views")
+	tagsProviderFactory                       = providerFactoryUsingCache("Tags")
+	servicesProviderFactory                   = providerFactoryUsingCache("Services")
+	userPasswordPoliciesProviderFactory       = providerFactoryUsingCache("UserPasswordPolicies")
+	userAuthenticationPoliciesProviderFactory = providerFactoryUsingCache("UserAuthenticationPolicies")
+	explicitAccountAdminRoleProviderFactory   = providerFactoryUsingCache("ExplicitAccountAdminRole")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate

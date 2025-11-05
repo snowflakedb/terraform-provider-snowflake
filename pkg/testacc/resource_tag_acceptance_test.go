@@ -51,7 +51,7 @@ func TestAcc_Tag_basic(t *testing.T) {
 		WithMaskingPolicies(maskingPolicy2.ID())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -248,7 +248,7 @@ func TestAcc_Tag_complete(t *testing.T) {
 		WithMaskingPoliciesValue(tfconfig.ListVariable(tfconfig.StringVariable(maskingPolicy.ID().FullyQualifiedName())))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -300,7 +300,7 @@ func TestAcc_Tag_Rename(t *testing.T) {
 	modelWithNewId := model.TagBase("test", newId)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -355,7 +355,7 @@ func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: tagsProviderFactory,
 				Config:                   config.FromModels(t, tagModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
