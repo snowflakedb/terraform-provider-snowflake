@@ -94,8 +94,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase
 			HasCommentString(comment).
 			HasOauthAccessTokenValidityString("42").
 			HasOauthRefreshTokenValidityString("12345").
-			HasOauthAllowedScopesLen(1).
-			HasOauthAllowedScopesElem(0, "foo"),
+			HasOauthAllowedScopes("foo"),
 
 		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
 			HasName(id.Name()).
@@ -265,8 +264,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_CompleteUseC
 						HasOauthClientAuthMethodString(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
 						HasOauthRefreshTokenValidityString("12345").
 						HasOauthTokenEndpointString("https://example.com").
-						HasOauthAllowedScopesLen(1).
-						HasOauthAllowedScopesElem(0, "foo"),
+						HasOauthAllowedScopes("foo"),
 
 					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
 						HasName(id.Name()).
