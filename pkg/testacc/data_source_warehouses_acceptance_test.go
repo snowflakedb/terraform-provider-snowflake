@@ -73,15 +73,48 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 	warehouseModel := model.Warehouse("test", id.Name()).
 		WithComment(comment)
 
-	warehousesModel := datasourcemodel.Warehouses("test").
-		WithLike(id.Name()).
-		WithDependsOn(warehouseModel.ResourceReference())
-
 	warehousesModelWithoutOptionals := datasourcemodel.Warehouses("test").
 		WithLike(id.Name()).
 		WithWithDescribe(false).
 		WithWithParameters(false).
 		WithDependsOn(warehouseModel.ResourceReference())
+
+	warehousesModel := datasourcemodel.Warehouses("test").
+		WithLike(id.Name()).
+		WithDependsOn(warehouseModel.ResourceReference())
+
+	commonShowAssert := func(t *testing.T, datasourceReference string) *resourceshowoutputassert.WarehouseShowOutputAssert {
+		t.Helper()
+		return resourceshowoutputassert.WarehousesDatasourceShowOutput(t, datasourceReference).
+			HasName(id.Name()).
+			HasStateNotEmpty().
+			HasType(sdk.WarehouseTypeStandard).
+			HasSize(sdk.WarehouseSizeXSmall).
+			HasMinClusterCount(1).
+			HasMaxClusterCount(1).
+			HasStartedClustersNotEmpty().
+			HasRunningNotEmpty().
+			HasQueuedNotEmpty().
+			HasIsDefault(false).
+			HasAutoSuspend(600).
+			HasAutoResume(true).
+			HasAvailableNotEmpty().
+			HasProvisioningNotEmpty().
+			HasQuiescingNotEmpty().
+			HasOtherNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasResumedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasOwnerNotEmpty().
+			HasComment(comment).
+			HasEnableQueryAcceleration(false).
+			HasQueryAccelerationMaxScaleFactor(8).
+			HasResourceMonitorEmpty().
+			HasScalingPolicy(sdk.ScalingPolicyStandard).
+			HasOwnerRoleTypeNotEmpty().
+			HasResourceConstraintEmpty().
+			HasGenerationNotEmpty()
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -91,37 +124,18 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Warehouse),
 		Steps: []resource.TestStep{
 			{
+				Config: config.FromModels(t, warehouseModel, warehousesModelWithoutOptionals),
+				Check: assertThat(t,
+					commonShowAssert(t, warehousesModelWithoutOptionals.DatasourceReference()),
+
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.parameters.#", "0")),
+				),
+			},
+			{
 				Config: config.FromModels(t, warehouseModel, warehousesModel),
 				Check: assertThat(t,
-					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModel.DatasourceReference()).
-						HasName(id.Name()).
-						HasStateNotEmpty().
-						HasType(sdk.WarehouseTypeStandard).
-						HasSize(sdk.WarehouseSizeXSmall).
-						HasMinClusterCount(1).
-						HasMaxClusterCount(1).
-						HasStartedClustersNotEmpty().
-						HasRunningNotEmpty().
-						HasQueuedNotEmpty().
-						HasIsDefault(false).
-						HasAutoSuspend(600).
-						HasAutoResume(true).
-						HasAvailableNotEmpty().
-						HasProvisioningNotEmpty().
-						HasQuiescingNotEmpty().
-						HasOtherNotEmpty().
-						HasCreatedOnNotEmpty().
-						HasResumedOnNotEmpty().
-						HasUpdatedOnNotEmpty().
-						HasOwnerNotEmpty().
-						HasComment(comment).
-						HasEnableQueryAcceleration(false).
-						HasQueryAccelerationMaxScaleFactor(8).
-						HasResourceMonitorEmpty().
-						HasScalingPolicy(sdk.ScalingPolicyStandard).
-						HasOwnerRoleTypeNotEmpty().
-						HasResourceConstraintEmpty().
-						HasGenerationNotEmpty(),
+					commonShowAssert(t, warehousesModel.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.created_on")),
@@ -132,43 +146,6 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 						HasDefaultMaxConcurrencyLevel().
 						HasDefaultStatementQueuedTimeoutInSeconds().
 						HasDefaultStatementTimeoutInSeconds(),
-				),
-			},
-			{
-				Config: config.FromModels(t, warehouseModel, warehousesModelWithoutOptionals),
-				Check: assertThat(t,
-					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, "test").
-						HasName(id.Name()).
-						HasStateNotEmpty().
-						HasType(sdk.WarehouseTypeStandard).
-						HasSize(sdk.WarehouseSizeXSmall).
-						HasMinClusterCount(1).
-						HasMaxClusterCount(1).
-						HasStartedClustersNotEmpty().
-						HasRunningNotEmpty().
-						HasQueuedNotEmpty().
-						HasIsDefault(false).
-						HasAutoSuspend(600).
-						HasAutoResume(true).
-						HasAvailableNotEmpty().
-						HasProvisioningNotEmpty().
-						HasQuiescingNotEmpty().
-						HasOtherNotEmpty().
-						HasCreatedOnNotEmpty().
-						HasResumedOnNotEmpty().
-						HasUpdatedOnNotEmpty().
-						HasOwnerNotEmpty().
-						HasComment(comment).
-						HasEnableQueryAcceleration(false).
-						HasQueryAccelerationMaxScaleFactor(8).
-						HasResourceMonitorEmpty().
-						HasScalingPolicy(sdk.ScalingPolicyStandard).
-						HasOwnerRoleTypeNotEmpty().
-						HasResourceConstraintEmpty().
-						HasGenerationNotEmpty(),
-
-					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
-					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.parameters.#", "0")),
 				),
 			},
 		},
