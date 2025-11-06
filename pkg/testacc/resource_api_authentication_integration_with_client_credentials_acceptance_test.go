@@ -202,8 +202,9 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *t
 			},
 			// Destroy - ensure api integration is destroyed before the next step
 			{
-				Destroy: true,
-				Config:  accconfig.FromModels(t, basic),
+				RefreshState: false,
+				Destroy:      true,
+				Config:       accconfig.FromModels(t, basic),
 				Check: assertThat(t,
 					invokeactionassert.ApiIntegrationDoesNotExist(t, id),
 				),
