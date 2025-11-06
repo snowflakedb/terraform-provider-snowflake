@@ -26,6 +26,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.10.0 ➞ v2.10.1
 
+### *(bugfix)* Fixed parsing DESCRIBE output for authentication policies
+
+In v2.10.0, we reworked authentication policies. This release contains a regression for handling `REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY` value in `MFA_ENROLLMENT` field. For such objects, the provider returned an error
+```
+Error: invalid MFA enrollment option: REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY
+```
+
+This bug is now fixed. Also, we kindly remind you about [deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout).
+
+References [#4093](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4093#issuecomment-3480743221).
+
 ### *(bugfix)* Fixed reading the value of `oauth_refresh_token_validity` in `snowflake_oauth_integration_for_custom_clients` resource
 
 Previously, whenever we detected an external change in the `oauth_refresh_token_validity` field,
@@ -36,6 +47,60 @@ panic: oauth_refresh_token_validity: '' expected type 'int', got unconvertible t
 
 No changes in configuration and state are required.
 
+### *(bugfix)* Fixed panics because of nil pointer dereferences
+
+In v2.8.0, the following error was reported during handling materialized view with lots of records:
+<details>
+  <summary>Expand</summary>
+```
+Error: Plugin did not respond
+The plugin encountered an error, and failed to respond to the
+plugin6.(*GRPCProvider).ApplyResourceChange call. The plugin logs may contain
+more details.
+Stack trace from the terraform-provider-snowflake_v2.8.0 plugin:
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation code=0x1 addr=0x40 pc=0x193f359]
+goroutine 41 [running]:
+github.com/snowflakedb/gosnowflake.postRestfulQueryHelper.func1()
+github.com/snowflakedb/gosnowflake@v1.17.0/restful.go:241 +0x19
+panic({0x257d740?, 0x41e1700?})
+runtime/panic.go:785 +0x132
+github.com/snowflakedb/gosnowflake.postRestfulQueryHelper.func2()
+github.com/snowflakedb/gosnowflake@v1.17.0/restful.go:288 +0x19
+panic({0x257d740?, 0x41e1700?})
+```
+</details>
+
+This was caused by the Go driver dependency. The Go driver fixed this in [v1.17.1](https://docs.snowflake.com/en/release-notes/clients-drivers/golang-2025#version-1-17-1-november-4-2025). We upgraded the driver on our side to that version.
+No changes in configuration and state are required.
+
+References [#4092](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4092).
+
 ### *(bugfix)* Fixed updating the value of `enabled` in `snowflake_oauth_integration_for_partner_applications` resource
 
 Previously, whenever we detected change for the `enabled` field,
@@ -43,6 +108,29 @@ we were wrongly checking the state of the `oauth_issue_refresh_tokens` field.
 Although the fields' logic is connected (see the note in https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake#additional-optional-parameters-partner-applications), it didn't matter in this context.
 This could cause issues like infinite loops in plans when only the `enabled` field was changed,
 but couldn't because the state of the `oauth_issue_refresh_tokens` prevented from it.
+
+No changes in configuration and state are required.
+
+### *(bugfix)* Fixed setting comment in secret resources
+
+Previously, when external changes were detected on comment field, the secret resources were failing to update it due to incorrect internal update operation handling.
+The resources were throwing errors like:
+```text
+Error: 001003 (42000): SQL compilation error:
+syntax error line 1 at position 248 unexpected '<EOF>'.
+```
+
+or
+
+```text
+Error: Saved plan is stale
+```
+
+Now, this behavior is fixed. Here's the list of affected resources:
+- `snowflake_secret_with_generic_string`
+- `snowflake_secret_with_basic_authentication`
+- `snowflake_secret_with_oauth_authorization_code`
+- `snowflake_secret_with_client_credentials`
 
 No changes in configuration and state are required.
 

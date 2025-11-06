@@ -6,17 +6,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,27 +25,110 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_SecretWithClientCredentials_BasicFlow(t *testing.T) {
+func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
-			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "foo"}, {Scope: "bar"}, {Scope: "test"}}),
+			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}, {Scope: "scope3"}, {Scope: "scope4"}}),
 	)
 	t.Cleanup(apiIntegrationCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	name := id.Name()
 	comment := random.Comment()
-	newComment := random.Comment()
+	oauthScopes := []string{"scope1", "scope2"}
+	currentRole := testClient().Context.CurrentRole(t).Name()
 
-	secretModel := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"}).WithComment(comment)
-	secretModelTestInScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"test"}).WithComment(newComment)
-	secretModelFooInScopesWithComment := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo"}).WithComment(newComment)
-	secretModelFooInScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo"})
-	secretModelWithoutComment := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"})
-	secretModelWithoutCommentWithOauthScopes := model.SecretWithClientCredentials("s", id.DatabaseName(), id.SchemaName(), name, integrationId.Name(), []string{"foo", "bar"}).
-		WithOauthScopes([]string{"foo", "bar"})
-	secretName := secretModel.ResourceReference()
+	basic := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), oauthScopes)
+
+	complete := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name(), []string{"scope3", "scope4"}).
+		WithComment(comment)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.Secret(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypeOAuth2)).
+			HasOwner(currentRole).
+			HasNoComment(),
+
+		resourceassert.SecretWithClientCredentialsResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasSecretTypeString("OAUTH2").
+			HasApiAuthenticationString(integrationId.Name()).
+			HasOauthScopes("scope1", "scope2").
+			HasCommentString(""),
+
+		resourceshowoutputassert.SecretShowOutput(t, basic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypeOAuth2)).
+			HasOwner(currentRole).
+			HasComment("").
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.secret_type", string(sdk.SecretTypeOAuth2))),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.username", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.comment", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_access_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.integration_name", integrationId.Name())),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_scopes.#", "2")),
+		assert.Check(resource.TestCheckTypeSetElemAttr(basic.ResourceReference(), "describe_output.0.oauth_scopes.*", "scope1")),
+		assert.Check(resource.TestCheckTypeSetElemAttr(basic.ResourceReference(), "describe_output.0.oauth_scopes.*", "scope2")),
+	}
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Secret(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypeOAuth2)).
+			HasOwner(currentRole).
+			HasComment(comment),
+
+		resourceassert.SecretWithClientCredentialsResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasSecretTypeString("OAUTH2").
+			HasApiAuthenticationString(integrationId.Name()).
+			HasOauthScopes("scope3", "scope4").
+			HasCommentString(comment),
+
+		resourceshowoutputassert.SecretShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypeOAuth2)).
+			HasOwner(currentRole).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.secret_type", string(sdk.SecretTypeOAuth2))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.username", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment", comment)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.integration_name", integrationId.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.#", "2")),
+		assert.Check(resource.TestCheckTypeSetElemAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.*", "scope3")),
+		assert.Check(resource.TestCheckTypeSetElemAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.*", "scope4")),
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -53,170 +137,85 @@ func TestAcc_SecretWithClientCredentials_BasicFlow(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.SecretWithClientCredentials),
 		Steps: []resource.TestStep{
+			// Create - without optionals
 			{
-				Config: config.FromModels(t, secretModel),
-				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
-						resourceassert.SecretWithClientCredentialsResource(t, secretModel.ResourceReference()).
-							HasNameString(name).
-							HasDatabaseString(id.DatabaseName()).
-							HasSchemaString(id.SchemaName()).
-							HasApiAuthenticationString(integrationId.Name()).
-							HasOauthScopesLength(len([]string{"foo", "bar"})).
-							HasCommentString(comment),
-
-						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
-							HasName(name).
-							HasDatabaseName(id.DatabaseName()).
-							HasSecretType(string(sdk.SecretTypeOAuth2)).
-							HasSchemaName(id.SchemaName()),
-					),
-					resource.TestCheckResourceAttr(secretName, "oauth_scopes.#", "2"),
-					resource.TestCheckTypeSetElemAttr(secretName, "oauth_scopes.*", "foo"),
-					resource.TestCheckTypeSetElemAttr(secretName, "oauth_scopes.*", "bar"),
-
-					resource.TestCheckResourceAttr(secretName, "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttrSet(secretName, "describe_output.0.created_on"),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.name", name),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.database_name", id.DatabaseName()),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.schema_name", id.SchemaName()),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.username", ""),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.oauth_access_token_expiry_time", ""),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.oauth_refresh_token_expiry_time", ""),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.integration_name", integrationId.Name()),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.oauth_scopes.#", "2"),
-					resource.TestCheckTypeSetElemAttr(secretName, "describe_output.0.oauth_scopes.*", "foo"),
-					resource.TestCheckTypeSetElemAttr(secretName, "describe_output.0.oauth_scopes.*", "bar"),
-				),
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
 			},
-			// set oauth_scopes and comment in config
+			// Import - without optionals
 			{
-				Config: config.FromModels(t, secretModelTestInScopes),
+				Config:                  config.FromModels(t, basic),
+				ResourceName:            basic.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"api_authentication"},
+			},
+			// Update - set optionals
+			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(secretName, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(secretName, "oauth_scopes", tfjson.ActionUpdate, sdk.String("[bar foo]"), sdk.String("[test]")),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
-						resourceassert.SecretWithClientCredentialsResource(t, "snowflake_secret_with_client_credentials.s").
-							HasNameString(name).
-							HasDatabaseString(id.DatabaseName()).
-							HasSchemaString(id.SchemaName()).
-							HasApiAuthenticationString(integrationId.Name()).
-							HasOauthScopesLength(len([]string{"test"})).
-							HasCommentString(newComment),
-						assert.Check(resource.TestCheckResourceAttr(secretName, "oauth_scopes.#", "1")),
-						assert.Check(resource.TestCheckTypeSetElemAttr(secretName, "oauth_scopes.*", "test")),
-
-						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
-							HasSecretType(string(sdk.SecretTypeOAuth2)).
-							HasComment(newComment),
-					),
-
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.comment", newComment),
-					resource.TestCheckResourceAttr(secretName, "describe_output.0.oauth_scopes.#", "1"),
-					resource.TestCheckTypeSetElemAttr(secretName, "describe_output.0.oauth_scopes.*", "test"),
-				),
+				Config: config.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
 			},
-			// set oauth_scopes and comment externally
+			// Import - with optionals
+			{
+				Config:                  config.FromModels(t, complete),
+				ResourceName:            complete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"api_authentication"},
+			},
+			// Update - unset optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
 			{
 				PreConfig: func() {
-					req := sdk.NewAlterSecretRequest(id).WithSet(*sdk.NewSecretSetRequest().
-						WithSetForFlow(*sdk.NewSetForFlowRequest().
-							WithSetForOAuthClientCredentials(
-								*sdk.NewSetForOAuthClientCredentialsRequest().WithOauthScopes(
-									*sdk.NewOauthScopesListRequest([]sdk.ApiIntegrationScope{{Scope: "bar"}}),
+					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
+						*sdk.NewSecretSetRequest().
+							WithComment(comment).
+							WithSetForFlow(*sdk.NewSetForFlowRequest().
+								WithSetForOAuthClientCredentials(*sdk.NewSetForOAuthClientCredentialsRequest().
+									WithOauthScopes(*sdk.NewOauthScopesListRequest(collections.Map(oauthScopes, func(s string) sdk.ApiIntegrationScope { return sdk.ApiIntegrationScope{Scope: s} }))),
 								),
 							),
-						),
-					)
-					testClient().Secret.Alter(t, req)
+					))
 				},
-				Config: config.FromModels(t, secretModelFooInScopesWithComment),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(secretModel.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift(secretModel.ResourceReference(), "oauth_scopes", sdk.String("[test]"), sdk.String("[bar]")),
-						planchecks.ExpectChange(secretModel.ResourceReference(), "oauth_scopes", tfjson.ActionUpdate, sdk.String("[bar]"), sdk.String("[foo]")),
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Destroy - ensure secret is destroyed before the next step
+			{
+				Destroy: true,
+				Config:  config.FromModels(t, basic),
 				Check: assertThat(t,
-					resourceassert.SecretWithClientCredentialsResource(t, "snowflake_secret_with_client_credentials.s").
-						HasNameString(name).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasApiAuthenticationString(integrationId.Name()).
-						HasOauthScopesLength(len([]string{"foo"})).
-						HasCommentString(newComment),
-					assert.Check(resource.TestCheckResourceAttr(secretName, "oauth_scopes.#", "1")),
-					assert.Check(resource.TestCheckTypeSetElemAttr(secretName, "oauth_scopes.*", "foo")),
+					invokeactionassert.SecretDoesNotExist(t, id),
 				),
 			},
-			// unset comment
+			// Create - with optionals
 			{
-				Config: config.FromModels(t, secretModelFooInScopes),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(secretModelFooInScopes.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(secretModelFooInScopes.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.String(newComment), nil),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
-				Check: assertThat(t,
-					resourceassert.SecretWithClientCredentialsResource(t, secretModelFooInScopes.ResourceReference()).
-						HasCommentString(""),
-				),
-			},
-			// set comment externally
-			{
-				PreConfig: func() {
-					req := sdk.NewAlterSecretRequest(id).WithSet(*sdk.NewSecretSetRequest().WithComment(comment))
-					testClient().Secret.Alter(t, req)
-				},
-				Config: config.FromModels(t, secretModelWithoutComment),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(secretModel.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(secretModelWithoutComment.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.String(comment), nil),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.SecretWithClientCredentialsResource(t, secretModelWithoutComment.ResourceReference()).
-						HasCommentString(""),
-				),
-			},
-			// create without comment
-			{
-				Config: config.FromModels(t, secretModelWithoutCommentWithOauthScopes),
-				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
-						resourceassert.SecretWithClientCredentialsResource(t, "snowflake_secret_with_client_credentials.s").
-							HasNameString(name).
-							HasDatabaseString(id.DatabaseName()).
-							HasSchemaString(id.SchemaName()).
-							HasApiAuthenticationString(integrationId.Name()).
-							HasOauthScopesLength(len([]string{"foo", "bar"})).
-							HasCommentString(""),
-					),
-					resource.TestCheckResourceAttr(secretName, "oauth_scopes.#", "2"),
-					resource.TestCheckTypeSetElemAttr(secretName, "oauth_scopes.*", "foo"),
-					resource.TestCheckTypeSetElemAttr(secretName, "oauth_scopes.*", "bar"),
-				),
-			},
-			// import
-			{
-				ResourceName:      secretModelWithoutComment.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "database", id.DatabaseId().Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "schema", id.SchemaId().Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "api_authentication", integrationId.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "oauth_scopes.#", "2"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "comment", ""),
-				),
+				Config: config.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
 			},
 		},
 	})

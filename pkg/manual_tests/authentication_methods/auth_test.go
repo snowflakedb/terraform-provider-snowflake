@@ -18,7 +18,6 @@ import (
 // This is a manual test for authenticating with Okta.
 func TestAcc_Provider_OktaAuth(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableManual)
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: manual_tests.ManualTestProtoV6ProviderFactories,

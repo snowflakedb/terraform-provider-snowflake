@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -281,8 +280,6 @@ func TestAcc_GrantPrivilegesToShare_OnAllTablesInSchema(t *testing.T) {
 }
 
 func TestAcc_GrantPrivilegesToShare_OnView(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -313,7 +310,7 @@ func TestAcc_GrantPrivilegesToShare_OnView(t *testing.T) {
 
 	resourceName := "snowflake_grant_privileges_to_share.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: viewsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -369,10 +366,10 @@ func TestAcc_GrantPrivilegesToShare_OnTag(t *testing.T) {
 		}
 		return variables
 	}
-
 	resourceName := "snowflake_grant_privileges_to_share.test"
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
