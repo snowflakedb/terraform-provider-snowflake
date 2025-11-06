@@ -43,12 +43,12 @@ func (a *AccountResourceParametersAssert) HasAbortDetachedQuery(expected bool) *
 }
 
 func (a *AccountResourceParametersAssert) HasAllowClientMfaCaching(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterAllowClientMfaCaching, expected))
+	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterAllowClientMFACaching, expected)) // modified manually
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasAllowIdToken(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterAllowIdToken, expected))
+	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterAllowIDToken, expected)) // modified manually
 	return a
 }
 
@@ -158,7 +158,7 @@ func (a *AccountResourceParametersAssert) HasErrorOnNondeterministicUpdate(expec
 }
 
 func (a *AccountResourceParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedList(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, expected))
+	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -178,7 +178,7 @@ func (a *AccountResourceParametersAssert) HasJdbcUseSessionTimezone(expected boo
 }
 
 func (a *AccountResourceParametersAssert) HasJsTreatIntegerAsBigint(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterJsTreatIntegerAsBigint, expected))
+	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterJsTreatIntegerAsBigInt, expected)) // modified manually
 	return a
 }
 
@@ -188,7 +188,7 @@ func (a *AccountResourceParametersAssert) HasNoorderSequenceAsDefault(expected b
 }
 
 func (a *AccountResourceParametersAssert) HasOauthAddPrivilegedRolesToBlockedList(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList, expected))
+	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -208,7 +208,7 @@ func (a *AccountResourceParametersAssert) HasPipeExecutionPaused(expected bool) 
 }
 
 func (a *AccountResourceParametersAssert) HasPreventUnloadToInlineUrl(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterPreventUnloadToInlineUrl, expected))
+	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterPreventUnloadToInlineURL, expected)) // modified manually
 	return a
 }
 
@@ -438,7 +438,7 @@ func (a *AccountResourceParametersAssert) HasDateOutputFormat(expected string) *
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultDdlCollation(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterDefaultDdlCollation, expected))
+	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterDefaultDDLCollation, expected)) // modified manually
 	return a
 }
 
@@ -483,7 +483,7 @@ func (a *AccountResourceParametersAssert) HasGeometryOutputFormat(expected sdk.G
 }
 
 func (a *AccountResourceParametersAssert) HasInitialReplicationSizeLimitInTb(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterInitialReplicationSizeLimitInTb, expected))
+	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterInitialReplicationSizeLimitInTB, expected)) // modified manually
 	return a
 }
 
@@ -627,12 +627,12 @@ func (a *AccountResourceParametersAssert) HasAbortDetachedQueryLevel(expected sd
 }
 
 func (a *AccountResourceParametersAssert) HasAllowClientMfaCachingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterAllowClientMfaCaching, expected))
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterAllowClientMFACaching, expected)) // modified manually
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasAllowIdTokenLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterAllowIdToken, expected))
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterAllowIDToken, expected)) // modified manually
 	return a
 }
 
@@ -742,7 +742,7 @@ func (a *AccountResourceParametersAssert) HasErrorOnNondeterministicUpdateLevel(
 }
 
 func (a *AccountResourceParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, expected))
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -762,7 +762,7 @@ func (a *AccountResourceParametersAssert) HasJdbcUseSessionTimezoneLevel(expecte
 }
 
 func (a *AccountResourceParametersAssert) HasJsTreatIntegerAsBigintLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterJsTreatIntegerAsBigint, expected))
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterJsTreatIntegerAsBigInt, expected)) // modified manually
 	return a
 }
 
@@ -772,7 +772,7 @@ func (a *AccountResourceParametersAssert) HasNoorderSequenceAsDefaultLevel(expec
 }
 
 func (a *AccountResourceParametersAssert) HasOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList, expected))
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -792,7 +792,7 @@ func (a *AccountResourceParametersAssert) HasPipeExecutionPausedLevel(expected s
 }
 
 func (a *AccountResourceParametersAssert) HasPreventUnloadToInlineUrlLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterPreventUnloadToInlineUrl, expected))
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterPreventUnloadToInlineURL, expected)) // modified manually
 	return a
 }
 
@@ -1022,7 +1022,7 @@ func (a *AccountResourceParametersAssert) HasDateOutputFormatLevel(expected sdk.
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDefaultDdlCollation, expected))
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDefaultDDLCollation, expected)) // modified manually
 	return a
 }
 
@@ -1067,7 +1067,7 @@ func (a *AccountResourceParametersAssert) HasGeometryOutputFormatLevel(expected 
 }
 
 func (a *AccountResourceParametersAssert) HasInitialReplicationSizeLimitInTbLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterInitialReplicationSizeLimitInTb, expected))
+	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterInitialReplicationSizeLimitInTB, expected)) // modified manually
 	return a
 }
 
