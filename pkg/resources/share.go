@@ -126,14 +126,14 @@ func setShareAccounts(ctx context.Context, client *sdk.Client, shareID sdk.Accou
 	// USAGE can only be granted to one database - granting USAGE on the temp db here
 	// conflicts (and errors) with having a database already shared (i.e. when you
 	// already have a share and are just adding or removing accounts). Instead, use
-	// REFERENCE_USAGE which is intended for multi-database sharing as per Snowflake
+	// USAGE and REFERENCE_USAGE which is intended for multi-database sharing as per Snowflake
 	// documentation here:
 	// https://docs.snowflake.com/en/sql-reference/sql/grant-privilege-share.html#usage-notes
 	// Note however that USAGE will be granted automatically on the temp db for the
 	// case where the main db doesn't already exist, so it will need to be revoked
 	// before deleting the temp db. Where USAGE hasn't been already granted it is not
 	// an error to revoke it, so it's ok to just do the revoke every time.
-	err = client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeReferenceUsage}, &sdk.ShareGrantOn{
+	err = client.Grants.GrantPrivilegeToShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage, sdk.ObjectPrivilegeReferenceUsage}, &sdk.ShareGrantOn{
 		Database: tempDatabaseID,
 	}, shareID)
 	if err != nil {

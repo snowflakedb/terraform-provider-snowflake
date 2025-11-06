@@ -130,6 +130,12 @@ If the bundle is disabled, then the `generation` column is not present in Snowfl
 
 No changes in the configuration are necessary.
 
+### *(improvement)* Granting privileges on a database during share update
+
+When updating the `accounts` field in the `share` resource, the provider creates a temporary database from the share. Before, it granted only the `USAGE` grant. Now, it also grants `REFERENCE_USAGE` because of the changes in the [2025_07](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#disallow-grant-reference_usage-on-a-database-if-grant-usage-isnt-set-first) bundle.
+
+No changes in the configuration are necessary.
+
 ## v2.9.x ➞ v2.10.0
 
 ### *(improvement)* Features promoted to stable
