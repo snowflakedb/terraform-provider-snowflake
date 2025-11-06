@@ -121,7 +121,6 @@ func (r organizationAccountDbRow) convert() (*OrganizationAccount, error) {
 		AccountLocatorUrl:                    r.AccountLocatorUrl,
 		ManagedAccounts:                      r.ManagedAccounts,
 		ConsumptionBillingEntityName:         r.ConsumptionBillingEntityName,
-		MarketplaceProviderBillingEntityName: r.MarketplaceProviderBillingEntityName,
 		IsOrgAdmin:                           r.IsOrgAdmin,
 		IsEventsAccount:                      r.IsEventsAccount,
 		IsOrganizationAccount:                r.IsOrganizationAccount,
@@ -129,6 +128,7 @@ func (r organizationAccountDbRow) convert() (*OrganizationAccount, error) {
 	mapStringWithMapping(&oa.Edition, r.Edition, ToOrganizationAccountEdition)
 	mapNullString(&oa.Comment, r.Comment)
 	mapNullString(&oa.MarketplaceConsumerBillingEntityName, r.MarketplaceConsumerBillingEntityName)
+	mapNullString(&oa.MarketplaceProviderBillingEntityName, r.MarketplaceProviderBillingEntityName)
 	mapNullString(&oa.OldAccountUrl, r.OldAccountUrl)
 	mapNullString(&oa.AccountOldUrlSavedOn, r.AccountOldUrlSavedOn)
 	mapNullString(&oa.AccountOldUrlLastUsed, r.AccountOldUrlLastUsed)

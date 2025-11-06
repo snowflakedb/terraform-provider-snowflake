@@ -102,7 +102,7 @@ type organizationAccountDbRow struct {
 	ManagedAccounts                      int            `db:"managed_accounts"`
 	ConsumptionBillingEntityName         string         `db:"consumption_billing_entity_name"`
 	MarketplaceConsumerBillingEntityName sql.NullString `db:"marketplace_consumer_billing_entity_name"`
-	MarketplaceProviderBillingEntityName string         `db:"marketplace_provider_billing_entity_name"`
+	MarketplaceProviderBillingEntityName sql.NullString `db:"marketplace_provider_billing_entity_name"`
 	OldAccountUrl                        sql.NullString `db:"old_account_url"`
 	IsOrgAdmin                           bool           `db:"is_org_admin"`
 	AccountOldUrlSavedOn                 sql.NullString `db:"account_old_url_saved_on"`
@@ -127,7 +127,7 @@ type OrganizationAccount struct {
 	ManagedAccounts                      int
 	ConsumptionBillingEntityName         string
 	MarketplaceConsumerBillingEntityName *string
-	MarketplaceProviderBillingEntityName string
+	MarketplaceProviderBillingEntityName *string
 	OldAccountUrl                        *string
 	IsOrgAdmin                           bool
 	AccountOldUrlSavedOn                 *string
