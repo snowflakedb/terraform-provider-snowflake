@@ -3,14 +3,11 @@ package sdk
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
 var managedAccountDbRow = g.DbStruct("managedAccountDBRow").
-	OptionalText("name").
 	OptionalText("account_name").
 	Text("cloud").
 	Text("region").
-	OptionalText("locator").
 	OptionalText("account_locator").
 	Text("created_on").
-	OptionalText("url").
 	OptionalText("account_url").
 	Text("account_locator_url").
 	Bool("is_reader").

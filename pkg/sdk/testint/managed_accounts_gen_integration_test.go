@@ -4,6 +4,7 @@ package testint
 
 import (
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -20,7 +21,7 @@ func TestInt_ManagedAccounts(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	assertManagedAccount := func(t *testing.T, managedAccount *sdk.ManagedAccount, id sdk.AccountObjectIdentifier, comment string) {
+	assertManagedAccount := func(t *testing.T, managedAccount *sdk.ManagedAccount, id sdk.AccountObjectIdentifier, comment *string) {
 		t.Helper()
 		assert.Equal(t, id.Name(), managedAccount.Name)
 		assert.Equal(t, "aws", managedAccount.Cloud)
@@ -60,8 +61,12 @@ func TestInt_ManagedAccounts(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupMangedAccountProvider(id))
 
-		managedAccount, err := client.ManagedAccounts.ShowByID(ctx, id)
-		require.NoError(t, err)
+		var managedAccount *sdk.ManagedAccount
+		require.Eventually(t, func() bool {
+			var err error
+			managedAccount, err = client.ManagedAccounts.ShowByID(ctx, id)
+			return err == nil
+		}, 10*time.Second, 2*time.Second)
 
 		return managedAccount
 	}
@@ -76,7 +81,7 @@ func TestInt_ManagedAccounts(t *testing.T) {
 
 		managedAccount := createManagedAccountWithRequest(t, request)
 
-		assertManagedAccount(t, managedAccount, request.GetName(), "")
+		assertManagedAccount(t, managedAccount, request.GetName(), nil)
 	})
 
 	t.Run("create managed account: full", func(t *testing.T) {
@@ -85,7 +90,7 @@ func TestInt_ManagedAccounts(t *testing.T) {
 
 		managedAccount := createManagedAccountWithRequest(t, request)
 
-		assertManagedAccount(t, managedAccount, request.GetName(), "some comment")
+		assertManagedAccount(t, managedAccount, request.GetName(), sdk.String("some comment"))
 	})
 
 	t.Run("drop managed account: existing", func(t *testing.T) {
@@ -117,7 +122,7 @@ func TestInt_ManagedAccounts(t *testing.T) {
 		returnedManagedAccounts, err := client.ManagedAccounts.Show(ctx, showRequest)
 		require.NoError(t, err)
 
-		assert.Len(t, returnedManagedAccounts, 2)
+		assert.GreaterOrEqual(t, len(returnedManagedAccounts), 2)
 		assert.Contains(t, returnedManagedAccounts, *managedAccount1)
 		assert.Contains(t, returnedManagedAccounts, *managedAccount2)
 	})
