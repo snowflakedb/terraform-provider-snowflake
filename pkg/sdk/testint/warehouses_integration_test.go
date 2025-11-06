@@ -17,6 +17,7 @@ import (
 
 func TestInt_Warehouses(t *testing.T) {
 	client := testClient(t)
+	secondaryClient := testSecondaryClient(t)
 	ctx := testContext(t)
 
 	prefix := random.StringN(6)
@@ -118,7 +119,7 @@ func TestInt_Warehouses(t *testing.T) {
 		)
 	})
 
-	createComplete := func(t *testing.T) {
+	t.Run("create: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
 			OrReplace:                       sdk.Bool(true),
@@ -214,15 +215,23 @@ func TestInt_Warehouses(t *testing.T) {
 		tag2Value, err := client.SystemFunctions.GetTag(ctx, tag2.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.Pointer("v2"), tag2Value)
-	}
-
-	t.Run("create: complete", func(t *testing.T) {
-		createComplete(t)
 	})
 
-	t.Run("create: complete - BCR 2025_07", func(t *testing.T) {
-		testClientHelper().BcrBundles.EnableBcrBundle(t, "2025_07")
-		createComplete(t)
+	t.Run("create: with generation - BCR 2025_07", func(t *testing.T) {
+		secondaryTestClientHelper().BcrBundles.EnableBcrBundle(t, "2025_07")
+		id := secondaryTestClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		err := secondaryClient.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
+			Generation: sdk.Pointer(sdk.WarehouseGenerationStandardGen1),
+		})
+		require.NoError(t, err)
+
+		result, err := secondaryClient.Warehouses.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.WarehouseFromObject(t, result).
+			HasGeneration(sdk.WarehouseGenerationStandardGen1).
+			HasNoResourceConstraint(),
+		)
 	})
 
 	t.Run("create: no options", func(t *testing.T) {
@@ -508,7 +517,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 	})
 
-	setAndUnsetGenerationOld := func(t *testing.T) {
+	setAndUnsetGenerationOld := func(t *testing.T, client *sdk.Client, testClientHelper func() *helpers.TestClient) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
@@ -548,15 +557,15 @@ func TestInt_Warehouses(t *testing.T) {
 	}
 
 	t.Run("alter: set and unset generation (old resource constraint syntax)", func(t *testing.T) {
-		setAndUnsetGenerationOld(t)
+		setAndUnsetGenerationOld(t, client, testClientHelper)
 	})
 
 	t.Run("alter: set and unset generation (old resource constraint syntax) - BCR 2025_07", func(t *testing.T) {
-		testClientHelper().BcrBundles.EnableBcrBundle(t, "2025_07")
-		setAndUnsetGenerationOld(t)
+		secondaryTestClientHelper().BcrBundles.EnableBcrBundle(t, "2025_07")
+		setAndUnsetGenerationOld(t, secondaryClient, secondaryTestClientHelper)
 	})
 
-	setAndUnsetGeneration := func(t *testing.T) {
+	setAndUnsetGeneration := func(t *testing.T, client *sdk.Client, testClientHelper func() *helpers.TestClient) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
@@ -596,12 +605,12 @@ func TestInt_Warehouses(t *testing.T) {
 	}
 
 	t.Run("alter: set and unset generation (new generation syntax)", func(t *testing.T) {
-		setAndUnsetGeneration(t)
+		setAndUnsetGeneration(t, client, testClientHelper)
 	})
 
 	t.Run("alter: set and unset generation (new generation syntax) - BCR 2025_07", func(t *testing.T) {
 		testClientHelper().BcrBundles.EnableBcrBundle(t, "2025_07")
-		setAndUnsetGeneration(t)
+		setAndUnsetGeneration(t, secondaryClient, secondaryTestClientHelper)
 	})
 
 	t.Run("alter: set and unset generation (both at the same time)", func(t *testing.T) {
