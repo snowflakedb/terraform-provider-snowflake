@@ -50,8 +50,6 @@ No changes in configuration and state are required.
 ### *(bugfix)* Fixed panics because of nil pointer dereferences
 
 In v2.8.0, the following error was reported during handling materialized view with lots of records:
-<details>
-  <summary>Expand</summary>
 ```
 Error: Plugin did not respond
 The plugin encountered an error, and failed to respond to the
@@ -59,42 +57,15 @@ plugin6.(*GRPCProvider).ApplyResourceChange call. The plugin logs may contain
 more details.
 Stack trace from the terraform-provider-snowflake_v2.8.0 plugin:
 panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
-panic: runtime error: invalid memory address or nil pointer dereference
+...
 [signal SIGSEGV: segmentation violation code=0x1 addr=0x40 pc=0x193f359]
 goroutine 41 [running]:
 github.com/snowflakedb/gosnowflake.postRestfulQueryHelper.func1()
 github.com/snowflakedb/gosnowflake@v1.17.0/restful.go:241 +0x19
 panic({0x257d740?, 0x41e1700?})
 runtime/panic.go:785 +0x132
-github.com/snowflakedb/gosnowflake.postRestfulQueryHelper.func2()
-github.com/snowflakedb/gosnowflake@v1.17.0/restful.go:288 +0x19
-panic({0x257d740?, 0x41e1700?})
+...
 ```
-</details>
 
 This was caused by the Go driver dependency. The Go driver fixed this in [v1.17.1](https://docs.snowflake.com/en/release-notes/clients-drivers/golang-2025#version-1-17-1-november-4-2025). We upgraded the driver on our side to that version.
 No changes in configuration and state are required.
@@ -110,6 +81,11 @@ This could cause issues like infinite loops in plans when only the `enabled` fie
 but couldn't because the state of the `oauth_issue_refresh_tokens` prevented from it.
 
 No changes in configuration and state are required.
+
+### New Go version and conflicts with Suricata-based firewalls (like AWS Network Firewall) - changes caused by Go 1.24
+Previously, when we bumped the Go version to v1.23.6 in provider version v1.0.4, it caused problems for certain firewall setups - read the [v1.0.4 migration guide](#new-go-version-and-conflicts-with-suricata-based-firewalls-like-aws-network-firewall).
+
+In this version we bumped our underlying Go version to v1.24.9. To mitigate this issue, the GODEBUG environment variable must be set to `GODEBUG=tlsmlkem=0`, instead of `GODEBUG=tlskyber=0`. Read GODEBUG [documentation](https://go.dev/doc/godebug#go-124) for more details.
 
 ### *(bugfix)* Fixed setting comment in secret resources
 
