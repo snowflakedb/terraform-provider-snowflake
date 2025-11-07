@@ -104,7 +104,7 @@ process-test-output-docker-compose: ## run test output processor within docker e
 
 upload-test-results: ## run test output processor within docker environment
 	go run ./pkg/scripts/test_output_processor/test_output_processor.go | \
-	awk 'BEGIN {FS=OFS=","} {if (NR == 1) print "CREATED_ON","TEST_RUN_ID","TEST_TYPE",$$0; else if (NF > 0) print ENVIRON["SNOWFLAKE_TIMESTAMP"],ENVIRON["TEST_SF_TF_TEST_WORKFLOW_ID"],ENVIRON["TEST_SF_TF_TEST_TYPE"],$$0}' > \
+	awk 'BEGIN {FS=OFS=","} {if (NR == 1) print "CREATED_ON","TEST_RUN_ID","TEST_TYPE",$$0; else if (NF > 0) print ENVIRON["SNOWFLAKE_TIMESTAMP"],ENVIRON["TEST_SF_TF_TEST_WORKFLOW_ID"],ENVIRON["TEST_SF_TF_TEST_TYPE"],$$0}' | \
 	go run ./pkg/scripts/test_output_uploader/test_output_uploader.go
 
 build-local: ## build the binary locally
