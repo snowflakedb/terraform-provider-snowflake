@@ -147,8 +147,12 @@ clean-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/*_gen.go
 	rm -f ./pkg/sdk/*_gen_test.go
 
-generate-sdk-examples: ## Generate all SDK objects
+generate-sdk-examples: ## Generate all SDK generation examples
 	go generate ./pkg/sdk/generator/internal/example/generate.go
+
+clean-generated-sdk-examples: ## Clean all generated SDK generation examples
+	rm -f ./pkg/sdk/generator/internal/example/*_gen.go
+	rm -f ./pkg/sdk/generator/internal/example/*_gen_test.go
 
 generate-docs-additional-files: ## generate docs additional files
 	go run ./pkg/internal/tools/doc-gen-helper/ $$PWD
