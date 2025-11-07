@@ -10,7 +10,7 @@ import (
 
 func init() {
 	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions,
-		DatabaseRole,
+		DatabaseRoles,
 		ToOptsOptionalExample,
 		SequencesDef,
 	)

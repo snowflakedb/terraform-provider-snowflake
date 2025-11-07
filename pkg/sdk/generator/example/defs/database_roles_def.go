@@ -30,7 +30,7 @@ var (
 		// Validations
 		WithValidation(g.AtLeastOneValueSet, "Comment")
 
-	DatabaseRole = g.NewInterface(
+	DatabaseRoles = g.NewInterface(
 		"DatabaseRoles",
 		"DatabaseRole",
 		"DatabaseObjectIdentifier",
