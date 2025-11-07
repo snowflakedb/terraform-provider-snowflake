@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -92,10 +91,10 @@ func GitRepository() *schema.Resource {
 		},
 	)
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.GitRepositoryResource), TrackingCreateWrapper(resources.GitRepository, CreateGitRepository)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.GitRepositoryResource), TrackingReadWrapper(resources.GitRepository, ReadGitRepository)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.GitRepositoryResource), TrackingUpdateWrapper(resources.GitRepository, UpdateGitRepository)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.GitRepositoryResource), TrackingDeleteWrapper(resources.GitRepository, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.GitRepository, CreateGitRepository),
+		ReadContext:   TrackingReadWrapper(resources.GitRepository, ReadGitRepository),
+		UpdateContext: TrackingUpdateWrapper(resources.GitRepository, UpdateGitRepository),
+		DeleteContext: TrackingDeleteWrapper(resources.GitRepository, deleteFunc),
 		Description:   "Resource used to manage git repositories. For more information, check [git repositories documentation](https://docs.snowflake.com/en/sql-reference/sql/create-git-repository).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.GitRepository, customdiff.All(

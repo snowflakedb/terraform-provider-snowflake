@@ -102,6 +102,15 @@ func TestLoadConfigFileWithInvalidFieldTypeFailsLegacy(t *testing.T) {
 		{name: "DisableQueryContextCache", fieldName: "disablequerycontextcache", wantType: "*bool"},
 		{name: "IncludeRetryReason", fieldName: "includeretryreason", wantType: "*bool"},
 		{name: "DisableConsoleLogin", fieldName: "disableconsolelogin", wantType: "*bool"},
+		{name: "OauthClientID", fieldName: "oauthclientid", wantType: "*string"},
+		{name: "OauthClientSecret", fieldName: "oauthclientsecret", wantType: "*string"},
+		{name: "OauthTokenRequestURL", fieldName: "oauthtokenrequesturl", wantType: "*string"},
+		{name: "OauthAuthorizationURL", fieldName: "oauthauthorizationurl", wantType: "*string"},
+		{name: "OauthRedirectURI", fieldName: "oauthredirecturi", wantType: "*string"},
+		{name: "OauthScope", fieldName: "oauthscope", wantType: "*string"},
+		{name: "WorkloadIdentityProvider", fieldName: "workloadidentityprovider", wantType: "*string"},
+		{name: "WorkloadIdentityEntraResource", fieldName: "workloadidentityentraresource", wantType: "*string"},
+		{name: "EnableSingleUseRefreshTokens", fieldName: "enablesingleuserefreshtokens", wantType: "*bool"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -252,7 +261,16 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithDisableQueryContextCache(true).
 			WithIncludeRetryReason(true).
 			WithDisableConsoleLogin(true).
-			WithParams(map[string]*string{"foo": Pointer("bar")}),
+			WithParams(map[string]*string{"foo": Pointer("bar")}).
+			WithOauthClientID("oauth_client_id").
+			WithOauthClientSecret("oauth_client_secret").
+			WithOauthTokenRequestURL("oauth_token_request_url").
+			WithOauthAuthorizationURL("oauth_authorization_url").
+			WithOauthRedirectURI("oauth_redirect_uri").
+			WithOauthScope("oauth_scope").
+			WithWorkloadIdentityProvider("workload_identity_provider").
+			WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+			WithEnableSingleUseRefreshTokens(true),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
@@ -311,6 +329,15 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
+		assert.Equal(t, "oauth_client_id", config.OauthClientID)
+		assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
+		assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
+		assert.Equal(t, "oauth_authorization_url", config.OauthAuthorizationURL)
+		assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
+		assert.Equal(t, "oauth_scope", config.OauthScope)
+		assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
+		assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
+		assert.True(t, config.EnableSingleUseRefreshTokens)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -409,7 +436,16 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				WithTmpDirPath("/tmp").
 				WithDisableQueryContextCache(true).
 				WithIncludeRetryReason(true).
-				WithDisableConsoleLogin(true),
+				WithDisableConsoleLogin(true).
+				WithOauthClientID("oauth_client_id").
+				WithOauthClientSecret("oauth_client_secret").
+				WithOauthTokenRequestURL("oauth_token_request_url").
+				WithOauthAuthorizationURL("oauth_authorization_url").
+				WithOauthRedirectURI("oauth_redirect_uri").
+				WithOauthScope("oauth_scope").
+				WithWorkloadIdentityProvider("workload_identity_provider").
+				WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+				WithEnableSingleUseRefreshTokens(true),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -447,7 +483,15 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.True(t, got.DisableQueryContextCache)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.IncludeRetryReason)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.DisableConsoleLogin)
-
+				assert.Equal(t, "oauth_client_id", got.OauthClientID)
+				assert.Equal(t, "oauth_client_secret", got.OauthClientSecret)
+				assert.Equal(t, "oauth_token_request_url", got.OauthTokenRequestURL)
+				assert.Equal(t, "oauth_authorization_url", got.OauthAuthorizationURL)
+				assert.Equal(t, "oauth_redirect_uri", got.OauthRedirectURI)
+				assert.Equal(t, "oauth_scope", got.OauthScope)
+				assert.Equal(t, "workload_identity_provider", got.WorkloadIdentityProvider)
+				assert.Equal(t, "workload_identity_entra_resource", got.WorkloadIdentityEntraResource)
+				assert.True(t, got.EnableSingleUseRefreshTokens)
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
 				gotUnencryptedKey := pem.EncodeToMemory(

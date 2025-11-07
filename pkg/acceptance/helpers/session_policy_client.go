@@ -48,7 +48,7 @@ func (c *SessionPolicyClient) DropSessionPolicyFunc(t *testing.T, id sdk.SchemaO
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropSessionPolicyRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropSessionPolicyRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

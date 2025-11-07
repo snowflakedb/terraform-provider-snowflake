@@ -20,11 +20,6 @@ var (
 
 const forbiddenAttributeNameSuffix = "_"
 
-var PredefinedImports = map[string]string{
-	"sdk":         "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk",
-	"collections": "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections",
-}
-
 // ToSnakeCase allows converting a CamelCase text to camel_case one (needed for schema attribute names). Examples:
 // - CamelCase -> camel_case
 // - ACamelCase -> a_camel_case
@@ -61,10 +56,17 @@ func WriteCodeToFile(buffer *bytes.Buffer, fileName string) error {
 		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
 	}
 	outputPath := filepath.Join(wd, fileName)
-	src, err := format.Source(buffer.Bytes())
+
+	src, err := AddImports(outputPath, buffer.Bytes())
 	if err != nil {
 		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
 	}
+
+	src, err = format.Source(src)
+	if err != nil {
+		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
+	}
+
 	if err := os.WriteFile(outputPath, src, 0o600); err != nil {
 		return fmt.Errorf("writing code to file %s failed with err: %w", fileName, err)
 	}

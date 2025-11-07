@@ -2,8 +2,8 @@
 
 {{ .KindNoPtr }}{
 {{- range .Fields }}
-    {{- if .ShouldBeInDto }}
-        {{ if .IsStruct }}{{ else }}{{ .Name }}: r{{ .Path }},{{ end -}}
+    {{- if and .ShouldBeInDto (not .IsStruct) }}
+        {{ .Name }}: r{{ .Path }},
     {{- end -}}
 {{- end }}
 }
@@ -13,10 +13,9 @@
             {{- if or .IsPointer .IsSlice }}
                 if r{{ .Path }} != nil {
             {{- end }}
-
-            {{- if not .IsSlice }}
+            {{ if not .IsSlice -}}
                 opts{{ .Path }} = {{ if .IsPointer }}&{{end}}{{ template "toOptsMapping" . -}}{{/* Recursive call */}}
-            {{- else }}
+            {{- else -}}
                 s := make({{ .Kind }}, len(r{{ .Path }}))
                 for i, v := range r{{ .Path }} {
                     s[i] = {{ .KindNoSlice }}{
@@ -26,11 +25,11 @@
                     }
                 }
                 opts{{ .Path }} = s
-            {{- end }}
+            {{- end -}}
 
-            {{- if or .IsPointer .IsSlice }}
+            {{- if or .IsPointer .IsSlice -}}
                 }
-            {{- end }}
-        {{- end }}
+            {{- end -}}
+        {{- end -}}
     {{- end }}
-{{- end }}
+{{- end -}}

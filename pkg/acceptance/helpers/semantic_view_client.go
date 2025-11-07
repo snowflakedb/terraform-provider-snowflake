@@ -66,3 +66,11 @@ func (c *SemanticViewClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifie
 	ctx := context.Background()
 	return c.client().Describe(ctx, id)
 }
+
+func (c *SemanticViewClient) Alter(t *testing.T, req *sdk.AlterSemanticViewRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}

@@ -53,6 +53,10 @@ type LimitFrom struct {
 	From *string `ddl:"parameter,no_equals,single_quotes" sql:"FROM"`
 }
 
+type StringListItemWrapper struct {
+	Value string `ddl:"keyword,single_quotes"`
+}
+
 type In struct {
 	Account  *bool                    `ddl:"keyword" sql:"ACCOUNT"`
 	Database AccountObjectIdentifier  `ddl:"identifier" sql:"DATABASE"`
@@ -63,6 +67,11 @@ type ExtendedIn struct {
 	In
 	Application        AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION"`
 	ApplicationPackage AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
+}
+
+type On struct {
+	Account *bool                   `ddl:"keyword" sql:"ACCOUNT"`
+	User    AccountObjectIdentifier `ddl:"identifier" sql:"USER"`
 }
 
 type ServiceIn struct {
@@ -338,10 +347,6 @@ var (
 	DistributionInternal Distribution = "INTERNAL"
 	DistributionExternal Distribution = "EXTERNAL"
 )
-
-func DistributionPointer(v Distribution) *Distribution {
-	return &v
-}
 
 type LogLevel string
 

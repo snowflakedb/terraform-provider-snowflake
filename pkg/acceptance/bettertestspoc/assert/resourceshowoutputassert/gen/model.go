@@ -1,26 +1,16 @@
 package gen
 
 import (
-	"os"
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
-// TODO [SNOW-1501905]: extract to commons?
-type PreambleModel struct {
-	PackageName               string
-	AdditionalStandardImports []string
-}
-
 type ResourceShowOutputAssertionsModel struct {
 	Name       string
 	Attributes []ResourceShowOutputAssertionModel
-	PreambleModel
-}
 
-func (m ResourceShowOutputAssertionsModel) SomeFunc() {
+	*genhelpers.PreambleModel
 }
 
 type ResourceShowOutputAssertionModel struct {
@@ -30,22 +20,17 @@ type ResourceShowOutputAssertionModel struct {
 	Mapper           genhelpers.Mapper
 }
 
-func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails) ResourceShowOutputAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel) ResourceShowOutputAssertionsModel {
 	attributes := make([]ResourceShowOutputAssertionModel, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {
 		attributes[idx] = MapToResourceShowOutputAssertion(field)
 	}
 
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
-	packageWithGenerateDirective := os.Getenv("GOPACKAGE")
-	unwantedPackageNames := []string{"slices"}
 	return ResourceShowOutputAssertionsModel{
-		Name:       name,
-		Attributes: attributes,
-		PreambleModel: PreambleModel{
-			PackageName:               packageWithGenerateDirective,
-			AdditionalStandardImports: slices.DeleteFunc(genhelpers.AdditionalStandardImports(sdkObject.Fields), func(s string) bool { return slices.Contains(unwantedPackageNames, s) }),
-		},
+		Name:          name,
+		Attributes:    attributes,
+		PreambleModel: preamble,
 	}
 }
 

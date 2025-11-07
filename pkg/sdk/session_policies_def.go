@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 var SessionPoliciesDef = g.NewInterface(
 	"SessionPolicies",
 	"SessionPolicy",
@@ -98,7 +96,7 @@ var SessionPoliciesDef = g.NewInterface(
 			Field("name", "string").
 			Field("session_idle_timeout_mins", "int").
 			Field("session_ui_idle_timeout_mins", "int").
-			Field("comment", "string"),
+			Field("comment", "sql.NullString"),
 		g.PlainStruct("SessionPolicyDescription").
 			Field("CreatedOn", "string").
 			Field("Name", "string").

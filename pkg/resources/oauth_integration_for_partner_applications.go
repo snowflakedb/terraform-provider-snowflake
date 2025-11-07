@@ -460,8 +460,8 @@ func UpdateContextOauthIntegrationForPartnerApplications(ctx context.Context, d 
 	}
 
 	if d.HasChange("enabled") {
-		if v := d.Get("oauth_issue_refresh_tokens").(string); v != BooleanDefault {
-			parsedBool, err := booleanStringToBool(d.Get("enabled").(string))
+		if v := d.Get("enabled").(string); v != BooleanDefault {
+			parsedBool, err := booleanStringToBool(v)
 			if err != nil {
 				return diag.FromErr(err)
 			}

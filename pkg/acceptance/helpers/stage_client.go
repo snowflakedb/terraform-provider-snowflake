@@ -39,7 +39,7 @@ func (c *StageClient) CreateStageWithURL(t *testing.T) (*sdk.Stage, func()) {
 	id := c.ids.RandomSchemaObjectIdentifier()
 
 	err := c.client().CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id).
-		WithExternalStageParams(sdk.NewExternalS3StageParamsRequest(nycWeatherDataURL)))
+		WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(nycWeatherDataURL)))
 	require.NoError(t, err)
 
 	stage, err := c.client().ShowByID(ctx, id)
@@ -51,7 +51,7 @@ func (c *StageClient) CreateStageWithURL(t *testing.T) (*sdk.Stage, func()) {
 func (c *StageClient) CreateStageWithDirectory(t *testing.T) (*sdk.Stage, func()) {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifier()
-	return c.CreateStageWithRequest(t, sdk.NewCreateInternalStageRequest(id).WithDirectoryTableOptions(sdk.NewInternalDirectoryTableOptionsRequest().WithEnable(sdk.Bool(true))))
+	return c.CreateStageWithRequest(t, sdk.NewCreateInternalStageRequest(id).WithDirectoryTableOptions(*sdk.NewInternalDirectoryTableOptionsRequest().WithEnable(true)))
 }
 
 func (c *StageClient) CreateStage(t *testing.T) (*sdk.Stage, func()) {
@@ -83,7 +83,7 @@ func (c *StageClient) DropStageFunc(t *testing.T, id sdk.SchemaObjectIdentifier)
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropStageRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropStageRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }
@@ -192,7 +192,7 @@ func (c *StageClient) Rename(t *testing.T, id sdk.SchemaObjectIdentifier, newId 
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, sdk.NewAlterStageRequest(id).WithRenameTo(&newId))
+	err := c.client().Alter(ctx, sdk.NewAlterStageRequest(id).WithRenameTo(newId))
 	require.NoError(t, err)
 }
 

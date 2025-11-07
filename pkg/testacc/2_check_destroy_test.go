@@ -337,6 +337,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.SecretWithGenericString: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Secrets.ShowByID)
 	},
+	resources.SemanticView: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.SemanticViews.ShowByID)
+	},
 	resources.Service: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Services.ShowByID)
 	},

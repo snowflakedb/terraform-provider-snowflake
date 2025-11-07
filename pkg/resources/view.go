@@ -729,7 +729,7 @@ func handlePolicyReferences(policyRefs []sdk.PolicyReference, d *schema.Resource
 }
 
 func handleDataMetricFunctions(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData) error {
-	dataMetricFunctionReferences, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequest(id, sdk.DataMetricFunctionRefEntityDomainView))
+	dataMetricFunctionReferences, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequestCustom(id, sdk.DataMetricFunctionRefEntityDomainView))
 	if err != nil {
 		return err
 	}

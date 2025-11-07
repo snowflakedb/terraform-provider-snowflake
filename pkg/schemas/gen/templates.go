@@ -9,10 +9,6 @@ import (
 )
 
 var (
-	//go:embed templates/preamble.tmpl
-	preambleTemplateContent string
-	PreambleTemplate, _     = template.New("preambleTemplate").Parse(preambleTemplateContent)
-
 	//go:embed templates/schema.tmpl
 	schemaTemplateContent string
 	SchemaTemplate, _     = template.New("schemaTemplate").Parse(schemaTemplateContent)
@@ -24,5 +20,5 @@ var (
 		genhelpers.RunMapper,
 	)).Parse(toSchemaMapperTemplateContent)
 
-	AllTemplates = []*template.Template{PreambleTemplate, SchemaTemplate, ToSchemaMapperTemplate}
+	AllTemplates = []*template.Template{genhelpers.PreambleTemplate, SchemaTemplate, ToSchemaMapperTemplate}
 )

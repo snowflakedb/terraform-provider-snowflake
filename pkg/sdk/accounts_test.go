@@ -866,6 +866,107 @@ func TestToAccountCreateResponse(t *testing.T) {
 	}
 }
 
+func TestGetAccountCreateResponse(t *testing.T) {
+	valid := []struct {
+		name           string
+		rows           []map[string]*any
+		expectedResult *AccountCreateResponse
+	}{
+		{
+			name: "successful case with all fields",
+			rows: []map[string]*any{
+				{
+					"status": Pointer(any(`{
+							"accountLocator": "ABC12345",
+							"accountLocatorUrl": "https://abc12345.snowflakecomputing.com",
+							"accountName": "full_account",
+							"url": "https://org-full_account.snowflakecomputing.com",
+							"edition": "BUSINESS_CRITICAL",
+							"regionGroup": "us-west-2",
+							"cloud": "aws",
+							"region": "us-west-2"
+						}`)),
+				},
+			},
+			expectedResult: &AccountCreateResponse{
+				AccountLocator:    "ABC12345",
+				AccountLocatorUrl: "https://abc12345.snowflakecomputing.com",
+				AccountName:       "full_account",
+				Url:               "https://org-full_account.snowflakecomputing.com",
+				Edition:           EditionBusinessCritical,
+				RegionGroup:       "us-west-2",
+				Cloud:             "aws",
+				Region:            "us-west-2",
+				OrganizationName:  "ORG",
+			},
+		},
+	}
+	invalid := []struct {
+		name           string
+		rows           []map[string]*any
+		expectedResult *AccountCreateResponse
+		expectedError  string
+	}{
+		{
+			name:          "error: wrong number of rows (0)",
+			rows:          []map[string]*any{},
+			expectedError: "expected 1 row, got 0",
+		},
+		{
+			name: "error: status is nil",
+			rows: []map[string]*any{
+				{
+					"status": nil,
+				},
+			},
+			expectedError: "status is not set",
+		},
+		{
+			name: "error: status is not a string",
+			rows: []map[string]*any{
+				{
+					"status": Pointer(any(123)),
+				},
+			},
+			expectedError: "could not convert status to string",
+		},
+		{
+			name: "error: invalid JSON in status",
+			rows: []map[string]*any{
+				{
+					"status": Pointer(any(`invalid json`)),
+				},
+			},
+			expectedError: "invalid character",
+		},
+		{
+			name: "error: empty JSON in status",
+			rows: []map[string]*any{
+				{
+					"status": Pointer(any("")),
+				},
+			},
+			expectedError: "unexpected end of JSON input",
+		},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := getAccountCreateResponse(tc.rows)
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedResult, result)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := getAccountCreateResponse(tc.rows)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tc.expectedError)
+		})
+	}
+}
+
 func TestToAccountEdition(t *testing.T) {
 	type test struct {
 		input string

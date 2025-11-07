@@ -124,6 +124,11 @@ func (c *ContextClient) IssuerURL(t *testing.T) string {
 	return fmt.Sprintf("https://%s.snowflakecomputing.com", c.CurrentAccount(t))
 }
 
+func (c *ContextClient) AccountURL(t *testing.T) string {
+	t.Helper()
+	return fmt.Sprintf("https://%s-%s.snowflakecomputing.com", c.CurrentOrganizationName(t), c.CurrentAccountName(t))
+}
+
 func (c *ContextClient) LastQueryId(t *testing.T) string {
 	t.Helper()
 	ctx := context.Background()

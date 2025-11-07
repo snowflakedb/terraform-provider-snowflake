@@ -42,9 +42,7 @@ import (
 //   - disable_console_login
 //   - DisableSamlURLCheck
 func (p *pluginFrameworkPocProvider) getDriverConfigFromTerraform(configModel pluginFrameworkPocProviderModelV0) (*gosnowflake.Config, error) {
-	config := &gosnowflake.Config{
-		Application: "terraform-provider-snowflake",
-	}
+	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
 	if errs := errors.Join(
 		setAccount(configModel, config),
 		setStringAttribute(configModel.User, snowflakeenvs.User, &config.User),

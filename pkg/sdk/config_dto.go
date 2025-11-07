@@ -53,4 +53,13 @@ type ConfigDTO struct {
 	DisableQueryContextCache       *bool               `toml:"disable_query_context_cache"`
 	IncludeRetryReason             *bool               `toml:"include_retry_reason"`
 	DisableConsoleLogin            *bool               `toml:"disable_console_login"`
+	OauthClientID                  *string             `toml:"oauth_client_id"`
+	OauthClientSecret              *string             `toml:"oauth_client_secret"`
+	OauthAuthorizationURL          *string             `toml:"oauth_authorization_url"`
+	OauthTokenRequestURL           *string             `toml:"oauth_token_request_url"`
+	OauthRedirectURI               *string             `toml:"oauth_redirect_uri"`
+	OauthScope                     *string             `toml:"oauth_scope"`
+	WorkloadIdentityProvider       *string             `toml:"workload_identity_provider"`
+	WorkloadIdentityEntraResource  *string             `toml:"workload_identity_entra_resource"`
+	EnableSingleUseRefreshTokens   *bool               `toml:"enable_single_use_refresh_tokens"`
 }

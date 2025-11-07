@@ -109,7 +109,7 @@ func CreateContextGrantApplicationRole(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 		snowflakeResourceID = helpers.EncodeResourceIdentifier(applicationRoleIdentifier.FullyQualifiedName(), "ACCOUNT_ROLE", parentRoleIdentifier.FullyQualifiedName())
-		req := sdk.NewGrantApplicationRoleRequest(applicationRoleIdentifier).WithTo(*sdk.NewKindOfRoleRequest().WithRoleName(&parentRoleIdentifier))
+		req := sdk.NewGrantApplicationRoleRequest(applicationRoleIdentifier).WithTo(*sdk.NewKindOfRoleRequest().WithRoleName(parentRoleIdentifier))
 		if err := client.ApplicationRoles.Grant(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
@@ -119,7 +119,7 @@ func CreateContextGrantApplicationRole(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 		snowflakeResourceID = helpers.EncodeResourceIdentifier(applicationRoleIdentifier.FullyQualifiedName(), sdk.ObjectTypeApplication.String(), applicationIdentifier.FullyQualifiedName())
-		req := sdk.NewGrantApplicationRoleRequest(applicationRoleIdentifier).WithTo(*sdk.NewKindOfRoleRequest().WithApplicationName(&applicationIdentifier))
+		req := sdk.NewGrantApplicationRoleRequest(applicationRoleIdentifier).WithTo(*sdk.NewKindOfRoleRequest().WithApplicationName(applicationIdentifier))
 		if err := client.ApplicationRoles.Grant(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
@@ -271,7 +271,7 @@ func DeleteContextGrantApplicationRole(ctx context.Context, d *schema.ResourceDa
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.ApplicationRoles.Revoke(ctx, sdk.NewRevokeApplicationRoleRequest(id).WithFrom(*sdk.NewKindOfRoleRequest().WithRoleName(&applicationRoleName))); err != nil {
+		if err := client.ApplicationRoles.Revoke(ctx, sdk.NewRevokeApplicationRoleRequest(id).WithFrom(*sdk.NewKindOfRoleRequest().WithRoleName(applicationRoleName))); err != nil {
 			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 				return diag.FromErr(err)
 			}
@@ -281,7 +281,7 @@ func DeleteContextGrantApplicationRole(ctx context.Context, d *schema.ResourceDa
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.ApplicationRoles.Revoke(ctx, sdk.NewRevokeApplicationRoleRequest(id).WithFrom(*sdk.NewKindOfRoleRequest().WithApplicationName(&applicationName))); err != nil {
+		if err := client.ApplicationRoles.Revoke(ctx, sdk.NewRevokeApplicationRoleRequest(id).WithFrom(*sdk.NewKindOfRoleRequest().WithApplicationName(applicationName))); err != nil {
 			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 				return diag.FromErr(err)
 			}

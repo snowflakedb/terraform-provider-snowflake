@@ -27,6 +27,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Accounts().Schema,
 	},
 	{
+		name:   "AuthenticationPolicies",
+		schema: datasources.AuthenticationPolicies().Schema,
+	},
+	{
 		name:   "ComputePools",
 		schema: datasources.ComputePools().Schema,
 	},
@@ -89,6 +93,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "SecurityIntegrations",
 		schema: datasources.SecurityIntegrations().Schema,
+	},
+	{
+		name:   "SemanticViews",
+		schema: datasources.SemanticViews().Schema,
 	},
 	{
 		name:   "Services",

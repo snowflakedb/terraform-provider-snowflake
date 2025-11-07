@@ -81,7 +81,7 @@ func (c *RowAccessPolicyClient) DropRowAccessPolicyFunc(t *testing.T, id sdk.Sch
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

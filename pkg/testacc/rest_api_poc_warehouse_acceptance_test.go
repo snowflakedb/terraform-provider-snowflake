@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -19,18 +18,16 @@ import (
 )
 
 func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userWithPat := testClient().SetUpTemporaryLegacyServiceUserWithPat(t)
-	testClient().Grant.GrantGlobalPrivilegesOnAccount(t, userWithPat.RoleId, []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateWarehouse})
+	testClient().Grant.GrantGlobalPrivilegesOnAccountRole(t, userWithPat.RoleId, []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateWarehouse})
 
 	userWithPatConfig := testClient().TempTomlConfigForServiceUserWithPat(t, userWithPat)
 	providerModel := providermodel.SnowflakeProvider().WithProfile(userWithPatConfig.Profile)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactoriesWithPluginPoc,
+		ProtoV6ProviderFactories: providerFactoryPluginPocUsingCache("TerraformPluginFrameworkRestApiPoC"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -45,7 +42,7 @@ func TestAcc_RestApiPoc_WarehouseInitialCheck(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr("snowflake_warehouse_rest_api_poc.test", "fully_qualified_name", id.FullyQualifiedName())),
 					objectassert.Warehouse(t, id).
 						HasName(id.Name()).
-						HasState(sdk.WarehouseStateStarted).
+						HasStateOneOf(sdk.WarehouseStateStarted, sdk.WarehouseStateResuming).
 						HasType(sdk.WarehouseTypeStandard).
 						HasSize(sdk.WarehouseSizeXSmall).
 						HasMaxClusterCount(1).

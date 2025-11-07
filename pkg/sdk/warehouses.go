@@ -35,6 +35,10 @@ type Warehouses interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*WarehouseDetails, error)
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
+
+	// ShowByIDExperimental is a show by id function with a potentially improved performance (by utilizing starts with and limit)
+	ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
+	ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 }
 
 var _ Warehouses = (*warehouses)(nil)
@@ -279,6 +283,7 @@ type CreateWarehouseOptions struct {
 	EnableQueryAcceleration         *bool                        `ddl:"parameter" sql:"ENABLE_QUERY_ACCELERATION"`
 	QueryAccelerationMaxScaleFactor *int                         `ddl:"parameter" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
 	ResourceConstraint              *WarehouseResourceConstraint `ddl:"parameter,single_quotes" sql:"RESOURCE_CONSTRAINT"`
+	Generation                      *WarehouseGeneration         `ddl:"parameter,single_quotes" sql:"GENERATION"`
 
 	// Object params
 	MaxConcurrencyLevel             *int             `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
@@ -384,6 +389,7 @@ type WarehouseSet struct {
 	EnableQueryAcceleration         *bool                        `ddl:"parameter" sql:"ENABLE_QUERY_ACCELERATION"`
 	QueryAccelerationMaxScaleFactor *int                         `ddl:"parameter" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
 	ResourceConstraint              *WarehouseResourceConstraint `ddl:"parameter,single_quotes" sql:"RESOURCE_CONSTRAINT"`
+	Generation                      *WarehouseGeneration         `ddl:"parameter,single_quotes" sql:"GENERATION"`
 
 	// Object params
 	MaxConcurrencyLevel             *int `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
@@ -408,8 +414,8 @@ func (v *WarehouseSet) validate() error {
 			return fmt.Errorf("QueryAccelerationMaxScaleFactor must be between 0 and 100")
 		}
 	}
-	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
-		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
+	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
+		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
 	}
 	return nil
 }
@@ -428,6 +434,7 @@ type WarehouseUnset struct {
 	EnableQueryAcceleration         *bool `ddl:"keyword" sql:"ENABLE_QUERY_ACCELERATION"`
 	QueryAccelerationMaxScaleFactor *bool `ddl:"keyword" sql:"QUERY_ACCELERATION_MAX_SCALE_FACTOR"`
 	ResourceConstraint              *bool `ddl:"keyword" sql:"RESOURCE_CONSTRAINT"`
+	Generation                      *bool `ddl:"keyword" sql:"GENERATION"`
 
 	// Object params
 	MaxConcurrencyLevel             *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
@@ -436,8 +443,8 @@ type WarehouseUnset struct {
 }
 
 func (v *WarehouseUnset) validate() error {
-	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
-		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
+	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
+		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
 	}
 	return nil
 }
@@ -548,6 +555,9 @@ type ShowWarehouseOptions struct {
 	show       bool  `ddl:"static" sql:"SHOW"`
 	warehouses bool  `ddl:"static" sql:"WAREHOUSES"`
 	Like       *Like `ddl:"keyword" sql:"LIKE"`
+	// TODO [SNOW-2472289]: they are currently missing from the docs; confirm their state and adjust the provider
+	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	LimitFrom  *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 func (opts *ShowWarehouseOptions) validate() error {
@@ -748,8 +758,31 @@ func (c *warehouses) ShowByID(ctx context.Context, id AccountObjectIdentifier) (
 	})
 }
 
+func (c *warehouses) ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
+	warehouses, err := c.Show(ctx, &ShowWarehouseOptions{
+		Like: &Like{
+			Pattern: String(id.Name()),
+		},
+		StartsWith: String(id.Name()),
+		LimitFrom: &LimitFrom{
+			Rows: Int(1),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return collections.FindFirst(warehouses, func(warehouse Warehouse) bool {
+		return warehouse.ID().FullyQualifiedName() == id.FullyQualifiedName()
+	})
+}
+
 func (c *warehouses) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
 	return SafeShowById(c.client, c.ShowByID, ctx, id)
+}
+
+func (c *warehouses) ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
+	return SafeShowById(c.client, c.ShowByIDExperimental, ctx, id)
 }
 
 // describeWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-warehouse.

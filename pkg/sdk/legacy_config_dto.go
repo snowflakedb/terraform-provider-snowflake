@@ -55,6 +55,15 @@ type LegacyConfigDTO struct {
 	DisableQueryContextCache       *bool               `toml:"disablequerycontextcache"`
 	IncludeRetryReason             *bool               `toml:"includeretryreason"`
 	DisableConsoleLogin            *bool               `toml:"disableconsolelogin"`
+	OauthClientID                  *string             `toml:"oauthclientid"`
+	OauthClientSecret              *string             `toml:"oauthclientsecret"`
+	OauthAuthorizationURL          *string             `toml:"oauthauthorizationurl"`
+	OauthTokenRequestURL           *string             `toml:"oauthtokenrequesturl"`
+	OauthRedirectURI               *string             `toml:"oauthredirecturi"`
+	OauthScope                     *string             `toml:"oauthscope"`
+	WorkloadIdentityProvider       *string             `toml:"workloadidentityprovider"`
+	WorkloadIdentityEntraResource  *string             `toml:"workloadidentityentraresource"`
+	EnableSingleUseRefreshTokens   *bool               `toml:"enablesingleuserefreshtokens"`
 }
 
 func (c *LegacyConfigDTO) DriverConfig() (gosnowflake.Config, error) {

@@ -165,8 +165,8 @@ func (atc *acceptanceTestContext) initialize() error {
 		errs := errors.Join(
 			testClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
 			secondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
-			testClient().EnsureScimProvisionerRolesExist(ctx),
-			secondaryTestClient().EnsureScimProvisionerRolesExist(ctx),
+			testClient().EnsureEssentialRolesExist(ctx),
+			secondaryTestClient().EnsureEssentialRolesExist(ctx),
 		)
 		if errs != nil {
 			return errs

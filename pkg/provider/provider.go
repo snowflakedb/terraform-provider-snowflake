@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -247,9 +248,10 @@ func GetProviderSchema() map[string]*schema.Schema {
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Token, nil),
 		},
 		"token_accessor": {
-			Type:     schema.TypeList,
-			Optional: true,
-			MaxItems: 1,
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "If you are using the OAuth authentication flows, use the dedicated `authenticator` and `oauth...` fields instead. See our [authentication methods guide](./guides/authentication_methods) for more information.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"token_endpoint": {
@@ -387,9 +389,22 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional: true,
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,
-				ValidateDiagFunc: validators.StringInSlice(previewfeatures.AllPreviewFeatures, true),
+				ValidateDiagFunc: validators.StringInSlice(previewfeatures.ValidPreviewFeatures, true),
 			},
-			Description: fmt.Sprintf("A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md). Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(previewfeatures.AllPreviewFeatures)),
+			Description: fmt.Sprintf("A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md)."+
+				" Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables."+
+				" Preview features that can be enabled are: %v. Promoted features that are stable and are enabled by default are: %v. Promoted features can be safely removed from this field. They will be removed in the next major version.",
+				docs.PossibleValuesListed(previewfeatures.AllPreviewFeatures), docs.PossibleValuesListed(previewfeatures.PromotedFeatures),
+			),
+		},
+		"experimental_features_enabled": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: validators.StringInSlice(experimentalfeatures.AllExperimentalFeatures, true),
+			},
+			Description: fmt.Sprintf("A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Valid options are: %v.", docs.PossibleValuesListed(experimentalfeatures.AllExperimentalFeatures)),
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
@@ -402,6 +417,65 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Description: envNameFieldDescription("False by default. When this is set to true, the provider expects the legacy TOML format. Otherwise, it expects the new format. See more in [the section below](#examples)", snowflakeenvs.UseLegacyTomlFile),
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.UseLegacyTomlFile, false),
+		},
+		"oauth_client_id": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Client id for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthClientId),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthClientId, nil),
+		},
+		"oauth_client_secret": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Client secret for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthClientSecret),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthClientSecret, nil),
+		},
+		"oauth_authorization_url": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Authorization URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthAuthorizationUrl),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthAuthorizationUrl, nil),
+		},
+		"oauth_token_request_url": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Token request URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthTokenRequestUrl),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthTokenRequestUrl, nil),
+		},
+		"oauth_redirect_uri": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Redirect URI registered in IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthRedirectUri),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthRedirectUri, nil),
+		},
+		"oauth_scope": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Comma separated list of scopes. If empty it is derived from role. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth).", snowflakeenvs.OauthScope),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.OauthScope, nil),
+		},
+		"enable_single_use_refresh_tokens": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("Enables single use refresh tokens for Snowflake IdP.", snowflakeenvs.EnableSingleUseRefreshTokens),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.EnableSingleUseRefreshTokens, nil),
+		},
+		"workload_identity_provider": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("The workload identity provider to use for WIF authentication.", snowflakeenvs.WorkloadIdentityProvider),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.WorkloadIdentityProvider, nil),
+		},
+		"workload_identity_entra_resource": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("The resource to use for WIF authentication on Azure environment.", snowflakeenvs.WorkloadIdentityEntraResource),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.WorkloadIdentityEntraResource, nil),
 		},
 	}
 }
@@ -513,6 +587,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_accounts":                           datasources.Accounts(),
 		"snowflake_account_roles":                      datasources.AccountRoles(),
 		"snowflake_alerts":                             datasources.Alerts(),
+		"snowflake_authentication_policies":            datasources.AuthenticationPolicies(),
 		"snowflake_compute_pools":                      datasources.ComputePools(),
 		"snowflake_connections":                        datasources.Connections(),
 		"snowflake_cortex_search_services":             datasources.CortexSearchServices(),
@@ -563,7 +638,7 @@ func getDataSources() map[string]*schema.Resource {
 	}
 }
 
-func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
+func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
 	config, err := getDriverConfigFromTerraform(s)
 	if err != nil {
 		return nil, diag.FromErr(err)
@@ -603,11 +678,24 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 		providerCtx.Client = client
 	}
 
+	diags := make([]diag.Diagnostic, 0)
 	if v, ok := s.GetOk("preview_features_enabled"); ok {
 		providerCtx.EnabledFeatures = expandStringList(v.(*schema.Set).List())
+		promotedFeatures := previewfeatures.GetPromotedFeatures(providerCtx.EnabledFeatures)
+		for _, pf := range promotedFeatures {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Stable feature used on preview feature list.",
+				Detail:   fmt.Sprintf("Preview feature %s was already promoted to stable feature. Please remove it from your preview_features_enabled configuration", pf),
+			})
+		}
 	}
 
-	return providerCtx, nil
+	if v, ok := s.GetOk("experimental_features_enabled"); ok {
+		providerCtx.EnabledExperiments = expandStringList(v.(*schema.Set).List())
+	}
+
+	return providerCtx, diags
 }
 
 // TODO: reuse with the function from resources package
@@ -649,9 +737,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 }
 
 func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, error) {
-	config := &gosnowflake.Config{
-		Application: "terraform-provider-snowflake",
-	}
+	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
 
 	err := errors.Join(
 		// account_name and organization_name are handled below
@@ -756,6 +842,15 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleBooleanStringAttribute(s, "disable_console_login", &config.DisableConsoleLogin),
 		// profile is handled in the calling function
 		// TODO(SNOW-1761318): handle DisableSamlURLCheck after upgrading the driver to at least 1.10.1
+		handleStringField(s, "oauth_client_id", &config.OauthClientID),
+		handleStringField(s, "oauth_client_secret", &config.OauthClientSecret),
+		handleStringField(s, "oauth_authorization_url", &config.OauthAuthorizationURL),
+		handleStringField(s, "oauth_token_request_url", &config.OauthTokenRequestURL),
+		handleStringField(s, "oauth_redirect_uri", &config.OauthRedirectURI),
+		handleStringField(s, "oauth_scope", &config.OauthScope),
+		handleBoolField(s, "enable_single_use_refresh_tokens", &config.EnableSingleUseRefreshTokens),
+		handleStringField(s, "workload_identity_provider", &config.WorkloadIdentityProvider),
+		handleStringField(s, "workload_identity_entra_resource", &config.WorkloadIdentityEntraResource),
 	)
 	if err != nil {
 		return nil, err

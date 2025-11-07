@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -1063,6 +1064,53 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			_, err := ParseExternalVolumeDescribed(tc.DescribeOutput)
 			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ContainsValue(t *testing.T) {
+	haystack := sdk.AsStringList([]sdk.AuthenticationMethodsOption{sdk.AuthenticationMethodsAll, sdk.AuthenticationMethodsSaml, sdk.AuthenticationMethodsPassword})
+	testCases := []struct {
+		name     string
+		haystack []string
+		needle   string
+		expected bool
+	}{
+		{
+			name:     "needle is in haystack",
+			haystack: haystack,
+			needle:   string(sdk.AuthenticationMethodsSaml),
+			expected: true,
+		},
+		{
+			name:     "needle is not in haystack",
+			haystack: haystack,
+			needle:   "INVALID",
+			expected: false,
+		},
+		{
+			name:     "haystack is empty",
+			haystack: []string{},
+			needle:   string(sdk.AuthenticationMethodsSaml),
+			expected: false,
+		},
+		{
+			name:     "needle is empty",
+			haystack: haystack,
+			needle:   "",
+			expected: false,
+		},
+		{
+			name:     "needle is in haystack, normalized",
+			haystack: haystack,
+			needle:   strings.ToLower(string(sdk.AuthenticationMethodsSaml)),
+			expected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, ContainsEnum(tc.haystack, tc.needle, sdk.ToAuthenticationMethodsOption))
 		})
 	}
 }

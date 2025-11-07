@@ -49,7 +49,7 @@ lint-fix: ## Run static code analysis, check formatting and try to fix findings
 	./bin/golangci-lint run ./... -v --fix
 
 mod: ## add missing and remove unused modules
-	go mod tidy -compat=1.23.6
+	go mod tidy -compat=1.24.9
 
 mod-check: mod ## check if there are any missing/unused modules
 	git diff --exit-code -- go.mod go.sum
@@ -74,10 +74,10 @@ test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") -json
 
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run "^TestAcc_" -v -cover -timeout=150m ./pkg/testacc -json
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=150m ./pkg/testacc -json
 
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=45m ./pkg/testacc ./pkg/sdk/testint -json
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=45m ./pkg/testacc ./pkg/sdk/testint -json
 
 test-account-level-features: create-test-output-directory ## run integration and acceptance test modifying account
 	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=30m ./pkg/testacc ./pkg/sdk/testint -json
@@ -91,8 +91,18 @@ test-functional: create-test-output-directory ## run functional tests of the und
 test-architecture: ## check architecture constraints between packages
 	go test ./pkg/architests/... -v
 
-test-acceptance-%: ## run acceptance tests for the given resource only, e.g. test-acceptance-Warehouse
-	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -run ^TestAcc_$*_ -v -timeout=20m ./pkg/testacc
+test-acceptance-%: ## run acceptance tests (both non-account and account level ones) for the given resource only, e.g. test-acceptance-Warehouse
+	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run ^TestAcc_$* -v -timeout=20m ./pkg/testacc
+
+test-main-terraform-use-cases: ## run test for main terraform use cases
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_.*_BasicUseCase.*|TestAcc_.*_CompleteUseCase.*)$$" -v -cover -json -timeout=20m ./pkg/testacc
+
+test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests within docker environment
+	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
+	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm test-main-terraform-use-cases
+
+process-test-output-docker-compose: ## run test output processor within docker environment
+	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm process-test-output
 
 build-local: ## build the binary locally
 	go build -o $(BASE_BINARY_NAME) .
@@ -135,6 +145,13 @@ run-generator-poc:
 run-generator-%: ./pkg/sdk/%_def.go ## Run go generate on given object definition
 	go generate $<
 	go generate ./pkg/sdk/$*_dto_gen.go
+
+generate-sdk: ## Generate all SDK objects
+	go generate ./pkg/sdk/generate.go
+
+clean-sdk: ## Clean all generated SDK objects
+	rm -f ./pkg/sdk/*_gen.go
+	rm -f ./pkg/sdk/*_gen_test.go
 
 generate-docs-additional-files: ## generate docs additional files
 	go run ./pkg/internal/tools/doc-gen-helper/ $$PWD
@@ -206,7 +223,7 @@ generate-all-config-model-builders: generate-resource-model-builders generate-da
 generate-all-config-model-builders-check: clean-all-config-model-builders generate-all-config-model-builders ## check that generated config model builders are up-to-date
 	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/model
 	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/datasourcemodel
-	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/providelmodel
+	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/providermodel
 
 clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-snowflake-object-parameters-assertions clean-resource-assertions clean-resource-parameters-assertions clean-resource-show-output-assertions clean-resource-model-builders clean-provider-model-builders clean-datasource-model-builders ## clean all generated assertions and config models
 

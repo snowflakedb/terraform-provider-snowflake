@@ -175,7 +175,7 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 			from := v.(string)
 			limit.From = sdk.String(from)
 		}
-		req.WithLimit(limit)
+		req.WithLimit(*limit)
 	}
 
 	rowAccessPolicies, err := client.RowAccessPolicies.Show(ctx, req)

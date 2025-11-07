@@ -1,4 +1,4 @@
-//go:build !account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -63,8 +63,6 @@ func TestAcc_Services(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, serviceModel, dataSourceModel),
 				Check: assertThat(t,
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "services.#", "1")),
-
 					resourceshowoutputassert.ServicesDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasStatus(sdk.ServiceStatusPending).

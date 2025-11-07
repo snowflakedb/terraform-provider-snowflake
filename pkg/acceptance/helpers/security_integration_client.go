@@ -62,13 +62,18 @@ func (c *SecurityIntegrationClient) CreateApiAuthenticationWithAuthorizationCode
 
 func (c *SecurityIntegrationClient) CreateExternalOauth(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	id := c.ids.RandomAccountObjectIdentifier()
 	issuer := random.String()
 	request := sdk.NewCreateExternalOauthSecurityIntegrationRequest(id, false, sdk.ExternalOauthSecurityIntegrationTypeCustom,
 		issuer, []sdk.TokenUserMappingClaim{{Claim: "foo"}}, sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
 	).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "http://example.com"}})
+	return c.CreateExternalOauthWithRequest(t, request)
+}
+
+func (c *SecurityIntegrationClient) CreateExternalOauthWithRequest(t *testing.T, request *sdk.CreateExternalOauthSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {
+	t.Helper()
+	ctx := context.Background()
+
 	err := c.client().CreateExternalOauth(ctx, request)
 	require.NoError(t, err)
 
@@ -204,4 +209,10 @@ func (c *SecurityIntegrationClient) DropSecurityIntegrationFunc(t *testing.T, id
 		err := c.client().Drop(ctx, sdk.NewDropSecurityIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *SecurityIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SecurityIntegration, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
 }

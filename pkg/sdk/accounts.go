@@ -160,13 +160,25 @@ func (c *accounts) Create(ctx context.Context, id AccountObjectIdentifier, opts 
 		log.Printf("[WARN] Unable to retrieve create account output, err = %v", err)
 	}
 
-	if len(rows) == 1 && rows[0]["status"] != nil {
-		if status, ok := (*rows[0]["status"]).(string); ok {
-			return ToAccountCreateResponse(status)
-		}
+	response, err := getAccountCreateResponse(rows)
+	if err != nil {
+		return nil, fmt.Errorf("converting response from Snowflake: %w", err)
 	}
+	return response, nil
+}
 
-	return nil, nil
+func getAccountCreateResponse(rows []map[string]*any) (*AccountCreateResponse, error) {
+	if len(rows) != 1 {
+		return nil, fmt.Errorf("expected 1 row, got %d", len(rows))
+	}
+	if rows[0]["status"] == nil {
+		return nil, fmt.Errorf("status is not set")
+	}
+	statusString, ok := (*rows[0]["status"]).(string)
+	if !ok {
+		return nil, fmt.Errorf("could not convert status to string")
+	}
+	return ToAccountCreateResponse(statusString)
 }
 
 // AlterAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-account.

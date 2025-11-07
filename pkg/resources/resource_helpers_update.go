@@ -84,6 +84,21 @@ func booleanStringAttributeUnsetFallbackUpdate(d *schema.ResourceData, key strin
 	return nil
 }
 
+func booleanStringAttributeUnsetFallbackUpdateBuilder[T any](d *schema.ResourceData, key string, setValue func(bool) T, fallbackValue bool) error {
+	if d.HasChange(key) {
+		if v := d.Get(key).(string); v != BooleanDefault {
+			parsed, err := booleanStringToBool(v)
+			if err != nil {
+				return err
+			}
+			setValue(parsed)
+		} else {
+			setValue(fallbackValue)
+		}
+	}
+	return nil
+}
+
 func accountObjectIdentifierAttributeSetOnly(d *schema.ResourceData, key string, setField **sdk.AccountObjectIdentifier) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {

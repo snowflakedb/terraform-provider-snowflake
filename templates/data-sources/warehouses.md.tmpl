@@ -9,6 +9,9 @@ description: |-
 {{- end }}
 ---
 
+
+-> **Note** Since [2025_07 BCR](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2110), `describe_output` field is different from Snowflake. Now, in Snowflake always `resource_constraint` and `generation` are present. The provider, always takes the value from `resource_constraint` and dispatches it based on the warehouse type: for Standard warehouses, it sets `generation`, for Snowpark-optimized warehouses, it sets `resource_constraint`. This will be adjusted later.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}

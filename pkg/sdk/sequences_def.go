@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 var sequenceSet = g.NewQueryStruct("SequenceSet").
 	PredefinedQueryStructField("ValuesBehavior", "*ValuesBehavior", g.KeywordOptions()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes())

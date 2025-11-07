@@ -50,6 +50,18 @@ type Operation struct {
 	DescribeMapping *Mapping
 	// ShowByIDFiltering defines a kind of filterings performed in ShowByID operation
 	ShowByIDFiltering []ShowByIDFiltering
+
+	// TODO [SNOW-2324252]: Consider splitting the Operation into definition and generation model
+	// new fields used to move the old template executors logic into simpler template generation based on prepared model
+
+	// StructsToGenerate is a list of all newly introduced structs comprised of HelperStructs and OptsField; contains only unique structs
+	StructsToGenerate []*Field
+	// ObjectIdMethod is a model to generate the ID() method for an SDK object; replaces the old logic
+	ObjectIdMethod *ShowObjectIdMethod
+	// ObjectTypeMethod is a model to generate the ObjectType() method for an SDK object; replaces the old logic
+	ObjectTypeMethod *ShowObjectTypeMethod
+	// DtosToGenerate is a list of all newly introduced dto structs based on the operation opts; contains only unique structs
+	DtosToGenerate []*Field
 }
 
 type Mapping struct {

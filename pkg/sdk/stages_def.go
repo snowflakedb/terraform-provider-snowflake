@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 type InternalStageEncryptionOption string
 
 var (
@@ -76,14 +74,14 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 
 var stageFileFormatDef = g.NewQueryStruct("StageFileFormat").
 	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes()).
-	OptionalAssignment("TYPE", g.KindOfTPointer[FileFormatType](), g.ParameterOptions()).
+	OptionalAssignmentWithFieldName("TYPE", g.KindOfTPointer[FileFormatType](), g.ParameterOptions(), "FileFormatType").
 	PredefinedQueryStructField("Options", g.KindOfTPointer[FileFormatTypeOptions](), g.ListOptions().NoComma())
 
 var stageCopyOptionsDef = g.NewQueryStruct("StageCopyOptions").
 	OptionalQueryStructField(
 		"OnError",
 		g.NewQueryStruct("StageCopyOnErrorOptions").
-			OptionalSQL("CONTINUE").
+			OptionalSQLWithCustomFieldName("Continue_", "CONTINUE").
 			OptionalSQL("SKIP_FILE").
 			// OptionalSQL("SKIP_FILE_n"). // TODO templated value - not even supported by structToSQL (could be keyword without space in-between)
 			// OptionalSQL("SKIP_FILE_n%"). // TODO templated value with % - not even supported by structToSQL (could be keyword without space in-between)
@@ -112,10 +110,11 @@ var externalS3StageParamsDef = g.NewQueryStruct("ExternalS3StageParams").
 		g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
 	).
 	OptionalQueryStructField("Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
-		OptionalAssignment(
+		OptionalAssignmentWithFieldName(
 			"TYPE",
 			g.KindOfT[ExternalStageS3EncryptionOption](),
 			g.ParameterOptions().SingleQuotes().Required(),
+			"EncryptionType",
 		).
 		OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
@@ -129,10 +128,11 @@ var externalGCSStageParamsDef = g.NewQueryStruct("ExternalGCSStageParams").
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalStageGCSEncryption").
-			OptionalAssignment(
+			OptionalAssignmentWithFieldName(
 				"TYPE",
 				g.KindOfT[ExternalStageGCSEncryptionOption](),
 				g.ParameterOptions().SingleQuotes().Required(),
+				"EncryptionType",
 			).
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
@@ -150,10 +150,11 @@ var externalAzureStageParamsDef = g.NewQueryStruct("ExternalAzureStageParams").
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalStageAzureEncryption").
-			OptionalAssignment(
+			OptionalAssignmentWithFieldName(
 				"TYPE",
 				g.KindOfT[ExternalStageAzureEncryptionOption](),
 				g.ParameterOptions().SingleQuotes().Required(),
+				"EncryptionType",
 			).
 			OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
@@ -173,10 +174,11 @@ var StagesDef = g.NewInterface(
 				OptionalQueryStructField(
 					"Encryption",
 					g.NewQueryStruct("InternalStageEncryption").
-						OptionalAssignment(
+						OptionalAssignmentWithFieldName(
 							"TYPE",
 							g.KindOfT[InternalStageEncryptionOption](),
 							g.ParameterOptions().SingleQuotes().Required(),
+							"EncryptionType",
 						),
 					g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 				).
@@ -272,8 +274,8 @@ var StagesDef = g.NewInterface(
 			IfExists().
 			Name().
 			OptionalIdentifier("RenameTo", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
-			NamedList("SET TAG", g.KindOfT[TagAssociation](), nil).
-			NamedList("UNSET TAG", g.KindOfT[ObjectIdentifier](), nil).
+			OptionalSetTags().
+			OptionalUnsetTags().
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SetTags", "UnsetTags").
 			WithValidation(g.ConflictingFields, "IfExists", "UnsetTags").

@@ -81,6 +81,13 @@ func (c *TestClient) TempTomlConfigForServiceUserWithPat(t *testing.T, serviceUs
 	})
 }
 
+func (c *TestClient) TempTomlConfigForServiceUserWithOauthClientCredentials(t *testing.T, user *TmpUser, oauthClientId, oauthClientSecret, oauthTokenRequestURL string) *TmpTomlConfig {
+	t.Helper()
+	return c.StoreTempTomlConfig(t, func(profile string) string {
+		return TomlConfigForServiceUserWithOauthClientCredentials(t, profile, user.RoleId, user.AccountId, oauthClientId, oauthClientSecret, oauthTokenRequestURL)
+	})
+}
+
 func (c *TestClient) TempTomlConfigForServiceUserWithPatAsPassword(t *testing.T, serviceUser *TmpServiceUserWithPat) *TmpTomlConfig {
 	t.Helper()
 	return c.StoreTempTomlConfig(t, func(profile string) string {

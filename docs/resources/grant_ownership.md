@@ -9,6 +9,10 @@ description: |-
 
 ~> **Note** Manage grants on `HYBRID TABLE` by specifying `TABLE` or `TABLES` in `object_type` field. This applies to a single object, all objects, or future objects. This reflects the current behavior in Snowflake.
 
+~> **Note** Changes introduced in [2025_01 Snowflake BCR Bundle](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_01/bcr-1870) alter how future ownership grant hierarchy works. After the change schema-level future ownership grant(s) will override those defined on the database-level. Previously, the database-level ones took the precedence.
+
+~> **Warning** Be careful when using this resource on managed schema or any object within it, as in Snowflake managed schemas follow different ownership and privilege model. For more details, please visit [Schema documentation](https://docs.snowflake.com/en/sql-reference/sql/create-schema#optional-parameters) (scroll to `WITH MANAGED ACCESS` option).
+
 !> **Warning** Grant ownership resource still has some limitations. Delete operation is not implemented for on_future grants (you have to remove the config and then revoke ownership grant on future X manually).
 
 # snowflake_grant_ownership (Resource)

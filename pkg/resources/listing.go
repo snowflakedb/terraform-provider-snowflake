@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -132,10 +131,10 @@ func Listing() *schema.Resource {
 	return &schema.Resource{
 		Description: "Resource used to manage listing objects. For more information, check [listing documentation](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about).",
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ListingResource), TrackingCreateWrapper(resources.Listing, CreateListing)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ListingResource), TrackingReadWrapper(resources.Listing, ReadListing)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ListingResource), TrackingUpdateWrapper(resources.Listing, UpdateListing)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ListingResource), TrackingDeleteWrapper(resources.Listing, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.Listing, CreateListing),
+		ReadContext:   TrackingReadWrapper(resources.Listing, ReadListing),
+		UpdateContext: TrackingUpdateWrapper(resources.Listing, UpdateListing),
+		DeleteContext: TrackingDeleteWrapper(resources.Listing, deleteFunc),
 
 		Schema: listingSchema,
 		Importer: &schema.ResourceImporter{

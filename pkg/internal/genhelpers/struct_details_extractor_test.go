@@ -1,9 +1,10 @@
-package genhelpers
+package genhelpers_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -66,16 +67,16 @@ func Test_ExtractStructDetails(t *testing.T) {
 		ExportedFloat64Ptr *float64
 	}
 
-	assertFieldExtracted := func(field Field, expectedName string, expectedConcreteType string, expectedUnderlyingType string) {
+	assertFieldExtracted := func(field genhelpers.Field, expectedName string, expectedConcreteType string, expectedUnderlyingType string) {
 		assert.Equal(t, expectedName, field.Name)
 		assert.Equal(t, expectedConcreteType, field.ConcreteType)
 		assert.Equal(t, expectedUnderlyingType, field.UnderlyingType)
 	}
 
 	t.Run("test struct details extraction", func(t *testing.T) {
-		structDetails := ExtractStructDetails(testStruct{})
+		structDetails := genhelpers.ExtractStructDetails(testStruct{})
 
-		assert.Equal(t, "genhelpers.testStruct", structDetails.Name)
+		assert.Equal(t, "genhelpers_test.testStruct", structDetails.Name)
 
 		assertFieldExtracted(structDetails.Fields[0], "unexportedString", "string", "string")
 		assertFieldExtracted(structDetails.Fields[1], "unexportedInt", "int", "int")
@@ -91,8 +92,8 @@ func Test_ExtractStructDetails(t *testing.T) {
 
 		assertFieldExtracted(structDetails.Fields[10], "unexportedStringEnum", "sdk.WarehouseType", "string")
 		assertFieldExtracted(structDetails.Fields[11], "unexportedStringEnumPtr", "*sdk.WarehouseType", "*string")
-		assertFieldExtracted(structDetails.Fields[12], "unexportedIntEnum", "genhelpers.testIntEnum", "int")
-		assertFieldExtracted(structDetails.Fields[13], "unexportedIntEnumPtr", "*genhelpers.testIntEnum", "*int")
+		assertFieldExtracted(structDetails.Fields[12], "unexportedIntEnum", "genhelpers_test.testIntEnum", "int")
+		assertFieldExtracted(structDetails.Fields[13], "unexportedIntEnumPtr", "*genhelpers_test.testIntEnum", "*int")
 
 		assertFieldExtracted(structDetails.Fields[14], "unexportedAccountIdentifier", "sdk.AccountIdentifier", "struct")
 		assertFieldExtracted(structDetails.Fields[15], "unexportedExternalObjectIdentifier", "sdk.ExternalObjectIdentifier", "struct")
@@ -119,21 +120,21 @@ func Test_ExtractStructDetails(t *testing.T) {
 
 func Test_Field_IsSlice(t *testing.T) {
 	t.Run("is a slice", func(t *testing.T) {
-		field := Field{ConcreteType: "[]any_type"}
+		field := genhelpers.Field{ConcreteType: "[]any_type"}
 
 		assert.True(t, field.IsSlice())
 	})
 
 	t.Run("is not a slice", func(t *testing.T) {
-		field := Field{ConcreteType: "*any_type"}
+		field := genhelpers.Field{ConcreteType: "*any_type"}
 
 		assert.False(t, field.IsSlice())
 
-		field = Field{ConcreteType: "*[]any_type"}
+		field = genhelpers.Field{ConcreteType: "*[]any_type"}
 
 		assert.False(t, field.IsSlice())
 
-		field = Field{ConcreteType: "any_type"}
+		field = genhelpers.Field{ConcreteType: "any_type"}
 
 		assert.False(t, field.IsSlice())
 	})
@@ -141,21 +142,21 @@ func Test_Field_IsSlice(t *testing.T) {
 
 func Test_Field_IsPointer(t *testing.T) {
 	t.Run("is a pointer", func(t *testing.T) {
-		field := Field{ConcreteType: "*any_type"}
+		field := genhelpers.Field{ConcreteType: "*any_type"}
 
 		assert.True(t, field.IsPointer())
 	})
 
 	t.Run("is not a pointer", func(t *testing.T) {
-		field := Field{ConcreteType: "[]any_type"}
+		field := genhelpers.Field{ConcreteType: "[]any_type"}
 
 		assert.False(t, field.IsPointer())
 
-		field = Field{ConcreteType: "[]*any_type"}
+		field = genhelpers.Field{ConcreteType: "[]*any_type"}
 
 		assert.False(t, field.IsPointer())
 
-		field = Field{ConcreteType: "any_type"}
+		field = genhelpers.Field{ConcreteType: "any_type"}
 
 		assert.False(t, field.IsPointer())
 	})

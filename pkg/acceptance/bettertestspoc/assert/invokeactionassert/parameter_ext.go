@@ -17,26 +17,30 @@ import (
 type snowflakeParameterUpdate struct {
 	parameter sdk.AccountParameter
 	newValue  string
+
+	// TODO [SNOW-1501905]: test client passed here temporarily to be able to check secondary (by default our assertions use the default one)
+	testClient *helpers.TestClient
 }
 
-func (s *snowflakeParameterUpdate) ToTerraformTestCheckFunc(t *testing.T, testClient *helpers.TestClient) resource.TestCheckFunc {
+func (s *snowflakeParameterUpdate) ToTerraformTestCheckFunc(t *testing.T, _ *helpers.TestClient) resource.TestCheckFunc {
 	t.Helper()
 	return func(_ *terraform.State) error {
-		if testClient == nil {
+		if s.testClient == nil {
 			return errors.New("testClient must not be nil")
 		}
 
-		revertParameter := testClient.Parameter.UpdateAccountParameterTemporarily(t, s.parameter, s.newValue)
+		revertParameter := s.testClient.Parameter.UpdateAccountParameterTemporarily(t, s.parameter, s.newValue)
 		t.Cleanup(revertParameter)
 
 		return nil
 	}
 }
 
-func UpdateAccountParameterTemporarily(t *testing.T, parameter sdk.AccountParameter, newValue string) assert.TestCheckFuncProvider {
+func UpdateAccountParameterTemporarily(t *testing.T, parameter sdk.AccountParameter, newValue string, testClient *helpers.TestClient) assert.TestCheckFuncProvider {
 	t.Helper()
 	return &snowflakeParameterUpdate{
-		parameter: parameter,
-		newValue:  newValue,
+		parameter:  parameter,
+		newValue:   newValue,
+		testClient: testClient,
 	}
 }

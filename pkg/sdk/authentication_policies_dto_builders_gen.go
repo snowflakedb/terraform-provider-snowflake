@@ -2,8 +2,6 @@
 
 package sdk
 
-import ()
-
 func NewCreateAuthenticationPolicyRequest(
 	name SchemaObjectIdentifier,
 ) *CreateAuthenticationPolicyRequest {
@@ -37,18 +35,104 @@ func (s *CreateAuthenticationPolicyRequest) WithMfaEnrollment(MfaEnrollment MfaE
 	return s
 }
 
+func (s *CreateAuthenticationPolicyRequest) WithMfaPolicy(MfaPolicy AuthenticationPolicyMfaPolicyRequest) *CreateAuthenticationPolicyRequest {
+	s.MfaPolicy = &MfaPolicy
+	return s
+}
+
 func (s *CreateAuthenticationPolicyRequest) WithClientTypes(ClientTypes []ClientTypes) *CreateAuthenticationPolicyRequest {
 	s.ClientTypes = ClientTypes
 	return s
 }
 
-func (s *CreateAuthenticationPolicyRequest) WithSecurityIntegrations(SecurityIntegrations []SecurityIntegrationsOption) *CreateAuthenticationPolicyRequest {
-	s.SecurityIntegrations = SecurityIntegrations
+func (s *CreateAuthenticationPolicyRequest) WithSecurityIntegrations(SecurityIntegrations SecurityIntegrationsOptionRequest) *CreateAuthenticationPolicyRequest {
+	s.SecurityIntegrations = &SecurityIntegrations
+	return s
+}
+
+func (s *CreateAuthenticationPolicyRequest) WithPatPolicy(PatPolicy AuthenticationPolicyPatPolicyRequest) *CreateAuthenticationPolicyRequest {
+	s.PatPolicy = &PatPolicy
+	return s
+}
+
+func (s *CreateAuthenticationPolicyRequest) WithWorkloadIdentityPolicy(WorkloadIdentityPolicy AuthenticationPolicyWorkloadIdentityPolicyRequest) *CreateAuthenticationPolicyRequest {
+	s.WorkloadIdentityPolicy = &WorkloadIdentityPolicy
 	return s
 }
 
 func (s *CreateAuthenticationPolicyRequest) WithComment(Comment string) *CreateAuthenticationPolicyRequest {
 	s.Comment = &Comment
+	return s
+}
+
+func NewAuthenticationPolicyMfaPolicyRequest() *AuthenticationPolicyMfaPolicyRequest {
+	return &AuthenticationPolicyMfaPolicyRequest{}
+}
+
+func (s *AuthenticationPolicyMfaPolicyRequest) WithEnforceMfaOnExternalAuthentication(EnforceMfaOnExternalAuthentication EnforceMfaOnExternalAuthenticationOption) *AuthenticationPolicyMfaPolicyRequest {
+	s.EnforceMfaOnExternalAuthentication = &EnforceMfaOnExternalAuthentication
+	return s
+}
+
+func (s *AuthenticationPolicyMfaPolicyRequest) WithAllowedMethods(AllowedMethods []AuthenticationPolicyMfaPolicyListItem) *AuthenticationPolicyMfaPolicyRequest {
+	s.AllowedMethods = AllowedMethods
+	return s
+}
+
+func NewSecurityIntegrationsOptionRequest() *SecurityIntegrationsOptionRequest {
+	return &SecurityIntegrationsOptionRequest{}
+}
+
+func (s *SecurityIntegrationsOptionRequest) WithAll(All bool) *SecurityIntegrationsOptionRequest {
+	s.All = &All
+	return s
+}
+
+func (s *SecurityIntegrationsOptionRequest) WithSecurityIntegrations(SecurityIntegrations []AccountObjectIdentifier) *SecurityIntegrationsOptionRequest {
+	s.SecurityIntegrations = SecurityIntegrations
+	return s
+}
+
+func NewAuthenticationPolicyPatPolicyRequest() *AuthenticationPolicyPatPolicyRequest {
+	return &AuthenticationPolicyPatPolicyRequest{}
+}
+
+func (s *AuthenticationPolicyPatPolicyRequest) WithDefaultExpiryInDays(DefaultExpiryInDays int) *AuthenticationPolicyPatPolicyRequest {
+	s.DefaultExpiryInDays = &DefaultExpiryInDays
+	return s
+}
+
+func (s *AuthenticationPolicyPatPolicyRequest) WithMaxExpiryInDays(MaxExpiryInDays int) *AuthenticationPolicyPatPolicyRequest {
+	s.MaxExpiryInDays = &MaxExpiryInDays
+	return s
+}
+
+func (s *AuthenticationPolicyPatPolicyRequest) WithNetworkPolicyEvaluation(NetworkPolicyEvaluation NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyRequest {
+	s.NetworkPolicyEvaluation = &NetworkPolicyEvaluation
+	return s
+}
+
+func NewAuthenticationPolicyWorkloadIdentityPolicyRequest() *AuthenticationPolicyWorkloadIdentityPolicyRequest {
+	return &AuthenticationPolicyWorkloadIdentityPolicyRequest{}
+}
+
+func (s *AuthenticationPolicyWorkloadIdentityPolicyRequest) WithAllowedProviders(AllowedProviders []AuthenticationPolicyAllowedProviderListItem) *AuthenticationPolicyWorkloadIdentityPolicyRequest {
+	s.AllowedProviders = AllowedProviders
+	return s
+}
+
+func (s *AuthenticationPolicyWorkloadIdentityPolicyRequest) WithAllowedAwsAccounts(AllowedAwsAccounts []StringListItemWrapper) *AuthenticationPolicyWorkloadIdentityPolicyRequest {
+	s.AllowedAwsAccounts = AllowedAwsAccounts
+	return s
+}
+
+func (s *AuthenticationPolicyWorkloadIdentityPolicyRequest) WithAllowedAzureIssuers(AllowedAzureIssuers []StringListItemWrapper) *AuthenticationPolicyWorkloadIdentityPolicyRequest {
+	s.AllowedAzureIssuers = AllowedAzureIssuers
+	return s
+}
+
+func (s *AuthenticationPolicyWorkloadIdentityPolicyRequest) WithAllowedOidcIssuers(AllowedOidcIssuers []StringListItemWrapper) *AuthenticationPolicyWorkloadIdentityPolicyRequest {
+	s.AllowedOidcIssuers = AllowedOidcIssuers
 	return s
 }
 
@@ -99,13 +183,28 @@ func (s *AuthenticationPolicySetRequest) WithMfaEnrollment(MfaEnrollment MfaEnro
 	return s
 }
 
+func (s *AuthenticationPolicySetRequest) WithMfaPolicy(MfaPolicy AuthenticationPolicyMfaPolicyRequest) *AuthenticationPolicySetRequest {
+	s.MfaPolicy = &MfaPolicy
+	return s
+}
+
 func (s *AuthenticationPolicySetRequest) WithClientTypes(ClientTypes []ClientTypes) *AuthenticationPolicySetRequest {
 	s.ClientTypes = ClientTypes
 	return s
 }
 
-func (s *AuthenticationPolicySetRequest) WithSecurityIntegrations(SecurityIntegrations []SecurityIntegrationsOption) *AuthenticationPolicySetRequest {
-	s.SecurityIntegrations = SecurityIntegrations
+func (s *AuthenticationPolicySetRequest) WithSecurityIntegrations(SecurityIntegrations SecurityIntegrationsOptionRequest) *AuthenticationPolicySetRequest {
+	s.SecurityIntegrations = &SecurityIntegrations
+	return s
+}
+
+func (s *AuthenticationPolicySetRequest) WithPatPolicy(PatPolicy AuthenticationPolicyPatPolicyRequest) *AuthenticationPolicySetRequest {
+	s.PatPolicy = &PatPolicy
+	return s
+}
+
+func (s *AuthenticationPolicySetRequest) WithWorkloadIdentityPolicy(WorkloadIdentityPolicy AuthenticationPolicyWorkloadIdentityPolicyRequest) *AuthenticationPolicySetRequest {
+	s.WorkloadIdentityPolicy = &WorkloadIdentityPolicy
 	return s
 }
 
@@ -143,6 +242,21 @@ func (s *AuthenticationPolicyUnsetRequest) WithMfaEnrollment(MfaEnrollment bool)
 	return s
 }
 
+func (s *AuthenticationPolicyUnsetRequest) WithMfaPolicy(MfaPolicy bool) *AuthenticationPolicyUnsetRequest {
+	s.MfaPolicy = &MfaPolicy
+	return s
+}
+
+func (s *AuthenticationPolicyUnsetRequest) WithPatPolicy(PatPolicy bool) *AuthenticationPolicyUnsetRequest {
+	s.PatPolicy = &PatPolicy
+	return s
+}
+
+func (s *AuthenticationPolicyUnsetRequest) WithWorkloadIdentityPolicy(WorkloadIdentityPolicy bool) *AuthenticationPolicyUnsetRequest {
+	s.WorkloadIdentityPolicy = &WorkloadIdentityPolicy
+	return s
+}
+
 func (s *AuthenticationPolicyUnsetRequest) WithComment(Comment bool) *AuthenticationPolicyUnsetRequest {
 	s.Comment = &Comment
 	return s
@@ -170,8 +284,13 @@ func (s *ShowAuthenticationPolicyRequest) WithLike(Like Like) *ShowAuthenticatio
 	return s
 }
 
-func (s *ShowAuthenticationPolicyRequest) WithIn(In In) *ShowAuthenticationPolicyRequest {
+func (s *ShowAuthenticationPolicyRequest) WithIn(In ExtendedIn) *ShowAuthenticationPolicyRequest {
 	s.In = &In
+	return s
+}
+
+func (s *ShowAuthenticationPolicyRequest) WithOn(On On) *ShowAuthenticationPolicyRequest {
+	s.On = &On
 	return s
 }
 

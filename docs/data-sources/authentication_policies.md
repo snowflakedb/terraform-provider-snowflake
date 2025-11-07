@@ -1,0 +1,237 @@
+---
+page_title: "snowflake_authentication_policies Data Source - terraform-provider-snowflake"
+subcategory: "Preview"
+description: |-
+  Data source used to get details of filtered authentication policies. Filtering is aligned with the current possibilities for SHOW AUTHENTICATION POLICIES https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies query. The results of SHOW and DESCRIBE are encapsulated in one output collection authentication_policies.
+---
+
+!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+
+# snowflake_authentication_policies (Data Source)
+
+Data source used to get details of filtered authentication policies. Filtering is aligned with the current possibilities for [SHOW AUTHENTICATION POLICIES](https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `authentication_policies`.
+
+## Example Usage
+
+```terraform
+# Simple usage
+data "snowflake_authentication_policies" "simple" {
+}
+
+output "simple_output" {
+  value = data.snowflake_authentication_policies.simple.authentication_policies
+}
+
+# Filtering (like)
+data "snowflake_authentication_policies" "like" {
+  like = "authentication-policy-name"
+}
+
+output "like_output" {
+  value = data.snowflake_authentication_policies.like.authentication_policies
+}
+
+# Filtering by prefix (like)
+data "snowflake_authentication_policies" "like_prefix" {
+  like = "prefix%"
+}
+
+output "like_prefix_output" {
+  value = data.snowflake_authentication_policies.like_prefix.authentication_policies
+}
+
+# Filtering (starts_with)
+data "snowflake_authentication_policies" "starts_with" {
+  starts_with = "prefix-"
+}
+
+output "starts_with_output" {
+  value = data.snowflake_authentication_policies.starts_with.authentication_policies
+}
+
+# Filtering (in)
+data "snowflake_authentication_policies" "in_account" {
+  in {
+    account = true
+  }
+}
+
+data "snowflake_authentication_policies" "in_database" {
+  in {
+    database = "<database_name>"
+  }
+}
+
+data "snowflake_authentication_policies" "in_schema" {
+  in {
+    schema = "<database_name>.<schema_name>"
+  }
+}
+
+output "in_output" {
+  value = {
+    "account" : data.snowflake_authentication_policies.in_account.authentication_policies,
+    "database" : data.snowflake_authentication_policies.in_database.authentication_policies,
+    "schema" : data.snowflake_authentication_policies.in_schema.authentication_policies,
+  }
+}
+
+# Filtering (on)
+data "snowflake_authentication_policies" "on_account" {
+  on {
+    account = true
+  }
+}
+
+data "snowflake_authentication_policies" "on_user" {
+  on {
+    user = "<user_name>"
+  }
+}
+
+output "on_output" {
+  value = {
+    "account" : data.snowflake_authentication_policies.on_account.authentication_policies,
+    "user" : data.snowflake_authentication_policies.on_user.authentication_policies,
+  }
+}
+
+
+# Filtering (limit)
+data "snowflake_authentication_policies" "limit" {
+  limit {
+    rows = 10
+    from = "prefix-"
+  }
+}
+
+output "limit_output" {
+  value = data.snowflake_authentication_policies.limit.authentication_policies
+}
+
+# Without additional data (to limit the number of calls make for every found authentication policy)
+data "snowflake_authentication_policies" "only_show" {
+  # with_describe is turned on by default and it calls DESCRIBE AUTHENTICATION POLICY for every authentication policy found and attaches its output to authentication_policies.*.describe_output field
+  with_describe = false
+}
+
+output "only_show_output" {
+  value = data.snowflake_authentication_policies.only_show.authentication_policies
+}
+
+# Ensure the number of authentication policies is equal to at least one element (with the use of postcondition)
+data "snowflake_authentication_policies" "assert_with_postcondition" {
+  like = "authentication-policy-name%"
+  lifecycle {
+    postcondition {
+      condition     = length(self.authentication_policies) > 0
+      error_message = "there should be at least one authentication policy"
+    }
+  }
+}
+
+# Ensure the number of authentication policies is equal to exactly one element (with the use of check block)
+check "authentication_policy_check" {
+  data "snowflake_authentication_policies" "assert_with_check_block" {
+    like = "authentication-policy-name"
+  }
+
+  assert {
+    condition     = length(data.snowflake_authentication_policies.assert_with_check_block.authentication_policies) == 1
+    error_message = "authentication policies filtered by '${data.snowflake_authentication_policies.assert_with_check_block.like}' returned ${length(data.snowflake_authentication_policies.assert_with_check_block.authentication_policies)} authentication policies where one was expected"
+  }
+}
+```
+
+-> **Note** If a field has a default value, it is shown next to the type in the schema.
+
+<!-- schema generated by tfplugindocs -->
+## Schema
+
+### Optional
+
+- `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
+- `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
+- `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
+- `on` (Block List, Max: 1) Lists the policies that are effective on the specified object. (see [below for nested schema](#nestedblock--on))
+- `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC AUTHENTICATION POLICY for each service returned by SHOW AUTHENTICATION POLICIES. The output of describe is saved to the description field. By default this value is set to true.
+
+### Read-Only
+
+- `authentication_policies` (List of Object) Holds the aggregated output of all authentication policies details queries. (see [below for nested schema](#nestedatt--authentication_policies))
+- `id` (String) The ID of this resource.
+
+<a id="nestedblock--in"></a>
+### Nested Schema for `in`
+
+Optional:
+
+- `account` (Boolean) Returns records for the entire account.
+- `application` (String) Returns records for the specified application.
+- `application_package` (String) Returns records for the specified application package.
+- `database` (String) Returns records for the current database in use or for a specified database.
+- `schema` (String) Returns records for the current schema in use or a specified schema. Use fully qualified name.
+
+
+<a id="nestedblock--limit"></a>
+### Nested Schema for `limit`
+
+Required:
+
+- `rows` (Number) The maximum number of rows to return.
+
+Optional:
+
+- `from` (String) Specifies a **case-sensitive** pattern that is used to match object name. After the first match, the limit on the number of rows will be applied.
+
+
+<a id="nestedblock--on"></a>
+### Nested Schema for `on`
+
+Optional:
+
+- `account` (Boolean) Returns records for the entire account.
+- `user` (String) Returns records for the specified user.
+
+
+<a id="nestedatt--authentication_policies"></a>
+### Nested Schema for `authentication_policies`
+
+Read-Only:
+
+- `describe_output` (List of Object) (see [below for nested schema](#nestedobjatt--authentication_policies--describe_output))
+- `show_output` (List of Object) (see [below for nested schema](#nestedobjatt--authentication_policies--show_output))
+
+<a id="nestedobjatt--authentication_policies--describe_output"></a>
+### Nested Schema for `authentication_policies.describe_output`
+
+Read-Only:
+
+- `authentication_methods` (String)
+- `client_types` (String)
+- `comment` (String)
+- `mfa_authentication_methods` (String)
+- `mfa_enrollment` (String)
+- `mfa_policy` (String)
+- `name` (String)
+- `owner` (String)
+- `pat_policy` (String)
+- `security_integrations` (String)
+- `workload_identity_policy` (String)
+
+
+<a id="nestedobjatt--authentication_policies--show_output"></a>
+### Nested Schema for `authentication_policies.show_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `kind` (String)
+- `name` (String)
+- `options` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `schema_name` (String)

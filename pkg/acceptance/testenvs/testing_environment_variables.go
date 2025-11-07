@@ -11,6 +11,7 @@ import (
 type env string
 
 const (
+	envPrefix                   = "TEST_SF_TF_"
 	BusinessCriticalAccount env = "SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT"
 
 	// TestNonProdModifiableAccountLocator represents an account locator that can be used for account modification tests.
@@ -34,7 +35,6 @@ const (
 	EnableAcceptance            env = resource.EnvTfAcc
 	EnableSweep                 env = "TEST_SF_TF_ENABLE_SWEEP"
 	EnableManual                env = "TEST_SF_TF_ENABLE_MANUAL_TESTS"
-	ConfigureClientOnce         env = "SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE"
 	EnableAllPreviewFeatures    env = "SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES"
 	TestObjectsSuffix           env = "TEST_SF_TF_TEST_OBJECT_SUFFIX"
 	RequireTestObjectsSuffix    env = "TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX"
@@ -44,6 +44,11 @@ const (
 	SimplifiedIntegrationTestsSetup env = "TEST_SF_TF_SIMPLIFIED_INTEGRATION_TESTS_SETUP"
 
 	TestResourceDataTypeDiffHandlingEnv env = "TEST_SF_TF_TEST_RESOURCE_DATA_DIFF_HANDLING_ENV"
+
+	// Oauth-related
+	OauthWithClientCredentialsClientId     env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_ID"
+	OauthWithClientCredentialsClientSecret env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_SECRET"
+	OauthWithClientCredentialsIssuer       env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_ISSUER"
 )
 
 func GetOrSkipTest(t *testing.T, envName Env) string {

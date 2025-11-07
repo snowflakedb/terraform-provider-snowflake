@@ -6,8 +6,6 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
-//go:generate go run ./poc/main.go
-
 // NetworkRulesSnowflakeDto is needed to unpack the applied network rules from the JSON response from Snowflake
 type NetworkRulesSnowflakeDto struct {
 	FullyQualifiedRuleName string

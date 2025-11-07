@@ -77,6 +77,7 @@ const (
 	SecretWithBasicAuthentication                          resource = "snowflake_secret_with_basic_authentication"
 	SecretWithClientCredentials                            resource = "snowflake_secret_with_client_credentials"
 	SecretWithGenericString                                resource = "snowflake_secret_with_generic_string"
+	SemanticView                                           resource = "snowflake_semantic_view"
 	SessionParameter                                       resource = "snowflake_session_parameter"
 	Sequence                                               resource = "snowflake_sequence"
 	Service                                                resource = "snowflake_service"

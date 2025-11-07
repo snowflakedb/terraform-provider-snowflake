@@ -1,11 +1,9 @@
 ---
 page_title: "snowflake_listing Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage listing objects. For more information, check listing documentation https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about.
 ---
-
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 !> **Warning** Versioning only works if your listing ever sourced the manifest from stage. This is a Snowflake limitation.
 
@@ -14,6 +12,8 @@ description: |-
 !> **Warning** This resource isn't suitable for public listings because its review process doesn't align with Terraform's standard method for managing infrastructure resources. The challenge is that the review process often takes time and might need several manual revisions. We need to reconsider how to integrate this process into a resource. Although we plan to support this in the future, it might be added later. Currently, the resource may not function well with public listings because review requests are closely connected to the publish field.
 
 !> **Warning** To use external resources in your manifest (e.g., company logo) you must be sourcing your manifest from a stage. Any references to external resources are relative to the manifest location in the stage.
+
+!> **Warning** Currently, this resource doesn't support [organization listings](https://docs.snowflake.com/en/user-guide/collaboration/listings/organizational/org-listing-about). We plan to add support for this in the future (through separate parameter or entirely new resource). There is a workaround for this provided in this issue: [#3982](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3982), but beware that in the next major version of the provider such workarounds may not be allowed.
 
 -> **Note** When using manifest from stage, the change in either stage id, location, or version will create a new listing version that can be seen by calling the [SHOW VERSIONS IN LISTING](https://docs.snowflake.com/en/sql-reference/sql/show-versions-in-listing) command.
 

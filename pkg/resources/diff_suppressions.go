@@ -46,6 +46,21 @@ var DiffSuppressDataTypes = NormalizeAndCompareUsingFunc(datatypes.ParseDataType
 // and the first diff is usually .# referring to the collection length (we skip those).
 func NormalizeAndCompareIdentifiersInSet(key string) schema.SchemaDiffSuppressFunc {
 	return func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+		containsFunc := helpers.ContainsIdentifierIgnoringQuotes
+		return normalizeAndCompareValuesInSet[sdk.ObjectIdentifier](key, containsFunc)(k, oldValue, newValue, d)
+	}
+}
+
+// NormalizeAndCompareIdentifiersInSet is a diff suppression function similar to NormalizeAndCompareIdentifiersInSet, but for enum sets.
+func NormalizeAndCompareEnumsInSet[T ~string](key string, enumNormalizer func(string) (T, error)) schema.SchemaDiffSuppressFunc {
+	return func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+		containsFunc := func(a []string, b string) bool { return helpers.ContainsEnum(a, b, enumNormalizer) }
+		return normalizeAndCompareValuesInSet[T](key, containsFunc)(k, oldValue, newValue, d)
+	}
+}
+
+func normalizeAndCompareValuesInSet[T comparable](key string, containsFunc func(a []string, b string) bool) schema.SchemaDiffSuppressFunc {
+	return func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 		if strings.HasSuffix(k, ".#") {
 			return false
 		}
@@ -54,20 +69,20 @@ func NormalizeAndCompareIdentifiersInSet(key string) schema.SchemaDiffSuppressFu
 		if oldValue == "" && !d.GetRawState().IsNull() {
 			stateRaw, ok := d.GetRawState().AsValueMap()[key]
 			if ok && !stateRaw.IsNull() && stateRaw.Type().IsCollectionType() {
-				if helpers.ContainsIdentifierIgnoringQuotes(ctyValToSliceString(stateRaw.AsValueSet().Values()), newValue) {
+				if containsFunc(ctyValToSliceString(stateRaw.AsValueSet().Values()), newValue) {
 					return true
 				}
 			} else {
-				log.Printf("[DEBUG] NormalizeAndCompareIdentifiersInSet: state raw for key %s is not found or is not a collection type", key)
+				log.Printf("[DEBUG] normalizeAndCompareValuesInSet: state raw for key %s is not found or is not a collection type", key)
 			}
 		}
 
 		if newValue == "" {
 			oldRaw, ok := d.Get(key).(*schema.Set)
-			if ok && helpers.ContainsIdentifierIgnoringQuotes(expandStringList(oldRaw.List()), oldValue) {
+			if ok && containsFunc(expandStringList(oldRaw.List()), oldValue) {
 				return true
 			} else {
-				log.Printf("[DEBUG] NormalizeAndCompareIdentifiersInSet: old raw for key %s is not found or is not a collection type", key)
+				log.Printf("[DEBUG] normalizeAndCompareValuesInSet: old raw for key %s is not found or is not a collection type", key)
 			}
 		}
 

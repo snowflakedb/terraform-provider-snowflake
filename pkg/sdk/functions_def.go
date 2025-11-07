@@ -2,8 +2,6 @@ package sdk
 
 import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 
-//go:generate go run ./poc/main.go
-
 var functionArgument = g.NewQueryStruct("FunctionArgument").
 	Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
 	PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
@@ -38,8 +36,8 @@ var functionReturns = g.NewQueryStruct("FunctionReturns").
 	).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 
 var (
-	functionImports            = g.NewQueryStruct("FunctionImport").Text("Import", g.KeywordOptions().SingleQuotes())
-	functionPackages           = g.NewQueryStruct("FunctionPackage").Text("Package", g.KeywordOptions().SingleQuotes())
+	functionImports            = g.NewQueryStruct("FunctionImport").Text("FunctionImport", g.KeywordOptions().SingleQuotes())
+	functionPackages           = g.NewQueryStruct("FunctionPackage").Text("FunctionPackage", g.KeywordOptions().SingleQuotes())
 	functionSecretsListWrapper = g.NewQueryStruct("SecretsList").
 					List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses())
 )
@@ -338,6 +336,8 @@ var FunctionsDef = g.NewInterface(
 		Field("IsAnsi", "bool").
 		Field("MinNumArguments", "int").
 		Field("MaxNumArguments", "int").
+		Field("ArgumentsOld", "[]DataType").
+		Field("ReturnTypeOld", "DataType").
 		Field("ArgumentsRaw", "string").
 		Field("Description", "string").
 		Field("CatalogName", "string").

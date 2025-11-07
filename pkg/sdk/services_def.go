@@ -84,7 +84,6 @@ var jobServiceFromSpecificationTemplateDef = g.NewQueryStruct("JobServiceFromSpe
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
 	WithValidation(g.ExactlyOneValueSet, "Location", "SpecificationTemplate")
 
-//go:generate go run ./poc/main.go
 var ServicesDef = g.NewInterface(
 	"Services",
 	"Service",

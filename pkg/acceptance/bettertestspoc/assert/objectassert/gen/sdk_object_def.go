@@ -11,11 +11,22 @@ type SdkObjectDef struct {
 	ObjectStruct any
 }
 
+// TODO [SNOW-2324252]: remove object type?
 var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeDatabase,
 		ObjectStruct: sdk.Database{},
+	},
+	{
+		IdType:       "sdk.DatabaseObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeSchema,
+		ObjectStruct: sdk.Schema{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeRole,
+		ObjectStruct: sdk.Role{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -51,6 +62,11 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeResourceMonitor,
 		ObjectStruct: sdk.ResourceMonitor{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeNetworkPolicy,
+		ObjectStruct: sdk.NetworkPolicy{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -142,6 +158,26 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeSemanticView,
 		ObjectStruct: sdk.SemanticView{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeStorageIntegration,
+		ObjectStruct: sdk.StorageIntegration{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeNotebook,
+		ObjectStruct: sdk.Notebook{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeSecurityIntegration,
+		ObjectStruct: sdk.SecurityIntegration{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeStreamlit,
+		ObjectStruct: sdk.Streamlit{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
@@ -150,7 +186,6 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 		structDetails := genhelpers.ExtractStructDetails(d.ObjectStruct)
 		allSdkObjectsDetails[idx] = genhelpers.SdkObjectDetails{
 			IdType:        d.IdType,
-			ObjectType:    d.ObjectType,
 			StructDetails: structDetails,
 		}
 	}
