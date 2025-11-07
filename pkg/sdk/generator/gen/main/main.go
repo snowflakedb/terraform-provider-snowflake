@@ -5,8 +5,8 @@ package main
 import (
 	"text/template"
 
-	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/defs"
-	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/internal/example/defs"
+	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
+	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/example/defs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
