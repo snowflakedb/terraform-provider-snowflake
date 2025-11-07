@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 // This file's only purpose is to make generated objects compile (or close to compile).
@@ -138,4 +140,12 @@ func assertOptsValidAndSQLEquals(t *testing.T, opts validatable, format string, 
 	_ = opts
 	_ = format
 	_ = args
+}
+
+func JoinErrors(errs ...error) error {
+	return sdk.JoinErrors(errs...)
+}
+
+func randomDatabaseObjectIdentifier() DatabaseObjectIdentifier {
+	return DatabaseObjectIdentifier{}
 }

@@ -52,6 +52,9 @@ func NewSchemaObjectIdentifier(_, _, _ string) SchemaObjectIdentifier {
 	return sdk.NewSchemaObjectIdentifier("", "", "")
 }
 
+func randomDatabaseObjectIdentifier() DatabaseObjectIdentifier {
+	return DatabaseObjectIdentifier{}
+}
 func randomSchemaObjectIdentifier() SchemaObjectIdentifier {
 	return SchemaObjectIdentifier{}
 }
