@@ -127,9 +127,6 @@ jobs:
           terraform_version: 1.7.4
           terraform_wrapper: false
 
-      - name: Set UTC Timestamp for Snowflake
-        run: echo "SNOWFLAKE_TIMESTAMP=$(date -u "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
-
       - name: Run integration and acceptance account-level tests
         run: make test-account-level-features | make upload-test-results
         if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
