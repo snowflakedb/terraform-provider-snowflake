@@ -53,7 +53,7 @@ func main() {
 	}
 
 	// Put file to the stage
-	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @~ auto_compress = true overwrite = true", temporaryFilePath)); err != nil {
+	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @%s auto_compress = true overwrite = true", temporaryFilePath, testResultsStageId.FullyQualifiedName())); err != nil {
 		log.Fatal("failed to put test results file to stage:", err)
 	}
 
@@ -61,8 +61,9 @@ func main() {
 	if _, err := client.ExecUnsafe(
 		context.Background(),
 		fmt.Sprintf(
-			`copy into %s from @~/%s file_format = (type = csv parse_header = true) match_by_column_name = case_sensitive`,
+			`copy into %s from @%s/%s file_format = (type = csv parse_header = true field_optionally_enclosed_by = '"') match_by_column_name = case_sensitive`,
 			testResultsTableId.FullyQualifiedName(),
+			testResultsStageId.FullyQualifiedName(),
 			temporaryFileName,
 		),
 	); err != nil {

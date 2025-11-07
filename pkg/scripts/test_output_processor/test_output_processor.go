@@ -27,6 +27,9 @@ func main() {
 		if err := json.Unmarshal(scanner.Bytes(), &entry); err != nil {
 			continue // Skip malformed JSON entries
 		}
+		if entry.Action == "output" {
+			log.Print(entry.Output)
+		}
 		testResults = append(testResults, entry)
 	}
 	if err := scanner.Err(); err != nil {
@@ -45,9 +48,6 @@ func main() {
 
 	// Write test results
 	for _, result := range testResults {
-		if result.Action == "output" {
-			log.Print(result.Output)
-		}
 		if result.Test != "" && (result.Action == "pass" || result.Action == "fail") {
 			record := []string{
 				result.Package,

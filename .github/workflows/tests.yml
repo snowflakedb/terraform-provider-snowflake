@@ -110,7 +110,9 @@ jobs:
           chmod 0600 ./config ./config_legacy ./config_v097_compatible
 
       - name: Run unit tests
-        run: make test-unit | make upload-test-results
+        run: |
+          set -o pipefail # called to ensure that the exit code of make test-unit is captured even when piped (otherwise it would take the exit code of make upload-test-results)
+          make test-unit | make upload-test-results
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
         env:
           TEST_SF_TF_TEST_TYPE: "unit"
