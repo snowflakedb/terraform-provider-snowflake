@@ -46,13 +46,14 @@ func main() {
 		log.Fatal("Failed to write test results to temporary file:", err)
 	}
 
+	temporaryFileName := filepath.Base(temporaryFile.Name())
 	temporaryFilePath, err := filepath.Abs(temporaryFile.Name())
 	if err != nil {
 		log.Fatal("Failed to get absolute path of temporary file:", err)
 	}
 
 	// Put file to the stage
-	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @%s auto_compress = true overwrite = true", temporaryFilePath, testResultsStageId.FullyQualifiedName())); err != nil {
+	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @~ auto_compress = true overwrite = true", temporaryFilePath)); err != nil {
 		log.Fatal("failed to put test results file to stage:", err)
 	}
 
@@ -60,10 +61,9 @@ func main() {
 	if _, err := client.ExecUnsafe(
 		context.Background(),
 		fmt.Sprintf(
-			`copy into %s from @%s/%s file_format = (type = csv parse_header = true) match_by_column_name = case_sensitive`,
+			`copy into %s from @~/%s file_format = (type = csv parse_header = true) match_by_column_name = case_sensitive`,
 			testResultsTableId.FullyQualifiedName(),
-			testResultsStageId.FullyQualifiedName(),
-			temporaryFile.Name(),
+			temporaryFileName,
 		),
 	); err != nil {
 		log.Fatal("failed to copy test results file from stage to the target table:", err)
