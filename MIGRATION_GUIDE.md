@@ -24,6 +24,67 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.10.0 ➞ v2.10.1
+
+### *(bugfix)* Fixed parsing DESCRIBE output for authentication policies
+
+In v2.10.0, we reworked authentication policies. This release contains a regression for handling `REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY` value in `MFA_ENROLLMENT` field. For such objects, the provider returned an error
+```
+Error: invalid MFA enrollment option: REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY
+```
+
+This bug is now fixed. Also, we kindly remind you about [deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout).
+
+References [#4093](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4093#issuecomment-3480743221).
+
+### *(bugfix)* Fixed reading the value of `oauth_refresh_token_validity` in `snowflake_oauth_integration_for_custom_clients` resource
+
+Previously, whenever we detected an external change in the `oauth_refresh_token_validity` field,
+we were trying to set it with inappropriate type causing errors like:
+```
+panic: oauth_refresh_token_validity: '' expected type 'int', got unconvertible type 'string', value: '86400'
+```
+
+No changes in configuration and state are required.
+
+### *(bugfix)* Fixed updating the value of `enabled` in `snowflake_oauth_integration_for_partner_applications` resource
+
+Previously, whenever we detected change for the `enabled` field,
+we were wrongly checking the state of the `oauth_issue_refresh_tokens` field.
+Although the fields' logic is connected (see the note in https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake#additional-optional-parameters-partner-applications), it didn't matter in this context.
+This could cause issues like infinite loops in plans when only the `enabled` field was changed,
+but couldn't because the state of the `oauth_issue_refresh_tokens` prevented from it.
+
+No changes in configuration and state are required.
+
+### New Go version and conflicts with Suricata-based firewalls (like AWS Network Firewall) - changes caused by Go 1.24
+Previously, when we bumped the Go version to v1.23.6 in provider version v1.0.4, it caused problems for certain firewall setups - read the [v1.0.4 migration guide](#new-go-version-and-conflicts-with-suricata-based-firewalls-like-aws-network-firewall).
+
+In this version we bumped our underlying Go version to v1.24.9. To mitigate this issue, the GODEBUG environment variable must be set to `GODEBUG=tlsmlkem=0`, instead of `GODEBUG=tlskyber=0`. Read GODEBUG [documentation](https://go.dev/doc/godebug#go-124) for more details.
+
+### *(bugfix)* Fixed setting comment in secret resources
+
+Previously, when external changes were detected on comment field, the secret resources were failing to update it due to incorrect internal update operation handling.
+The resources were throwing errors like:
+```text
+Error: 001003 (42000): SQL compilation error:
+syntax error line 1 at position 248 unexpected '<EOF>'.
+```
+
+or
+
+```text
+Error: Saved plan is stale
+```
+
+Now, this behavior is fixed. Here's the list of affected resources:
+- `snowflake_secret_with_generic_string`
+- `snowflake_secret_with_basic_authentication`
+- `snowflake_secret_with_oauth_authorization_code`
+- `snowflake_secret_with_client_credentials`
+
+No changes in configuration and state are required.
+
 ## v2.9.x ➞ v2.10.0
 
 ### *(improvement)* Features promoted to stable
@@ -111,7 +172,6 @@ Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE
 
 Details:
 - The query after enabling the experiment should look like this: `SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`.
-- For the implementation reasons, it may not improve the performance when warehouse identifier contains `_` or `%` sign.
 - The optimization should work correctly independently of the identifier casing.
 
 Feedback:

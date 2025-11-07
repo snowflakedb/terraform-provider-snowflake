@@ -22,12 +22,12 @@ func (v AuthenticationPolicyDetails) Raw(key string) string {
 	return raw.Value
 }
 
-func (v AuthenticationPolicyDetails) GetMfaEnrollment() (MfaEnrollmentOption, error) {
+func (v AuthenticationPolicyDetails) GetMfaEnrollment() (MfaEnrollmentReadOption, error) {
 	raw, err := collections.FindFirst(v, func(r AuthenticationPolicyDescription) bool { return r.Property == "MFA_ENROLLMENT" })
 	if err != nil {
 		return "", err
 	}
-	return ToMfaEnrollmentOption(raw.Value)
+	return ToMfaEnrollmentReadOption(raw.Value)
 }
 
 func (v AuthenticationPolicyDetails) GetClientTypes() ([]ClientTypesOption, error) {

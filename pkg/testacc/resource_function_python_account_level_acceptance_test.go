@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -23,8 +22,6 @@ import (
 func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
 	// TODO(SNOW-2251351): Resolve these tests after the change rollout is clarified.
 	t.Skip("Skipping because the changes have been reverted from the BCR")
-
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	schema, schemaCleanup := secondaryTestClient().Schema.CreateSchema(t)
 	t.Cleanup(schemaCleanup)
@@ -88,8 +85,6 @@ func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
 	// TODO(SNOW-2251351): Resolve these tests after the change rollout is clarified.
 	t.Skip("Skipping because the changes have been reverted from the BCR")
 
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	schema, schemaCleanup := secondaryTestClient().Schema.CreateSchema(t)
 	t.Cleanup(schemaCleanup)
 
@@ -121,7 +116,7 @@ func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
 				PreConfig: func() {
 					secondaryTestClient().BcrBundles.EnableBcrBundle(t, "2025_03")
 				},

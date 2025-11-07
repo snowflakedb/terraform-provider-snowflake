@@ -496,6 +496,7 @@ func Test_ToMfaEnrollmentOption(t *testing.T) {
 	invalid := []test{
 		{input: "foo"},
 		{input: "ALL"},
+		{input: "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"},
 	}
 	for _, tt := range valid {
 		t.Run(tt.input, func(t *testing.T) {
@@ -507,6 +508,40 @@ func Test_ToMfaEnrollmentOption(t *testing.T) {
 	for _, tt := range invalid {
 		t.Run(tt.input, func(t *testing.T) {
 			_, err := ToMfaEnrollmentOption(tt.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ToMfaEnrollmentReadOption(t *testing.T) {
+	type test struct {
+		input string
+		want  MfaEnrollmentReadOption
+	}
+	valid := []test{
+		// case insensitive.
+		{input: "required", want: MfaEnrollmentReadRequired},
+
+		// supported values.
+		{input: "REQUIRED", want: MfaEnrollmentReadRequired},
+		{input: "REQUIRED_PASSWORD_ONLY", want: MfaEnrollmentReadRequiredPasswordOnly},
+		{input: "OPTIONAL", want: MfaEnrollmentReadOptional},
+		{input: "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY", want: MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly},
+	}
+	invalid := []test{
+		{input: "foo"},
+		{input: "ALL"},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToMfaEnrollmentReadOption(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToMfaEnrollmentReadOption(tt.input)
 			require.Error(t, err)
 		})
 	}
