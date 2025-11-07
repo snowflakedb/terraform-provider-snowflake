@@ -33,24 +33,14 @@ linters:
       disable:
         - require-error # Do not force using require instead of assert checks.
   exclusions:
-    generated: lax
     presets:
-      - comments
-      - common-false-positives
       - legacy
       - std-error-handling
+    # Scripts are not part of the production code and may be excluded.
     paths:
-      - third_party$
-      - builtin$
-      - examples$
+      - scripts$
 formatters:
   enable:
     - gofmt
     - gofumpt
     - goimports
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
