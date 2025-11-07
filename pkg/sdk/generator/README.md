@@ -1,49 +1,99 @@
 > ⚠️ **Disclaimer**: The SDK generator started as PoC but was widely used to speed up the development of the SQL abstraction over Snowflake. It requires a lot of changes as improvements as working with it is not always the easiest. Additionally, we are currently considering the move to REST API (check [this roadmap entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#snowflake-rest-apis)), which may ultimately lead to deprecation of this generator as SQL abstraction may not be needed anymore.
 
-## SDK generator PoC
+## SDK generator
 
-PoC of generating full object implementation based on object definition.
+Generating full SDK object implementation based on object definition.
 
-### Description
+### How it works
+##### Adding new object to the SDK
 
-There is an example file ready for generation [database_role_def.go](example/database_role_def.go) which creates files:
+To add definition for the new SDK object:
+
+1. Create file `<object_name_plural>_def.go` in the [defs directory](defs) (e.g., [sequences_def.go](defs/sequences_def.go)).
+2. Create object definition in the created file. Base it on the existing definitions and the [example directory](example).
+3. Add the created definition to the [0_init.go](defs/0_init.go) file.
+4. You are all set to run generation.
+
+##### Invoking generation
+
+> **Important**: All the commands should be run from the main project directory.
+
+The generator offers filtering by object name and by generation part. To list all available objects and generation parts run:
+```shell
+make generate-sdk SF_TF_GENERATOR_ARGS='--help'
+```
+
+Available generation parts:
+- default
+- dto
+- dto_builders
+- impl
+- unit_tests
+- validations
+
+Generator is built on top of our common generator (read more in its [README](../../internal/genhelpers/README.md)). Experiment with the following commands:
+
+```shell
+# generate all objects and all files
+make generate-sdk
+```
+```shell
+# remove all generated files first; generate all objects and all files
+make clean-generated-sdk generate-sdk
+```
+```shell
+# generate all objects and chosen files only
+make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,dto,validations'
+```
+```shell
+# generate chosen objects only and all files
+make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=Sequences'
+```
+```shell
+# generate chosen objects and chosen files only
+make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,impl --filter-object-names=Sequences'
+```
+
+##### Examples
+
+There are example files ready for generation, e.g. [database_role_def.go](example/defs/database_role_def.go), which creates files:
 - [database_role_gen.go](example/database_roles_gen.go) - SDK interface, options structs
 - [database_role_dto_gen.go](example/database_roles_dto_gen.go) - SDK Request DTOs
-- [database_role_dto_builders_gen.go](example/database_roles_dto_builders_gen.go) - SDK Request DTOs constructors and builder methods (this file is generated using [dto-builder-generator](../dto-builder-generator/main.go))
+- [database_role_dto_builders_gen.go](example/database_roles_dto_builders_gen.go) - SDK Request DTOs constructors and builder methods
 - [database_role_validations_gen.go](example/database_roles_validations_gen.go) - options structs validations
 - [database_role_impl_gen.go](example/database_roles_impl_gen.go) - SDK interface implementation
 - [database_role_gen_test.go](example/database_roles_gen_test.go) - unit tests placeholders with guidance comments (at least for now)
 
-Note:
-- for now, integration tests files are not generated, and they have to be created manually in the `pkg/sdk/testint` directory
+The commands follow the same format as the official SDK ones:
 
-### How it works
-##### Creating object generation definition
-
-To create definition for object generation:
-
-1. Create file `object_name_def.go` (like example [database_role_def.go](example/defs/database_role_def.go) file).
-2. Put go generate directive at the top: `//go:generate go run ../main.go`. Remember that you may have to change the path to [main.go](generator/main/main.go) file.
-3. Create object interface definition.
-4. Add key-value entry to `definitionMapping` in [main.go](main.go):
-   - key should be created file name (for [database_role_def.go](example/database_role_def.go) example file: `"database_role_def.go"`)
-   - value should be created definition (like for [database_role_def.go](example/database_role_def.go) example file: `DatabaseRole`)
-   - 
-5. You are all set to run generation.
-
-##### Invoking generation
-
-To invoke example generation (with first cleaning all the generated files) run:
 ```shell
-make clean-generator-poc run-generator-poc
+# generate all example objects and all files
+make generate-sdk-examples
 ```
-
-To invoke generation inside SDK package (with cleaning), e.g. for `session_policies` run (mind the `_`(underscore)):
 ```shell
-make clean-generator-session_policies run-generator-session_policies
+# remove all example generated files first; generate all example objects and all files
+make clean-generated-sdk-examples generate-sdk-examples
+```
+```shell
+# generate all example objects and chosen files only
+make generate-sdk-examples SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,dto,validations'
+```
+```shell
+# generate chosen example objects only and all files
+make generate-sdk-examples SF_TF_GENERATOR_ARGS='--filter-object-names=Sequences'
+```
+```shell
+# generate chosen example objects and chosen files only
+make generate-sdk-examples SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,impl --filter-object-names=Sequences'
+```
+```shell
+# show usage
+make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ```
 
 ### Next steps
+
+> ⚠️ **Disclaimer**: This section may contain the deprecated essentials/improvements/known issues. It will be cleaned up shortly.
 
 ##### High-priority improvements/changes
 

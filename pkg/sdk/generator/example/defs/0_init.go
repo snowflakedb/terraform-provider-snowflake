@@ -9,7 +9,13 @@ import (
 )
 
 func init() {
-	fmt.Printf("katarakta %v\n", gen.AllSdkObjectDefinitions)
-	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions, DatabaseRole, ToOptsOptionalExample, SequencesDef)
-	fmt.Printf("katarakta %v\n", gen.AllSdkObjectDefinitions)
+	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions,
+		DatabaseRole,
+		ToOptsOptionalExample,
+		SequencesDef,
+	)
+	fmt.Println("SDK object definitions:")
+	for _, def := range gen.AllSdkObjectDefinitions {
+		fmt.Printf(" - %s\n", def.Name)
+	}
 }
