@@ -1026,8 +1026,8 @@ func TestAcc_CurrentAccount_migrateFromV2_10_0(t *testing.T) {
 	provider := providermodel.SnowflakeProvider().
 		WithPreviewFeaturesEnabled(string(previewfeatures.CurrentAccountResource)).
 		WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
-	configModel := model.CurrentAccount("test").
-		WithNetworkPolicy("RESTRICTED_ACCESS")
+
+	configModel := model.CurrentAccount("test")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{

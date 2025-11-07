@@ -464,7 +464,6 @@ func TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate(t *testing.T) {
 	})
 }
 
-// TODO: Can't be tested as 2.10.0 version doesn't work apparently
 func TestAcc_CurrentOrganizationAccount_migrateFromV2_10_0(t *testing.T) {
 	testClient().EnsureValidNonProdOrganizationAccountIsUsed(t)
 
@@ -474,27 +473,26 @@ func TestAcc_CurrentOrganizationAccount_migrateFromV2_10_0(t *testing.T) {
 		WithPreviewFeaturesEnabled(string(previewfeatures.CurrentOrganizationAccountResource)).
 		WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
 
-	configModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName).
-		WithComment("SNOWFLAKE")
+	configModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
-			//{
-			//	ExternalProviders: ExternalProviderWithExactVersion("2.10.0"),
-			//	Config:            config.FromModels(t, provider, configModel),
-			//	Check: assertThat(t,
-			//		assert.Check(resource.TestCheckResourceAttr(configModel.ResourceReference(), "saml_identity_provider", "")),
-			//	),
-			//},
 			{
-				//ConfigPlanChecks: resource.ConfigPlanChecks{
-				//	PreApply: []plancheck.PlanCheck{
-				//		plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionNoop),
-				//	},
-				//},
+				ExternalProviders: ExternalProviderWithExactVersion("2.10.0"),
+				Config:            config.FromModels(t, provider, configModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(configModel.ResourceReference(), "saml_identity_provider", "")),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, provider, configModel),
 				Check: assertThat(t,
