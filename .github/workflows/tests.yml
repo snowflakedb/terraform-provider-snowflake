@@ -111,17 +111,15 @@ jobs:
           chmod 0600 ./config ./config_legacy ./config_v097_compatible
 
       - name: Run unit tests
-        run: |
-          set -o pipefail # called to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
-          make test-unit | make upload-test-results
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
+        run: set -o pipefail && make test-unit | make upload-test-results
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
         env:
           TEST_SF_TF_TEST_TYPE: "unit"
 
       - name: Run integration tests
-        run: |
-          set -o pipefail # called to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
-          make test-integration | make upload-test-results
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
+        run: set -o pipefail && make test-integration | make upload-test-results
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
         env:
           TEST_SF_TF_TEST_TYPE: "integration"
@@ -144,16 +142,14 @@ jobs:
           terraform_wrapper: false
 
       - name: Run functional tests of the underlying terraform libraries
-        run: |
-          set -o pipefail # called to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
-          make test-functional | make upload-test-results
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
+        run: set -o pipefail && make test-functional | make upload-test-results
         if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
 
 
       - name: Run acceptance tests
-        run: |
-          set -o pipefail # called to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
-          make test-acceptance | make upload-test-results
+        # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
+        run: set -o pipefail && make test-acceptance | make upload-test-results
         if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
         env:
           TEST_SF_TF_TEST_TYPE: "functional"
