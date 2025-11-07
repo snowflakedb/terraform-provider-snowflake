@@ -1,5 +1,7 @@
 package sdkcommons
 
-type AccountObjectIdentifier struct{}
-type DatabaseObjectIdentifier struct{}
-type SchemaObjectIdentifier struct{}
+type (
+	AccountObjectIdentifier  struct{}
+	DatabaseObjectIdentifier struct{}
+	SchemaObjectIdentifier   struct{}
+)

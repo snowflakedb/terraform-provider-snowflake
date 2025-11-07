@@ -117,6 +117,7 @@ func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
 	}
 }
 
+// TODO [next PRs]: move these definitions
 //var allSdkObjectDefinitions = []*generator.Interface{
 //	sdk.ApiIntegrationsDef,
 //	sdk.ApplicationPackagesDef,
@@ -146,7 +147,6 @@ func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
 //	sdk.SecretsDef,
 //	sdk.SecurityIntegrationsDef,
 //	sdk.SemanticViewsDef,
-//	sdk.SequencesDef,
 //	sdk.ServicesDef,
 //	sdk.SessionPoliciesDef,
 //	sdk.StagesDef,
