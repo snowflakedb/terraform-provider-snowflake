@@ -14,7 +14,7 @@ var sequenceConstraint = g.NewQueryStruct("SequenceConstraint").
 var SequencesDef = g.NewInterface(
 	"Sequences",
 	"Sequence",
-	"SchemaObjectIdentifier",
+	g.KindOfT[SchemaObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-sequence",
 	g.NewQueryStruct("CreateSequence").
@@ -36,7 +36,7 @@ var SequencesDef = g.NewInterface(
 		SQL("SEQUENCE").
 		IfExists().
 		Name().
-		Identifier("RenameTo", "*SchemaObjectIdentifier", g.IdentifierOptions().SQL("RENAME TO")).
+		Identifier("RenameTo", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalNumberAssignment("SET INCREMENT", g.ParameterOptions().NoQuotes()).
 		OptionalQueryStructField(
 			"Set",
