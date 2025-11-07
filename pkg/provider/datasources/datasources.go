@@ -38,6 +38,7 @@ const (
 	SecurityIntegrations           datasource = "snowflake_security_integrations"
 	SemanticViews                  datasource = "snowflake_semantic_views"
 	Services                       datasource = "snowflake_services"
+	Listings                       datasource = "snowflake_listings"
 	Sequences                      datasource = "snowflake_sequences"
 	Shares                         datasource = "snowflake_shares"
 	Stages                         datasource = "snowflake_stages"

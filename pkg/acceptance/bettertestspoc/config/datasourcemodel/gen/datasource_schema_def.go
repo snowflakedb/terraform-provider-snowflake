@@ -111,6 +111,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Services().Schema,
 	},
 	{
+		name:   "Listings",
+		schema: datasources.Listings().Schema,
+	},
+	{
 		name:   "Streamlits",
 		schema: datasources.Streamlits().Schema,
 	},
