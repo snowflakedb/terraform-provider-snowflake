@@ -1,6 +1,10 @@
 package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var sequenceSet = g.NewQueryStruct("SequenceSet").
 	PredefinedQueryStructField("ValuesBehavior", "*ValuesBehavior", g.KeywordOptions()).
@@ -14,7 +18,7 @@ var sequenceConstraint = g.NewQueryStruct("SequenceConstraint").
 var SequencesDef = g.NewInterface(
 	"Sequences",
 	"Sequence",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-sequence",
 	g.NewQueryStruct("CreateSequence").
@@ -36,7 +40,7 @@ var SequencesDef = g.NewInterface(
 		SQL("SEQUENCE").
 		IfExists().
 		Name().
-		Identifier("RenameTo", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalNumberAssignment("SET INCREMENT", g.ParameterOptions().NoQuotes()).
 		OptionalQueryStructField(
 			"Set",

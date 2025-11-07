@@ -2,6 +2,8 @@ package defs
 
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
 //go:generate go run ../main.go
@@ -9,7 +11,7 @@ import (
 var ToOptsOptionalExample = g.NewInterface(
 	"ToOptsOptionalExamples",
 	"ToOptsOptionalExample",
-	g.KindOfT[DatabaseObjectIdentifier](),
+	g.KindOfT[sdkcommons.DatabaseObjectIdentifier](),
 ).CreateOperation("https://example.com",
 	g.NewQueryStruct("Alter").
 		Alter().

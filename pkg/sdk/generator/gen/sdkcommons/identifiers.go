@@ -1,4 +1,4 @@
-package defs
+package sdkcommons
 
 type AccountObjectIdentifier struct{}
 type DatabaseObjectIdentifier struct{}

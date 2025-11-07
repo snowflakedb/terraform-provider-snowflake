@@ -2,6 +2,8 @@ package defs
 
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
 //go:generate go run ../main.go
@@ -9,13 +11,13 @@ import (
 var (
 	dbRoleRename = g.NewQueryStruct("DatabaseRoleRename").
 		// Fields
-		Identifier("Name", g.KindOfT[DatabaseObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("Name", g.KindOfT[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().Required()).
 		// Validations
 		WithValidation(g.ValidIdentifier, "Name")
 
 	nestedThirdLevel = g.NewQueryStruct("NestedThirdLevel").
 		// Fields
-		Identifier("Field", g.KindOfT[DatabaseObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("Field", g.KindOfT[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().Required()).
 		// Validations
 		WithValidation(g.AtLeastOneValueSet, "Field")
 
