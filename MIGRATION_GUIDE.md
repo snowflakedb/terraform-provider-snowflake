@@ -47,31 +47,6 @@ panic: oauth_refresh_token_validity: '' expected type 'int', got unconvertible t
 
 No changes in configuration and state are required.
 
-### *(bugfix)* Fixed panics because of nil pointer dereferences
-
-In v2.8.0, the following error was reported during handling materialized view with lots of records:
-```
-Error: Plugin did not respond
-The plugin encountered an error, and failed to respond to the
-plugin6.(*GRPCProvider).ApplyResourceChange call. The plugin logs may contain
-more details.
-Stack trace from the terraform-provider-snowflake_v2.8.0 plugin:
-panic: runtime error: invalid memory address or nil pointer dereference
-...
-[signal SIGSEGV: segmentation violation code=0x1 addr=0x40 pc=0x193f359]
-goroutine 41 [running]:
-github.com/snowflakedb/gosnowflake.postRestfulQueryHelper.func1()
-github.com/snowflakedb/gosnowflake@v1.17.0/restful.go:241 +0x19
-panic({0x257d740?, 0x41e1700?})
-runtime/panic.go:785 +0x132
-...
-```
-
-This was caused by the Go driver dependency. The Go driver fixed this in [v1.17.1](https://docs.snowflake.com/en/release-notes/clients-drivers/golang-2025#version-1-17-1-november-4-2025). We upgraded the driver on our side to that version.
-No changes in configuration and state are required.
-
-References [#4092](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4092).
-
 ### *(bugfix)* Fixed updating the value of `enabled` in `snowflake_oauth_integration_for_partner_applications` resource
 
 Previously, whenever we detected change for the `enabled` field,
