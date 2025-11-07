@@ -191,7 +191,9 @@ In this version we introduce a new attribute on the provider level: [`experiment
 
 We treat the available values as experiments, that may become stable feature/behavior in the future provider releases if successful.
 
-Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses.
+Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses. 
+
+**Important**: to benefit from this improvement, you need to have it enabled also on your Snowflake account. To do this, please reach out to us through your Snowflake Account Manager.
 
 Details:
 - The query after enabling the experiment should look like this: `SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`.
