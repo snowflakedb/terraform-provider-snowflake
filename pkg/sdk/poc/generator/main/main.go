@@ -5,8 +5,9 @@ package main
 import (
 	"text/template"
 
+	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/defs"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
@@ -18,8 +19,8 @@ const (
 func main() {
 	genhelpers.NewGenerator(
 		genhelpers.NewPreambleModel(name, version),
-		poc.GetSdkDefinitions,
-		poc.ExtendInterface(),
+		generator.GetSdkDefinitions,
+		generator.ExtendInterface(),
 		filenameForPart(""),
 		[]*template.Template{genhelpers.PreambleTemplate, generator.InterfaceTemplate, generator.OperationStructIterateTemplate},
 	).

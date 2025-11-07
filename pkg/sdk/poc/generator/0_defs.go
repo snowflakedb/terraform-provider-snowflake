@@ -1,22 +1,18 @@
-package poc
+package generator
 
 import (
 	"fmt"
 	"log"
 	"slices"
 
-	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/defs"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/tmp"
 )
 
-// TODO [SNOW-2324252]: rename this file and move it (can't be moved currently due to import cycle: sdk needs gen for definition, and generator needs all the definitions list)
+var AllSdkObjectDefinitions = make([]*Interface, 0)
 
-func GetSdkDefinitions() []*generator.Interface {
-	allDefinitions := tmp.AllSdkObjectDefinitions
-	interfaces := make([]*generator.Interface, len(allDefinitions))
+func GetSdkDefinitions() []*Interface {
+	allDefinitions := AllSdkObjectDefinitions
+	interfaces := make([]*Interface, len(allDefinitions))
 	for idx, def := range allDefinitions {
 		preprocessDefinition(def)
 		interfaces[idx] = def
@@ -25,7 +21,7 @@ func GetSdkDefinitions() []*generator.Interface {
 }
 
 // preprocessDefinition is needed because current simple builder is not ideal, should be removed later
-func preprocessDefinition(definition *generator.Interface) {
+func preprocessDefinition(definition *Interface) {
 	generatedStructs := make([]string, 0)
 	generatedDtos := make([]string, 0)
 
@@ -38,7 +34,7 @@ func preprocessDefinition(definition *generator.Interface) {
 
 			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out StructsToGenerate; it replaces the old generateOptionsStruct and generateStruct
-			structsToGenerate := make([]*generator.Field, 0)
+			structsToGenerate := make([]*Field, 0)
 			for _, f := range o.HelperStructs {
 				if !slices.Contains(generatedStructs, f.KindNoPtr()) {
 					structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
@@ -54,22 +50,22 @@ func preprocessDefinition(definition *generator.Interface) {
 
 			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out ObjectIdMethod and ObjectIdType; it replaces the old template executors logic
-			if o.Name == string(generator.OperationKindShow) {
+			if o.Name == string(OperationKindShow) {
 				// TODO [SNOW-2324252]: do we really conversion logic? The definition file should handle this.
-				idKind, err := generator.ToObjectIdentifierKind(definition.IdentifierKind)
+				idKind, err := ToObjectIdentifierKind(definition.IdentifierKind)
 				if err != nil {
 					log.Printf("[WARN] for showObjectIdMethod: %v", err)
 				}
-				if generator.CheckRequiredFieldsForIdMethod(definition.NameSingular, o.HelperStructs, idKind) {
-					o.ObjectIdMethod = generator.NewShowObjectIDMethod(definition.NameSingular, idKind)
+				if CheckRequiredFieldsForIdMethod(definition.NameSingular, o.HelperStructs, idKind) {
+					o.ObjectIdMethod = NewShowObjectIDMethod(definition.NameSingular, idKind)
 				}
 
-				o.ObjectTypeMethod = generator.NewShowObjectTypeMethod(definition.NameSingular)
+				o.ObjectTypeMethod = NewShowObjectTypeMethod(definition.NameSingular)
 			}
 
 			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out DtosToGenerate; it replaces the old GenerateDtos and generateDtoDecls logic
-			dtosToGenerate := make([]*generator.Field, 0)
+			dtosToGenerate := make([]*Field, 0)
 			dtosToGenerate, generatedDtos = addDtoToGenerate(o.OptsField, dtosToGenerate, generatedDtos)
 			log.Printf("[DEBUG] Dtos to generate (length: %d): %v", len(dtosToGenerate), dtosToGenerate)
 			o.DtosToGenerate = dtosToGenerate
@@ -77,14 +73,14 @@ func preprocessDefinition(definition *generator.Interface) {
 	}
 }
 
-func setParent(field *generator.Field) {
+func setParent(field *Field) {
 	for _, f := range field.Fields {
 		f.Parent = field
 		setParent(f)
 	}
 }
 
-func addStructToGenerate(field *generator.Field, structsToGenerate []*generator.Field, generatedStructs []string) ([]*generator.Field, []string) {
+func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStructs []string) ([]*Field, []string) {
 	if !slices.Contains(generatedStructs, field.KindNoPtr()) {
 		log.Printf("[DEBUG] Adding %s to structs to be generated", field.KindNoPtr())
 		structsToGenerate = append(structsToGenerate, field)
@@ -99,7 +95,7 @@ func addStructToGenerate(field *generator.Field, structsToGenerate []*generator.
 	return structsToGenerate, generatedStructs
 }
 
-func addDtoToGenerate(field *generator.Field, dtosToGenerate []*generator.Field, generatedDtos []string) ([]*generator.Field, []string) {
+func addDtoToGenerate(field *Field, dtosToGenerate []*Field, generatedDtos []string) ([]*Field, []string) {
 	if !slices.Contains(generatedDtos, field.DtoDecl()) {
 		log.Printf("[DEBUG] Adding %s to structs to be generated", field.DtoDecl())
 		dtosToGenerate = append(dtosToGenerate, field)
@@ -114,8 +110,8 @@ func addDtoToGenerate(field *generator.Field, dtosToGenerate []*generator.Field,
 	return dtosToGenerate, generatedDtos
 }
 
-func ExtendInterface() func(*generator.Interface, *genhelpers.PreambleModel) *generator.Interface {
-	return func(i *generator.Interface, preamble *genhelpers.PreambleModel) *generator.Interface {
+func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
+	return func(i *Interface, preamble *genhelpers.PreambleModel) *Interface {
 		i.PreambleModel = preamble
 		return i
 	}

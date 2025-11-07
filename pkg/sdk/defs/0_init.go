@@ -5,11 +5,11 @@ package defs
 import (
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/tmp"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 )
 
 func init() {
-	fmt.Printf("katarakta %v\n", tmp.AllSdkObjectDefinitions)
-	tmp.AllSdkObjectDefinitions = append(tmp.AllSdkObjectDefinitions, SequencesDef)
-	fmt.Printf("katarakta %v\n", tmp.AllSdkObjectDefinitions)
+	fmt.Printf("katarakta %v\n", generator.AllSdkObjectDefinitions)
+	generator.AllSdkObjectDefinitions = append(generator.AllSdkObjectDefinitions, SequencesDef)
+	fmt.Printf("katarakta %v\n", generator.AllSdkObjectDefinitions)
 }
