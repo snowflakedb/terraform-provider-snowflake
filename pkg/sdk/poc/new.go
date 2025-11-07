@@ -8,12 +8,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/tmp"
 )
 
 // TODO [SNOW-2324252]: rename this file and move it (can't be moved currently due to import cycle: sdk needs gen for definition, and generator needs all the definitions list)
 
 func GetSdkDefinitions() []*generator.Interface {
-	allDefinitions := allSdkObjectDefinitions
+	allDefinitions := tmp.AllSdkObjectDefinitions
 	interfaces := make([]*generator.Interface, len(allDefinitions))
 	for idx, def := range allDefinitions {
 		preprocessDefinition(def)
