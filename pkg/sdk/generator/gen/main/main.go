@@ -6,7 +6,7 @@ import (
 	"text/template"
 
 	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/defs"
-	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/example/defs"
+	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/internal/example/defs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"

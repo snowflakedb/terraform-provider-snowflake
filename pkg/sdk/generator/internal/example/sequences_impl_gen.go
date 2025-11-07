@@ -4,43 +4,42 @@ package example
 
 import (
 	"context"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/internal/rework"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ Sequences = (*sequences)(nil)
 
-var _ rework.convertibleRow[Sequence] = new(sequenceRow)
-var _ rework.convertibleRow[SequenceDetail] = new(sequenceDetailRow)
+var _ convertibleRow[Sequence] = new(sequenceRow)
+var _ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
 
 type sequences struct {
-	client *rework.Client
+	client *Client
 }
 
 func (v *sequences) Create(ctx context.Context, request *CreateSequenceRequest) error {
 	opts := request.toOpts()
-	return rework.validateAndExec(v.client, ctx, opts)
+	return validateAndExec(v.client, ctx, opts)
 }
 
 func (v *sequences) Alter(ctx context.Context, request *AlterSequenceRequest) error {
 	opts := request.toOpts()
-	return rework.validateAndExec(v.client, ctx, opts)
+	return validateAndExec(v.client, ctx, opts)
 }
 
 func (v *sequences) Show(ctx context.Context, request *ShowSequenceRequest) ([]Sequence, error) {
 	opts := request.toOpts()
-	dbRows, err := rework.validateAndQuery[sequenceRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[sequenceRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return rework.convertRows[sequenceRow, Sequence](dbRows)
+	return convertRows[sequenceRow, Sequence](dbRows)
 }
 
-func (v *sequences) ShowByID(ctx context.Context, id rework.SchemaObjectIdentifier) (*Sequence, error) {
+func (v *sequences) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Sequence, error) {
 	request := NewShowSequenceRequest().
-		WithLike(rework.Like{Pattern: rework.String(id.Name())}).
-		WithIn(rework.In{Schema: id.SchemaId()})
+		WithLike(Like{Pattern: String(id.Name())}).
+		WithIn(In{Schema: id.SchemaId()})
 	sequences, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
@@ -48,28 +47,28 @@ func (v *sequences) ShowByID(ctx context.Context, id rework.SchemaObjectIdentifi
 	return collections.FindFirst(sequences, func(r Sequence) bool { return r.Name == id.Name() })
 }
 
-func (v *sequences) ShowByIDSafely(ctx context.Context, id rework.SchemaObjectIdentifier) (*Sequence, error) {
-	return rework.SafeShowById(v.client, v.ShowByID, ctx, id)
+func (v *sequences) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Sequence, error) {
+	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *sequences) Describe(ctx context.Context, id rework.SchemaObjectIdentifier) (*SequenceDetail, error) {
+func (v *sequences) Describe(ctx context.Context, id SchemaObjectIdentifier) (*SequenceDetail, error) {
 	opts := &DescribeSequenceOptions{
 		name: id,
 	}
-	result, err := rework.validateAndQueryOne[sequenceDetailRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[sequenceDetailRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return rework.conversionErrorWrapped(result.convert())
+	return conversionErrorWrapped(result.convert())
 }
 
 func (v *sequences) Drop(ctx context.Context, request *DropSequenceRequest) error {
 	opts := request.toOpts()
-	return rework.validateAndExec(v.client, ctx, opts)
+	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *sequences) DropSafely(ctx context.Context, id rework.SchemaObjectIdentifier) error {
-	return rework.SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropSequenceRequest(id).WithIfExists(true)) }, ctx, id)
+func (v *sequences) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropSequenceRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
 func (r *CreateSequenceRequest) toOpts() *CreateSequenceOptions {
@@ -91,7 +90,6 @@ func (r *AlterSequenceRequest) toOpts() *AlterSequenceOptions {
 		name:         r.name,
 		RenameTo:     r.RenameTo,
 		SetIncrement: r.SetIncrement,
-
 		UnsetComment: r.UnsetComment,
 	}
 	if r.Set != nil {

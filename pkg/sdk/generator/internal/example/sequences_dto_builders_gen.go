@@ -2,10 +2,8 @@
 
 package example
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/internal/rework"
-
 func NewCreateSequenceRequest(
-	name rework.SchemaObjectIdentifier,
+	name SchemaObjectIdentifier,
 ) *CreateSequenceRequest {
 	s := CreateSequenceRequest{}
 	s.name = name
@@ -32,7 +30,7 @@ func (s *CreateSequenceRequest) WithIncrement(increment int) *CreateSequenceRequ
 	return s
 }
 
-func (s *CreateSequenceRequest) WithValuesBehavior(valuesBehavior rework.ValuesBehavior) *CreateSequenceRequest {
+func (s *CreateSequenceRequest) WithValuesBehavior(valuesBehavior ValuesBehavior) *CreateSequenceRequest {
 	s.ValuesBehavior = &valuesBehavior
 	return s
 }
@@ -43,7 +41,7 @@ func (s *CreateSequenceRequest) WithComment(comment string) *CreateSequenceReque
 }
 
 func NewAlterSequenceRequest(
-	name rework.SchemaObjectIdentifier,
+	name SchemaObjectIdentifier,
 ) *AlterSequenceRequest {
 	s := AlterSequenceRequest{}
 	s.name = name
@@ -55,7 +53,7 @@ func (s *AlterSequenceRequest) WithIfExists(ifExists bool) *AlterSequenceRequest
 	return s
 }
 
-func (s *AlterSequenceRequest) WithRenameTo(renameTo rework.SchemaObjectIdentifier) *AlterSequenceRequest {
+func (s *AlterSequenceRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterSequenceRequest {
 	s.RenameTo = &renameTo
 	return s
 }
@@ -80,7 +78,7 @@ func NewSequenceSetRequest() *SequenceSetRequest {
 	return &s
 }
 
-func (s *SequenceSetRequest) WithValuesBehavior(valuesBehavior rework.ValuesBehavior) *SequenceSetRequest {
+func (s *SequenceSetRequest) WithValuesBehavior(valuesBehavior ValuesBehavior) *SequenceSetRequest {
 	s.ValuesBehavior = &valuesBehavior
 	return s
 }
@@ -95,18 +93,18 @@ func NewShowSequenceRequest() *ShowSequenceRequest {
 	return &s
 }
 
-func (s *ShowSequenceRequest) WithLike(like rework.Like) *ShowSequenceRequest {
+func (s *ShowSequenceRequest) WithLike(like Like) *ShowSequenceRequest {
 	s.Like = &like
 	return s
 }
 
-func (s *ShowSequenceRequest) WithIn(in rework.In) *ShowSequenceRequest {
+func (s *ShowSequenceRequest) WithIn(in In) *ShowSequenceRequest {
 	s.In = &in
 	return s
 }
 
 func NewDescribeSequenceRequest(
-	name rework.SchemaObjectIdentifier,
+	name SchemaObjectIdentifier,
 ) *DescribeSequenceRequest {
 	s := DescribeSequenceRequest{}
 	s.name = name
@@ -114,7 +112,7 @@ func NewDescribeSequenceRequest(
 }
 
 func NewDropSequenceRequest(
-	name rework.SchemaObjectIdentifier,
+	name SchemaObjectIdentifier,
 ) *DropSequenceRequest {
 	s := DropSequenceRequest{}
 	s.name = name

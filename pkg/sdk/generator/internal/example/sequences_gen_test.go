@@ -3,12 +3,11 @@
 package example
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/internal/rework"
 	"testing"
 )
 
 func TestSequences_Create(t *testing.T) {
-	id := rework.randomSchemaObjectIdentifier()
+	id := randomSchemaObjectIdentifier()
 	// Minimal valid CreateSequenceOptions
 	defaultOpts := func() *CreateSequenceOptions {
 		return &CreateSequenceOptions{
@@ -18,36 +17,36 @@ func TestSequences_Create(t *testing.T) {
 
 	t.Run("validation: nil options", func(t *testing.T) {
 		opts := (*CreateSequenceOptions)(nil)
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrNilOptions)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrInvalidObjectIdentifier)
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.errOneOf("CreateSequenceOptions", "OrReplace", "IfNotExists"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSequenceOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
 func TestSequences_Alter(t *testing.T) {
-	id := rework.randomSchemaObjectIdentifier()
+	id := randomSchemaObjectIdentifier()
 	// Minimal valid AlterSequenceOptions
 	defaultOpts := func() *AlterSequenceOptions {
 		return &AlterSequenceOptions{
@@ -57,37 +56,37 @@ func TestSequences_Alter(t *testing.T) {
 
 	t.Run("validation: nil options", func(t *testing.T) {
 		opts := (*AlterSequenceOptions)(nil)
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrNilOptions)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrInvalidObjectIdentifier)
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrInvalidObjectIdentifier)
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one field from [opts.RenameTo opts.SetIncrement opts.Set opts.UnsetComment] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
@@ -99,24 +98,24 @@ func TestSequences_Show(t *testing.T) {
 
 	t.Run("validation: nil options", func(t *testing.T) {
 		opts := (*ShowSequenceOptions)(nil)
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrNilOptions)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
 func TestSequences_Describe(t *testing.T) {
-	id := rework.randomSchemaObjectIdentifier()
+	id := randomSchemaObjectIdentifier()
 	// Minimal valid DescribeSequenceOptions
 	defaultOpts := func() *DescribeSequenceOptions {
 		return &DescribeSequenceOptions{
@@ -126,30 +125,30 @@ func TestSequences_Describe(t *testing.T) {
 
 	t.Run("validation: nil options", func(t *testing.T) {
 		opts := (*DescribeSequenceOptions)(nil)
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrNilOptions)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrInvalidObjectIdentifier)
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
 func TestSequences_Drop(t *testing.T) {
-	id := rework.randomSchemaObjectIdentifier()
+	id := randomSchemaObjectIdentifier()
 	// Minimal valid DropSequenceOptions
 	defaultOpts := func() *DropSequenceOptions {
 		return &DropSequenceOptions{
@@ -159,30 +158,30 @@ func TestSequences_Drop(t *testing.T) {
 
 	t.Run("validation: nil options", func(t *testing.T) {
 		opts := (*DropSequenceOptions)(nil)
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrNilOptions)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.ErrInvalidObjectIdentifier)
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one field from [opts.Constraint.Cascade opts.Constraint.Restrict] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsInvalidJoinedErrors(t, opts, rework.errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		// TODO: fill me
-		rework.assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }

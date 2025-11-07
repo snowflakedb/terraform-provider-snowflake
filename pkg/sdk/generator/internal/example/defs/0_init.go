@@ -10,6 +10,6 @@ import (
 
 func init() {
 	fmt.Printf("katarakta %v\n", gen.AllSdkObjectDefinitions)
-	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions, DatabaseRole, ToOptsOptionalExample)
+	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions, DatabaseRole, ToOptsOptionalExample, SequencesDef)
 	fmt.Printf("katarakta %v\n", gen.AllSdkObjectDefinitions)
 }

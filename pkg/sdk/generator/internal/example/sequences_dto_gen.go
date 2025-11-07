@@ -2,52 +2,50 @@
 
 package example
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/internal/rework"
-
 var (
-	_ rework.optionsProvider[CreateSequenceOptions]   = new(CreateSequenceRequest)
-	_ rework.optionsProvider[AlterSequenceOptions]    = new(AlterSequenceRequest)
-	_ rework.optionsProvider[ShowSequenceOptions]     = new(ShowSequenceRequest)
-	_ rework.optionsProvider[DescribeSequenceOptions] = new(DescribeSequenceRequest)
-	_ rework.optionsProvider[DropSequenceOptions]     = new(DropSequenceRequest)
+	_ optionsProvider[CreateSequenceOptions]   = new(CreateSequenceRequest)
+	_ optionsProvider[AlterSequenceOptions]    = new(AlterSequenceRequest)
+	_ optionsProvider[ShowSequenceOptions]     = new(ShowSequenceRequest)
+	_ optionsProvider[DescribeSequenceOptions] = new(DescribeSequenceRequest)
+	_ optionsProvider[DropSequenceOptions]     = new(DropSequenceRequest)
 )
 
 type CreateSequenceRequest struct {
 	OrReplace      *bool
 	IfNotExists    *bool
-	name           rework.SchemaObjectIdentifier // required
+	name           SchemaObjectIdentifier // required
 	Start          *int
 	Increment      *int
-	ValuesBehavior *rework.ValuesBehavior
+	ValuesBehavior *ValuesBehavior
 	Comment        *string
 }
 
 type AlterSequenceRequest struct {
 	IfExists     *bool
-	name         rework.SchemaObjectIdentifier // required
-	RenameTo     *rework.SchemaObjectIdentifier
+	name         SchemaObjectIdentifier // required
+	RenameTo     *SchemaObjectIdentifier
 	SetIncrement *int
 	Set          *SequenceSetRequest
 	UnsetComment *bool
 }
 
 type SequenceSetRequest struct {
-	ValuesBehavior *rework.ValuesBehavior
+	ValuesBehavior *ValuesBehavior
 	Comment        *string
 }
 
 type ShowSequenceRequest struct {
-	Like *rework.Like
-	In   *rework.In
+	Like *Like
+	In   *In
 }
 
 type DescribeSequenceRequest struct {
-	name rework.SchemaObjectIdentifier // required
+	name SchemaObjectIdentifier // required
 }
 
 type DropSequenceRequest struct {
 	IfExists   *bool
-	name       rework.SchemaObjectIdentifier // required
+	name       SchemaObjectIdentifier // required
 	Constraint *SequenceConstraintRequest
 }
 
