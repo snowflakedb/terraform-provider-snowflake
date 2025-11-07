@@ -5,7 +5,7 @@ package defs
 import (
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
 
 func init() {

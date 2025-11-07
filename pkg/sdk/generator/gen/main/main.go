@@ -9,7 +9,7 @@ import (
 	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/example/defs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
 
 const (

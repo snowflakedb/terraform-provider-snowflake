@@ -1,6 +1,6 @@
 package sdk
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 var externalFunctionArgument = g.NewQueryStruct("ExternalFunctionArgument").
 	Text("ArgName", g.KeywordOptions().NoQuotes().Required()).

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
 
 type DataMetricFunctionRefEntityDomainOption string
