@@ -52,6 +52,10 @@ func main() {
 		log.Fatal("Failed to get absolute path of temporary file:", err)
 	}
 
+	if err := temporaryFile.Close(); err != nil {
+		log.Fatal("Failed to close temporary file:", err)
+	}
+
 	// Put file to the stage
 	if _, err := client.ExecUnsafe(context.Background(), fmt.Sprintf("put file://%s @%s auto_compress = true overwrite = true", temporaryFilePath, testResultsStageId.FullyQualifiedName())); err != nil {
 		log.Fatal("failed to put test results file to stage:", err)
