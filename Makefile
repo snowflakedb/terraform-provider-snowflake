@@ -118,11 +118,11 @@ install-locally-released-tf: release-local ## installs plugin (built by the GoRe
 uninstall-tf: ## uninstalls plugin from where terraform can find it
 	rm -f $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
-# TODO [this PR]: remove
+# TODO [SNOW-1501905]: decide its fate
 generate-all-dto: ## Generate all DTOs for SDK interfaces
 	go generate ./pkg/sdk/*_dto.go
 
-# TODO [this PR]: remove
+# TODO [SNOW-1501905]: decide its fate
 generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 	go generate $<
 
