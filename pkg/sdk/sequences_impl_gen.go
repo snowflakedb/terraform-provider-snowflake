@@ -90,7 +90,6 @@ func (r *AlterSequenceRequest) toOpts() *AlterSequenceOptions {
 		name:         r.name,
 		RenameTo:     r.RenameTo,
 		SetIncrement: r.SetIncrement,
-
 		UnsetComment: r.UnsetComment,
 	}
 	if r.Set != nil {
