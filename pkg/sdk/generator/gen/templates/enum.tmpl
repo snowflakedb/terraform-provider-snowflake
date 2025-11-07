@@ -6,11 +6,13 @@ import (
 	"strings"
 )
 
+{{ range .Enums }}
 type {{ .Name }} string
 
 const (
+	{{ $enumTypeName := .Name }}
 	{{- range .ValueRepresentations }}
-	{{ .Name }} {{ $.Name }} = "{{ .Value }}"
+	{{ .Name }} {{ $enumTypeName }} = "{{ .Value }}"
 	{{- end }}
 )
 
@@ -27,3 +29,4 @@ func {{ .ConverterFunctionName }}(s string) ({{ .Name }}, error) {
 	}
 	return {{ .Name }}(s), nil
 }
+{{ end }}
