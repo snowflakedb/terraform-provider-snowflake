@@ -172,7 +172,6 @@ Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE
 
 Details:
 - The query after enabling the experiment should look like this: `SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`.
-- For the implementation reasons, it may not improve the performance when warehouse identifier contains `_` or `%` sign.
 - The optimization should work correctly independently of the identifier casing.
 
 Feedback:
