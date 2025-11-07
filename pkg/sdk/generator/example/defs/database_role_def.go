@@ -6,8 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-//go:generate go run ../main.go
-
 var (
 	dbRoleRename = g.NewQueryStruct("DatabaseRoleRename").
 		// Fields
