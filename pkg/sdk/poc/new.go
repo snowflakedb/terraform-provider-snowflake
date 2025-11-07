@@ -5,8 +5,9 @@ import (
 	"log"
 	"slices"
 
+	_ "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/defs"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/tmp"
 )
@@ -120,43 +121,43 @@ func ExtendInterface() func(*generator.Interface, *genhelpers.PreambleModel) *ge
 	}
 }
 
-var allSdkObjectDefinitions = []*generator.Interface{
-	sdk.ApiIntegrationsDef,
-	sdk.ApplicationPackagesDef,
-	sdk.ApplicationRolesDef,
-	sdk.ApplicationsDef,
-	sdk.AuthenticationPoliciesDef,
-	sdk.ComputePoolsDef,
-	sdk.ConnectionDef,
-	sdk.CortexSearchServiceDef,
-	sdk.DataMetricFunctionReferenceDef,
-	sdk.EventTablesDef,
-	sdk.ExternalFunctionsDef,
-	sdk.ExternalVolumesDef,
-	sdk.FunctionsDef,
-	sdk.GitRepositoriesDef,
-	sdk.ImageRepositoriesDef,
-	sdk.ListingsDef,
-	sdk.ManagedAccountsDef,
-	sdk.MaterializedViewsDef,
-	sdk.NetworkPoliciesDef,
-	sdk.NetworkRuleDef,
-	sdk.NotebooksDef,
-	sdk.NotificationIntegrationsDef,
-	sdk.OrganizationAccountsDef,
-	sdk.ProceduresDef,
-	sdk.RowAccessPoliciesDef,
-	sdk.SecretsDef,
-	sdk.SecurityIntegrationsDef,
-	sdk.SemanticViewsDef,
-	sdk.SequencesDef,
-	sdk.ServicesDef,
-	sdk.SessionPoliciesDef,
-	sdk.StagesDef,
-	sdk.StorageIntegrationDef,
-	sdk.StreamlitsDef,
-	sdk.StreamsDef,
-	sdk.TasksDef,
-	sdk.UserProgrammaticAccessTokensDef,
-	sdk.ViewsDef,
-}
+//var allSdkObjectDefinitions = []*generator.Interface{
+//	sdk.ApiIntegrationsDef,
+//	sdk.ApplicationPackagesDef,
+//	sdk.ApplicationRolesDef,
+//	sdk.ApplicationsDef,
+//	sdk.AuthenticationPoliciesDef,
+//	sdk.ComputePoolsDef,
+//	sdk.ConnectionDef,
+//	sdk.CortexSearchServiceDef,
+//	sdk.DataMetricFunctionReferenceDef,
+//	sdk.EventTablesDef,
+//	sdk.ExternalFunctionsDef,
+//	sdk.ExternalVolumesDef,
+//	sdk.FunctionsDef,
+//	sdk.GitRepositoriesDef,
+//	sdk.ImageRepositoriesDef,
+//	sdk.ListingsDef,
+//	sdk.ManagedAccountsDef,
+//	sdk.MaterializedViewsDef,
+//	sdk.NetworkPoliciesDef,
+//	sdk.NetworkRuleDef,
+//	sdk.NotebooksDef,
+//	sdk.NotificationIntegrationsDef,
+//	sdk.OrganizationAccountsDef,
+//	sdk.ProceduresDef,
+//	sdk.RowAccessPoliciesDef,
+//	sdk.SecretsDef,
+//	sdk.SecurityIntegrationsDef,
+//	sdk.SemanticViewsDef,
+//	sdk.SequencesDef,
+//	sdk.ServicesDef,
+//	sdk.SessionPoliciesDef,
+//	sdk.StagesDef,
+//	sdk.StorageIntegrationDef,
+//	sdk.StreamlitsDef,
+//	sdk.StreamsDef,
+//	sdk.TasksDef,
+//	sdk.UserProgrammaticAccessTokensDef,
+//	sdk.ViewsDef,
+//}
