@@ -1,4 +1,4 @@
-package generator
+package gen
 
 func (v *QueryStruct) assignment(name string, kind string, transformer *ParameterTransformer) *QueryStruct {
 	v.fields = append(v.fields, NewField(name, kind, Tags().Parameter(), transformer))

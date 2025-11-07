@@ -1,4 +1,4 @@
-package generator
+package gen
 
 type plainStruct struct {
 	name   string

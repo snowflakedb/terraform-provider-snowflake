@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	fmt.Printf("katarakta %v\n", generator.AllSdkObjectDefinitions)
-	generator.AllSdkObjectDefinitions = append(generator.AllSdkObjectDefinitions, DatabaseRole, ToOptsOptionalExample)
-	fmt.Printf("katarakta %v\n", generator.AllSdkObjectDefinitions)
+	fmt.Printf("katarakta %v\n", gen.AllSdkObjectDefinitions)
+	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions, DatabaseRole, ToOptsOptionalExample)
+	fmt.Printf("katarakta %v\n", gen.AllSdkObjectDefinitions)
 }

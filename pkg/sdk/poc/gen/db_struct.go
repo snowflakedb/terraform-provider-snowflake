@@ -1,4 +1,4 @@
-package generator
+package gen
 
 type dbStruct struct {
 	name   string

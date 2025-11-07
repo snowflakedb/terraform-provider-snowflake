@@ -1,4 +1,4 @@
-package generator
+package gen
 
 // Name adds identifier with field name "name" and type will be inferred from interface definition
 func (v *QueryStruct) Name() *QueryStruct {

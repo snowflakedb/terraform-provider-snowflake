@@ -1,4 +1,4 @@
-package generator
+package gen
 
 func (v *QueryStruct) OptionalSQL(sql string) *QueryStruct {
 	return v.OptionalSQLWithCustomFieldName(sqlToFieldName(sql, true), sql)

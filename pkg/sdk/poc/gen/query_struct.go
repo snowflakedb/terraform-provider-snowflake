@@ -1,4 +1,4 @@
-package generator
+package gen
 
 // TODO For Field abstractions use internal Field representation instead of copying only needed fields, e.g.
 //
