@@ -91,6 +91,7 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--filter-generation-part-names=
 make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ```
 
+[//]: # (TODO [next PRs]: update this section)
 ### Next steps
 
 > ⚠️ **Disclaimer**: This section may contain the deprecated essentials/improvements/known issues. It will be cleaned up shortly.
