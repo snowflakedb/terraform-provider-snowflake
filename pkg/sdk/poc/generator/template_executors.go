@@ -115,9 +115,7 @@ func GenerateValidations(writer io.Writer, def *Interface) {
 
 func GenerateEnums(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
-	for _, enum := range def.Enums {
-		printTo(writer, EnumTemplate, enum)
-	}
+	printTo(writer, EnumTemplate, def)
 }
 
 func generatePackageDirective(writer io.Writer) {

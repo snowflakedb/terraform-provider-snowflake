@@ -61,7 +61,7 @@ var (
 
 	//go:embed templates/enum.tmpl
 	enumTemplateContent string
-	EnumTemplate, _     = template.New("enumTemplate").Parse(enumTemplateContent)
+	EnumTemplate        *template.Template
 
 	//go:embed templates/implementation.tmpl
 	implementationTemplateContent string
@@ -132,4 +132,5 @@ func init() {
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)
+	EnumTemplate, _ = subTemplates.New("enumTemplate").Parse(enumTemplateContent)
 }
