@@ -1,8 +1,15 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/gen.ResourceShowOutputAssertionsModel*/ -}}
 
-{{- $assertName := .Name | printf "%sShowOutputAssert" -}}
-{{- $nameLowerCase := FirstLetterLowercase .Name -}}
+{{- $assertName := .Name | printf "%sShowOutputAssert" }}
+{{- $nameLowerCase := FirstLetterLowercase .Name }}
 {{- $assertVar := FirstLetter $nameLowerCase }}
+
+{{- if .IsDataSourceOutput }}
+    {{- $trimmedName := TrimSuffix .Name "Details" }}
+    {{- $nameLowerCase = FirstLetterLowercase $trimmedName }}
+    {{- $assertVar = FirstLetterLowercase $trimmedName | printf "%sAssert" }}
+    {{- $assertName = $trimmedName | printf "%sDescribeOutputAssert" }}
+{{- end}}
 
 ////////////////////////////
 // Attribute value checks //
