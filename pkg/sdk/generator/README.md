@@ -6,13 +6,13 @@ PoC of generating full object implementation based on object definition.
 
 ### Description
 
-There is an example file ready for generation [database_role_def.go](internal/example/database_role_def.go) which creates files:
-- [database_role_gen.go](internal/example/database_roles_gen.go) - SDK interface, options structs
-- [database_role_dto_gen.go](internal/example/database_roles_dto_gen.go) - SDK Request DTOs
-- [database_role_dto_builders_gen.go](internal/example/database_roles_dto_builders_gen.go) - SDK Request DTOs constructors and builder methods (this file is generated using [dto-builder-generator](../dto-builder-generator/main.go))
-- [database_role_validations_gen.go](internal/example/database_roles_validations_gen.go) - options structs validations
-- [database_role_impl_gen.go](internal/example/database_roles_impl_gen.go) - SDK interface implementation
-- [database_role_gen_test.go](internal/example/database_roles_gen_test.go) - unit tests placeholders with guidance comments (at least for now)
+There is an example file ready for generation [database_role_def.go](example/database_role_def.go) which creates files:
+- [database_role_gen.go](example/database_roles_gen.go) - SDK interface, options structs
+- [database_role_dto_gen.go](example/database_roles_dto_gen.go) - SDK Request DTOs
+- [database_role_dto_builders_gen.go](example/database_roles_dto_builders_gen.go) - SDK Request DTOs constructors and builder methods (this file is generated using [dto-builder-generator](../dto-builder-generator/main.go))
+- [database_role_validations_gen.go](example/database_roles_validations_gen.go) - options structs validations
+- [database_role_impl_gen.go](example/database_roles_impl_gen.go) - SDK interface implementation
+- [database_role_gen_test.go](example/database_roles_gen_test.go) - unit tests placeholders with guidance comments (at least for now)
 
 Note:
 - for now, integration tests files are not generated, and they have to be created manually in the `pkg/sdk/testint` directory
@@ -22,12 +22,12 @@ Note:
 
 To create definition for object generation:
 
-1. Create file `object_name_def.go` (like example [database_role_def.go](internal/example/defs/database_role_def.go) file).
+1. Create file `object_name_def.go` (like example [database_role_def.go](example/defs/database_role_def.go) file).
 2. Put go generate directive at the top: `//go:generate go run ../main.go`. Remember that you may have to change the path to [main.go](generator/main/main.go) file.
 3. Create object interface definition.
 4. Add key-value entry to `definitionMapping` in [main.go](main.go):
-   - key should be created file name (for [database_role_def.go](internal/example/database_role_def.go) example file: `"database_role_def.go"`)
-   - value should be created definition (like for [database_role_def.go](internal/example/database_role_def.go) example file: `DatabaseRole`)
+   - key should be created file name (for [database_role_def.go](example/database_role_def.go) example file: `"database_role_def.go"`)
+   - value should be created definition (like for [database_role_def.go](example/database_role_def.go) example file: `DatabaseRole`)
    - 
 5. You are all set to run generation.
 
