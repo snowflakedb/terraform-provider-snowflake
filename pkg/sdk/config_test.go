@@ -738,7 +738,7 @@ func Test_ConfigFile_Marshal(t *testing.T) {
 		file := NewConfigFile()
 		bytes, err := file.MarshalToml()
 		require.NoError(t, err)
-		require.Equal(t, "", string(bytes))
+		require.Empty(t, string(bytes))
 	})
 
 	t.Run("single profile", func(t *testing.T) {

@@ -481,6 +481,6 @@ func TestStageLocation(t *testing.T) {
 		stage := NewSchemaObjectIdentifier("", "", "")
 		identifier := NewStageLocation(stage, "")
 
-		assert.Equal(t, "", identifier.ToSql())
+		assert.Empty(t, identifier.ToSql())
 	})
 }

@@ -13,8 +13,7 @@ UNIT_TESTS_EXCLUDE_PATTERN=$(shell echo $(UNIT_TESTS_EXCLUDE_PACKAGES) | sed 's/
 default: help
 
 dev-setup: ## setup development dependencies
-# TODO(SNOW-2002208): Upgrade to the latest version of golangci-lint.
-	@which ./bin/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./bin v1.64.8
+	@which ./bin/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ./bin v2.6.1
 	cd tools && mkdir -p bin/
 	cd tools && env GOBIN=$$PWD/bin go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 	cd tools && env GOBIN=$$PWD/bin go install mvdan.cc/gofumpt
@@ -42,11 +41,11 @@ help:
 install: ## install the binary
 	go install -v ./...
 
-lint: # Run static code analysis, check formatting. See https://golangci-lint.run/
-	./bin/golangci-lint run ./... -v
+lint: # Run linters and formatters. Fails if there are any findings. See https://golangci-lint.run/
+	./bin/golangci-lint run -v
 
-lint-fix: ## Run static code analysis, check formatting and try to fix findings
-	./bin/golangci-lint run ./... -v --fix
+lint-fix: ## Run linters and formatters. If linters or formatters support autofix, try to fix findings.
+	./bin/golangci-lint run -v --fix
 
 mod: ## add missing and remove unused modules
 	go mod tidy -compat=1.24.9
@@ -54,7 +53,7 @@ mod: ## add missing and remove unused modules
 mod-check: mod ## check if there are any missing/unused modules
 	git diff --exit-code -- go.mod go.sum
 
-pre-push: generate-all-config-model-builders-check mod fmt generate-docs-additional-files docs lint test-architecture ## Run a few checks before pushing a change (docs, fmt, mod, etc.)
+pre-push: generate-all-config-model-builders-check mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
 pre-push-check: pre-push mod-check generate-docs-additional-files-check docs-check ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
