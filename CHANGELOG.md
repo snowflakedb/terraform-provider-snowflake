@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.10.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.10.0...v2.10.1) (2025-11-07)
+
+
+### 🔧 **Misc**
+
+* Adjust docker compose commands ([#4153](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4153)) ([95b1445](https://github.com/snowflakedb/terraform-provider-snowflake/commit/95b144520a936106d0c77c1b98c9a0271b5231ac))
+* Base for main resource use case tests follow up 3 ([#4130](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4130)) ([4178747](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4178747ed9160eb59410b9d98c825c8dc5938696))
+* Base for main resource use case tests follow up 4 ([#4131](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4131)) ([8aef982](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8aef9826d9facaaf8c4c748a1a66972752f423c8))
+* Base for main resource use case tests follow up 5 ([#4132](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4132)) ([44fde6a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/44fde6aa0b3709c7678ff34fc519f5328a4c4523))
+* Base for main resource use case tests follow up 6 ([#4133](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4133)) ([bd94b9b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/bd94b9ba6b99cf769cc48ecb9626af6f521c39a0))
+* Bump the driver version to 1.17.1 ([#4169](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4169)) ([db4a60b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/db4a60b8fe778803edfe523e64720b4d0b18eeda))
+* Ignore parameter value changes if unset and not on the object level ([#4149](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4149)) ([0c88ed3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0c88ed30a56260a88559d4d42f188c3c4cc9dfbd))
+* Improve the cache logic ([#4154](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4154)) ([b904bb3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b904bb38eb1b9eb57834ffef68d8f5658b02b619))
+* Revert driver bump to v1.17.1 ([#4177](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4177)) ([0b94fb5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0b94fb5286e1369c8b76211e5e42b39dca774666))
+* Skip failing warehouse integration test ([#4180](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4180)) ([7109d9b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7109d9b756ffc39fa6878ed49809d2d5d47e9879))
+* Update migration guide ([#4179](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4179)) ([2b5ec94](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2b5ec94fe459bdfe157d7a9fd118618b361fcf86))
+* Update migration guide about warehouse improved performance ([#4162](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4162)) ([c4c00e5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c4c00e55008ad10ac464f49525232359711aeee8))
+* Upgrade Go to v1.24.9 ([#4170](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4170)) ([0f5601d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0f5601df4a3b236b572ea9325e9b5a46ebf19f78))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix handling DESC output in authentication policy ([#4167](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4167)) ([28b6325](https://github.com/snowflakedb/terraform-provider-snowflake/commit/28b6325e317695867fd1976e602643f8576daf01))
+
 ## [2.10.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.9.0...v2.10.0) (2025-10-31)
 
 

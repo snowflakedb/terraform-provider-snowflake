@@ -84,6 +84,7 @@ func TestInt_Warehouses(t *testing.T) {
 	})
 
 	t.Run("show: with starts with, and limit", func(t *testing.T) {
+		t.Skip("TODO(SNOW-2683898): Unskip after the regression is fixed in Snowflake")
 		showOptions := &sdk.ShowWarehouseOptions{
 			StartsWith: sdk.String(precreatedWarehouseId.Name()),
 			LimitFrom: &sdk.LimitFrom{
