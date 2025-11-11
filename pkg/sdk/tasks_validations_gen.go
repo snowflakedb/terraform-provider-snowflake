@@ -118,8 +118,16 @@ func (opts *AlterTaskOptions) validate() error {
 			}
 		}
 		// adjusted manually to include TargetCompletionInterval
-		if !anyValueSet(opts.Unset.Warehouse, opts.Unset.UserTaskManagedInitialWarehouseSize, opts.Unset.Schedule, opts.Unset.Config, opts.Unset.AllowOverlappingExecution, opts.Unset.UserTaskTimeoutMs, opts.Unset.SuspendTaskAfterNumFailures, opts.Unset.ErrorIntegration, opts.Unset.Comment, opts.Unset.SessionParametersUnset, opts.Unset.TaskAutoRetryAttempts, opts.Unset.UserTaskMinimumTriggerIntervalInSeconds, opts.Unset.TargetCompletionInterval) {
-			errs = append(errs, errAtLeastOneOf("AlterTaskOptions.Unset", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval"))
+		if !anyValueSet(opts.Unset.Warehouse, opts.Unset.UserTaskManagedInitialWarehouseSize, opts.Unset.Schedule, opts.Unset.Config, 
+			opts.Unset.AllowOverlappingExecution, opts.Unset.UserTaskTimeoutMs, opts.Unset.SuspendTaskAfterNumFailures, 
+			opts.Unset.ErrorIntegration, opts.Unset.Comment, opts.Unset.SessionParametersUnset, opts.Unset.TaskAutoRetryAttempts, 
+			opts.Unset.UserTaskMinimumTriggerIntervalInSeconds, opts.Unset.TargetCompletionInterval, 
+			opts.Unset.ServerlessTaskMinStatementSize, opts.Unset.ServerlessTaskMaxStatementSize) {
+			errs = append(errs, errAtLeastOneOf("AlterTaskOptions.Unset", "Warehouse", "UserTaskManagedInitialWarehouseSize", 
+				"Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", 
+				"ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", 
+				"UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", 
+				"ServerlessTaskMaxStatementSize"))
 		}
 	}
 	return JoinErrors(errs...)
