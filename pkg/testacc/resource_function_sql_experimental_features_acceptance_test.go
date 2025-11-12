@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -21,8 +20,6 @@ import (
 )
 
 func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
-
 	database, databaseCleanup := secondaryTestClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 	secondaryTestClient().Database.UpdateLogLevel(t, database.ID(), sdk.LogLevelError)
@@ -43,7 +40,7 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 		WithExperimentalFeaturesEnabled(experimentalfeatures.ParametersIgnoreValueChangesIfNotOnObjectLevel)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel"),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
