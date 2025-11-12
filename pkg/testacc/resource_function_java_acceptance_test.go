@@ -1,9 +1,8 @@
-//go:build non_account_level_tests
-
 package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -96,6 +95,7 @@ func TestAcc_FunctionJava_InlineBasic(t *testing.T) {
 			{
 				ResourceName:            functionModel.ResourceReference(),
 				ImportState:             true,
+				ImportStateId:           id.FullyQualifiedName(),
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"is_secure", "arguments.0.arg_data_type", "null_input_behavior", "return_results_behavior"},
 				ImportStateCheck: assertThatImport(t,
@@ -544,6 +544,48 @@ func TestAcc_FunctionJava_handleExternalLanguageChange(t *testing.T) {
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).HasNameString(id.Name()).HasFunctionLanguageString("JAVA"),
 					resourceshowoutputassert.FunctionShowOutput(t, functionModel.ResourceReference()).HasLanguage("JAVA"),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_FunctionJava_Issue4187(t *testing.T) {
+	className := "TestFunc"
+	funcName := "echoVarchar"
+	returnDataType := testdatatypes.DataTypeVarchar_100
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	handler := fmt.Sprintf("%s.%s", className, funcName)
+	definition := testClient().Function.SampleJavaDefinitionNoArgs(t, className, funcName)
+
+	functionModel := model.FunctionJavaBasicInline("w", id, returnDataType, handler, definition)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionJava),
+		Steps: []resource.TestStep{
+			// CREATE BASIC
+			{
+				Config: config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFunctionDefinitionString(definition).
+						HasFunctionLanguageString("JAVA").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				),
+			},
+			// IMPORT
+			{
+				ResourceName:      functionModel.ResourceReference(),
+				ImportState:       true,
+				ImportStateId:     "a|b|c()",
+				ImportStateVerify: true,
+				ExpectError:       regexp.MustCompile(`unexpected number of parts 1 in identifier a|b|c(), expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...)>" where <argname> is optional`),
 			},
 		},
 	})
