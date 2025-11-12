@@ -24,6 +24,19 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.10.1 ➞ v2.10.2
+
+### *(bugfix)* Disallowed setting `DATABASE ROLES` object type on `all` and `future` fields in `snowflake_grant_ownership` resource
+Previously, the provider allowed setting the `DATABASE ROLES` object type on `all` and `future` fields in the `grant_ownership` resource.
+This operation is not allowed in Snowflake, and such resource configuration resulted in errors being returned from Snowflake.
+
+In this version, the provider does not allow setting the `DATABASE ROLES` object type on `all` and `future` fields in the `grant_ownership` resource.
+In a few releases, we will address other similar faulty object type cases in privilege-granting resources.
+
+No changes in configuration are required.
+
+Community PR: [#4185](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4185)
+
 ## v2.10.0 ➞ v2.10.1
 
 ### *(bugfix)* Fixed parsing DESCRIBE output for authentication policies
