@@ -39,7 +39,7 @@ To create a new generator:
     - `main/main.go` file
     - `templates` directory
     - `model.go` containing the model definition and conversion
-    - `templates.go` containing the templates definitions and helper functions 
+    - `templates.go` containing the templates definitions and helper functions
 2. Create `generate.go` file on the same level as the `gen` package above with the following content only (in addition to the package name) `//go:generate go run ./gen/main/main.go $SF_TF_GENERATOR_ARGS`.
 3. In the `gen/main/main.go` create and run a new generator. This means invoking the `genhelpers.NewGenerator` and:
    - providing the name and version for the generator

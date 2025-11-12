@@ -104,6 +104,7 @@ func runAllTemplatesToStdOut(definition *generator.Interface) {
 	generator.GenerateImplementation(writer, definition)
 	generator.GenerateUnitTests(writer, definition)
 	generator.GenerateValidations(writer, definition)
+	generator.GenerateEnums(writer, definition)
 }
 
 func runAllTemplatesAndSave(definition *generator.Interface, file string) {
@@ -113,6 +114,7 @@ func runAllTemplatesAndSave(definition *generator.Interface, file string) {
 	runTemplateAndSave(definition, generator.GenerateImplementation, filenameFor(fileWithoutSuffix, "_impl"))
 	runTemplateAndSave(definition, generator.GenerateUnitTests, filename(fileWithoutSuffix, "_gen", "_test.go"))
 	runTemplateAndSave(definition, generator.GenerateValidations, filenameFor(fileWithoutSuffix, "_validations"))
+	runTemplateAndSave(definition, generator.GenerateEnums, filenameFor(fileWithoutSuffix, "_enums"))
 }
 
 func runTemplateAndSave(def *generator.Interface, genFunc func(io.Writer, *generator.Interface), fileName string) {

@@ -17,6 +17,7 @@ var (
 // TODO [SNOW-2324252]: remove this method
 func GenerateInterface(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
+
 	printTo(writer, InterfaceTemplate, def)
 	for _, o := range def.Operations {
 		if o.OptsField != nil {
@@ -110,6 +111,11 @@ func GenerateUnitTests(writer io.Writer, def *Interface) {
 func GenerateValidations(writer io.Writer, def *Interface) {
 	generatePackageDirective(writer)
 	printTo(writer, ValidationsTemplate, def)
+}
+
+func GenerateEnums(writer io.Writer, def *Interface) {
+	generatePackageDirective(writer)
+	printTo(writer, EnumTemplate, def)
 }
 
 func generatePackageDirective(writer io.Writer) {
