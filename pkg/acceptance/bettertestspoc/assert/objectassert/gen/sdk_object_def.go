@@ -174,6 +174,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.SecurityIntegration{},
 	},
 	{
+		IdType:       "sdk.DatabaseObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeSchema,
+		ObjectStruct: sdk.Schema{},
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectType:   sdk.ObjectTypeStreamlit,
 		ObjectStruct: sdk.Streamlit{},
