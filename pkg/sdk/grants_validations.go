@@ -65,6 +65,53 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeWarehouse,
 }
 
+// Database roles are excluded
+var validGrantOwnershipBulkObjectTypes = []ObjectType{
+	ObjectTypeAggregationPolicy,
+	ObjectTypeAlert,
+	ObjectTypeAuthenticationPolicy,
+	ObjectTypeComputePool,
+	ObjectTypeDataMetricFunction,
+	ObjectTypeDatabase,
+	ObjectTypeDynamicTable,
+	ObjectTypeEventTable,
+	ObjectTypeExternalTable,
+	ObjectTypeExternalVolume,
+	ObjectTypeFailoverGroup,
+	ObjectTypeFileFormat,
+	ObjectTypeFunction,
+	ObjectTypeGitRepository,
+	ObjectTypeHybridTable,
+	ObjectTypeIcebergTable,
+	ObjectTypeImageRepository,
+	ObjectTypeIntegration,
+	ObjectTypeMaterializedView,
+	ObjectTypeNetworkPolicy,
+	ObjectTypeNetworkRule,
+	ObjectTypePackagesPolicy,
+	ObjectTypePipe,
+	ObjectTypeProcedure,
+	ObjectTypeMaskingPolicy,
+	ObjectTypePasswordPolicy,
+	ObjectTypeProjectionPolicy,
+	ObjectTypeReplicationGroup,
+	ObjectTypeResourceMonitor,
+	ObjectTypeRole,
+	ObjectTypeRowAccessPolicy,
+	ObjectTypeSchema,
+	ObjectTypeSessionPolicy,
+	ObjectTypeSecret,
+	ObjectTypeSequence,
+	ObjectTypeStage,
+	ObjectTypeStream,
+	ObjectTypeTable,
+	ObjectTypeTag,
+	ObjectTypeTask,
+	ObjectTypeUser,
+	ObjectTypeView,
+	ObjectTypeWarehouse,
+}
+
 var validGrantToAccountObjectTypes = []ObjectType{
 	ObjectTypeUser,
 	ObjectTypeResourceMonitor,
@@ -142,7 +189,7 @@ var invalidGrantToFutureObjectTypes = []ObjectType{
 
 var (
 	ValidGrantOwnershipObjectTypesString       = make([]string, len(validGrantOwnershipObjectTypes))
-	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipObjectTypes))
+	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipBulkObjectTypes))
 	ValidGrantToAccountObjectTypesString       = make([]string, len(validGrantToAccountObjectTypes))
 	ValidGrantToSchemaObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
 	ValidGrantToPluralObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
@@ -152,6 +199,8 @@ var (
 func init() {
 	for i, objectType := range validGrantOwnershipObjectTypes {
 		ValidGrantOwnershipObjectTypesString[i] = objectType.String()
+	}
+	for i, objectType := range validGrantOwnershipBulkObjectTypes {
 		ValidGrantOwnershipPluralObjectTypesString[i] = objectType.Plural().String()
 	}
 	for i, objectType := range validGrantToAccountObjectTypes {
