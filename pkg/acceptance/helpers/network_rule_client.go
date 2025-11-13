@@ -77,7 +77,7 @@ func (c *NetworkRuleClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropNetworkRuleRequest(id).WithIfExists(sdk.Bool(true)))
+		err := c.client().Drop(ctx, sdk.NewDropNetworkRuleRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

@@ -49,7 +49,7 @@ lint-fix: ## Run static code analysis, check formatting and try to fix findings
 	./bin/golangci-lint run ./... -v --fix
 
 mod: ## add missing and remove unused modules
-	go mod tidy -compat=1.23.6
+	go mod tidy -compat=1.24.9
 
 mod-check: mod ## check if there are any missing/unused modules
 	git diff --exit-code -- go.mod go.sum
@@ -71,10 +71,10 @@ test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)")
 
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=150m ./pkg/testacc
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=150m ./pkg/testacc
 
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=45m ./pkg/testacc ./pkg/sdk/testint
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=45m ./pkg/testacc ./pkg/sdk/testint
 
 test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint
@@ -86,13 +86,17 @@ test-architecture: ## check architecture constraints between packages
 	go test ./pkg/architests/... -v
 
 test-acceptance-%: ## run acceptance tests (both non-account and account level ones) for the given resource only, e.g. test-acceptance-Warehouse
-	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run ^TestAcc_$*_ -v -timeout=20m ./pkg/testacc
+	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run ^TestAcc_$* -v -timeout=20m ./pkg/testacc
 
-test-build-verification: ## run build verification tests
-	TF_ACC=1 SF_TF_ACC_TEST_CONFIGURE_CLIENT_ONCE=true TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_Schema_basic|TestAcc_Schema_complete)$$" -v -cover -timeout=20m ./pkg/testacc
+test-main-terraform-use-cases: ## run test for main terraform use cases
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_.*_BasicUseCase.*|TestAcc_.*_CompleteUseCase.*)$$" -v -cover -json -timeout=20m ./pkg/testacc
 
-test-build-verification-ci: ## run build verification tests for CI environment
-	docker compose -f ./packaging/docker-compose.yml run --rm run-build-verification-tests
+test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests within docker environment
+	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
+	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm test-main-terraform-use-cases
+
+process-test-output-docker-compose: ## run test output processor within docker environment
+	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm process-test-output
 
 build-local: ## build the binary locally
 	go build -o $(BASE_BINARY_NAME) .
@@ -114,34 +118,27 @@ install-locally-released-tf: release-local ## installs plugin (built by the GoRe
 uninstall-tf: ## uninstalls plugin from where terraform can find it
 	rm -f $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
+# TODO [SNOW-1501905]: decide its fate
 generate-all-dto: ## Generate all DTOs for SDK interfaces
 	go generate ./pkg/sdk/*_dto.go
 
+# TODO [SNOW-1501905]: decide its fate
 generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 	go generate $<
-
-clean-generator-poc:
-	rm -f ./pkg/sdk/poc/example/*_gen.go
-	rm -f ./pkg/sdk/poc/example/*_gen_test.go
-
-clean-generator-%: ## Clean generated files for specified resource
-	rm -f ./pkg/sdk/$**_gen.go
-	rm -f ./pkg/sdk/$**_gen_*test.go
-
-run-generator-poc:
-	go generate ./pkg/sdk/poc/example/*_def.go
-	go generate ./pkg/sdk/poc/example/*_dto_gen.go
-
-run-generator-%: ./pkg/sdk/%_def.go ## Run go generate on given object definition
-	go generate $<
-	go generate ./pkg/sdk/$*_dto_gen.go
 
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
 
-clean-sdk: ## Clean all generated SDK objects
+clean-generated-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/*_gen.go
 	rm -f ./pkg/sdk/*_gen_test.go
+
+generate-sdk-examples: ## Generate all SDK generation examples
+	go generate ./pkg/sdk/generator/example/generate.go
+
+clean-generated-sdk-examples: ## Clean all generated SDK generation examples
+	rm -f ./pkg/sdk/generator/example/*_gen.go
+	rm -f ./pkg/sdk/generator/example/*_gen_test.go
 
 generate-docs-additional-files: ## generate docs additional files
 	go run ./pkg/internal/tools/doc-gen-helper/ $$PWD
@@ -225,4 +222,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local clean-generator-poc dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf
+.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf

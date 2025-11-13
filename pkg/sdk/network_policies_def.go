@@ -3,10 +3,8 @@ package sdk
 import (
 	"encoding/json"
 
-	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
-
-//go:generate go run ./poc/main.go
 
 // NetworkRulesSnowflakeDto is needed to unpack the applied network rules from the JSON response from Snowflake
 type NetworkRulesSnowflakeDto struct {

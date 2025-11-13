@@ -348,10 +348,6 @@ var (
 	DistributionExternal Distribution = "EXTERNAL"
 )
 
-func DistributionPointer(v Distribution) *Distribution {
-	return &v
-}
-
 type LogLevel string
 
 const (

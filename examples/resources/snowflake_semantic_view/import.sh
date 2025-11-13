@@ -1,0 +1,1 @@
+terraform import snowflake_semantic_view.example '"<db_name>"."<schema_name>"."<semantic_view_name>"'

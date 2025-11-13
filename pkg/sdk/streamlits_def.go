@@ -1,8 +1,7 @@
 package sdk
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
-//go:generate go run ./poc/main.go
 var externalAccessIntegrations = g.NewQueryStruct("ExternalAccessIntegrations").
 	List("ExternalAccessIntegrations", "AccountObjectIdentifier", g.ListOptions().Required().MustParentheses())
 

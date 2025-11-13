@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -108,15 +107,6 @@ func (n *NotebookModel) WithComment(comment string) *NotebookModel {
 }
 
 // from attribute type is not yet supported, so WithFrom can't be generated
-// added manually
-func (n *NotebookModel) WithFrom(path string, stageId sdk.SchemaObjectIdentifier) *NotebookModel {
-	n.From = tfconfig.ListVariable(
-		tfconfig.MapVariable(map[string]tfconfig.Variable{
-			"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
-			"path":  tfconfig.StringVariable(path),
-		}))
-	return n
-}
 
 func (n *NotebookModel) WithFullyQualifiedName(fullyQualifiedName string) *NotebookModel {
 	n.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)

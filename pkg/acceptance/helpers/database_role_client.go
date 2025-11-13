@@ -75,3 +75,11 @@ func (c *DatabaseRoleClient) Show(t *testing.T, id sdk.DatabaseObjectIdentifier)
 	t.Helper()
 	return c.client().ShowByID(context.Background(), id)
 }
+
+func (c *DatabaseRoleClient) Alter(t *testing.T, req *sdk.AlterDatabaseRoleRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}

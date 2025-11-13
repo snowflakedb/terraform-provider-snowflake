@@ -166,19 +166,19 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeDynamicTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).DynamicTables.Drop, sdk.NewDropDynamicTableRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeCortexSearchService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).CortexSearchServices.Drop, sdk.NewDropCortexSearchServiceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeExternalTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).ExternalTables.Drop, sdk.NewDropExternalTableRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeEventTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).EventTables.Drop, sdk.NewDropEventTableRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeEventTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).EventTables.Drop, sdk.NewDropEventTableRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Views.Drop, sdk.NewDropViewRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeMaterializedView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).MaterializedViews.Drop, sdk.NewDropMaterializedViewRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeMaterializedView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).MaterializedViews.Drop, sdk.NewDropMaterializedViewRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeSequence, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Sequences.Drop, sdk.NewDropSequenceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeStream, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streams.Drop, sdk.NewDropStreamRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTask, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tasks.Drop, sdk.NewDropTaskRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeMaskingPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).MaskingPolicies.Drop(ctx, id, &sdk.DropMaskingPolicyOptions{IfExists: sdk.Bool(true)})
 		}},
-		{ObjectType: sdk.ObjectTypeRowAccessPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).RowAccessPolicies.Drop, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeRowAccessPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).RowAccessPolicies.Drop, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTag, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tags.Drop, sdk.NewDropTagRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeSecret, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Secrets.Drop, sdk.NewDropSecretRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeStage, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Stages.Drop, sdk.NewDropStageRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeStage, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Stages.Drop, sdk.NewDropStageRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
@@ -189,7 +189,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 			return testClient(t).Alerts.Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
 		}},
 		{ObjectType: sdk.ObjectTypeStreamlit, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streamlits.Drop, sdk.NewDropStreamlitRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).NetworkRules.Drop, sdk.NewDropNetworkRuleRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).NetworkRules.Drop, sdk.NewDropNetworkRuleRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeAuthenticationPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).AuthenticationPolicies.Drop, sdk.NewDropAuthenticationPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeImageRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).ImageRepositories.Drop, sdk.NewDropImageRepositoryRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Services.Drop, sdk.NewDropServiceRequest(id).WithIfExists(true))},
@@ -243,19 +243,19 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeDynamicTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).DynamicTables.Drop, sdk.NewDropDynamicTableRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeCortexSearchService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).CortexSearchServices.Drop, sdk.NewDropCortexSearchServiceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeExternalTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).ExternalTables.Drop, sdk.NewDropExternalTableRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeEventTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).EventTables.Drop, sdk.NewDropEventTableRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeEventTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).EventTables.Drop, sdk.NewDropEventTableRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Views.Drop, sdk.NewDropViewRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeMaterializedView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).MaterializedViews.Drop, sdk.NewDropMaterializedViewRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeMaterializedView, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).MaterializedViews.Drop, sdk.NewDropMaterializedViewRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeSequence, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Sequences.Drop, sdk.NewDropSequenceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeStream, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streams.Drop, sdk.NewDropStreamRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTask, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tasks.Drop, sdk.NewDropTaskRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeMaskingPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).MaskingPolicies.Drop(ctx, id, &sdk.DropMaskingPolicyOptions{IfExists: sdk.Bool(true)})
 		}},
-		{ObjectType: sdk.ObjectTypeRowAccessPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).RowAccessPolicies.Drop, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeRowAccessPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).RowAccessPolicies.Drop, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTag, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tags.Drop, sdk.NewDropTagRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeSecret, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Secrets.Drop, sdk.NewDropSecretRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeStage, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Stages.Drop, sdk.NewDropStageRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeStage, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Stages.Drop, sdk.NewDropStageRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
@@ -266,7 +266,7 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 			return testClient(t).Alerts.Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
 		}},
 		{ObjectType: sdk.ObjectTypeStreamlit, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streamlits.Drop, sdk.NewDropStreamlitRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).NetworkRules.Drop, sdk.NewDropNetworkRuleRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).NetworkRules.Drop, sdk.NewDropNetworkRuleRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeAuthenticationPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).AuthenticationPolicies.Drop, sdk.NewDropAuthenticationPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeImageRepository, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).ImageRepositories.Drop, sdk.NewDropImageRepositoryRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Services.Drop, sdk.NewDropServiceRequest(id).WithIfExists(true))},

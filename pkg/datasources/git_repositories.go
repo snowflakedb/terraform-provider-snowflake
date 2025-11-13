@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -54,7 +53,7 @@ var gitRepositoriesSchema = map[string]*schema.Schema{
 
 func GitRepositories() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.GitRepositoriesDatasource), TrackingReadWrapper(datasources.GitRepositories, ReadGitRepositories)),
+		ReadContext: TrackingReadWrapper(datasources.GitRepositories, ReadGitRepositories),
 		Schema:      gitRepositoriesSchema,
 		Description: "Data source used to get details of filtered git repositories. Filtering is aligned with the current possibilities for [SHOW GIT REPOSITORIES](https://docs.snowflake.com/en/sql-reference/sql/show-git-repositories) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `git_repositories`.",
 	}

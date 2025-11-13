@@ -31,7 +31,7 @@ func TestInt_EventTables(t *testing.T) {
 	cleanupTableHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 		t.Helper()
 		return func() {
-			err := client.EventTables.Drop(ctx, sdk.NewDropEventTableRequest(id).WithIfExists(sdk.Bool(true)))
+			err := client.EventTables.Drop(ctx, sdk.NewDropEventTableRequest(id).WithIfExists(true))
 			require.NoError(t, err)
 		}
 	}
@@ -53,12 +53,12 @@ func TestInt_EventTables(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		request := sdk.NewCreateEventTableRequest(id).
-			WithChangeTracking(sdk.Bool(true)).
-			WithDefaultDdlCollation(sdk.String("en_US")).
-			WithDataRetentionTimeInDays(sdk.Int(1)).
-			WithMaxDataExtensionTimeInDays(sdk.Int(2)).
-			WithComment(sdk.String("test")).
-			WithIfNotExists(sdk.Bool(true)).
+			WithChangeTracking(true).
+			WithDefaultDdlCollation("en_US").
+			WithDataRetentionTimeInDays(1).
+			WithMaxDataExtensionTimeInDays(2).
+			WithComment("test").
+			WithIfNotExists(true).
 			WithTag([]sdk.TagAssociation{
 				{
 					Name:  tagTest.ID(),
@@ -119,16 +119,16 @@ func TestInt_EventTables(t *testing.T) {
 		id := dt.ID()
 
 		comment := random.Comment()
-		set := sdk.NewEventTableSetRequest().WithComment(&comment)
-		err := client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithSet(set))
+		set := sdk.NewEventTableSetRequest().WithComment(comment)
+		err := client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithSet(*set))
 		require.NoError(t, err)
 
 		et, err := client.EventTables.ShowByID(ctx, id)
 		require.NoError(t, err)
 		assertEventTableHandle(t, et, dt.Name, comment, nil)
 
-		unset := sdk.NewEventTableUnsetRequest().WithComment(sdk.Bool(true))
-		err = client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithUnset(unset))
+		unset := sdk.NewEventTableUnsetRequest().WithComment(true)
+		err = client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithUnset(*unset))
 		require.NoError(t, err)
 
 		et, err = client.EventTables.ShowByID(ctx, id)
@@ -140,12 +140,12 @@ func TestInt_EventTables(t *testing.T) {
 		dt := createEventTableHandle(t)
 		id := dt.ID()
 
-		set := sdk.NewEventTableSetRequest().WithChangeTracking(sdk.Bool(true))
-		err := client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithSet(set))
+		set := sdk.NewEventTableSetRequest().WithChangeTracking(true)
+		err := client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithSet(*set))
 		require.NoError(t, err)
 
-		unset := sdk.NewEventTableUnsetRequest().WithChangeTracking(sdk.Bool(true))
-		err = client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithUnset(unset))
+		unset := sdk.NewEventTableUnsetRequest().WithChangeTracking(true)
+		err = client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithUnset(*unset))
 		require.NoError(t, err)
 	})
 
@@ -156,7 +156,7 @@ func TestInt_EventTables(t *testing.T) {
 		require.NoError(t, err)
 
 		nid := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err = client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithRenameTo(&nid))
+		err = client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithRenameTo(nid))
 		if err != nil {
 			t.Cleanup(cleanupTableHandle(t, id))
 		} else {
@@ -175,8 +175,8 @@ func TestInt_EventTables(t *testing.T) {
 		dt := createEventTableHandle(t)
 		id := dt.ID()
 
-		action := sdk.NewEventTableClusteringActionRequest().WithDropClusteringKey(sdk.Bool(true))
-		err := client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithClusteringAction(action))
+		action := sdk.NewEventTableClusteringActionRequest().WithDropClusteringKey(true)
+		err := client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithClusteringAction(*action))
 		require.NoError(t, err)
 	})
 
@@ -184,12 +184,12 @@ func TestInt_EventTables(t *testing.T) {
 		dt := createEventTableHandle(t)
 		id := dt.ID()
 
-		action := sdk.NewEventTableSearchOptimizationActionRequest().WithAdd(sdk.NewSearchOptimizationRequest().WithOn([]string{"SUBSTRING(*)"}))
-		err := client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithSearchOptimizationAction(action))
+		action := sdk.NewEventTableSearchOptimizationActionRequest().WithAdd(*sdk.NewSearchOptimizationRequest().WithOn([]string{"SUBSTRING(*)"}))
+		err := client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithSearchOptimizationAction(*action))
 		require.NoError(t, err)
 
-		action = sdk.NewEventTableSearchOptimizationActionRequest().WithDrop(sdk.NewSearchOptimizationRequest().WithOn([]string{"SUBSTRING(*)"}))
-		err = client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithSearchOptimizationAction(action))
+		action = sdk.NewEventTableSearchOptimizationActionRequest().WithDrop(*sdk.NewSearchOptimizationRequest().WithOn([]string{"SUBSTRING(*)"}))
+		err = client.EventTables.Alter(ctx, sdk.NewAlterEventTableRequest(id).WithSearchOptimizationAction(*action))
 		require.NoError(t, err)
 	})
 
@@ -204,7 +204,7 @@ func TestInt_EventTables(t *testing.T) {
 		t.Cleanup(tableCleanup)
 
 		// add policy
-		alterRequest := sdk.NewAlterEventTableRequest(table.ID()).WithAddRowAccessPolicy(sdk.NewEventTableAddRowAccessPolicyRequest(rowAccessPolicy.ID(), []string{"id"}))
+		alterRequest := sdk.NewAlterEventTableRequest(table.ID()).WithAddRowAccessPolicy(*sdk.NewEventTableAddRowAccessPolicyRequest(rowAccessPolicy.ID(), []string{"id"}))
 		err := client.EventTables.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -217,7 +217,7 @@ func TestInt_EventTables(t *testing.T) {
 		assert.Equal(t, "ACTIVE", *e.PolicyStatus)
 
 		// remove policy
-		alterRequest = sdk.NewAlterEventTableRequest(table.ID()).WithDropRowAccessPolicy(sdk.NewEventTableDropRowAccessPolicyRequest(rowAccessPolicy.ID()))
+		alterRequest = sdk.NewAlterEventTableRequest(table.ID()).WithDropRowAccessPolicy(*sdk.NewEventTableDropRowAccessPolicyRequest(rowAccessPolicy.ID()))
 		err = client.EventTables.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -226,7 +226,7 @@ func TestInt_EventTables(t *testing.T) {
 		require.Empty(t, references)
 
 		// add policy again
-		alterRequest = sdk.NewAlterEventTableRequest(table.ID()).WithAddRowAccessPolicy(sdk.NewEventTableAddRowAccessPolicyRequest(rowAccessPolicy.ID(), []string{"id"}))
+		alterRequest = sdk.NewAlterEventTableRequest(table.ID()).WithAddRowAccessPolicy(*sdk.NewEventTableAddRowAccessPolicyRequest(rowAccessPolicy.ID(), []string{"id"}))
 		err = client.EventTables.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -235,7 +235,7 @@ func TestInt_EventTables(t *testing.T) {
 		assert.Equal(t, rowAccessPolicy.ID().Name(), e.PolicyName)
 
 		// drop and add other policy simultaneously
-		alterRequest = sdk.NewAlterEventTableRequest(table.ID()).WithDropAndAddRowAccessPolicy(sdk.NewEventTableDropAndAddRowAccessPolicyRequest(
+		alterRequest = sdk.NewAlterEventTableRequest(table.ID()).WithDropAndAddRowAccessPolicy(*sdk.NewEventTableDropAndAddRowAccessPolicyRequest(
 			*sdk.NewEventTableDropRowAccessPolicyRequest(rowAccessPolicy.ID()),
 			*sdk.NewEventTableAddRowAccessPolicyRequest(rowAccessPolicy2.ID(), []string{"id"}),
 		))
@@ -247,7 +247,7 @@ func TestInt_EventTables(t *testing.T) {
 		assert.Equal(t, rowAccessPolicy2.ID().Name(), e.PolicyName)
 
 		// drop all policies
-		alterRequest = sdk.NewAlterEventTableRequest(table.ID()).WithDropAllRowAccessPolicies(sdk.Bool(true))
+		alterRequest = sdk.NewAlterEventTableRequest(table.ID()).WithDropAllRowAccessPolicies(true)
 		err = client.EventTables.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
@@ -264,7 +264,7 @@ func TestInt_EventTableShowByID(t *testing.T) {
 	cleanupEventTableHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 		t.Helper()
 		return func() {
-			err := client.EventTables.Drop(ctx, sdk.NewDropEventTableRequest(id).WithIfExists(sdk.Bool(true)))
+			err := client.EventTables.Drop(ctx, sdk.NewDropEventTableRequest(id).WithIfExists(true))
 			require.NoError(t, err)
 		}
 	}

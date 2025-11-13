@@ -92,12 +92,34 @@ func (c *SchemaClient) UpdateDataRetentionTime(t *testing.T, id sdk.DatabaseObje
 	})
 }
 
+func (c *SchemaClient) UpdateLogLevel(t *testing.T, id sdk.DatabaseObjectIdentifier, level sdk.LogLevel) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, id, &sdk.AlterSchemaOptions{
+		Set: &sdk.SchemaSet{
+			LogLevel: &level,
+		},
+	})
+	require.NoError(t, err)
+}
+
 func (c *SchemaClient) UnsetDataRetentionTime(t *testing.T, id sdk.DatabaseObjectIdentifier) {
 	t.Helper()
 
 	c.Alter(t, id, &sdk.AlterSchemaOptions{
 		Unset: &sdk.SchemaUnset{
 			DataRetentionTimeInDays: sdk.Bool(true),
+		},
+	})
+}
+
+func (c *SchemaClient) UnsetLogLevel(t *testing.T, id sdk.DatabaseObjectIdentifier) {
+	t.Helper()
+
+	c.Alter(t, id, &sdk.AlterSchemaOptions{
+		Unset: &sdk.SchemaUnset{
+			LogLevel: sdk.Bool(true),
 		},
 	})
 }

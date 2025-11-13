@@ -11,7 +11,32 @@ description: |-
 
 Resource used to manage notebooks. For more information, check [notebooks documentation](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).
 
+## Example Usage
 
+-> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
+<!-- TODO(SNOW-1634854): include an example showing both methods-->
+
+```terraform
+# basic resource
+resource "snowflake_notebook" "basic" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "NOTEBOOK"
+}
+
+# complete resource
+resource "snowflake_notebook" "complete" {
+  name                            = "NOTEBOOK"
+  database                        = "DATABASE"
+  schema                          = "SCHEMA"
+  from                            = "\"<db_name>\".\"<schema_name>\".\"<stage_name>\""
+  main_file                       = "MAIN_FILE.ipynb"
+  query_warehouse                 = "\"QUERY_WAREHOUSE\""
+  idle_auto_shutdown_time_seconds = number_of_seconds
+  warehouse                       = "\"WAREHOUSE\""
+  comment                         = "comment"
+}
+```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
@@ -51,7 +76,7 @@ Required:
 
 Optional:
 
-- `location` (String) Location of the .ipynb file in the stage.
+- `path` (String) Location of the .ipynb file in the stage.
 
 
 <a id="nestedblock--timeouts"></a>
@@ -116,3 +141,11 @@ Read-Only:
 - `query_warehouse` (String)
 - `schema_name` (String)
 - `url_id` (String)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+terraform import snowflake_notebook.example '"<db_name>"."<schema_name>"."<notebook_name>"'
+```

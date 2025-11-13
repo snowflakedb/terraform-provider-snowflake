@@ -72,14 +72,14 @@ host="<host of your account, e.g. organisation-account_name2.snowflakecomputing.
 
 **TIP**: check [how-can-i-get-my-organization-name](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#how-can-i-get-my-organization-name) and [how-can-i-get-my-account-name](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#how-can-i-get-my-account-name) sections in our guides if you have troubles setting the proper `organization_name` and `account_name`.
 
-We are aware that not everyone has access two multiple accounts, so the majority of tests can be run using just one account. The tests setup however, requires both profiles (`default` and `secondary_test_account`) to be present. You can use the same details for `secondary_test_account` as in the `default` one, if you don't plan to run tests requiring multiple accounts. The warning will be logged when setting up tests with just a single account.
+We are aware that not everyone has access to two different accounts, so the majority of tests can be run using just one account. The tests setup however, requires both profiles (`default` and `secondary_test_account`) to be present. You can use the same details for `secondary_test_account` as in the `default` one, if you don't plan to run tests requiring multiple accounts. The warning will be logged when setting up tests with just a single account.
 
-There is also environment flag `TEST_SF_TF_SIMPLIFIED_INTEGRATION_TESTS_SETUP` available to set up only the default account for the integration tests. Careful, as tests requiring multiple accounts will fail when using this flag. Such flag is not yet available for the acceptance tests.
+There is also environment flag `TEST_SF_TF_SIMPLIFIED_INTEGRATION_TESTS_SETUP` available to set up only the default account for the integration tests. Careful, as tests requiring multiple accounts will fail when using this flag.
 
 **⚠️ Important ⚠️** Some of the tests require the privileged role (like `ACCOUNTADMIN`). Otherwise, the managed objects may not be created. If you want to use lower role, you have to make sure it has all the necessary privileges added.
 
 To run the tests we have the following commands:
-- `make test` run unit tests
+- `make test-unit` run unit tests
 - `make test-acceptance` run acceptance tests (without account-level ones)
 - `make test-integration` run integration tests (without account-level ones)
 - `make test-account-level-features` run both integration and acceptance tests verifying account-level features

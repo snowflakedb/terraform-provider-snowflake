@@ -24,7 +24,6 @@ func TestAcc_Provider_tomlConfigIsTooPermissive(t *testing.T) {
 	if !oswrapper.IsRunningOnWindows() {
 		t.Skip("checking file permissions on other platforms is currently done in the provider package")
 	}
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 
 	permissions := fs.FileMode(0o755)
 

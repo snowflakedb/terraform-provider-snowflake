@@ -42,6 +42,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiAuthenticationIntegrationWithClientCredentials().Schema,
 	},
 	{
+		name:   "AuthenticationPolicy",
+		schema: resources.AuthenticationPolicy().Schema,
+	},
+	{
 		name:   "ComputePool",
 		schema: resources.ComputePool().Schema,
 	},

@@ -19,6 +19,7 @@ type SnowflakeModel struct {
 	DisableTelemetry                   tfconfig.Variable `json:"disable_telemetry,omitempty"`
 	DriverTracing                      tfconfig.Variable `json:"driver_tracing,omitempty"`
 	EnableSingleUseRefreshTokens       tfconfig.Variable `json:"enable_single_use_refresh_tokens,omitempty"`
+	ExperimentalFeaturesEnabled        tfconfig.Variable `json:"experimental_features_enabled,omitempty"`
 	ExternalBrowserTimeout             tfconfig.Variable `json:"external_browser_timeout,omitempty"`
 	Host                               tfconfig.Variable `json:"host,omitempty"`
 	IncludeRetryReason                 tfconfig.Variable `json:"include_retry_reason,omitempty"`
@@ -57,6 +58,8 @@ type SnowflakeModel struct {
 	User                               tfconfig.Variable `json:"user,omitempty"`
 	ValidateDefaultParameters          tfconfig.Variable `json:"validate_default_parameters,omitempty"`
 	Warehouse                          tfconfig.Variable `json:"warehouse,omitempty"`
+	WorkloadIdentityEntraResource      tfconfig.Variable `json:"workload_identity_entra_resource,omitempty"`
+	WorkloadIdentityProvider           tfconfig.Variable `json:"workload_identity_provider,omitempty"`
 
 	*config.ProviderModelMeta
 }
@@ -135,6 +138,8 @@ func (s *SnowflakeModel) WithEnableSingleUseRefreshTokens(enableSingleUseRefresh
 	s.EnableSingleUseRefreshTokens = tfconfig.BoolVariable(enableSingleUseRefreshTokens)
 	return s
 }
+
+// experimental_features_enabled attribute type is not yet supported, so WithExperimentalFeaturesEnabled can't be generated
 
 func (s *SnowflakeModel) WithExternalBrowserTimeout(externalBrowserTimeout int) *SnowflakeModel {
 	s.ExternalBrowserTimeout = tfconfig.IntegerVariable(externalBrowserTimeout)
@@ -317,6 +322,16 @@ func (s *SnowflakeModel) WithWarehouse(warehouse string) *SnowflakeModel {
 	return s
 }
 
+func (s *SnowflakeModel) WithWorkloadIdentityEntraResource(workloadIdentityEntraResource string) *SnowflakeModel {
+	s.WorkloadIdentityEntraResource = tfconfig.StringVariable(workloadIdentityEntraResource)
+	return s
+}
+
+func (s *SnowflakeModel) WithWorkloadIdentityProvider(workloadIdentityProvider string) *SnowflakeModel {
+	s.WorkloadIdentityProvider = tfconfig.StringVariable(workloadIdentityProvider)
+	return s
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -373,6 +388,11 @@ func (s *SnowflakeModel) WithDriverTracingValue(value tfconfig.Variable) *Snowfl
 
 func (s *SnowflakeModel) WithEnableSingleUseRefreshTokensValue(value tfconfig.Variable) *SnowflakeModel {
 	s.EnableSingleUseRefreshTokens = value
+	return s
+}
+
+func (s *SnowflakeModel) WithExperimentalFeaturesEnabledValue(value tfconfig.Variable) *SnowflakeModel {
+	s.ExperimentalFeaturesEnabled = value
 	return s
 }
 
@@ -563,5 +583,15 @@ func (s *SnowflakeModel) WithValidateDefaultParametersValue(value tfconfig.Varia
 
 func (s *SnowflakeModel) WithWarehouseValue(value tfconfig.Variable) *SnowflakeModel {
 	s.Warehouse = value
+	return s
+}
+
+func (s *SnowflakeModel) WithWorkloadIdentityEntraResourceValue(value tfconfig.Variable) *SnowflakeModel {
+	s.WorkloadIdentityEntraResource = value
+	return s
+}
+
+func (s *SnowflakeModel) WithWorkloadIdentityProviderValue(value tfconfig.Variable) *SnowflakeModel {
+	s.WorkloadIdentityProvider = value
 	return s
 }

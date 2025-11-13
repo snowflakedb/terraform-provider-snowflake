@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
-
-//go:generate go run ./poc/main.go
 
 var AllViewDataMetricScheduleMinutes = []int{5, 15, 30, 60, 720, 1440}
 

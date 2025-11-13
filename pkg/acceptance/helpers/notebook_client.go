@@ -25,6 +25,7 @@ func (c *NotebookClient) client() sdk.Notebooks {
 }
 
 func (c *NotebookClient) Create(t *testing.T) (*sdk.Notebook, func()) {
+	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifier()
 	t.Helper()
 	return c.CreateWithRequest(t, sdk.NewCreateNotebookRequest(id))

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -261,7 +262,8 @@ func Warehouse() *schema.Resource {
 }
 
 func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
@@ -271,7 +273,12 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 		return nil, err
 	}
 
-	w, err := client.Warehouses.ShowByID(ctx, id)
+	var w *sdk.Warehouse
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.WarehouseShowImprovedPerformance, providerCtx.EnabledExperiments) {
+		w, err = client.Warehouses.ShowByIDExperimental(ctx, id)
+	} else {
+		w, err = client.Warehouses.ShowByID(ctx, id)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -399,11 +406,7 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		resourceConstraint, err := generation.ToWarehouseResourceConstraint()
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		createOptions.ResourceConstraint = &resourceConstraint
+		createOptions.Generation = &generation
 	}
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
 		createOptions.MaxConcurrencyLevel = v
@@ -426,13 +429,19 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		w, err := client.Warehouses.ShowByIDSafely(ctx, id)
+		var w *sdk.Warehouse
+		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.WarehouseShowImprovedPerformance, providerCtx.EnabledExperiments) {
+			w, err = client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+		} else {
+			w, err = client.Warehouses.ShowByIDSafely(ctx, id)
+		}
 		if err != nil {
 			if errors.Is(err, sdk.ErrObjectNotFound) {
 				d.SetId("")
@@ -693,13 +702,9 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				resourceConstraint, err := generation.ToWarehouseResourceConstraint()
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				set.ResourceConstraint = &resourceConstraint
+				set.Generation = &generation
 			} else {
-				unset.ResourceConstraint = sdk.Bool(true)
+				unset.Generation = sdk.Bool(true)
 			}
 		} else {
 			log.Printf("[DEBUG] generation is not supported for %s warehouses, ignoring", warehouseTypeRaw)

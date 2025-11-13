@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
 
 type ServiceStatus string
@@ -84,7 +84,6 @@ var jobServiceFromSpecificationTemplateDef = g.NewQueryStruct("JobServiceFromSpe
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
 	WithValidation(g.ExactlyOneValueSet, "Location", "SpecificationTemplate")
 
-//go:generate go run ./poc/main.go
 var ServicesDef = g.NewInterface(
 	"Services",
 	"Service",

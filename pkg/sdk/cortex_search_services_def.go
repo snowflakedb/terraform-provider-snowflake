@@ -1,10 +1,8 @@
 package sdk
 
 import (
-	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
-
-//go:generate go run ./poc/main.go
 
 var alterServiceSet = g.NewQueryStruct("CortexSearchServiceSet").
 	// Fields

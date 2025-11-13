@@ -19,7 +19,6 @@ import (
 
 // This test is marked as account_level_tests because it creates an Oauth security integration with a unique issuer and a user with a unique login name.
 func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
-	t.Setenv(string(testenvs.ConfigureClientOnce), "")
 	oauthClientId := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsClientId)
 	oauthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsClientSecret)
 	oauthIssuerUrl := testenvs.GetOrSkipTest(t, testenvs.OauthWithClientCredentialsIssuer)
@@ -61,7 +60,7 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 	userConfig := testClient().TempTomlConfigForServiceUserWithOauthClientCredentials(t, &userHelper, oauthClientId, oauthClientSecret, oauthTokenRequestUrl)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

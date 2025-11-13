@@ -64,7 +64,7 @@ func (opts *createTableOptions) validate() error {
 	if stageFileFormat := opts.StageFileFormat; valueSet(stageFileFormat) {
 		if ok := exactlyOneValueSet(
 			stageFileFormat.FormatName,
-			stageFileFormat.Type,
+			stageFileFormat.FileFormatType,
 		); !ok {
 			errs = append(errs, errExactlyOneOf("StageFileFormat", "FormatName", "FormatType"))
 		}

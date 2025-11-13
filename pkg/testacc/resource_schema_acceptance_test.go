@@ -11,15 +11,16 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	acchelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -31,22 +32,62 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAcc_Schema_basic(t *testing.T) {
+func TestAcc_Schema_BasicUseCase(t *testing.T) {
+	db, cleanupDb := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupDb)
+
+	id := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(db.ID())
+	newId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(db.ID())
+	comment := random.Comment()
+
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
 
 	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
 
-	id := testClient().Ids.RandomDatabaseObjectIdentifier()
-	comment := random.Comment()
+	basic := model.Schema("test", id.DatabaseName(), id.Name())
 
-	basicSchemaModel := model.Schema("test", id.DatabaseName(), id.Name())
-	fullSchemaModel := model.Schema("test", id.DatabaseName(), id.Name()).
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.Schema(t, id).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasDatabaseName(id.DatabaseName()).
+			HasOwnerNotEmpty().
+			HasComment("").
+			HasOptions("").
+			HasRetentionTime("1").
+			HasOwnerRoleTypeNotEmpty(),
+
+		objectparametersassert.SchemaParameters(t, id).
+			HasAllDefaultsExplicit(),
+
+		resourceassert.SchemaResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasWithManagedAccessString(r.BooleanDefault).
+			HasIsTransientString(r.BooleanDefault).
+			HasCommentString(""),
+
+		resourceshowoutputassert.SchemaShowOutput(t, basic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasDatabaseName(id.DatabaseName()).
+			HasOwnerNotEmpty().
+			HasComment("").
+			HasOptions("").
+			HasOwnerRoleTypeNotEmpty(),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "0")),
+	}
+
+	complete := model.Schema("test", newId.DatabaseName(), newId.Name()).
 		WithComment(comment).
 		WithWithManagedAccess(r.BooleanTrue).
-		WithIsTransient(r.BooleanFalse).
-		WithDataRetentionTimeInDays(5).
+		WithDataRetentionTimeInDays(15).
 		WithMaxDataExtensionTimeInDays(3).
 		WithExternalVolume(externalVolumeId.Name()).
 		WithCatalog(catalogId.Name()).
@@ -64,30 +105,59 @@ func TestAcc_Schema_basic(t *testing.T) {
 		WithEnableConsoleOutput(true).
 		WithPipeExecutionPaused(true)
 
-	schemaModelWithExplicitTransientFalse := model.Schema("test", id.DatabaseName(), id.Name()).
-		WithIsTransient(r.BooleanFalse)
-	schemaModelWithExplicitTransientTrue := model.Schema("test", id.DatabaseName(), id.Name()).
-		WithIsTransient(r.BooleanTrue)
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Schema(t, newId).
+			HasCreatedOnNotEmpty().
+			HasName(newId.Name()).
+			HasIsDefault(false).
+			HasDatabaseName(newId.DatabaseName()).
+			HasOwnerNotEmpty().
+			HasComment(comment).
+			HasOptions("MANAGED ACCESS").
+			HasRetentionTime("15").
+			HasOwnerRoleTypeNotEmpty(),
 
-	var (
-		testDatabaseDataRetentionTimeInDays            = new(string)
-		testDatabaseMaxDataExtensionTimeInDays         = new(string)
-		accountExternalVolume                          = new(string)
-		testDatabaseCatalog                            = new(string)
-		accountReplaceInvalidCharacters                = new(string)
-		accountDefaultDdlCollation                     = new(string)
-		accountStorageSerializationPolicy              = new(string)
-		accountLogLevel                                = new(string)
-		accountTraceLevel                              = new(string)
-		accountSuspendTaskAfterNumFailures             = new(string)
-		accountTaskAutoRetryAttempts                   = new(string)
-		accountUserTaskMangedInitialWarehouseSize      = new(string)
-		accountUserTaskTimeoutMs                       = new(string)
-		accountUserTaskMinimumTriggerIntervalInSeconds = new(string)
-		accountQuotedIdentifiersIgnoreCase             = new(string)
-		accountEnableConsoleOutput                     = new(string)
-		accountPipeExecutionPaused                     = new(string)
-	)
+		// TODO(SNOW-1501905): update assertions after updating schema parameters
+		objectparametersassert.SchemaParameters(t, newId).
+			HasDefaultDdlCollation("en_US"),
+
+		resourceassert.SchemaResource(t, complete.ResourceReference()).
+			HasNameString(newId.Name()).
+			HasDatabaseString(newId.DatabaseName()).
+			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+			HasWithManagedAccessString(r.BooleanTrue).
+			HasIsTransientString(r.BooleanDefault).
+			HasCommentString(comment).
+			HasDataRetentionTimeInDaysString("15").
+			HasMaxDataExtensionTimeInDaysString("3").
+			HasExternalVolumeString(externalVolumeId.Name()).
+			HasCatalogString(catalogId.Name()).
+			HasReplaceInvalidCharactersString("true").
+			HasDefaultDdlCollationString("en_US").
+			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
+			HasLogLevelString(string(sdk.LogLevelInfo)).
+			HasTraceLevelString(string(sdk.TraceLevelPropagate)).
+			HasSuspendTaskAfterNumFailuresString("20").
+			HasTaskAutoRetryAttemptsString("20").
+			HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeXLarge)).
+			HasUserTaskTimeoutMsString("1200000").
+			HasUserTaskMinimumTriggerIntervalInSecondsString("120").
+			HasQuotedIdentifiersIgnoreCaseString("true").
+			HasEnableConsoleOutputString("true").
+			HasPipeExecutionPausedString("true"),
+
+		resourceshowoutputassert.SchemaShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(newId.Name()).
+			HasIsDefault(false).
+			HasDatabaseName(newId.DatabaseName()).
+			HasOwnerNotEmpty().
+			HasComment(comment).
+			HasOptions("MANAGED ACCESS").
+			HasOwnerRoleTypeNotEmpty(),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "0")),
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -96,227 +166,129 @@ func TestAcc_Schema_basic(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
+			// Create - without optionals
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"is_transient",
+					"show_output.0.is_current",
+					"with_managed_access",
+				},
+			},
+			// Update - set optionals (including rename)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"is_transient",
+					"show_output.0.is_current",
+					"with_managed_access",
+				},
+			},
+			// Update - unset optionals (back to basic, with rename back)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
 			{
 				PreConfig: func() {
-					params := testClient().Parameter.ShowAccountParameters(t)
-					*testDatabaseDataRetentionTimeInDays = strconv.Itoa(testClient().Database.TestDatabaseDataRetentionTimeInDays())
-					*testDatabaseMaxDataExtensionTimeInDays = strconv.Itoa(testClient().Database.TestDatabaseMaxDataExtensionTimeInDays())
-					*accountExternalVolume = acchelpers.FindParameter(t, params, sdk.AccountParameterExternalVolume).Value
-					*testDatabaseCatalog = testClient().Database.TestDatabaseCatalog().Name()
-					*accountReplaceInvalidCharacters = acchelpers.FindParameter(t, params, sdk.AccountParameterReplaceInvalidCharacters).Value
-					*accountDefaultDdlCollation = acchelpers.FindParameter(t, params, sdk.AccountParameterDefaultDDLCollation).Value
-					*accountStorageSerializationPolicy = acchelpers.FindParameter(t, params, sdk.AccountParameterStorageSerializationPolicy).Value
-					*accountLogLevel = acchelpers.FindParameter(t, params, sdk.AccountParameterLogLevel).Value
-					*accountTraceLevel = acchelpers.FindParameter(t, params, sdk.AccountParameterTraceLevel).Value
-					*accountSuspendTaskAfterNumFailures = acchelpers.FindParameter(t, params, sdk.AccountParameterSuspendTaskAfterNumFailures).Value
-					*accountTaskAutoRetryAttempts = acchelpers.FindParameter(t, params, sdk.AccountParameterTaskAutoRetryAttempts).Value
-					*accountUserTaskMangedInitialWarehouseSize = acchelpers.FindParameter(t, params, sdk.AccountParameterUserTaskManagedInitialWarehouseSize).Value
-					*accountUserTaskTimeoutMs = acchelpers.FindParameter(t, params, sdk.AccountParameterUserTaskTimeoutMs).Value
-					*accountUserTaskMinimumTriggerIntervalInSeconds = acchelpers.FindParameter(t, params, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds).Value
-					*accountQuotedIdentifiersIgnoreCase = acchelpers.FindParameter(t, params, sdk.AccountParameterQuotedIdentifiersIgnoreCase).Value
-					*accountEnableConsoleOutput = acchelpers.FindParameter(t, params, sdk.AccountParameterEnableConsoleOutput).Value
-					*accountPipeExecutionPaused = acchelpers.FindParameter(t, params, sdk.AccountParameterPipeExecutionPaused).Value
+					testClient().Schema.Alter(t, id, &sdk.AlterSchemaOptions{
+						Set: &sdk.SchemaSet{
+							DataRetentionTimeInDays:                 sdk.Int(2),
+							MaxDataExtensionTimeInDays:              sdk.Int(15),
+							ExternalVolume:                          sdk.Pointer(externalVolumeId),
+							Catalog:                                 sdk.Pointer(catalogId),
+							ReplaceInvalidCharacters:                sdk.Bool(true),
+							DefaultDDLCollation:                     &sdk.StringAllowEmpty{Value: "en_US"},
+							StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
+							LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
+							TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
+							SuspendTaskAfterNumFailures:             sdk.Int(11),
+							TaskAutoRetryAttempts:                   sdk.Int(1),
+							UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeSmall),
+							UserTaskTimeoutMs:                       sdk.Int(3600001),
+							UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(31),
+							EnableConsoleOutput:                     sdk.Bool(true),
+							PipeExecutionPaused:                     sdk.Bool(true),
+							QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
+							Comment:                                 sdk.String(random.Comment()),
+						},
+					})
 				},
-				Config: accconfig.FromModels(t, basicSchemaModel),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "database", TestDatabaseName),
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "with_managed_access", r.BooleanDefault),
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "is_transient", r.BooleanDefault),
-
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "data_retention_time_in_days", testDatabaseDataRetentionTimeInDays),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "max_data_extension_time_in_days", testDatabaseMaxDataExtensionTimeInDays),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "external_volume", accountExternalVolume),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "catalog", testDatabaseCatalog),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "log_level", accountLogLevel),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "trace_level", accountTraceLevel),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "enable_console_output", accountEnableConsoleOutput),
-					resource.TestCheckResourceAttrPtr(basicSchemaModel.ResourceReference(), "pipe_execution_paused", accountPipeExecutionPaused),
-
-					resource.TestCheckResourceAttrSet(basicSchemaModel.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "show_output.0.is_default", "false"),
-					resource.TestCheckResourceAttrSet(basicSchemaModel.ResourceReference(), "show_output.0.is_current"),
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "show_output.0.database_name", id.DatabaseId().Name()),
-					resource.TestCheckResourceAttrSet(basicSchemaModel.ResourceReference(), "show_output.0.owner"),
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "show_output.0.comment", ""),
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "show_output.0.options", ""),
-				),
-			},
-			// import - without optionals
-			{
-				Config:       accconfig.FromModels(t, basicSchemaModel),
-				ResourceName: basicSchemaModel.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "database", TestDatabaseName),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "with_managed_access", "false"),
-					importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "is_transient", "false"),
-				),
-			},
-			// set other fields
-			{
-				Config: accconfig.FromModels(t, fullSchemaModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(fullSchemaModel.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "with_managed_access", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "is_transient", "false"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "data_retention_time_in_days", "5"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "max_data_extension_time_in_days", "3"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "catalog", catalogId.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "replace_invalid_characters", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "default_ddl_collation", "en_US"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "log_level", string(sdk.LogLevelInfo)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "trace_level", string(sdk.TraceLevelPropagate)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "suspend_task_after_num_failures", "20"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "task_auto_retry_attempts", "20"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "user_task_managed_initial_warehouse_size", string(sdk.WarehouseSizeXLarge)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "user_task_timeout_ms", "1200000"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", "120"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "quoted_identifiers_ignore_case", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "enable_console_output", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "pipe_execution_paused", "true"),
-
-					resource.TestCheckResourceAttrSet(fullSchemaModel.ResourceReference(), "show_output.0.created_on"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "show_output.0.is_default", "false"),
-					resource.TestCheckResourceAttrSet(fullSchemaModel.ResourceReference(), "show_output.0.is_current"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "show_output.0.database_name", id.DatabaseId().Name()),
-					resource.TestCheckResourceAttrSet(fullSchemaModel.ResourceReference(), "show_output.0.owner"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "show_output.0.comment", comment),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "show_output.0.options", "MANAGED ACCESS"),
-
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.data_retention_time_in_days.0.value", "5"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.max_data_extension_time_in_days.0.value", "3"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.external_volume.0.value", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.catalog.0.value", catalogId.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.replace_invalid_characters.0.value", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.default_ddl_collation.0.value", "en_US"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.storage_serialization_policy.0.value", string(sdk.StorageSerializationPolicyCompatible)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.log_level.0.value", string(sdk.LogLevelInfo)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.trace_level.0.value", string(sdk.TraceLevelPropagate)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.suspend_task_after_num_failures.0.value", "20"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.task_auto_retry_attempts.0.value", "20"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.user_task_managed_initial_warehouse_size.0.value", string(sdk.WarehouseSizeXLarge)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.user_task_timeout_ms.0.value", "1200000"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.user_task_minimum_trigger_interval_in_seconds.0.value", "120"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.quoted_identifiers_ignore_case.0.value", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.enable_console_output.0.value", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "parameters.0.pipe_execution_paused.0.value", "true"),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Empty config - ensure schema is destroyed
+			{
+				Config: " ",
+				Check: assertThat(t,
+					objectassert.SchemaIsMissing(t, id),
 				),
 			},
+			// Create - with optionals
 			{
-				Config:                  accconfig.FromModels(t, fullSchemaModel),
-				ResourceName:            fullSchemaModel.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"show_output.0.is_current"},
-			},
-			// unset
-			{
-				Config: accconfig.FromModels(t, schemaModelWithExplicitTransientFalse),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(schemaModelWithExplicitTransientFalse.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(schemaModelWithExplicitTransientFalse.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(schemaModelWithExplicitTransientFalse.ResourceReference(), "database", id.DatabaseId().Name()),
-					resource.TestCheckResourceAttr(schemaModelWithExplicitTransientFalse.ResourceReference(), "with_managed_access", r.BooleanDefault),
-					resource.TestCheckResourceAttr(schemaModelWithExplicitTransientFalse.ResourceReference(), "is_transient", "false"),
-
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "data_retention_time_in_days", testDatabaseDataRetentionTimeInDays),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "max_data_extension_time_in_days", testDatabaseMaxDataExtensionTimeInDays),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "external_volume", accountExternalVolume),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "catalog", testDatabaseCatalog),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "log_level", accountLogLevel),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "trace_level", accountTraceLevel),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "enable_console_output", accountEnableConsoleOutput),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientFalse.ResourceReference(), "pipe_execution_paused", accountPipeExecutionPaused),
-				),
-			},
-			// set is_transient - recreate
-			{
-				Config: accconfig.FromModels(t, schemaModelWithExplicitTransientTrue),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(schemaModelWithExplicitTransientTrue.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(schemaModelWithExplicitTransientTrue.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(schemaModelWithExplicitTransientTrue.ResourceReference(), "database", id.DatabaseId().Name()),
-					resource.TestCheckResourceAttr(schemaModelWithExplicitTransientTrue.ResourceReference(), "with_managed_access", r.BooleanDefault),
-					resource.TestCheckResourceAttr(schemaModelWithExplicitTransientTrue.ResourceReference(), "is_transient", "true"),
-
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "data_retention_time_in_days", testDatabaseDataRetentionTimeInDays),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "max_data_extension_time_in_days", testDatabaseMaxDataExtensionTimeInDays),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "external_volume", accountExternalVolume),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "catalog", testDatabaseCatalog),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "log_level", accountLogLevel),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "trace_level", accountTraceLevel),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "enable_console_output", accountEnableConsoleOutput),
-					resource.TestCheckResourceAttrPtr(schemaModelWithExplicitTransientTrue.ResourceReference(), "pipe_execution_paused", accountPipeExecutionPaused),
-				),
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
 			},
 		},
 	})
 }
 
-func TestAcc_Schema_complete(t *testing.T) {
+func TestAcc_Schema_CompleteUseCase(t *testing.T) {
+	db, cleanupDb := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupDb)
+
+	id := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(db.ID())
+	comment := random.Comment()
+
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
 	t.Cleanup(externalVolumeCleanup)
 
 	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
 
-	id := testClient().Ids.RandomDatabaseObjectIdentifier()
-	comment := random.Comment()
-
-	fullSchemaModel := model.Schema("test", id.DatabaseName(), id.Name()).
+	complete := model.Schema("test", id.DatabaseName(), id.Name()).
 		WithComment(comment).
 		WithWithManagedAccess(r.BooleanTrue).
 		WithIsTransient(r.BooleanTrue).
 		WithDataRetentionTimeInDays(1).
-		WithMaxDataExtensionTimeInDays(1).
+		WithMaxDataExtensionTimeInDays(3).
 		WithExternalVolume(externalVolumeId.Name()).
 		WithCatalog(catalogId.Name()).
 		WithReplaceInvalidCharacters(true).
@@ -340,39 +312,72 @@ func TestAcc_Schema_complete(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
+			// Create - with all optionals (including optional force-new fields)
 			{
-				Config: accconfig.FromModels(t, fullSchemaModel),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "is_transient", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "with_managed_access", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "comment", comment),
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(t,
+					objectassert.Schema(t, id).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasIsDefault(false).
+						HasDatabaseName(id.DatabaseName()).
+						HasOwnerNotEmpty().
+						HasComment(comment).
+						HasOptions("TRANSIENT, MANAGED ACCESS").
+						HasRetentionTime("1").
+						HasOwnerRoleTypeNotEmpty(),
 
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "max_data_extension_time_in_days", "1"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "catalog", catalogId.Name()),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "replace_invalid_characters", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "default_ddl_collation", "en_US"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "log_level", string(sdk.LogLevelInfo)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "trace_level", string(sdk.TraceLevelPropagate)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "suspend_task_after_num_failures", "20"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "task_auto_retry_attempts", "20"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "user_task_managed_initial_warehouse_size", string(sdk.WarehouseSizeXLarge)),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "user_task_timeout_ms", "1200000"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", "120"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "quoted_identifiers_ignore_case", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "enable_console_output", "true"),
-					resource.TestCheckResourceAttr(fullSchemaModel.ResourceReference(), "pipe_execution_paused", "true"),
+					resourceassert.SchemaResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasWithManagedAccessString(r.BooleanTrue).
+						HasIsTransientString(r.BooleanTrue).
+						HasCommentString(comment).
+						HasDataRetentionTimeInDaysString("1").
+						HasMaxDataExtensionTimeInDaysString("3").
+						HasExternalVolumeString(externalVolumeId.Name()).
+						HasCatalogString(catalogId.Name()).
+						HasReplaceInvalidCharactersString("true").
+						HasDefaultDdlCollationString("en_US").
+						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
+						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasTraceLevelString(string(sdk.TraceLevelPropagate)).
+						HasSuspendTaskAfterNumFailuresString("20").
+						HasTaskAutoRetryAttemptsString("20").
+						HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeXLarge)).
+						HasUserTaskTimeoutMsString("1200000").
+						HasUserTaskMinimumTriggerIntervalInSecondsString("120").
+						HasQuotedIdentifiersIgnoreCaseString("true").
+						HasEnableConsoleOutputString("true").
+						HasPipeExecutionPausedString("true"),
+
+					// TODO(SNOW-1501905): update assertions after updating schema parameters
+					objectparametersassert.SchemaParameters(t, id).
+						HasDefaultDdlCollation("en_US"),
+
+					resourceshowoutputassert.SchemaShowOutput(t, complete.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasIsDefault(false).
+						HasDatabaseName(id.DatabaseName()).
+						HasOwnerNotEmpty().
+						HasComment(comment).
+						HasOptions("TRANSIENT, MANAGED ACCESS").
+						HasOwnerRoleTypeNotEmpty(),
+
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "0")),
 				),
 			},
+			// Import - with all optionals
 			{
-				Config:                  accconfig.FromModels(t, fullSchemaModel),
-				ResourceName:            fullSchemaModel.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"show_output.0.is_current"},
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"show_output.0.is_current",
+				},
 			},
 		},
 	})

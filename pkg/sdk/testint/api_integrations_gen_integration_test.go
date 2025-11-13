@@ -55,7 +55,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateApiIntegrationRequest(id, prefixes(awsPrefix), true).
-			WithAwsApiProviderParams(sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiGateway, apiAwsRoleArn))
+			WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiGateway, apiAwsRoleArn))
 	}
 
 	createApiIntegrationAzureRequest := func(t *testing.T) *sdk.CreateApiIntegrationRequest {
@@ -63,7 +63,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateApiIntegrationRequest(id, prefixes(azurePrefix), true).
-			WithAzureApiProviderParams(sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId))
+			WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId))
 	}
 
 	createApiIntegrationGoogleRequest := func(t *testing.T) *sdk.CreateApiIntegrationRequest {
@@ -71,7 +71,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 		return sdk.NewCreateApiIntegrationRequest(id, prefixes(googlePrefix), true).
-			WithGoogleApiProviderParams(sdk.NewGoogleApiParamsRequest(googleAudience))
+			WithGoogleApiProviderParams(*sdk.NewGoogleApiParamsRequest(googleAudience))
 	}
 
 	createApiIntegrationWithRequest := func(t *testing.T, request *sdk.CreateApiIntegrationRequest) *sdk.ApiIntegration {
@@ -131,9 +131,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		request := createApiIntegrationAwsRequest(t)
 
 		request = request.
-			WithAwsApiProviderParams(request.AwsApiProviderParams.WithApiKey(sdk.String("key"))).
+			WithAwsApiProviderParams(*request.AwsApiProviderParams.WithApiKey("key")).
 			WithApiBlockedPrefixes(prefixes(awsOtherPrefix)).
-			WithComment(sdk.String("comment"))
+			WithComment("comment")
 
 		integration := createApiIntegrationWithRequest(t, request)
 
@@ -151,9 +151,9 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		request := createApiIntegrationAzureRequest(t)
 
 		request = request.
-			WithAzureApiProviderParams(request.AzureApiProviderParams.WithApiKey(sdk.String("key"))).
+			WithAzureApiProviderParams(*request.AzureApiProviderParams.WithApiKey("key")).
 			WithApiBlockedPrefixes(prefixes(azureOtherPrefix)).
-			WithComment(sdk.String("comment"))
+			WithComment("comment")
 
 		integration := createApiIntegrationWithRequest(t, request)
 
@@ -170,7 +170,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 	t.Run("create api integration: google more options", func(t *testing.T) {
 		request := createApiIntegrationGoogleRequest(t).
 			WithApiBlockedPrefixes(prefixes(googleOtherPrefix)).
-			WithComment(sdk.String("comment"))
+			WithComment("comment")
 
 		integration := createApiIntegrationWithRequest(t, request)
 
@@ -189,12 +189,12 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		otherRoleArn := "arn:aws:iam::000000000001:/role/other"
 		setRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(
-				sdk.NewApiIntegrationSetRequest().
-					WithAwsParams(sdk.NewSetAwsApiParamsRequest().WithApiAwsRoleArn(sdk.String(otherRoleArn)).WithApiKey(sdk.String("key"))).
-					WithEnabled(sdk.Bool(true)).
+				*sdk.NewApiIntegrationSetRequest().
+					WithAwsParams(*sdk.NewSetAwsApiParamsRequest().WithApiAwsRoleArn(otherRoleArn).WithApiKey("key")).
+					WithEnabled(true).
 					WithApiAllowedPrefixes(prefixes(awsOtherPrefix)).
 					WithApiBlockedPrefixes(prefixes(awsPrefix)).
-					WithComment(sdk.String("changed comment")),
+					WithComment("changed comment"),
 			)
 		err := client.ApiIntegrations.Alter(ctx, setRequest)
 		require.NoError(t, err)
@@ -211,11 +211,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		unsetRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithUnset(
-				sdk.NewApiIntegrationUnsetRequest().
-					WithApiKey(sdk.Bool(true)).
-					WithEnabled(sdk.Bool(true)).
-					WithApiBlockedPrefixes(sdk.Bool(true)).
-					WithComment(sdk.Bool(true)),
+				*sdk.NewApiIntegrationUnsetRequest().
+					WithApiKey(true).
+					WithEnabled(true).
+					WithApiBlockedPrefixes(true).
+					WithComment(true),
 			)
 		err = client.ApiIntegrations.Alter(ctx, unsetRequest)
 		require.NoError(t, err)
@@ -237,12 +237,12 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		otherAdApplicationId := "22222222-2222-2222-2222-222222222222"
 		setRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(
-				sdk.NewApiIntegrationSetRequest().
-					WithAzureParams(sdk.NewSetAzureApiParamsRequest().WithAzureAdApplicationId(sdk.String(otherAdApplicationId)).WithApiKey(sdk.String("key"))).
-					WithEnabled(sdk.Bool(true)).
+				*sdk.NewApiIntegrationSetRequest().
+					WithAzureParams(*sdk.NewSetAzureApiParamsRequest().WithAzureAdApplicationId(otherAdApplicationId).WithApiKey("key")).
+					WithEnabled(true).
 					WithApiAllowedPrefixes(prefixes(azureOtherPrefix)).
 					WithApiBlockedPrefixes(prefixes(azurePrefix)).
-					WithComment(sdk.String("changed comment")),
+					WithComment("changed comment"),
 			)
 		err := client.ApiIntegrations.Alter(ctx, setRequest)
 		require.NoError(t, err)
@@ -259,11 +259,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		unsetRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithUnset(
-				sdk.NewApiIntegrationUnsetRequest().
-					WithApiKey(sdk.Bool(true)).
-					WithEnabled(sdk.Bool(true)).
-					WithApiBlockedPrefixes(sdk.Bool(true)).
-					WithComment(sdk.Bool(true)),
+				*sdk.NewApiIntegrationUnsetRequest().
+					WithApiKey(true).
+					WithEnabled(true).
+					WithApiBlockedPrefixes(true).
+					WithComment(true),
 			)
 		err = client.ApiIntegrations.Alter(ctx, unsetRequest)
 		require.NoError(t, err)
@@ -283,7 +283,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		integration := createAzureApiIntegration(t)
 
 		setRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
-			WithSet(sdk.NewApiIntegrationSetRequest().WithAzureParams(sdk.NewSetAzureApiParamsRequest().WithAzureTenantId(sdk.String(azureOtherTenantId))))
+			WithSet(*sdk.NewApiIntegrationSetRequest().WithAzureParams(*sdk.NewSetAzureApiParamsRequest().WithAzureTenantId(azureOtherTenantId)))
 		err := client.ApiIntegrations.Alter(ctx, setRequest)
 		require.NoError(t, err)
 
@@ -298,11 +298,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		setRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithSet(
-				sdk.NewApiIntegrationSetRequest().
-					WithEnabled(sdk.Bool(true)).
+				*sdk.NewApiIntegrationSetRequest().
+					WithEnabled(true).
 					WithApiAllowedPrefixes(prefixes(googleOtherPrefix)).
 					WithApiBlockedPrefixes(prefixes(googlePrefix)).
-					WithComment(sdk.String("changed comment")),
+					WithComment("changed comment"),
 			)
 		err := client.ApiIntegrations.Alter(ctx, setRequest)
 		require.NoError(t, err)
@@ -317,11 +317,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 		unsetRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
 			WithUnset(
-				sdk.NewApiIntegrationUnsetRequest().
-					WithApiKey(sdk.Bool(true)).
-					WithEnabled(sdk.Bool(true)).
-					WithApiBlockedPrefixes(sdk.Bool(true)).
-					WithComment(sdk.Bool(true)),
+				*sdk.NewApiIntegrationUnsetRequest().
+					WithApiKey(true).
+					WithEnabled(true).
+					WithApiBlockedPrefixes(true).
+					WithComment(true),
 			)
 		err = client.ApiIntegrations.Alter(ctx, unsetRequest)
 		require.NoError(t, err)
@@ -339,7 +339,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		integration := createGoogleApiIntegration(t)
 
 		setRequest := sdk.NewAlterApiIntegrationRequest(integration.ID()).
-			WithSet(sdk.NewApiIntegrationSetRequest().WithGoogleParams(sdk.NewSetGoogleApiParamsRequest(googleOtherAudience)))
+			WithSet(*sdk.NewApiIntegrationSetRequest().WithGoogleParams(*sdk.NewSetGoogleApiParamsRequest(googleOtherAudience)))
 		err := client.ApiIntegrations.Alter(ctx, setRequest)
 		require.NoError(t, err)
 

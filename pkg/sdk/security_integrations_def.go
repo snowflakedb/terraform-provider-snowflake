@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
-
-//go:generate go run ./poc/main.go
 
 const (
 	SecurityIntegrationCategory                                     = "SECURITY"
@@ -489,7 +487,7 @@ var oauthForPartnerApplicationsIntegrationSetDef = g.NewQueryStruct("OauthForPar
 		g.ParameterOptions(),
 	).
 	OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses()).
-	OptionalComment().
+	OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
 	WithValidation(g.AtLeastOneValueSet, "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles",
 		"BlockedRolesList", "Comment")
 

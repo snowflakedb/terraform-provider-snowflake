@@ -1,8 +1,6 @@
 package sdk
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
-
-//go:generate go run ./poc/main.go
+import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 var applicationRoleKindOfRole = g.NewQueryStruct("KindOfRole").
 	OptionalIdentifier("RoleName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("ROLE")).

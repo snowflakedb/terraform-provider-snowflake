@@ -187,7 +187,7 @@ func CreateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 	createRequest := sdk.NewCreateNotificationIntegrationRequest(id, enabled)
 
 	if v, ok := d.GetOk("comment"); ok {
-		createRequest.WithComment(sdk.String(v.(string)))
+		createRequest.WithComment(v.(string))
 	}
 
 	notificationProvider := strings.ToUpper(d.Get("notification_provider").(string))
@@ -202,17 +202,17 @@ func CreateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 			return diag.FromErr(fmt.Errorf("if you use AWS_SNS provider you must specify an aws_sns_role_arn"))
 		}
 		createRequest.WithPushNotificationParams(
-			sdk.NewPushNotificationParamsRequest().WithAmazonPushParams(sdk.NewAmazonPushParamsRequest(topic.(string), role.(string))),
+			*sdk.NewPushNotificationParamsRequest().WithAmazonPushParams(*sdk.NewAmazonPushParamsRequest(topic.(string), role.(string))),
 		)
 	case "GCP_PUBSUB":
 		if v, ok := d.GetOk("gcp_pubsub_subscription_name"); ok {
 			createRequest.WithAutomatedDataLoadsParams(
-				sdk.NewAutomatedDataLoadsParamsRequest().WithGoogleAutoParams(sdk.NewGoogleAutoParamsRequest(v.(string))),
+				*sdk.NewAutomatedDataLoadsParamsRequest().WithGoogleAutoParams(*sdk.NewGoogleAutoParamsRequest(v.(string))),
 			)
 		}
 		if v, ok := d.GetOk("gcp_pubsub_topic_name"); ok {
 			createRequest.WithPushNotificationParams(
-				sdk.NewPushNotificationParamsRequest().WithGooglePushParams(sdk.NewGooglePushParamsRequest(v.(string))),
+				*sdk.NewPushNotificationParamsRequest().WithGooglePushParams(*sdk.NewGooglePushParamsRequest(v.(string))),
 			)
 		}
 	case "AZURE_STORAGE_QUEUE":
@@ -225,7 +225,7 @@ func CreateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 			return diag.FromErr(fmt.Errorf("if you use AZURE_STORAGE_QUEUE provider you must specify an azure_tenant_id"))
 		}
 		createRequest.WithAutomatedDataLoadsParams(
-			sdk.NewAutomatedDataLoadsParamsRequest().WithAzureAutoParams(sdk.NewAzureAutoParamsRequest(uri.(string), tenantId.(string))),
+			*sdk.NewAutomatedDataLoadsParamsRequest().WithAzureAutoParams(*sdk.NewAzureAutoParamsRequest(uri.(string), tenantId.(string))),
 		)
 	default:
 		return diag.FromErr(fmt.Errorf("unexpected provider %v", notificationProvider))
@@ -378,12 +378,12 @@ func UpdateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 	setRequest := sdk.NewNotificationIntegrationSetRequest()
 	if d.HasChange("comment") {
 		runSetStatement = true
-		setRequest.WithComment(sdk.String(d.Get("comment").(string)))
+		setRequest.WithComment(d.Get("comment").(string))
 	}
 
 	if d.HasChange("enabled") {
 		runSetStatement = true
-		setRequest.WithEnabled(sdk.Bool(d.Get("enabled").(bool)))
+		setRequest.WithEnabled(d.Get("enabled").(bool))
 	}
 
 	notificationProvider := strings.ToUpper(d.Get("notification_provider").(string))
@@ -392,7 +392,7 @@ func UpdateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 		if d.HasChange("aws_sns_topic_arn") || d.HasChange("aws_sns_role_arn") {
 			runSetStatement = true
 			setAmazonPush := sdk.NewSetAmazonPushRequest(d.Get("aws_sns_topic_arn").(string), d.Get("aws_sns_role_arn").(string))
-			setRequest.WithSetPushParams(sdk.NewSetPushParamsRequest().WithSetAmazonPush(setAmazonPush))
+			setRequest.WithSetPushParams(*sdk.NewSetPushParamsRequest().WithSetAmazonPush(*setAmazonPush))
 		}
 	case "GCP_PUBSUB":
 		log.Printf("[WARN] all GCP_PUBSUB properties should recreate the resource")
@@ -403,7 +403,7 @@ func UpdateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if runSetStatement {
-		err := client.NotificationIntegrations.Alter(ctx, sdk.NewAlterNotificationIntegrationRequest(id).WithSet(setRequest))
+		err := client.NotificationIntegrations.Alter(ctx, sdk.NewAlterNotificationIntegrationRequest(id).WithSet(*setRequest))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating notification integration: %w", err))
 		}

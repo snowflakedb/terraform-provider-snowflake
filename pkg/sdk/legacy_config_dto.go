@@ -61,6 +61,8 @@ type LegacyConfigDTO struct {
 	OauthTokenRequestURL           *string             `toml:"oauthtokenrequesturl"`
 	OauthRedirectURI               *string             `toml:"oauthredirecturi"`
 	OauthScope                     *string             `toml:"oauthscope"`
+	WorkloadIdentityProvider       *string             `toml:"workloadidentityprovider"`
+	WorkloadIdentityEntraResource  *string             `toml:"workloadidentityentraresource"`
 	EnableSingleUseRefreshTokens   *bool               `toml:"enablesingleuserefreshtokens"`
 }
 

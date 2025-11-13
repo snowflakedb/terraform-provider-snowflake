@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	acchelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -151,6 +152,41 @@ func Test_NormalizeAndCompareIdentifiersSet(t *testing.T) {
 		assert.True(t, resources.NormalizeAndCompareIdentifiersInSet("value")("value.doesnt_matter", `"SCHEMA"."OBJECT"."IDENTIFIER"`, "", resourceData))
 		// TODO(SNOW-1511594): Cannot be tested with schema.TestResourceDataRaw because it doesn't populate raw state which is used in the cases below
 		// assert.True(t, resources.NormalizeAndCompareIdentifiersInSet("value")("value.doesnt_matter", "", "SCHEMA.OBJECT.IDENTIFIER", resourceData))
+	})
+}
+
+func Test_NormalizeAndCompareEnumsSet(t *testing.T) {
+	rawDataWithValues := func(values []any) *schema.ResourceData {
+		return schema.TestResourceDataRaw(t, map[string]*schema.Schema{
+			"value": {
+				Required: true,
+				Type:     schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+		}, map[string]any{
+			"value": values,
+		})
+	}
+	emptyResourceData := rawDataWithValues([]any{})
+
+	t.Run("validation: size key", func(t *testing.T) {
+		assert.False(t, resources.NormalizeAndCompareEnumsInSet("value", sdk.ToAuthenticationMethodsOption)("value.#", "1", "2", emptyResourceData))
+	})
+
+	t.Run(`change suppressed from lowercase to uppercase in state`, func(t *testing.T) {
+		resourceData := rawDataWithValues([]any{string(acchelpers.EnumToLower(sdk.AuthenticationMethodsPassword))})
+		assert.True(t, resources.NormalizeAndCompareEnumsInSet("value", sdk.ToAuthenticationMethodsOption)("value.doesnt_matter", string(sdk.AuthenticationMethodsPassword), "", resourceData))
+		// TODO(SNOW-1511594): Cannot be tested with schema.TestResourceDataRaw because it doesn't populate raw state which is used in the cases below
+		// assert.True(t, resources.NormalizeAndCompareIdentifiersInSet("value")("value.doesnt_matter", "", string(sdk.AuthenticationMethodsPassword), resourceData))
+	})
+
+	t.Run(`change suppressed from uppercase to lowercase in state`, func(t *testing.T) {
+		resourceData := rawDataWithValues([]any{string(sdk.AuthenticationMethodsPassword)})
+		assert.True(t, resources.NormalizeAndCompareEnumsInSet("value", sdk.ToAuthenticationMethodsOption)("value.doesnt_matter", string(acchelpers.EnumToLower(sdk.AuthenticationMethodsPassword)), "", resourceData))
+		// TODO(SNOW-1511594): Cannot be tested with schema.TestResourceDataRaw because it doesn't populate raw state which is used in the cases below
+		// assert.True(t, resources.NormalizeAndCompareIdentifiersInSet("value")("value.doesnt_matter", "", string(sdk.AuthenticationMethodsPassword), resourceData))
 	})
 }
 

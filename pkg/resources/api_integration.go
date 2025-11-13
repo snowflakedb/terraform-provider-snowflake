@@ -172,7 +172,7 @@ func CreateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	if v, ok := d.GetOk("comment"); ok {
-		createRequest.WithComment(sdk.String(v.(string)))
+		createRequest.WithComment(v.(string))
 	}
 
 	apiProvider := d.Get("api_provider").(string)
@@ -184,9 +184,9 @@ func CreateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 		awsParams := sdk.NewAwsApiParamsRequest(sdk.ApiIntegrationAwsApiProviderType(apiProvider), roleArn.(string))
 		if v, ok := d.GetOk("api_key"); ok {
-			awsParams.WithApiKey(sdk.String(v.(string)))
+			awsParams.WithApiKey(v.(string))
 		}
-		createRequest.WithAwsApiProviderParams(awsParams)
+		createRequest.WithAwsApiProviderParams(*awsParams)
 	case "azure_api_management":
 		tenantId, ok := d.GetOk("azure_tenant_id")
 		if !ok {
@@ -198,16 +198,16 @@ func CreateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 		azureParams := sdk.NewAzureApiParamsRequest(tenantId.(string), applicationId.(string))
 		if v, ok := d.GetOk("api_key"); ok {
-			azureParams.WithApiKey(sdk.String(v.(string)))
+			azureParams.WithApiKey(v.(string))
 		}
-		createRequest.WithAzureApiProviderParams(azureParams)
+		createRequest.WithAzureApiProviderParams(*azureParams)
 	case "google_api_gateway":
 		audience, ok := d.GetOk("google_audience")
 		if !ok {
 			return diag.FromErr(fmt.Errorf("if you use GCP api provider you must specify a google_audience"))
 		}
 		googleParams := sdk.NewGoogleApiParamsRequest(audience.(string))
-		createRequest.WithGoogleApiProviderParams(googleParams)
+		createRequest.WithGoogleApiProviderParams(*googleParams)
 	default:
 		return diag.FromErr(fmt.Errorf("unexpected provider %v", apiProvider))
 	}
@@ -346,7 +346,7 @@ func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 	setRequest := sdk.NewApiIntegrationSetRequest()
 	if d.HasChange("enabled") {
 		runSetStatement = true
-		setRequest.WithEnabled(sdk.Bool(d.Get("enabled").(bool)))
+		setRequest.WithEnabled(d.Get("enabled").(bool))
 	}
 
 	if d.HasChange("api_allowed_prefixes") {
@@ -356,14 +356,14 @@ func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 
 	if d.HasChange("comment") {
 		runSetStatement = true
-		setRequest.WithComment(sdk.String(d.Get("comment").(string)))
+		setRequest.WithComment(d.Get("comment").(string))
 	}
 
 	// We need to UNSET this if we remove all api blocked prefixes.
 	if d.HasChange("api_blocked_prefixes") {
 		v := d.Get("api_blocked_prefixes").([]interface{})
 		if len(v) == 0 {
-			err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).WithUnset(sdk.NewApiIntegrationUnsetRequest().WithApiBlockedPrefixes(sdk.Bool(true))))
+			err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).WithUnset(*sdk.NewApiIntegrationUnsetRequest().WithApiBlockedPrefixes(true)))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting api_blocked_prefixes: %w", err))
 			}
@@ -378,42 +378,42 @@ func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 	case "aws_api_gateway", "aws_private_api_gateway", "aws_gov_api_gateway", "aws_gov_private_api_gateway":
 		awsParams := sdk.NewSetAwsApiParamsRequest()
 		if d.HasChange("api_aws_role_arn") {
-			awsParams.WithApiAwsRoleArn(sdk.String(d.Get("api_aws_role_arn").(string)))
+			awsParams.WithApiAwsRoleArn(d.Get("api_aws_role_arn").(string))
 		}
 		if d.HasChange("api_key") {
-			awsParams.WithApiKey(sdk.String(d.Get("api_key").(string)))
+			awsParams.WithApiKey(d.Get("api_key").(string))
 		}
 		if *awsParams != *sdk.NewSetAwsApiParamsRequest() {
 			runSetStatement = true
-			setRequest.WithAwsParams(awsParams)
+			setRequest.WithAwsParams(*awsParams)
 		}
 	case "azure_api_management":
 		azureParams := sdk.NewSetAzureApiParamsRequest()
 		if d.HasChange("azure_tenant_id") {
-			azureParams.WithAzureTenantId(sdk.String(d.Get("azure_tenant_id").(string)))
+			azureParams.WithAzureTenantId(d.Get("azure_tenant_id").(string))
 		}
 		if d.HasChange("azure_ad_application_id") {
-			azureParams.WithAzureAdApplicationId(sdk.String(d.Get("azure_ad_application_id").(string)))
+			azureParams.WithAzureAdApplicationId(d.Get("azure_ad_application_id").(string))
 		}
 		if d.HasChange("api_key") {
-			azureParams.WithApiKey(sdk.String(d.Get("api_key").(string)))
+			azureParams.WithApiKey(d.Get("api_key").(string))
 		}
 		if *azureParams != *sdk.NewSetAzureApiParamsRequest() {
 			runSetStatement = true
-			setRequest.WithAzureParams(azureParams)
+			setRequest.WithAzureParams(*azureParams)
 		}
 	case "google_api_gateway":
 		if d.HasChange("google_audience") {
 			runSetStatement = true
 			googleParams := sdk.NewSetGoogleApiParamsRequest(d.Get("google_audience").(string))
-			setRequest.WithGoogleParams(googleParams)
+			setRequest.WithGoogleParams(*googleParams)
 		}
 	default:
 		return diag.FromErr(fmt.Errorf("unexpected provider %v", apiProvider))
 	}
 
 	if runSetStatement {
-		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).WithSet(setRequest))
+		err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).WithSet(*setRequest))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating api integration: %w", err))
 		}

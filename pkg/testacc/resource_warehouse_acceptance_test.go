@@ -24,7 +24,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -772,8 +771,6 @@ func TestAcc_Warehouse_Validations(t *testing.T) {
 
 // Just for the experimental purposes
 func TestAcc_Warehouse_ValidateDriftForCurrentWarehouse(t *testing.T) {
-	_ = testenvs.GetOrSkipTest(t, testenvs.ConfigureClientOnce)
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	secondId := testClient().Ids.RandomAccountObjectIdentifier()
 

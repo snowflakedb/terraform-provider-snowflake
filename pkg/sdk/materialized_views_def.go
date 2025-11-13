@@ -1,8 +1,6 @@
 package sdk
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
-
-//go:generate go run ./poc/main.go
+import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 var materializedViewColumn = g.NewQueryStruct("MaterializedViewColumn").
 	Text("Name", g.KeywordOptions().DoubleQuotes().Required()).

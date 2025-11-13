@@ -113,7 +113,7 @@ func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 
 	// Set optionals
 	if v, ok := d.GetOk("comment"); ok {
-		req = req.WithComment(sdk.String(v.(string)))
+		req = req.WithComment(v.(string))
 	}
 
 	client := meta.(*provider.Context).Client
@@ -198,11 +198,11 @@ func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 	if d.HasChange("value_list") {
 		baseReq := sdk.NewAlterNetworkRuleRequest(id)
 		if len(valueList) == 0 {
-			unsetReq := sdk.NewNetworkRuleUnsetRequest().WithValueList(sdk.Bool(true))
-			baseReq.WithUnset(unsetReq)
+			unsetReq := sdk.NewNetworkRuleUnsetRequest().WithValueList(true)
+			baseReq.WithUnset(*unsetReq)
 		} else {
 			setReq := sdk.NewNetworkRuleSetRequest(networkRuleValues)
-			baseReq.WithSet(setReq)
+			baseReq.WithSet(*setReq)
 		}
 
 		if err := client.NetworkRules.Alter(ctx, baseReq); err != nil {
@@ -213,11 +213,11 @@ func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 	if d.HasChange("comment") {
 		baseReq := sdk.NewAlterNetworkRuleRequest(id)
 		if len(comment) == 0 {
-			unsetReq := sdk.NewNetworkRuleUnsetRequest().WithComment(sdk.Bool(true))
-			baseReq.WithUnset(unsetReq)
+			unsetReq := sdk.NewNetworkRuleUnsetRequest().WithComment(true)
+			baseReq.WithUnset(*unsetReq)
 		} else {
-			setReq := sdk.NewNetworkRuleSetRequest(networkRuleValues).WithComment(sdk.String(comment))
-			baseReq.WithSet(setReq)
+			setReq := sdk.NewNetworkRuleSetRequest(networkRuleValues).WithComment(comment)
+			baseReq.WithSet(*setReq)
 		}
 
 		if err := client.NetworkRules.Alter(ctx, baseReq); err != nil {
