@@ -5,6 +5,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// TODO: Validate
+
 // DescribeListingSchema represents output of DESCRIBE LISTING for a single Listing.
 var DescribeListingSchema = map[string]*schema.Schema{
 	"global_name":                     {Type: schema.TypeString, Computed: true},
@@ -67,8 +69,6 @@ var DescribeListingSchema = map[string]*schema.Schema{
 	"monetization_display_order":      {Type: schema.TypeString, Computed: true},
 	"legacy_uniform_listing_locators": {Type: schema.TypeString, Computed: true},
 }
-
-var _ = DescribeListingSchema
 
 func ListingDetailsToSchema(details *sdk.ListingDetails) map[string]any {
 	m := make(map[string]any)
@@ -225,5 +225,3 @@ func ListingDetailsToSchema(details *sdk.ListingDetails) map[string]any {
 	}
 	return m
 }
-
-var _ = ListingDetailsToSchema

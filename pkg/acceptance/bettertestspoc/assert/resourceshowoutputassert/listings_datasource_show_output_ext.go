@@ -7,11 +7,11 @@ import (
 )
 
 // ListingsDatasourceShowOutput is a temporary workaround to have better show output assertions in data source acceptance tests.
-func ListingsDatasourceShowOutput(t *testing.T, name string) *ListingShowOutputAssert {
+func ListingsDatasourceShowOutput(t *testing.T, datasourceReference string) *ListingShowOutputAssert {
 	t.Helper()
 
 	l := ListingShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert("data."+name, "show_output", "listings.0."),
+		ResourceAssert: assert.NewDatasourceAssert(datasourceReference, "show_output", "listings.0."),
 	}
 	l.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &l

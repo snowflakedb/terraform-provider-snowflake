@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	providerdatasources "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -47,7 +48,7 @@ var listingsSchema = map[string]*schema.Schema{
 
 func Listings() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: TrackingReadWrapper(providerdatasources.Listings, ReadListings),
+		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ListingsDatasource), TrackingReadWrapper(datasources.Listings, ReadListings)),
 		Schema:      listingsSchema,
 		Description: "Data source used to get details of filtered listings. Filtering is aligned with the current possibilities for SHOW LISTINGS query (`like`, `starts_with`, and `limit` are supported). The results of SHOW and DESCRIBE are encapsulated in one output collection.",
 	}
@@ -55,25 +56,11 @@ func Listings() *schema.Resource {
 
 func ReadListings(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	req := sdk.NewShowListingRequest()
+	req := new(sdk.ShowListingRequest)
 
-	if v, ok := d.GetOk("like"); ok {
-		req.WithLike(sdk.Like{Pattern: sdk.String(v.(string))})
-	}
-	if v, ok := d.GetOk("starts_with"); ok {
-		req.WithStartsWith(v.(string))
-	}
-	if v, ok := d.GetOk("limit"); ok {
-		l := v.([]any)[0].(map[string]any)
-		limit := sdk.LimitFrom{}
-		if rv, ok := l["rows"]; ok {
-			limit.Rows = sdk.Int(rv.(int))
-		}
-		if fv, ok := l["from"]; ok {
-			limit.From = sdk.String(fv.(string))
-		}
-		req.WithLimit(limit)
-	}
+	handleLike(d, &req.Like)
+	handleStartsWith(d, &req.StartsWith)
+	handleLimitFrom(d, &req.Limit)
 
 	listings, err := client.Listings.Show(ctx, req)
 	if err != nil {
