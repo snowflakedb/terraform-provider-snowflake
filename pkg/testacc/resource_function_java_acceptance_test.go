@@ -583,11 +583,10 @@ func TestAcc_FunctionJava_Issue4187(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:      functionModel.ResourceReference(),
-				ImportState:       true,
-				ImportStateId:     "a|b|c()",
-				ImportStateVerify: true,
-				ExpectError:       regexp.MustCompile(`unexpected number of parts 1 in identifier a|b|c(), expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...)>" where <argname> is optional`),
+				ResourceName:  functionModel.ResourceReference(),
+				ImportState:   true,
+				ImportStateId: "a|b|c()",
+				ExpectError:   regexp.MustCompile(`unexpected number of parts 1 in identifier a|b|c(), expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...)>" where <argname> is optional`),
 			},
 		},
 	})

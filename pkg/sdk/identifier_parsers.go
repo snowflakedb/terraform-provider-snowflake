@@ -156,7 +156,7 @@ func ParseSchemaObjectIdentifierWithArguments(fullyQualifiedName string) (Schema
 		return SchemaObjectIdentifierWithArguments{}, err
 	}
 	if len(parts) != 3 {
-		return SchemaObjectIdentifierWithArguments{}, fmt.Errorf(`unexpected number of parts %[1]d in identifier %[2]s, expected %[3]d in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...)>" where <argname> is optional`, len(parts), fullyQualifiedName, 3)
+		return SchemaObjectIdentifierWithArguments{}, fmt.Errorf(`unexpected number of parts %[1]d in identifier %[2]s, expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...)>" where <argname> is optional`, len(parts), fullyQualifiedName)
 	}
 	parsedArguments, err := ParseFunctionAndProcedureArguments(fullyQualifiedName[splitIdIndex:])
 	if err != nil {
@@ -183,7 +183,7 @@ func ParseSchemaObjectIdentifierWithArgumentsAndReturnType(fullyQualifiedName st
 		return SchemaObjectIdentifierWithArguments{}, err
 	}
 	if len(parts) != 3 {
-		return SchemaObjectIdentifierWithArguments{}, fmt.Errorf(`unexpected number of parts %[1]d in identifier %[2]s, expected %[3]d in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...):<returntype>" where <argname> is optional`, len(parts), fullyQualifiedName, 3)
+		return SchemaObjectIdentifierWithArguments{}, fmt.Errorf(`unexpected number of parts %[1]d in identifier %[2]s, expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...):<returntype>" where <argname> is optional`, len(parts), fullyQualifiedName)
 	}
 	functionHeader := parts[2]
 	leftParenthesisIndex := strings.IndexRune(functionHeader, '(')
