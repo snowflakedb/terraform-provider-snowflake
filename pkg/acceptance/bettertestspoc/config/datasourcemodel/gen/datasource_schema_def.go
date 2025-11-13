@@ -27,6 +27,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Accounts().Schema,
 	},
 	{
+		name:   "AccountRoles",
+		schema: datasources.AccountRoles().Schema,
+	},
+	{
 		name:   "AuthenticationPolicies",
 		schema: datasources.AuthenticationPolicies().Schema,
 	},
@@ -81,6 +85,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "ResourceMonitors",
 		schema: datasources.ResourceMonitors().Schema,
+	},
+	{
+		name:   "RowAccessPolicies",
+		schema: datasources.RowAccessPolicies().Schema,
 	},
 	{
 		name:   "Schemas",
