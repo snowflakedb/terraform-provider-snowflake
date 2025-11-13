@@ -1,6 +1,6 @@
 package sdk
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator"
+import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 var applicationPackageModifyReleaseDirective = g.NewQueryStruct("ModifyReleaseDirective").
 	Text("ReleaseDirective", g.KeywordOptions().NoQuotes().Required()).
