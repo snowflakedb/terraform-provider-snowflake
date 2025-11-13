@@ -118,34 +118,27 @@ install-locally-released-tf: release-local ## installs plugin (built by the GoRe
 uninstall-tf: ## uninstalls plugin from where terraform can find it
 	rm -f $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
+# TODO [SNOW-1501905]: decide its fate
 generate-all-dto: ## Generate all DTOs for SDK interfaces
 	go generate ./pkg/sdk/*_dto.go
 
+# TODO [SNOW-1501905]: decide its fate
 generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 	go generate $<
-
-clean-generator-poc:
-	rm -f ./pkg/sdk/poc/example/*_gen.go
-	rm -f ./pkg/sdk/poc/example/*_gen_test.go
-
-clean-generator-%: ## Clean generated files for specified resource
-	rm -f ./pkg/sdk/$**_gen.go
-	rm -f ./pkg/sdk/$**_gen_*test.go
-
-run-generator-poc:
-	go generate ./pkg/sdk/poc/example/*_def.go
-	go generate ./pkg/sdk/poc/example/*_dto_gen.go
-
-run-generator-%: ./pkg/sdk/%_def.go ## Run go generate on given object definition
-	go generate $<
-	go generate ./pkg/sdk/$*_dto_gen.go
 
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
 
-clean-sdk: ## Clean all generated SDK objects
+clean-generated-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/*_gen.go
 	rm -f ./pkg/sdk/*_gen_test.go
+
+generate-sdk-examples: ## Generate all SDK generation examples
+	go generate ./pkg/sdk/generator/example/generate.go
+
+clean-generated-sdk-examples: ## Clean all generated SDK generation examples
+	rm -f ./pkg/sdk/generator/example/*_gen.go
+	rm -f ./pkg/sdk/generator/example/*_gen_test.go
 
 generate-docs-additional-files: ## generate docs additional files
 	go run ./pkg/internal/tools/doc-gen-helper/ $$PWD
@@ -229,4 +222,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local clean-generator-poc dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf
+.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf
