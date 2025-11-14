@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var ApiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
@@ -8,7 +12,7 @@ var ApiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPr
 var ApiIntegrationsDef = g.NewInterface(
 	"ApiIntegrations",
 	"ApiIntegration",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-api-integration",
@@ -21,7 +25,7 @@ var ApiIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AwsApiProviderParams",
 				g.NewQueryStruct("AwsApiParams").
-					Assignment("API_PROVIDER", g.KindOfT[ApiIntegrationAwsApiProviderType](), g.ParameterOptions().NoQuotes().Required()).
+					Assignment("API_PROVIDER", g.KindOfT[sdkcommons.ApiIntegrationAwsApiProviderType](), g.ParameterOptions().NoQuotes().Required()).
 					TextAssignment("API_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("API_KEY", g.ParameterOptions().SingleQuotes()),
 				g.KeywordOptions(),
