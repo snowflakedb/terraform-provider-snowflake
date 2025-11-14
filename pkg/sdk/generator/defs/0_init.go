@@ -11,6 +11,7 @@ import (
 func init() {
 	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions,
 		ApiIntegrationsDef,
+		ApplicationPackagesDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)
