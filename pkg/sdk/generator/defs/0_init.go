@@ -12,6 +12,7 @@ func init() {
 	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions,
 		ApiIntegrationsDef,
 		ApplicationPackagesDef,
+		ApplicationRolesDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)
