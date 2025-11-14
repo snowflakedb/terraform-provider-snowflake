@@ -24,6 +24,40 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.10.1 ➞ v2.10.2
+
+### *(bugfix)* Improved validation of identifiers with arguments
+Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:
+```
+Stack trace from the terraform-provider-snowflake_v2.8.0 plugin:
+
+panic: runtime error: index out of range [1] with length 1
+
+goroutine 142 [running]:
+github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk.ParseSchemaObjectIdentifierWithArguments({0x14000ff3a40, 0x28})
+github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/identifier_parsers.go:164 +0x2bc
+```
+This could happen when e.g. the passed identifier was using the old pipe-separated format.
+
+In this version, the provider validates the expected number of parts, so the error message is like this:
+```
+unexpected number of parts 1 in identifier abc|def|ghi(varchar), expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...)>" where <argname> is optional
+```
+No changes in configuration are required.
+
+References: [#4187](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4187)
+
+### *(bugfix)* Disallowed setting `DATABASE ROLES` object type on `all` and `future` fields in `snowflake_grant_ownership` resource
+Previously, the provider allowed setting the `DATABASE ROLES` object type on `all` and `future` fields in the `grant_ownership` resource.
+This operation is not allowed in Snowflake, and such resource configuration resulted in errors being returned from Snowflake.
+
+In this version, the provider does not allow setting the `DATABASE ROLES` object type on `all` and `future` fields in the `grant_ownership` resource.
+In a few releases, we will address other similar faulty object type cases in privilege-granting resources.
+
+No changes in configuration are required.
+
+Community PR: [#4185](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4185)
+
 ## v2.10.0 ➞ v2.10.1
 
 ### *(bugfix)* Fixed parsing DESCRIBE output for authentication policies
@@ -166,7 +200,7 @@ In this version we introduce a new attribute on the provider level: [`experiment
 
 We treat the available values as experiments, that may become stable feature/behavior in the future provider releases if successful.
 
-Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses. 
+Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses.
 
 **Important**: to benefit from this improvement, you need to have it enabled also on your Snowflake account. To do this, please reach out to us through your Snowflake Account Manager.
 
