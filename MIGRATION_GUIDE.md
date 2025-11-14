@@ -58,6 +58,13 @@ No changes in configuration are required.
 
 Community PR: [#4185](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4185)
 
+### *(new feature)* snowflake_listings datasource
+Added a new preview data source for listings. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-listings).
+
+This data source focuses on base query commands (SHOW LISTINGS and DESCRIBE LISTING). Other query commands like SHOW AVAILABLE LISTINGS, DESCRIBE AVAILABLE LISTING, SHOW LISTING OFFERS, SHOW OFFERS, SHOW PRICING PLANS, and SHOW VERSIONS IN LISTING are not included and will be added depending on demand.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listings_datasource` to `preview_features_enabled` field in the provider configuration.
+
 ## v2.10.0 ➞ v2.10.1
 
 ### *(bugfix)* Fixed parsing DESCRIBE output for authentication policies
