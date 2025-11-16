@@ -157,7 +157,6 @@ func TestInt_Users(t *testing.T) {
 			HasName(id.Name()).
 			HasHasPassword(true).
 			HasHasWorkloadIdentity(false).
-			HasHasPAT(false).
 			HasLoginName(strings.ToUpper(loginName)).
 			HasDefaultRole(defaultRole),
 		)
@@ -1920,7 +1919,6 @@ func TestInt_Users(t *testing.T) {
 			HasHasRsaPublicKey(false).
 			HasType(""). // underlying null
 			HasHasMfa(false).
-			HasHasPAT(false).
 			HasHasWorkloadIdentity(false),
 		)
 	})
