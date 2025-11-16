@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 /*
  * 	todo: add definition for `CREATE APPLICATION <name> FROM LISTING <listing_name> [ COMMENT = '<string_literal>' ] [ WITH TAG ( <tag_name> = '<tag_value>' [ , ... ] ) ]`
@@ -34,7 +38,7 @@ var applicationReferences = g.NewQueryStruct("ApplicationReferences").ListQueryS
 var ApplicationsDef = g.NewInterface(
 	"Applications",
 	"Application",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-application",
 	g.NewQueryStruct("CreateApplication").
@@ -42,7 +46,7 @@ var ApplicationsDef = g.NewInterface(
 		SQL("APPLICATION").
 		Name().
 		SQL("FROM APPLICATION PACKAGE").
-		Identifier("PackageName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("PackageName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		OptionalQueryStructField(
 			"Version",
 			applicationVersion,

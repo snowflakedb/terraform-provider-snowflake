@@ -13,6 +13,7 @@ func init() {
 		ApiIntegrationsDef,
 		ApplicationPackagesDef,
 		ApplicationRolesDef,
+		ApplicationsDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)
