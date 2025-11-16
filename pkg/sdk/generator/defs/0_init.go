@@ -14,6 +14,7 @@ func init() {
 		ApplicationPackagesDef,
 		ApplicationRolesDef,
 		ApplicationsDef,
+		AuthenticationPoliciesDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)

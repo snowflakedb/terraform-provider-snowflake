@@ -1,5 +1,13 @@
 package sdkcommons
 
 type (
-	ApiIntegrationAwsApiProviderType string
+	AllowedProviderOption                    string
+	ApiIntegrationAwsApiProviderType         string
+	AuthenticationMethodsOption              string
+	ClientTypesOption                        string
+	EnforceMfaOnExternalAuthenticationOption string
+	MfaAuthenticationMethodsOption           string
+	MfaEnrollmentOption                      string
+	MfaPolicyAllowedMethodsOption            string
+	NetworkPolicyEvaluationOption            string
 )

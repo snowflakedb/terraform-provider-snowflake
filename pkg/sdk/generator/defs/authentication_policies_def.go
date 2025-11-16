@@ -1,32 +1,34 @@
-package sdk
+package defs
 
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
 var (
-	AuthenticationMethodsOptionDef    = g.NewQueryStruct("AuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[AuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
-	MfaAuthenticationMethodsOptionDef = g.NewQueryStruct("MfaAuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[MfaAuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
-	ClientTypesOptionDef              = g.NewQueryStruct("ClientTypes").PredefinedQueryStructField("ClientType", g.KindOfT[ClientTypesOption](), g.KeywordOptions().SingleQuotes().Required())
+	AuthenticationMethodsOptionDef    = g.NewQueryStruct("AuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[sdkcommons.AuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
+	MfaAuthenticationMethodsOptionDef = g.NewQueryStruct("MfaAuthenticationMethods").PredefinedQueryStructField("Method", g.KindOfT[sdkcommons.MfaAuthenticationMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
+	ClientTypesOptionDef              = g.NewQueryStruct("ClientTypes").PredefinedQueryStructField("ClientType", g.KindOfT[sdkcommons.ClientTypesOption](), g.KeywordOptions().SingleQuotes().Required())
 	SecurityIntegrationsOptionDef     = g.NewQueryStruct("SecurityIntegrationsOption").
 						OptionalSQLWithCustomFieldName("All", "('ALL')").
-						UnnamedList("SecurityIntegrations", g.KindOfT[AccountObjectIdentifier](), g.KeywordOptions().Parentheses()).
+						UnnamedList("SecurityIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.KeywordOptions().Parentheses()).
 						WithValidation(g.ExactlyOneValueSet, "All", "SecurityIntegrations")
 	AuthenticationPolicyMfaPolicyDef = g.NewQueryStruct("AuthenticationPolicyMfaPolicy").
-						PredefinedQueryStructField("EnforceMfaOnExternalAuthentication", g.KindOfTPointer[EnforceMfaOnExternalAuthenticationOption](), g.ParameterOptions().SQL("ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION")).
+						PredefinedQueryStructField("EnforceMfaOnExternalAuthentication", g.KindOfTPointer[sdkcommons.EnforceMfaOnExternalAuthenticationOption](), g.ParameterOptions().SQL("ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION")).
 						ListAssignment("ALLOWED_METHODS", "AuthenticationPolicyMfaPolicyListItem", g.ParameterOptions().Parentheses()).
 						WithValidation(g.AtLeastOneValueSet, "EnforceMfaOnExternalAuthentication", "AllowedMethods")
-	AuthenticationPolicyMfaPolicyListItemDef = g.NewQueryStruct("AuthenticationPolicyMfaPolicyListItem").PredefinedQueryStructField("Method", g.KindOfT[MfaPolicyAllowedMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
+	AuthenticationPolicyMfaPolicyListItemDef = g.NewQueryStruct("AuthenticationPolicyMfaPolicyListItem").PredefinedQueryStructField("Method", g.KindOfT[sdkcommons.MfaPolicyAllowedMethodsOption](), g.KeywordOptions().SingleQuotes().Required())
 	AuthenticationPolicyPatPolicyDef         = g.NewQueryStruct("AuthenticationPolicyPatPolicy").
 							OptionalNumberAssignment("DEFAULT_EXPIRY_IN_DAYS", g.ParameterOptions().NoQuotes()).
 							OptionalNumberAssignment("MAX_EXPIRY_IN_DAYS", g.ParameterOptions().NoQuotes()).
 							OptionalAssignment(
 			"NETWORK_POLICY_EVALUATION",
-			g.KindOfT[NetworkPolicyEvaluationOption](),
+			g.KindOfT[sdkcommons.NetworkPolicyEvaluationOption](),
 			g.ParameterOptions().NoQuotes(),
 		).
 		WithValidation(g.AtLeastOneValueSet, "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation")
-	AuthenticationPolicyAllowedProviderListItemDef = g.NewQueryStruct("AuthenticationPolicyAllowedProviderListItem").PredefinedQueryStructField("Provider", g.KindOfT[AllowedProviderOption](), g.KeywordOptions().SingleQuotes().Required())
+	AuthenticationPolicyAllowedProviderListItemDef = g.NewQueryStruct("AuthenticationPolicyAllowedProviderListItem").PredefinedQueryStructField("Provider", g.KindOfT[sdkcommons.AllowedProviderOption](), g.KeywordOptions().SingleQuotes().Required())
 	AuthenticationPolicyWorkloadIdentityPolicyDef  = g.NewQueryStruct("AuthenticationPolicyWorkloadIdentityPolicy").
 							ListAssignment("ALLOWED_PROVIDERS", "AuthenticationPolicyAllowedProviderListItem", g.ParameterOptions().Parentheses()).
 							ListAssignment("ALLOWED_AWS_ACCOUNTS", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
@@ -38,7 +40,7 @@ var (
 var AuthenticationPoliciesDef = g.NewInterface(
 	"AuthenticationPolicies",
 	"AuthenticationPolicy",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy",
@@ -50,7 +52,7 @@ var AuthenticationPoliciesDef = g.NewInterface(
 			Name().
 			ListAssignment("AUTHENTICATION_METHODS", "AuthenticationMethods", g.ParameterOptions().Parentheses()).
 			ListAssignment("MFA_AUTHENTICATION_METHODS", "MfaAuthenticationMethods", g.ParameterOptions().Parentheses()).
-			PredefinedQueryStructField("MfaEnrollment", g.KindOfTPointer[MfaEnrollmentOption](), g.ParameterOptions().SQL("MFA_ENROLLMENT")).
+			PredefinedQueryStructField("MfaEnrollment", g.KindOfTPointer[sdkcommons.MfaEnrollmentOption](), g.ParameterOptions().SQL("MFA_ENROLLMENT")).
 			OptionalQueryStructField("MfaPolicy", AuthenticationPolicyMfaPolicyDef, g.ListOptions().SQL("MFA_POLICY =").Parentheses().NoComma()).
 			ListAssignment("CLIENT_TYPES", "ClientTypes", g.ParameterOptions().Parentheses()).
 			OptionalQueryStructField("SecurityIntegrations", SecurityIntegrationsOptionDef, g.ParameterOptions().SQL("SECURITY_INTEGRATIONS")).
@@ -80,7 +82,7 @@ var AuthenticationPoliciesDef = g.NewInterface(
 				g.NewQueryStruct("AuthenticationPolicySet").
 					ListAssignment("AUTHENTICATION_METHODS", "AuthenticationMethods", g.ParameterOptions().Parentheses()).
 					ListAssignment("MFA_AUTHENTICATION_METHODS", "MfaAuthenticationMethods", g.ParameterOptions().Parentheses()).
-					PredefinedQueryStructField("MfaEnrollment", g.KindOfTPointer[MfaEnrollmentOption](), g.ParameterOptions().SQL("MFA_ENROLLMENT")).
+					PredefinedQueryStructField("MfaEnrollment", g.KindOfTPointer[sdkcommons.MfaEnrollmentOption](), g.ParameterOptions().SQL("MFA_ENROLLMENT")).
 					OptionalQueryStructField("MfaPolicy", AuthenticationPolicyMfaPolicyDef, g.ListOptions().SQL("MFA_POLICY =").Parentheses().NoComma()).
 					ListAssignment("CLIENT_TYPES", "ClientTypes", g.ParameterOptions().Parentheses()).
 					OptionalQueryStructField("SecurityIntegrations", SecurityIntegrationsOptionDef, g.ParameterOptions().SQL("SECURITY_INTEGRATIONS")).
@@ -105,7 +107,7 @@ var AuthenticationPoliciesDef = g.NewInterface(
 					WithValidation(g.AtLeastOneValueSet, "ClientTypes", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaAuthenticationMethods", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
-			Identifier("RenameTo", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo").
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo"),
