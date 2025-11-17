@@ -22,30 +22,26 @@ func TestSequences_Create(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSequenceOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEQUENCE %s`, id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Start = Int(1)
-		opts.Increment = Int(1)
-		opts.ValuesBehavior = ValuesBehaviorPointer(ValuesBehaviorOrder)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SEQUENCE %s START = 1 INCREMENT = 1 ORDER COMMENT = 'comment'`, id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
@@ -54,8 +50,7 @@ func TestSequences_Alter(t *testing.T) {
 	// Minimal valid AlterSequenceOptions
 	defaultOpts := func() *AlterSequenceOptions {
 		return &AlterSequenceOptions{
-			name:     id,
-			IfExists: Bool(true),
+			name: id,
 		}
 	}
 
@@ -66,54 +61,32 @@ func TestSequences_Alter(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.RenameTo = &emptySchemaObjectIdentifier
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one field from [opts.RenameTo opts.SetIncrement opts.Set opts.UnsetComment] should be present", func(t *testing.T) {
 		opts := defaultOpts()
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"))
 	})
 
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetIncrement opts.Set opts.UnsetComment] should be present - multiple", func(t *testing.T) {
+	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SetIncrement = Int(1)
-		opts.UnsetComment = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"))
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
-	t.Run("alter: rename to", func(t *testing.T) {
+	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
-		opts.RenameTo = &target
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), opts.RenameTo.FullyQualifiedName())
-	})
-
-	t.Run("alter: set options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SequenceSet{
-			Comment:        String("comment"),
-			ValuesBehavior: ValuesBehaviorPointer(ValuesBehaviorOrder),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s SET ORDER COMMENT = 'comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetComment = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s UNSET COMMENT`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set increment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetIncrement = Int(1)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s SET INCREMENT = 1`, id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
@@ -128,25 +101,16 @@ func TestSequences_Show(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("show with empty options", func(t *testing.T) {
+	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SEQUENCES`)
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
-	t.Run("show with like", func(t *testing.T) {
+	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SEQUENCES LIKE 'pattern'`)
-	})
-
-	t.Run("show with in", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &In{
-			Account: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SEQUENCES IN ACCOUNT`)
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
@@ -166,13 +130,20 @@ func TestSequences_Describe(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE SEQUENCE %s`, id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }
 
@@ -192,36 +163,25 @@ func TestSequences_Drop(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one field from [opts.Constraint.Cascade opts.Constraint.Restrict] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Constraint = &SequenceConstraint{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Constraint.Cascade opts.Constraint.Restrict] should be present - multiple", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Constraint = &SequenceConstraint{
-			Cascade:  Bool(true),
-			Restrict: Bool(true),
-		}
+		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP SEQUENCE %s`, id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Constraint = &SequenceConstraint{
-			Cascade: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `DROP SEQUENCE IF EXISTS %s CASCADE`, id.FullyQualifiedName())
+		// TODO: fill me
+		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
 	})
 }

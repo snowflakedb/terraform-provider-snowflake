@@ -110,19 +110,8 @@ func (r *ShowSequenceRequest) toOpts() *ShowSequenceOptions {
 }
 
 func (r sequenceRow) convert() (*Sequence, error) {
-	// edited manually
-	return &Sequence{
-		CreatedOn:     r.CreatedOn,
-		Name:          r.Name,
-		SchemaName:    r.SchemaName,
-		DatabaseName:  r.DatabaseName,
-		NextValue:     r.NextValue,
-		Interval:      r.Interval,
-		Owner:         r.Owner,
-		OwnerRoleType: r.OwnerRoleType,
-		Comment:       r.Comment,
-		Ordered:       r.Ordered == "Y",
-	}, nil
+	// TODO: Mapping
+	return &Sequence{}, nil
 }
 
 func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
@@ -133,19 +122,8 @@ func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
 }
 
 func (r sequenceDetailRow) convert() (*SequenceDetail, error) {
-	// edited manually
-	return &SequenceDetail{
-		CreatedOn:     r.CreatedOn,
-		Name:          r.Name,
-		SchemaName:    r.SchemaName,
-		DatabaseName:  r.DatabaseName,
-		NextValue:     r.NextValue,
-		Interval:      r.Interval,
-		Owner:         r.Owner,
-		OwnerRoleType: r.OwnerRoleType,
-		Comment:       r.Comment,
-		Ordered:       r.Ordered == "Y",
-	}, nil
+	// TODO: Mapping
+	return &SequenceDetail{}, nil
 }
 
 func (r *DropSequenceRequest) toOpts() *DropSequenceOptions {
