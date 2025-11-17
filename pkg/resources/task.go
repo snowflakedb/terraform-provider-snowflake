@@ -65,10 +65,16 @@ var taskSchema = map[string]*schema.Schema{
 		ConflictsWith:    []string{"user_task_managed_initial_warehouse_size"},
 	},
 	"schedule": {
-		Type:          schema.TypeList,
-		Optional:      true,
-		MaxItems:      1,
-		Description:   "The schedule for periodically running the task. This can be a cron or interval in minutes. (Conflicts with finalize and after; when set, one of the sub-fields `minutes` or `using_cron` should be set)",
+		Type:     schema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Description: joinWithSpace(
+			"The schedule for periodically running the task. This can be a cron or interval in minutes. (Conflicts with finalize and after; when set, one of the sub-fields `minutes` or `using_cron` should be set)",
+			"For [Triggered tasks](https://docs.snowflake.com/en/user-guide/tasks-triggered), a schedule is not required. For other tasks,",
+			"a schedule must be defined for a standalone task or the root task in a [task graph](https://docs.snowflake.com/en/user-guide/tasks-graphs#label-task-dag); otherwise,",
+			"the task only runs if manually executed using [EXECUTE TASK](https://docs.snowflake.com/en/sql-reference/sql/execute-task) in, for example, the [snowflake_execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.",
+			"A schedule cannot be specified for child tasks in a task graph. For more information on schedule restrictions, consult the [official documentation for Task object](https://docs.snowflake.com/en/user-guide/tasks-intro).",
+		),
 		ConflictsWith: []string{"finalize", "after"},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
