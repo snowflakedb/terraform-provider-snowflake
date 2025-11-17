@@ -81,7 +81,21 @@ func (t *TaskModel) WithScheduleMinutes(minutes int) *TaskModel {
 
 func (t *TaskModel) WithScheduleCron(cron string) *TaskModel {
 	t.Schedule = tfconfig.MapVariable(map[string]tfconfig.Variable{
-		"cron": tfconfig.StringVariable(cron),
+		"using_cron": tfconfig.StringVariable(cron),
+	})
+	return t
+}
+
+func (t *TaskModel) WithScheduleSeconds(seconds int) *TaskModel {
+	t.Schedule = tfconfig.MapVariable(map[string]tfconfig.Variable{
+		"seconds": tfconfig.IntegerVariable(seconds),
+	})
+	return t
+}
+
+func (t *TaskModel) WithScheduleHours(hours int) *TaskModel {
+	t.Schedule = tfconfig.MapVariable(map[string]tfconfig.Variable{
+		"hours": tfconfig.IntegerVariable(hours),
 	})
 	return t
 }
