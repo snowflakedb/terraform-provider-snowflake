@@ -66,7 +66,7 @@ Reference: [BCR-2120](https://docs.snowflake.com/en/release-notes/bcr-bundles/20
 
 After enabling this BCR, `GRANT USAGE` on a database must be granted before `GRANT REFERENCE_USAGE`. These operations can be combined like `GRANT USAGE, REFERENCE_USAGE`. You can manage these in Terraform with [grant_privileges_to_share](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_share). You may need to adjust your grant configurations.
 
-Additionally, when updating the `accounts` field in the `share` resource, the provider creates a temporary database from the share. Before, it granted only the `USAGE` grant. Since [v2.10.1](./MIGRATION_GUIDE.md#improvement-granting-privileges-on-a-database-during-share-update), it also grants `REFERENCE_USAGE`. If you have trouble updating or creating the `share` resource, update the provider to this version.
+Additionally, when updating the `accounts` field in the `share` resource, the provider creates a temporary database from the share. Before, it granted only the `USAGE` grant. Since [v2.11.0](./MIGRATION_GUIDE.md#improvement-granting-privileges-on-a-database-during-share-update), it also grants `REFERENCE_USAGE`. If you have trouble updating or creating the `share` resource, update the provider to this version.
 
 Reference: [BCR-2136](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2136)
 
