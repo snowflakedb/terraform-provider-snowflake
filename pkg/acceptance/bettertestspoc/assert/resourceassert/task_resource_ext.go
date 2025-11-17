@@ -16,9 +16,21 @@ func (t *TaskResourceAssert) HasAfter(ids ...sdk.SchemaObjectIdentifier) *TaskRe
 	return t
 }
 
+func (t *TaskResourceAssert) HasScheduleSeconds(seconds int) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("schedule.#", "1"))
+	t.AddAssertion(assert.ValueSet("schedule.0.seconds", strconv.Itoa(seconds)))
+	return t
+}
+
 func (t *TaskResourceAssert) HasScheduleMinutes(minutes int) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("schedule.#", "1"))
 	t.AddAssertion(assert.ValueSet("schedule.0.minutes", strconv.Itoa(minutes)))
+	return t
+}
+
+func (t *TaskResourceAssert) HasScheduleHours(hours int) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("schedule.#", "1"))
+	t.AddAssertion(assert.ValueSet("schedule.0.hours", strconv.Itoa(hours)))
 	return t
 }
 

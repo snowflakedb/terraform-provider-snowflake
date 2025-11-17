@@ -41,8 +41,12 @@ func v098TaskStateUpgrader(ctx context.Context, rawState map[string]any, meta an
 		switch {
 		case len(taskSchedule.Cron) > 0:
 			scheduleMap["using_cron"] = taskSchedule.Cron
+		case taskSchedule.Seconds > 0:
+			scheduleMap["seconds"] = taskSchedule.Seconds
 		case taskSchedule.Minutes > 0:
 			scheduleMap["minutes"] = taskSchedule.Minutes
+		case taskSchedule.Hours > 0:
+			scheduleMap["hours"] = taskSchedule.Hours
 		}
 		rawState["schedule"] = []any{scheduleMap}
 	} else {

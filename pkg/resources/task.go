@@ -68,23 +68,37 @@ var taskSchema = map[string]*schema.Schema{
 		Type:          schema.TypeList,
 		Optional:      true,
 		MaxItems:      1,
-		Description:   "The schedule for periodically running the task. This can be a cron or interval in minutes. (Conflicts with finalize and after; when set, one of the sub-fields `minutes` or `using_cron` should be set)",
+		Description:   "The schedule for periodically running the task. This can be a cron or interval in seconds, minutes, or hours. (Conflicts with finalize and after; when set, one of the sub-fields `seconds`, `minutes`, `hours`, or `using_cron` should be set)",
 		ConflictsWith: []string{"finalize", "after"},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"seconds": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers from 10 to 691200 (10 seconds to 8 days). (conflicts with `minutes`, `hours`, and `using_cron`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(10, 691200)),
+					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
+				},
 				"minutes": {
 					Type:             schema.TypeInt,
 					Optional:         true,
-					Description:      "Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers only. (conflicts with `using_cron`)",
-					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-					ExactlyOneOf:     []string{"schedule.0.minutes", "schedule.0.using_cron"},
+					Description:      "Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers from 1 to 11520 (1 minute to 8 days). (conflicts with `seconds`, `hours`, and `using_cron`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 11520)),
+					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
+				},
+				"hours": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies an interval (in hours) of wait time inserted between runs of the task. Accepts positive integers from 1 to 192 (1 hour to 8 days). (conflicts with `seconds`, `minutes`, and `using_cron`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 192)),
+					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
 				},
 				"using_cron": {
 					Type:             schema.TypeString,
 					Optional:         true,
-					Description:      "Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `minutes`)",
+					Description:      "Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `seconds`, `minutes`, and `hours`)",
 					DiffSuppressFunc: ignoreCaseSuppressFunc,
-					ExactlyOneOf:     []string{"schedule.0.minutes", "schedule.0.using_cron"},
+					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
 				},
 			},
 		},
@@ -245,13 +259,19 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		}),
 		attributeMappedValueCreate(d, "schedule", &req.Schedule, func(v any) (*string, error) {
 			if len(v.([]any)) > 0 {
+				if seconds, ok := d.GetOk("schedule.0.seconds"); ok {
+					return sdk.String(fmt.Sprintf("%d SECOND", seconds)), nil
+				}
 				if minutes, ok := d.GetOk("schedule.0.minutes"); ok {
 					return sdk.String(fmt.Sprintf("%d MINUTE", minutes)), nil
+				}
+				if hours, ok := d.GetOk("schedule.0.hours"); ok {
+					return sdk.String(fmt.Sprintf("%d HOUR", hours)), nil
 				}
 				if cron, ok := d.GetOk("schedule.0.using_cron"); ok {
 					return sdk.String(fmt.Sprintf("USING CRON %s", cron)), nil
 				}
-				return nil, fmt.Errorf("when setting a schedule either minutes or using_cron field should be set")
+				return nil, fmt.Errorf("when setting a schedule one of seconds, minutes, hours, or using_cron field should be set")
 			}
 			return nil, nil
 		}),
@@ -383,8 +403,14 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		_, newSchedule := d.GetChange("schedule")
 
 		if newSchedule != nil && len(newSchedule.([]any)) == 1 {
+			if _, newSeconds := d.GetChange("schedule.0.seconds"); newSeconds.(int) > 0 {
+				set.Schedule = sdk.String(fmt.Sprintf("%d SECOND", newSeconds.(int)))
+			}
 			if _, newMinutes := d.GetChange("schedule.0.minutes"); newMinutes.(int) > 0 {
 				set.Schedule = sdk.String(fmt.Sprintf("%d MINUTE", newMinutes.(int)))
+			}
+			if _, newHours := d.GetChange("schedule.0.hours"); newHours.(int) > 0 {
+				set.Schedule = sdk.String(fmt.Sprintf("%d HOUR", newHours.(int)))
 			}
 			if _, newCron := d.GetChange("schedule.0.using_cron"); newCron.(string) != "" {
 				set.Schedule = sdk.String(fmt.Sprintf("USING CRON %s", newCron.(string)))
@@ -596,9 +622,21 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 						}}); err != nil {
 							return err
 						}
+					case taskSchedule.Seconds > 0:
+						if err := d.Set("schedule", []any{map[string]any{
+							"seconds": taskSchedule.Seconds,
+						}}); err != nil {
+							return err
+						}
 					case taskSchedule.Minutes > 0:
 						if err := d.Set("schedule", []any{map[string]any{
 							"minutes": taskSchedule.Minutes,
+						}}); err != nil {
+							return err
+						}
+					case taskSchedule.Hours > 0:
+						if err := d.Set("schedule", []any{map[string]any{
+							"hours": taskSchedule.Hours,
 						}}); err != nil {
 							return err
 						}
