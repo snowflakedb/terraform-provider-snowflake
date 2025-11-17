@@ -33,6 +33,8 @@ Because of this, we have removed support for this parameter in the `snowflake_cu
 If you were using this parameter in your configuration, please follow instructions in the linked documentation to migrate away from it.
 If you were not using this parameter, no changes are required.
 
+Related: [#4010](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4010)
+
 ## v2.10.1 ➞ v2.10.2
 
 ### *(bugfix)* Improved validation of identifiers with arguments

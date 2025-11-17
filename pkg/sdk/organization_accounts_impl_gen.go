@@ -112,18 +112,18 @@ func (r *ShowOrganizationAccountRequest) toOpts() *ShowOrganizationAccountOption
 func (r organizationAccountDbRow) convert() (*OrganizationAccount, error) {
 	// adjusted manually
 	oa := &OrganizationAccount{
-		OrganizationName:                     r.OrganizationName,
-		AccountName:                          r.AccountName,
-		SnowflakeRegion:                      r.SnowflakeRegion,
-		AccountUrl:                           r.AccountUrl,
-		CreatedOn:                            r.CreatedOn,
-		AccountLocator:                       r.AccountLocator,
-		AccountLocatorUrl:                    r.AccountLocatorUrl,
-		ManagedAccounts:                      r.ManagedAccounts,
-		ConsumptionBillingEntityName:         r.ConsumptionBillingEntityName,
-		IsOrgAdmin:                           r.IsOrgAdmin,
-		IsEventsAccount:                      r.IsEventsAccount,
-		IsOrganizationAccount:                r.IsOrganizationAccount,
+		OrganizationName:             r.OrganizationName,
+		AccountName:                  r.AccountName,
+		SnowflakeRegion:              r.SnowflakeRegion,
+		AccountUrl:                   r.AccountUrl,
+		CreatedOn:                    r.CreatedOn,
+		AccountLocator:               r.AccountLocator,
+		AccountLocatorUrl:            r.AccountLocatorUrl,
+		ManagedAccounts:              r.ManagedAccounts,
+		ConsumptionBillingEntityName: r.ConsumptionBillingEntityName,
+		IsOrgAdmin:                   r.IsOrgAdmin,
+		IsEventsAccount:              r.IsEventsAccount,
+		IsOrganizationAccount:        r.IsOrganizationAccount,
 	}
 	mapStringWithMapping(&oa.Edition, r.Edition, ToOrganizationAccountEdition)
 	mapNullString(&oa.Comment, r.Comment)
