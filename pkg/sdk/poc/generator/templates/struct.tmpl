@@ -1,8 +1,0 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.Field*/ -}}
-
-type {{ .KindNoPtr }} struct {
-{{- range .Fields }}
-    {{ .Name }} {{ .Kind }} {{ .TagsPrintable }}
-{{- end }}
-}
-

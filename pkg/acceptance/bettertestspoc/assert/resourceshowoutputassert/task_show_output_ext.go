@@ -14,7 +14,7 @@ func TaskDatasourceShowOutput(t *testing.T, name string) *TaskShowOutputAssert {
 	t.Helper()
 
 	taskAssert := TaskShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert("data."+name, "show_output", "tasks.0."),
+		ResourceAssert: assert.NewDatasourceAssert("data.snowflake_tasks."+name, "show_output", "tasks.0."),
 	}
 	taskAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &taskAssert

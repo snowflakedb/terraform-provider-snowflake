@@ -32,6 +32,38 @@ Previously, the provider's file reading functions did not clean paths. In this v
 
 No changes in configuration and state are required. The supported TOML location `~/.snowflake/config` stays the same and the behavior shouldn't be affected.
 
+### *(bugfix)* Improved validation of identifiers with arguments
+Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:
+```
+Stack trace from the terraform-provider-snowflake_v2.8.0 plugin:
+
+panic: runtime error: index out of range [1] with length 1
+
+goroutine 142 [running]:
+github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk.ParseSchemaObjectIdentifierWithArguments({0x14000ff3a40, 0x28})
+github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/identifier_parsers.go:164 +0x2bc
+```
+This could happen when e.g. the passed identifier was using the old pipe-separated format.
+
+In this version, the provider validates the expected number of parts, so the error message is like this:
+```
+unexpected number of parts 1 in identifier abc|def|ghi(varchar), expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...)>" where <argname> is optional
+```
+No changes in configuration are required.
+
+References: [#4187](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4187)
+
+### *(bugfix)* Disallowed setting `DATABASE ROLES` object type on `all` and `future` fields in `snowflake_grant_ownership` resource
+Previously, the provider allowed setting the `DATABASE ROLES` object type on `all` and `future` fields in the `grant_ownership` resource.
+This operation is not allowed in Snowflake, and such resource configuration resulted in errors being returned from Snowflake.
+
+In this version, the provider does not allow setting the `DATABASE ROLES` object type on `all` and `future` fields in the `grant_ownership` resource.
+In a few releases, we will address other similar faulty object type cases in privilege-granting resources.
+
+No changes in configuration are required.
+
+Community PR: [#4185](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4185)
+
 ## v2.10.0 ➞ v2.10.1
 
 ### *(bugfix)* Fixed parsing DESCRIBE output for authentication policies
@@ -92,6 +124,17 @@ Now, this behavior is fixed. Here's the list of affected resources:
 - `snowflake_secret_with_client_credentials`
 
 No changes in configuration and state are required.
+
+### *(improvement)* Handling show_output in warehouses
+
+In v2.7.0 ([migration guide](./MIGRATION_GUIDE.md#new-feature-added-support-for-generation-2-standard-warehouses-and-resource-constraints-for-snowpark-optimized-warehouses)),
+we added support for gen2 warehouses. In this change, we added new fields to `show_output`: `generation`, and `resource_constraint`. Before the 2025_07 bundle, the `generation` column was not available in `SHOW WAREHOUSES`. Internally, we dispatched
+`resource_constraint` value based on the warehouse type, and filled the values in the resource state.
+
+The 2025_07 bundle adds the `generation` column (read our [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#new-generation-column-in-output-in-show-warehouses)). Now, instead of dispatching the `resource_constraint` value, the provider simply passes the `generation` field from Snowflake to the `show_output`.
+If the bundle is disabled, then the `generation` column is not present in Snowflake, and the providers behaves in the old way.
+
+No changes in the configuration are necessary.
 
 ## v2.9.x ➞ v2.10.0
 

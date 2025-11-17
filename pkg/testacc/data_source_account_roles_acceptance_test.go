@@ -3,110 +3,88 @@
 package testacc
 
 import (
-	"fmt"
-	"strconv"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/hashicorp/terraform-plugin-testing/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_AccountRoles_Complete(t *testing.T) {
-	accountRoleNamePrefix := random.AlphaN(10)
-	accountRoleName1 := testClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "1")
-	accountRoleName2 := testClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "2")
-	accountRoleName3 := testClient().Ids.Alpha()
-	dbRoleName := testClient().Ids.AlphaWithPrefix(accountRoleNamePrefix + "db")
-	comment := random.Comment()
+func TestAcc_AccountRoles_BasicUseCase_DifferentFiltering(t *testing.T) {
+	prefix := random.AlphaN(4)
+	id1 := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
+	id2 := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 
-	// Proof that database role with the same prefix is not in the output of SHOW ROLES.
-	dbRole, dbRoleCleanup := testClient().DatabaseRole.CreateDatabaseRoleWithName(t, dbRoleName)
-	t.Cleanup(dbRoleCleanup)
+	accountRole1 := model.AccountRole("primary", id1.Name())
+	accountRole2 := model.AccountRole("secondary", id2.Name())
 
-	likeVariables := config.Variables{
-		"account_role_name_1": config.StringVariable(accountRoleName1),
-		"account_role_name_2": config.StringVariable(accountRoleName2),
-		"account_role_name_3": config.StringVariable(accountRoleName3),
-		"comment":             config.StringVariable(comment),
-		"like":                config.StringVariable(accountRoleNamePrefix + "%"),
-	}
+	datasourceModelLikeExact := datasourcemodel.AccountRoles("test").
+		WithLike(id1.Name()).
+		WithDependsOn(accountRole1.ResourceReference(), accountRole2.ResourceReference())
+
+	datasourceModelLikePrefix := datasourcemodel.AccountRoles("test").
+		WithLike(prefix+"%").
+		WithDependsOn(accountRole1.ResourceReference(), accountRole2.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
+		CheckDestroy: CheckDestroy(t, resources.AccountRole),
 		Steps: []resource.TestStep{
+			// like (prefix)
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: likeVariables,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.snowflake_account_roles.test", "account_roles.#", "2"),
-					accountRolesDataSourceContainsRole(accountRoleName1, comment),
-					accountRolesDataSourceContainsRole(accountRoleName2, comment),
-					accountRolesDataSourceDoesNotContainRole(accountRoleName3, comment),
-					accountRolesDataSourceDoesNotContainRole(dbRole.ID().FullyQualifiedName(), comment),
+				Config: config.FromModels(t, accountRole1, accountRole2, datasourceModelLikePrefix),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikePrefix.DatasourceReference(), "account_roles.#", "2"),
 				),
 			},
+			// like (exact)
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: config.Variables{},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrWith("data.snowflake_account_roles.test", "account_roles.#", func(value string) error {
-						numberOfRoles, err := strconv.ParseInt(value, 10, 8)
-						if err != nil {
-							return err
-						}
-
-						if numberOfRoles == 0 {
-							return fmt.Errorf("expected roles to be non-empty")
-						}
-
-						return nil
-					}),
+				Config: config.FromModels(t, accountRole1, accountRole2, datasourceModelLikeExact),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datasourceModelLikeExact.DatasourceReference(), "account_roles.#", "1"),
+					resource.TestCheckResourceAttr(datasourceModelLikeExact.DatasourceReference(), "account_roles.0.show_output.0.name", id1.Name()),
 				),
 			},
 		},
 	})
 }
 
-func accountRolesDataSourceDoesNotContainRole(name string, comment string) func(s *terraform.State) error {
-	return func(state *terraform.State) error {
-		err := accountRolesDataSourceContainsRole(name, comment)(state)
-		if err != nil && err.Error() == fmt.Sprintf("role %s not found", name) {
-			return nil
-		}
-		return fmt.Errorf("expected %s not to be present", name)
-	}
-}
+func TestAcc_AccountRoles_CompleteUseCase(t *testing.T) {
+	roleName := testClient().Ids.AlphaWithPrefix(random.AlphaN(10))
+	comment := random.Comment()
 
-func accountRolesDataSourceContainsRole(name string, comment string) func(s *terraform.State) error {
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "snowflake_account_roles" {
-				continue
-			}
+	accountRoleModel := model.AccountRole("role", roleName).WithComment(comment)
 
-			iter, err := strconv.ParseInt(rs.Primary.Attributes["account_roles.#"], 10, 32)
-			if err != nil {
-				return err
-			}
+	accountRolesModel := datasourcemodel.AccountRoles("test").
+		WithLike(roleName).
+		WithDependsOn(accountRoleModel.ResourceReference())
 
-			for i := 0; i < int(iter); i++ {
-				if rs.Primary.Attributes[fmt.Sprintf("account_roles.%d.show_output.0.name", i)] == name {
-					actualComment := rs.Primary.Attributes[fmt.Sprintf("account_roles.%d.show_output.0.comment", i)]
-					if actualComment != comment {
-						return fmt.Errorf("expected comment: %s, but got: %s", comment, actualComment)
-					}
-
-					return nil
-				}
-			}
-		}
-
-		return fmt.Errorf("role %s not found", name)
-	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.AccountRole),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, accountRoleModel, accountRolesModel),
+				Check: assertThat(t,
+					resourceshowoutputassert.AccountRolesDatasourceShowOutput(t, accountRolesModel.DatasourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(roleName).
+						HasIsDefault(false).
+						HasIsCurrent(false).
+						HasComment(comment),
+				),
+			},
+		},
+	})
 }
