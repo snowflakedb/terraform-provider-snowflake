@@ -47,14 +47,11 @@ type ShowManagedAccountOptions struct {
 }
 
 type managedAccountDBRow struct {
-	Name              sql.NullString `db:"name"`
 	AccountName       sql.NullString `db:"account_name"`
 	Cloud             string         `db:"cloud"`
 	Region            string         `db:"region"`
-	Locator           sql.NullString `db:"locator"`
 	AccountLocator    sql.NullString `db:"account_locator"`
 	CreatedOn         string         `db:"created_on"`
-	Url               sql.NullString `db:"url"`
 	AccountUrl        sql.NullString `db:"account_url"`
 	AccountLocatorUrl string         `db:"account_locator_url"`
 	IsReader          bool           `db:"is_reader"`
