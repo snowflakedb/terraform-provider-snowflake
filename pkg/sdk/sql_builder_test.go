@@ -510,7 +510,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 func TestBuilder_sql(t *testing.T) {
 	t.Run("test sql with no clauses", func(t *testing.T) {
 		s := builder.sql([]sqlClause{}...)
-		assert.Empty(t, s)
+		assert.Equal(t, "", s)
 	})
 
 	t.Run("test sql with clauses", func(t *testing.T) {
@@ -615,7 +615,7 @@ func TestBuilder_DataType(t *testing.T) {
 		s, err := structToSQL(opts)
 
 		require.NoError(t, err)
-		assert.Empty(t, s)
+		assert.Equal(t, "", s)
 	})
 
 	for _, tc := range nilTestCases {
@@ -628,7 +628,7 @@ func TestBuilder_DataType(t *testing.T) {
 			s, err := structToSQL(opts)
 
 			require.NoError(t, err)
-			assert.Empty(t, s)
+			assert.Equal(t, "", s)
 		})
 	}
 

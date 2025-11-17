@@ -1586,7 +1586,7 @@ func TestTableColumnDetailsRow_SplitTypeAndCollation(t *testing.T) {
 
 		actualType, actualCollation := row.splitTypeAndCollation()
 		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
-		assert.Empty(t, *actualCollation)
+		assert.Equal(t, "", *actualCollation)
 	})
 
 	t.Run("without collation", func(t *testing.T) {
