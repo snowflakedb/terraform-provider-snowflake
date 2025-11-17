@@ -32,6 +32,21 @@ To use the provider with the bundles containing this change:
 
 Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
 
+## [Bundle 2025_07](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07_bundle)
+
+### USAGE privilege on CATALOG INTEGRATION and EXTERNAL VOLUME required for database owner role for all operations
+
+In certain scenarios, new privileges would be required to perform operations on catalog integrations and external volumes. You can manage these in Terraform with [grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role)
+and [grant_privileges_to_database_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role).
+
+Reference: [BCR-2114](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2114)
+
+### New `generation` column in output in SHOW WAREHOUSES
+
+This bundle adds the `generation` column. The values in `resource_constraint` column remain the same. The provider has been adjusted in [v2.10.1](./MIGRATION_GUIDE.md#improvement-handling-show_output-in-warehouses).
+
+Reference: [BCR-2110](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2110)
+
 ## [Bundle 2025_06](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06_bundle)
 
 ### Changes in authentication policies

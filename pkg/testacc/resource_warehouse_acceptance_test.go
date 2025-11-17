@@ -21,6 +21,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	acchelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
@@ -2345,6 +2347,14 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 }
 
 func TestAcc_Warehouse_Generation(t *testing.T) {
+	funcTestAcc_Warehouse_Generation(t, providermodel.SnowflakeProvider(), testClient, TestAccProtoV6ProviderFactories)
+}
+
+func funcTestAcc_Warehouse_Generation(t *testing.T,
+	providerModel *providermodel.SnowflakeModel,
+	testClient func() *acchelpers.TestClient,
+	factory ProviderFactory,
+) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	warehouseModelStandard := model.Warehouse("test", id.Name()).
@@ -2357,7 +2367,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 		WithGenerationEnum(sdk.WarehouseGenerationStandardGen2)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: factory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2365,7 +2375,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 		Steps: []resource.TestStep{
 			// set up with concrete type
 			{
-				Config: config.FromModels(t, warehouseModelStandardAndGeneration),
+				Config: config.FromModels(t, providerModel, warehouseModelStandardAndGeneration),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelStandardAndGeneration.ResourceReference(), "resource_constraint", r.ShowOutputAttributeName),
@@ -2387,7 +2397,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 			},
 			// import when generation in config
 			{
-				Config:       accconfig.FromModels(t, warehouseModelStandardAndGeneration),
+				Config:       accconfig.FromModels(t, providerModel, warehouseModelStandardAndGeneration),
 				ResourceName: warehouseModelStandardAndGeneration.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
@@ -2404,7 +2414,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 			},
 			// change generation in config
 			{
-				Config: config.FromModels(t, warehouseModelStandardAndGeneration2),
+				Config: config.FromModels(t, providerModel, warehouseModelStandardAndGeneration2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelStandardAndGeneration2.ResourceReference(), "resource_constraint", r.ShowOutputAttributeName),
@@ -2426,7 +2436,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 			},
 			// remove generation from config
 			{
-				Config: config.FromModels(t, warehouseModelStandard),
+				Config: config.FromModels(t, providerModel, warehouseModelStandard),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -2449,7 +2459,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 			},
 			// add config again
 			{
-				Config: config.FromModels(t, warehouseModelStandardAndGeneration2),
+				Config: config.FromModels(t, providerModel, warehouseModelStandardAndGeneration2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelStandardAndGeneration2.ResourceReference(), "resource_constraint", r.ShowOutputAttributeName),
@@ -2474,7 +2484,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 				PreConfig: func() {
 					testClient().Warehouse.UpdateResourceConstraint(t, id, sdk.WarehouseResourceConstraintStandardGen1)
 				},
-				Config: config.FromModels(t, warehouseModelStandard),
+				Config: config.FromModels(t, providerModel, warehouseModelStandard),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -2503,7 +2513,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 					// we change the type to the type different from default, expecting action
 					testClient().Warehouse.UpdateResourceConstraint(t, id, sdk.WarehouseResourceConstraintStandardGen2)
 				},
-				Config: config.FromModels(t, warehouseModelStandard),
+				Config: config.FromModels(t, providerModel, warehouseModelStandard),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -2547,6 +2557,14 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 }
 
 func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
+	funcTestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t, providermodel.SnowflakeProvider(), testClient, TestAccProtoV6ProviderFactories)
+}
+
+func funcTestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T,
+	providerModel *providermodel.SnowflakeModel,
+	testClient func() *acchelpers.TestClient,
+	factory ProviderFactory,
+) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	warehouseModelDefault := model.Warehouse("test", id.Name()).
@@ -2574,7 +2592,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
-				Config:            config.FromModels(t, warehouseModelStandard),
+				Config:            config.FromModels(t, providerModel, warehouseModelStandard),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
@@ -2588,8 +2606,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			},
 			// set up with the standard type
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelStandard),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelStandard),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
@@ -2608,8 +2626,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			},
 			// change the type and add the resource constraint in config
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelSnowparkOptimizedAndResourceConstraint),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelSnowparkOptimizedAndResourceConstraint),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference(), "resource_constraint", r.ShowOutputAttributeName),
@@ -2632,8 +2650,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			},
 			// remove resource constraint from config and set back to standard type
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelStandard),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelStandard),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -2659,8 +2677,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 				PreConfig: func() {
 					testClient().Warehouse.UpdateWarehouseTypeAndResourceConstraint(t, id, sdk.WarehouseTypeSnowparkOptimized, sdk.WarehouseResourceConstraintMemory16X)
 				},
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelStandard),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelStandard),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -2687,13 +2705,13 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			},
 			// bring back the snowpark optimized type
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelSnowparkOptimizedAndResourceConstraint),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelSnowparkOptimizedAndResourceConstraint),
 			},
 			// remove the resource constraint and the type from config
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelDefault),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelDefault),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelDefault.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -2719,8 +2737,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 				PreConfig: func() {
 					testClient().Warehouse.UpdateWarehouseTypeAndResourceConstraint(t, id, sdk.WarehouseTypeSnowparkOptimized, sdk.WarehouseResourceConstraintMemory16X)
 				},
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelDefault),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelDefault),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -2747,8 +2765,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			},
 			// set standard and generation
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelStandardAndGeneration),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelStandardAndGeneration),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -2770,8 +2788,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			},
 			// remove generation and set to snowpark optimized
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelSnowparkOptimized),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelSnowparkOptimized),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelSnowparkOptimized.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -2797,8 +2815,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 				PreConfig: func() {
 					testClient().Warehouse.UpdateWarehouseTypeAndResourceConstraint(t, id, sdk.WarehouseTypeStandard, sdk.WarehouseResourceConstraintStandardGen2)
 				},
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelSnowparkOptimized),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelSnowparkOptimized),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -2824,13 +2842,13 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			},
 			// bring back the standard type
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelStandardAndGeneration),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelStandardAndGeneration),
 			},
 			// remove the resource constraint and the type from config
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, warehouseModelDefault),
+				ProtoV6ProviderFactories: factory,
+				Config:                   config.FromModels(t, providerModel, warehouseModelDefault),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelDefault.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -2911,6 +2929,14 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateManuallySetResourceConstraint(t
 }
 
 func TestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T) {
+	funcTestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t, providermodel.SnowflakeProvider(), testClient, TestAccProtoV6ProviderFactories)
+}
+
+func funcTestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T,
+	providerModel *providermodel.SnowflakeModel,
+	testClient func() *acchelpers.TestClient,
+	factory ProviderFactory,
+) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	warehouseModelStandard := model.Warehouse("test", id.Name()).
@@ -2928,7 +2954,7 @@ func TestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
-				Config:            config.FromModels(t, warehouseModelStandard),
+				Config:            config.FromModels(t, providerModel, warehouseModelStandard),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
@@ -2941,8 +2967,8 @@ func TestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T) {
 				),
 			},
 			{
-				Config:                   config.FromModels(t, warehouseModelStandardAndGeneration),
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, providerModel, warehouseModelStandardAndGeneration),
+				ProtoV6ProviderFactories: factory,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelStandardAndGeneration.ResourceReference(), plancheck.ResourceActionNoop),
@@ -3067,6 +3093,14 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 }
 
 func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T) {
+	funcTestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t, providermodel.SnowflakeProvider(), testClient, TestAccProtoV6ProviderFactories)
+}
+
+func funcTestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T,
+	providerModel *providermodel.SnowflakeModel,
+	testClient func() *acchelpers.TestClient,
+	factory ProviderFactory,
+) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	warehouseModelStandard := model.Warehouse("test", id.Name()).
@@ -3081,7 +3115,7 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
-				Config:            config.FromModels(t, warehouseModelStandard),
+				Config:            config.FromModels(t, providerModel, warehouseModelStandard),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
@@ -3094,8 +3128,8 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T)
 				),
 			},
 			{
-				Config:                   config.FromModels(t, warehouseModelStandard),
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, providerModel, warehouseModelStandard),
+				ProtoV6ProviderFactories: factory,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
@@ -3117,6 +3151,14 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T)
 }
 
 func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExternally(t *testing.T) {
+	funcTestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExternally(t, providermodel.SnowflakeProvider(), testClient, TestAccProtoV6ProviderFactories)
+}
+
+func funcTestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExternally(t *testing.T,
+	providerModel *providermodel.SnowflakeModel,
+	testClient func() *acchelpers.TestClient,
+	factory ProviderFactory,
+) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	warehouseModelStandard := model.Warehouse("test", id.Name()).
@@ -3131,7 +3173,7 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
-				Config:            config.FromModels(t, warehouseModelStandard),
+				Config:            config.FromModels(t, providerModel, warehouseModelStandard),
 				Check: assertThat(t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
@@ -3147,8 +3189,8 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 				PreConfig: func() {
 					testClient().Warehouse.UpdateResourceConstraint(t, id, sdk.WarehouseResourceConstraintStandardGen2)
 				},
-				Config:                   config.FromModels(t, warehouseModelStandard),
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, providerModel, warehouseModelStandard),
+				ProtoV6ProviderFactories: factory,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
