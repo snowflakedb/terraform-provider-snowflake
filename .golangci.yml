@@ -32,6 +32,7 @@ linters:
     testifylint:
       disable:
         - require-error # Do not force using require instead of assert checks.
+        - empty # Do not force using Empty assertion instead of Equal assertion with empty string.
   exclusions:
     presets:
       - legacy
