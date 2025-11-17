@@ -5,8 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO: Validate
-
 // DescribeListingSchema represents output of DESCRIBE LISTING for a single Listing.
 var DescribeListingSchema = map[string]*schema.Schema{
 	"global_name":                     {Type: schema.TypeString, Computed: true},
