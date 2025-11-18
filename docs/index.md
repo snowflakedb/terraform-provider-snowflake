@@ -605,6 +605,19 @@ resource "snowflake_execute" "test" {
 
 -> Note: Timeouts can be also set at driver's level (see [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake)). These timeouts are independent. We recommend tweaking the timeouts on Terraform level first.
 
+## General provider rules
+
+> Note: This section is in a `work in progress` state and will be updated over time.
+
+In this section, we describe general rules that apply to multiple resources and data sources in the provider.
+This may help you understand the provider behavior when you are getting started with it.
+
+However, getting familiar with existing [guides](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs)
+(`Guides` section on the left), resource-specific documentation, and Snowflake-specific documentation for a given object is still recommended.
+
+Here's a list of general rules:
+- All fields representing object identifiers (e.g., [allowed_network_rule_list](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_policy#allowed_network_rule_list-1) in `snowflake_network_policy`) or parts of them (e.g., `database`, `schema`, and `name` in the [snowflake_network_rule](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_rule#required) resource) are case-sensitive unless [QUOTED_IDENTIFIERS_IGNORE_CASE](https://docs.snowflake.com/en/sql-reference/parameters#quoted-identifiers-ignore-case) is enabled.
+
 ## A list of preview and stable resources and data sources
 
 The provider supports a number of Snowflake features. Within the provider, some features are stable, while others are in preview
