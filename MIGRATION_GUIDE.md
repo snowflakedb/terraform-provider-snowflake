@@ -26,6 +26,46 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.10.1 ➞ v2.10.2
 
+### *(new feature)* Added missing `object_types` in grant resources
+
+Previously, the following resources did not support all object types that can be specified in `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources.
+With this change, we added support for the following missing object types:
+
+- In the `snowflake_grant_privileges_to_account_role` resource:
+  - In the `on_account_object.object_type` field:
+    - `CONNECTION`
+  - In the `on_schema_object.object_type` field:
+    - `STORAGE LIFECYCLE POLICY`
+    - `ONLINE FEATURE TABLE`
+    - `WORKSPACE`
+  - In the `on_schema_object.all` field:
+    - `ONLINE FEATURE TABLE`
+  - In the `on_schema_object.future` field:
+    - `ONLINE FEATURE TABLE`
+- In the `snowflake_grant_privileges_to_database_role` resource:
+  - In the `on_schema_object.object_type` field:
+    - `STORAGE LIFECYCLE POLICY`
+    - `ONLINE FEATURE TABLE`
+    - `WORKSPACE`
+  - In the `on_schema_object.all` field:
+    - `ONLINE FEATURE TABLE`
+  - In the `on_schema_object.future` field:
+    - `ONLINE FEATURE TABLE`
+
+### *(improvement)* `describe_output` will now recompute whenever `comment` field is changed in secret resources
+
+Previously, in the following resources:
+- `snowflake_secret_with_generic_string`
+- `snowflake_secret_with_basic_authentication`
+- `snowflake_secret_with_oauth_authorization_code`
+- `snowflake_secret_with_client_credentials`
+
+when the `comment` field was changed, the `describe_output` field was not recomputed, although it contains the `comment` field.
+Now, changing the `comment` field will trigger recomputing the `describe_output` field. It doesn't affect current resource behavior
+(in terms of applying or ignoring changes on the actual Snowflake object), but keeps the consistency with logic in other resources.
+
+No changes in configuration and state are required.
+
 ### *(improvement)* Functions reading TOML configuration now clean path
 
 Previously, the provider's file reading functions did not clean paths. In this version, all functions handling files use Go's [filepath.Clean](https://pkg.go.dev/path/filepath#Clean) function for each file path.

@@ -42,7 +42,6 @@ const (
 	ObjectTypeCortexSearchService    ObjectType = "CORTEX SEARCH SERVICE"
 	ObjectTypeExternalTable          ObjectType = "EXTERNAL TABLE"
 	ObjectTypeEventTable             ObjectType = "EVENT TABLE"
-	ObjectTypeExperiment             ObjectType = "EXPERIMENT"
 	ObjectTypeView                   ObjectType = "VIEW"
 	ObjectTypeMaterializedView       ObjectType = "MATERIALIZED VIEW"
 	ObjectTypeSequence               ObjectType = "SEQUENCE"
@@ -68,7 +67,6 @@ const (
 	ObjectTypeApplicationPackage     ObjectType = "APPLICATION PACKAGE"
 	ObjectTypeApplicationRole        ObjectType = "APPLICATION ROLE"
 	ObjectTypeStreamlit              ObjectType = "STREAMLIT"
-	ObjectTypeOnlineFeatureTable     ObjectType = "ONLINE FEATURE TABLE"
 	ObjectTypeColumn                 ObjectType = "COLUMN"
 	ObjectTypeIcebergTable           ObjectType = "ICEBERG TABLE"
 	ObjectTypeJoinPolicy             ObjectType = "JOIN POLICY"
@@ -88,9 +86,11 @@ const (
 	ObjectTypeModelMonitor           ObjectType = "MODEL MONITOR"
 	ObjectTypeService                ObjectType = "SERVICE"
 	ObjectTypeStorageIntegration     ObjectType = "STORAGE INTEGRATION"
-	ObjectTypeStorageLifecyclePolicy ObjectType = "STORAGE LIFECYCLE POLICY"
 	ObjectTypeListing                ObjectType = "LISTING"
 	ObjectTypeSemanticView           ObjectType = "SEMANTIC VIEW"
+	ObjectTypeOnlineFeatureTable     ObjectType = "ONLINE FEATURE TABLE"
+	ObjectTypeExperiment             ObjectType = "EXPERIMENT"
+	ObjectTypeStorageLifecyclePolicy ObjectType = "STORAGE LIFECYCLE POLICY"
 	ObjectTypeWorkspace              ObjectType = "WORKSPACE"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
