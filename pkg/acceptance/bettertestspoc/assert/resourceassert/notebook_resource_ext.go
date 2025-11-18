@@ -9,6 +9,6 @@ func (n *NotebookResourceAssert) HasFromString(expectedPath string, expectedStag
 }
 
 func (n *NotebookResourceAssert) HasNoFromString() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("from.0"))
+	n.AddAssertion(assert.ValueSet("from.#", "0"))
 	return n
 }

@@ -44,31 +44,18 @@ func TestAcc_Notebook_basic(t *testing.T) {
 
 	idleAutoShutdownTimeSeconds, changedIdleAutoShutdownTimeSeconds := 3600, 2400
 
-	modelBasic := model.Notebook(
-		"test",
-		id.DatabaseName(),
-		id.SchemaName(),
-		id.Name(),
-	)
+	modelBasic := model.Notebook("test", id)
 
-	modelComplete := model.Notebook(
-		"test",
-		id.DatabaseName(),
-		id.SchemaName(),
-		id.Name(),
-	).WithComment(comment).
+	modelComplete := model.Notebook("test", id).
+		WithComment(comment).
 		WithFrom(path, stage.ID()).
 		WithMainFile("example.ipynb").
 		WithQueryWarehouse(queryWarehouse.ID().FullyQualifiedName()).
 		WithIdleAutoShutdownTimeSeconds(idleAutoShutdownTimeSeconds).
 		WithWarehouse(warehouse.ID().FullyQualifiedName())
 
-	modelCompleteWithDifferentValues := model.Notebook(
-		"test",
-		id.DatabaseName(),
-		id.SchemaName(),
-		id.Name(),
-	).WithComment(changedComment).
+	modelCompleteWithDifferentValues := model.Notebook("test", id).
+		WithComment(changedComment).
 		WithFrom(changedPath, changedStage.ID()).
 		WithMainFile("example.ipynb").
 		WithQueryWarehouse(changedQueryWarehouse.ID().FullyQualifiedName()).
@@ -369,12 +356,8 @@ func TestAcc_Notebook_complete(t *testing.T) {
 
 	idleAutoShutdownTimeSeconds := 3600
 
-	modelComplete := model.Notebook(
-		"test",
-		id.DatabaseName(),
-		id.SchemaName(),
-		id.Name(),
-	).WithComment(comment).
+	modelComplete := model.Notebook("test", id).
+		WithComment(comment).
 		WithFrom(path, stage.ID()).
 		WithMainFile("example.ipynb").
 		WithQueryWarehouse(queryWarehouse.ID().FullyQualifiedName()).

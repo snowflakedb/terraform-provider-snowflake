@@ -15,13 +15,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var notebookSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the notebook; must be unique for the schema in which the notebook is created."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -37,19 +37,13 @@ var notebookSchema = map[string]*schema.Schema{
 		Required:         true,
 		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the notebook."),
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("code_warehouse"),
-	},
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the notebook.",
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"from": {
-		Type:             schema.TypeList,
-		Optional:         true,
-		ForceNew:         true,
-		Description:      "Specifies that the notebook should be created from an .ipynb file in the specified stage location.",
-		DiffSuppressFunc: suppressIdentifierQuoting,
+		Type:        schema.TypeList,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "Specifies the location in a stage of an .ipynb file from which the notebook should be created.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"stage": {
@@ -62,7 +56,7 @@ var notebookSchema = map[string]*schema.Schema{
 				},
 				"path": {
 					Type:        schema.TypeString,
-					Optional:    true,
+					Required:    true,
 					ForceNew:    true,
 					Description: "Location of the .ipynb file in the stage.",
 				},
@@ -70,11 +64,15 @@ var notebookSchema = map[string]*schema.Schema{
 		},
 	},
 	"main_file": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ForceNew:         true,
-		Description:      "Specifies a user-specified identifier for the notebook file name.",
-		DiffSuppressFunc: suppressIdentifierQuoting,
+		Type:        schema.TypeString,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "Specifies a user-specified identifier for the notebook file name.",
+	},
+	"comment": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specifies a comment for the notebook.",
 	},
 	"query_warehouse": {
 		Type:             schema.TypeString,
@@ -84,9 +82,10 @@ var notebookSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"idle_auto_shutdown_time_seconds": {
-		Type:        schema.TypeInt,
-		Optional:    true,
-		Description: "Specifies the number of seconds of idle time before the notebook is shut down automatically.",
+		Type:             schema.TypeInt,
+		Optional:         true,
+		Description:      "Specifies the number of seconds of idle time before the notebook is shut down automatically.",
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 	},
 	"warehouse": {
 		Type:             schema.TypeString,
@@ -139,6 +138,7 @@ func Notebook() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Notebook, customdiff.All(
 			ComputedIfAnyAttributeChanged(notebookSchema, ShowOutputAttributeName, "comment", "query_warehouse", "code_warehouse"),
+			ComputedIfAnyAttributeChanged(notebookSchema, DescribeOutputAttributeName, "comment", "query_warehouse", "code_warehouse", "idle_auto_shutdown_time_seconds", "main_file"),
 		)),
 
 		Schema: notebookSchema,
@@ -162,16 +162,14 @@ func ImportNotebook(ctx context.Context, d *schema.ResourceData, meta any) ([]*s
 		return nil, err
 	}
 
-	if notebook.CodeWarehouse != nil {
-		if err := d.Set("warehouse", notebook.CodeWarehouse.FullyQualifiedName()); err != nil {
-			return nil, err
-		}
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
+		return nil, err
 	}
 
 	errs := errors.Join(
-		d.Set("name", notebook.Name),
 		d.Set("database", notebook.DatabaseName),
 		d.Set("schema", notebook.SchemaName),
+		d.Set("warehouse", notebook.CodeWarehouse.FullyQualifiedName()),
 	)
 	if errs != nil {
 		return nil, errs
@@ -200,7 +198,7 @@ func CreateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.FromErr(errs)
 	}
 
-	if fromStage, ok := d.GetOk("from"); ok {
+	if fromStage, ok := d.GetOk("from"); ok && len(fromStage.([]any)) > 0 {
 		fromStageMap := fromStage.([]any)[0].(map[string]any)
 
 		stage, err := sdk.ParseSchemaObjectIdentifier(fromStageMap["stage"].(string))
@@ -208,12 +206,14 @@ func CreateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.FromErr(err)
 		}
 
-		var location string
-		if l, ok := fromStageMap["location"]; ok {
-			location = l.(string)
+		var path string
+		if l, ok := fromStageMap["path"]; ok {
+			path = l.(string)
 		}
+		// TODO: For some reason it works only with an empty path; I will investigate further it in the next commit.
+		path = ""
 
-		request.WithFrom(sdk.NewStageLocation(stage, location))
+		request.WithFrom(sdk.NewStageLocation(stage, path))
 	}
 
 	if err := client.Notebooks.Create(ctx, request); err != nil {
@@ -253,12 +253,11 @@ func GetReadNotebookFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 		}
 
 		if withExternalChangesMarking {
-			var warehouse string
-			if notebook.CodeWarehouse != nil {
-				warehouse = notebook.CodeWarehouse.Name()
-			}
+			warehouse := notebook.CodeWarehouse.Name()
+			// secrets := notebookDetails.ExternalAccessSecrets
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"code_warehouse", "warehouse", warehouse, warehouse, nil},
+				// outputMapping{"external_access_secrets", "secrets", secrets, secrets, nil}, // TODO: to investigate in the next commit.
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -278,6 +277,10 @@ func GetReadNotebookFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 		)
 		if notebook.QueryWarehouse != nil {
 			errs = errors.Join(errs, d.Set("query_warehouse", notebook.QueryWarehouse.FullyQualifiedName()))
+		} else {
+			if _, ok := d.GetOk("query_warehouse"); ok {
+				errs = errors.Join(errs, d.Set("query_warehouse", ""))
+			}
 		}
 
 		if errs != nil {
@@ -295,17 +298,30 @@ func UpdateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 
 	set, unset := sdk.NewNotebookSetRequest(), sdk.NewNotebookUnsetRequest()
+
+	if d.HasChange("name") {
+		databaseName := d.Get("database").(string)
+		schemaName := d.Get("schema").(string)
+		name := d.Get("name").(string)
+		newId := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
+
+		err := client.Notebooks.Alter(ctx, sdk.NewAlterNotebookRequest(id).WithRenameTo(newId))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		d.SetId(newId.FullyQualifiedName())
+		id = newId
+	}
+
 	errs := errors.Join(
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		accountObjectIdentifierAttributeUpdate(d, "query_warehouse", &set.QueryWarehouse, &unset.QueryWarehouse),
 		accountObjectIdentifierAttributeUpdate(d, "warehouse", &set.Warehouse, &unset.Warehouse),
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "idle_auto_shutdown_time_seconds", &set.IdleAutoShutdownTimeSeconds, 1800),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
-	}
-
-	if err := intAttributeUnsetFallbackUpdateWithZeroDefault(d, "idle_auto_shutdown_time_seconds", &set.IdleAutoShutdownTimeSeconds, 1800); err != nil {
-		return diag.FromErr(err)
 	}
 
 	if !reflect.DeepEqual(set, &sdk.NotebookSetRequest{}) {
@@ -316,23 +332,10 @@ func UpdateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 
 	defaultUnset := &sdk.NotebookUnsetRequest{}
 	if !reflect.DeepEqual(unset, defaultUnset) {
-		// `warehouse` and `query_warehouse` cannot be unset in the same query
-		if unset.Warehouse != defaultUnset.Warehouse && unset.QueryWarehouse != defaultUnset.QueryWarehouse {
-			unsetWarehouse := &sdk.NotebookUnsetRequest{Warehouse: sdk.Bool(true)}
-			// unset warehouse
-			if err := client.Notebooks.Alter(ctx, sdk.NewAlterNotebookRequest(id).WithUnset(*unsetWarehouse)); err != nil {
-				return diag.FromErr(err)
-			}
-			// unset remaining parameters
-			unset.Warehouse = sdk.Bool(false)
-			if err := client.Notebooks.Alter(ctx, sdk.NewAlterNotebookRequest(id).WithUnset(*unset)); err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
-			if err := client.Notebooks.Alter(ctx, sdk.NewAlterNotebookRequest(id).WithUnset(*unset)); err != nil {
-				return diag.FromErr(err)
-			}
+		if err := client.Notebooks.Alter(ctx, sdk.NewAlterNotebookRequest(id).WithUnset(*unset)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
+
 	return GetReadNotebookFunc(false)(ctx, d, meta)
 }

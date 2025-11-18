@@ -29,12 +29,12 @@ resource "snowflake_notebook" "complete" {
   name                            = "NOTEBOOK"
   database                        = "DATABASE"
   schema                          = "SCHEMA"
-  from                            = "\"<db_name>\".\"<schema_name>\".\"<stage_name>\""
-  main_file                       = "MAIN_FILE.ipynb"
-  query_warehouse                 = "\"QUERY_WAREHOUSE\""
-  idle_auto_shutdown_time_seconds = number_of_seconds
-  warehouse                       = "\"WAREHOUSE\""
-  comment                         = "comment"
+  from                            = snowflake_stage.test.fully_qualifed_name
+  main_file                       = "my_notebook.ipynb"
+  query_warehouse                 = snowflake_warehouse.test.name
+  idle_auto_shutdown_time_seconds = 2400
+  warehouse                       = snowflake_warehouse.test.name
+  comment                         = "Lorem ipsum"
 }
 ```
 

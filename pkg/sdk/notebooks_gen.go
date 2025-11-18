@@ -187,7 +187,7 @@ type Notebook struct {
 	QueryWarehouse *AccountObjectIdentifier
 	UrlId          string
 	OwnerRoleType  string
-	CodeWarehouse  *AccountObjectIdentifier
+	CodeWarehouse  AccountObjectIdentifier
 }
 
 func (v *Notebook) ID() SchemaObjectIdentifier {

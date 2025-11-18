@@ -24,12 +24,13 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.10.x -> v2.11.0
+
 ### *(new feature)* snowflake_notebook resource
 Added a new preview resource for managing notebooks. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_notebook_resource` to `preview_features_enabled` field in the provider configuration.
 
-## v2.9.x ➞ v2.10.0
 ## v2.10.1 ➞ v2.10.2
 
 ### *(bugfix)* Disallowed setting `DATABASE ROLES` object type on `all` and `future` fields in `snowflake_grant_ownership` resource
@@ -185,7 +186,7 @@ In this version we introduce a new attribute on the provider level: [`experiment
 
 We treat the available values as experiments, that may become stable feature/behavior in the future provider releases if successful.
 
-Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses. 
+Currently, the only available experiment is `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`. When enabled, it uses a slightly different SHOW query to read warehouse details. It's meant to improve the performance for accounts with many warehouses.
 
 **Important**: to benefit from this improvement, you need to have it enabled also on your Snowflake account. To do this, please reach out to us through your Snowflake Account Manager.
 

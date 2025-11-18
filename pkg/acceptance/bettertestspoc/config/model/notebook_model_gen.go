@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -34,14 +35,12 @@ type NotebookModel struct {
 
 func Notebook(
 	resourceName string,
-	database string,
-	schema string,
-	name string,
+	id sdk.SchemaObjectIdentifier,
 ) *NotebookModel {
 	n := &NotebookModel{ResourceModelMeta: config.Meta(resourceName, resources.Notebook)}
-	n.WithDatabase(database)
-	n.WithSchema(schema)
-	n.WithName(name)
+	n.WithDatabase(id.DatabaseName())
+	n.WithSchema(id.SchemaName())
+	n.WithName(id.Name())
 	return n
 }
 

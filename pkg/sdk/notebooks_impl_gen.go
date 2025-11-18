@@ -207,7 +207,7 @@ func (r notebookRow) convert() (*Notebook, error) {
 		Owner:         r.Owner,
 		UrlId:         r.UrlId,
 		OwnerRoleType: r.OwnerRoleType,
-		CodeWarehouse: &AccountObjectIdentifier{r.CodeWarehouse},
+		CodeWarehouse: AccountObjectIdentifier{r.CodeWarehouse},
 	}
 
 	mapNullString(&n.Comment, r.Comment)
