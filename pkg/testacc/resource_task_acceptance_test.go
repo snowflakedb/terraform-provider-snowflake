@@ -1096,11 +1096,11 @@ func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 			},
 			{
 				Config:      taskConfigInvalidScheduleNegativeSeconds(id),
-				ExpectError: regexp.MustCompile("expected schedule.0.seconds to be at least \\(1\\)"),
+				ExpectError: regexp.MustCompile("expected schedule.0.seconds to be in the range \\(10 - 691200\\)"),
 			},
 			{
 				Config:      taskConfigInvalidScheduleNegativeHours(id),
-				ExpectError: regexp.MustCompile("expected schedule.0.hours to be at least \\(1\\)"),
+				ExpectError: regexp.MustCompile("expected schedule.0.hours to be in the range \\(1 - 192\\)"),
 			},
 		},
 	})
@@ -1139,7 +1139,7 @@ resource "snowflake_task" "test" {
 	sql_statement = "SELECT 1"
 
 	schedule {
-		seconds = -1
+		seconds = 5
 	}
 }`, id.DatabaseName(), id.SchemaName(), id.Name())
 }
@@ -1154,7 +1154,7 @@ resource "snowflake_task" "test" {
 	sql_statement = "SELECT 1"
 
 	schedule {
-		hours = -1
+		hours = 200
 	}
 }`, id.DatabaseName(), id.SchemaName(), id.Name())
 }
