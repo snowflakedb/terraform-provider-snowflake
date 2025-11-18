@@ -31,26 +31,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 Previously, the following resources did not support all object types that can be specified in `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources.
 With this change, we added support for the following missing object types:
 
-- In the `snowflake_grant_privileges_to_account_role` resource:
-  - In the `on_account_object.object_type` field:
-    - `CONNECTION`
-  - In the `on_schema_object.object_type` field:
-    - `STORAGE LIFECYCLE POLICY`
-    - `ONLINE FEATURE TABLE`
-    - `WORKSPACE`
-  - In the `on_schema_object.all` field:
-    - `ONLINE FEATURE TABLE`
-  - In the `on_schema_object.future` field:
-    - `ONLINE FEATURE TABLE`
-- In the `snowflake_grant_privileges_to_database_role` resource:
-  - In the `on_schema_object.object_type` field:
-    - `STORAGE LIFECYCLE POLICY`
-    - `ONLINE FEATURE TABLE`
-    - `WORKSPACE`
-  - In the `on_schema_object.all` field:
-    - `ONLINE FEATURE TABLE`
-  - In the `on_schema_object.future` field:
-    - `ONLINE FEATURE TABLE`
+In the `snowflake_grant_privileges_to_account_role` resource, we enabled support for:
+- `CONNECTION` object type in the `on_account_object.object_type` field
+- `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
+ 
+In the `snowflake_grant_privileges_to_database_role` resource, we enabled support for:
+- `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
 
 ### *(improvement)* `describe_output` will now recompute whenever `comment` field is changed in secret resources
 
