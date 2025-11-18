@@ -44,9 +44,9 @@ func TestAcc_Notebook_basic(t *testing.T) {
 
 	idleAutoShutdownTimeSeconds, changedIdleAutoShutdownTimeSeconds := 3600, 2400
 
-	modelBasic := model.Notebook("test", id)
+	modelBasic := model.NotebookFromId("test", id)
 
-	modelComplete := model.Notebook("test", id).
+	modelComplete := model.NotebookFromId("test", id).
 		WithComment(comment).
 		WithFrom(path, stage.ID()).
 		WithMainFile("example.ipynb").
@@ -54,7 +54,7 @@ func TestAcc_Notebook_basic(t *testing.T) {
 		WithIdleAutoShutdownTimeSeconds(idleAutoShutdownTimeSeconds).
 		WithWarehouse(warehouse.ID().FullyQualifiedName())
 
-	modelCompleteWithDifferentValues := model.Notebook("test", id).
+	modelCompleteWithDifferentValues := model.NotebookFromId("test", id).
 		WithComment(changedComment).
 		WithFrom(changedPath, changedStage.ID()).
 		WithMainFile("example.ipynb").
@@ -356,7 +356,7 @@ func TestAcc_Notebook_complete(t *testing.T) {
 
 	idleAutoShutdownTimeSeconds := 3600
 
-	modelComplete := model.Notebook("test", id).
+	modelComplete := model.NotebookFromId("test", id).
 		WithComment(comment).
 		WithFrom(path, stage.ID()).
 		WithMainFile("example.ipynb").
