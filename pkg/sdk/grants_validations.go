@@ -177,20 +177,21 @@ var validGrantToSchemaObjectTypes = []ObjectType{
 	ObjectTypeWorkspace,
 }
 
+// TODO(SNOW-2370066): Adjust after adding tests
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
 var invalidGrantToAllObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
 	ObjectTypeExternalFunction,
 	ObjectTypeExperiment,
-	ObjectTypeImageRepository,
-	ObjectTypeAggregationPolicy,
-	ObjectTypeMaskingPolicy,
-	ObjectTypePackagesPolicy,
-	ObjectTypeProjectionPolicy,
-	ObjectTypeRowAccessPolicy,
-	ObjectTypeSessionPolicy,
+	// ObjectTypeImageRepository,
+	// ObjectTypeAggregationPolicy,
+	// ObjectTypeMaskingPolicy,
+	// ObjectTypePackagesPolicy,
+	// ObjectTypeProjectionPolicy,
+	// ObjectTypeRowAccessPolicy,
+	// ObjectTypeSessionPolicy,
 	ObjectTypeStorageLifecyclePolicy,
-	ObjectTypeTag,
+	// ObjectTypeTag,
 	ObjectTypeWarehouse,
 	ObjectTypeWorkspace,
 }
