@@ -206,12 +206,12 @@ func CreateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.FromErr(err)
 		}
 
-		var path string
-		if l, ok := fromStageMap["path"]; ok {
-			path = l.(string)
-		}
+		// var path string
+		// if l, ok := fromStageMap["path"]; ok {
+		// 	path = l.(string)
+		// }
 		// TODO: For some reason it works only with an empty path; I will investigate further it in the next commit.
-		path = ""
+		path := ""
 
 		request.WithFrom(sdk.NewStageLocation(stage, path))
 	}

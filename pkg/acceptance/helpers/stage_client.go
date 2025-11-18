@@ -139,6 +139,7 @@ func (c *StageClient) PutInLocationWithContent(t *testing.T, stageLocation strin
 }
 
 func (c *StageClient) putInLocation(ctx context.Context, t *testing.T, filePath string, filename string, location string) {
+	t.Helper()
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s %s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, location))
 	require.NoError(t, err)
 	t.Cleanup(func() {
