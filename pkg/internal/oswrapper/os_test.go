@@ -117,10 +117,28 @@ func TestReadFileSafeReadsFileWithCorrectPermissions(t *testing.T) {
 	}
 }
 
-func TestStat(t *testing.T) {
-	env := random.AlphaN(10)
-	t.Setenv(env, "test")
-	require.Equal(t, os.Getenv(env), oswrapper.Getenv(env))
+func TestReadFileSafeCleansPath(t *testing.T) {
+	if oswrapper.IsRunningOnWindows() {
+		t.Skip("checking path cleaning is tested only on Unix systems")
+	}
+	// In this case, we must test the suffixed paths. These suffixes are cleaned, and the resulting path is a valid filename.
+	// If we add similar prefixes, the path even without cleaning is valid and handled by the reading functions correctly.
+	tests := []struct {
+		suffix string
+	}{
+		{suffix: "/"},
+		{suffix: "/./"},
+	}
+
+	content := random.Bytes()
+	filePath := testfiles.TestFile(t, "config", content)
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("cleaning path %s", tt.suffix), func(t *testing.T) {
+			got, err := oswrapper.ReadFileSafe(filePath+tt.suffix, true)
+			require.NoError(t, err)
+			require.Equal(t, content, got)
+		})
+	}
 }
 
 func TestStatOnFileThatDoesNotExist(t *testing.T) {
@@ -129,6 +147,27 @@ func TestStatOnFileThatDoesNotExist(t *testing.T) {
 	actVal, actErr := oswrapper.Stat(fileName)
 	require.Equal(t, expVal, actVal)
 	require.Equal(t, expErr, actErr)
+}
+
+func TestStatCleansPath(t *testing.T) {
+	if oswrapper.IsRunningOnWindows() {
+		t.Skip("checking path cleaning is tested only on Unix systems")
+	}
+	// In this case, we must test the suffixed paths. These suffixes are cleaned, and the resulting path is a valid filename.
+	// If we add similar prefixes, the path even without cleaning is valid and handled by the reading functions correctly.
+	tests := []struct {
+		suffix string
+	}{
+		{suffix: "/"},
+		{suffix: "/./"},
+	}
+	filePath := testfiles.TestFile(t, "config", random.Bytes())
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("cleaning path %s", tt.suffix), func(t *testing.T) {
+			_, err := oswrapper.Stat(filePath + tt.suffix)
+			require.NoError(t, err)
+		})
+	}
 }
 
 func TestGetenv(t *testing.T) {
