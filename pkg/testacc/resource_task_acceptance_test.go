@@ -6,6 +6,7 @@ package testacc
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	configvariable "github.com/hashicorp/terraform-plugin-testing/config"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -802,8 +804,7 @@ func TestAcc_Task_SecondsAndHours(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with seconds
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithSeconds),
+				Config: config.FromModels(t, configModelWithSeconds),
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, configModelWithSeconds.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
@@ -821,8 +822,7 @@ func TestAcc_Task_SecondsAndHours(t *testing.T) {
 			},
 			// Unset schedule (from seconds)
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithoutSchedule),
+				Config: config.FromModels(t, configModelWithoutSchedule),
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, configModelWithoutSchedule.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
@@ -838,10 +838,12 @@ func TestAcc_Task_SecondsAndHours(t *testing.T) {
 						HasScheduleEmpty(),
 				),
 			},
-			// Create with hours
+			// Create with hours (add Destroy step as requested)
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithHours),
+				Destroy: true,
+			},
+			{
+				Config: config.FromModels(t, configModelWithHours),
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
@@ -859,8 +861,7 @@ func TestAcc_Task_SecondsAndHours(t *testing.T) {
 			},
 			// Change to seconds
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithSeconds),
+				Config: config.FromModels(t, configModelWithSeconds),
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, configModelWithSeconds.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
@@ -878,8 +879,36 @@ func TestAcc_Task_SecondsAndHours(t *testing.T) {
 			},
 			// Change back to hours
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_Task/basic"),
-				ConfigVariables: config.ConfigVariablesFromModel(t, configModelWithHours),
+				Config: config.FromModels(t, configModelWithHours),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleHours(hours).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithHours.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleHours(hours),
+				),
+			},
+			// External changes detection - alter task externally with different schedule type
+			{
+				PreConfig: func() {
+					client := testClient().Client
+					ctx := context.Background()
+					// Alter the task externally to use seconds instead of hours
+					err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(id).WithSuspend(true))
+					require.NoError(t, err)
+					err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().WithSchedule(sdk.String("30 SECOND"))))
+					require.NoError(t, err)
+					err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(id).WithResume(true))
+					require.NoError(t, err)
+				},
+				Config: config.FromModels(t, configModelWithHours),
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
@@ -1065,6 +1094,14 @@ func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 				Config:      taskConfigInvalidScheduleSetMultipleOrEmpty(id, false),
 				ExpectError: regexp.MustCompile("\"schedule.0.minutes\": one of `schedule.0.seconds,schedule.0.minutes,schedule.0.hours,schedule.0.using_cron`"),
 			},
+			{
+				Config:      taskConfigInvalidScheduleNegativeSeconds(id),
+				ExpectError: regexp.MustCompile("expected schedule.0.seconds to be at least \\(1\\)"),
+			},
+			{
+				Config:      taskConfigInvalidScheduleNegativeHours(id),
+				ExpectError: regexp.MustCompile("expected schedule.0.hours to be at least \\(1\\)"),
+			},
 		},
 	})
 }
@@ -1090,6 +1127,36 @@ resource "snowflake_task" "test" {
 
 	%[4]s
 }`, id.DatabaseName(), id.SchemaName(), id.Name(), scheduleString)
+}
+
+func taskConfigInvalidScheduleNegativeSeconds(id sdk.SchemaObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_task" "test" {
+	database = "%[1]s"
+	schema = "%[2]s"
+	name = "%[3]s"
+	started = false
+	sql_statement = "SELECT 1"
+
+	schedule {
+		seconds = -1
+	}
+}`, id.DatabaseName(), id.SchemaName(), id.Name())
+}
+
+func taskConfigInvalidScheduleNegativeHours(id sdk.SchemaObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_task" "test" {
+	database = "%[1]s"
+	schema = "%[2]s"
+	name = "%[3]s"
+	started = false
+	sql_statement = "SELECT 1"
+
+	schedule {
+		hours = -1
+	}
+}`, id.DatabaseName(), id.SchemaName(), id.Name())
 }
 
 func TestAcc_Task_Enabled(t *testing.T) {
@@ -2075,6 +2142,74 @@ func TestAcc_Task_StateUpgrade(t *testing.T) {
 	})
 }
 
+func TestAcc_Task_StateUpgradeWithHours(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+	condition := "2 < 1"
+	hours := 2
+	configModel := model.TaskWithId("test", id, false, statement).
+		WithScheduleHours(hours).
+		WithAllowOverlappingExecution(r.BooleanTrue).
+		WithSuspendTaskAfterNumFailures(10).
+		WithWhen(condition).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeXSmall)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					SetLegacyConfigPathEnv(t)
+					// Manually create the task with hours schedule since older versions didn't support it
+					client := testClient().Client
+					ctx := context.Background()
+					req := sdk.NewCreateTaskRequest(id, statement).
+						WithSchedule(sdk.String(fmt.Sprintf("%d HOUR", hours))).
+						WithAllowOverlappingExecution(sdk.Bool(true)).
+						WithWhen(condition).
+						WithUserTaskManagedInitialWarehouseSize(&sdk.CreateTaskUserTaskManagedInitialWarehouseSizeRequest{
+							UserTaskManagedInitialWarehouseSize: sdk.WarehouseSizeXSmall,
+						})
+
+					err := client.Tasks.Create(ctx, req)
+					require.NoError(t, err)
+				},
+				ExternalProviders: ExternalProviderWithExactVersion("0.98.0"),
+				Config:            taskBasicConfigV0980WithHours(id, condition, hours),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(configModel.ResourceReference(), "enabled", "false"),
+					resource.TestCheckResourceAttr(configModel.ResourceReference(), "allow_overlapping_execution", "true"),
+					resource.TestCheckResourceAttr(configModel.ResourceReference(), "schedule", fmt.Sprintf("%d HOURS", hours)),
+					resource.TestCheckResourceAttr(configModel.ResourceReference(), "suspend_task_after_num_failures", "10"),
+					resource.TestCheckResourceAttr(configModel.ResourceReference(), "when", condition),
+					resource.TestCheckResourceAttr(configModel.ResourceReference(), "user_task_managed_initial_warehouse_size", "XSMALL"),
+				),
+			},
+			{
+				PreConfig:                func() { UnsetConfigPathEnv(t) },
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasScheduleHours(hours).
+						HasAllowOverlappingExecutionString(r.BooleanTrue).
+						HasSuspendTaskAfterNumFailuresString("10").
+						HasWhenString(condition).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeXSmall),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 	rootTask, rootTaskCleanup := testClient().Task.Create(t)
 	t.Cleanup(rootTaskCleanup)
@@ -2177,6 +2312,23 @@ resource "snowflake_task" "test" {
 	user_task_managed_initial_warehouse_size = "XSMALL"
 }
 `, id.DatabaseName(), id.SchemaName(), id.Name(), condition)
+}
+
+func taskBasicConfigV0980WithHours(id sdk.SchemaObjectIdentifier, condition string, hours int) string {
+	return fmt.Sprintf(`
+resource "snowflake_task" "test" {
+	database = "%[1]s"
+	schema = "%[2]s"
+	name = "%[3]s"
+	enabled = false
+	sql_statement = "SELECT 1"
+	schedule = "%[5]d HOURS"
+	allow_overlapping_execution = true
+	suspend_task_after_num_failures = 10
+	when = "%[4]s"
+	user_task_managed_initial_warehouse_size = "XSMALL"
+}
+`, id.DatabaseName(), id.SchemaName(), id.Name(), condition, hours)
 }
 
 func taskCompleteConfigV0980(
