@@ -57,6 +57,7 @@ const (
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
 	NotebookResource                              feature = "snowflake_notebook_resource"
+	NotebooksDatasource                           feature = "snowflake_notebook_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
@@ -136,6 +137,7 @@ var allPreviewFeatures = []feature{
 	NetworkPolicyAttachmentResource,
 	NetworkRuleResource,
 	NotebookResource,
+	NotebooksDatasource,
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
