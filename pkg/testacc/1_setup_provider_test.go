@@ -18,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type ProviderFactory = map[string]func() (tfprotov6.ProviderServer, error)
+
 var (
 	// TODO [SNOW-2661409]: check all the places using TestAccProvider directly
 	TestAccProvider                 *schema.Provider
