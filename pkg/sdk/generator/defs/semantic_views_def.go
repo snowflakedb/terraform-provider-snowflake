@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var semanticViewDbRow = g.DbStruct("semanticViewDBRow").
 	Time("created_on").
@@ -39,7 +43,7 @@ var semanticViewDetails = g.PlainStruct("SemanticViewDetails").
 var SemanticViewsDef = g.NewInterface(
 	"SemanticViews",
 	"SemanticView",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view",
@@ -132,7 +136,7 @@ var semanticViewColumn = g.NewQueryStruct("SemanticViewColumn").
 
 var logicalTable = g.NewQueryStruct("LogicalTable").
 	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.KeywordOptions()).
-	Identifier("TableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+	Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	OptionalQueryStructField("primaryKeys", primaryKey, g.ParameterOptions().NoEquals()).
 	ListQueryStructField("uniqueKeys", uniqueKey, g.ListOptions().NoEquals().NoComma()).
 	OptionalQueryStructField("synonyms", synonyms, g.ParameterOptions().NoEquals()).
@@ -143,7 +147,7 @@ var relationshipAlias = g.NewQueryStruct("RelationshipAlias").
 	SQL("AS")
 
 var relationshipTableNameOrAlias = g.NewQueryStruct("RelationshipTableAlias").
-	OptionalIdentifier("RelationshipTableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions()).
+	OptionalIdentifier("RelationshipTableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions()).
 	OptionalText("RelationshipTableAlias", g.KeywordOptions()).
 	WithValidation(g.ExactlyOneValueSet, "RelationshipTableName", "RelationshipTableAlias")
 
