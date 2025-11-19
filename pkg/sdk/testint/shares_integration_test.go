@@ -73,6 +73,7 @@ func TestInt_SharesCreate(t *testing.T) {
 			Comment:   sdk.String("test comment"),
 		})
 		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Share.DropShareFunc(t, id))
 		shares, err := client.Shares.Show(ctx, &sdk.ShowShareOptions{
 			Like: &sdk.Like{
 				Pattern: sdk.String(id.Name()),
@@ -85,8 +86,6 @@ func TestInt_SharesCreate(t *testing.T) {
 		assert.Len(t, shares, 1)
 		assert.Equal(t, id.Name(), shares[0].Name.Name())
 		assert.Equal(t, "test comment", shares[0].Comment)
-
-		t.Cleanup(testClientHelper().Share.DropShareFunc(t, id))
 	})
 
 	t.Run("test no options", func(t *testing.T) {
@@ -96,11 +95,10 @@ func TestInt_SharesCreate(t *testing.T) {
 			Comment:   sdk.String("test comment"),
 		})
 		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Share.DropShareFunc(t, id))
 		shares, err := client.Shares.Show(ctx, nil)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, len(shares), 1)
-
-		t.Cleanup(testClientHelper().Share.DropShareFunc(t, id))
 	})
 }
 
