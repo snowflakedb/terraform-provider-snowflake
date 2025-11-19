@@ -21,8 +21,8 @@ func TestInt_SemanticView(t *testing.T) {
 		*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
 		*sdk.NewTableColumnRequest("FIRST_C", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
 	}
-	table1ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1ID, columns1))
+	table1Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
+	table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1Id, columns1))
 	t.Cleanup(table1Cleanup)
 
 	columns2 := []sdk.TableColumnRequest{
@@ -30,8 +30,8 @@ func TestInt_SemanticView(t *testing.T) {
 		*sdk.NewTableColumnRequest("SECOND_B", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
 		*sdk.NewTableColumnRequest("SECOND_C", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
 	}
-	table2ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	table2, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2ID, columns2))
+	table2Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
+	table2, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2Id, columns2))
 	t.Cleanup(table2Cleanup)
 
 	// create logical table entities using the 2 tables created above
@@ -51,7 +51,7 @@ func TestInt_SemanticView(t *testing.T) {
 	}
 
 	// create a simple metric to be used in the semantic view definition
-	metricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.metric1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "SUM(table1.FIRST_A)"})
+	metricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."metric1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("table1".FIRST_A)`})
 	metric := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*metricSemanticExpression)
 	metrics := []sdk.MetricDefinitionRequest{
 		*metric,
@@ -103,13 +103,13 @@ func TestInt_SemanticView(t *testing.T) {
 
 		// facts
 		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F1"}})
-		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.fact1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "FIRST_C"}).
+		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."fact1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "FIRST_C"}).
 			WithSynonyms(*factSynonymRequest).
 			WithComment("fact comment")
 
 		// dimensions
 		dimensionSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "D1"}})
-		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.FIRST_C"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "table1.FIRST_C"}).
+		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1".FIRST_C`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"table1".FIRST_C`}).
 			WithSynonyms(*dimensionSynonymRequest).
 			WithComment("dimension comment")
 
@@ -150,14 +150,14 @@ func TestInt_SemanticView(t *testing.T) {
 		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
 
 		tableKind, metricKind := "TABLE", "METRIC"
-		t1Name, t2Name, metricName := "TABLE1", "TABLE2", "METRIC1"
+		t1Name, t2Name, metricName := "table1", "table2", "metric1"
 
 		tableDatabaseName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
 		tableSchemaName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
 		tableName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_NAME", table1.Name)
 		pk := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "PRIMARY_KEY", "[\"FIRST_C\"]")
-		metricTable := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "TABLE", "TABLE1")
-		metricExpression := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "EXPRESSION", "SUM(table1.FIRST_A)")
+		metricTable := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "TABLE", "table1")
+		metricExpression := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "EXPRESSION", `SUM("table1".FIRST_A)`) // alias
 		metricDataType := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "DATA_TYPE", "NUMBER(38,0)")
 		metricAccessModifier := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "ACCESS_MODIFIER", "PUBLIC")
 		tableDatabaseName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_DATABASE_NAME", table2.DatabaseName)

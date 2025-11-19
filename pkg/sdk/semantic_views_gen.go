@@ -97,7 +97,8 @@ type SemanticExpression struct {
 }
 
 type QualifiedExpressionName struct {
-	QualifiedExpressionName string `ddl:"keyword,double_quotes"`
+	// TODO [this PR]: adjusted manually
+	QualifiedExpressionName string `ddl:"keyword"`
 }
 
 type SemanticSqlExpression struct {
