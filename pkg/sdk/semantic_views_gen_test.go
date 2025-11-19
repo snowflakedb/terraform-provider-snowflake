@@ -3,6 +3,7 @@
 package sdk
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -211,7 +212,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		}
 		factsObj := []SemanticExpression{
 			{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: factName},
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, factName)},
 				sqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
 				synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
 				Comment:                 String("fact_comment"),
@@ -219,7 +220,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		}
 		dimensionsObj := []SemanticExpression{
 			{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: dimensionName},
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, dimensionName)},
 				sqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
 				synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
 				Comment:                 String("dimension_comment"),
@@ -228,7 +229,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		metricsObj := []MetricDefinition{
 			{
 				semanticExpression: &SemanticExpression{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, metricName)},
 					sqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
 					synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test5"}, {Synonym: "test6"}}},
 					Comment:                 String("metric_comment"),
