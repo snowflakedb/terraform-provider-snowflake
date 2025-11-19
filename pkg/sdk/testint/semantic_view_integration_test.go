@@ -253,8 +253,8 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, newId.Name(), result.Name)
 
-		_, err := client.SemanticViews.ShowByID(ctx, id)
-		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+		_, err = client.SemanticViews.ShowByID(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
 	t.Run("drop: basic", func(t *testing.T) {
