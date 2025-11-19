@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [this PR]: check creation with a non-existent table
 func TestInt_SemanticView(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -57,7 +56,7 @@ func TestInt_SemanticView(t *testing.T) {
 		*metric,
 	}
 
-	t.Run("create and show", func(t *testing.T) {
+	t.Run("create: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
 
@@ -82,7 +81,7 @@ func TestInt_SemanticView(t *testing.T) {
 		)
 	})
 
-	t.Run("create - all fields", func(t *testing.T) {
+	t.Run("create: all fields", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		// relationships
@@ -139,6 +138,15 @@ func TestInt_SemanticView(t *testing.T) {
 			HasOwnerRoleType("ROLE").
 			HasComment("comment"),
 		)
+	})
+
+	t.Run("create: non-existing table", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*sdk.NewLogicalTableRequest(NonExistingSchemaObjectIdentifier)}).WithSemanticViewMetrics(metrics)
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.ErrorContains(t, err, "object does not exist or not authorized")
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
 	})
 
 	t.Run("describe semantic view", func(t *testing.T) {
@@ -226,7 +234,30 @@ func TestInt_SemanticView(t *testing.T) {
 		)
 	})
 
-	t.Run("drop semantic view", func(t *testing.T) {
+	t.Run("alter: rename", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		alterRequest := sdk.NewAlterSemanticViewRequest(id).WithRenameTo(newId)
+
+		err = client.SemanticViews.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, newId))
+
+		result, err := client.SemanticViews.ShowByID(ctx, newId)
+		require.NoError(t, err)
+		require.Equal(t, newId.Name(), result.Name)
+
+		_, err := client.SemanticViews.ShowByID(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+
+	t.Run("drop: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
 
@@ -245,5 +276,11 @@ func TestInt_SemanticView(t *testing.T) {
 		// with if exists set to true, calling Drop again should not return an error
 		err = client.SemanticViews.Drop(ctx, dropRequest)
 		require.NoError(t, err)
+	})
+
+	t.Run("drop: not existing", func(t *testing.T) {
+		dropRequest := sdk.NewDropSemanticViewRequest(NonExistingSchemaObjectIdentifier)
+		err := client.SemanticViews.Drop(ctx, dropRequest)
+		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }

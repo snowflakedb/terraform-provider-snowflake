@@ -77,8 +77,9 @@ var SemanticViewsDef = g.NewInterface(
 			Name().
 			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalSQL("UNSET COMMENT").
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment"),
+			WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment", "RenameTo"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
@@ -160,7 +161,7 @@ var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
 	ListQueryStructField("relationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())
 
 var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
-	Text("QualifiedExpressionName", g.KeywordOptions().DoubleQuotes().Required())
+	Text("QualifiedExpressionName", g.KeywordOptions().Required())
 
 var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
 	Text("SqlExpression", g.KeywordOptions().NoQuotes().Required())
