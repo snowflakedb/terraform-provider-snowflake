@@ -5,7 +5,7 @@ description: |-
   Resource used to manage notebooks. For more information, check notebooks documentation https://docs.snowflake.com/en/sql-reference/sql/create-notebook.
 ---
 
--> **Note** External changes to `from` are not currently supported. They will be handled in the following versions of the provider which may still affect this resource.
+-> **Note** Due to Snowflake limitations, external changes to `from` are not currently detected.
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
@@ -58,7 +58,7 @@ resource "snowflake_notebook" "complete" {
 - `idle_auto_shutdown_time_seconds` (Number) Specifies the number of seconds of idle time before the notebook is shut down automatically.
 - `main_file` (String) Specifies a user-specified identifier for the notebook file name.
 - `query_warehouse` (String) Specifies the warehouse where SQL queries in the notebook are run.
-- `secrets` (String) Specifies secret variables for the notebook.
+- `secrets` (Block List) Specifies secret variables for the notebook. (see [below for nested schema](#nestedblock--secrets))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `warehouse` (String) Specifies the warehouse that runs the notebook kernel and python code.
 
@@ -76,6 +76,15 @@ Required:
 
 - `path` (String) Location of the .ipynb file in the stage.
 - `stage` (String) Identifier of the stage where the .ipynb file is located.
+
+
+<a id="nestedblock--secrets"></a>
+### Nested Schema for `secrets`
+
+Required:
+
+- `secret_id` (String) Fully qualified name of the allowed [secret](https://docs.snowflake.com/en/sql-reference/sql/create-secret).
+- `secret_variable_name` (String) The name of the secret variable.
 
 
 <a id="nestedblock--timeouts"></a>

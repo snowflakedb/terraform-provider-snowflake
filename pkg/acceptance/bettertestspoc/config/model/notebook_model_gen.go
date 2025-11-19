@@ -128,10 +128,7 @@ func (n *NotebookModel) WithQueryWarehouse(queryWarehouse string) *NotebookModel
 	return n
 }
 
-func (n *NotebookModel) WithSecrets(secrets string) *NotebookModel {
-	n.Secrets = tfconfig.StringVariable(secrets)
-	return n
-}
+// secrets attribute type is not yet supported, so WithSecrets can't be generated
 
 func (n *NotebookModel) WithWarehouse(warehouse string) *NotebookModel {
 	n.Warehouse = tfconfig.StringVariable(warehouse)

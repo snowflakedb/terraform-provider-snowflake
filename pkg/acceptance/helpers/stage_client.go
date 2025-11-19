@@ -114,7 +114,7 @@ func (c *StageClient) PutOnUserStageWithContent(t *testing.T, filename string, c
 	return path
 }
 
-func (c *StageClient) PutOnStageWithPath(t *testing.T, id sdk.SchemaObjectIdentifier, filename string) string {
+func (c *StageClient) PutOnStageWithPath(t *testing.T, id sdk.SchemaObjectIdentifier, stageLocation string, filename string) string {
 	t.Helper()
 	ctx := context.Background()
 
@@ -122,9 +122,11 @@ func (c *StageClient) PutOnStageWithPath(t *testing.T, id sdk.SchemaObjectIdenti
 	absPath, err := filepath.Abs(filePath)
 	require.NoError(t, err)
 
-	c.putInLocation(ctx, t, absPath, absPath, "@"+id.FullyQualifiedName())
+	stagePath := filepath.Join(stageLocation, filename)
 
-	return filePath
+	c.putInLocation(ctx, t, absPath, filePath, fmt.Sprintf("@%s/%s", id.FullyQualifiedName(), stagePath))
+
+	return stagePath
 }
 
 func (c *StageClient) PutInLocationWithContent(t *testing.T, stageLocation string, filename string, content string) string {

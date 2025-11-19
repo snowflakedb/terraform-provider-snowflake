@@ -39,8 +39,8 @@ func TestAcc_Notebook_basic(t *testing.T) {
 	changedStage, changedStageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(changedStageCleanup)
 
-	path := testClient().Stage.PutOnStageWithPath(t, stage.ID(), "example.ipynb")
-	changedPath := testClient().Stage.PutOnStageWithPath(t, changedStage.ID(), "example.ipynb")
+	path := testClient().Stage.PutOnStageWithPath(t, stage.ID(), "testdata", "example.ipynb")
+	changedPath := testClient().Stage.PutOnStageWithPath(t, changedStage.ID(), "testdata", "example.ipynb")
 
 	idleAutoShutdownTimeSeconds, changedIdleAutoShutdownTimeSeconds := 3600, 2400
 
@@ -352,7 +352,7 @@ func TestAcc_Notebook_complete(t *testing.T) {
 	stage, stageCleanup := testClient().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	path := testClient().Stage.PutOnStageWithPath(t, stage.ID(), "example.ipynb")
+	path := testClient().Stage.PutOnStageWithPath(t, stage.ID(), "testdata", "example.ipynb")
 
 	idleAutoShutdownTimeSeconds := 3600
 
@@ -411,6 +411,90 @@ func TestAcc_Notebook_complete(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"from", "main_file", "idle_auto_shutdown_time_seconds"},
+			},
+		},
+	})
+}
+
+func TestAcc_Notebook_double_warehouse_change(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+
+	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(warehouseCleanup)
+
+	queryWarehouse, queryWarehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(queryWarehouseCleanup)
+
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	path := testClient().Stage.PutOnStageWithPath(t, stage.ID(), "testdata", "example.ipynb")
+
+	idleAutoShutdownTimeSeconds := 3600
+
+	modelComplete := model.NotebookFromId("test", id).
+		WithComment(comment).
+		WithFrom(path, stage.ID()).
+		WithMainFile("example.ipynb").
+		WithQueryWarehouse(queryWarehouse.ID().FullyQualifiedName()).
+		WithIdleAutoShutdownTimeSeconds(idleAutoShutdownTimeSeconds).
+		WithWarehouse(warehouse.ID().FullyQualifiedName())
+
+	modelCompleteWithChangedWarehouses := model.NotebookFromId("test", id).
+		WithComment(comment).
+		WithFrom(path, stage.ID()).
+		WithMainFile("example.ipynb").
+		WithIdleAutoShutdownTimeSeconds(idleAutoShutdownTimeSeconds)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Notebook),
+		Steps: []resource.TestStep{
+			// create object
+			{
+				Config: accconfig.FromModels(t, modelComplete),
+				Check:  assertThat(t),
+			},
+			// unset warehouse and query_warehouse at the same time
+			{
+				Config: accconfig.FromModels(t, modelCompleteWithChangedWarehouses),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteWithChangedWarehouses.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.NotebookResource(t, modelCompleteWithChangedWarehouses.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFromString("testdata/example.ipynb", stage.ID().FullyQualifiedName()).
+						HasMainFileString("example.ipynb").
+						HasIdleAutoShutdownTimeSecondsString(strconv.Itoa(idleAutoShutdownTimeSeconds)).
+						HasCommentString(comment).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.NotebookShowOutput(t, modelCompleteWithChangedWarehouses.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasQueryWarehouse(sdk.NewAccountObjectIdentifier("")).
+						HasCodeWarehouse(sdk.NewAccountObjectIdentifier("\"SYSTEM$STREAMLIT_NOTEBOOK_WH\"")).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasOwnerRoleType("ROLE").
+						HasComment(comment),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithChangedWarehouses.ResourceReference(), "describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithChangedWarehouses.ResourceReference(), "describe_output.0.main_file", "example.ipynb")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithChangedWarehouses.ResourceReference(), "describe_output.0.query_warehouse", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithChangedWarehouses.ResourceReference(), "describe_output.0.idle_auto_shutdown_time_seconds", "3600")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithChangedWarehouses.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithChangedWarehouses.ResourceReference(), "describe_output.0.code_warehouse", "SYSTEM$STREAMLIT_NOTEBOOK_WH")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithChangedWarehouses.ResourceReference(), "describe_output.0.comment", comment)),
+				),
 			},
 		},
 	})
