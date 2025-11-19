@@ -358,14 +358,6 @@ var semanticViewsSchema = map[string]*schema.Schema{
 			Schema: schemas.ShowSemanticViewSchema,
 		},
 	},
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE SEMANTIC VIEW` for the given semantic view.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeSemanticViewSchema,
-		},
-	},
 }
 
 func SemanticView() *schema.Resource {
@@ -384,7 +376,6 @@ func SemanticView() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SemanticView, customdiff.All(
 			ComputedIfAnyAttributeChanged(semanticViewsSchema, ShowOutputAttributeName, "comment"),
-			ComputedIfAnyAttributeChanged(semanticViewsSchema, DescribeOutputAttributeName, "comment"),
 		)),
 
 		Schema: semanticViewsSchema,
@@ -473,14 +464,8 @@ func ReadSemanticView(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
-	semanticViewDetails, err := client.SemanticViews.Describe(ctx, id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	errs := errors.Join(
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.SemanticViewToSchema(semanticView)}),
-		d.Set(DescribeOutputAttributeName, schemas.SemanticViewDetailsToSchema(semanticViewDetails)),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set("comment", semanticView.Comment),
 	)
