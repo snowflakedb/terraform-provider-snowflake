@@ -29,6 +29,7 @@ type AlterSemanticViewRequest struct {
 	name         SchemaObjectIdentifier // required
 	SetComment   *string
 	UnsetComment *bool
+	RenameTo     *SchemaObjectIdentifier
 }
 
 type DropSemanticViewRequest struct {

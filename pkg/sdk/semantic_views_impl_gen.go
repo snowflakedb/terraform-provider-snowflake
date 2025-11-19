@@ -230,6 +230,7 @@ func (r *AlterSemanticViewRequest) toOpts() *AlterSemanticViewOptions {
 		name:         r.name,
 		SetComment:   r.SetComment,
 		UnsetComment: r.UnsetComment,
+		RenameTo:     r.RenameTo,
 	}
 	return opts
 }

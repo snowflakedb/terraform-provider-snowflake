@@ -124,12 +124,13 @@ type WindowFunctionOverClause struct {
 
 // AlterSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view.
 type AlterSemanticViewOptions struct {
-	alter        bool                   `ddl:"static" sql:"ALTER"`
-	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
-	IfExists     *bool                  `ddl:"keyword" sql:"IF EXISTS"`
-	name         SchemaObjectIdentifier `ddl:"identifier"`
-	SetComment   *string                `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
-	UnsetComment *bool                  `ddl:"keyword" sql:"UNSET COMMENT"`
+	alter        bool                    `ddl:"static" sql:"ALTER"`
+	semanticView bool                    `ddl:"static" sql:"SEMANTIC VIEW"`
+	IfExists     *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	name         SchemaObjectIdentifier  `ddl:"identifier"`
+	SetComment   *string                 `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
+	UnsetComment *bool                   `ddl:"keyword" sql:"UNSET COMMENT"`
+	RenameTo     *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.

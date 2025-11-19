@@ -80,6 +80,11 @@ func (s *AlterSemanticViewRequest) WithUnsetComment(unsetComment bool) *AlterSem
 	return s
 }
 
+func (s *AlterSemanticViewRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterSemanticViewRequest {
+	s.RenameTo = &renameTo
+	return s
+}
+
 func NewDropSemanticViewRequest(
 	name SchemaObjectIdentifier,
 ) *DropSemanticViewRequest {
