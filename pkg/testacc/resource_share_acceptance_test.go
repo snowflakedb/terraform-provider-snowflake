@@ -14,6 +14,7 @@ import (
 )
 
 // TODO [SNOW-1284394]: Unskip the test
+// TODO [SNOW-1348347]: Add more tests or merge with other tests.
 func TestAcc_Share(t *testing.T) {
 	t.Skip("second and third account must be set for Share acceptance tests")
 
@@ -65,6 +66,32 @@ func TestAcc_Share(t *testing.T) {
 				ResourceName:      "snowflake_share.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// TODO [SNOW-1348347]: Add more tests or merge with other tests.
+func TestAcc_Share_basic(t *testing.T) {
+	account2 := secondaryTestClient().Account.GetAccountIdentifier(t)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Share),
+		Steps: []resource.TestStep{
+			{
+				Config: shareConfigOneAccount(id, "", account2.Name()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_share.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_share.test", "fully_qualified_name", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr("snowflake_share.test", "accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_share.test", "accounts.0", account2.Name()),
+				),
 			},
 		},
 	})
