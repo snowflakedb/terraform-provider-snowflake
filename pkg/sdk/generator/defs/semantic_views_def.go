@@ -128,11 +128,11 @@ var synonyms = g.NewQueryStruct("Synonyms").
 	ListAssignment("WITH SYNONYMS", "Synonym", g.ParameterOptions().NoEquals().Parentheses().Required())
 
 var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
-	Text("LogicalTableAlias", g.KeywordOptions().Required()).
+	Text("LogicalTableAlias", g.KeywordOptions().DoubleQuotes().Required()).
 	SQL("AS")
 
 var semanticViewColumn = g.NewQueryStruct("SemanticViewColumn").
-	Text("Name", g.KeywordOptions().Required())
+	Text("Name", g.KeywordOptions().DoubleQuotes().Required())
 
 var logicalTable = g.NewQueryStruct("LogicalTable").
 	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.KeywordOptions()).
@@ -143,12 +143,12 @@ var logicalTable = g.NewQueryStruct("LogicalTable").
 	OptionalComment()
 
 var relationshipAlias = g.NewQueryStruct("RelationshipAlias").
-	Text("RelationshipAlias", g.KeywordOptions().Required()).
+	Text("RelationshipAlias", g.KeywordOptions().DoubleQuotes().Required()).
 	SQL("AS")
 
 var relationshipTableNameOrAlias = g.NewQueryStruct("RelationshipTableAlias").
 	OptionalIdentifier("RelationshipTableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions()).
-	OptionalText("RelationshipTableAlias", g.KeywordOptions()).
+	OptionalText("RelationshipTableAlias", g.KeywordOptions().DoubleQuotes()).
 	WithValidation(g.ExactlyOneValueSet, "RelationshipTableName", "RelationshipTableAlias")
 
 var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
@@ -160,7 +160,7 @@ var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
 	ListQueryStructField("relationshipRefColumnNames", semanticViewColumn, g.ListOptions().NoEquals().Parentheses())
 
 var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
-	Text("QualifiedExpressionName", g.KeywordOptions().Required())
+	Text("QualifiedExpressionName", g.KeywordOptions().DoubleQuotes().Required())
 
 var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
 	Text("SqlExpression", g.KeywordOptions().NoQuotes().Required())
@@ -180,7 +180,7 @@ var windowFunctionOverClause = g.NewQueryStruct("WindowFunctionOverClause").
 	OptionalText("WindowFrameClause", g.KeywordOptions())
 
 var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefinition").
-	Text("WindowFunction", g.KeywordOptions().Required()).
+	Text("WindowFunction", g.KeywordOptions().DoubleQuotes().Required()).
 	SQL("AS").
 	Text("Metric", g.KeywordOptions().Required()).
 	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ListOptions().Parentheses().NoComma().SQL("OVER"))

@@ -45,7 +45,7 @@ type LogicalTable struct {
 }
 
 type LogicalTableAlias struct {
-	LogicalTableAlias string `ddl:"keyword"`
+	LogicalTableAlias string `ddl:"keyword,double_quotes"`
 	as                bool   `ddl:"static" sql:"AS"`
 }
 
@@ -75,17 +75,17 @@ type SemanticViewRelationship struct {
 }
 
 type RelationshipAlias struct {
-	RelationshipAlias string `ddl:"keyword"`
+	RelationshipAlias string `ddl:"keyword,double_quotes"`
 	as                bool   `ddl:"static" sql:"AS"`
 }
 
 type RelationshipTableAlias struct {
 	RelationshipTableName  *SchemaObjectIdentifier `ddl:"identifier"`
-	RelationshipTableAlias *string                 `ddl:"keyword"`
+	RelationshipTableAlias *string                 `ddl:"keyword,double_quotes"`
 }
 
 type SemanticViewColumn struct {
-	Name string `ddl:"keyword"`
+	Name string `ddl:"keyword,double_quotes"`
 }
 
 type SemanticExpression struct {
@@ -97,7 +97,7 @@ type SemanticExpression struct {
 }
 
 type QualifiedExpressionName struct {
-	QualifiedExpressionName string `ddl:"keyword"`
+	QualifiedExpressionName string `ddl:"keyword,double_quotes"`
 }
 
 type SemanticSqlExpression struct {
@@ -110,7 +110,7 @@ type MetricDefinition struct {
 }
 
 type WindowFunctionMetricDefinition struct {
-	WindowFunction string                    `ddl:"keyword"`
+	WindowFunction string                    `ddl:"keyword,double_quotes"`
 	as             bool                      `ddl:"static" sql:"AS"`
 	Metric         string                    `ddl:"keyword"`
 	OverClause     *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
