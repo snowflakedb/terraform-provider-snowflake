@@ -17,6 +17,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// TODO [this PR]: document external changes are not handled currently
+// TODO [this PR]: document how to fill qualified_expression_name correctly
+// TODO [this PR]: document which fields are case-sensitive and that provider will use double quotes syntax for them
+// TODO [this PR]: run acceptance tests for the resource
+// TODO [this PR]: test (integration and acceptance) creation without aliases
+// TODO [this PR]: adjust examples to the case-sensitivity
+// TODO [this PR]: verify issues created for semantic views follow-up and group them
+// TODO [this PR]: generate docs for resource and data source (documenting limitations)
+// TODO [this PR]: document that most of the changes will be handled as drop/recreate
+// TODO [this PR]: does the table needs to be in the same schema as semantic view
+// TODO [this PR]: add note on copy grants
 var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,

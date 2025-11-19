@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [this PR]: check creation with a non-existent table
 func TestInt_SemanticView(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -21,7 +22,7 @@ func TestInt_SemanticView(t *testing.T) {
 		*sdk.NewTableColumnRequest(`"first_c"`, sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
 	}
 	table1Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
-	table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1Id, columns1))
+	_, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1Id, columns1))
 	t.Cleanup(table1Cleanup)
 
 	columns2 := []sdk.TableColumnRequest{
@@ -30,7 +31,7 @@ func TestInt_SemanticView(t *testing.T) {
 		*sdk.NewTableColumnRequest(`"second_c"`, sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
 	}
 	table2Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
-	table2, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2Id, columns2))
+	_, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2Id, columns2))
 	t.Cleanup(table2Cleanup)
 
 	// create logical table entities using the 2 tables created above
@@ -40,9 +41,9 @@ func TestInt_SemanticView(t *testing.T) {
 			Name: "first_c",
 		},
 	})
-	logicalTable1 := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(*alias1).WithPrimaryKeys(*pk1)
+	logicalTable1 := sdk.NewLogicalTableRequest(table1Id).WithLogicalTableAlias(*alias1).WithPrimaryKeys(*pk1)
 	alias2 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table2")
-	logicalTable2 := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(*alias2)
+	logicalTable2 := sdk.NewLogicalTableRequest(table2Id).WithLogicalTableAlias(*alias2)
 
 	logicalTables := []sdk.LogicalTableRequest{
 		*logicalTable1,
@@ -151,17 +152,17 @@ func TestInt_SemanticView(t *testing.T) {
 		tableKind, metricKind := "TABLE", "METRIC"
 		t1Name, t2Name, metricName := "table1", "table2", "metric1"
 
-		tableDatabaseName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
-		tableSchemaName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
-		tableName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_NAME", table1.Name)
+		tableDatabaseName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_DATABASE_NAME", table1Id.DatabaseName())
+		tableSchemaName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_SCHEMA_NAME", table1Id.SchemaName())
+		tableName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_NAME", table1Id.Name())
 		pk := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "PRIMARY_KEY", "[\"first_c\"]")
 		metricTable := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "TABLE", "table1")
 		metricExpression := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "EXPRESSION", `SUM("table1"."first_a")`) // alias
 		metricDataType := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "DATA_TYPE", "NUMBER(38,0)")
 		metricAccessModifier := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "ACCESS_MODIFIER", "PUBLIC")
-		tableDatabaseName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_DATABASE_NAME", table2.DatabaseName)
-		tableSchemaName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_SCHEMA_NAME", table2.SchemaName)
-		tableName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_NAME", table2.Name)
+		tableDatabaseName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_DATABASE_NAME", table2Id.DatabaseName())
+		tableSchemaName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_SCHEMA_NAME", table2Id.SchemaName())
+		tableName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_NAME", table2Id.Name())
 
 		// confirm the semantic view details are correct
 		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
