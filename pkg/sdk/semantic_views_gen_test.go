@@ -306,16 +306,16 @@ func TestSemanticViews_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment opts.RenameTo] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"))
 	})
 
-	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment] should be present - more present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment opts.RenameTo] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.SetComment = String("comment")
 		opts.UnsetComment = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"))
 	})
 
 	// variants added manually
@@ -329,6 +329,13 @@ func TestSemanticViews_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.UnsetComment = Bool(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s UNSET COMMENT", id.FullyQualifiedName())
+	})
+
+	t.Run("rename", func(t *testing.T) {
+		opts := defaultOpts()
+		newId := randomSchemaObjectIdentifier()
+		opts.RenameTo = &newId
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
