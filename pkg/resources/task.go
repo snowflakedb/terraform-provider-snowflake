@@ -75,22 +75,22 @@ var taskSchema = map[string]*schema.Schema{
 				"seconds": {
 					Type:             schema.TypeInt,
 					Optional:         true,
-					Description:      "Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers from 10 to 691200 (10 seconds to 8 days). (conflicts with `minutes`, `hours`, and `using_cron`)",
-					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(10, 691200)),
+					Description:      "Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `minutes`, `hours`, and `using_cron`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
 				},
 				"minutes": {
 					Type:             schema.TypeInt,
 					Optional:         true,
-					Description:      "Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers from 1 to 11520 (1 minute to 8 days). (conflicts with `seconds`, `hours`, and `using_cron`)",
-					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 11520)),
+					Description:      "Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `hours`, and `using_cron`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
 				},
 				"hours": {
 					Type:             schema.TypeInt,
 					Optional:         true,
-					Description:      "Specifies an interval (in hours) of wait time inserted between runs of the task. Accepts positive integers from 1 to 192 (1 hour to 8 days). (conflicts with `seconds`, `minutes`, and `using_cron`)",
-					ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 192)),
+					Description:      "Specifies an interval (in hours) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `minutes`, and `using_cron`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
 				},
 				"using_cron": {

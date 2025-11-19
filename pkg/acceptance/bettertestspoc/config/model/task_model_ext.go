@@ -99,3 +99,22 @@ func (t *TaskModel) WithScheduleHours(hours int) *TaskModel {
 	})
 	return t
 }
+
+func (t *TaskModel) WithEmptySchedule() *TaskModel {
+	return t.WithScheduleValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+		}),
+	)
+}
+
+func (t *TaskModel) WithMultipleSchedules() *TaskModel {
+	return t.WithScheduleValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"hours":      tfconfig.IntegerVariable(1),
+			"minutes":    tfconfig.IntegerVariable(1),
+			"seconds":    tfconfig.IntegerVariable(1),
+			"using_cron": tfconfig.StringVariable("*/5 * * * * UTC"),
+		}),
+	)
+}

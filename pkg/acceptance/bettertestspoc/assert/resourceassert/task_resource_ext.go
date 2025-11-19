@@ -19,36 +19,36 @@ func (t *TaskResourceAssert) HasAfter(ids ...sdk.SchemaObjectIdentifier) *TaskRe
 func (t *TaskResourceAssert) HasScheduleSeconds(seconds int) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("schedule.#", "1"))
 	t.AddAssertion(assert.ValueSet("schedule.0.seconds", strconv.Itoa(seconds)))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.minutes"))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.hours"))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.using_cron"))
+	t.AddAssertion(assert.ValueSet("schedule.0.minutes", "0"))
+	t.AddAssertion(assert.ValueSet("schedule.0.hours", "0"))
+	t.AddAssertion(assert.ValueSet("schedule.0.using_cron", ""))
 	return t
 }
 
 func (t *TaskResourceAssert) HasScheduleMinutes(minutes int) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("schedule.#", "1"))
 	t.AddAssertion(assert.ValueSet("schedule.0.minutes", strconv.Itoa(minutes)))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.seconds"))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.hours"))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.using_cron"))
+	t.AddAssertion(assert.ValueSet("schedule.0.seconds", "0"))
+	t.AddAssertion(assert.ValueSet("schedule.0.hours", "0"))
+	t.AddAssertion(assert.ValueSet("schedule.0.using_cron", ""))
 	return t
 }
 
 func (t *TaskResourceAssert) HasScheduleHours(hours int) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("schedule.#", "1"))
 	t.AddAssertion(assert.ValueSet("schedule.0.hours", strconv.Itoa(hours)))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.seconds"))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.minutes"))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.using_cron"))
+	t.AddAssertion(assert.ValueSet("schedule.0.seconds", "0"))
+	t.AddAssertion(assert.ValueSet("schedule.0.minutes", "0"))
+	t.AddAssertion(assert.ValueSet("schedule.0.using_cron", ""))
 	return t
 }
 
 func (t *TaskResourceAssert) HasScheduleCron(cron string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("schedule.#", "1"))
 	t.AddAssertion(assert.ValueSet("schedule.0.using_cron", cron))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.seconds"))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.minutes"))
-	t.AddAssertion(assert.ValueNotSet("schedule.0.hours"))
+	t.AddAssertion(assert.ValueSet("schedule.0.seconds", "0"))
+	t.AddAssertion(assert.ValueSet("schedule.0.minutes", "0"))
+	t.AddAssertion(assert.ValueSet("schedule.0.hours", "0"))
 	return t
 }
 

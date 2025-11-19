@@ -268,9 +268,9 @@ resource "snowflake_task" "test" {
 
 Optional:
 
-- `hours` (Number) Specifies an interval (in hours) of wait time inserted between runs of the task. Accepts positive integers from 1 to 192 (1 hour to 8 days). (conflicts with `seconds`, `minutes`, and `using_cron`)
-- `minutes` (Number) Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers from 1 to 11520 (1 minute to 8 days). (conflicts with `seconds`, `hours`, and `using_cron`)
-- `seconds` (Number) Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers from 10 to 691200 (10 seconds to 8 days). (conflicts with `minutes`, `hours`, and `using_cron`)
+- `hours` (Number) Specifies an interval (in hours) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `minutes`, and `using_cron`)
+- `minutes` (Number) Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `hours`, and `using_cron`)
+- `seconds` (Number) Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `minutes`, `hours`, and `using_cron`)
 - `using_cron` (String) Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `seconds`, `minutes`, and `hours`)
 
 
