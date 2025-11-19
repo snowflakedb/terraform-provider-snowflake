@@ -29,15 +29,12 @@ func TestAcc_DatabaseRoles_BasicUseCase_DifferentFiltering(t *testing.T) {
 
 	datasourceModelLikeExact := datasourcemodel.DatabaseRoles("test", databaseRoleId1.DatabaseName()).
 		WithLike(databaseRoleId1.Name()).
+		WithInDatabase(databaseRoleId3.DatabaseName()).
 		WithDependsOn(databaseRoleModel1.ResourceReference(), databaseRoleModel2.ResourceReference(), databaseRoleModel3.ResourceReference())
 
 	datasourceModelLikePrefix := datasourcemodel.DatabaseRoles("test", databaseRoleId1.DatabaseName()).
 		WithLike(prefix+"%").
-		WithDependsOn(databaseRoleModel1.ResourceReference(), databaseRoleModel2.ResourceReference(), databaseRoleModel3.ResourceReference())
-
-	datasourceModelInDatabase := datasourcemodel.DatabaseRoles("test", databaseRoleId3.DatabaseName()).
 		WithInDatabase(databaseRoleId3.DatabaseName()).
-		WithLike(databaseRoleId3.Name()).
 		WithDependsOn(databaseRoleModel1.ResourceReference(), databaseRoleModel2.ResourceReference(), databaseRoleModel3.ResourceReference())
 
 	datasourceModelLimitRows := datasourcemodel.DatabaseRoles("test", databaseRoleId1.DatabaseName()).
@@ -73,14 +70,6 @@ func TestAcc_DatabaseRoles_BasicUseCase_DifferentFiltering(t *testing.T) {
 				Config: accconfig.FromModels(t, databaseRoleModel1, databaseRoleModel2, databaseRoleModel3, datasourceModelLikePrefix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceModelLikePrefix.DatasourceReference(), "database_roles.#", "2"),
-				),
-			},
-			// explicit in_database filtering for role3's database
-			{
-				Config: accconfig.FromModels(t, databaseRoleModel1, databaseRoleModel2, databaseRoleModel3, datasourceModelInDatabase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceModelInDatabase.DatasourceReference(), "database_roles.#", "1"),
-					resource.TestCheckResourceAttr(datasourceModelInDatabase.DatasourceReference(), "database_roles.0.show_output.0.name", databaseRoleId3.Name()),
 				),
 			},
 			// limit rows only (no from)
