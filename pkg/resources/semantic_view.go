@@ -17,8 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [this PR]: document how to fill qualified_expression_name correctly
-// TODO [this PR]: document which fields are case-sensitive and that provider will use double quotes syntax for them
 // TODO [this PR]: run acceptance tests for the resource
 // TODO [this PR]: test (integration and acceptance) creation without aliases
 // TODO [this PR]: adjust examples to the case-sensitivity
@@ -54,19 +52,19 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"table_alias": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "Specifies an alias for a logical table in the semantic view.",
+					Description: caseSensitiveFieldDoubleQuotes("Specifies an alias for a logical table in the semantic view."),
 				},
 				"table_name": {
 					Type:             schema.TypeString,
 					Required:         true,
-					Description:      blocklistedCharactersFieldDescription("Specifies an identifier for the logical table."),
+					Description:      blocklistedCharactersFieldDescription(caseSensitiveFieldDoubleQuotes("Specifies an identifier for the logical table.")),
 					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 					DiffSuppressFunc: suppressIdentifierQuoting,
 				},
 				"primary_key": {
 					Type:        schema.TypeList,
 					Optional:    true,
-					Description: "Definitions of primary keys in the logical table.",
+					Description: caseSensitiveFieldDoubleQuotes("Definitions of primary keys in the logical table."),
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
@@ -74,7 +72,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"unique": {
 					Type:        schema.TypeList,
 					Optional:    true,
-					Description: "Definitions of unique key combinations in the logical table.",
+					Description: caseSensitiveFieldDoubleQuotes("Definitions of unique key combinations in the logical table."),
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"values": {
@@ -114,7 +112,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"relationship_identifier": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "Specifies an optional identifier for the relationship.",
+					Description: caseSensitiveFieldDoubleQuotes("Specifies an optional identifier for the relationship."),
 				},
 				"table_name_or_alias": {
 					Type:     schema.TypeList,
@@ -128,12 +126,12 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								Type:             schema.TypeString,
 								Optional:         true,
 								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-								Description:      "The name of the logical table, cannot be used in combination with the table_alias",
+								Description:      caseSensitiveFieldDoubleQuotes("The name of the logical table, cannot be used in combination with the `table_alias`."),
 							},
 							"table_alias": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: "The alias used for the logical table, cannot be used in combination with the table_name",
+								Description: caseSensitiveFieldDoubleQuotes("The alias used for the logical table, cannot be used in combination with the `table_name`."),
 							},
 						},
 					},
@@ -144,7 +142,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
-					Description: "Specifies one or more columns in the first logical table that refers to columns in another logical table.",
+					Description: caseSensitiveListItemDoubleQuotes("Specifies one or more columns in the first logical table that refers to columns in another logical table.", "Column names"),
 				},
 				"referenced_table_name_or_alias": {
 					Type:     schema.TypeList,
@@ -158,12 +156,12 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								Type:             schema.TypeString,
 								Optional:         true,
 								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-								Description:      "The name of the logical table, cannot be used in combination with the table_alias",
+								Description:      caseSensitiveFieldDoubleQuotes("The name of the logical table, cannot be used in combination with the table_alias"),
 							},
 							"table_alias": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: "The alias used for the logical table, cannot be used in combination with the table_name",
+								Description: caseSensitiveFieldDoubleQuotes("The alias used for the logical table, cannot be used in combination with the table_name"),
 							},
 						},
 					},
@@ -174,7 +172,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
-					Description: "Specifies one or more columns in the second logical table that are referred to by the first logical table.",
+					Description: caseSensitiveListItemDoubleQuotes("Specifies one or more columns in the second logical table that are referred to by the first logical table.", "Column names"),
 				},
 			},
 		},
@@ -189,7 +187,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"qualified_expression_name": {
 					Type:        schema.TypeString,
 					Required:    true,
-					Description: "Specifies a qualified name for the fact, including the table name and a unique identifier for the fact.",
+					Description: "Specifies a qualified name for the fact, including the table name and a unique identifier for the fact: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
 				},
 				"sql_expression": {
 					Type:        schema.TypeString,
@@ -222,7 +220,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"qualified_expression_name": {
 					Type:        schema.TypeString,
 					Required:    true,
-					Description: "Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension.",
+					Description: "Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
 				},
 				"sql_expression": {
 					Type:        schema.TypeString,
@@ -271,7 +269,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 							"qualified_expression_name": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: "Specifies a name for the semantic expression",
+								Description: "Specifies a qualified name for the metric: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`. For the [derived metric](https://docs.snowflake.com/en/user-guide/views-semantic/sql#label-semantic-views-create-derived-metrics) omit the `<table_alias>.` part but still wrap in double quotes, e.g. `\"\\\"<semantic_expression_name>\\\"\"`.",
 							},
 							"sql_expression": {
 								Type:        schema.TypeString,
@@ -306,7 +304,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 							"window_function": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: "Specifies a name for the window function.",
+								Description: caseSensitiveFieldDoubleQuotes("Specifies a name for the window function."),
 							},
 							"metric": {
 								Type:        schema.TypeString,
@@ -328,7 +326,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 										"order_by": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: "Specifies an order by clause",
+											Description: "Specifies an order by clause. It must be a complete SQL expression, including any `[ ASC | DESC ] [ NULLS { FIRST | LAST } ]` modifiers.",
 										},
 										"window_frame_clause": {
 											Type:        schema.TypeString,
