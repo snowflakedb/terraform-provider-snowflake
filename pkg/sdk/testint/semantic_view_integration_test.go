@@ -82,6 +82,17 @@ func TestInt_SemanticView(t *testing.T) {
 		)
 	})
 
+	t.Run("create: without queryable expression", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		logicalTableNoAlias := sdk.NewLogicalTableRequest(table1Id)
+
+		request := sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*logicalTableNoAlias})
+
+		err := client.SemanticViews.Create(ctx, request)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+		require.ErrorContains(t, err, "No queryable expression is defined in the semantic view")
+	})
+
 	// TODO [SNOW-2852837]: Clarify if creation without table alias is possible
 	t.Run("create: without table alias", func(t *testing.T) {
 		t.Skip("SNOW-2852837: Skipped as by current docs the table alias is optional but we can't figure out the syntax for metrics without it.")
