@@ -82,6 +82,28 @@ func TestInt_SemanticView(t *testing.T) {
 		)
 	})
 
+	t.Run("create: table in a different schema", func(t *testing.T) {
+		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
+		t.Cleanup(schemaCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// check that the semantic view's properties match our settings
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasName(id.Name()),
+		)
+	})
+
 	t.Run("create: without queryable expression", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		logicalTableNoAlias := sdk.NewLogicalTableRequest(table1Id)

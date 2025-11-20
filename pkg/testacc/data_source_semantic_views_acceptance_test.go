@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TODO [SNOW-2108211]: show output assertions
 func TestAcc_SemanticViews_Basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
@@ -58,7 +57,6 @@ func TestAcc_SemanticViews_Basic(t *testing.T) {
 				Config: accconfig.FromModels(t, semanticViewModel, dataSourceModel),
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.#", "1")),
-
 					resourceshowoutputassert.SemanticViewsDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -68,14 +66,6 @@ func TestAcc_SemanticViews_Basic(t *testing.T) {
 						HasComment(comment).
 						HasExtension("").
 						HasOwnerRoleType("ROLE"),
-					assert.Check(resource.TestCheckResourceAttrSet(dataSourceModel.DatasourceReference(), "semantic_views.0.show_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.0.show_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.0.show_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.0.show_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.0.show_output.0.comment", comment)),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.0.show_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.0.show_output.0.owner_role_type", "ROLE")),
-					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "semantic_views.0.show_output.0.extension", "")),
 				),
 			},
 		},
@@ -135,11 +125,11 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	dataSourceModelWithLimit := datasourcemodel.SemanticViews("test").
-		WithRowsAndFrom(2, "").
+		WithRowsAndFrom(2, prefix).
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
