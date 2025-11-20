@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.10.1 ➞ v2.10.2
 
+### *(improvement)* Functions reading TOML configuration now clean path
+
+Previously, the provider's file reading functions did not clean paths. In this version, all functions handling files use Go's [filepath.Clean](https://pkg.go.dev/path/filepath#Clean) function for each file path.
+
+No changes in configuration and state are required. The supported TOML location `~/.snowflake/config` stays the same and the behavior shouldn't be affected.
+
 ### *(bugfix)* Improved validation of identifiers with arguments
 Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:
 ```
@@ -134,6 +140,12 @@ we added support for gen2 warehouses. In this change, we added new fields to `sh
 
 The 2025_07 bundle adds the `generation` column (read our [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#new-generation-column-in-output-in-show-warehouses)). Now, instead of dispatching the `resource_constraint` value, the provider simply passes the `generation` field from Snowflake to the `show_output`.
 If the bundle is disabled, then the `generation` column is not present in Snowflake, and the providers behaves in the old way.
+
+No changes in the configuration are necessary.
+
+### *(improvement)* Granting privileges on a database during share update
+
+When updating the `accounts` field in the `share` resource, the provider creates a temporary database from the share. Before, it granted only the `USAGE` grant. Now, it also grants `REFERENCE_USAGE` because of the changes in the [2025_07](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#disallow-grant-reference_usage-on-a-database-if-grant-usage-isnt-set-first) bundle.
 
 No changes in the configuration are necessary.
 

@@ -1147,7 +1147,7 @@ func Test_ParseDataType_Table(t *testing.T) {
 			require.IsType(t, &TableDataType{}, parsed)
 
 			assert.Equal(t, "TABLE", parsed.(*TableDataType).underlyingType)
-			assert.Equal(t, len(tc.expectedColumns), len(parsed.(*TableDataType).columns))
+			assert.Len(t, parsed.(*TableDataType).columns, len(tc.expectedColumns))
 			for i, column := range tc.expectedColumns {
 				assert.Equal(t, column.Name, parsed.(*TableDataType).columns[i].name)
 				parsedType, err := ParseDataType(column.Type)
