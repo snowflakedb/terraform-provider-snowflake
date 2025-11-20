@@ -151,22 +151,22 @@ resource "snowflake_semantic_view" "complete" {
 
 Required:
 
-- `table_name` (String) Specifies an identifier for the logical table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `table_name` (String) Specifies an identifier for the logical table. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 
 Optional:
 
 - `comment` (String) Specifies a comment for the logical table.
-- `primary_key` (List of String) Definitions of primary keys in the logical table.
+- `primary_key` (List of String) Definitions of primary keys in the logical table. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
 - `synonym` (Set of String) List of synonyms for the logical table.
-- `table_alias` (String) Specifies an alias for a logical table in the semantic view.
-- `unique` (Block List) Definitions of unique key combinations in the logical table. (see [below for nested schema](#nestedblock--tables--unique))
+- `table_alias` (String) Specifies an alias for a logical table in the semantic view. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
+- `unique` (Block List) Definitions of unique key combinations in the logical table. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake. (see [below for nested schema](#nestedblock--tables--unique))
 
 <a id="nestedblock--tables--unique"></a>
 ### Nested Schema for `tables.unique`
 
 Required:
 
-- `values` (List of String) Unique key combinations in the logical table
+- `values` (List of String) Unique key combinations in the logical table.
 
 
 
@@ -175,7 +175,7 @@ Required:
 
 Required:
 
-- `qualified_expression_name` (String) Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension.
+- `qualified_expression_name` (String) Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `"\"<table_alias>\".\"<semantic_expression_name>\""`.
 - `sql_expression` (String) The SQL expression used to compute the dimension.
 
 Optional:
@@ -189,7 +189,7 @@ Optional:
 
 Required:
 
-- `qualified_expression_name` (String) Specifies a qualified name for the fact, including the table name and a unique identifier for the fact.
+- `qualified_expression_name` (String) Specifies a qualified name for the fact, including the table name and a unique identifier for the fact: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `"\"<table_alias>\".\"<semantic_expression_name>\""`.
 - `sql_expression` (String) The SQL expression used to compute the fact.
 
 Optional:
@@ -203,15 +203,15 @@ Optional:
 
 Optional:
 
-- `semantic_expression` (Block List, Max: 1) Specifies a semantic expression for a metric definition.Cannot be used in combination with a window function. (see [below for nested schema](#nestedblock--metrics--semantic_expression))
-- `window_function` (Block List, Max: 1) Specifies a window function for a metric definition.Cannot be used in combination with a semantic expression. (see [below for nested schema](#nestedblock--metrics--window_function))
+- `semantic_expression` (Block List, Max: 1) Specifies a semantic expression for a metric definition. Cannot be used in combination with a window function. (see [below for nested schema](#nestedblock--metrics--semantic_expression))
+- `window_function` (Block List, Max: 1) Specifies a window function for a metric definition. Cannot be used in combination with a semantic expression. (see [below for nested schema](#nestedblock--metrics--window_function))
 
 <a id="nestedblock--metrics--semantic_expression"></a>
 ### Nested Schema for `metrics.semantic_expression`
 
 Required:
 
-- `qualified_expression_name` (String) Specifies a name for the semantic expression
+- `qualified_expression_name` (String) Specifies a qualified name for the metric: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `"\"<table_alias>\".\"<semantic_expression_name>\""`. For the [derived metric](https://docs.snowflake.com/en/user-guide/views-semantic/sql#label-semantic-views-create-derived-metrics) omit the `<table_alias>.` part but still wrap in double quotes, e.g. `"\"<semantic_expression_name>\""`.
 - `sql_expression` (String) The SQL expression used to compute the metric.
 
 Optional:
@@ -226,17 +226,17 @@ Optional:
 Required:
 
 - `metric` (String) Specifies a metric expression for this window function.
-- `over_clause` (Block List, Min: 1, Max: 1) Specify the partition by, order by or frame over which the window function is to be computed (see [below for nested schema](#nestedblock--metrics--window_function--over_clause))
-- `window_function` (String) Specifies a name for the window function.
+- `over_clause` (Block List, Min: 1, Max: 1) Specify the partition by, order by or frame over which the window function is to be computed. (see [below for nested schema](#nestedblock--metrics--window_function--over_clause))
+- `window_function` (String) Specifies a name for the window function. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
 
 <a id="nestedblock--metrics--window_function--over_clause"></a>
 ### Nested Schema for `metrics.window_function.over_clause`
 
 Optional:
 
-- `order_by` (String) Specifies an order by clause
-- `partition_by` (String) Specifies a partition by clause
-- `window_frame_clause` (String) Specifies a window frame clause
+- `order_by` (String) Specifies an order by clause. It must be a complete SQL expression, including any `[ ASC | DESC ] [ NULLS { FIRST | LAST } ]` modifiers.
+- `partition_by` (String) Specifies a partition by clause.
+- `window_frame_clause` (String) Specifies a window frame clause.
 
 
 
@@ -246,22 +246,22 @@ Optional:
 
 Required:
 
-- `referenced_table_name_or_alias` (Block List, Min: 1, Max: 1) Specifies the other logical table and one or more of its columns that are referred to by the first logical table.Each referenced table can have either a table_name or a table_alias, not both. (see [below for nested schema](#nestedblock--relationships--referenced_table_name_or_alias))
-- `relationship_columns` (List of String) Specifies one or more columns in the first logical table that refers to columns in another logical table.
-- `table_name_or_alias` (Block List, Min: 1, Max: 1) Specifies one of the logical tables that refers to columns in another logical table.Each table can have either a table_name or a table_alias, not both. (see [below for nested schema](#nestedblock--relationships--table_name_or_alias))
+- `referenced_table_name_or_alias` (Block List, Min: 1, Max: 1) Specifies the other logical table and one or more of its columns that are referred to by the first logical table. Each referenced table can have either a `table_name` or a `table_alias`, not both. (see [below for nested schema](#nestedblock--relationships--referenced_table_name_or_alias))
+- `relationship_columns` (List of String) Specifies one or more columns in the first logical table that refers to columns in another logical table. Column names in this list are case-sensitive - the provider uses double quotes to wrap each of them when sending the SQL to Snowflake.
+- `table_name_or_alias` (Block List, Min: 1, Max: 1) Specifies one of the logical tables that refers to columns in another logical table. Each table can have either a `table_name` or a `table_alias`, not both. (see [below for nested schema](#nestedblock--relationships--table_name_or_alias))
 
 Optional:
 
-- `referenced_relationship_columns` (List of String) Specifies one or more columns in the second logical table that are referred to by the first logical table.
-- `relationship_identifier` (String) Specifies an optional identifier for the relationship.
+- `referenced_relationship_columns` (List of String) Specifies one or more columns in the second logical table that are referred to by the first logical table. Column names in this list are case-sensitive - the provider uses double quotes to wrap each of them when sending the SQL to Snowflake.
+- `relationship_identifier` (String) Specifies an optional identifier for the relationship. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
 
 <a id="nestedblock--relationships--referenced_table_name_or_alias"></a>
 ### Nested Schema for `relationships.referenced_table_name_or_alias`
 
 Optional:
 
-- `table_alias` (String) The alias used for the logical table, cannot be used in combination with the table_name
-- `table_name` (String) The name of the logical table, cannot be used in combination with the table_alias
+- `table_alias` (String) The alias used for the logical table, cannot be used in combination with the `table_name`. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
+- `table_name` (String) The name of the logical table, cannot be used in combination with the `table_alias`. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
 
 
 <a id="nestedblock--relationships--table_name_or_alias"></a>
@@ -269,8 +269,8 @@ Optional:
 
 Optional:
 
-- `table_alias` (String) The alias used for the logical table, cannot be used in combination with the table_name
-- `table_name` (String) The name of the logical table, cannot be used in combination with the table_alias
+- `table_alias` (String) The alias used for the logical table, cannot be used in combination with the `table_name`. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
+- `table_name` (String) The name of the logical table, cannot be used in combination with the `table_alias`. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
 
 
 

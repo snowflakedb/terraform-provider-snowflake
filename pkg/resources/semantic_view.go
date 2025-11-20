@@ -81,7 +81,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								Elem: &schema.Schema{
 									Type: schema.TypeString,
 								},
-								Description: "Unique key combinations in the logical table",
+								Description: "Unique key combinations in the logical table.",
 							},
 						},
 					},
@@ -115,11 +115,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Description: caseSensitiveFieldDoubleQuotes("Specifies an optional identifier for the relationship."),
 				},
 				"table_name_or_alias": {
-					Type:     schema.TypeList,
-					Required: true,
-					MaxItems: 1,
-					Description: "Specifies one of the logical tables that refers to columns in another logical table." +
-						"Each table can have either a table_name or a table_alias, not both.",
+					Type:        schema.TypeList,
+					Required:    true,
+					MaxItems:    1,
+					Description: "Specifies one of the logical tables that refers to columns in another logical table. Each table can have either a `table_name` or a `table_alias`, not both.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"table_name": {
@@ -148,20 +147,22 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Type:     schema.TypeList,
 					Required: true,
 					MaxItems: 1,
-					Description: "Specifies the other logical table and one or more of its columns that are referred to by the first logical table." +
-						"Each referenced table can have either a table_name or a table_alias, not both.",
+					Description: joinWithSpace(
+						"Specifies the other logical table and one or more of its columns that are referred to by the first logical table.",
+						"Each referenced table can have either a `table_name` or a `table_alias`, not both.",
+					),
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"table_name": {
 								Type:             schema.TypeString,
 								Optional:         true,
 								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-								Description:      caseSensitiveFieldDoubleQuotes("The name of the logical table, cannot be used in combination with the table_alias"),
+								Description:      caseSensitiveFieldDoubleQuotes("The name of the logical table, cannot be used in combination with the `table_alias`."),
 							},
 							"table_alias": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: caseSensitiveFieldDoubleQuotes("The alias used for the logical table, cannot be used in combination with the table_name"),
+								Description: caseSensitiveFieldDoubleQuotes("The alias used for the logical table, cannot be used in combination with the `table_name`."),
 							},
 						},
 					},
@@ -185,9 +186,12 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Specifies a qualified name for the fact, including the table name and a unique identifier for the fact: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+					Type:     schema.TypeString,
+					Required: true,
+					Description: joinWithSpace(
+						"Specifies a qualified name for the fact, including the table name and a unique identifier for the fact: `<table_alias>.<semantic_expression_name>`.",
+						"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+					),
 				},
 				"sql_expression": {
 					Type:        schema.TypeString,
@@ -218,9 +222,12 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+					Type:     schema.TypeString,
+					Required: true,
+					Description: joinWithSpace(
+						"Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension: `<table_alias>.<semantic_expression_name>`.",
+						"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+					),
 				},
 				"sql_expression": {
 					Type:        schema.TypeString,
@@ -261,15 +268,21 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"semantic_expression": {
 					Type:     schema.TypeList,
 					Optional: true,
-					Description: "Specifies a semantic expression for a metric definition." +
+					Description: joinWithSpace(
+						"Specifies a semantic expression for a metric definition.",
 						"Cannot be used in combination with a window function.",
+					),
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"qualified_expression_name": {
-								Type:        schema.TypeString,
-								Required:    true,
-								Description: "Specifies a qualified name for the metric: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`. For the [derived metric](https://docs.snowflake.com/en/user-guide/views-semantic/sql#label-semantic-views-create-derived-metrics) omit the `<table_alias>.` part but still wrap in double quotes, e.g. `\"\\\"<semantic_expression_name>\\\"\"`.",
+								Type:     schema.TypeString,
+								Required: true,
+								Description: joinWithSpace(
+									"Specifies a qualified name for the metric: `<table_alias>.<semantic_expression_name>`.",
+									"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+									"For the [derived metric](https://docs.snowflake.com/en/user-guide/views-semantic/sql#label-semantic-views-create-derived-metrics) omit the `<table_alias>.` part but still wrap in double quotes, e.g. `\"\\\"<semantic_expression_name>\\\"\"`.",
+								),
 							},
 							"sql_expression": {
 								Type:        schema.TypeString,
@@ -296,8 +309,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"window_function": {
 					Type:     schema.TypeList,
 					Optional: true,
-					Description: "Specifies a window function for a metric definition." +
+					Description: joinWithSpace(
+						"Specifies a window function for a metric definition.",
 						"Cannot be used in combination with a semantic expression.",
+					),
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
@@ -315,13 +330,13 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								Type:        schema.TypeList,
 								Required:    true,
 								MaxItems:    1,
-								Description: "Specify the partition by, order by or frame over which the window function is to be computed",
+								Description: "Specify the partition by, order by or frame over which the window function is to be computed.",
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
 										"partition_by": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: "Specifies a partition by clause",
+											Description: "Specifies a partition by clause.",
 										},
 										"order_by": {
 											Type:        schema.TypeString,
@@ -331,7 +346,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 										"window_frame_clause": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: "Specifies a window frame clause",
+											Description: "Specifies a window frame clause.",
 										},
 									},
 								},
