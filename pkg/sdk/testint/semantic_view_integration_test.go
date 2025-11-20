@@ -151,8 +151,10 @@ func TestInt_SemanticView(t *testing.T) {
 			WithComment("fact comment")
 
 		// dimensions
+		dimensionExpressionNameRaw := `"table1"."d1"`
+		dimensionExpressionRaw := `"table1"."first_c"`
 		dimensionSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "D1"}})
-		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."d1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"table1"."first_c"`}).
+		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: dimensionExpressionNameRaw}, &sdk.SemanticSqlExpressionRequest{SqlExpression: dimensionExpressionRaw}).
 			WithSynonyms(*dimensionSynonymRequest).
 			WithComment("dimension comment")
 
@@ -184,6 +186,92 @@ func TestInt_SemanticView(t *testing.T) {
 			HasOwner("ACCOUNTADMIN").
 			HasOwnerRoleType("ROLE").
 			HasComment("comment"),
+		)
+
+		t1Alias, t2Alias, dimensionName, factName, metricName, metric2Name, relationshipName := "table1", "table2", "d1", "fact1", "metric1", "metric2", "rel1"
+
+		// TODO [this PR]: group expected assertions per type (e.g. logical table, metric, etc.)
+		// semantic view related details
+		commentDetails := objectassert.NewSemanticViewDetails(nil, nil, nil, "COMMENT", "comment")
+
+		// logical table 1 related details
+		tableDatabaseName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1Id.DatabaseName())
+		tableSchemaName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1Id.SchemaName())
+		tableName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1Id.Name())
+		pk := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", "[\"first_c\"]")
+
+		// dimension related details
+		dimensionTable := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "TABLE", t1Alias)
+		dimensionExpression := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "EXPRESSION", dimensionExpressionRaw)
+		dimensionDataType := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
+		dimensionSynonyms := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "SYNONYMS", `["D1"]`)
+		dimensionComment := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "COMMENT", "dimension comment")
+		dimensionAccessModifier := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+		// fact related details
+		factTable := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "TABLE", t1Alias)
+		factExpression := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "EXPRESSION", `"first_c"`)
+		factDataType := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
+		factSynonyms := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "SYNONYMS", `["F1"]`)
+		factComment := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "COMMENT", "fact comment")
+		factAccessModifier := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+		// metric related details
+		metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", t1Alias)
+		metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("table1"."first_a")`)
+		metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+		metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+		metric2Table := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "TABLE", t1Alias)
+		metric2Expression := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "EXPRESSION", `SUM("table1"."metric1") OVER (PARTITION BY "table1"."d1")`)
+		metric2DataType := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+		metric2AccessModifier := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+		// logical table 2 related details
+		tableDatabaseName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2Id.DatabaseName())
+		tableSchemaName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2Id.SchemaName())
+		tableName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2Id.Name())
+
+		// relationship related details
+		relationshipTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "TABLE", t2Alias)
+		relationshipRefTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "REF_TABLE", t1Alias)
+		relationshipForeignKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "FOREIGN_KEY", `["second_c"]`)
+		relationshipRefKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "REF_KEY", `["first_c"]`)
+
+		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
+			HasDetailsCount(32).
+			ContainsDetail(commentDetails).
+			ContainsDetail(tableDatabaseName1).
+			ContainsDetail(tableSchemaName1).
+			ContainsDetail(tableName1).
+			ContainsDetail(pk).
+			ContainsDetail(dimensionTable).
+			ContainsDetail(dimensionExpression).
+			ContainsDetail(dimensionDataType).
+			ContainsDetail(dimensionSynonyms).
+			ContainsDetail(dimensionComment).
+			ContainsDetail(dimensionAccessModifier).
+			ContainsDetail(factTable).
+			ContainsDetail(factExpression).
+			ContainsDetail(factDataType).
+			ContainsDetail(factSynonyms).
+			ContainsDetail(factComment).
+			ContainsDetail(factAccessModifier).
+			ContainsDetail(metricTable).
+			ContainsDetail(metricExpression).
+			ContainsDetail(metricDataType).
+			ContainsDetail(metricAccessModifier).
+			ContainsDetail(metric2Table).
+			ContainsDetail(metric2Expression).
+			ContainsDetail(metric2DataType).
+			ContainsDetail(metric2AccessModifier).
+			ContainsDetail(tableDatabaseName2).
+			ContainsDetail(tableSchemaName2).
+			ContainsDetail(tableName2).
+			ContainsDetail(relationshipTable).
+			ContainsDetail(relationshipRefTable).
+			ContainsDetail(relationshipForeignKey).
+			ContainsDetail(relationshipRefKey),
 		)
 	})
 
