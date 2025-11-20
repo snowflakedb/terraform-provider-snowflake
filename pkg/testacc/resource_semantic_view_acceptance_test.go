@@ -7,6 +7,7 @@ import (
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -319,10 +320,13 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	})
 }
 
-// TODO [this PR]: test move to different schema/db
 func TestAcc_SemanticView_Rename(t *testing.T) {
+	secondSchema, secondSchemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(secondSchemaCleanup)
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
+	newIdInDifferentSchema := testClient().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
 
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest(`"a1"`, sdk.DataTypeNumber),
@@ -352,6 +356,15 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 		[]sdk.MetricDefinition{*metric1},
 	).WithComment("new comment")
 
+	renamedDifferentSchema := model.SemanticViewWithMetrics(
+		"test",
+		newIdInDifferentSchema.DatabaseName(),
+		newIdInDifferentSchema.SchemaName(),
+		newIdInDifferentSchema.Name(),
+		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.MetricDefinition{*metric1},
+	).WithComment("new comment")
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -377,11 +390,27 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					// TODO [this PR]: check not exists
 					resourceassert.SemanticViewResource(t, renamedAndChanged.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasCommentString("new comment").
 						HasFullyQualifiedNameString(newId.FullyQualifiedName()),
+					invokeactionassert.SemanticViewDoesNotExist(t, id),
+				),
+			},
+			// rename - different schema
+			{
+				Config: accconfig.FromModels(t, renamedDifferentSchema),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(renamedDifferentSchema.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.SemanticViewResource(t, renamedDifferentSchema.ResourceReference()).
+						HasNameString(newIdInDifferentSchema.Name()).
+						HasCommentString("new comment").
+						HasFullyQualifiedNameString(newIdInDifferentSchema.FullyQualifiedName()),
+					invokeactionassert.SemanticViewDoesNotExist(t, newId),
 				),
 			},
 		},
