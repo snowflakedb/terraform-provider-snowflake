@@ -318,3 +318,72 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		},
 	})
 }
+
+// TODO [this PR]: test move to different schema/db
+func TestAcc_SemanticView_Rename(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest(`"a1"`, sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a2"`, sdk.DataTypeNumber),
+	})
+	t.Cleanup(table1Cleanup)
+
+	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}}, []sdk.Synonym{}, "")
+	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{}, "")
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
+
+	modelBasic := model.SemanticViewWithMetrics(
+		"test",
+		id.DatabaseName(),
+		id.SchemaName(),
+		id.Name(),
+		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.MetricDefinition{*metric1},
+	).WithComment("old comment")
+
+	renamedAndChanged := model.SemanticViewWithMetrics(
+		"test",
+		newId.DatabaseName(),
+		newId.SchemaName(),
+		newId.Name(),
+		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.MetricDefinition{*metric1},
+	).WithComment("new comment")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.SemanticView),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				Check: assertThat(t,
+					resourceassert.SemanticViewResource(t, modelBasic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasCommentString("old comment").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				),
+			},
+			// rename with one param changed
+			{
+				Config: accconfig.FromModels(t, renamedAndChanged),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(renamedAndChanged.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					// TODO [this PR]: check not exists
+					resourceassert.SemanticViewResource(t, renamedAndChanged.ResourceReference()).
+						HasNameString(newId.Name()).
+						HasCommentString("new comment").
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()),
+				),
+			},
+		},
+	})
+}

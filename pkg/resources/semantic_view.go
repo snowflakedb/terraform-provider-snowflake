@@ -32,21 +32,18 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the semantic view; must be unique within the schema."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the semantic view."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the semantic view."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -494,7 +491,20 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	// TODO [SNOW-2108211]: handle rename through ALTER ... RENAME to
+	if d.HasChange("name") || d.HasChange("schema") || d.HasChange("database") {
+		databaseName := d.Get("database").(string)
+		schemaName := d.Get("schema").(string)
+		name := d.Get("name").(string)
+		newId := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
+
+		err := client.SemanticViews.Alter(ctx, sdk.NewAlterSemanticViewRequest(id).WithRenameTo(newId))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		d.SetId(newId.FullyQualifiedName())
+		id = newId
+	}
 
 	if d.HasChange("comment") {
 		if comment := d.Get("comment").(string); comment != "" {
