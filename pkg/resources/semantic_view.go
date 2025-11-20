@@ -18,7 +18,6 @@ import (
 )
 
 // TODO [this PR]: run acceptance tests for the resource
-// TODO [this PR]: test (integration and acceptance) creation without aliases
 // TODO [this PR]: adjust examples to the case-sensitivity
 // TODO [this PR]: verify issues created for semantic views follow-up and group them
 // TODO [this PR]: does the table needs to be in the same schema as semantic view
@@ -54,9 +53,12 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Description: caseSensitiveFieldDoubleQuotes("Specifies an alias for a logical table in the semantic view."),
 				},
 				"table_name": {
-					Type:             schema.TypeString,
-					Required:         true,
-					Description:      blocklistedCharactersFieldDescription(caseSensitiveFieldDoubleQuotes("Specifies an identifier for the logical table.")),
+					Type:     schema.TypeString,
+					Required: true,
+					Description: blocklistedCharactersFieldDescription(joinWithSpace(
+						"Specifies an identifier for the logical table.",
+						exampleSchemaObjectIdentifier("table"),
+					)),
 					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 					DiffSuppressFunc: suppressIdentifierQuoting,
 				},

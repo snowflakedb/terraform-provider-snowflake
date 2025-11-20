@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -66,6 +67,38 @@ func TestInt_SemanticView(t *testing.T) {
 		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
 
 		// check that the semantic view was created
+		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// check that the semantic view's properties match our settings
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasName(id.Name()).
+			HasCreatedOnNotEmpty().
+			HasOwner("ACCOUNTADMIN").
+			HasOwnerRoleType("ROLE").
+			HasComment("comment"),
+		)
+	})
+
+	// TODO [SNOW-2852837]: Clarify if creation without table alias is possible
+	t.Run("create: without table alias", func(t *testing.T) {
+		t.Skip("SNOW-2852837: Skipped as by current docs the table alias is optional but we can't figure out the syntax for metrics without it.")
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		logicalTableNoAlias := sdk.NewLogicalTableRequest(table1Id)
+		metricOnNoAliasTable := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*sdk.NewSemanticExpressionRequest(
+			&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: fmt.Sprintf(`%s."metric1"`, table1Id.FullyQualifiedName())},
+			&sdk.SemanticSqlExpressionRequest{SqlExpression: fmt.Sprintf(`SUM(%s."first_a")`, table1Id.FullyQualifiedName())},
+		))
+
+		request := sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*logicalTableNoAlias}).WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*metricOnNoAliasTable})
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
 		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
 		require.NoError(t, err)
 
@@ -252,6 +285,33 @@ func TestInt_SemanticView(t *testing.T) {
 		result, err := client.SemanticViews.ShowByID(ctx, newId)
 		require.NoError(t, err)
 		require.Equal(t, newId.Name(), result.Name)
+
+		_, err = client.SemanticViews.ShowByID(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("alter: rename to different schema", func(t *testing.T) {
+		secondSchema, secondSchemaCleanup := testClientHelper().Schema.CreateSchema(t)
+		t.Cleanup(secondSchemaCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		newId := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
+		alterRequest := sdk.NewAlterSemanticViewRequest(id).WithRenameTo(newId)
+
+		err = client.SemanticViews.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, newId))
+
+		result, err := client.SemanticViews.ShowByID(ctx, newId)
+		require.NoError(t, err)
+		require.Equal(t, newId.Name(), result.Name)
+		require.Equal(t, newId.SchemaName(), result.SchemaName)
 
 		_, err = client.SemanticViews.ShowByID(ctx, id)
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
