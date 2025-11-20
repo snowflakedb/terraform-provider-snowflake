@@ -740,6 +740,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_procedure_python](./docs/resources/procedure_python)
 - [snowflake_procedure_scala](./docs/resources/procedure_scala)
 - [snowflake_procedure_sql](./docs/resources/procedure_sql)
+- [snowflake_semantic_view](./docs/resources/semantic_view)
 - [snowflake_sequence](./docs/resources/sequence)
 - [snowflake_share](./docs/resources/share)
 - [snowflake_stage](./docs/resources/stage)

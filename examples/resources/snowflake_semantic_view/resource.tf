@@ -1,4 +1,4 @@
-#basic resource
+# basic resource
 resource "snowflake_semantic_view" "basic" {
   database = "DATABASE"
   schema   = "SCHEMA"
