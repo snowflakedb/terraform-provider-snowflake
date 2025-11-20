@@ -202,8 +202,8 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 			}
 			if v.windowFunctionMetricDefinition != nil {
 				s[i].windowFunctionMetricDefinition = &WindowFunctionMetricDefinition{
-					WindowFunction: v.windowFunctionMetricDefinition.WindowFunction,
-					Metric:         v.windowFunctionMetricDefinition.Metric,
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.windowFunctionMetricDefinition.qualifiedExpressionName.QualifiedExpressionName},
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: v.windowFunctionMetricDefinition.sqlExpression.SqlExpression},
 				}
 				if v.windowFunctionMetricDefinition.OverClause != nil {
 					s[i].windowFunctionMetricDefinition.OverClause = &WindowFunctionOverClause{}

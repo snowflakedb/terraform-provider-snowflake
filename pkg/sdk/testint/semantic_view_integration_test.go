@@ -156,7 +156,7 @@ func TestInt_SemanticView(t *testing.T) {
 			WithSynonyms(*dimensionSynonymRequest).
 			WithComment("dimension comment")
 
-		windowFunctionExpression := sdk.NewWindowFunctionMetricDefinitionRequest(`"table1"."metric2"`, `SUM("table1"."metric1")`).WithOverClause(*sdk.NewWindowFunctionOverClauseRequest().WithPartitionBy(`"table1"."d1"`))
+		windowFunctionExpression := sdk.NewWindowFunctionMetricDefinitionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."metric2"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("table1"."metric1")`}).WithOverClause(*sdk.NewWindowFunctionOverClauseRequest().WithPartitionBy(`"table1"."d1"`))
 		windowFunctionMetric := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*windowFunctionExpression)
 
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).

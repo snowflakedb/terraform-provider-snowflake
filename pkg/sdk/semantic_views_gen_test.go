@@ -2,6 +2,7 @@
 
 package sdk
 
+// imports adjusted manually
 import (
 	"fmt"
 	"testing"
@@ -140,7 +141,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		dimensionExpression := "dimension_sql_expression"
 		dimensionName := "dimension_name"
 		metricExpression := "metric_sql_expression"
-		metricName := "metric_name"
+		metricName := `"table1"."metric_name"`
 		tablesObj := []LogicalTable{
 			{
 				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
@@ -229,7 +230,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		metricsObj := []MetricDefinition{
 			{
 				semanticExpression: &SemanticExpression{
-					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, metricName)},
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
 					sqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
 					synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test5"}, {Synonym: "test6"}}},
 					Comment:                 String("metric_comment"),
@@ -237,9 +238,9 @@ func TestSemanticViews_Create(t *testing.T) {
 			},
 			{
 				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
-					WindowFunction: "metric1",
-					as:             true,
-					Metric:         "SUM(table_1.metric_1)",
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: `"table1"."metric1"`},
+					as:                      true,
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: fmt.Sprintf(`SUM(%s)`, metricName)},
 					OverClause: &WindowFunctionOverClause{
 						PartitionBy: String("table_1.dimension_2, table_1.dimension_3"),
 						OrderBy:     String("table_1.dimension_2"),
@@ -258,7 +259,7 @@ func TestSemanticViews_Create(t *testing.T) {
 			semanticViewDimensions:    dimensionsObj,
 			semanticViewMetrics:       metricsObj,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES ("%s" AS %s PRIMARY KEY ("pk1.1", "pk1.2") UNIQUE ("uk1.3") UNIQUE ("uk1.4") WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', "%s" AS %s PRIMARY KEY ("pk2.1", "pk2.2") WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS ("%s" AS "%s" ("pk1.1", "pk1.2") REFERENCES "%s" ("pk2.1", "pk2.2")) FACTS ("%s" AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS ("%s" AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS ("%s" AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', "%s" AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES ("%s" AS %s PRIMARY KEY ("pk1.1", "pk1.2") UNIQUE ("uk1.3") UNIQUE ("uk1.4") WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', "%s" AS %s PRIMARY KEY ("pk2.1", "pk2.2") WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS ("%s" AS "%s" ("pk1.1", "pk1.2") REFERENCES "%s" ("pk2.1", "pk2.2")) FACTS ("%s" AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS ("%s" AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (%s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
 			id.FullyQualifiedName(),
 			tableAlias1,
 			logicalTableId1.FullyQualifiedName(),
@@ -278,8 +279,8 @@ func TestSemanticViews_Create(t *testing.T) {
 			metricName,
 			metricExpression,
 			*metricsObj[0].semanticExpression.Comment,
-			metricsObj[1].windowFunctionMetricDefinition.WindowFunction,
-			metricsObj[1].windowFunctionMetricDefinition.Metric,
+			metricsObj[1].windowFunctionMetricDefinition.qualifiedExpressionName.QualifiedExpressionName,
+			metricsObj[1].windowFunctionMetricDefinition.sqlExpression.SqlExpression,
 			*metricsObj[1].windowFunctionMetricDefinition.OverClause.PartitionBy,
 			*metricsObj[1].windowFunctionMetricDefinition.OverClause.OrderBy,
 			"comment",

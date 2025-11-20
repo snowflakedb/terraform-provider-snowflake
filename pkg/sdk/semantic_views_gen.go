@@ -110,11 +110,10 @@ type MetricDefinition struct {
 }
 
 type WindowFunctionMetricDefinition struct {
-	// TODO [this PR]: adjusted manually
-	WindowFunction string                    `ddl:"keyword"`
-	as             bool                      `ddl:"static" sql:"AS"`
-	Metric         string                    `ddl:"keyword"`
-	OverClause     *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
+	qualifiedExpressionName *QualifiedExpressionName  `ddl:"keyword"`
+	as                      bool                      `ddl:"static" sql:"AS"`
+	sqlExpression           *SemanticSqlExpression    `ddl:"keyword"`
+	OverClause              *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
 }
 
 type WindowFunctionOverClause struct {

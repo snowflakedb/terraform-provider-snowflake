@@ -91,7 +91,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	lt1Request := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt1"})
 	lt2Request := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt2"})
 	seRequest := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"lt1"."m2"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("lt1"."a1")`})
-	wfRequest := sdk.NewWindowFunctionMetricDefinitionRequest(`"lt1"."wf2"`, `SUM("lt1"."m2")`).WithOverClause(*sdk.NewWindowFunctionOverClauseRequest().WithPartitionBy(`"lt1"."d1"`))
+	wfRequest := sdk.NewWindowFunctionMetricDefinitionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"lt1"."wf2"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("lt1"."m2")`}).WithOverClause(*sdk.NewWindowFunctionOverClauseRequest().WithPartitionBy(`"lt1"."d1"`))
 	m1Request := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*seRequest)
 	m2Request := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*wfRequest)
 

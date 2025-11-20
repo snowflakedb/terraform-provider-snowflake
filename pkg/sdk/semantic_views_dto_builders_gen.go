@@ -312,12 +312,12 @@ func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunct
 }
 
 func NewWindowFunctionMetricDefinitionRequest(
-	WindowFunction string,
-	Metric string,
+	qualifiedExpressionName *QualifiedExpressionNameRequest,
+	sqlExpression *SemanticSqlExpressionRequest,
 ) *WindowFunctionMetricDefinitionRequest {
 	s := WindowFunctionMetricDefinitionRequest{}
-	s.WindowFunction = WindowFunction
-	s.Metric = Metric
+	s.qualifiedExpressionName = qualifiedExpressionName
+	s.sqlExpression = sqlExpression
 	return &s
 }
 

@@ -317,15 +317,19 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
-							"window_function": {
-								Type:        schema.TypeString,
-								Required:    true,
-								Description: caseSensitiveFieldDoubleQuotes("Specifies a name for the window function."),
+							"qualified_expression_name": {
+								Type:     schema.TypeString,
+								Required: true,
+								Description: joinWithSpace(
+									"Specifies a qualified name for the metric: `<table_alias>.<semantic_expression_name>`.",
+									"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+									"For the [derived metric](https://docs.snowflake.com/en/user-guide/views-semantic/sql#label-semantic-views-create-derived-metrics) omit the `<table_alias>.` part but still wrap in double quotes, e.g. `\"\\\"<semantic_expression_name>\\\"\"`.",
+								),
 							},
-							"metric": {
+							"sql_expression": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: "Specifies a metric expression for this window function.",
+								Description: "The SQL expression used to compute the metric following the `<window_function>(<metric>)` format.",
 							},
 							"over_clause": {
 								Type:        schema.TypeList,
@@ -623,9 +627,11 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
 	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
-		windowFunction := windowFunctionDefinition["window_function"].(string)
-		metric := windowFunctionDefinition["metric"].(string)
-		windowFuncRequest := sdk.NewWindowFunctionMetricDefinitionRequest(windowFunction, metric)
+		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
+			WithQualifiedExpressionName(windowFunctionDefinition["qualified_expression_name"].(string))
+		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
+			WithSqlExpression(windowFunctionDefinition["sql_expression"].(string))
+		windowFuncRequest := sdk.NewWindowFunctionMetricDefinitionRequest(qualifiedExpNameRequest, sqlExpRequest)
 		if len(windowFunctionDefinition["over_clause"].([]any)) > 0 {
 			overClause, ok := windowFunctionDefinition["over_clause"].([]any)[0].(map[string]any)
 			if ok {
