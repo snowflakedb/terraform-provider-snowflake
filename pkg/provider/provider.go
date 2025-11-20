@@ -618,6 +618,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_schemas":                            datasources.Schemas(),
 		"snowflake_secrets":                            datasources.Secrets(),
 		"snowflake_security_integrations":              datasources.SecurityIntegrations(),
+		"snowflake_semantic_views":                     datasources.SemanticViews(),
 		"snowflake_services":                           datasources.Services(),
 		"snowflake_sequences":                          datasources.Sequences(),
 		"snowflake_shares":                             datasources.Shares(),
