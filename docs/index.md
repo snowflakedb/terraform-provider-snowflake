@@ -612,11 +612,11 @@ resource "snowflake_execute" "test" {
 In this section, we describe general rules that apply to multiple resources and data sources in the provider.
 This may help you understand the provider behavior when you are getting started with it.
 
-However, getting familiar with existing [guides](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs)
-(`Guides` section on the left), resource-specific documentation, and Snowflake-specific documentation for a given object is still recommended.
+However, getting familiar with existing guides (`Guides` section on the left),
+resource-specific documentation, and Snowflake-specific documentation for a given object is still recommended.
 
 Here's a list of general rules:
-- All fields representing object identifiers (e.g., [allowed_network_rule_list](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_policy#allowed_network_rule_list-1) in `snowflake_network_policy`) or parts of them (e.g., `database`, `schema`, and `name` in the [snowflake_network_rule](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_rule#required) resource) are case-sensitive unless [QUOTED_IDENTIFIERS_IGNORE_CASE](https://docs.snowflake.com/en/sql-reference/parameters#quoted-identifiers-ignore-case) is enabled.
+- All fields representing object identifiers (e.g., [allowed_network_rule_list](./resources/network_policy#allowed_network_rule_list-1) in `snowflake_network_policy`) or parts of them (e.g., `database`, `schema`, and `name` in the [snowflake_network_rule](./resources/network_rule#required) resource) are case-sensitive. This is true for all stable resources (there may be some exceptions in the preview ones; especially older ones). However, you can make all identifiers case-insensitive by enabling [QUOTED_IDENTIFIERS_IGNORE_CASE](https://docs.snowflake.com/en/sql-reference/parameters#quoted-identifiers-ignore-case), but be aware with the [issues you may have when using it](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/KNOWN_ISSUES.md#using-quoted_identifiers_ignore_case-with-the-provider).
 
 ## A list of preview and stable resources and data sources
 

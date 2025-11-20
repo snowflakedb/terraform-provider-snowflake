@@ -181,6 +181,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeModel,
 	ObjectTypeModelMonitor,
 	ObjectTypeService,
+	ObjectTypeListing,
 	ObjectTypeStorageIntegration,
 	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeWorkspace,
