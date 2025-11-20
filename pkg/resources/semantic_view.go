@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [this PR]: adjust examples to the case-sensitivity
 // TODO [this PR]: verify issues created for semantic views follow-up and group them
 // TODO [this PR]: does the table needs to be in the same schema as semantic view
 // TODO [this PR]: check validation on metrics/dimensions
