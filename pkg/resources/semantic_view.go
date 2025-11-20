@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [this PR]: document external changes are not handled currently
 // TODO [this PR]: document how to fill qualified_expression_name correctly
 // TODO [this PR]: document which fields are case-sensitive and that provider will use double quotes syntax for them
 // TODO [this PR]: run acceptance tests for the resource
@@ -51,7 +50,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Required:    true,
 		ForceNew:    true,
-		Description: "The list of logical tables in the semantic view.",
+		Description: externalChangesNotDetectedFieldDescription("The list of logical tables in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"table_alias": {
@@ -111,7 +110,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
 		ForceNew:    true,
-		Description: "The list of relationships between the logical tables in the semantic view.",
+		Description: externalChangesNotDetectedFieldDescription("The list of relationships between the logical tables in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"relationship_identifier": {
@@ -186,7 +185,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
 		ForceNew:    true,
-		Description: "The list of facts in the semantic view.",
+		Description: externalChangesNotDetectedFieldDescription("The list of facts in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
@@ -219,7 +218,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
 		ForceNew:    true,
-		Description: "The list of dimensions in the semantic view.",
+		Description: externalChangesNotDetectedFieldDescription("The list of dimensions in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
@@ -253,11 +252,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		},
 	},
 	"metrics": {
-		Type: schema.TypeList,
-		Description: "Specify a list of metrics for the semantic view. " +
-			"Each metric can have either a semantic expression or a window function in its definition.",
-		Optional: true,
-		ForceNew: true,
+		Type:        schema.TypeList,
+		Description: externalChangesNotDetectedFieldDescription("Specify a list of metrics for the semantic view. Each metric can have either a semantic expression or a window function in its definition."),
+		Optional:    true,
+		ForceNew:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				// TODO(SNOW-2396311): update the SDK with the newly added/updated fields for semantic expressions, then add them here
