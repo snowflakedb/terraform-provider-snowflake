@@ -152,12 +152,15 @@ func TestInt_SemanticView(t *testing.T) {
 
 		// dimensions
 		dimensionSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "D1"}})
-		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."first_c"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"table1"."first_c"`}).
+		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."d1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"table1"."first_c"`}).
 			WithSynonyms(*dimensionSynonymRequest).
 			WithComment("dimension comment")
 
+		windowFunctionExpression := sdk.NewWindowFunctionMetricDefinitionRequest(`"table1"."metric2"`, `SUM("table1"."metric1")`).WithOverClause(*sdk.NewWindowFunctionOverClauseRequest().WithPartitionBy(`"table1"."d1"`))
+		windowFunctionMetric := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*windowFunctionExpression)
+
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).
-			WithSemanticViewMetrics(metrics).
+			WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*metric, *windowFunctionMetric}).
 			WithComment("comment").
 			WithSemanticViewRelationships([]sdk.SemanticViewRelationshipRequest{*relationships}).
 			WithSemanticViewFacts([]sdk.SemanticExpressionRequest{*factSemanticExpression}).

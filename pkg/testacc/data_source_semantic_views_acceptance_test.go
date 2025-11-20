@@ -20,28 +20,25 @@ import (
 )
 
 // TODO [SNOW-2108211]: show output assertions
-// TODO [SNOW-2108211]: check the filtering test more closely
 func TestAcc_SemanticViews_Basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a3", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a4", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a1"`, sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a2"`, sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a3"`, sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a4"`, sdk.DataTypeNumber),
 	})
 	t.Cleanup(table1Cleanup)
 
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, nil, "logical table 1")
-	semExp1 := model.SemanticExpressionWithProps("lt1.se1", "SUM(lt1.a1)", []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
+	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
 
 	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
 
 	semanticViewModel := model.SemanticViewWithMetrics(
 		"test",
-		id.DatabaseName(),
-		id.SchemaName(),
-		id.Name(),
+		id,
 		[]sdk.LogicalTable{*logicalTable1},
 		[]sdk.MetricDefinition{*metric1},
 	).WithComment(comment)
@@ -87,15 +84,33 @@ func TestAcc_SemanticViews_Basic(t *testing.T) {
 
 func TestAcc_SemanticViews_Filtering(t *testing.T) {
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a1"`, sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a2"`, sdk.DataTypeNumber),
 	})
 	t.Cleanup(table1Cleanup)
 
+	table2, table2Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest(`"a1"`, sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a2"`, sdk.DataTypeNumber),
+	})
+	t.Cleanup(table2Cleanup)
+
+	table3, table3Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest(`"a1"`, sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a2"`, sdk.DataTypeNumber),
+	})
+	t.Cleanup(table3Cleanup)
+
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 1")
-	semExp1 := model.SemanticExpressionWithProps("lt1.se1", "SUM(lt1.a1)", []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
+	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 2")
+	logicalTable3 := model.LogicalTableWithProps("lt3", table3.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 3")
+	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
+	semExp2 := model.SemanticExpressionWithProps(`"lt2"."se1"`, `SUM("lt2"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
+	semExp3 := model.SemanticExpressionWithProps(`"lt3"."se1"`, `SUM("lt3"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
 
 	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
+	metric2 := model.MetricDefinitionWithProps(semExp2, nil)
+	metric3 := model.MetricDefinitionWithProps(semExp3, nil)
 
 	prefix := random.AlphaUpperN(4)
 
@@ -103,9 +118,9 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id3 := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	model1 := model.SemanticViewWithMetrics("test1", id1.DatabaseName(), id1.SchemaName(), id1.Name(), []sdk.LogicalTable{*logicalTable1}, []sdk.MetricDefinition{*metric1})
-	model2 := model.SemanticViewWithMetrics("test2", id2.DatabaseName(), id2.SchemaName(), id2.Name(), []sdk.LogicalTable{*logicalTable1}, []sdk.MetricDefinition{*metric1})
-	model3 := model.SemanticViewWithMetrics("test3", id3.DatabaseName(), id3.SchemaName(), id3.Name(), []sdk.LogicalTable{*logicalTable1}, []sdk.MetricDefinition{*metric1})
+	model1 := model.SemanticViewWithMetrics("test1", id1, []sdk.LogicalTable{*logicalTable1}, []sdk.MetricDefinition{*metric1})
+	model2 := model.SemanticViewWithMetrics("test2", id2, []sdk.LogicalTable{*logicalTable2}, []sdk.MetricDefinition{*metric2})
+	model3 := model.SemanticViewWithMetrics("test3", id3, []sdk.LogicalTable{*logicalTable3}, []sdk.MetricDefinition{*metric3})
 
 	dataSourceModelLikeFirstOne := datasourcemodel.SemanticViews("test").
 		WithLike(id1.Name()).

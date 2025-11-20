@@ -8,13 +8,11 @@ import (
 
 func SemanticViewWithMetrics(
 	resourceName string,
-	database string,
-	schema string,
-	name string,
+	id sdk.SchemaObjectIdentifier,
 	tables []sdk.LogicalTable,
 	metrics []sdk.MetricDefinition,
 ) *SemanticViewModel {
-	return SemanticView(resourceName, database, schema, name, tables).WithMetrics(metrics)
+	return SemanticView(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), tables).WithMetrics(metrics)
 }
 
 func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewModel {

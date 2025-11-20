@@ -17,10 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [this PR]: run acceptance tests for the resource
 // TODO [this PR]: adjust examples to the case-sensitivity
 // TODO [this PR]: verify issues created for semantic views follow-up and group them
 // TODO [this PR]: does the table needs to be in the same schema as semantic view
+// TODO [this PR]: check validation on metrics/dimensions
 var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
@@ -49,7 +49,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 			Schema: map[string]*schema.Schema{
 				"table_alias": {
 					Type:        schema.TypeString,
-					Optional:    true,
+					Required:    true,
 					Description: caseSensitiveFieldDoubleQuotes("Specifies an alias for a logical table in the semantic view."),
 				},
 				"table_name": {

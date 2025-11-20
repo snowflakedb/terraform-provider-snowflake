@@ -151,14 +151,14 @@ resource "snowflake_semantic_view" "complete" {
 
 Required:
 
-- `table_name` (String) Specifies an identifier for the logical table. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `table_alias` (String) Specifies an alias for a logical table in the semantic view. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
+- `table_name` (String) Specifies an identifier for the logical table. Example: `"\"<db_name>\".\"<schema_name>\".\"<table_name>\""`. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 
 Optional:
 
 - `comment` (String) Specifies a comment for the logical table.
 - `primary_key` (List of String) Definitions of primary keys in the logical table. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
 - `synonym` (Set of String) List of synonyms for the logical table.
-- `table_alias` (String) Specifies an alias for a logical table in the semantic view. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
 - `unique` (Block List) Definitions of unique key combinations in the logical table. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake. (see [below for nested schema](#nestedblock--tables--unique))
 
 <a id="nestedblock--tables--unique"></a>
