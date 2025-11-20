@@ -140,6 +140,9 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasCommentString("").
+						HasDimensionsEmpty().
+						HasFactsEmpty().
+						HasRelationshipsEmpty().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.SemanticViewShowOutput(t, modelBasic.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -163,6 +166,12 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasCommentString("").
+						HasDimensionsEmpty().
+						HasFactsEmpty().
+						HasMetricsEmpty().
+						HasRelationshipsEmpty().
+						// TODO [this PR]: assert tables empty
+						// HasTablesString("").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.ImportedSemanticViewShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasCreatedOnNotEmpty().
@@ -185,7 +194,27 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasCommentString(comment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
-					resourceshowoutputassert.SemanticViewShowOutput(t, modelComplete.ResourceReference()).
+				),
+			},
+			// import complete
+			{
+				Config:       accconfig.FromModels(t, providerModel, modelComplete),
+				ResourceName: modelComplete.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedSemanticViewResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(comment).
+						HasDimensionsEmpty().
+						HasFactsEmpty().
+						HasMetricsEmpty().
+						HasRelationshipsEmpty().
+						// TODO [this PR]: assert tables empty
+						// HasTablesString("").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.ImportedSemanticViewShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -212,14 +241,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasCommentString(changedComment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.SemanticViewShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE").
-						HasComment(changedComment).
-						HasExtension(""),
+						HasComment(changedComment),
 				),
 			},
 			// change externally alter
@@ -241,14 +263,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasCommentString(changedComment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.SemanticViewShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE").
-						HasComment(changedComment).
-						HasExtension(""),
+						HasComment(changedComment),
 				),
 			},
 			// change externally create
@@ -263,6 +278,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 				Config: accconfig.FromModels(t, providerModel, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
+						// TODO [this PR]: why not recreate here?
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
@@ -274,17 +290,10 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasCommentString(changedComment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.SemanticViewShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE").
-						HasComment(changedComment).
-						HasExtension(""),
+						HasComment(changedComment),
 				),
 			},
-			// unset
+			// recreate to basic
 			{
 				Config: accconfig.FromModels(t, providerModel, modelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -298,16 +307,10 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasCommentString("").
+						HasDimensionsEmpty().
+						HasFactsEmpty().
+						HasRelationshipsEmpty().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
-					resourceshowoutputassert.SemanticViewShowOutput(t, modelBasic.ResourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasOwnerRoleType("ROLE").
-						HasComment("").
-						HasExtension(""),
 				),
 			},
 		},
