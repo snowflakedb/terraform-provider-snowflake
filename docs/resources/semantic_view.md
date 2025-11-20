@@ -35,14 +35,17 @@ resource "snowflake_semantic_view" "basic" {
   database = "DATABASE"
   schema   = "SCHEMA"
   name     = "SEMANTIC_VIEW"
-  tables {
-    table_name = "TABLE_NAME"
-  }
+
   metrics {
     semantic_expression {
-      qualified_expression_name = "TABLE_NAME.METRIC_NAME"
-      sql_expression            = "SQL_EXPRESSION"
+      qualified_expression_name = "\"lt1\".\"m1\""
+      sql_expression            = "SUM(\"lt1\".\"a1\")"
     }
+  }
+
+  tables {
+    table_alias = "lt1"
+    table_name  = snowflake_table.test.fully_qualified_name
   }
 }
 
@@ -52,67 +55,70 @@ resource "snowflake_semantic_view" "complete" {
   schema   = "SCHEMA"
   name     = "SEMANTIC_VIEW"
   comment  = "comment"
-  tables {
-    comment     = "comment"
-    primary_key = ["COL1"]
-    unique {
-      values = ["COL2"]
-    }
-    table_alias = "TABLE_ALIAS"
-    table_name  = "TABLE_NAME"
-    synonym     = ["synonym", "synonym"]
-  }
-  tables {
-    comment     = "comment"
-    primary_key = ["COL1"]
-    unique {
-      values = ["COL2"]
-    }
-    table_alias = "TABLE_ALIAS"
-    table_name  = "TABLE_NAME"
-    synonym     = ["synonym"]
-  }
-  relationships {
-    relationship_identifier = "RELATIONSHIP_NAME"
-    table_name_or_alias {
-      table_alias = "TABLE_ALIAS"
-    }
-    relationship_columns = ["COL1", "COL2"]
-    referenced_table_name_or_alias {
-      table_alias = "TABLE_ALIAS"
-    }
-    referenced_relationship_columns = ["COL1", "COL2"]
-  }
-  facts {
-    comment                   = "comment"
-    qualified_expression_name = "TABLE_ALIAS.FACT_NAME"
-    sql_expression            = "SQL_EXPRESSION"
-    synonym                   = ["synonym"]
-  }
+
   dimensions {
-    comment                   = "comment"
-    qualified_expression_name = "TABLE_ALIAS.DIMENSION_NAME"
-    sql_expression            = "SQL_EXPRESSION"
-    synonym                   = ["synonym"]
+    comment                   = "dimension comment"
+    qualified_expression_name = "\"lt1\".\"d2\""
+    sql_expression            = "\"lt1\".\"a2\""
+    synonym                   = ["dim2"]
   }
+
+  facts {
+    comment                   = "fact comment"
+    qualified_expression_name = "\"lt1\".\"f2\""
+    sql_expression            = "\"lt1\".\"a1\""
+    synonym                   = ["fact2"]
+  }
+
   metrics {
     semantic_expression {
-      comment                   = "comment"
-      qualified_expression_name = "TABLE_ALIAS.METRIC_NAME"
-      sql_expression            = "SQL_EXPRESSION"
-      synonym                   = ["synonym"]
+      comment                   = "semantic expression comment"
+      qualified_expression_name = "\"lt1\".\"m1\""
+      sql_expression            = "SUM(\"lt1\".\"a1\")"
+      synonym                   = ["sem1", "baseSem"]
     }
   }
+
   metrics {
     window_function {
-      metric = "METRIC_EXPRESSION"
       over_clause {
-        partition_by        = "PARTITION_CLAUSE"
-        order_by            = "ORDER_BY_CLAUSE"
-        window_frame_clause = "WINDOW_FRAME_CLAUSE"
+        partition_by = "\"lt1\".\"d2\""
       }
-      window_function = "ALIAS.WINDOW_FUNCTION_NAME"
+      qualified_expression_name = "\"lt1\".\"wf1\""
+      sql_expression            = "SUM(\"lt1\".\"m1\")"
     }
+  }
+
+  relationships {
+    referenced_relationship_columns = ["a1", "a2"]
+    referenced_table_name_or_alias {
+      table_alias = "lt1"
+    }
+    relationship_columns    = ["a1", "a2"]
+    relationship_identifier = "r2"
+    table_name_or_alias {
+      table_alias = "lt2"
+    }
+  }
+
+  tables {
+    comment     = "logical table 1 comment"
+    primary_key = ["a1"]
+    synonym     = ["orders", "sales"]
+    table_alias = "lt1"
+    table_name  = snowflake_table.test.fully_qualified_name
+    unique {
+      values = ["a2"]
+    }
+    unique {
+      values = ["a3", "a4"]
+    }
+  }
+  tables {
+    comment     = "logical table 2 comment"
+    primary_key = ["a1"]
+    table_alias = "lt2"
+    table_name  = snowflake_table.test2.fully_qualified_name
   }
 }
 ```

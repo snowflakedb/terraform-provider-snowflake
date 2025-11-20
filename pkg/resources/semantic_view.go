@@ -20,6 +20,7 @@ import (
 // TODO [this PR]: verify issues created for semantic views follow-up and group them
 // TODO [this PR]: does the table needs to be in the same schema as semantic view
 // TODO [this PR]: check validation on metrics/dimensions
+// TODO [this PR]: add the migration guide
 var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
