@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.10.1 ➞ v2.10.2
+## v2.10.1 ➞ v2.11.0
 
 ### *(improvement)* Functions reading TOML configuration now clean path
 
