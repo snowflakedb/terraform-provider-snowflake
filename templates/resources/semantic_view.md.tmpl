@@ -11,6 +11,22 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+!> **Case-sensitive names** Object names, column names, and aliases are case-sensitive. The provider would wrap them in double quotes when running SQL on Snowflake. Keep it in mind when defining the semantic view (check the [example usage](#example-usage)).
+
+-> **Note** The [`ALTER SEMANTIC VIEW`](https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view) does not currently handle changes to `dimensions`, `facts`, `metrics`, `relationships`, and `tables`. It means that all changes to these attributes will be handled as destroy and recreate.
+
+-> **Note** External changes for `dimensions`, `facts`, `metrics`, `relationships`, and `tables` are not currently handled. Support for this functionality will be added in the next versions of the provider before moving this resource out of preview.
+
+-> **Note** `PRIVATE`/`PUBLIC` qualifiers for semantic expressions are not currently supported. They are treated as `PUBLIC` by default. Support for this functionality will be added in the next versions of the provider before moving this resource out of preview.
+
+-> **Note** Excluding dimensions in `window_function:over_clause:partition_by` clause is not currently supported. Support for this functionality will be added in the next versions of the provider before moving this resource out of preview.
+
+-> **Note** The `window_function:over_clause:order_by` clause must be a complete SQL expression, including any `[ ASC | DESC ] [ NULLS { FIRST | LAST } ]` modifiers. It will be broken down in the next versions of the provider before moving this resource out of preview.
+
+-> **Note** `COPY GRANTS` and `OR REPLACE` are not currently supported.
+
+-> **Note** Output from the [`DESCRIBE SEMANTIC VIEW`](https://docs.snowflake.com/en/sql-reference/sql/desc-semantic-view) is not currently available.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}

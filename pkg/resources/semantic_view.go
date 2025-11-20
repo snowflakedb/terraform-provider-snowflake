@@ -24,9 +24,7 @@ import (
 // TODO [this PR]: adjust examples to the case-sensitivity
 // TODO [this PR]: verify issues created for semantic views follow-up and group them
 // TODO [this PR]: generate docs for resource and data source (documenting limitations)
-// TODO [this PR]: document that most of the changes will be handled as drop/recreate
 // TODO [this PR]: does the table needs to be in the same schema as semantic view
-// TODO [this PR]: add note on copy grants
 var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
