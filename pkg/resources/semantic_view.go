@@ -21,7 +21,6 @@ import (
 // TODO [this PR]: test (integration and acceptance) creation without aliases
 // TODO [this PR]: adjust examples to the case-sensitivity
 // TODO [this PR]: verify issues created for semantic views follow-up and group them
-// TODO [this PR]: generate docs for resource and data source (documenting limitations)
 // TODO [this PR]: does the table needs to be in the same schema as semantic view
 var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
