@@ -1293,6 +1293,10 @@ func TestInt_GrantOwnership(t *testing.T) {
 		return ownershipGrantOnObject(sdk.ObjectTypeTask, task.ID())
 	}
 
+	ownershipGrantOnSemanticView := func(semanticView *sdk.SemanticView) sdk.OwnershipGrantOn {
+		return ownershipGrantOnObject(sdk.ObjectTypeSemanticView, semanticView.ID())
+	}
+
 	t.Run("on schema object to database role", func(t *testing.T) {
 		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 		t.Cleanup(databaseRoleCleanup)
@@ -1460,6 +1464,89 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		grantOwnershipToRole(t, currentRole, ownershipGrantOnCortexSearchService(cortex), nil)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnCortexSearchService(cortex), currentRole)
+	})
+
+	t.Run("on semantic view - with ownership", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		// TODO (SNOW-2108211): Use a setup from semantic view helpers
+		table1ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		alias1 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table1")
+		columns1 := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("FIRST_A", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
+			*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
+			*sdk.NewTableColumnRequest("FIRST_C", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
+		}
+		table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1ID, columns1))
+		t.Cleanup(table1Cleanup)
+		pk1 := sdk.NewPrimaryKeysRequest().WithPrimaryKey([]sdk.SemanticViewColumn{
+			{
+				Name: "FIRST_C",
+			},
+		})
+
+		logicalTables := []sdk.LogicalTableRequest{
+			*sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(*alias1).WithPrimaryKeys(*pk1),
+		}
+
+		metricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.metric1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "SUM(table1.FIRST_A)"})
+		metrics := []sdk.MetricDefinitionRequest{
+			*sdk.NewMetricDefinitionRequest().WithSemanticExpression(*metricSemanticExpression),
+		}
+		req := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
+		semanticView, semanticViewCleanup := testClientHelper().SemanticView.CreateWithRequest(t, req)
+		t.Cleanup(semanticViewCleanup)
+
+		err := client.Grants.GrantOwnership(
+			ctx,
+			ownershipGrantOnObject(sdk.ObjectTypeSemanticView, semanticView.ID()),
+			sdk.OwnershipGrantTo{
+				AccountRoleName: sdk.Pointer(role.ID()),
+			},
+			new(sdk.GrantOwnershipOptions),
+		)
+		require.NoError(t, err)
+		checkOwnershipOnObjectToRole(t, ownershipGrantOnSemanticView(semanticView), role.ID())
+
+		currentRole := testClientHelper().Context.CurrentRole(t)
+
+		grantOwnershipToRole(t, currentRole, ownershipGrantOnSemanticView(semanticView), nil)
+		checkOwnershipOnObjectToRole(t, ownershipGrantOnSemanticView(semanticView), currentRole)
+	})
+
+	t.Run("on semantic view - all", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+		roleId := role.ID()
+
+		on := sdk.OwnershipGrantOn{
+			Future: &sdk.GrantOnSchemaObjectIn{
+				PluralObjectType: sdk.PluralObjectTypeSemanticViews,
+				InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
+			},
+		}
+		to := sdk.OwnershipGrantTo{
+			AccountRoleName: &roleId,
+		}
+
+		err := client.Grants.GrantOwnership(ctx, on, to, nil)
+		require.NoError(t, err)
+
+		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Future: sdk.Bool(true),
+			To: &sdk.ShowGrantsTo{
+				Role: roleId,
+			},
+		})
+		require.NoError(t, err)
+		require.Len(t, returnedGrants, 1)
+
+		assert.Equal(t, sdk.SchemaObjectOwnership.String(), returnedGrants[0].Privilege)
+		assert.Equal(t, sdk.ObjectTypeSemanticView, returnedGrants[0].GrantOn)
+		assert.Equal(t, sdk.ObjectTypeRole, returnedGrants[0].GrantTo)
+		assert.Equal(t, roleId, returnedGrants[0].GranteeName)
 	})
 
 	t.Run("on pipe - with operate and monitor privileges granted", func(t *testing.T) {
