@@ -29,6 +29,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ### Add support for semantic views in `snowflake_grant_ownership` resource
 Add a missing option in `snowflake_grant_ownership` to support semantic views (see [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership)).
 
+### *(improvement)* Upgraded gosnowflake driver to v1.18.0
+
+The provider now uses [gosnowflake driver v1.18.0](https://github.com/snowflakedb/gosnowflake).
+
+**Important note about query logging:** With this driver version, queries are not logged by default. If you need query-level debugging, ensure you configure appropriate logging settings.
+
+We added new provider configuration options to control query logging behavior:
+  - `log_query_text` - when set to `true`, query text will be logged
+  - `log_query_parameters` - when set to `true`, query parameters will be logged
+
+These options can be set in the provider configuration, TOML configuration file, or via environment variables. Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+
+Note that you still need to set the `INFO` level in `driver_tracing` field to see the query logs.
+
+**Note:** Enabling these options may log sensitive information. Use with caution and ensure appropriate security measures are in place.
+
+References: [#4092](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4092).
+
 ### *(improvement)* Functions reading TOML configuration now clean path
 
 Previously, the provider's file reading functions did not clean paths. In this version, all functions handling files use Go's [filepath.Clean](https://pkg.go.dev/path/filepath#Clean) function for each file path.

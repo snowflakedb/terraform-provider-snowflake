@@ -3,14 +3,12 @@
 package testacc
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -43,12 +41,12 @@ func TestAcc_Share_2025_07(t *testing.T) {
 	})
 }
 
-func shareConfigOneAccount(shareId sdk.AccountObjectIdentifier, comment string, account string) string {
-	return fmt.Sprintf(`
-resource "snowflake_share" "test" {
-	name           = "%s"
-	comment        = "%s"
-	accounts       = ["%s"]
-}
-`, shareId.Name(), comment, account)
-}
+// func shareConfigOneAccount(shareId sdk.AccountObjectIdentifier, comment string, account string) string {
+// 	return fmt.Sprintf(`
+// resource "snowflake_share" "test" {
+// 	name           = "%s"
+// 	comment        = "%s"
+// 	accounts       = ["%s"]
+// }
+// `, shareId.Name(), comment, account)
+// }

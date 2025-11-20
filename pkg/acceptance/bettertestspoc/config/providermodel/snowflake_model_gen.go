@@ -27,6 +27,8 @@ type SnowflakeModel struct {
 	JwtClientTimeout                   tfconfig.Variable `json:"jwt_client_timeout,omitempty"`
 	JwtExpireTimeout                   tfconfig.Variable `json:"jwt_expire_timeout,omitempty"`
 	KeepSessionAlive                   tfconfig.Variable `json:"keep_session_alive,omitempty"`
+	LogQueryParameters                 tfconfig.Variable `json:"log_query_parameters,omitempty"`
+	LogQueryText                       tfconfig.Variable `json:"log_query_text,omitempty"`
 	LoginTimeout                       tfconfig.Variable `json:"login_timeout,omitempty"`
 	MaxRetryCount                      tfconfig.Variable `json:"max_retry_count,omitempty"`
 	OauthAuthorizationUrl              tfconfig.Variable `json:"oauth_authorization_url,omitempty"`
@@ -173,6 +175,16 @@ func (s *SnowflakeModel) WithJwtExpireTimeout(jwtExpireTimeout int) *SnowflakeMo
 
 func (s *SnowflakeModel) WithKeepSessionAlive(keepSessionAlive bool) *SnowflakeModel {
 	s.KeepSessionAlive = tfconfig.BoolVariable(keepSessionAlive)
+	return s
+}
+
+func (s *SnowflakeModel) WithLogQueryParameters(logQueryParameters bool) *SnowflakeModel {
+	s.LogQueryParameters = tfconfig.BoolVariable(logQueryParameters)
+	return s
+}
+
+func (s *SnowflakeModel) WithLogQueryText(logQueryText bool) *SnowflakeModel {
+	s.LogQueryText = tfconfig.BoolVariable(logQueryText)
 	return s
 }
 
@@ -428,6 +440,16 @@ func (s *SnowflakeModel) WithJwtExpireTimeoutValue(value tfconfig.Variable) *Sno
 
 func (s *SnowflakeModel) WithKeepSessionAliveValue(value tfconfig.Variable) *SnowflakeModel {
 	s.KeepSessionAlive = value
+	return s
+}
+
+func (s *SnowflakeModel) WithLogQueryParametersValue(value tfconfig.Variable) *SnowflakeModel {
+	s.LogQueryParameters = value
+	return s
+}
+
+func (s *SnowflakeModel) WithLogQueryTextValue(value tfconfig.Variable) *SnowflakeModel {
+	s.LogQueryText = value
 	return s
 }
 

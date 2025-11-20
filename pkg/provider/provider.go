@@ -477,6 +477,18 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.WorkloadIdentityEntraResource, nil),
 		},
+		"log_query_text": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("When set to true, the full query text will be logged. Be aware that it may include sensitive information. Default value is false.", snowflakeenvs.LogQueryText),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.LogQueryText, nil),
+		},
+		"log_query_parameters": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("When set to true, the parameters will be logged. Requires logQueryText to be enabled first. Be aware that it may include sensitive information. Default value is false.", snowflakeenvs.LogQueryParameters),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.LogQueryParameters, nil),
+		},
 	}
 }
 
@@ -851,6 +863,8 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleBoolField(s, "enable_single_use_refresh_tokens", &config.EnableSingleUseRefreshTokens),
 		handleStringField(s, "workload_identity_provider", &config.WorkloadIdentityProvider),
 		handleStringField(s, "workload_identity_entra_resource", &config.WorkloadIdentityEntraResource),
+		handleBoolField(s, "log_query_text", &config.LogQueryText),
+		handleBoolField(s, "log_query_parameters", &config.LogQueryParameters),
 	)
 	if err != nil {
 		return nil, err

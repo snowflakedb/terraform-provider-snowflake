@@ -312,7 +312,8 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 					assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 					assert.True(t, config.EnableSingleUseRefreshTokens)
-
+					assert.True(t, config.LogQueryText)
+					assert.True(t, config.LogQueryParameters)
 					return nil
 				},
 			},
@@ -508,6 +509,8 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.WorkloadIdentityProvider, "workload_identity_provider")
 					t.Setenv(snowflakeenvs.WorkloadIdentityEntraResource, "workload_identity_entra_resource")
 					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
+					t.Setenv(snowflakeenvs.LogQueryText, "true")
+					t.Setenv(snowflakeenvs.LogQueryParameters, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -558,6 +561,8 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 					assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 					assert.True(t, config.EnableSingleUseRefreshTokens)
+					assert.True(t, config.LogQueryText)
+					assert.True(t, config.LogQueryParameters)
 					return nil
 				},
 			},
@@ -622,15 +627,17 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.DriverTracing, "invalid")
 					t.Setenv(snowflakeenvs.TmpDirectoryPath, "../")
 					t.Setenv(snowflakeenvs.DisableConsoleLogin, "false")
-					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
-					t.Setenv(snowflakeenvs.OauthClientSecret, "oauth_client_secret")
-					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "oauth_token_request_url")
-					t.Setenv(snowflakeenvs.OauthAuthorizationUrl, "oauth_authorization_url")
-					t.Setenv(snowflakeenvs.OauthRedirectUri, "oauth_redirect_uri")
-					t.Setenv(snowflakeenvs.OauthScope, "oauth_scope")
-					t.Setenv(snowflakeenvs.WorkloadIdentityProvider, "workload_identity_provider")
-					t.Setenv(snowflakeenvs.WorkloadIdentityEntraResource, "workload_identity_entra_resource")
-					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
+					t.Setenv(snowflakeenvs.OauthClientId, "overridden")
+					t.Setenv(snowflakeenvs.OauthClientSecret, "overridden")
+					t.Setenv(snowflakeenvs.OauthTokenRequestUrl, "overridden")
+					t.Setenv(snowflakeenvs.OauthAuthorizationUrl, "overridden")
+					t.Setenv(snowflakeenvs.OauthRedirectUri, "overridden")
+					t.Setenv(snowflakeenvs.OauthScope, "overridden")
+					t.Setenv(snowflakeenvs.WorkloadIdentityProvider, "overridden")
+					t.Setenv(snowflakeenvs.WorkloadIdentityEntraResource, "overridden")
+					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "false")
+					t.Setenv(snowflakeenvs.LogQueryText, "false")
+					t.Setenv(snowflakeenvs.LogQueryParameters, "false")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -681,6 +688,8 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 					assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 					assert.True(t, config.EnableSingleUseRefreshTokens)
+					assert.True(t, config.LogQueryText)
+					assert.True(t, config.LogQueryParameters)
 					return nil
 				},
 			},
