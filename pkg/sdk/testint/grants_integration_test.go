@@ -1516,7 +1516,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnSemanticView(semanticView), currentRole)
 	})
 
-	t.Run("on semantic view - all", func(t *testing.T) {
+	t.Run("on semantic view - future", func(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 		roleId := role.ID()
