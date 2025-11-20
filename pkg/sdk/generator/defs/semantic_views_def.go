@@ -180,10 +180,12 @@ var windowFunctionOverClause = g.NewQueryStruct("WindowFunctionOverClause").
 	OptionalTextAssignment("ORDER BY", g.ParameterOptions().NoEquals()).
 	OptionalText("WindowFrameClause", g.KeywordOptions())
 
+// TODO [SNOW-2398097]: sqlExpression could be replaced with <window_function>(<metric>)
+// TODO [SNOW-2398097]: windowFunctionMetricDefinition could be merged with semanticExpression to have syntax for metrics definition (different than for facts and dimensions)
 var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefinition").
-	Text("WindowFunction", g.KeywordOptions().DoubleQuotes().Required()).
+	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
 	SQL("AS").
-	Text("Metric", g.KeywordOptions().Required()).
+	OptionalQueryStructField("sqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
 	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ListOptions().Parentheses().NoComma().SQL("OVER"))
 
 var metricDefinition = g.NewQueryStruct("MetricDefinition").
