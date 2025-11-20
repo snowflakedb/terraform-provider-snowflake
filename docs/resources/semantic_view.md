@@ -225,9 +225,9 @@ Optional:
 
 Required:
 
-- `metric` (String) Specifies a metric expression for this window function.
 - `over_clause` (Block List, Min: 1, Max: 1) Specify the partition by, order by or frame over which the window function is to be computed. (see [below for nested schema](#nestedblock--metrics--window_function--over_clause))
-- `window_function` (String) Specifies a name for the window function. This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.
+- `qualified_expression_name` (String) Specifies a qualified name for the metric: `<table_alias>.<semantic_expression_name>`. Remember to wrap each part in double quotes like `"\"<table_alias>\".\"<semantic_expression_name>\""`. For the [derived metric](https://docs.snowflake.com/en/user-guide/views-semantic/sql#label-semantic-views-create-derived-metrics) omit the `<table_alias>.` part but still wrap in double quotes, e.g. `"\"<semantic_expression_name>\""`.
+- `sql_expression` (String) The SQL expression used to compute the metric following the `<window_function>(<metric>)` format.
 
 <a id="nestedblock--metrics--window_function--over_clause"></a>
 ### Nested Schema for `metrics.window_function.over_clause`
