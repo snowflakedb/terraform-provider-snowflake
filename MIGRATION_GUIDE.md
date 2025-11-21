@@ -89,6 +89,23 @@ Previously, the provider's file reading functions did not clean paths. In this v
 
 No changes in configuration and state are required. The supported TOML location `~/.snowflake/config` stays the same and the behavior shouldn't be affected.
 
+### Task parameter validation handling
+
+Recently, Snowflake moved validation from runtime (task execution) to CREATE/ALTER operations for two parameters ([`AUTOCOMMIT`](https://docs.snowflake.com/en/sql-reference/parameters#autocommit) and [`SEARCH_PATH`](https://docs.snowflake.com/en/sql-reference/parameters#search-path)).
+Because of this, both parameters for tasks fail during those operations for invalid values.
+The `AUTOCOMMIT` parameter can be only set to `TRUE` (default value for this parameter), and `SEARCH_PATH` cannot be set at all. Both parameters can be unset.
+Now, when either `AUTOCOMMIT` is set to `FALSE` or `SEARCH_PATH` is set in the configuration (when creating or changing), the task resource will return warnings saying:
+
+```
+Invalid value for AUTOCOMMIT parameter: cannot be set to FALSE on a task
+Invalid value for SEARCH_PATH parameter: cannot be set on a task
+```
+
+If you have any of these parameters set in your configuration,
+please remove them to avoid the Terraform warnings and potential errors from the Snowflake side.
+The parameters may be removed in the next major version of the provider.
+Other than this, no changes in the configuration are required.
+
 ### *(bugfix)* Improved validation of identifiers with arguments
 Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:
 ```
