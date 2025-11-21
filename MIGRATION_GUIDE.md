@@ -115,8 +115,6 @@ No changes in configuration are required.
 
 References: [#4187](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4187)
 
-## v2.10.1 ➞ v2.10.2
-
 ### *(bugfix)* Disallowed setting `DATABASE ROLES` object type on `all` and `future` fields in `snowflake_grant_ownership` resource
 Previously, the provider allowed setting the `DATABASE ROLES` object type on `all` and `future` fields in the `grant_ownership` resource.
 This operation is not allowed in Snowflake, and such resource configuration resulted in errors being returned from Snowflake.
