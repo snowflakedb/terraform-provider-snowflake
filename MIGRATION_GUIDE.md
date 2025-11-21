@@ -34,7 +34,8 @@ You can enable resource and data source by adding `snowflake_semantic_view_resou
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version.
 
-## v2.10.1 ➞ v2.10.2
+#### Add support for semantic views in `snowflake_grant_ownership` resource
+Add a missing option in `snowflake_grant_ownership` to support semantic views (see [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership)).
 
 ### *(improvement)* Functions reading TOML configuration now clean path
 

@@ -1975,7 +1975,6 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 		WithAfterValue(configvariable.SetVariable(configvariable.StringVariable(rootTask.ID().FullyQualifiedName()))).
 		WithComment(comment).
 		WithLogLevelEnum(sdk.LogLevelInfo).
-		WithAutocommit(false).
 		WithJsonIndent(4)
 
 	resource.Test(t, resource.TestCase{
@@ -1995,7 +1994,7 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 					resource.TestCheckResourceAttr(configModel.ResourceReference(), "user_task_timeout_ms", "50"),
 					resource.TestCheckResourceAttr(configModel.ResourceReference(), "comment", comment),
 					resource.TestCheckResourceAttr(configModel.ResourceReference(), "session_parameters.LOG_LEVEL", "INFO"),
-					resource.TestCheckResourceAttr(configModel.ResourceReference(), "session_parameters.AUTOCOMMIT", "false"),
+					resource.TestCheckNoResourceAttr(configModel.ResourceReference(), "session_parameters.AUTOCOMMIT"),
 					resource.TestCheckResourceAttr(configModel.ResourceReference(), "session_parameters.JSON_INDENT", "4"),
 				),
 			},
@@ -2015,7 +2014,7 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
 						HasUserTaskTimeoutMsString("50").
 						HasLogLevelString(string(sdk.LogLevelInfo)).
-						HasAutocommitString("false").
+						HasAutocommitString("true").
 						HasJsonIndentString("4").
 						HasCommentString(comment),
 				),
@@ -2087,7 +2086,6 @@ resource "snowflake_task" "test" {
 	comment = "%[7]s"
 	session_parameters = {
 		LOG_LEVEL = "INFO",
-		AUTOCOMMIT = false,
 		JSON_INDENT = 4,
 	}
 }
