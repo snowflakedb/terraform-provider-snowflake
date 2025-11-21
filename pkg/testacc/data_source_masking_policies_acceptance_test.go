@@ -45,6 +45,7 @@ func TestAcc_MaskingPolicies_BasicUseCase_DifferentFiltering(t *testing.T) {
 
 	datasourceModelLikePrefix := datasourcemodel.MaskingPolicies("test").
 		WithLike(prefix+"%").
+		WithInAccount().
 		WithDependsOn(maskingPolicyModel1.ResourceReference(), maskingPolicyModel2.ResourceReference(), maskingPolicyModel3.ResourceReference())
 
 	datasourceModelInSchema := datasourcemodel.MaskingPolicies("test").
