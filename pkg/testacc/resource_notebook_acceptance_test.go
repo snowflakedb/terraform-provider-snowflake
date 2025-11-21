@@ -12,9 +12,11 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -545,7 +547,6 @@ func TestAcc_Notebook_Rename(t *testing.T) {
 	})
 }
 
-// TODO [SNOW-2858907]: Detect external changes on warehouse.
 func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -553,6 +554,7 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 	t.Cleanup(warehouseCleanup)
 
 	modelBasic := model.NotebookFromId("test", id)
+	warehouseNoQuotes := warehouse.ID().FullyQualifiedName()[1 : len(warehouse.ID().FullyQualifiedName())-1]
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -605,6 +607,8 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift("snowflake_notebook.test", "warehouse", nil, sdk.String(warehouseNoQuotes)),
+						planchecks.ExpectChange("snowflake_notebook.test", "warehouse", tfjson.ActionUpdate, sdk.String(warehouseNoQuotes), nil),
 					},
 				},
 				Check: assertThat(t,
@@ -616,7 +620,7 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 						HasNoMainFile().
 						HasNoQueryWarehouse().
 						HasNoIdleAutoShutdownTimeSeconds().
-						HasWarehouseString(warehouse.ID().FullyQualifiedName()).
+						HasWarehouseString("").
 						HasCommentString(""),
 					resourceshowoutputassert.NotebookShowOutput(t, modelBasic.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -624,7 +628,7 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasQueryWarehouse(sdk.NewAccountObjectIdentifier("")).
-						HasCodeWarehouse(warehouse.ID()).
+						HasCodeWarehouse(sdk.NewAccountObjectIdentifier("\"SYSTEM$STREAMLIT_NOTEBOOK_WH\"")).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(""),
@@ -632,7 +636,7 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.main_file", "notebook_app.ipynb")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.query_warehouse", "")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.idle_auto_shutdown_time_seconds", "1800")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.code_warehouse", warehouse.ID().FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.code_warehouse", "SYSTEM$STREAMLIT_NOTEBOOK_WH")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
 				),

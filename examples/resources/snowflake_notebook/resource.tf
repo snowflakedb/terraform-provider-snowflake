@@ -11,7 +11,7 @@ resource "snowflake_notebook" "complete" {
   database = "DATABASE"
   schema   = "SCHEMA"
   from {
-    stage = stage.fully_qualified_name
+    stage = snowflake_stage.test.fully_qualified_name
     path  = "some/path"
   }
   main_file                       = "my_notebook.ipynb"
