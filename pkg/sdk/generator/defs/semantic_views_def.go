@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var semanticViewDbRow = g.DbStruct("semanticViewDBRow").
 	Time("created_on").
@@ -39,7 +43,7 @@ var semanticViewDetails = g.PlainStruct("SemanticViewDetails").
 var SemanticViewsDef = g.NewInterface(
 	"SemanticViews",
 	"SemanticView",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view",
@@ -73,8 +77,9 @@ var SemanticViewsDef = g.NewInterface(
 			Name().
 			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalSQL("UNSET COMMENT").
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment"),
+			WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment", "RenameTo"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view",
@@ -124,27 +129,27 @@ var synonyms = g.NewQueryStruct("Synonyms").
 	ListAssignment("WITH SYNONYMS", "Synonym", g.ParameterOptions().NoEquals().Parentheses().Required())
 
 var logicalTableAlias = g.NewQueryStruct("LogicalTableAlias").
-	Text("LogicalTableAlias", g.KeywordOptions().Required()).
+	Text("LogicalTableAlias", g.KeywordOptions().DoubleQuotes().Required()).
 	SQL("AS")
 
 var semanticViewColumn = g.NewQueryStruct("SemanticViewColumn").
-	Text("Name", g.KeywordOptions().Required())
+	Text("Name", g.KeywordOptions().DoubleQuotes().Required())
 
 var logicalTable = g.NewQueryStruct("LogicalTable").
 	OptionalQueryStructField("logicalTableAlias", logicalTableAlias, g.KeywordOptions()).
-	Identifier("TableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+	Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	OptionalQueryStructField("primaryKeys", primaryKey, g.ParameterOptions().NoEquals()).
 	ListQueryStructField("uniqueKeys", uniqueKey, g.ListOptions().NoEquals().NoComma()).
 	OptionalQueryStructField("synonyms", synonyms, g.ParameterOptions().NoEquals()).
 	OptionalComment()
 
 var relationshipAlias = g.NewQueryStruct("RelationshipAlias").
-	Text("RelationshipAlias", g.KeywordOptions().Required()).
+	Text("RelationshipAlias", g.KeywordOptions().DoubleQuotes().Required()).
 	SQL("AS")
 
 var relationshipTableNameOrAlias = g.NewQueryStruct("RelationshipTableAlias").
-	OptionalIdentifier("RelationshipTableName", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions()).
-	OptionalText("RelationshipTableAlias", g.KeywordOptions()).
+	OptionalIdentifier("RelationshipTableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions()).
+	OptionalText("RelationshipTableAlias", g.KeywordOptions().DoubleQuotes()).
 	WithValidation(g.ExactlyOneValueSet, "RelationshipTableName", "RelationshipTableAlias")
 
 var semanticViewRelationship = g.NewQueryStruct("SemanticViewRelationship").
@@ -161,8 +166,8 @@ var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
 var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
 	Text("SqlExpression", g.KeywordOptions().NoQuotes().Required())
 
-// TODO(SNOW-2396371): add PUBLIC/PRIVATE optional field
-// TODO(SNOW-2398097): replace qualifiedExpressionName with table_alias and fact_or_metric fields
+// TODO [SNOW-2396371]: add PUBLIC/PRIVATE optional field
+// TODO [SNOW-2398097]: replace qualifiedExpressionName with table_alias and fact_or_metric fields
 var semanticExpression = g.NewQueryStruct("SemanticExpression").
 	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
 	SQL("AS").
@@ -175,10 +180,12 @@ var windowFunctionOverClause = g.NewQueryStruct("WindowFunctionOverClause").
 	OptionalTextAssignment("ORDER BY", g.ParameterOptions().NoEquals()).
 	OptionalText("WindowFrameClause", g.KeywordOptions())
 
+// TODO [SNOW-2398097]: sqlExpression could be replaced with <window_function>(<metric>)
+// TODO [SNOW-2398097]: windowFunctionMetricDefinition could be merged with semanticExpression to have syntax for metrics definition (different than for facts and dimensions)
 var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefinition").
-	Text("WindowFunction", g.KeywordOptions().Required()).
+	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
 	SQL("AS").
-	Text("Metric", g.KeywordOptions().Required()).
+	OptionalQueryStructField("sqlExpression", semanticSqlExpression, g.KeywordOptions().Required()).
 	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ListOptions().Parentheses().NoComma().SQL("OVER"))
 
 var metricDefinition = g.NewQueryStruct("MetricDefinition").

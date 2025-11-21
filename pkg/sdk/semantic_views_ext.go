@@ -84,6 +84,22 @@ func (s *SemanticExpression) SetSynonyms(synonyms []Synonym) {
 	}
 }
 
+func (s *WindowFunctionMetricDefinition) GetQualifiedExpressionName() *QualifiedExpressionName {
+	return s.qualifiedExpressionName
+}
+
+func (s *WindowFunctionMetricDefinition) SetQualifiedExpressionName(qExName string) {
+	s.qualifiedExpressionName = &QualifiedExpressionName{QualifiedExpressionName: qExName}
+}
+
+func (s *WindowFunctionMetricDefinition) GetSqlExpression() *SemanticSqlExpression {
+	return s.sqlExpression
+}
+
+func (s *WindowFunctionMetricDefinition) SetSqlExpression(sqlExpression string) {
+	s.sqlExpression = &SemanticSqlExpression{SqlExpression: sqlExpression}
+}
+
 func (r *SemanticViewRelationship) GetRelationshipAlias() *RelationshipAlias {
 	return r.relationshipAlias
 }

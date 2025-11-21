@@ -26,7 +26,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.10.x ➞ v2.11.0
 
-### Add support for semantic views in `snowflake_grant_ownership` resource
+### *(new feature)* Semantic views preview feature
+
+This version of the provider introduces support for the `SEMANTIC VIEWS`. Check the [official Snowflake documentation](https://docs.snowflake.com/en/user-guide/views-semantic/overview) to know more.
+
+You can enable resource and data source by adding `snowflake_semantic_view_resource` or `snowflake_semantic_views_datasource` to `preview_features_enabled` field in the provider configuration. You can read about the resource and data source current limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version.
+
+#### Add support for semantic views in `snowflake_grant_ownership` resource
 Add a missing option in `snowflake_grant_ownership` to support semantic views (see [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership)).
 
 ### *(improvement)* Upgraded gosnowflake driver to v1.18.0
@@ -46,6 +54,34 @@ Note that you still need to set the `INFO` level in `driver_tracing` field to se
 **Note:** Enabling these options may log sensitive information. Use with caution and ensure appropriate security measures are in place.
 
 References: [#4092](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4092).
+
+### *(new feature)* Added missing `object_types` in grant resources
+
+Previously, the following resources did not support all object types that can be specified in `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources.
+With this change, we added support for the following missing object types:
+
+In the `snowflake_grant_privileges_to_account_role` resource, we enabled support for:
+- `CONNECTION` object type in the `on_account_object.object_type` field
+- `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
+ 
+In the `snowflake_grant_privileges_to_database_role` resource, we enabled support for:
+- `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
+
+### *(improvement)* `describe_output` will now recompute whenever `comment` field is changed in secret resources
+
+Previously, in the following resources:
+- `snowflake_secret_with_generic_string`
+- `snowflake_secret_with_basic_authentication`
+- `snowflake_secret_with_oauth_authorization_code`
+- `snowflake_secret_with_client_credentials`
+
+when the `comment` field was changed, the `describe_output` field was not recomputed, although it contains the `comment` field.
+Now, changing the `comment` field will trigger recomputing the `describe_output` field. It doesn't affect current resource behavior
+(in terms of applying or ignoring changes on the actual Snowflake object), but keeps the consistency with logic in other resources.
+
+No changes in configuration and state are required.
 
 ### *(improvement)* Functions reading TOML configuration now clean path
 

@@ -1471,27 +1471,21 @@ func TestInt_GrantOwnership(t *testing.T) {
 		t.Cleanup(roleCleanup)
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		// TODO (SNOW-2108211): Use a setup from semantic view helpers
+		// TODO [SNOW-2852837]: Create a better semantic view helper
 		table1ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		alias1 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table1")
 		columns1 := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("FIRST_A", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-			*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-			*sdk.NewTableColumnRequest("FIRST_C", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
+			*sdk.NewTableColumnRequest("FIRST_A", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber),
 		}
 		table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1ID, columns1))
 		t.Cleanup(table1Cleanup)
-		pk1 := sdk.NewPrimaryKeysRequest().WithPrimaryKey([]sdk.SemanticViewColumn{
-			{
-				Name: "FIRST_C",
-			},
-		})
 
 		logicalTables := []sdk.LogicalTableRequest{
-			*sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(*alias1).WithPrimaryKeys(*pk1),
+			*sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(*alias1),
 		}
 
-		metricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.metric1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "SUM(table1.FIRST_A)"})
+		metricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."metric1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("table1"."FIRST_A")`})
 		metrics := []sdk.MetricDefinitionRequest{
 			*sdk.NewMetricDefinitionRequest().WithSemanticExpression(*metricSemanticExpression),
 		}

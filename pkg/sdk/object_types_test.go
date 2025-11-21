@@ -82,6 +82,13 @@ func Test_ToObjectType(t *testing.T) {
 		{input: "MODEL", want: ObjectTypeModel},
 		{input: "SERVICE", want: ObjectTypeService},
 		{input: "PROGRAMMATIC ACCESS TOKEN", want: ObjectTypeProgrammaticAccessToken},
+		{input: "SEMANTIC VIEW", want: ObjectTypeSemanticView},
+		{input: "STORAGE INTEGRATION", want: ObjectTypeStorageIntegration},
+		{input: "LISTING", want: ObjectTypeListing},
+		{input: "ONLINE FEATURE TABLE", want: ObjectTypeOnlineFeatureTable},
+		{input: "EXPERIMENT", want: ObjectTypeExperiment},
+		{input: "STORAGE LIFECYCLE POLICY", want: ObjectTypeStorageLifecyclePolicy},
+		{input: "WORKSPACE", want: ObjectTypeWorkspace},
 	}
 
 	invalid := []test{

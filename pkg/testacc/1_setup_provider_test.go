@@ -7,11 +7,9 @@ import (
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -56,8 +54,8 @@ var secondaryAccountProviderFactory = providerFactoryUsingCache("SecondaryAccoun
 
 func acceptanceTestsProvider() *schema.Provider {
 	p := provider.Provider()
-	p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
-	p.DataSourcesMap["snowflake_semantic_views"] = datasources.SemanticViews()
+	// add resources and data sources that are not ready here like:
+	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	return p
 }
 
