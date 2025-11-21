@@ -396,9 +396,16 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 	secondSchema, secondSchemaCleanup := testClient().Schema.CreateSchema(t)
 	t.Cleanup(secondSchemaCleanup)
 
+	secondDatabase, secondDatabaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(secondDatabaseCleanup)
+
+	schemaInSecondDatabase, schemaInSecondDatabaseCleanup := testClient().Schema.CreateSchemaInDatabase(t, secondDatabase.ID())
+	t.Cleanup(schemaInSecondDatabaseCleanup)
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	newIdInDifferentSchema := testClient().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
+	newIdInDifferentDatabase := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaInSecondDatabase.ID())
 
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest(`"a1"`, sdk.DataTypeNumber),
@@ -427,6 +434,13 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 	renamedDifferentSchema := model.SemanticViewWithMetrics(
 		"test",
 		newIdInDifferentSchema,
+		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.MetricDefinition{*metric1},
+	).WithComment("new comment")
+
+	renamedDifferentDatabase := model.SemanticViewWithMetrics(
+		"test",
+		newIdInDifferentDatabase,
 		[]sdk.LogicalTable{*logicalTable1},
 		[]sdk.MetricDefinition{*metric1},
 	).WithComment("new comment")
@@ -477,6 +491,22 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 						HasCommentString("new comment").
 						HasFullyQualifiedNameString(newIdInDifferentSchema.FullyQualifiedName()),
 					invokeactionassert.SemanticViewDoesNotExist(t, newId),
+				),
+			},
+			// rename - different database
+			{
+				Config: accconfig.FromModels(t, renamedDifferentDatabase),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(renamedDifferentDatabase.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.SemanticViewResource(t, renamedDifferentDatabase.ResourceReference()).
+						HasNameString(newIdInDifferentDatabase.Name()).
+						HasCommentString("new comment").
+						HasFullyQualifiedNameString(newIdInDifferentDatabase.FullyQualifiedName()),
+					invokeactionassert.SemanticViewDoesNotExist(t, newIdInDifferentSchema),
 				),
 			},
 		},

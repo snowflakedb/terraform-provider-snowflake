@@ -444,6 +444,37 @@ func TestInt_SemanticView(t *testing.T) {
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
+	t.Run("alter: rename to different database", func(t *testing.T) {
+		secondDatabase, secondDatabaseCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
+		t.Cleanup(secondDatabaseCleanup)
+
+		secondSchema, secondSchemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, secondDatabase.ID())
+		t.Cleanup(secondSchemaCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		newId := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
+		alterRequest := sdk.NewAlterSemanticViewRequest(id).WithRenameTo(newId)
+
+		err = client.SemanticViews.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, newId))
+
+		result, err := client.SemanticViews.ShowByID(ctx, newId)
+		require.NoError(t, err)
+		require.Equal(t, newId.Name(), result.Name)
+		require.Equal(t, newId.SchemaName(), result.SchemaName)
+		require.Equal(t, newId.DatabaseName(), result.DatabaseName)
+
+		_, err = client.SemanticViews.ShowByID(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
 	t.Run("drop: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
