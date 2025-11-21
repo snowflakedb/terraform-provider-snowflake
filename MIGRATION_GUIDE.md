@@ -89,16 +89,16 @@ Previously, the provider's file reading functions did not clean paths. In this v
 
 No changes in configuration and state are required. The supported TOML location `~/.snowflake/config` stays the same and the behavior shouldn't be affected.
 
-### Task deprecated parameter handling
+### Task parameter validation handling
 
-Recently, Snowflake moved validation from runtime to CREATE/ALTER operations.
-Because of this, both [`AUTOCOMMIT`](https://docs.snowflake.com/en/sql-reference/parameters#autocommit) and [`SEARCH_PATH`](https://docs.snowflake.com/en/sql-reference/parameters#search-path) parameters for tasks fail during those operations for invalid values.
+Recently, Snowflake moved validation from runtime (task execution) to CREATE/ALTER operations for two parameters ([`AUTOCOMMIT`](https://docs.snowflake.com/en/sql-reference/parameters#autocommit) and [`SEARCH_PATH`](https://docs.snowflake.com/en/sql-reference/parameters#search-path)).
+Because of this, both parameters for tasks fail during those operations for invalid values.
 The `AUTOCOMMIT` parameter can be only set to `TRUE` (default value for this parameter), and `SEARCH_PATH` cannot be set at all. Both parameters can be unset.
 Now, when either `AUTOCOMMIT` is set to `FALSE` or `SEARCH_PATH` is set in the configuration (when creating or changing), the task resource will return warnings saying:
 
 ```
-Deprecated parameter 'AUTOCOMMIT' cannot be set to FALSE on a task
-Deprecated parameter 'SEARCH_PATH' cannot be set on a task
+Invalid value for AUTOCOMMIT parameter: cannot be set to FALSE on a task
+Invalid value for SEARCH_PATH parameter: cannot be set on a task
 ```
 
 If you have any of these parameters set in your configuration,

@@ -336,7 +336,7 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 					return diag.Diagnostics{
 						diag.Diagnostic{
 							Severity: diag.Warning,
-							Summary:  "Deprecated parameter 'AUTOCOMMIT' cannot be set to FALSE on a task",
+							Summary:  "Invalid value for AUTOCOMMIT parameter: cannot be set to FALSE on a task",
 						},
 					}
 				}
@@ -350,7 +350,7 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 				return diag.Diagnostics{
 					diag.Diagnostic{
 						Severity: diag.Warning,
-						Summary:  "Deprecated parameter 'SEARCH_PATH' cannot be set on a task",
+						Summary:  "Invalid value for SEARCH_PATH parameter: cannot be set on a task",
 					},
 				}
 			}
@@ -433,7 +433,7 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 						return diag.Diagnostics{
 							diag.Diagnostic{
 								Severity: diag.Warning,
-								Summary:  "Deprecated parameter 'AUTOCOMMIT' cannot be set to FALSE on a task",
+								Summary:  "Invalid value for AUTOCOMMIT parameter: cannot be set to FALSE on a task",
 							},
 						}
 					}
@@ -453,7 +453,7 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 					return diag.Diagnostics{
 						diag.Diagnostic{
 							Severity: diag.Warning,
-							Summary:  "Deprecated parameter 'SEARCH_PATH' cannot be set on a task",
+							Summary:  "Invalid value for SEARCH_PATH parameter: cannot be set on a task",
 						},
 					}
 				} else {
