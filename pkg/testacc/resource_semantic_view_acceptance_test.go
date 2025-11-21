@@ -215,8 +215,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasFactsEmpty().
 						HasMetricsEmpty().
 						HasRelationshipsEmpty().
-						// TODO [this PR]: assert tables empty
-						// HasTablesString("").
+						HasNoTables().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.ImportedSemanticViewShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasCreatedOnNotEmpty().
@@ -294,8 +293,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasFactsEmpty().
 						HasMetricsEmpty().
 						HasRelationshipsEmpty().
-						// TODO [this PR]: assert tables empty
-						// HasTablesString("").
+						HasNoTables().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.ImportedSemanticViewShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasCreatedOnNotEmpty().
