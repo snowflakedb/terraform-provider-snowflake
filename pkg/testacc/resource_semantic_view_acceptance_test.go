@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -11,10 +12,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -122,8 +121,6 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithFacts([]sdk.SemanticExpression{*fact2}).
 		WithDimensions([]sdk.SemanticExpression{*dimension2})
 
-	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.SemanticViewResource))
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -133,7 +130,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with only required attributes
 			{
-				Config: accconfig.FromModels(t, providerModel, modelBasic),
+				Config: accconfig.FromModels(t, modelBasic),
 				Check: assertThat(t,
 					resourceassert.SemanticViewResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
@@ -157,7 +154,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			},
 			// import minimal state
 			{
-				Config:       accconfig.FromModels(t, providerModel, modelBasic),
+				Config:       accconfig.FromModels(t, modelBasic),
 				ResourceName: modelBasic.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
@@ -186,7 +183,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			},
 			// add optional attributes
 			{
-				Config: accconfig.FromModels(t, providerModel, modelComplete),
+				Config: accconfig.FromModels(t, modelComplete),
 				Check: assertThat(t,
 					resourceassert.SemanticViewResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
@@ -198,7 +195,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			},
 			// import complete
 			{
-				Config:       accconfig.FromModels(t, providerModel, modelComplete),
+				Config:       accconfig.FromModels(t, modelComplete),
 				ResourceName: modelComplete.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: assertThatImport(t,
@@ -227,7 +224,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			},
 			// alter
 			{
-				Config: accconfig.FromModels(t, providerModel, modelCompleteWithDifferentValues),
+				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
@@ -249,7 +246,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 				PreConfig: func() {
 					testClient().SemanticView.Alter(t, sdk.NewAlterSemanticViewRequest(id).WithSetComment(comment))
 				},
-				Config: accconfig.FromModels(t, providerModel, modelCompleteWithDifferentValues),
+				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -275,7 +272,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						WithComment(comment).WithOrReplace(true))
 					t.Cleanup(semanticViewCleanup)
 				},
-				Config: accconfig.FromModels(t, providerModel, modelCompleteWithDifferentValues),
+				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						// TODO [this PR]: why not recreate here?
@@ -295,7 +292,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			},
 			// recreate to basic
 			{
-				Config: accconfig.FromModels(t, providerModel, modelBasic),
+				Config: accconfig.FromModels(t, modelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
@@ -403,6 +400,33 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 						HasFullyQualifiedNameString(newIdInDifferentSchema.FullyQualifiedName()),
 					invokeactionassert.SemanticViewDoesNotExist(t, newId),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_SemanticView_Validations(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	logicalTable1 := model.LogicalTableWithProps("lt1", tableId, []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, []sdk.Synonym{}, "logical table 1")
+
+	modelWithoutMetricNorDimension := model.SemanticView(
+		"test",
+		id.DatabaseName(),
+		id.SchemaName(),
+		id.Name(),
+		[]sdk.LogicalTable{*logicalTable1},
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, modelWithoutMetricNorDimension),
+				ExpectError: regexp.MustCompile("one of `dimensions,metrics` must be specified"),
 			},
 		},
 	})
