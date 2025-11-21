@@ -288,7 +288,7 @@ No changes. Your infrastructure matches the configuration.
 #### 5. Update generated resources
 
 The last step is optional, but highly recommended. The generated resources have generic names, which are not very user-friendly,
-and they do not depend on the existing role resources which they refer to in their configuration.
+and they do not depend on the existing role resources which they refer to in their configuration. 
 
 To rename the resources, you can use the [terraform state mv](https://developer.hashicorp.com/terraform/cli/commands/state/mv) command or [moved block](https://developer.hashicorp.com/terraform/language/moved).
 
@@ -377,7 +377,7 @@ SHOW GRANTS ON ACCOUNT;
 and filter the output to only include the grants to the roles we are interested in.
 
 > If you use SnowSight, you can click on the "Download" button and select "CSV" format.
->
+> 
 > ![Download CSV button in SnowSight](./images/csv_output_download.png)
 
 Whatever way you choose, save the output to a CSV file as `example.csv`.
@@ -540,7 +540,6 @@ This is only to ensure clarity in the generated names that contain identifiers w
 instead of removing the dots in `DATABASE.SCHEMA` (resulting in `DATABASESCHEMA`), we transfer them to `DATABASE_SCHEMA`.
 
 ### No dependencies handling
-
 
 The script does not handle dependencies between resources. If the generated resources depend on other resources,
 you will need to manually add the necessary dependencies using `depends_on` argument or implicit dependencies
