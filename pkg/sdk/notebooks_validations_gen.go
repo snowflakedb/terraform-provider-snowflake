@@ -54,8 +54,8 @@ func (opts *AlterNotebookOptions) validate() error {
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.RenameTo) {
+		errs = append(errs, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
 		if opts.Set.QueryWarehouse != nil && !ValidObjectIdentifier(opts.Set.QueryWarehouse) {

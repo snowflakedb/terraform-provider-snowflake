@@ -274,6 +274,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.NetworkRule: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NetworkRules.ShowByID)
 	},
+	resources.Notebook: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Notebooks.ShowByID)
+	},
 	resources.NotificationIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NotificationIntegrations.ShowByID)
 	},

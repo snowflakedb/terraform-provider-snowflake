@@ -31,6 +31,7 @@ var SdkShowResultStructs = []any{
 	sdk.MaterializedView{},
 	sdk.NetworkPolicy{},
 	sdk.NetworkRule{},
+	sdk.Notebook{},
 	sdk.NotificationIntegration{},
 	sdk.OrganizationAccount{},
 	sdk.Parameter{},

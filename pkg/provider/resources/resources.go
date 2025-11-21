@@ -52,6 +52,7 @@ const (
 	NetworkPolicy                                          resource = "snowflake_network_policy"
 	NetworkPolicyAttachment                                resource = "snowflake_network_policy_attachment"
 	NetworkRule                                            resource = "snowflake_network_rule"
+	Notebook                                               resource = "snowflake_notebook"
 	NotificationIntegration                                resource = "snowflake_notification_integration"
 	OauthIntegration                                       resource = "snowflake_oauth_integration"
 	OauthIntegrationForCustomClients                       resource = "snowflake_oauth_integration_for_custom_clients"
