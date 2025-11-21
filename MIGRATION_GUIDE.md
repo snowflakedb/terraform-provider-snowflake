@@ -423,6 +423,7 @@ Note that in v3, we are planning to remove the logic for setting the default aut
 
 ## v2.7.x ➞ v2.8.0
 
+
 ### *(new feature)* Added handling private link in S3 and Azure storage integrations
 
 Snowflake offers using private link in S3 and Azure storage integration. In this version, we added a new `use_privatelink_endpoint` field for handling this field in Snowflake.
