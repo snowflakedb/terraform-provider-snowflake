@@ -80,6 +80,11 @@ func (s *CreateNotebookRequest) WithDefaultVersion(DefaultVersion string) *Creat
 	return s
 }
 
+func (s *CreateNotebookRequest) WithSecrets(Secrets SecretsListRequest) *CreateNotebookRequest {
+	s.Secrets = &Secrets
+	return s
+}
+
 func NewAlterNotebookRequest(
 	name SchemaObjectIdentifier,
 ) *AlterNotebookRequest {

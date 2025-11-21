@@ -40,10 +40,11 @@ var notebookSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"from": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		ForceNew:    true,
-		Description: "Specifies the location in a stage of an .ipynb file from which the notebook should be created.",
+		Type:         schema.TypeList,
+		Optional:     true,
+		ForceNew:     true,
+		Description:  "Specifies the location in a stage of an .ipynb file from which the notebook should be created. MAIN_FILE parameter a user-specified identifier for the notebook file name must also be set alongside it.",
+		RequiredWith: []string{"main_file"},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"stage": {
@@ -56,7 +57,7 @@ var notebookSchema = map[string]*schema.Schema{
 				},
 				"path": {
 					Type:        schema.TypeString,
-					Required:    true,
+					Optional:    true,
 					ForceNew:    true,
 					Description: "Location of the .ipynb file in the stage.",
 				},
@@ -109,6 +110,7 @@ var notebookSchema = map[string]*schema.Schema{
 					Type:             schema.TypeString,
 					Required:         true,
 					Description:      "Fully qualified name of the allowed [secret](https://docs.snowflake.com/en/sql-reference/sql/create-secret).",
+					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 					DiffSuppressFunc: suppressIdentifierQuoting,
 				},
 			},
@@ -221,6 +223,25 @@ func CreateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 
 		request.WithFrom(sdk.NewStageLocation(stage, path))
+	}
+
+	if secrets, ok := d.GetOk("secrets"); ok && len(secrets.([]any)) > 0 {
+		secretsList := make([]sdk.SecretReference, 0)
+		for _, secret := range secrets.([]any) {
+			secretMap := secret.(map[string]any)
+
+			secretVariableName := secretMap["secret_variable_name"].(string)
+			secretId, err := sdk.ParseSchemaObjectIdentifier(secretMap["secret_id"].(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			secretsList = append(secretsList, sdk.SecretReference{
+				VariableName: secretVariableName,
+				Name:         secretId,
+			})
+		}
+		request.WithSecrets(sdk.SecretsListRequest{SecretsList: secretsList})
 	}
 
 	if err := client.Notebooks.Create(ctx, request); err != nil {
