@@ -41,7 +41,7 @@ data "snowflake_notebooks" "limit" {
   }
 }
 
-output "like_output" {
+output "limit_output" {
   value = data.snowflake_notebooks.limit.notebooks
 }
 
