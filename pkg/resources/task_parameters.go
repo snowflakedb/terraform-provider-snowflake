@@ -331,6 +331,7 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		func() diag.Diagnostics {
 			key := strings.ToLower(string(sdk.TaskParameterAutocommit))
 			if v := GetConfigPropertyAsPointerAllowingZeroValue[bool](d, key); v != nil {
+				createOpts.SessionParameters.Autocommit = v
 				if !*v {
 					return diag.Diagnostics{
 						diag.Diagnostic{
@@ -339,7 +340,6 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 						},
 					}
 				}
-				createOpts.SessionParameters.Autocommit = v
 			}
 			return nil
 		}(),
