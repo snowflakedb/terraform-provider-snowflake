@@ -69,13 +69,14 @@ func TestAcc_Notebooks(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(comment),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.main_file", "example.ipynb")),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.query_warehouse", queryWarehouse.ID().Name())),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.idle_auto_shutdown_time_seconds", "3600")),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.code_warehouse", warehouse.ID().Name())),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.comment", comment)),
+					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.0.describe_output.0.name", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.0.describe_output.0.main_file", "example.ipynb")),
+					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.0.describe_output.0.query_warehouse", queryWarehouse.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.0.describe_output.0.idle_auto_shutdown_time_seconds", "3600")),
+					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.0.describe_output.0.code_warehouse", warehouse.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.0.describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.0.describe_output.0.comment", comment)),
 				),
 			},
 			{
