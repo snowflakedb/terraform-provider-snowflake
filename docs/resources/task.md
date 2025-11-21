@@ -9,6 +9,8 @@ description: |-
 
 !> **Warning** Due to complex conditional logic in Snowflake regarding required fields for a given type (serverless or not) and use case (scheduled, run after another task, conditional, or other) of a task, please make sure you went through the [Snowflake documentation for tasks](https://docs.snowflake.com/en/user-guide/tasks-intro) to understand which fields are required for your use case.
 
+!> **Warning** The `AUTOCOMMIT` and `SEARCH_PATH` are deprecated session parameters for tasks in Snowflake. It is not possible to set them in Snowflake, thus it's recommended to not configure them within the resource. The parameters may be removed in the next major version of the provider.
+
 # snowflake_task (Resource)
 
 Resource used to manage task objects. For more information, check [task documentation](https://docs.snowflake.com/en/user-guide/tasks-intro).
