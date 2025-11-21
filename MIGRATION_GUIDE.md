@@ -48,6 +48,7 @@ Deprecated parameter 'SEARCH_PATH' cannot be set on a task
 
 If you have any of these parameters set in your configuration,
 please remove them to avoid the Terraform warnings and potential errors from the Snowflake side.
+The parameters may be removed in the next major version of the provider.
 Other than this, no changes in the configuration are required.
 
 ### *(bugfix)* Improved validation of identifiers with arguments

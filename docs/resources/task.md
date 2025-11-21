@@ -7,6 +7,8 @@ description: |-
 
 !> **Sensitive values** This resource's `config`, `show_output.config` and `show_output.definition` fields are not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
 
+!> **Warning** The `AUTOCOMMIT` and `SEARCH_PATH` are deprecated session parameters for tasks in Snowflake. It is not possible to set them in Snowflake, thus it's recommended to not configure them within the resource. The parameters may be removed in the next major version of the provider.
+
 # snowflake_task (Resource)
 
 Resource used to manage task objects. For more information, check [task documentation](https://docs.snowflake.com/en/user-guide/tasks-intro).
