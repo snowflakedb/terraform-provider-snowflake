@@ -64,6 +64,8 @@ type LegacyConfigDTO struct {
 	WorkloadIdentityProvider       *string             `toml:"workloadidentityprovider"`
 	WorkloadIdentityEntraResource  *string             `toml:"workloadidentityentraresource"`
 	EnableSingleUseRefreshTokens   *bool               `toml:"enablesingleuserefreshtokens"`
+	LogQueryText                   *bool               `toml:"logquerytext"`
+	LogQueryParameters             *bool               `toml:"logqueryparameters"`
 }
 
 func (c *LegacyConfigDTO) DriverConfig() (gosnowflake.Config, error) {

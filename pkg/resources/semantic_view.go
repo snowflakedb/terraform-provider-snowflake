@@ -21,21 +21,18 @@ var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the semantic view; must be unique within the schema."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the semantic view."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the semantic view."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -43,25 +40,28 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Required:    true,
 		ForceNew:    true,
-		Description: "The list of logical tables in the semantic view.",
+		Description: externalChangesNotDetectedFieldDescription("The list of logical tables in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"table_alias": {
 					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Specifies an alias for a logical table in the semantic view.",
+					Required:    true,
+					Description: caseSensitiveFieldDoubleQuotes("Specifies an alias for a logical table in the semantic view."),
 				},
 				"table_name": {
-					Type:             schema.TypeString,
-					Required:         true,
-					Description:      blocklistedCharactersFieldDescription("Specifies an identifier for the logical table."),
+					Type:     schema.TypeString,
+					Required: true,
+					Description: blocklistedCharactersFieldDescription(joinWithSpace(
+						"Specifies an identifier for the logical table.",
+						exampleSchemaObjectIdentifier("table"),
+					)),
 					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 					DiffSuppressFunc: suppressIdentifierQuoting,
 				},
 				"primary_key": {
 					Type:        schema.TypeList,
 					Optional:    true,
-					Description: "Definitions of primary keys in the logical table.",
+					Description: caseSensitiveFieldDoubleQuotes("Definitions of primary keys in the logical table."),
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
@@ -69,7 +69,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				"unique": {
 					Type:        schema.TypeList,
 					Optional:    true,
-					Description: "Definitions of unique key combinations in the logical table.",
+					Description: caseSensitiveFieldDoubleQuotes("Definitions of unique key combinations in the logical table."),
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"values": {
@@ -78,7 +78,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 								Elem: &schema.Schema{
 									Type: schema.TypeString,
 								},
-								Description: "Unique key combinations in the logical table",
+								Description: "Unique key combinations in the logical table.",
 							},
 						},
 					},
@@ -103,32 +103,31 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
 		ForceNew:    true,
-		Description: "The list of relationships between the logical tables in the semantic view.",
+		Description: externalChangesNotDetectedFieldDescription("The list of relationships between the logical tables in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"relationship_identifier": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "Specifies an optional identifier for the relationship.",
+					Description: caseSensitiveFieldDoubleQuotes("Specifies an optional identifier for the relationship."),
 				},
 				"table_name_or_alias": {
-					Type:     schema.TypeList,
-					Required: true,
-					MaxItems: 1,
-					Description: "Specifies one of the logical tables that refers to columns in another logical table." +
-						"Each table can have either a table_name or a table_alias, not both.",
+					Type:        schema.TypeList,
+					Required:    true,
+					MaxItems:    1,
+					Description: "Specifies one of the logical tables that refers to columns in another logical table. Each table can have either a `table_name` or a `table_alias`, not both.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"table_name": {
 								Type:             schema.TypeString,
 								Optional:         true,
 								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-								Description:      "The name of the logical table, cannot be used in combination with the table_alias",
+								Description:      caseSensitiveFieldDoubleQuotes("The name of the logical table, cannot be used in combination with the `table_alias`."),
 							},
 							"table_alias": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: "The alias used for the logical table, cannot be used in combination with the table_name",
+								Description: caseSensitiveFieldDoubleQuotes("The alias used for the logical table, cannot be used in combination with the `table_name`."),
 							},
 						},
 					},
@@ -139,26 +138,28 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
-					Description: "Specifies one or more columns in the first logical table that refers to columns in another logical table.",
+					Description: caseSensitiveListItemDoubleQuotes("Specifies one or more columns in the first logical table that refers to columns in another logical table.", "Column names"),
 				},
 				"referenced_table_name_or_alias": {
 					Type:     schema.TypeList,
 					Required: true,
 					MaxItems: 1,
-					Description: "Specifies the other logical table and one or more of its columns that are referred to by the first logical table." +
-						"Each referenced table can have either a table_name or a table_alias, not both.",
+					Description: joinWithSpace(
+						"Specifies the other logical table and one or more of its columns that are referred to by the first logical table.",
+						"Each referenced table can have either a `table_name` or a `table_alias`, not both.",
+					),
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"table_name": {
 								Type:             schema.TypeString,
 								Optional:         true,
 								ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-								Description:      "The name of the logical table, cannot be used in combination with the table_alias",
+								Description:      caseSensitiveFieldDoubleQuotes("The name of the logical table, cannot be used in combination with the `table_alias`."),
 							},
 							"table_alias": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: "The alias used for the logical table, cannot be used in combination with the table_name",
+								Description: caseSensitiveFieldDoubleQuotes("The alias used for the logical table, cannot be used in combination with the `table_name`."),
 							},
 						},
 					},
@@ -169,7 +170,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
-					Description: "Specifies one or more columns in the second logical table that are referred to by the first logical table.",
+					Description: caseSensitiveListItemDoubleQuotes("Specifies one or more columns in the second logical table that are referred to by the first logical table.", "Column names"),
 				},
 			},
 		},
@@ -178,13 +179,16 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
 		ForceNew:    true,
-		Description: "The list of facts in the semantic view.",
+		Description: externalChangesNotDetectedFieldDescription("The list of facts in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Specifies a qualified name for the fact, including the table name and a unique identifier for the fact.",
+					Type:     schema.TypeString,
+					Required: true,
+					Description: joinWithSpace(
+						"Specifies a qualified name for the fact, including the table name and a unique identifier for the fact: `<table_alias>.<semantic_expression_name>`.",
+						"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+					),
 				},
 				"sql_expression": {
 					Type:        schema.TypeString,
@@ -211,13 +215,16 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
 		ForceNew:    true,
-		Description: "The list of dimensions in the semantic view.",
+		Description: externalChangesNotDetectedFieldDescription("The list of dimensions in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"qualified_expression_name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension.",
+					Type:     schema.TypeString,
+					Required: true,
+					Description: joinWithSpace(
+						"Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension: `<table_alias>.<semantic_expression_name>`.",
+						"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+					),
 				},
 				"sql_expression": {
 					Type:        schema.TypeString,
@@ -245,29 +252,34 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		},
 	},
 	"metrics": {
-		Type: schema.TypeList,
-		Description: "Specify a list of metrics for the semantic view. " +
-			"Each metric can have either a semantic expression or a window function in its definition.",
-		Optional: true,
-		ForceNew: true,
+		Type:        schema.TypeList,
+		Description: externalChangesNotDetectedFieldDescription("Specify a list of metrics for the semantic view. Each metric can have either a semantic expression or a window function in its definition."),
+		Optional:    true,
+		ForceNew:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				// TODO(SNOW-2396311): update the SDK with the newly added/updated fields for semantic expressions, then add them here
-				// TODO(SNOW-2396371): add PUBLIC/PRIVATE field
-				// TODO(SNOW-2398097): add table_alias
-				// TODO(SNOW-2398097): add fact_or_metric
+				// TODO [SNOW-2396311]: update the SDK with the newly added/updated fields for semantic expressions, then add them here
+				// TODO [SNOW-2396371]: add PUBLIC/PRIVATE field
+				// TODO [SNOW-2398097]: add table_alias
+				// TODO [SNOW-2398097]: add fact_or_metric
 				"semantic_expression": {
 					Type:     schema.TypeList,
 					Optional: true,
-					Description: "Specifies a semantic expression for a metric definition." +
+					Description: joinWithSpace(
+						"Specifies a semantic expression for a metric definition.",
 						"Cannot be used in combination with a window function.",
+					),
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"qualified_expression_name": {
-								Type:        schema.TypeString,
-								Required:    true,
-								Description: "Specifies a name for the semantic expression",
+								Type:     schema.TypeString,
+								Required: true,
+								Description: joinWithSpace(
+									"Specifies a qualified name for the metric: `<table_alias>.<semantic_expression_name>`.",
+									"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+									"For the [derived metric](https://docs.snowflake.com/en/user-guide/views-semantic/sql#label-semantic-views-create-derived-metrics) omit the `<table_alias>.` part but still wrap in double quotes, e.g. `\"\\\"<semantic_expression_name>\\\"\"`.",
+								),
 							},
 							"sql_expression": {
 								Type:        schema.TypeString,
@@ -290,46 +302,52 @@ var semanticViewsSchema = map[string]*schema.Schema{
 						},
 					},
 				},
-				// TODO(SNOW-2396397): update the sdk and the model with the newly added/updated fields for window functions
+				// TODO [SNOW-2396397]: update the sdk and the model with the newly added/updated fields for window functions
 				"window_function": {
 					Type:     schema.TypeList,
 					Optional: true,
-					Description: "Specifies a window function for a metric definition." +
+					Description: joinWithSpace(
+						"Specifies a window function for a metric definition.",
 						"Cannot be used in combination with a semantic expression.",
+					),
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
-							"window_function": {
-								Type:        schema.TypeString,
-								Required:    true,
-								Description: "Specifies a name for the window function.",
+							"qualified_expression_name": {
+								Type:     schema.TypeString,
+								Required: true,
+								Description: joinWithSpace(
+									"Specifies a qualified name for the metric: `<table_alias>.<semantic_expression_name>`.",
+									"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+									"For the [derived metric](https://docs.snowflake.com/en/user-guide/views-semantic/sql#label-semantic-views-create-derived-metrics) omit the `<table_alias>.` part but still wrap in double quotes, e.g. `\"\\\"<semantic_expression_name>\\\"\"`.",
+								),
 							},
-							"metric": {
+							"sql_expression": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: "Specifies a metric expression for this window function.",
+								Description: "The SQL expression used to compute the metric following the `<window_function>(<metric>)` format.",
 							},
 							"over_clause": {
 								Type:        schema.TypeList,
 								Required:    true,
 								MaxItems:    1,
-								Description: "Specify the partition by, order by or frame over which the window function is to be computed",
+								Description: "Specify the partition by, order by or frame over which the window function is to be computed.",
 								Elem: &schema.Resource{
 									Schema: map[string]*schema.Schema{
 										"partition_by": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: "Specifies a partition by clause",
+											Description: "Specifies a partition by clause.",
 										},
 										"order_by": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: "Specifies an order by clause",
+											Description: "Specifies an order by clause. It must be a complete SQL expression, including any `[ ASC | DESC ] [ NULLS { FIRST | LAST } ]` modifiers.",
 										},
 										"window_frame_clause": {
 											Type:        schema.TypeString,
 											Optional:    true,
-											Description: "Specifies a window frame clause",
+											Description: "Specifies a window frame clause.",
 										},
 									},
 								},
@@ -358,14 +376,6 @@ var semanticViewsSchema = map[string]*schema.Schema{
 			Schema: schemas.ShowSemanticViewSchema,
 		},
 	},
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE SEMANTIC VIEW` for the given semantic view.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeSemanticViewSchema,
-		},
-	},
 }
 
 func SemanticView() *schema.Resource {
@@ -384,7 +394,6 @@ func SemanticView() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SemanticView, customdiff.All(
 			ComputedIfAnyAttributeChanged(semanticViewsSchema, ShowOutputAttributeName, "comment"),
-			ComputedIfAnyAttributeChanged(semanticViewsSchema, DescribeOutputAttributeName, "comment"),
 		)),
 
 		Schema: semanticViewsSchema,
@@ -435,7 +444,7 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 		request.WithSemanticViewDimensions(dimensionsRequests)
 	}
-	// TODO(SNOW-2405571): use custom wrappers and set these fields in errors.Join like below
+	// TODO [SNOW-2405571]: use custom wrappers and set these fields in errors.Join like below
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
@@ -473,14 +482,8 @@ func ReadSemanticView(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
-	semanticViewDetails, err := client.SemanticViews.Describe(ctx, id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	errs := errors.Join(
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.SemanticViewToSchema(semanticView)}),
-		d.Set(DescribeOutputAttributeName, schemas.SemanticViewDetailsToSchema(semanticViewDetails)),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set("comment", semanticView.Comment),
 	)
@@ -498,7 +501,20 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	// TODO [SNOW-2108211]: handle rename through ALTER ... RENAME to
+	if d.HasChange("name") || d.HasChange("schema") || d.HasChange("database") {
+		databaseName := d.Get("database").(string)
+		schemaName := d.Get("schema").(string)
+		name := d.Get("name").(string)
+		newId := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
+
+		err := client.SemanticViews.Alter(ctx, sdk.NewAlterSemanticViewRequest(id).WithRenameTo(newId))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		d.SetId(newId.FullyQualifiedName())
+		id = newId
+	}
 
 	if d.HasChange("comment") {
 		if comment := d.Get("comment").(string); comment != "" {
@@ -607,9 +623,11 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
 	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
-		windowFunction := windowFunctionDefinition["window_function"].(string)
-		metric := windowFunctionDefinition["metric"].(string)
-		windowFuncRequest := sdk.NewWindowFunctionMetricDefinitionRequest(windowFunction, metric)
+		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
+			WithQualifiedExpressionName(windowFunctionDefinition["qualified_expression_name"].(string))
+		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
+			WithSqlExpression(windowFunctionDefinition["sql_expression"].(string))
+		windowFuncRequest := sdk.NewWindowFunctionMetricDefinitionRequest(qualifiedExpNameRequest, sqlExpRequest)
 		if len(windowFunctionDefinition["over_clause"].([]any)) > 0 {
 			overClause, ok := windowFunctionDefinition["over_clause"].([]any)[0].(map[string]any)
 			if ok {

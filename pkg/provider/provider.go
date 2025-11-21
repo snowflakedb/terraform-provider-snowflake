@@ -477,6 +477,18 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.WorkloadIdentityEntraResource, nil),
 		},
+		"log_query_text": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("When set to true, the full query text will be logged. Be aware that it may include sensitive information. Default value is false.", snowflakeenvs.LogQueryText),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.LogQueryText, nil),
+		},
+		"log_query_parameters": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("When set to true, the parameters will be logged. Requires logQueryText to be enabled first. Be aware that it may include sensitive information. Default value is false.", snowflakeenvs.LogQueryParameters),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.LogQueryParameters, nil),
+		},
 	}
 }
 
@@ -555,6 +567,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_secret_with_basic_authentication":                             resources.SecretWithBasicAuthentication(),
 		"snowflake_secret_with_client_credentials":                               resources.SecretWithClientCredentials(),
 		"snowflake_secret_with_generic_string":                                   resources.SecretWithGenericString(),
+		"snowflake_semantic_view":                                                resources.SemanticView(),
 		"snowflake_service":                                                      resources.Service(),
 		"snowflake_sequence":                                                     resources.Sequence(),
 		"snowflake_service_user":                                                 resources.ServiceUser(),
@@ -618,6 +631,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_schemas":                            datasources.Schemas(),
 		"snowflake_secrets":                            datasources.Secrets(),
 		"snowflake_security_integrations":              datasources.SecurityIntegrations(),
+		"snowflake_semantic_views":                     datasources.SemanticViews(),
 		"snowflake_services":                           datasources.Services(),
 		"snowflake_sequences":                          datasources.Sequences(),
 		"snowflake_shares":                             datasources.Shares(),
@@ -852,6 +866,8 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleBoolField(s, "enable_single_use_refresh_tokens", &config.EnableSingleUseRefreshTokens),
 		handleStringField(s, "workload_identity_provider", &config.WorkloadIdentityProvider),
 		handleStringField(s, "workload_identity_entra_resource", &config.WorkloadIdentityEntraResource),
+		handleBoolField(s, "log_query_text", &config.LogQueryText),
+		handleBoolField(s, "log_query_parameters", &config.LogQueryParameters),
 	)
 	if err != nil {
 		return nil, err

@@ -164,6 +164,8 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		{name: "EnableSingleUseRefreshTokens", fieldName: "enable_single_use_refresh_tokens", wantType: "*bool"},
 		{name: "WorkloadIdentityProvider", fieldName: "workload_identity_provider", wantType: "*string"},
 		{name: "WorkloadIdentityEntraResource", fieldName: "workload_identity_entra_resource", wantType: "*string"},
+		{name: "LogQueryText", fieldName: "log_query_text", wantType: "*bool"},
+		{name: "LogQueryParameters", fieldName: "log_query_parameters", wantType: "*bool"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -324,7 +326,9 @@ func TestProfileConfig(t *testing.T) {
 		WithOauthScope("oauth_scope").
 		WithEnableSingleUseRefreshTokens(true).
 		WithWorkloadIdentityProvider("workload_identity_provider").
-		WithWorkloadIdentityEntraResource("workload_identity_entra_resource"),
+		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+		WithLogQueryText(true).
+		WithLogQueryParameters(true),
 		"securityadmin",
 	)
 	bytes, err := cfg.MarshalToml()
@@ -392,6 +396,8 @@ func TestProfileConfig(t *testing.T) {
 		assert.True(t, config.EnableSingleUseRefreshTokens)
 		assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 		assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
+		assert.True(t, config.LogQueryText)
+		assert.True(t, config.LogQueryParameters)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -479,6 +485,8 @@ func Test_MergeConfig(t *testing.T) {
 		EnableSingleUseRefreshTokens:   false,
 		WorkloadIdentityProvider:       "workload_identity_provider1",
 		WorkloadIdentityEntraResource:  "workload_identity_entra_resource1",
+		LogQueryText:                   false,
+		LogQueryParameters:             false,
 	}
 
 	config2 := &gosnowflake.Config{
@@ -528,6 +536,8 @@ func Test_MergeConfig(t *testing.T) {
 		EnableSingleUseRefreshTokens:   true,
 		WorkloadIdentityProvider:       "workload_identity_provider2",
 		WorkloadIdentityEntraResource:  "workload_identity_entra_resource2",
+		LogQueryText:                   true,
+		LogQueryParameters:             true,
 	}
 
 	t.Run("base config empty", func(t *testing.T) {
@@ -876,7 +886,9 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithOauthScope("oauth_scope").
 				WithEnableSingleUseRefreshTokens(true).
 				WithWorkloadIdentityProvider("workload_identity_provider").
-				WithWorkloadIdentityEntraResource("workload_identity_entra_resource"),
+				WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+				WithLogQueryText(true).
+				WithLogQueryParameters(true),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -923,6 +935,8 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.True(t, got.EnableSingleUseRefreshTokens)
 				assert.Equal(t, "workload_identity_provider", got.WorkloadIdentityProvider)
 				assert.Equal(t, "workload_identity_entra_resource", got.WorkloadIdentityEntraResource)
+				assert.True(t, got.LogQueryText)
+				assert.True(t, got.LogQueryParameters)
 
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)

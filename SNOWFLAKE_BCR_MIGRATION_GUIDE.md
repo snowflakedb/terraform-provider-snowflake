@@ -32,6 +32,56 @@ To use the provider with the bundles containing this change:
 
 Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
 
+## [Bundle 2025_07](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07_bundle)
+
+### USAGE privilege on CATALOG INTEGRATION and EXTERNAL VOLUME required for database owner role for all operations
+
+In certain scenarios, new privileges would be required to perform operations on catalog integrations and external volumes. You can manage these in Terraform with [grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role)
+and [grant_privileges_to_database_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role).
+
+Reference: [BCR-2114](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2114)
+
+### New default column sizes for string and binary data types
+
+Before this change, the default size was 16 MB for text and 8 MB for binary columns. With the new bundle, the defaults increase to 128 MB for text and 64 MB for binary columns.
+For now, the provider will continue to use the old default size - 16 MB for text and 8 MB for binary. We are planning to adjust even more datatypes because of a new `DATA_TYPE_ALIAS` column in information schema - read [related BCR](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2061). We'll comeback to this in the future.
+
+The datatype precision and scale can be specified for columns in the provider.
+
+Reference: [BCR-2118](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2118)
+
+### Disallow setting date and time output formats to AUTO
+
+Snowflake now does not allow setting a number of time output parameters to `AUTO` - see the reference for the exact list. The provider does not validate such values in related resources. If you are using the `AUTO` value, adjust your configurations.
+
+Reference: [BCR-2115](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2115)
+
+### Python telemetry library automatically installed
+
+Snowflake automatically installs the `snowflake-telemetry-python` package when a function or procedure with a Python handler is created. Read more about packages policy in [Snowflake documentation](https://docs.snowflake.com/en/developer-guide/udf/python/packages-policy). Package policies are not yet supported in the provider.
+
+Reference: [BCR-2120](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2120)
+
+### Disallow GRANT REFERENCE_USAGE on a database if GRANT USAGE isn’t set first
+
+After enabling this BCR, `GRANT USAGE` on a database must be granted before `GRANT REFERENCE_USAGE`. These operations can be combined like `GRANT USAGE, REFERENCE_USAGE`. You can manage these in Terraform with [grant_privileges_to_share](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_share). You may need to adjust your grant configurations.
+
+Additionally, when updating the `accounts` field in the `share` resource, the provider creates a temporary database from the share. Before, it granted only the `USAGE` grant. Since [v2.11.0](./MIGRATION_GUIDE.md#improvement-granting-privileges-on-a-database-during-share-update), it also grants `REFERENCE_USAGE`. If you have trouble updating or creating the `share` resource, update the provider to this version.
+
+Reference: [BCR-2136](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2136)
+
+### Default schedule for data metric functions in views
+
+Setting data metric functions in views is now optional. In the provider, the `data_metric_function` field must be set if `data_metric_schedule` is set. The provider will continue to require setting that field for now. We are treating this relaxation as a missing feature, and we'll adjust it in the future.
+
+Reference: [BCR-2101](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2101)
+
+### New `generation` column in output in SHOW WAREHOUSES
+
+This bundle adds the `generation` column. The values in `resource_constraint` column remain the same. The provider has been adjusted in [v2.10.1](./MIGRATION_GUIDE.md#improvement-handling-show_output-in-warehouses).
+
+Reference: [BCR-2110](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_07/bcr-2110)
+
 ## [Bundle 2025_06](https://docs.snowflake.com/en/release-notes/bcr-bundles/2025_06_bundle)
 
 ### Changes in authentication policies

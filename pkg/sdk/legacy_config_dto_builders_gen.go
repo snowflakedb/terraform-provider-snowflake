@@ -249,3 +249,13 @@ func (s *LegacyConfigDTO) WithEnableSingleUseRefreshTokens(EnableSingleUseRefres
 	s.EnableSingleUseRefreshTokens = &EnableSingleUseRefreshTokens
 	return s
 }
+
+func (s *LegacyConfigDTO) WithLogQueryText(LogQueryText bool) *LegacyConfigDTO {
+	s.LogQueryText = &LogQueryText
+	return s
+}
+
+func (s *LegacyConfigDTO) WithLogQueryParameters(LogQueryParameters bool) *LegacyConfigDTO {
+	s.LogQueryParameters = &LogQueryParameters
+	return s
+}

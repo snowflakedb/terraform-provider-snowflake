@@ -10,6 +10,7 @@ import (
 
 func init() {
 	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions,
+		SemanticViewsDef,
 		SequencesDef,
 	)
 	fmt.Println("SDK object definitions:")
