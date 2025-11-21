@@ -90,16 +90,6 @@ output "limit_output" {
   value = data.snowflake_semantic_views.limit.semantic_views
 }
 
-# Without additional data (to limit the number of calls made for every found semantic view)
-data "snowflake_semantic_views" "only_show" {
-  # with_describe is turned on by default and it calls DESCRIBE SEMANTIC VIEW for every semantic view found and attaches its output to semantic_views.*.describe_output field
-  with_describe = false
-}
-
-output "only_show_output" {
-  value = data.snowflake_semantic_views.only_show.semantic_views
-}
-
 # Ensure the number of semantic views is equal to at least one element (with the use of postcondition)
 data "snowflake_semantic_views" "assert_with_postcondition" {
   like = "semantic-view-name%"
