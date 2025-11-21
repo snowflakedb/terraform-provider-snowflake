@@ -26,7 +26,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.10.x ➞ v2.11.0
 
-### Add support for semantic views in `snowflake_grant_ownership` resource
+### *(new feature)* Semantic views preview feature
+
+This version of the provider introduces support for the `SEMANTIC VIEWS`. Check the [official Snowflake documentation](https://docs.snowflake.com/en/user-guide/views-semantic/overview) to know more.
+
+You can enable resource and data source by adding `snowflake_semantic_view_resource` or `snowflake_semantic_views_datasource` to `preview_features_enabled` field in the provider configuration. You can read about the resource and data source current limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version.
+
+#### Add support for semantic views in `snowflake_grant_ownership` resource
 Add a missing option in `snowflake_grant_ownership` to support semantic views (see [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership)).
 
 ### *(improvement)* Upgraded gosnowflake driver to v1.18.0

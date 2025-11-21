@@ -3,12 +3,12 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInt_SemanticView(t *testing.T) {
@@ -17,33 +17,33 @@ func TestInt_SemanticView(t *testing.T) {
 
 	// create 2 tables and add them to the cleanup queue
 	columns1 := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("FIRST_A", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest("FIRST_C", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
+		*sdk.NewTableColumnRequest(`"first_a"`, sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
+		*sdk.NewTableColumnRequest(`"first_b"`, sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
+		*sdk.NewTableColumnRequest(`"first_c"`, sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
 	}
-	table1ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1ID, columns1))
+	table1Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
+	_, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1Id, columns1))
 	t.Cleanup(table1Cleanup)
 
 	columns2 := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("SECOND_A", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest("SECOND_B", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest("SECOND_C", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
+		*sdk.NewTableColumnRequest(`"second_a"`, sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
+		*sdk.NewTableColumnRequest(`"second_b"`, sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
+		*sdk.NewTableColumnRequest(`"second_c"`, sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.NewColumnInlineConstraintRequest("pkey", sdk.ColumnConstraintTypePrimaryKey)),
 	}
-	table2ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	table2, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2ID, columns2))
+	table2Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
+	_, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2Id, columns2))
 	t.Cleanup(table2Cleanup)
 
 	// create logical table entities using the 2 tables created above
 	alias1 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table1")
 	pk1 := sdk.NewPrimaryKeysRequest().WithPrimaryKey([]sdk.SemanticViewColumn{
 		{
-			Name: "FIRST_C",
+			Name: "first_c",
 		},
 	})
-	logicalTable1 := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(*alias1).WithPrimaryKeys(*pk1)
+	logicalTable1 := sdk.NewLogicalTableRequest(table1Id).WithLogicalTableAlias(*alias1).WithPrimaryKeys(*pk1)
 	alias2 := sdk.NewLogicalTableAliasRequest().WithLogicalTableAlias("table2")
-	logicalTable2 := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(*alias2)
+	logicalTable2 := sdk.NewLogicalTableRequest(table2Id).WithLogicalTableAlias(*alias2)
 
 	logicalTables := []sdk.LogicalTableRequest{
 		*logicalTable1,
@@ -51,13 +51,13 @@ func TestInt_SemanticView(t *testing.T) {
 	}
 
 	// create a simple metric to be used in the semantic view definition
-	metricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.metric1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "SUM(table1.FIRST_A)"})
+	metricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."metric1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("table1"."first_a")`})
 	metric := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*metricSemanticExpression)
 	metrics := []sdk.MetricDefinitionRequest{
 		*metric,
 	}
 
-	t.Run("create and show", func(t *testing.T) {
+	t.Run("create: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
 
@@ -82,18 +82,83 @@ func TestInt_SemanticView(t *testing.T) {
 		)
 	})
 
-	t.Run("create - all fields", func(t *testing.T) {
+	t.Run("create: table in a different schema", func(t *testing.T) {
+		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
+		t.Cleanup(schemaCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// check that the semantic view's properties match our settings
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasName(id.Name()),
+		)
+	})
+
+	t.Run("create: without queryable expression", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		logicalTableNoAlias := sdk.NewLogicalTableRequest(table1Id)
+
+		request := sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*logicalTableNoAlias})
+
+		err := client.SemanticViews.Create(ctx, request)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+		require.ErrorContains(t, err, "No queryable expression is defined in the semantic view")
+	})
+
+	// TODO [SNOW-2852837]: Clarify if creation without table alias is possible
+	t.Run("create: without table alias", func(t *testing.T) {
+		t.Skip("SNOW-2852837: Skipped as by current docs the table alias is optional but we can't figure out the syntax for metrics without it.")
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		logicalTableNoAlias := sdk.NewLogicalTableRequest(table1Id)
+		metricOnNoAliasTable := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*sdk.NewSemanticExpressionRequest(
+			&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: fmt.Sprintf(`%s."metric1"`, table1Id.FullyQualifiedName())},
+			&sdk.SemanticSqlExpressionRequest{SqlExpression: fmt.Sprintf(`SUM(%s."first_a")`, table1Id.FullyQualifiedName())},
+		))
+
+		request := sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*logicalTableNoAlias}).WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*metricOnNoAliasTable})
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// check that the semantic view's properties match our settings
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasName(id.Name()).
+			HasCreatedOnNotEmpty().
+			HasOwner("ACCOUNTADMIN").
+			HasOwnerRoleType("ROLE").
+			HasComment("comment"),
+		)
+	})
+
+	t.Run("create: all fields", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		// relationships
 		tableAlias := sdk.NewRelationshipTableAliasRequest().WithRelationshipTableAlias("table2")
-		relCol := sdk.NewSemanticViewColumnRequest("SECOND_C")
+		relCol := sdk.NewSemanticViewColumnRequest("second_c")
 		relColumnNames := []sdk.SemanticViewColumnRequest{
 			*relCol,
 		}
 		refTableAlias := sdk.NewRelationshipTableAliasRequest().WithRelationshipTableAlias("table1")
 		relAliasRequest := sdk.NewRelationshipAliasRequest().WithRelationshipAlias("rel1")
-		relRefCol := sdk.NewSemanticViewColumnRequest("FIRST_C")
+		relRefCol := sdk.NewSemanticViewColumnRequest("first_c")
 
 		relationships := sdk.NewSemanticViewRelationshipRequest(
 			tableAlias,
@@ -103,18 +168,23 @@ func TestInt_SemanticView(t *testing.T) {
 
 		// facts
 		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F1"}})
-		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.fact1"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "FIRST_C"}).
+		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."fact1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"first_c"`}).
 			WithSynonyms(*factSynonymRequest).
 			WithComment("fact comment")
 
 		// dimensions
+		dimensionExpressionNameRaw := `"table1"."d1"`
+		dimensionExpressionRaw := `"table1"."first_c"`
 		dimensionSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "D1"}})
-		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: "table1.FIRST_C"}, &sdk.SemanticSqlExpressionRequest{SqlExpression: "table1.FIRST_C"}).
+		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: dimensionExpressionNameRaw}, &sdk.SemanticSqlExpressionRequest{SqlExpression: dimensionExpressionRaw}).
 			WithSynonyms(*dimensionSynonymRequest).
 			WithComment("dimension comment")
 
+		windowFunctionExpression := sdk.NewWindowFunctionMetricDefinitionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."metric2"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("table1"."metric1")`}).WithOverClause(*sdk.NewWindowFunctionOverClauseRequest().WithPartitionBy(`"table1"."d1"`))
+		windowFunctionMetric := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*windowFunctionExpression)
+
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).
-			WithSemanticViewMetrics(metrics).
+			WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*metric, *windowFunctionMetric}).
 			WithComment("comment").
 			WithSemanticViewRelationships([]sdk.SemanticViewRelationshipRequest{*relationships}).
 			WithSemanticViewFacts([]sdk.SemanticExpressionRequest{*factSemanticExpression}).
@@ -139,6 +209,105 @@ func TestInt_SemanticView(t *testing.T) {
 			HasOwnerRoleType("ROLE").
 			HasComment("comment"),
 		)
+
+		t1Alias, t2Alias, dimensionName, factName, metricName, metric2Name, relationshipName := "table1", "table2", "d1", "fact1", "metric1", "metric2", "rel1"
+
+		// TODO [SNOW-2852837]: group expected assertions per type (e.g. logical table, metric, etc.)
+		// semantic view related details
+		commentDetails := objectassert.NewSemanticViewDetails(nil, nil, nil, "COMMENT", "comment")
+
+		// logical table 1 related details
+		table1DatabaseName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1Id.DatabaseName())
+		table1SchemaName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1Id.SchemaName())
+		table1Name := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1Id.Name())
+		table1PrimaryKey := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", "[\"first_c\"]")
+
+		// dimension related details
+		dimensionTable := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "TABLE", t1Alias)
+		dimensionExpression := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "EXPRESSION", dimensionExpressionRaw)
+		// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+		// dimensionDataType := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
+		dimensionSynonyms := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "SYNONYMS", `["D1"]`)
+		dimensionComment := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "COMMENT", "dimension comment")
+		dimensionAccessModifier := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+		// fact related details
+		factTable := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "TABLE", t1Alias)
+		factExpression := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "EXPRESSION", `"first_c"`)
+		// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+		// factDataType := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
+		factSynonyms := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "SYNONYMS", `["F1"]`)
+		factComment := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "COMMENT", "fact comment")
+		factAccessModifier := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+		// metric related details
+		metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", t1Alias)
+		metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("table1"."first_a")`)
+		metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+		metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+		metric2Table := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "TABLE", t1Alias)
+		metric2Expression := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "EXPRESSION", `SUM("table1"."metric1") OVER (PARTITION BY "table1"."d1")`)
+		metric2DataType := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+		metric2AccessModifier := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+		// logical table 2 related details
+		table2DatabaseName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2Id.DatabaseName())
+		table2SchemaName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2Id.SchemaName())
+		table2Name := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2Id.Name())
+
+		// relationship related details
+		relationshipTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "TABLE", t2Alias)
+		relationshipRefTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "REF_TABLE", t1Alias)
+		relationshipForeignKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "FOREIGN_KEY", `["second_c"]`)
+		relationshipRefKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "REF_KEY", `["first_c"]`)
+
+		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
+			HasDetailsCount(32).
+			ContainsDetail(commentDetails).
+			ContainsDetail(table1DatabaseName).
+			ContainsDetail(table1SchemaName).
+			ContainsDetail(table1Name).
+			ContainsDetail(table1PrimaryKey).
+			ContainsDetail(dimensionTable).
+			ContainsDetail(dimensionExpression).
+			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+			// ContainsDetail(dimensionDataType).
+			ContainsDetail(dimensionSynonyms).
+			ContainsDetail(dimensionComment).
+			ContainsDetail(dimensionAccessModifier).
+			ContainsDetail(factTable).
+			ContainsDetail(factExpression).
+			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+			// ContainsDetail(factDataType).
+			ContainsDetail(factSynonyms).
+			ContainsDetail(factComment).
+			ContainsDetail(factAccessModifier).
+			ContainsDetail(metricTable).
+			ContainsDetail(metricExpression).
+			ContainsDetail(metricDataType).
+			ContainsDetail(metricAccessModifier).
+			ContainsDetail(metric2Table).
+			ContainsDetail(metric2Expression).
+			ContainsDetail(metric2DataType).
+			ContainsDetail(metric2AccessModifier).
+			ContainsDetail(table2DatabaseName).
+			ContainsDetail(table2SchemaName).
+			ContainsDetail(table2Name).
+			ContainsDetail(relationshipTable).
+			ContainsDetail(relationshipRefTable).
+			ContainsDetail(relationshipForeignKey).
+			ContainsDetail(relationshipRefKey),
+		)
+	})
+
+	t.Run("create: non-existing table", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*sdk.NewLogicalTableRequest(NonExistingSchemaObjectIdentifier)}).WithSemanticViewMetrics(metrics)
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.ErrorContains(t, err, "object does not exist or not authorized")
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
 	})
 
 	t.Run("describe semantic view", func(t *testing.T) {
@@ -149,20 +318,19 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
 
-		tableKind, metricKind := "TABLE", "METRIC"
-		t1Name, t2Name, metricName := "TABLE1", "TABLE2", "METRIC1"
+		t1Alias, t2Alias, metricName := "table1", "table2", "metric1"
 
-		tableDatabaseName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_DATABASE_NAME", table1.DatabaseName)
-		tableSchemaName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_SCHEMA_NAME", table1.SchemaName)
-		tableName1 := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "BASE_TABLE_NAME", table1.Name)
-		pk := objectassert.NewSemanticViewDetails(&tableKind, &t1Name, nil, "PRIMARY_KEY", "[\"FIRST_C\"]")
-		metricTable := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "TABLE", "TABLE1")
-		metricExpression := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "EXPRESSION", "SUM(table1.FIRST_A)")
-		metricDataType := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "DATA_TYPE", "NUMBER(38,0)")
-		metricAccessModifier := objectassert.NewSemanticViewDetails(&metricKind, &metricName, &t1Name, "ACCESS_MODIFIER", "PUBLIC")
-		tableDatabaseName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_DATABASE_NAME", table2.DatabaseName)
-		tableSchemaName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_SCHEMA_NAME", table2.SchemaName)
-		tableName2 := objectassert.NewSemanticViewDetails(&tableKind, &t2Name, nil, "BASE_TABLE_NAME", table2.Name)
+		tableDatabaseName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1Id.DatabaseName())
+		tableSchemaName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1Id.SchemaName())
+		tableName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1Id.Name())
+		pk := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", "[\"first_c\"]")
+		metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", "table1")
+		metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("table1"."first_a")`)
+		metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+		metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+		tableDatabaseName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2Id.DatabaseName())
+		tableSchemaName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2Id.SchemaName())
+		tableName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2Id.Name())
 
 		// confirm the semantic view details are correct
 		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
@@ -226,7 +394,88 @@ func TestInt_SemanticView(t *testing.T) {
 		)
 	})
 
-	t.Run("drop semantic view", func(t *testing.T) {
+	t.Run("alter: rename", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		alterRequest := sdk.NewAlterSemanticViewRequest(id).WithRenameTo(newId)
+
+		err = client.SemanticViews.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, newId))
+
+		result, err := client.SemanticViews.ShowByID(ctx, newId)
+		require.NoError(t, err)
+		require.Equal(t, newId.Name(), result.Name)
+
+		_, err = client.SemanticViews.ShowByID(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("alter: rename to different schema", func(t *testing.T) {
+		secondSchema, secondSchemaCleanup := testClientHelper().Schema.CreateSchema(t)
+		t.Cleanup(secondSchemaCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics).WithComment("comment")
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		newId := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
+		alterRequest := sdk.NewAlterSemanticViewRequest(id).WithRenameTo(newId)
+
+		err = client.SemanticViews.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, newId))
+
+		result, err := client.SemanticViews.ShowByID(ctx, newId)
+		require.NoError(t, err)
+		require.Equal(t, newId.Name(), result.Name)
+		require.Equal(t, newId.SchemaName(), result.SchemaName)
+
+		_, err = client.SemanticViews.ShowByID(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("alter: rename to different database", func(t *testing.T) {
+		secondDatabase, secondDatabaseCleanup := testClientHelper().Database.CreateDatabaseWithParametersSet(t)
+		t.Cleanup(secondDatabaseCleanup)
+
+		secondSchema, secondSchemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, secondDatabase.ID())
+		t.Cleanup(secondSchemaCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		newId := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
+		alterRequest := sdk.NewAlterSemanticViewRequest(id).WithRenameTo(newId)
+
+		err = client.SemanticViews.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, newId))
+
+		result, err := client.SemanticViews.ShowByID(ctx, newId)
+		require.NoError(t, err)
+		require.Equal(t, newId.Name(), result.Name)
+		require.Equal(t, newId.SchemaName(), result.SchemaName)
+		require.Equal(t, newId.DatabaseName(), result.DatabaseName)
+
+		_, err = client.SemanticViews.ShowByID(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("drop: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metrics)
 
@@ -245,5 +494,11 @@ func TestInt_SemanticView(t *testing.T) {
 		// with if exists set to true, calling Drop again should not return an error
 		err = client.SemanticViews.Drop(ctx, dropRequest)
 		require.NoError(t, err)
+	})
+
+	t.Run("drop: not existing", func(t *testing.T) {
+		dropRequest := sdk.NewDropSemanticViewRequest(NonExistingSchemaObjectIdentifier)
+		err := client.SemanticViews.Drop(ctx, dropRequest)
+		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }

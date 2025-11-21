@@ -146,7 +146,6 @@ func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
 //	sdk.RowAccessPoliciesDef,
 //	sdk.SecretsDef,
 //	sdk.SecurityIntegrationsDef,
-//	sdk.SemanticViewsDef,
 //	sdk.ServicesDef,
 //	sdk.SessionPoliciesDef,
 //	sdk.StagesDef,
