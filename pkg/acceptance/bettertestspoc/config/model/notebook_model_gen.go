@@ -20,7 +20,6 @@ type NotebookModel struct {
 	IdleAutoShutdownTimeSeconds tfconfig.Variable `json:"idle_auto_shutdown_time_seconds,omitempty"`
 	MainFile                    tfconfig.Variable `json:"main_file,omitempty"`
 	QueryWarehouse              tfconfig.Variable `json:"query_warehouse,omitempty"`
-	Secrets                     tfconfig.Variable `json:"secrets,omitempty"`
 	Warehouse                   tfconfig.Variable `json:"warehouse,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
@@ -128,8 +127,6 @@ func (n *NotebookModel) WithQueryWarehouse(queryWarehouse string) *NotebookModel
 	return n
 }
 
-// secrets attribute type is not yet supported, so WithSecrets can't be generated
-
 func (n *NotebookModel) WithWarehouse(warehouse string) *NotebookModel {
 	n.Warehouse = tfconfig.StringVariable(warehouse)
 	return n
@@ -181,11 +178,6 @@ func (n *NotebookModel) WithMainFileValue(value tfconfig.Variable) *NotebookMode
 
 func (n *NotebookModel) WithQueryWarehouseValue(value tfconfig.Variable) *NotebookModel {
 	n.QueryWarehouse = value
-	return n
-}
-
-func (n *NotebookModel) WithSecretsValue(value tfconfig.Variable) *NotebookModel {
-	n.Secrets = value
 	return n
 }
 

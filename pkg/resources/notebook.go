@@ -95,27 +95,6 @@ var notebookSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
-	"secrets": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "Specifies secret variables for the notebook.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"secret_variable_name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "The name of the secret variable.",
-				},
-				"secret_id": {
-					Type:             schema.TypeString,
-					Required:         true,
-					Description:      "Fully qualified name of the allowed [secret](https://docs.snowflake.com/en/sql-reference/sql/create-secret).",
-					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-					DiffSuppressFunc: suppressIdentifierQuoting,
-				},
-			},
-		},
-	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -226,25 +205,6 @@ func CreateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		request.WithFrom(sdk.NewStageLocation(stage, path))
 	}
 
-	if secrets, ok := d.GetOk("secrets"); ok && len(secrets.([]any)) > 0 {
-		secretsList := make([]sdk.SecretReference, 0)
-		for _, secret := range secrets.([]any) {
-			secretMap := secret.(map[string]any)
-
-			secretVariableName := secretMap["secret_variable_name"].(string)
-			secretId, err := sdk.ParseSchemaObjectIdentifier(secretMap["secret_id"].(string))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			secretsList = append(secretsList, sdk.SecretReference{
-				VariableName: secretVariableName,
-				Name:         secretId,
-			})
-		}
-		request.WithSecrets(sdk.SecretsListRequest{SecretsList: secretsList})
-	}
-
 	if err := client.Notebooks.Create(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
@@ -285,13 +245,6 @@ func GetReadNotebookFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 			warehouse := notebook.CodeWarehouse.Name()
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"code_warehouse", "warehouse", warehouse, warehouse, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
-
-			secrets := notebookDetails.ExternalAccessSecrets
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
-				outputMapping{"external_access_secrets", "secrets", secrets, secrets, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -353,15 +306,6 @@ func UpdateNotebook(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		accountObjectIdentifierAttributeUpdate(d, "query_warehouse", &set.QueryWarehouse, &unset.QueryWarehouse),
 		accountObjectIdentifierAttributeUpdate(d, "warehouse", &set.Warehouse, &unset.Warehouse),
 		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "idle_auto_shutdown_time_seconds", &set.IdleAutoShutdownTimeSeconds, 1800),
-		func() error {
-			if d.HasChange("secrets") {
-				return setSecretsInBuilder(d, func(references []sdk.SecretReference) error {
-					set.Secrets = &sdk.SecretsListRequest{SecretsList: references}
-					return nil
-				})
-			}
-			return nil
-		}(),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)

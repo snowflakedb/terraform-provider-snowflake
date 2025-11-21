@@ -136,7 +136,6 @@ func TestInt_Notebooks(t *testing.T) {
 		queryWarehouse, queryWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(queryWarehouseCleanup)
 
-		// 'Secrets' field is missing from SHOW and DESC by design.
 		setRequest := sdk.NewNotebookSetRequest().
 			WithComment("comment").
 			WithQueryWarehouse(queryWarehouse.ID()).
@@ -236,8 +235,7 @@ func TestInt_Notebooks(t *testing.T) {
 			WithExternalAccessIntegrations(true).
 			WithQueryWarehouse(true).
 			WithRuntimeEnvironmentVersion(true).
-			WithRuntimeName(true).
-			WithSecrets(true)
+			WithRuntimeName(true)
 
 		alterRequest := sdk.NewAlterNotebookRequest(id).WithUnset(*unsetRequest)
 

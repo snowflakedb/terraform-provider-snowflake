@@ -61,7 +61,6 @@ resource "snowflake_notebook" "complete" {
 - `idle_auto_shutdown_time_seconds` (Number) Specifies the number of seconds of idle time before the notebook is shut down automatically.
 - `main_file` (String) Specifies a user-specified identifier for the notebook file name.
 - `query_warehouse` (String) Specifies the warehouse where SQL queries in the notebook are run.
-- `secrets` (Block List) Specifies secret variables for the notebook. (see [below for nested schema](#nestedblock--secrets))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `warehouse` (String) Specifies the warehouse that runs the notebook kernel and python code.
 
@@ -82,15 +81,6 @@ Required:
 Optional:
 
 - `path` (String) Location of the .ipynb file in the stage.
-
-
-<a id="nestedblock--secrets"></a>
-### Nested Schema for `secrets`
-
-Required:
-
-- `secret_id` (String) Fully qualified name of the allowed [secret](https://docs.snowflake.com/en/sql-reference/sql/create-secret).
-- `secret_variable_name` (String) The name of the secret variable.
 
 
 <a id="nestedblock--timeouts"></a>

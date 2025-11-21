@@ -72,11 +72,6 @@ func (n *NotebookResourceAssert) HasQueryWarehouseString(expected string) *Noteb
 	return n
 }
 
-func (n *NotebookResourceAssert) HasSecretsString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("secrets", expected))
-	return n
-}
-
 func (n *NotebookResourceAssert) HasWarehouseString(expected string) *NotebookResourceAssert {
 	n.AddAssertion(assert.ValueSet("warehouse", expected))
 	return n
@@ -126,11 +121,6 @@ func (n *NotebookResourceAssert) HasNoQueryWarehouse() *NotebookResourceAssert {
 	return n
 }
 
-func (n *NotebookResourceAssert) HasNoSecrets() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("secrets"))
-	return n
-}
-
 func (n *NotebookResourceAssert) HasNoWarehouse() *NotebookResourceAssert {
 	n.AddAssertion(assert.ValueNotSet("warehouse"))
 	return n
@@ -167,11 +157,6 @@ func (n *NotebookResourceAssert) HasMainFileEmpty() *NotebookResourceAssert {
 
 func (n *NotebookResourceAssert) HasQueryWarehouseEmpty() *NotebookResourceAssert {
 	n.AddAssertion(assert.ValueSet("query_warehouse", ""))
-	return n
-}
-
-func (n *NotebookResourceAssert) HasSecretsEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("secrets", ""))
 	return n
 }
 
@@ -221,11 +206,6 @@ func (n *NotebookResourceAssert) HasMainFileNotEmpty() *NotebookResourceAssert {
 
 func (n *NotebookResourceAssert) HasQueryWarehouseNotEmpty() *NotebookResourceAssert {
 	n.AddAssertion(assert.ValuePresent("query_warehouse"))
-	return n
-}
-
-func (n *NotebookResourceAssert) HasSecretsNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("secrets"))
 	return n
 }
 
