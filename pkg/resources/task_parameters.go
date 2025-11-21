@@ -278,7 +278,6 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreate(d, sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, &createOpts.UserTaskMinimumTriggerIntervalInSeconds),
 		// session parameters
 		handleParameterCreate(d, sdk.TaskParameterAbortDetachedQuery, &createOpts.SessionParameters.AbortDetachedQuery),
-		handleParameterCreate(d, sdk.TaskParameterAutocommit, &createOpts.SessionParameters.Autocommit),
 		handleParameterCreateWithMapping(d, sdk.TaskParameterBinaryInputFormat, &createOpts.SessionParameters.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
 		handleParameterCreateWithMapping(d, sdk.TaskParameterBinaryOutputFormat, &createOpts.SessionParameters.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
 		handleParameterCreate(d, sdk.TaskParameterClientMemoryLimit, &createOpts.SessionParameters.ClientMemoryLimit),
@@ -308,7 +307,6 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreate(d, sdk.TaskParameterQuotedIdentifiersIgnoreCase, &createOpts.SessionParameters.QuotedIdentifiersIgnoreCase),
 		handleParameterCreate(d, sdk.TaskParameterRowsPerResultset, &createOpts.SessionParameters.RowsPerResultset),
 		handleParameterCreate(d, sdk.TaskParameterS3StageVpceDnsName, &createOpts.SessionParameters.S3StageVpceDnsName),
-		handleParameterCreate(d, sdk.TaskParameterSearchPath, &createOpts.SessionParameters.SearchPath),
 		handleParameterCreate(d, sdk.TaskParameterStatementQueuedTimeoutInSeconds, &createOpts.SessionParameters.StatementQueuedTimeoutInSeconds),
 		handleParameterCreate(d, sdk.TaskParameterStatementTimeoutInSeconds, &createOpts.SessionParameters.StatementTimeoutInSeconds),
 		handleParameterCreate(d, sdk.TaskParameterStrictJsonOutput, &createOpts.SessionParameters.StrictJsonOutput),
@@ -330,6 +328,34 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreate(d, sdk.TaskParameterUseCachedResult, &createOpts.SessionParameters.UseCachedResult),
 		handleParameterCreate(d, sdk.TaskParameterWeekOfYearPolicy, &createOpts.SessionParameters.WeekOfYearPolicy),
 		handleParameterCreate(d, sdk.TaskParameterWeekStart, &createOpts.SessionParameters.WeekStart),
+		func() diag.Diagnostics {
+			key := strings.ToLower(string(sdk.TaskParameterAutocommit))
+			if v := GetConfigPropertyAsPointerAllowingZeroValue[bool](d, key); v != nil {
+				if !*v {
+					return diag.Diagnostics{
+						diag.Diagnostic{
+							Severity: diag.Warning,
+							Summary:  "Deprecated parameter 'AUTOCOMMIT' cannot be set to FALSE on a task",
+						},
+					}
+				}
+				createOpts.SessionParameters.Autocommit = v
+			}
+			return nil
+		}(),
+		func() diag.Diagnostics {
+			key := strings.ToLower(string(sdk.TaskParameterSearchPath))
+			if v := GetConfigPropertyAsPointerAllowingZeroValue[string](d, key); v != nil {
+				createOpts.SessionParameters.SearchPath = v
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Deprecated parameter 'SEARCH_PATH' cannot be set on a task",
+					},
+				}
+			}
+			return nil
+		}(),
 	)
 	if *createOpts.SessionParameters == (sdk.SessionParameters{}) {
 		createOpts.SessionParameters = nil
@@ -403,14 +429,15 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 			key := strings.ToLower(string(sdk.TaskParameterAutocommit))
 			if d.HasChange(key) || !d.GetRawPlan().AsValueMap()[key].IsKnown() {
 				if !d.GetRawConfig().AsValueMap()[key].IsNull() {
-					value := d.Get(key).(bool)
-					set.SessionParameters.Autocommit = sdk.Bool(value)
-					return diag.Diagnostics{
-						diag.Diagnostic{
-							Severity: diag.Warning,
-							Summary:  "Deprecated parameter 'AUTOCOMMIT' cannot be set on a task",
-						},
+					if !d.Get(key).(bool) {
+						return diag.Diagnostics{
+							diag.Diagnostic{
+								Severity: diag.Warning,
+								Summary:  "Deprecated parameter 'AUTOCOMMIT' cannot be set to FALSE on a task",
+							},
+						}
 					}
+					set.SessionParameters.Autocommit = sdk.Bool(true)
 				} else {
 					unset.SessionParametersUnset.Autocommit = sdk.Bool(true)
 				}
