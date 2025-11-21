@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [this PR]: verify issues created for semantic views follow-up and group them
 var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
@@ -259,10 +258,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		ForceNew:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				// TODO(SNOW-2396311): update the SDK with the newly added/updated fields for semantic expressions, then add them here
-				// TODO(SNOW-2396371): add PUBLIC/PRIVATE field
-				// TODO(SNOW-2398097): add table_alias
-				// TODO(SNOW-2398097): add fact_or_metric
+				// TODO [SNOW-2396311]: update the SDK with the newly added/updated fields for semantic expressions, then add them here
+				// TODO [SNOW-2396371]: add PUBLIC/PRIVATE field
+				// TODO [SNOW-2398097]: add table_alias
+				// TODO [SNOW-2398097]: add fact_or_metric
 				"semantic_expression": {
 					Type:     schema.TypeList,
 					Optional: true,
@@ -303,7 +302,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 						},
 					},
 				},
-				// TODO(SNOW-2396397): update the sdk and the model with the newly added/updated fields for window functions
+				// TODO [SNOW-2396397]: update the sdk and the model with the newly added/updated fields for window functions
 				"window_function": {
 					Type:     schema.TypeList,
 					Optional: true,
@@ -445,7 +444,7 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 		request.WithSemanticViewDimensions(dimensionsRequests)
 	}
-	// TODO(SNOW-2405571): use custom wrappers and set these fields in errors.Join like below
+	// TODO [SNOW-2405571]: use custom wrappers and set these fields in errors.Join like below
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
