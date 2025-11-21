@@ -11,6 +11,32 @@ resource "snowflake_task" "task" {
   sql_statement = "select 1"
 }
 
+# Basic task with seconds schedule
+resource "snowflake_task" "task_seconds" {
+  database  = "database"
+  schema    = "schema"
+  name      = "task_seconds"
+  warehouse = "warehouse"
+  started   = true
+  schedule {
+    seconds = 30
+  }
+  sql_statement = "select 1"
+}
+
+# Basic task with hours schedule
+resource "snowflake_task" "task_hours" {
+  database  = "database"
+  schema    = "schema"
+  name      = "task_hours"
+  warehouse = "warehouse"
+  started   = true
+  schedule {
+    hours = 2
+  }
+  sql_statement = "select 1"
+}
+
 # Basic serverless task
 resource "snowflake_task" "serverless_task" {
   database                                 = "database"

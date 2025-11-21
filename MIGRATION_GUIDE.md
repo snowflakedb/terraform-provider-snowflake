@@ -121,6 +121,43 @@ No changes in configuration are required.
 
 Community PR: [#4185](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4185)
 
+### *(new feature)* Task seconds and hours scheduling support
+
+Added support for scheduling tasks using seconds and hours intervals in addition to the existing minutes and cron support. The `snowflake_task` resource now supports:
+
+- `schedule.seconds` - Schedule tasks to run at intervals specified in seconds (e.g., every 30 seconds)
+- `schedule.hours` - Schedule tasks to run at intervals specified in hours (e.g., every 2 hours)
+
+These new scheduling options work alongside the existing `schedule.minutes` and `schedule.using_cron` options. Only one scheduling method can be specified at a time.
+
+**Example usage:**
+
+```terraform
+resource "snowflake_task" "example_seconds" {
+  database      = "my_database"
+  schema        = "my_schema"
+  name          = "my_task_seconds"
+  sql_statement = "SELECT 1"
+  started       = true
+
+  schedule {
+    seconds = 30  # Run every 30 seconds
+  }
+}
+
+resource "snowflake_task" "example_hours" {
+  database      = "my_database"
+  schema        = "my_schema"
+  name          = "my_task_hours"
+  sql_statement = "SELECT 1"
+  started       = true
+
+  schedule {
+    hours = 2  # Run every 2 hours
+  }
+}
+```
+
 ## v2.10.0 ➞ v2.10.1
 
 ### *(bugfix)* Fixed parsing DESCRIBE output for authentication policies

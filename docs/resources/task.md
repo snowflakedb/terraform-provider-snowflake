@@ -29,6 +29,32 @@ resource "snowflake_task" "task" {
   sql_statement = "select 1"
 }
 
+# Basic task with seconds schedule
+resource "snowflake_task" "task_seconds" {
+  database  = "database"
+  schema    = "schema"
+  name      = "task_seconds"
+  warehouse = "warehouse"
+  started   = true
+  schedule {
+    seconds = 30
+  }
+  sql_statement = "select 1"
+}
+
+# Basic task with hours schedule
+resource "snowflake_task" "task_hours" {
+  database  = "database"
+  schema    = "schema"
+  name      = "task_hours"
+  warehouse = "warehouse"
+  started   = true
+  schedule {
+    hours = 2
+  }
+  sql_statement = "select 1"
+}
+
 # Basic serverless task
 resource "snowflake_task" "serverless_task" {
   database                                 = "database"
@@ -238,7 +264,7 @@ resource "snowflake_task" "test" {
 - `quoted_identifiers_ignore_case` (Boolean) Specifies whether letters in double-quoted object identifiers are stored and resolved as uppercase letters. By default, Snowflake preserves the case of alphabetic characters when storing and resolving double-quoted identifiers (see [Identifier resolution](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html#label-identifier-casing)). You can use this parameter in situations in which [third-party applications always use double quotes around identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html#label-identifier-casing-parameter). For more information, check [QUOTED_IDENTIFIERS_IGNORE_CASE docs](https://docs.snowflake.com/en/sql-reference/parameters#quoted-identifiers-ignore-case).
 - `rows_per_resultset` (Number) Specifies the maximum number of rows returned in a result set. A value of 0 specifies no maximum. For more information, check [ROWS_PER_RESULTSET docs](https://docs.snowflake.com/en/sql-reference/parameters#rows-per-resultset).
 - `s3_stage_vpce_dns_name` (String) Specifies the DNS name of an Amazon S3 interface endpoint. Requests sent to the internal stage of an account via [AWS PrivateLink for Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/privatelink-interface-endpoints.html) use this endpoint to connect. For more information, see [Accessing Internal stages with dedicated interface endpoints](https://docs.snowflake.com/en/user-guide/private-internal-stages-aws.html#label-aws-privatelink-internal-stage-network-isolation). For more information, check [S3_STAGE_VPCE_DNS_NAME docs](https://docs.snowflake.com/en/sql-reference/parameters#s3-stage-vpce-dns-name).
-- `schedule` (Block List, Max: 1) The schedule for periodically running the task. This can be a cron or interval in minutes. (Conflicts with finalize and after; when set, one of the sub-fields `minutes` or `using_cron` should be set) For [Triggered tasks](https://docs.snowflake.com/en/user-guide/tasks-triggered), a schedule is not required. For other tasks, a schedule must be defined for a standalone task or the root task in a [task graph](https://docs.snowflake.com/en/user-guide/tasks-graphs#label-task-dag); otherwise, the task only runs if manually executed using [EXECUTE TASK](https://docs.snowflake.com/en/sql-reference/sql/execute-task) in, for example, the [snowflake_execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource. A schedule cannot be specified for child tasks in a task graph. For more information on schedule restrictions, consult the [official documentation for Task object](https://docs.snowflake.com/en/user-guide/tasks-intro). (see [below for nested schema](#nestedblock--schedule))
+- `schedule` (Block List, Max: 1) The schedule for periodically running the task. This can be a cron or interval in seconds, minutes, or hours. (Conflicts with finalize and after; when set, one of the sub-fields `seconds`, `minutes`, `hours`, or `using_cron` should be set) For [Triggered tasks](https://docs.snowflake.com/en/user-guide/tasks-triggered), a schedule is not required. For other tasks, a schedule must be defined for a standalone task or the root task in a [task graph](https://docs.snowflake.com/en/user-guide/tasks-graphs#label-task-dag); otherwise, the task only runs if manually executed using [EXECUTE TASK](https://docs.snowflake.com/en/sql-reference/sql/execute-task) in, for example, the [snowflake_execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource. A schedule cannot be specified for child tasks in a task graph. For more information on schedule restrictions, consult the [official documentation for Task object](https://docs.snowflake.com/en/user-guide/tasks-intro). (see [below for nested schema](#nestedblock--schedule))
 - `search_path` (String) Specifies the path to search to resolve unqualified object names in queries. For more information, see [Name resolution in queries](https://docs.snowflake.com/en/sql-reference/name-resolution.html#label-object-name-resolution-search-path). Comma-separated list of identifiers. An identifier can be a fully or partially qualified schema name. For more information, check [SEARCH_PATH docs](https://docs.snowflake.com/en/sql-reference/parameters#search-path).
 - `serverless_task_max_statement_size` (String) Specifies the maximum warehouse size for serverless tasks. Valid values are (case-insensitive): `XSMALL` | `X-SMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `X-LARGE` | `XXLARGE` | `X2LARGE` | `2X-LARGE` | `XXXLARGE` | `X3LARGE` | `3X-LARGE` | `X4LARGE` | `4X-LARGE` | `X5LARGE` | `5X-LARGE` | `X6LARGE` | `6X-LARGE`. For more information, check [SERVERLESS_TASK_MAX_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-max-statement-size).
 - `serverless_task_min_statement_size` (String) Specifies the minimum warehouse size for serverless tasks. Valid values are (case-insensitive): `XSMALL` | `X-SMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `X-LARGE` | `XXLARGE` | `X2LARGE` | `2X-LARGE` | `XXXLARGE` | `X3LARGE` | `3X-LARGE` | `X4LARGE` | `4X-LARGE` | `X5LARGE` | `5X-LARGE` | `X6LARGE` | `6X-LARGE`. For more information, check [SERVERLESS_TASK_MIN_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-min-statement-size).
@@ -285,8 +311,10 @@ resource "snowflake_task" "test" {
 
 Optional:
 
-- `minutes` (Number) Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers only. (conflicts with `using_cron`)
-- `using_cron` (String) Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `minutes`)
+- `hours` (Number) Specifies an interval (in hours) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `minutes`, and `using_cron`)
+- `minutes` (Number) Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `hours`, and `using_cron`)
+- `seconds` (Number) Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `minutes`, `hours`, and `using_cron`)
+- `using_cron` (String) Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `seconds`, `minutes`, and `hours`)
 
 
 <a id="nestedblock--timeouts"></a>

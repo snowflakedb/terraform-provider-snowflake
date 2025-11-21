@@ -5,7 +5,6 @@
 package testacc
 
 import (
-	"bytes"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -786,6 +785,192 @@ func TestAcc_Task_CronAndMinutes(t *testing.T) {
 	})
 }
 
+func TestAcc_Task_Seconds(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	seconds := 30
+	basic := model.TaskWithId("test", id, false, "SELECT 1")
+	configModelWithSeconds := model.TaskWithId("test", id, true, "SELECT 1").WithScheduleSeconds(seconds)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// create with seconds
+			{
+				Config: config.FromModels(t, configModelWithSeconds),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithSeconds.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleSeconds(seconds).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithSeconds.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleSeconds(seconds),
+				),
+			},
+			// Unset schedule (from seconds)
+			{
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, basic.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasNoScheduleSet().
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, basic.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleEmpty(),
+				),
+			},
+			// Change back to seconds
+			{
+				Config: config.FromModels(t, configModelWithSeconds),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithSeconds.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleSeconds(seconds).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithSeconds.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleSeconds(seconds),
+				),
+			},
+			// External changes detection - alter task externally with different schedule type
+			{
+				PreConfig: func() {
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSuspend(true))
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().WithSchedule("30 MINUTES")))
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithResume(true))
+				},
+				Config: config.FromModels(t, configModelWithSeconds),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithSeconds.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleSeconds(seconds).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithSeconds.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleSeconds(seconds),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_Hours(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	hours := 2
+	basic := model.TaskWithId("test", id, false, "SELECT 1")
+	configModelWithHours := model.TaskWithId("test", id, true, "SELECT 1").WithScheduleHours(hours)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// create with hours
+			{
+				Config: config.FromModels(t, configModelWithHours),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleHours(hours).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithHours.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleHours(hours),
+				),
+			},
+			// Unset schedule (from hours)
+			{
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, basic.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasNoScheduleSet().
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, basic.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleEmpty(),
+				),
+			},
+			// Change back to hours
+			{
+				Config: config.FromModels(t, configModelWithHours),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleHours(hours).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithHours.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleHours(hours),
+				),
+			},
+			// External changes detection - alter task externally with different schedule type
+			{
+				PreConfig: func() {
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSuspend(true))
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().WithSchedule("30 SECONDS")))
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithResume(true))
+				},
+				Config: config.FromModels(t, configModelWithHours),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleHours(hours).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithHours.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleHours(hours),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	minutes := 5
@@ -937,6 +1122,12 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
+	taskConfigInvalidScheduleNegativeSeconds := model.TaskWithId("test", id, false, "SELECT 1").WithScheduleSeconds(0)
+	taskConfigInvalidScheduleNegativeMinutes := model.TaskWithId("test", id, false, "SELECT 1").WithScheduleMinutes(0)
+	taskConfigInvalidScheduleNegativeHours := model.TaskWithId("test", id, false, "SELECT 1").WithScheduleHours(0)
+	taskConfigWithEmptySchedule := model.TaskWithId("test", id, false, "SELECT 1").WithEmptySchedule()
+	taskConfigWithMultipleSchedules := model.TaskWithId("test", id, false, "SELECT 1").WithMultipleSchedules()
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -945,38 +1136,27 @@ func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			{
-				Config:      taskConfigInvalidScheduleSetMultipleOrEmpty(id, true),
-				ExpectError: regexp.MustCompile("\"schedule.0.minutes\": only one of `schedule.0.minutes,schedule.0.using_cron`"),
+				Config:      config.FromModels(t, taskConfigInvalidScheduleNegativeSeconds),
+				ExpectError: regexp.MustCompile(`expected seconds to be at least \(1\), got 0`),
 			},
 			{
-				Config:      taskConfigInvalidScheduleSetMultipleOrEmpty(id, false),
-				ExpectError: regexp.MustCompile("\"schedule.0.minutes\": one of `schedule.0.minutes,schedule.0.using_cron`"),
+				Config:      config.FromModels(t, taskConfigInvalidScheduleNegativeMinutes),
+				ExpectError: regexp.MustCompile(`expected minutes to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigInvalidScheduleNegativeHours),
+				ExpectError: regexp.MustCompile(`expected hours to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigWithEmptySchedule),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigWithMultipleSchedules),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
 			},
 		},
 	})
-}
-
-func taskConfigInvalidScheduleSetMultipleOrEmpty(id sdk.SchemaObjectIdentifier, setMultiple bool) string {
-	var scheduleString string
-	scheduleBuffer := new(bytes.Buffer)
-	scheduleBuffer.WriteString("schedule {\n")
-	if setMultiple {
-		scheduleBuffer.WriteString("minutes = 10\n")
-		scheduleBuffer.WriteString("using_cron = \"*/5 * * * * UTC\"\n")
-	}
-	scheduleBuffer.WriteString("}\n")
-	scheduleString = scheduleBuffer.String()
-
-	return fmt.Sprintf(`
-resource "snowflake_task" "test" {
-	database = "%[1]s"
-	schema = "%[2]s"
-	name = "%[3]s"
-	started = false
-	sql_statement = "SELECT 1"
-
-	%[4]s
-}`, id.DatabaseName(), id.SchemaName(), id.Name(), scheduleString)
 }
 
 func TestAcc_Task_Enabled(t *testing.T) {
@@ -1962,6 +2142,51 @@ func TestAcc_Task_StateUpgrade(t *testing.T) {
 	})
 }
 
+func TestAcc_Task_StateUpgradeWithHours(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+	hours := 2
+	basic := model.TaskWithId("test", id, false, statement)
+	basicWithScheduleHours := model.TaskWithId("test", id, false, statement).
+		WithScheduleHours(hours)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.10.0"),
+				Config:            config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, basicWithScheduleHours.ResourceReference()).
+						HasNameString(id.Name()),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().WithSchedule(fmt.Sprintf("%d HOUR", hours))))
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, basicWithScheduleHours),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basicWithScheduleHours.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, basicWithScheduleHours.ResourceReference()).
+						HasNameString(id.Name()).
+						HasScheduleHours(hours),
+					resourceshowoutputassert.TaskShowOutput(t, basicWithScheduleHours.ResourceReference()).
+						HasScheduleHours(hours),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 	rootTask, rootTaskCleanup := testClient().Task.Create(t)
 	t.Cleanup(rootTaskCleanup)
@@ -2063,6 +2288,23 @@ resource "snowflake_task" "test" {
 	user_task_managed_initial_warehouse_size = "XSMALL"
 }
 `, id.DatabaseName(), id.SchemaName(), id.Name(), condition)
+}
+
+func taskBasicConfigV0980WithHours(id sdk.SchemaObjectIdentifier, condition string, hours int) string {
+	return fmt.Sprintf(`
+resource "snowflake_task" "test" {
+	database = "%[1]s"
+	schema = "%[2]s"
+	name = "%[3]s"
+	enabled = false
+	sql_statement = "SELECT 1"
+	schedule = "%[5]d HOURS"
+	allow_overlapping_execution = true
+	suspend_task_after_num_failures = 10
+	when = "%[4]s"
+	user_task_managed_initial_warehouse_size = "XSMALL"
+}
+`, id.DatabaseName(), id.SchemaName(), id.Name(), condition, hours)
 }
 
 func taskCompleteConfigV0980(
