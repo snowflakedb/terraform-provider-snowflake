@@ -308,7 +308,6 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreateWithMapping(d, sdk.TaskParameterServerlessTaskMaxStatementSize, &createOpts.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		// session parameters
 		handleParameterCreate(d, sdk.TaskParameterAbortDetachedQuery, &createOpts.SessionParameters.AbortDetachedQuery),
-		handleParameterCreate(d, sdk.TaskParameterAutocommit, &createOpts.SessionParameters.Autocommit),
 		handleParameterCreateWithMapping(d, sdk.TaskParameterBinaryInputFormat, &createOpts.SessionParameters.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
 		handleParameterCreateWithMapping(d, sdk.TaskParameterBinaryOutputFormat, &createOpts.SessionParameters.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
 		handleParameterCreate(d, sdk.TaskParameterClientMemoryLimit, &createOpts.SessionParameters.ClientMemoryLimit),
@@ -338,7 +337,6 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreate(d, sdk.TaskParameterQuotedIdentifiersIgnoreCase, &createOpts.SessionParameters.QuotedIdentifiersIgnoreCase),
 		handleParameterCreate(d, sdk.TaskParameterRowsPerResultset, &createOpts.SessionParameters.RowsPerResultset),
 		handleParameterCreate(d, sdk.TaskParameterS3StageVpceDnsName, &createOpts.SessionParameters.S3StageVpceDnsName),
-		handleParameterCreate(d, sdk.TaskParameterSearchPath, &createOpts.SessionParameters.SearchPath),
 		handleParameterCreate(d, sdk.TaskParameterStatementQueuedTimeoutInSeconds, &createOpts.SessionParameters.StatementQueuedTimeoutInSeconds),
 		handleParameterCreate(d, sdk.TaskParameterStatementTimeoutInSeconds, &createOpts.SessionParameters.StatementTimeoutInSeconds),
 		handleParameterCreate(d, sdk.TaskParameterStrictJsonOutput, &createOpts.SessionParameters.StrictJsonOutput),
@@ -360,6 +358,34 @@ func handleTaskParametersCreate(d *schema.ResourceData, createOpts *sdk.CreateTa
 		handleParameterCreate(d, sdk.TaskParameterUseCachedResult, &createOpts.SessionParameters.UseCachedResult),
 		handleParameterCreate(d, sdk.TaskParameterWeekOfYearPolicy, &createOpts.SessionParameters.WeekOfYearPolicy),
 		handleParameterCreate(d, sdk.TaskParameterWeekStart, &createOpts.SessionParameters.WeekStart),
+		func() diag.Diagnostics {
+			key := strings.ToLower(string(sdk.TaskParameterAutocommit))
+			if v := GetConfigPropertyAsPointerAllowingZeroValue[bool](d, key); v != nil {
+				createOpts.SessionParameters.Autocommit = v
+				if !*v {
+					return diag.Diagnostics{
+						diag.Diagnostic{
+							Severity: diag.Warning,
+							Summary:  "Invalid value for AUTOCOMMIT parameter: cannot be set to FALSE on a task",
+						},
+					}
+				}
+			}
+			return nil
+		}(),
+		func() diag.Diagnostics {
+			key := strings.ToLower(string(sdk.TaskParameterSearchPath))
+			if v := GetConfigPropertyAsPointerAllowingZeroValue[string](d, key); v != nil {
+				createOpts.SessionParameters.SearchPath = v
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Invalid value for SEARCH_PATH parameter: cannot be set on a task",
+					},
+				}
+			}
+			return nil
+		}(),
 	)
 	if *createOpts.SessionParameters == (sdk.SessionParameters{}) {
 		createOpts.SessionParameters = nil
@@ -379,7 +405,6 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 		handleParameterUpdate(d, sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, &set.UserTaskMinimumTriggerIntervalInSeconds, &unset.UserTaskMinimumTriggerIntervalInSeconds),
 		// session parameters
 		handleParameterUpdate(d, sdk.TaskParameterAbortDetachedQuery, &set.SessionParameters.AbortDetachedQuery, &unset.SessionParametersUnset.AbortDetachedQuery),
-		handleParameterUpdate(d, sdk.TaskParameterAutocommit, &set.SessionParameters.Autocommit, &unset.SessionParametersUnset.Autocommit),
 		handleParameterUpdateWithMapping(d, sdk.TaskParameterBinaryInputFormat, &set.SessionParameters.BinaryInputFormat, &unset.SessionParametersUnset.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
 		handleParameterUpdateWithMapping(d, sdk.TaskParameterBinaryOutputFormat, &set.SessionParameters.BinaryOutputFormat, &unset.SessionParametersUnset.BinaryOutputFormat, stringToStringEnumProvider(sdk.ToBinaryOutputFormat)),
 		handleParameterUpdate(d, sdk.TaskParameterClientMemoryLimit, &set.SessionParameters.ClientMemoryLimit, &unset.SessionParametersUnset.ClientMemoryLimit),
@@ -409,7 +434,6 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 		handleParameterUpdate(d, sdk.TaskParameterQuotedIdentifiersIgnoreCase, &set.SessionParameters.QuotedIdentifiersIgnoreCase, &unset.SessionParametersUnset.QuotedIdentifiersIgnoreCase),
 		handleParameterUpdate(d, sdk.TaskParameterRowsPerResultset, &set.SessionParameters.RowsPerResultset, &unset.SessionParametersUnset.RowsPerResultset),
 		handleParameterUpdate(d, sdk.TaskParameterS3StageVpceDnsName, &set.SessionParameters.S3StageVpceDnsName, &unset.SessionParametersUnset.S3StageVpceDnsName),
-		handleParameterUpdate(d, sdk.TaskParameterSearchPath, &set.SessionParameters.SearchPath, &unset.SessionParametersUnset.SearchPath),
 		handleParameterUpdate(d, sdk.TaskParameterStatementQueuedTimeoutInSeconds, &set.SessionParameters.StatementQueuedTimeoutInSeconds, &unset.SessionParametersUnset.StatementQueuedTimeoutInSeconds),
 		handleParameterUpdate(d, sdk.TaskParameterStatementTimeoutInSeconds, &set.SessionParameters.StatementTimeoutInSeconds, &unset.SessionParametersUnset.StatementTimeoutInSeconds),
 		handleParameterUpdate(d, sdk.TaskParameterStrictJsonOutput, &set.SessionParameters.StrictJsonOutput, &unset.SessionParametersUnset.StrictJsonOutput),
@@ -431,6 +455,43 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 		handleParameterUpdate(d, sdk.TaskParameterUseCachedResult, &set.SessionParameters.UseCachedResult, &unset.SessionParametersUnset.UseCachedResult),
 		handleParameterUpdate(d, sdk.TaskParameterWeekOfYearPolicy, &set.SessionParameters.WeekOfYearPolicy, &unset.SessionParametersUnset.WeekOfYearPolicy),
 		handleParameterUpdate(d, sdk.TaskParameterWeekStart, &set.SessionParameters.WeekStart, &unset.SessionParametersUnset.WeekStart),
+		func() diag.Diagnostics {
+			key := strings.ToLower(string(sdk.TaskParameterAutocommit))
+			if d.HasChange(key) || !d.GetRawPlan().AsValueMap()[key].IsKnown() {
+				if !d.GetRawConfig().AsValueMap()[key].IsNull() {
+					if !d.Get(key).(bool) {
+						return diag.Diagnostics{
+							diag.Diagnostic{
+								Severity: diag.Warning,
+								Summary:  "Invalid value for AUTOCOMMIT parameter: cannot be set to FALSE on a task",
+							},
+						}
+					}
+					set.SessionParameters.Autocommit = sdk.Bool(true)
+				} else {
+					unset.SessionParametersUnset.Autocommit = sdk.Bool(true)
+				}
+			}
+			return nil
+		}(),
+		func() diag.Diagnostics {
+			key := strings.ToLower(string(sdk.TaskParameterSearchPath))
+			if d.HasChange(key) || !d.GetRawPlan().AsValueMap()[key].IsKnown() {
+				if !d.GetRawConfig().AsValueMap()[key].IsNull() {
+					value := d.Get(key).(string)
+					set.SessionParameters.SearchPath = sdk.String(value)
+					return diag.Diagnostics{
+						diag.Diagnostic{
+							Severity: diag.Warning,
+							Summary:  "Invalid value for SEARCH_PATH parameter: cannot be set on a task",
+						},
+					}
+				} else {
+					unset.SessionParametersUnset.SearchPath = sdk.Bool(true)
+				}
+			}
+			return nil
+		}(),
 	)
 	if *set.SessionParameters == (sdk.SessionParameters{}) {
 		set.SessionParameters = nil
