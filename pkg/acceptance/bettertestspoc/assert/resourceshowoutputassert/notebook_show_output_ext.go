@@ -15,7 +15,7 @@ func NotebooksDatasourceShowOutput(t *testing.T, name string) *NotebookShowOutpu
 	t.Helper()
 
 	n := NotebookShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert(name, "show_output", "notebooks.0."),
+		ResourceAssert: assert.NewDatasourceAssert("data."+name, "show_output", "notebooks.0."),
 	}
 	n.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &n

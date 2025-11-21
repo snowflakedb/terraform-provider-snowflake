@@ -1,5 +1,5 @@
 <!-- Section of preview data sources -->
-## Currently preview data sources
+## Currently preview data sources 
 
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_authentication_policies](./docs/data-sources/authentication_policies)
