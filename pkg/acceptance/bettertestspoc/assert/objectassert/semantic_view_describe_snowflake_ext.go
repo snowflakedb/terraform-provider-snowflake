@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -56,11 +57,28 @@ func (s *SemanticViewDetailsAssert) ContainsDetail(expected sdk.SemanticViewDeta
 				reflect.DeepEqual(detail.ParentEntity, expected.ParentEntity)
 		})
 		if !found {
-			return fmt.Errorf("expected semantic view to contain a detail row matching %v", expected)
+			return fmt.Errorf("expected semantic view to contain a detail row matching %s", semanticViewDetailsString(expected))
 		}
 		return nil
 	})
 	return s
+}
+
+func semanticViewDetailsString(d sdk.SemanticViewDetails) string {
+	stringBuilder := new(strings.Builder)
+	stringBuilder.WriteString("[")
+	if d.ObjectKind != nil {
+		stringBuilder.WriteString(fmt.Sprintf("object_kind=%s ", *d.ObjectKind))
+	}
+	if d.ObjectName != nil {
+		stringBuilder.WriteString(fmt.Sprintf("object_name=%s ", *d.ObjectName))
+	}
+	if d.ParentEntity != nil {
+		stringBuilder.WriteString(fmt.Sprintf("parent_entity=%s ", *d.ParentEntity))
+	}
+	stringBuilder.WriteString(fmt.Sprintf("property=%s property_value=%s", d.Property, d.PropertyValue))
+	stringBuilder.WriteString("]")
+	return stringBuilder.String()
 }
 
 func NewSemanticViewDetails(
@@ -84,5 +102,83 @@ func NewSemanticViewDetails(
 		details.ParentEntity = parentEntity
 	}
 
+	return details
+}
+
+func NewSemanticViewDetailsTable(
+	tableAlias string,
+	property string,
+	propertyValue string,
+) sdk.SemanticViewDetails {
+	details := sdk.SemanticViewDetails{
+		Property:      property,
+		PropertyValue: propertyValue,
+	}
+	details.ObjectKind = sdk.Pointer("TABLE")
+	details.ObjectName = sdk.Pointer(tableAlias)
+	return details
+}
+
+func NewSemanticViewDetailsDimension(
+	dimensionName string,
+	tableAlias string,
+	property string,
+	propertyValue string,
+) sdk.SemanticViewDetails {
+	details := sdk.SemanticViewDetails{
+		Property:      property,
+		PropertyValue: propertyValue,
+	}
+	details.ObjectKind = sdk.Pointer("DIMENSION")
+	details.ObjectName = sdk.Pointer(dimensionName)
+	details.ParentEntity = sdk.Pointer(tableAlias)
+	return details
+}
+
+func NewSemanticViewDetailsFact(
+	factName string,
+	tableAlias string,
+	property string,
+	propertyValue string,
+) sdk.SemanticViewDetails {
+	details := sdk.SemanticViewDetails{
+		Property:      property,
+		PropertyValue: propertyValue,
+	}
+	details.ObjectKind = sdk.Pointer("FACT")
+	details.ObjectName = sdk.Pointer(factName)
+	details.ParentEntity = sdk.Pointer(tableAlias)
+	return details
+}
+
+func NewSemanticViewDetailsMetric(
+	metricName string,
+	tableAlias string,
+	property string,
+	propertyValue string,
+) sdk.SemanticViewDetails {
+	details := sdk.SemanticViewDetails{
+		Property:      property,
+		PropertyValue: propertyValue,
+	}
+	details.ObjectKind = sdk.Pointer("METRIC")
+	details.ObjectName = sdk.Pointer(metricName)
+	details.ParentEntity = sdk.Pointer(tableAlias)
+	return details
+}
+
+func NewSemanticViewDetailsRelationship(
+	relationshipName string,
+	tableAlias string,
+	property string,
+	propertyValue string,
+) sdk.SemanticViewDetails {
+	details := sdk.SemanticViewDetails{
+		Property:      property,
+		PropertyValue: propertyValue,
+	}
+	details.ObjectKind = sdk.Pointer("RELATIONSHIP")
+	details.ObjectName = sdk.Pointer(relationshipName)
+	details.ParentEntity = sdk.Pointer(tableAlias)
 	return details
 }
