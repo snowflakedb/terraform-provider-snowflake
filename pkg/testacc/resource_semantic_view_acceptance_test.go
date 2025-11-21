@@ -9,6 +9,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
@@ -121,6 +122,53 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithFacts([]sdk.SemanticExpression{*fact2}).
 		WithDimensions([]sdk.SemanticExpression{*dimension2})
 
+	t1Alias, t2Alias, dimensionName, factName, metricName, relationshipName := "lt1", "lt2", "d1", "f1", "m1", "r1"
+
+	// semantic view related details
+	commentDetails := objectassert.NewSemanticViewDetails(nil, nil, nil, "COMMENT", comment)
+
+	// logical table 1 related details
+	table1DatabaseName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1.ID().DatabaseName())
+	table1SchemaName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1.ID().SchemaName())
+	table1Name := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1.ID().Name())
+	table1Synonyms := objectassert.NewSemanticViewDetailsTable(t1Alias, "SYNONYMS", `["sales","orders"]`)
+	table1PrimaryKey := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", `["a1"]`)
+	table1UniqueKey := objectassert.NewSemanticViewDetailsTable(t1Alias, "UNIQUE_KEY", `[["a2"],["a3","a4"]]`)
+	table1Comment := objectassert.NewSemanticViewDetailsTable(t1Alias, "COMMENT", `logical table 1`)
+
+	// dimension related details
+	dimensionTable := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "TABLE", t1Alias)
+	dimensionExpression := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "EXPRESSION", `"lt1"."a1"`)
+	dimensionDataType := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+	dimensionSynonyms := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "SYNONYMS", `["dim1"]`)
+	dimensionComment := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "COMMENT", "dimension 1")
+	dimensionAccessModifier := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+	// fact related details
+	factTable := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "TABLE", t1Alias)
+	factExpression := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "EXPRESSION", `"lt1"."a2"`)
+	factDataType := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+	factSynonyms := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "SYNONYMS", `["fact1"]`)
+	factComment := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "COMMENT", "fact 1")
+	factAccessModifier := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+	// metric related details
+	metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", t1Alias)
+	metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("lt1"."a1")`)
+	metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+	metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+
+	// logical table 2 related details
+	table2DatabaseName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2.ID().DatabaseName())
+	table2SchemaName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2.ID().SchemaName())
+	table2Name := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2.ID().Name())
+
+	// relationship related details
+	relationshipTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t1Alias, "TABLE", t1Alias)
+	relationshipRefTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t1Alias, "REF_TABLE", t2Alias)
+	relationshipForeignKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t1Alias, "FOREIGN_KEY", `["a1","a2"]`)
+	relationshipRefKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t1Alias, "REF_KEY", `["a1","a2"]`)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -181,8 +229,13 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasExtension(""),
 				),
 			},
-			// add optional attributes
+			// add optional attributes - recreate
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
 				Config: accconfig.FromModels(t, modelComplete),
 				Check: assertThat(t,
 					resourceassert.SemanticViewResource(t, modelComplete.ResourceReference()).
@@ -191,6 +244,39 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasCommentString(comment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					objectassert.SemanticViewDetails(t, id).
+						HasDetailsCount(34).
+						ContainsDetail(commentDetails).
+						ContainsDetail(table1DatabaseName).
+						ContainsDetail(table1SchemaName).
+						ContainsDetail(table1Name).
+						ContainsDetail(table1Synonyms).
+						ContainsDetail(table1PrimaryKey).
+						ContainsDetail(table1UniqueKey).
+						ContainsDetail(table1Comment).
+						ContainsDetail(dimensionTable).
+						ContainsDetail(dimensionExpression).
+						ContainsDetail(dimensionDataType).
+						ContainsDetail(dimensionSynonyms).
+						ContainsDetail(dimensionComment).
+						ContainsDetail(dimensionAccessModifier).
+						ContainsDetail(factTable).
+						ContainsDetail(factExpression).
+						ContainsDetail(factDataType).
+						ContainsDetail(factSynonyms).
+						ContainsDetail(factComment).
+						ContainsDetail(factAccessModifier).
+						ContainsDetail(metricTable).
+						ContainsDetail(metricExpression).
+						ContainsDetail(metricDataType).
+						ContainsDetail(metricAccessModifier).
+						ContainsDetail(table2DatabaseName).
+						ContainsDetail(table2SchemaName).
+						ContainsDetail(table2Name).
+						ContainsDetail(relationshipTable).
+						ContainsDetail(relationshipRefTable).
+						ContainsDetail(relationshipForeignKey).
+						ContainsDetail(relationshipRefKey),
 				),
 			},
 			// import complete
@@ -222,7 +308,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasExtension(""),
 				),
 			},
-			// alter
+			// change values in config - recreate
 			{
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -241,7 +327,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasComment(changedComment),
 				),
 			},
-			// change externally alter
+			// change externally - alter
 			{
 				PreConfig: func() {
 					testClient().SemanticView.Alter(t, sdk.NewAlterSemanticViewRequest(id).WithSetComment(comment))
@@ -263,31 +349,25 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasComment(changedComment),
 				),
 			},
-			// change externally create
+			// change externally - no recreation yet
+			// TODO [SNOW-2852837]: Handle external changes
 			{
 				PreConfig: func() {
 					_, semanticViewCleanup := testClient().SemanticView.CreateWithRequest(t, sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*lt1Request, *lt2Request}).
 						WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*m1Request, *m2Request}).
 						WithSemanticViewDimensions([]sdk.SemanticExpressionRequest{*sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"lt1"."d1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"lt1"."a2"`})}).
-						WithComment(comment).WithOrReplace(true))
+						WithComment(changedComment).WithOrReplace(true))
 					t.Cleanup(semanticViewCleanup)
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						// TODO [this PR]: why not recreate here?
-						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				Check: assertThat(t,
 					resourceassert.SemanticViewResource(t, modelCompleteWithDifferentValues.ResourceReference()).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasCommentString(changedComment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
-					resourceshowoutputassert.SemanticViewShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
-						HasComment(changedComment),
 				),
 			},
 			// recreate to basic

@@ -212,15 +212,15 @@ func TestInt_SemanticView(t *testing.T) {
 
 		t1Alias, t2Alias, dimensionName, factName, metricName, metric2Name, relationshipName := "table1", "table2", "d1", "fact1", "metric1", "metric2", "rel1"
 
-		// TODO [this PR]: group expected assertions per type (e.g. logical table, metric, etc.)
+		// TODO [SNOW-2852837]: group expected assertions per type (e.g. logical table, metric, etc.)
 		// semantic view related details
 		commentDetails := objectassert.NewSemanticViewDetails(nil, nil, nil, "COMMENT", "comment")
 
 		// logical table 1 related details
-		tableDatabaseName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1Id.DatabaseName())
-		tableSchemaName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1Id.SchemaName())
-		tableName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1Id.Name())
-		pk := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", "[\"first_c\"]")
+		table1DatabaseName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1Id.DatabaseName())
+		table1SchemaName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1Id.SchemaName())
+		table1Name := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1Id.Name())
+		table1PrimaryKey := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", "[\"first_c\"]")
 
 		// dimension related details
 		dimensionTable := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "TABLE", t1Alias)
@@ -252,9 +252,9 @@ func TestInt_SemanticView(t *testing.T) {
 		metric2AccessModifier := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
 
 		// logical table 2 related details
-		tableDatabaseName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2Id.DatabaseName())
-		tableSchemaName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2Id.SchemaName())
-		tableName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2Id.Name())
+		table2DatabaseName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2Id.DatabaseName())
+		table2SchemaName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2Id.SchemaName())
+		table2Name := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2Id.Name())
 
 		// relationship related details
 		relationshipTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "TABLE", t2Alias)
@@ -265,10 +265,10 @@ func TestInt_SemanticView(t *testing.T) {
 		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
 			HasDetailsCount(32).
 			ContainsDetail(commentDetails).
-			ContainsDetail(tableDatabaseName1).
-			ContainsDetail(tableSchemaName1).
-			ContainsDetail(tableName1).
-			ContainsDetail(pk).
+			ContainsDetail(table1DatabaseName).
+			ContainsDetail(table1SchemaName).
+			ContainsDetail(table1Name).
+			ContainsDetail(table1PrimaryKey).
 			ContainsDetail(dimensionTable).
 			ContainsDetail(dimensionExpression).
 			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
@@ -291,9 +291,9 @@ func TestInt_SemanticView(t *testing.T) {
 			ContainsDetail(metric2Expression).
 			ContainsDetail(metric2DataType).
 			ContainsDetail(metric2AccessModifier).
-			ContainsDetail(tableDatabaseName2).
-			ContainsDetail(tableSchemaName2).
-			ContainsDetail(tableName2).
+			ContainsDetail(table2DatabaseName).
+			ContainsDetail(table2SchemaName).
+			ContainsDetail(table2Name).
 			ContainsDetail(relationshipTable).
 			ContainsDetail(relationshipRefTable).
 			ContainsDetail(relationshipForeignKey).
