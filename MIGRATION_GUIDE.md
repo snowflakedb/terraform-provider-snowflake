@@ -69,7 +69,7 @@ In the `snowflake_grant_privileges_to_account_role` resource, we enabled support
 - `CONNECTION` object type in the `on_account_object.object_type` field
 - `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
 - `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
- 
+
 In the `snowflake_grant_privileges_to_database_role` resource, we enabled support for:
 - `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
 - `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
@@ -115,7 +115,7 @@ No changes in configuration are required.
 
 References: [#4187](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4187)
 
-## v2.10.1 ➞ v.2.10.2
+## v2.10.1 ➞ v2.10.2
 
 ### *(bugfix)* Disallowed setting `DATABASE ROLES` object type on `all` and `future` fields in `snowflake_grant_ownership` resource
 Previously, the provider allowed setting the `DATABASE ROLES` object type on `all` and `future` fields in the `grant_ownership` resource.
