@@ -26,6 +26,7 @@ type CreateNotebookRequest struct {
 	ExternalAccessIntegrations  []AccountObjectIdentifier
 	RuntimeEnvironmentVersion   *string
 	DefaultVersion              *string
+	Secrets                     *SecretsListRequest
 }
 
 type AlterNotebookRequest struct {
