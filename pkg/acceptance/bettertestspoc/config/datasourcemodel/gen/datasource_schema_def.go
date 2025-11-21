@@ -71,6 +71,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.ImageRepositories().Schema,
 	},
 	{
+		name:   "Listings",
+		schema: datasources.Listings().Schema,
+	},
+	{
 		name:   "MaskingPolicies",
 		schema: datasources.MaskingPolicies().Schema,
 	},

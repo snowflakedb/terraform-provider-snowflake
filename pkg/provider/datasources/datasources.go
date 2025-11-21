@@ -25,6 +25,7 @@ const (
 	GitRepositories                datasource = "snowflake_git_repositories"
 	Grants                         datasource = "snowflake_grants"
 	ImageRepositories              datasource = "snowflake_image_repositories"
+	Listings                       datasource = "snowflake_listings"
 	MaskingPolicies                datasource = "snowflake_masking_policies"
 	MaterializedViews              datasource = "snowflake_materialized_views"
 	NetworkPolicies                datasource = "snowflake_network_policies"
