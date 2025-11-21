@@ -445,7 +445,6 @@ const (
 	AccountParameterRequireStorageIntegrationForStageOperation       AccountParameter = "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION"
 	AccountParameterRowsPerResultset                                 AccountParameter = "ROWS_PER_RESULTSET"
 	AccountParameterS3StageVpceDnsName                               AccountParameter = "S3_STAGE_VPCE_DNS_NAME"
-	AccountParameterSamlIdentityProvider                             AccountParameter = "SAML_IDENTITY_PROVIDER"
 	AccountParameterSearchPath                                       AccountParameter = "SEARCH_PATH"
 	AccountParameterServerlessTaskMaxStatementSize                   AccountParameter = "SERVERLESS_TASK_MAX_STATEMENT_SIZE"
 	AccountParameterServerlessTaskMinStatementSize                   AccountParameter = "SERVERLESS_TASK_MIN_STATEMENT_SIZE"
@@ -571,7 +570,6 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterRequireStorageIntegrationForStageOperation,
 	AccountParameterRowsPerResultset,
 	AccountParameterS3StageVpceDnsName,
-	AccountParameterSamlIdentityProvider,
 	AccountParameterSearchPath,
 	AccountParameterServerlessTaskMaxStatementSize,
 	AccountParameterServerlessTaskMinStatementSize,
@@ -1196,7 +1194,6 @@ type AccountParameters struct {
 	RequireStorageIntegrationForStageOperation       *bool                             `ddl:"parameter" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION"`
 	RowsPerResultset                                 *int                              `ddl:"parameter" sql:"ROWS_PER_RESULTSET"`
 	S3StageVpceDnsName                               *string                           `ddl:"parameter,double_quotes" sql:"S3_STAGE_VPCE_DNS_NAME"`
-	SamlIdentityProvider                             *string                           `ddl:"parameter,double_quotes" sql:"SAML_IDENTITY_PROVIDER"`
 	SearchPath                                       *string                           `ddl:"parameter,double_quotes" sql:"SEARCH_PATH"`
 	ServerlessTaskMaxStatementSize                   *WarehouseSize                    `ddl:"parameter,double_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 	ServerlessTaskMinStatementSize                   *WarehouseSize                    `ddl:"parameter,double_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
@@ -1346,7 +1343,6 @@ type AccountParametersUnset struct {
 	RequireStorageIntegrationForStageOperation       *bool `ddl:"keyword" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION"`
 	RowsPerResultset                                 *bool `ddl:"keyword" sql:"ROWS_PER_RESULTSET"`
 	S3StageVpceDnsName                               *bool `ddl:"keyword" sql:"S3_STAGE_VPCE_DNS_NAME"`
-	SamlIdentityProvider                             *bool `ddl:"keyword" sql:"SAML_IDENTITY_PROVIDER"`
 	SearchPath                                       *bool `ddl:"keyword" sql:"SEARCH_PATH"`
 	ServerlessTaskMaxStatementSize                   *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 	ServerlessTaskMinStatementSize                   *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`

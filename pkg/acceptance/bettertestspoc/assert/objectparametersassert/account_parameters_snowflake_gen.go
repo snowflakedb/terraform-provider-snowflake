@@ -169,7 +169,6 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPythonProfilerTargetStage, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterQueryTag, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterS3StageVpceDnsName, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterSamlIdentityProvider, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterSearchPath, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterServerlessTaskMaxStatementSize, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterServerlessTaskMinStatementSize, sdk.ParameterTypeSnowflakeDefault).
@@ -290,7 +289,6 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultPythonProfilerTargetStageValueExplicit().
 		HasDefaultQueryTagValueExplicit().
 		HasDefaultS3StageVpceDnsNameValueExplicit().
-		HasDefaultSamlIdentityProviderValueExplicit().
 		HasDefaultSearchPathValueExplicit().
 		HasDefaultServerlessTaskMaxStatementSizeValueExplicit().
 		HasDefaultServerlessTaskMinStatementSizeValueExplicit().
@@ -802,11 +800,6 @@ func (a *AccountParametersAssert) HasQueryTag(expected string) *AccountParameter
 
 func (a *AccountParametersAssert) HasS3StageVpceDnsName(expected string) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterS3StageVpceDnsName, expected))
-	return a
-}
-
-func (a *AccountParametersAssert) HasSamlIdentityProvider(expected string) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterSamlIdentityProvider, expected))
 	return a
 }
 
@@ -1394,11 +1387,6 @@ func (a *AccountParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.Parame
 	return a
 }
 
-func (a *AccountParametersAssert) HasSamlIdentityProviderLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSamlIdentityProvider, expected))
-	return a
-}
-
 func (a *AccountParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSearchPath, expected))
 	return a
@@ -1885,10 +1873,6 @@ func (a *AccountParametersAssert) HasDefaultS3StageVpceDnsNameValue() *AccountPa
 	return a.HasDefaultParameterValue(sdk.AccountParameterS3StageVpceDnsName)
 }
 
-func (a *AccountParametersAssert) HasDefaultSamlIdentityProviderValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterSamlIdentityProvider)
-}
-
 func (a *AccountParametersAssert) HasDefaultSearchPathValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterSearchPath)
 }
@@ -2355,10 +2339,6 @@ func (a *AccountParametersAssert) HasDefaultQueryTagValueExplicit() *AccountPara
 
 func (a *AccountParametersAssert) HasDefaultS3StageVpceDnsNameValueExplicit() *AccountParametersAssert {
 	return a.HasS3StageVpceDnsName("")
-}
-
-func (a *AccountParametersAssert) HasDefaultSamlIdentityProviderValueExplicit() *AccountParametersAssert {
-	return a.HasSamlIdentityProvider("")
 }
 
 func (a *AccountParametersAssert) HasDefaultSearchPathValueExplicit() *AccountParametersAssert {

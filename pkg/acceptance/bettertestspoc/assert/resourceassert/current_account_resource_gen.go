@@ -477,11 +477,6 @@ func (c *CurrentAccountResourceAssert) HasS3StageVpceDnsNameString(expected stri
 	return c
 }
 
-func (c *CurrentAccountResourceAssert) HasSamlIdentityProviderString(expected string) *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("saml_identity_provider", expected))
-	return c
-}
-
 func (c *CurrentAccountResourceAssert) HasSearchPathString(expected string) *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("search_path", expected))
 	return c
@@ -1093,11 +1088,6 @@ func (c *CurrentAccountResourceAssert) HasNoRowsPerResultset() *CurrentAccountRe
 
 func (c *CurrentAccountResourceAssert) HasNoS3StageVpceDnsName() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("s3_stage_vpce_dns_name"))
-	return c
-}
-
-func (c *CurrentAccountResourceAssert) HasNoSamlIdentityProvider() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("saml_identity_provider"))
 	return c
 }
 
@@ -1715,11 +1705,6 @@ func (c *CurrentAccountResourceAssert) HasS3StageVpceDnsNameEmpty() *CurrentAcco
 	return c
 }
 
-func (c *CurrentAccountResourceAssert) HasSamlIdentityProviderEmpty() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("saml_identity_provider", ""))
-	return c
-}
-
 func (c *CurrentAccountResourceAssert) HasSearchPathEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("search_path", ""))
 	return c
@@ -2331,11 +2316,6 @@ func (c *CurrentAccountResourceAssert) HasRowsPerResultsetNotEmpty() *CurrentAcc
 
 func (c *CurrentAccountResourceAssert) HasS3StageVpceDnsNameNotEmpty() *CurrentAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("s3_stage_vpce_dns_name"))
-	return c
-}
-
-func (c *CurrentAccountResourceAssert) HasSamlIdentityProviderNotEmpty() *CurrentAccountResourceAssert {
-	c.AddAssertion(assert.ValuePresent("saml_identity_provider"))
 	return c
 }
 

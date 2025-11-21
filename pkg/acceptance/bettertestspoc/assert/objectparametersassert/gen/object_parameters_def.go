@@ -302,7 +302,6 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.AccountParameterPythonProfilerTargetStage), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterQueryTag), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterS3StageVpceDnsName), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
-			{ParameterName: string(sdk.AccountParameterSamlIdentityProvider), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterSearchPath), ParameterType: "string", DefaultValue: "$current, $public", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterServerlessTaskMaxStatementSize), ParameterType: "sdk.WarehouseSize", DefaultValue: `sdk.WarehouseSize("X2Large")`, DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterServerlessTaskMinStatementSize), ParameterType: "sdk.WarehouseSize", DefaultValue: "sdk.WarehouseSizeXSmall", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},

@@ -472,11 +472,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasS3StageVpceDnsNameString(e
 	return c
 }
 
-func (c *CurrentOrganizationAccountResourceAssert) HasSamlIdentityProviderString(expected string) *CurrentOrganizationAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("saml_identity_provider", expected))
-	return c
-}
-
 func (c *CurrentOrganizationAccountResourceAssert) HasSearchPathString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("search_path", expected))
 	return c
@@ -1086,11 +1081,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasNoS3StageVpceDnsName() *Cu
 	return c
 }
 
-func (c *CurrentOrganizationAccountResourceAssert) HasNoSamlIdentityProvider() *CurrentOrganizationAccountResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("saml_identity_provider"))
-	return c
-}
-
 func (c *CurrentOrganizationAccountResourceAssert) HasNoSearchPath() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueNotSet("search_path"))
 	return c
@@ -1692,11 +1682,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasRowsPerResultsetEmpty() *C
 
 func (c *CurrentOrganizationAccountResourceAssert) HasS3StageVpceDnsNameEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValueSet("s3_stage_vpce_dns_name", ""))
-	return c
-}
-
-func (c *CurrentOrganizationAccountResourceAssert) HasSamlIdentityProviderEmpty() *CurrentOrganizationAccountResourceAssert {
-	c.AddAssertion(assert.ValueSet("saml_identity_provider", ""))
 	return c
 }
 
@@ -2306,11 +2291,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasRowsPerResultsetNotEmpty()
 
 func (c *CurrentOrganizationAccountResourceAssert) HasS3StageVpceDnsNameNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.AddAssertion(assert.ValuePresent("s3_stage_vpce_dns_name"))
-	return c
-}
-
-func (c *CurrentOrganizationAccountResourceAssert) HasSamlIdentityProviderNotEmpty() *CurrentOrganizationAccountResourceAssert {
-	c.AddAssertion(assert.ValuePresent("saml_identity_provider"))
 	return c
 }
 

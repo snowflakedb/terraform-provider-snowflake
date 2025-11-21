@@ -99,7 +99,6 @@ type CurrentOrganizationAccountModel struct {
 	ResourceMonitor                                  tfconfig.Variable `json:"resource_monitor,omitempty"`
 	RowsPerResultset                                 tfconfig.Variable `json:"rows_per_resultset,omitempty"`
 	S3StageVpceDnsName                               tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
-	SamlIdentityProvider                             tfconfig.Variable `json:"saml_identity_provider,omitempty"`
 	SearchPath                                       tfconfig.Variable `json:"search_path,omitempty"`
 	ServerlessTaskMaxStatementSize                   tfconfig.Variable `json:"serverless_task_max_statement_size,omitempty"`
 	ServerlessTaskMinStatementSize                   tfconfig.Variable `json:"serverless_task_min_statement_size,omitempty"`
@@ -626,11 +625,6 @@ func (c *CurrentOrganizationAccountModel) WithRowsPerResultset(rowsPerResultset 
 
 func (c *CurrentOrganizationAccountModel) WithS3StageVpceDnsName(s3StageVpceDnsName string) *CurrentOrganizationAccountModel {
 	c.S3StageVpceDnsName = tfconfig.StringVariable(s3StageVpceDnsName)
-	return c
-}
-
-func (c *CurrentOrganizationAccountModel) WithSamlIdentityProvider(samlIdentityProvider string) *CurrentOrganizationAccountModel {
-	c.SamlIdentityProvider = tfconfig.StringVariable(samlIdentityProvider)
 	return c
 }
 
@@ -1240,11 +1234,6 @@ func (c *CurrentOrganizationAccountModel) WithRowsPerResultsetValue(value tfconf
 
 func (c *CurrentOrganizationAccountModel) WithS3StageVpceDnsNameValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.S3StageVpceDnsName = value
-	return c
-}
-
-func (c *CurrentOrganizationAccountModel) WithSamlIdentityProviderValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
-	c.SamlIdentityProvider = value
 	return c
 }
 
