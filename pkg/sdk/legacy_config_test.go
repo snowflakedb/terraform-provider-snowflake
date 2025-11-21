@@ -111,6 +111,8 @@ func TestLoadConfigFileWithInvalidFieldTypeFailsLegacy(t *testing.T) {
 		{name: "WorkloadIdentityProvider", fieldName: "workloadidentityprovider", wantType: "*string"},
 		{name: "WorkloadIdentityEntraResource", fieldName: "workloadidentityentraresource", wantType: "*string"},
 		{name: "EnableSingleUseRefreshTokens", fieldName: "enablesingleuserefreshtokens", wantType: "*bool"},
+		{name: "LogQueryText", fieldName: "logquerytext", wantType: "*bool"},
+		{name: "LogQueryParameters", fieldName: "logqueryparameters", wantType: "*bool"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -270,7 +272,9 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithOauthScope("oauth_scope").
 			WithWorkloadIdentityProvider("workload_identity_provider").
 			WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
-			WithEnableSingleUseRefreshTokens(true),
+			WithEnableSingleUseRefreshTokens(true).
+			WithLogQueryText(true).
+			WithLogQueryParameters(true),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
@@ -338,6 +342,8 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 		assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 		assert.True(t, config.EnableSingleUseRefreshTokens)
+		assert.True(t, config.LogQueryText)
+		assert.True(t, config.LogQueryParameters)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -445,7 +451,9 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				WithOauthScope("oauth_scope").
 				WithWorkloadIdentityProvider("workload_identity_provider").
 				WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
-				WithEnableSingleUseRefreshTokens(true),
+				WithEnableSingleUseRefreshTokens(true).
+				WithLogQueryText(true).
+				WithLogQueryParameters(true),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -492,6 +500,8 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "workload_identity_provider", got.WorkloadIdentityProvider)
 				assert.Equal(t, "workload_identity_entra_resource", got.WorkloadIdentityEntraResource)
 				assert.True(t, got.EnableSingleUseRefreshTokens)
+				assert.True(t, got.LogQueryText)
+				assert.True(t, got.LogQueryParameters)
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
 				gotUnencryptedKey := pem.EncodeToMemory(

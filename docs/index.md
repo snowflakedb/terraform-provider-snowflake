@@ -124,6 +124,8 @@ provider "snowflake" {
 - `jwt_client_timeout` (Number) The timeout in seconds for the JWT client to complete the authentication. Can also be sourced from the `SNOWFLAKE_JWT_CLIENT_TIMEOUT` environment variable.
 - `jwt_expire_timeout` (Number) JWT expire after timeout in seconds. Can also be sourced from the `SNOWFLAKE_JWT_EXPIRE_TIMEOUT` environment variable.
 - `keep_session_alive` (Boolean) Enables the session to persist even after the connection is closed. Can also be sourced from the `SNOWFLAKE_KEEP_SESSION_ALIVE` environment variable.
+- `log_query_parameters` (Boolean) When set to true, the parameters will be logged. Requires logQueryText to be enabled first. Be aware that it may include sensitive information. Default value is false. Can also be sourced from the `SNOWFLAKE_LOG_QUERY_PARAMETERS` environment variable.
+- `log_query_text` (Boolean) When set to true, the full query text will be logged. Be aware that it may include sensitive information. Default value is false. Can also be sourced from the `SNOWFLAKE_LOG_QUERY_TEXT` environment variable.
 - `login_timeout` (Number) Login retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_LOGIN_TIMEOUT` environment variable.
 - `max_retry_count` (Number) Specifies how many times non-periodic HTTP request can be retried by the driver. Can also be sourced from the `SNOWFLAKE_MAX_RETRY_COUNT` environment variable.
 - `oauth_authorization_url` (String, Sensitive) Authorization URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_AUTHORIZATION_URL` environment variable.
@@ -423,6 +425,8 @@ oauth_scope = 'oauth_scope'
 workload_identity_provider = 'azure'
 workload_identity_entra_resource = 'workload_identity_entra_resource'
 enable_single_use_refresh_tokens = true
+log_query_text = false
+log_query_parameters = false
 
 [example.params]
 param_key = 'param_value'
@@ -471,6 +475,8 @@ oauthscope = 'oauth_scope'
 workloadidentityprovider = 'azure'
 workloadidentityentraresource = 'workload_identity_entra_resource'
 enablesingleuserefreshtokens = true
+logquerytext = false
+logqueryparameters = false
 
 [example.params]
 param_key = 'param_value'
@@ -519,6 +525,8 @@ provider "snowflake" {
 	workload_identity_provider = "azure"
 	workload_identity_entra_resource = "workload_identity_entra_resource"
 	enable_single_use_refresh_tokens = true
+	log_query_text = false
+	log_query_parameters = false
 
 	params = {
 		param_key = "param_value"
