@@ -96,7 +96,8 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 			HasRunningNotEmpty().
 			HasQueuedNotEmpty().
 			HasIsDefault(false).
-			HasAutoSuspend(600).
+			// TODO(SNOW-2852741): Different auto suspend default on different test environments
+			// HasAutoSuspend(600).
 			HasAutoResume(true).
 			HasAvailableNotEmpty().
 			HasProvisioningNotEmpty().
