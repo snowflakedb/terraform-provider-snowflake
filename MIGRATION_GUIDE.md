@@ -35,6 +35,21 @@ Previously, the provider's file reading functions did not clean paths. In this v
 
 No changes in configuration and state are required. The supported TOML location `~/.snowflake/config` stays the same and the behavior shouldn't be affected.
 
+### *(bugfix)* Task deprecated parameter handling
+
+Recently, Snowflake deprecated both [`AUTOCOMMIT`](https://docs.snowflake.com/en/sql-reference/parameters#autocommit) and [`SEARCH_PATH`](https://docs.snowflake.com/en/sql-reference/parameters#search-path) parameters for tasks.
+The `AUTOCOMMIT` parameter can be only set to `TRUE` (default value for this parameter), and `SEARCH_PATH` cannot be set at all. Both parameters can be unset.
+Now, when either `AUTOCOMMIT` or `SEARCH_PATH` is set in the configuration, the task resource will return warnings saying:
+
+```
+Deprecated parameter 'AUTOCOMMIT' cannot be set on a task
+Deprecated parameter 'SEARCH_PATH' cannot be set on a task
+```
+
+If you have any of these parameters set in your configuration,
+please remove them to avoid the Terraform warnings and potential errors from the Snowflake side.
+Other than this, no changes in the configuration are required.
+
 ### *(bugfix)* Improved validation of identifiers with arguments
 Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:
 ```
