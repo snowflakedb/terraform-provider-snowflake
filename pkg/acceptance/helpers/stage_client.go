@@ -114,23 +114,43 @@ func (c *StageClient) PutOnUserStageWithContent(t *testing.T, filename string, c
 	return path
 }
 
+func (c *StageClient) PutOnStageWithPath(t *testing.T, id sdk.SchemaObjectIdentifier, stageLocation string, filename string) string {
+	t.Helper()
+	ctx := context.Background()
+
+	filePath := filepath.Join("./testdata/", filename)
+	absPath, err := filepath.Abs(filePath)
+	require.NoError(t, err)
+
+	stagePath := filepath.Join(stageLocation, filename)
+
+	c.putInLocation(ctx, t, absPath, filePath, fmt.Sprintf("@%s/%s", id.FullyQualifiedName(), stagePath))
+
+	return stagePath
+}
+
 func (c *StageClient) PutInLocationWithContent(t *testing.T, stageLocation string, filename string, content string) string {
 	t.Helper()
 	ctx := context.Background()
 
 	filePath := testfiles.TestFile(t, filename, []byte(content))
 
-	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s %s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, stageLocation))
+	c.putInLocation(ctx, t, filePath, filename, stageLocation)
+
+	return filePath
+}
+
+func (c *StageClient) putInLocation(ctx context.Context, t *testing.T, filePath string, filename string, location string) {
+	t.Helper()
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`PUT file://%s %s AUTO_COMPRESS = FALSE OVERWRITE = TRUE`, filePath, location))
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf(`REMOVE %s/%s`, stageLocation, filename))
+		_, err = c.context.client.ExecForTests(ctx, fmt.Sprintf(`REMOVE %s/%s`, location, filename))
 		// Only check the error if it's not related to the stage / file existence or access
 		if !errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			require.NoError(t, err)
 		}
 	})
-
-	return filePath
 }
 
 func (c *StageClient) RemoveFromUserStage(t *testing.T, pathOnStage string) {

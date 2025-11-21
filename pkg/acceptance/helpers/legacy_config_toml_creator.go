@@ -45,7 +45,9 @@ func FullLegacyTomlConfigForServiceUser(t *testing.T, profile string, userId sdk
 			WithDisableQueryContextCache(true).
 			WithIncludeRetryReason(true).
 			WithDisableConsoleLogin(true).
-			WithParams(map[string]*string{"foo": sdk.Pointer("bar")}),
+			WithParams(map[string]*string{"foo": sdk.Pointer("bar")}).
+			WithLogQueryText(true).
+			WithLogQueryParameters(true),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)

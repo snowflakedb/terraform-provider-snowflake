@@ -54,7 +54,7 @@ func TestAcc_DatabaseRoles_BasicUseCase_DifferentFiltering(t *testing.T) {
 		WithDependsOn(databaseRoleModel1.ResourceReference(), databaseRoleModel2.ResourceReference(), databaseRoleModel3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

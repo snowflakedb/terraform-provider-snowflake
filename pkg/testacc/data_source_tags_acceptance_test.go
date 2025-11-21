@@ -31,11 +31,13 @@ func TestAcc_Tags_BasicUseCase_DifferentFiltering(t *testing.T) {
 	// like only (exact match)
 	datasourceModelLikeExact := datasourcemodel.Tags("test").
 		WithLike(tagId1.Name()).
+		WithInAccount().
 		WithDependsOn(tagModel1.ResourceReference(), tagModel2.ResourceReference(), tagModel3.ResourceReference())
 
 	// like only (prefix pattern)
 	datasourceModelLikePrefix := datasourcemodel.Tags("test").
 		WithLike(prefix+"%").
+		WithInAccount().
 		WithDependsOn(tagModel1.ResourceReference(), tagModel2.ResourceReference(), tagModel3.ResourceReference())
 
 	// in database only

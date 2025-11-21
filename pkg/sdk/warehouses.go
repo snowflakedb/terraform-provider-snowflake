@@ -643,6 +643,7 @@ type warehouseDBRow struct {
 	ScalingPolicy                   string         `db:"scaling_policy"`
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
 	ResourceConstraint              sql.NullString `db:"resource_constraint"`
+	Generation                      sql.NullString `db:"generation"`
 }
 
 func (row warehouseDBRow) convert() (*Warehouse, error) {
@@ -709,23 +710,29 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 	if row.ResourceMonitor != "null" {
 		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
 	}
+	if row.Generation.Valid {
+		generation, err := ToWarehouseGeneration(row.Generation.String)
+		if err != nil {
+			return nil, err
+		}
+		wh.Generation = &generation
+	}
 	if row.ResourceConstraint.Valid {
+		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+		if err != nil {
+			return nil, err
+		}
 		switch wh.Type {
 		case WarehouseTypeStandard:
-			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
-			if err != nil {
-				return nil, err
+			// Before BCR 2025_07, the generation column was not present, so we converted the resource constraint to generation.
+			if wh.Generation == nil {
+				generation, err := resourceConstraint.ToWarehouseGeneration()
+				if err != nil {
+					return nil, err
+				}
+				wh.Generation = &generation
 			}
-			generation, err := resourceConstraint.ToWarehouseGeneration()
-			if err != nil {
-				return nil, err
-			}
-			wh.Generation = &generation
 		case WarehouseTypeSnowparkOptimized:
-			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
-			if err != nil {
-				return nil, err
-			}
 			wh.ResourceConstraint = &resourceConstraint
 		default:
 			return nil, fmt.Errorf("invalid warehouse type: %s", wh.Type)

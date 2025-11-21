@@ -36,6 +36,7 @@ type CreateNotebookOptions struct {
 	ExternalAccessIntegrations  []AccountObjectIdentifier `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	RuntimeEnvironmentVersion   *string                   `ddl:"parameter,single_quotes" sql:"RUNTIME_ENVIRONMENT_VERSION"`
 	DefaultVersion              *string                   `ddl:"parameter,no_quotes" sql:"DEFAULT_VERSION"`
+	Secrets                     *SecretsList              `ddl:"parameter,parentheses" sql:"SECRETS"`
 }
 
 // AlterNotebookOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-notebook.
