@@ -626,6 +626,38 @@ func TestParseTaskSchedule(t *testing.T) {
 			Schedule:             "5 MINUTES",
 			ExpectedTaskSchedule: &TaskSchedule{Minutes: 5},
 		},
+		"valid schedule: s seconds": {
+			Schedule:             "30 s",
+			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
+		},
+		"valid schedule: S seconds": {
+			Schedule:             "30 S",
+			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
+		},
+		"valid schedule: SECOND seconds": {
+			Schedule:             "30 SECOND",
+			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
+		},
+		"valid schedule: SECONDS seconds": {
+			Schedule:             "30 SECONDS",
+			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
+		},
+		"valid schedule: h hours": {
+			Schedule:             "2 h",
+			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
+		},
+		"valid schedule: H hours": {
+			Schedule:             "2 H",
+			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
+		},
+		"valid schedule: HOUR hours": {
+			Schedule:             "2 HOUR",
+			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
+		},
+		"valid schedule: HOURS hours": {
+			Schedule:             "2 HOURS",
+			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
+		},
 		"valid schedule: cron": {
 			Schedule:             "USING CRON * * * * * UTC",
 			ExpectedTaskSchedule: &TaskSchedule{Cron: "* * * * * UTC"},
