@@ -51,3 +51,5 @@ Import is supported using the following syntax:
 
 {{ codefile "shell" (printf "examples/resources/%s/import.sh" .Name)}}
 {{- end }}
+
+Note: Because the external changes for `dimensions`, `facts`, `metrics`, `relationships`, and `tables` are not currently handled, then import won't populate these fields too.
