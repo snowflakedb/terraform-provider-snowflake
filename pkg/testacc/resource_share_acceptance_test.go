@@ -128,16 +128,6 @@ resource "snowflake_share" "test" {
 `, shareId.Name(), comment)
 }
 
-func shareConfigOneAccount(shareId sdk.AccountObjectIdentifier, comment string, account string) string {
-	return fmt.Sprintf(`
-resource "snowflake_share" "test" {
-	name           = "%s"
-	comment        = "%s"
-	accounts       = ["%s"]
-}
-`, shareId.Name(), comment, account)
-}
-
 func shareConfigTwoAccounts(shareId sdk.AccountObjectIdentifier, comment string, account string, account2 string) string {
 	return fmt.Sprintf(`
 resource "snowflake_share" "test" {

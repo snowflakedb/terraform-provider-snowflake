@@ -71,6 +71,8 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Empty(t, config.EnableSingleUseRefreshTokens)
 	assert.Empty(t, config.WorkloadIdentityProvider)
 	assert.Empty(t, config.WorkloadIdentityEntraResource)
+	assert.False(t, config.LogQueryText)
+	assert.False(t, config.LogQueryParameters)
 }
 
 func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
@@ -120,6 +122,8 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"enable_single_use_refresh_tokens": "true",
 		"workload_identity_provider":       "workload_identity_provider",
 		"workload_identity_entra_resource": "workload_identity_entra_resource",
+		"log_query_text":                   true,
+		"log_query_parameters":             true,
 	})
 
 	config, err := getDriverConfigFromTerraform(d)
@@ -171,4 +175,6 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.True(t, config.EnableSingleUseRefreshTokens)
 	assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 	assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
+	assert.True(t, config.LogQueryText)
+	assert.True(t, config.LogQueryParameters)
 }
