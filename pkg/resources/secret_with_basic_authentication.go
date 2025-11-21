@@ -44,7 +44,7 @@ func SecretWithBasicAuthentication() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SecretWithBasicAuthentication, customdiff.All(
 			ComputedIfAnyAttributeChanged(secretBasicAuthenticationSchema, ShowOutputAttributeName, "comment"),
-			ComputedIfAnyAttributeChanged(secretBasicAuthenticationSchema, DescribeOutputAttributeName, "username"),
+			ComputedIfAnyAttributeChanged(secretBasicAuthenticationSchema, DescribeOutputAttributeName, "username", "comment"),
 			RecreateWhenSecretTypeChangedExternally(sdk.SecretTypePassword),
 		)),
 
