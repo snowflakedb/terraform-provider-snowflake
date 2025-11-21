@@ -225,7 +225,8 @@ func TestInt_SemanticView(t *testing.T) {
 		// dimension related details
 		dimensionTable := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "TABLE", t1Alias)
 		dimensionExpression := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "EXPRESSION", dimensionExpressionRaw)
-		dimensionDataType := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
+		// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+		// dimensionDataType := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
 		dimensionSynonyms := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "SYNONYMS", `["D1"]`)
 		dimensionComment := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "COMMENT", "dimension comment")
 		dimensionAccessModifier := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
@@ -233,7 +234,8 @@ func TestInt_SemanticView(t *testing.T) {
 		// fact related details
 		factTable := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "TABLE", t1Alias)
 		factExpression := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "EXPRESSION", `"first_c"`)
-		factDataType := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
+		// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+		// factDataType := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
 		factSynonyms := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "SYNONYMS", `["F1"]`)
 		factComment := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "COMMENT", "fact comment")
 		factAccessModifier := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
@@ -269,13 +271,15 @@ func TestInt_SemanticView(t *testing.T) {
 			ContainsDetail(pk).
 			ContainsDetail(dimensionTable).
 			ContainsDetail(dimensionExpression).
-			ContainsDetail(dimensionDataType).
+			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+			// ContainsDetail(dimensionDataType).
 			ContainsDetail(dimensionSynonyms).
 			ContainsDetail(dimensionComment).
 			ContainsDetail(dimensionAccessModifier).
 			ContainsDetail(factTable).
 			ContainsDetail(factExpression).
-			ContainsDetail(factDataType).
+			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+			// ContainsDetail(factDataType).
 			ContainsDetail(factSynonyms).
 			ContainsDetail(factComment).
 			ContainsDetail(factAccessModifier).
