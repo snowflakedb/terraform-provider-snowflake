@@ -10,8 +10,10 @@ import (
 
 var _ Sequences = (*sequences)(nil)
 
-var _ convertibleRow[Sequence] = new(sequenceRow)
-var _ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
+var (
+	_ convertibleRow[Sequence]       = new(sequenceRow)
+	_ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
+)
 
 type sequences struct {
 	client *Client
@@ -110,8 +112,19 @@ func (r *ShowSequenceRequest) toOpts() *ShowSequenceOptions {
 }
 
 func (r sequenceRow) convert() (*Sequence, error) {
-	// TODO: Mapping
-	return &Sequence{}, nil
+	// edited manually
+	return &Sequence{
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		SchemaName:    r.SchemaName,
+		DatabaseName:  r.DatabaseName,
+		NextValue:     r.NextValue,
+		Interval:      r.Interval,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
+		Comment:       r.Comment,
+		Ordered:       r.Ordered == "Y",
+	}, nil
 }
 
 func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
@@ -122,8 +135,19 @@ func (r *DescribeSequenceRequest) toOpts() *DescribeSequenceOptions {
 }
 
 func (r sequenceDetailRow) convert() (*SequenceDetail, error) {
-	// TODO: Mapping
-	return &SequenceDetail{}, nil
+	// edited manually
+	return &SequenceDetail{
+		CreatedOn:     r.CreatedOn,
+		Name:          r.Name,
+		SchemaName:    r.SchemaName,
+		DatabaseName:  r.DatabaseName,
+		NextValue:     r.NextValue,
+		Interval:      r.Interval,
+		Owner:         r.Owner,
+		OwnerRoleType: r.OwnerRoleType,
+		Comment:       r.Comment,
+		Ordered:       r.Ordered == "Y",
+	}, nil
 }
 
 func (r *DropSequenceRequest) toOpts() *DropSequenceOptions {
