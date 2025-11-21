@@ -137,7 +137,7 @@ func TestInt_Tasks(t *testing.T) {
 
 	sessionParametersSet := sdk.SessionParameters{
 		AbortDetachedQuery:                       sdk.Bool(true),
-		Autocommit:                               sdk.Bool(false),
+		Autocommit:                               sdk.Bool(true),
 		BinaryInputFormat:                        sdk.Pointer(sdk.BinaryInputFormatUTF8),
 		BinaryOutputFormat:                       sdk.Pointer(sdk.BinaryOutputFormatBase64),
 		ClientMemoryLimit:                        sdk.Int(1024),
@@ -167,7 +167,6 @@ func TestInt_Tasks(t *testing.T) {
 		QuotedIdentifiersIgnoreCase:              sdk.Bool(true),
 		RowsPerResultset:                         sdk.Int(2),
 		S3StageVpceDnsName:                       sdk.String("vpce-id.s3.region.vpce.amazonaws.com"),
-		SearchPath:                               sdk.String("$public, $current"),
 		StatementQueuedTimeoutInSeconds:          sdk.Int(10),
 		StatementTimeoutInSeconds:                sdk.Int(10),
 		StrictJsonOutput:                         sdk.Bool(true),
@@ -194,7 +193,7 @@ func TestInt_Tasks(t *testing.T) {
 	assertSessionParametersSet := func(parametersAssert *objectparametersassert.TaskParametersAssert) *objectparametersassert.TaskParametersAssert {
 		return parametersAssert.
 			HasAbortDetachedQuery(true).
-			HasAutocommit(false).
+			HasAutocommit(true).
 			HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
 			HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 			HasClientMemoryLimit(1024).
@@ -224,7 +223,7 @@ func TestInt_Tasks(t *testing.T) {
 			HasQuotedIdentifiersIgnoreCase(true).
 			HasRowsPerResultset(2).
 			HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-			HasSearchPath("$public, $current").
+			HasSearchPath("$current, $public").
 			HasStatementQueuedTimeoutInSeconds(10).
 			HasStatementTimeoutInSeconds(10).
 			HasStrictJsonOutput(true).
