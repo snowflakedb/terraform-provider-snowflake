@@ -24,7 +24,34 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.10.1 ➞ v2.10.2
+## v2.10.x ➞ v2.11.0
+
+### Add support for semantic views in `snowflake_grant_ownership` resource
+Add a missing option in `snowflake_grant_ownership` to support semantic views (see [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership)).
+
+### *(improvement)* Upgraded gosnowflake driver to v1.18.0
+
+The provider now uses [gosnowflake driver v1.18.0](https://github.com/snowflakedb/gosnowflake).
+
+**Important note about query logging:** With this driver version, queries are not logged by default. If you need query-level debugging, ensure you configure appropriate logging settings.
+
+We added new provider configuration options to control query logging behavior:
+  - `log_query_text` - when set to `true`, query text will be logged
+  - `log_query_parameters` - when set to `true`, query parameters will be logged
+
+These options can be set in the provider configuration, TOML configuration file, or via environment variables. Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+
+Note that you still need to set the `INFO` level in `driver_tracing` field to see the query logs.
+
+**Note:** Enabling these options may log sensitive information. Use with caution and ensure appropriate security measures are in place.
+
+References: [#4092](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4092).
+
+### *(improvement)* Functions reading TOML configuration now clean path
+
+Previously, the provider's file reading functions did not clean paths. In this version, all functions handling files use Go's [filepath.Clean](https://pkg.go.dev/path/filepath#Clean) function for each file path.
+
+No changes in configuration and state are required. The supported TOML location `~/.snowflake/config` stays the same and the behavior shouldn't be affected.
 
 ### *(bugfix)* Improved validation of identifiers with arguments
 Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:
@@ -164,6 +191,12 @@ we added support for gen2 warehouses. In this change, we added new fields to `sh
 
 The 2025_07 bundle adds the `generation` column (read our [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#new-generation-column-in-output-in-show-warehouses)). Now, instead of dispatching the `resource_constraint` value, the provider simply passes the `generation` field from Snowflake to the `show_output`.
 If the bundle is disabled, then the `generation` column is not present in Snowflake, and the providers behaves in the old way.
+
+No changes in the configuration are necessary.
+
+### *(improvement)* Granting privileges on a database during share update
+
+When updating the `accounts` field in the `share` resource, the provider creates a temporary database from the share. Before, it granted only the `USAGE` grant. Now, it also grants `REFERENCE_USAGE` because of the changes in the [2025_07](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#disallow-grant-reference_usage-on-a-database-if-grant-usage-isnt-set-first) bundle.
 
 No changes in the configuration are necessary.
 

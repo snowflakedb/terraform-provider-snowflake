@@ -49,6 +49,8 @@ const (
 	UseLegacyTomlFile                  = "SNOWFLAKE_USE_LEGACY_TOML_FILE"
 	WorkloadIdentityProvider           = "SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER"
 	WorkloadIdentityEntraResource      = "SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE"
+	LogQueryText                       = "SNOWFLAKE_LOG_QUERY_TEXT"
+	LogQueryParameters                 = "SNOWFLAKE_LOG_QUERY_PARAMETERS"
 
 	OauthClientId                = "SNOWFLAKE_OAUTH_CLIENT_ID"
 	OauthClientSecret            = "SNOWFLAKE_OAUTH_CLIENT_SECRET" //nolint:gosec

@@ -28,6 +28,8 @@ type pluginFrameworkPocProviderModelV0 struct {
 	JwtClientTimeout                   types.Int64  `tfsdk:"jwt_client_timeout"`
 	JwtExpireTimeout                   types.Int64  `tfsdk:"jwt_expire_timeout"`
 	KeepSessionAlive                   types.Bool   `tfsdk:"keep_session_alive"`
+	LogQueryParameters                 types.Bool   `tfsdk:"log_query_parameters"`
+	LogQueryText                       types.Bool   `tfsdk:"log_query_text"`
 	LoginTimeout                       types.Int64  `tfsdk:"login_timeout"`
 	MaxRetryCount                      types.Int64  `tfsdk:"max_retry_count"`
 	OauthAuthorizationUrl              types.String `tfsdk:"oauth_authorization_url"`
@@ -159,6 +161,16 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	},
 	"keep_session_alive": schema.BoolAttribute{
 		Description: existingSchema["keep_session_alive"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"log_query_parameters": schema.BoolAttribute{
+		Description: existingSchema["log_query_parameters"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"log_query_text": schema.BoolAttribute{
+		Description: existingSchema["log_query_text"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
