@@ -26,10 +26,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.10.x ➞ v2.11.0
 
-### *(new feature)* snowflake_notebook resource
+### *(new feature)* snowflake_notebook
+
+#### Added resource
 Added a new preview resource for managing notebooks. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_notebook_resource` to `preview_features_enabled` field in the provider configuration.
+
+#### Added data source
+Added a new preview data source for notebooks. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-notebooks).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_notebooks_datasource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* Semantic views preview feature
 
