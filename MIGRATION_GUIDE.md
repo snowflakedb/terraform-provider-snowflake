@@ -24,6 +24,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.10.x ➞ v2.11.0
+
+### *(new feature)* Semantic views preview feature
+
+This version of the provider introduces support for the `SEMANTIC VIEWS`. Check the [official Snowflake documentation](https://docs.snowflake.com/en/user-guide/views-semantic/overview) to know more.
+
+You can enable resource and data source by adding `snowflake_semantic_view_resource` or `snowflake_semantic_views_datasource` to `preview_features_enabled` field in the provider configuration. You can read about the resource and data source current limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version.
+
 ## v2.10.1 ➞ v2.10.2
 
 ### *(improvement)* Functions reading TOML configuration now clean path

@@ -19,7 +19,6 @@ import (
 
 // TODO [this PR]: verify issues created for semantic views follow-up and group them
 // TODO [this PR]: check validation on metrics/dimensions
-// TODO [this PR]: add the migration guide
 // TODO [this PR]: verify details from describe in the resource test
 var semanticViewsSchema = map[string]*schema.Schema{
 	"name": {
