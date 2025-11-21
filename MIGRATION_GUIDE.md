@@ -24,7 +24,10 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.10.1 ➞ v2.10.2
+## v2.10.x ➞ v2.11.0
+
+### Add support for semantic views in `snowflake_grant_ownership` resource
+Add a missing option in `snowflake_grant_ownership` to support semantic views (see [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership)).
 
 ### *(improvement)* Functions reading TOML configuration now clean path
 
