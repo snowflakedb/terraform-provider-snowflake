@@ -26,8 +26,62 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.10.x ➞ v2.11.0
 
-### Add support for semantic views in `snowflake_grant_ownership` resource
+### *(new feature)* Semantic views preview feature
+
+This version of the provider introduces support for the `SEMANTIC VIEWS`. Check the [official Snowflake documentation](https://docs.snowflake.com/en/user-guide/views-semantic/overview) to know more.
+
+You can enable resource and data source by adding `snowflake_semantic_view_resource` or `snowflake_semantic_views_datasource` to `preview_features_enabled` field in the provider configuration. You can read about the resource and data source current limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version.
+
+#### Add support for semantic views in `snowflake_grant_ownership` resource
 Add a missing option in `snowflake_grant_ownership` to support semantic views (see [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership)).
+
+### *(improvement)* Upgraded gosnowflake driver to v1.18.0
+
+The provider now uses [gosnowflake driver v1.18.0](https://github.com/snowflakedb/gosnowflake).
+
+**Important note about query logging:** With this driver version, queries are not logged by default. If you need query-level debugging, ensure you configure appropriate logging settings.
+
+We added new provider configuration options to control query logging behavior:
+  - `log_query_text` - when set to `true`, query text will be logged
+  - `log_query_parameters` - when set to `true`, query parameters will be logged
+
+These options can be set in the provider configuration, TOML configuration file, or via environment variables. Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+
+Note that you still need to set the `INFO` level in `driver_tracing` field to see the query logs.
+
+**Note:** Enabling these options may log sensitive information. Use with caution and ensure appropriate security measures are in place.
+
+References: [#4092](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4092).
+
+### *(new feature)* Added missing `object_types` in grant resources
+
+Previously, the following resources did not support all object types that can be specified in `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources.
+With this change, we added support for the following missing object types:
+
+In the `snowflake_grant_privileges_to_account_role` resource, we enabled support for:
+- `CONNECTION` object type in the `on_account_object.object_type` field
+- `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
+ 
+In the `snowflake_grant_privileges_to_database_role` resource, we enabled support for:
+- `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
+
+### *(improvement)* `describe_output` will now recompute whenever `comment` field is changed in secret resources
+
+Previously, in the following resources:
+- `snowflake_secret_with_generic_string`
+- `snowflake_secret_with_basic_authentication`
+- `snowflake_secret_with_oauth_authorization_code`
+- `snowflake_secret_with_client_credentials`
+
+when the `comment` field was changed, the `describe_output` field was not recomputed, although it contains the `comment` field.
+Now, changing the `comment` field will trigger recomputing the `describe_output` field. It doesn't affect current resource behavior
+(in terms of applying or ignoring changes on the actual Snowflake object), but keeps the consistency with logic in other resources.
+
+No changes in configuration and state are required.
 
 ### *(improvement)* Functions reading TOML configuration now clean path
 
@@ -83,6 +137,43 @@ In a few releases, we will address other similar faulty object type cases in pri
 No changes in configuration are required.
 
 Community PR: [#4185](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4185)
+
+### *(new feature)* Task seconds and hours scheduling support
+
+Added support for scheduling tasks using seconds and hours intervals in addition to the existing minutes and cron support. The `snowflake_task` resource now supports:
+
+- `schedule.seconds` - Schedule tasks to run at intervals specified in seconds (e.g., every 30 seconds)
+- `schedule.hours` - Schedule tasks to run at intervals specified in hours (e.g., every 2 hours)
+
+These new scheduling options work alongside the existing `schedule.minutes` and `schedule.using_cron` options. Only one scheduling method can be specified at a time.
+
+**Example usage:**
+
+```terraform
+resource "snowflake_task" "example_seconds" {
+  database      = "my_database"
+  schema        = "my_schema"
+  name          = "my_task_seconds"
+  sql_statement = "SELECT 1"
+  started       = true
+
+  schedule {
+    seconds = 30  # Run every 30 seconds
+  }
+}
+
+resource "snowflake_task" "example_hours" {
+  database      = "my_database"
+  schema        = "my_schema"
+  name          = "my_task_hours"
+  sql_statement = "SELECT 1"
+  started       = true
+
+  schedule {
+    hours = 2  # Run every 2 hours
+  }
+}
+```
 
 ## v2.10.0 ➞ v2.10.1
 

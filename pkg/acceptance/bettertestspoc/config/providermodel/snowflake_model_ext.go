@@ -123,13 +123,24 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 		WithDriverTracing("warning").
 		WithTmpDirectoryPath("../../").
 		WithDisableConsoleLogin("true").
+		WithOauthClientId("oauth_client_id").
+		WithOauthClientSecret("oauth_client_secret").
+		WithOauthTokenRequestUrl("oauth_token_request_url").
+		WithOauthAuthorizationUrl("oauth_authorization_url").
+		WithOauthRedirectUri("oauth_redirect_uri").
+		WithOauthScope("oauth_scope").
 		WithParamsValue(
 			tfconfig.ObjectVariable(
 				map[string]tfconfig.Variable{
 					"foo": tfconfig.StringVariable("piyo"),
 				},
 			),
-		)
+		).
+		WithEnableSingleUseRefreshTokens(true).
+		WithWorkloadIdentityProvider("workload_identity_provider").
+		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
+		WithLogQueryText(true).
+		WithLogQueryParameters(true)
 }
 
 func PatConfig(h helpers.TmpServiceUserWithPat) *SnowflakeModel {

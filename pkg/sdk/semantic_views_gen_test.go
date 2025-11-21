@@ -2,7 +2,9 @@
 
 package sdk
 
+// imports adjusted manually
 import (
+	"fmt"
 	"testing"
 )
 
@@ -139,7 +141,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		dimensionExpression := "dimension_sql_expression"
 		dimensionName := "dimension_name"
 		metricExpression := "metric_sql_expression"
-		metricName := "metric_name"
+		metricName := `"table1"."metric_name"`
 		tablesObj := []LogicalTable{
 			{
 				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
@@ -211,7 +213,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		}
 		factsObj := []SemanticExpression{
 			{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: factName},
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, factName)},
 				sqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
 				synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
 				Comment:                 String("fact_comment"),
@@ -219,7 +221,7 @@ func TestSemanticViews_Create(t *testing.T) {
 		}
 		dimensionsObj := []SemanticExpression{
 			{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: dimensionName},
+				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, dimensionName)},
 				sqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
 				synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
 				Comment:                 String("dimension_comment"),
@@ -236,9 +238,9 @@ func TestSemanticViews_Create(t *testing.T) {
 			},
 			{
 				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
-					WindowFunction: "metric1",
-					as:             true,
-					Metric:         "SUM(table_1.metric_1)",
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: `"table1"."metric1"`},
+					as:                      true,
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: fmt.Sprintf(`SUM(%s)`, metricName)},
 					OverClause: &WindowFunctionOverClause{
 						PartitionBy: String("table_1.dimension_2, table_1.dimension_3"),
 						OrderBy:     String("table_1.dimension_2"),
@@ -257,8 +259,32 @@ func TestSemanticViews_Create(t *testing.T) {
 			semanticViewDimensions:    dimensionsObj,
 			semanticViewMetrics:       metricsObj,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES (%s AS %s PRIMARY KEY (pk1.1, pk1.2) UNIQUE (uk1.3) UNIQUE (uk1.4) WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', %s AS %s PRIMARY KEY (pk2.1, pk2.2) WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS (%s AS %s (pk1.1, pk1.2) REFERENCES %s (pk2.1, pk2.2)) FACTS (%s AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS (%s AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (%s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
-			id.FullyQualifiedName(), tableAlias1, logicalTableId1.FullyQualifiedName(), *logicalTableComment1, tableAlias2, logicalTableId2.FullyQualifiedName(), *logicalTableComment2, relationshipAlias1, tableAlias1, tableAlias2, factName, factExpression, *factsObj[0].Comment, dimensionName, dimensionExpression, *dimensionsObj[0].Comment, metricName, metricExpression, *metricsObj[0].semanticExpression.Comment, metricsObj[1].windowFunctionMetricDefinition.WindowFunction, metricsObj[1].windowFunctionMetricDefinition.Metric, *metricsObj[1].windowFunctionMetricDefinition.OverClause.PartitionBy, *metricsObj[1].windowFunctionMetricDefinition.OverClause.OrderBy, "comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES ("%s" AS %s PRIMARY KEY ("pk1.1", "pk1.2") UNIQUE ("uk1.3") UNIQUE ("uk1.4") WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', "%s" AS %s PRIMARY KEY ("pk2.1", "pk2.2") WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS ("%s" AS "%s" ("pk1.1", "pk1.2") REFERENCES "%s" ("pk2.1", "pk2.2")) FACTS ("%s" AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS ("%s" AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (%s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
+			id.FullyQualifiedName(),
+			tableAlias1,
+			logicalTableId1.FullyQualifiedName(),
+			*logicalTableComment1,
+			tableAlias2,
+			logicalTableId2.FullyQualifiedName(),
+			*logicalTableComment2,
+			relationshipAlias1,
+			tableAlias1,
+			tableAlias2,
+			factName,
+			factExpression,
+			*factsObj[0].Comment,
+			dimensionName,
+			dimensionExpression,
+			*dimensionsObj[0].Comment,
+			metricName,
+			metricExpression,
+			*metricsObj[0].semanticExpression.Comment,
+			metricsObj[1].windowFunctionMetricDefinition.qualifiedExpressionName.QualifiedExpressionName,
+			metricsObj[1].windowFunctionMetricDefinition.sqlExpression.SqlExpression,
+			*metricsObj[1].windowFunctionMetricDefinition.OverClause.PartitionBy,
+			*metricsObj[1].windowFunctionMetricDefinition.OverClause.OrderBy,
+			"comment",
+		)
 	})
 }
 
@@ -282,16 +308,16 @@ func TestSemanticViews_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment opts.RenameTo] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"))
 	})
 
-	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment] should be present - more present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment opts.RenameTo] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.SetComment = String("comment")
 		opts.UnsetComment = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"))
 	})
 
 	// variants added manually
@@ -305,6 +331,13 @@ func TestSemanticViews_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.UnsetComment = Bool(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s UNSET COMMENT", id.FullyQualifiedName())
+	})
+
+	t.Run("rename", func(t *testing.T) {
+		opts := defaultOpts()
+		newId := randomSchemaObjectIdentifier()
+		opts.RenameTo = &newId
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {

@@ -233,6 +233,8 @@ func (v *Task) IsStarted() bool {
 // added manually
 type TaskSchedule struct {
 	Minutes int
+	Seconds int
+	Hours   int
 	Cron    string
 }
 
@@ -245,9 +247,17 @@ func ParseTaskSchedule(schedule string) (*TaskSchedule, error) {
 		// That why the prefix trimming has to be done by slicing rather than using strings.TrimPrefix.
 		cron := schedule[len("USING CRON "):]
 		return &TaskSchedule{Cron: cron}, nil
-	case strings.HasSuffix(upperSchedule, "M") ||
-		strings.HasSuffix(upperSchedule, "MINUTE") ||
-		strings.HasSuffix(upperSchedule, "MINUTES"):
+	case strings.HasSuffix(upperSchedule, "SECONDS") ||
+		strings.HasSuffix(upperSchedule, "SECOND"):
+		secondsParts := strings.Split(upperSchedule, " ")
+		seconds, err := strconv.Atoi(secondsParts[0])
+		if err != nil {
+			return nil, err
+		}
+
+		return &TaskSchedule{Seconds: seconds}, nil
+	case strings.HasSuffix(upperSchedule, "MINUTES") ||
+		strings.HasSuffix(upperSchedule, "MINUTE"):
 		minuteParts := strings.Split(upperSchedule, " ")
 		minutes, err := strconv.Atoi(minuteParts[0])
 		if err != nil {
@@ -255,6 +265,39 @@ func ParseTaskSchedule(schedule string) (*TaskSchedule, error) {
 		}
 
 		return &TaskSchedule{Minutes: minutes}, nil
+	case strings.HasSuffix(upperSchedule, "HOURS") ||
+		strings.HasSuffix(upperSchedule, "HOUR"):
+		hoursParts := strings.Split(upperSchedule, " ")
+		hours, err := strconv.Atoi(hoursParts[0])
+		if err != nil {
+			return nil, err
+		}
+
+		return &TaskSchedule{Hours: hours}, nil
+	case strings.HasSuffix(upperSchedule, "S"):
+		secondsParts := strings.Split(upperSchedule, " ")
+		seconds, err := strconv.Atoi(secondsParts[0])
+		if err != nil {
+			return nil, err
+		}
+
+		return &TaskSchedule{Seconds: seconds}, nil
+	case strings.HasSuffix(upperSchedule, "M"):
+		minuteParts := strings.Split(upperSchedule, " ")
+		minutes, err := strconv.Atoi(minuteParts[0])
+		if err != nil {
+			return nil, err
+		}
+
+		return &TaskSchedule{Minutes: minutes}, nil
+	case strings.HasSuffix(upperSchedule, "H"):
+		hoursParts := strings.Split(upperSchedule, " ")
+		hours, err := strconv.Atoi(hoursParts[0])
+		if err != nil {
+			return nil, err
+		}
+
+		return &TaskSchedule{Hours: hours}, nil
 	default:
 		return nil, fmt.Errorf("invalid schedule format: %s", schedule)
 	}
