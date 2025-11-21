@@ -151,7 +151,8 @@ func Notebook() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Notebook, customdiff.All(
 			ComputedIfAnyAttributeChanged(notebookSchema, ShowOutputAttributeName, "name", "comment", "query_warehouse", "code_warehouse"),
-			ComputedIfAnyAttributeChanged(notebookSchema, DescribeOutputAttributeName, FullyQualifiedNameAttributeName, "name", "comment", "query_warehouse", "code_warehouse", "idle_auto_shutdown_time_seconds", "main_file"),
+			ComputedIfAnyAttributeChanged(notebookSchema, DescribeOutputAttributeName, "name", "comment", "query_warehouse", "code_warehouse", "idle_auto_shutdown_time_seconds", "main_file"),
+			ComputedIfAnyAttributeChanged(notebookSchema, FullyQualifiedNameAttributeName, "name"),
 		)),
 
 		Schema: notebookSchema,
