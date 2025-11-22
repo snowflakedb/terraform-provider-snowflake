@@ -77,6 +77,8 @@ type User struct {
 	HasRsaPublicKey       bool
 	Type                  string
 	HasMfa                bool
+	HasPAT                bool
+	HasWorkloadIdentity   bool
 }
 
 func (v *User) GetSecondaryRolesOption() SecondaryRolesOption {
@@ -124,6 +126,8 @@ type userDBRow struct {
 	HasRsaPublicKey       sql.NullBool   `db:"has_rsa_public_key"`
 	Type                  sql.NullString `db:"type"`
 	HasMfa                sql.NullBool   `db:"has_mfa"`
+	HasPAT                sql.NullBool   `db:"has_pat"`
+	HasWorkloadIdentity   sql.NullBool   `db:"has_workload_identity"`
 }
 
 func (row userDBRow) convert() (*User, error) {
@@ -207,6 +211,12 @@ func (row userDBRow) convert() (*User, error) {
 	if row.HasMfa.Valid {
 		user.HasMfa = row.HasMfa.Bool
 	}
+	if row.HasPAT.Valid {
+		user.HasPAT = row.HasPAT.Bool
+	}
+	if row.HasWorkloadIdentity.Valid {
+		user.HasWorkloadIdentity = row.HasWorkloadIdentity.Bool
+	}
 	return user, nil
 }
 
@@ -269,28 +279,37 @@ func (v *users) Create(ctx context.Context, id AccountObjectIdentifier, opts *Cr
 }
 
 type UserObjectProperties struct {
-	Password              *string                  `ddl:"parameter,single_quotes" sql:"PASSWORD"`
-	LoginName             *string                  `ddl:"parameter,single_quotes" sql:"LOGIN_NAME"`
-	DisplayName           *string                  `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
-	FirstName             *string                  `ddl:"parameter,single_quotes" sql:"FIRST_NAME"`
-	MiddleName            *string                  `ddl:"parameter,single_quotes" sql:"MIDDLE_NAME"`
-	LastName              *string                  `ddl:"parameter,single_quotes" sql:"LAST_NAME"`
-	Email                 *string                  `ddl:"parameter,single_quotes" sql:"EMAIL"`
-	MustChangePassword    *bool                    `ddl:"parameter,no_quotes" sql:"MUST_CHANGE_PASSWORD"`
-	Disable               *bool                    `ddl:"parameter,no_quotes" sql:"DISABLED"`
-	DaysToExpiry          *int                     `ddl:"parameter,no_quotes" sql:"DAYS_TO_EXPIRY"`
-	MinsToUnlock          *int                     `ddl:"parameter,no_quotes" sql:"MINS_TO_UNLOCK"`
-	DefaultWarehouse      *AccountObjectIdentifier `ddl:"identifier,equals" sql:"DEFAULT_WAREHOUSE"`
-	DefaultNamespace      *ObjectIdentifier        `ddl:"identifier,equals" sql:"DEFAULT_NAMESPACE"`
-	DefaultRole           *AccountObjectIdentifier `ddl:"identifier,equals" sql:"DEFAULT_ROLE"`
-	DefaultSecondaryRoles *SecondaryRoles          `ddl:"parameter,equals" sql:"DEFAULT_SECONDARY_ROLES"`
-	MinsToBypassMFA       *int                     `ddl:"parameter,no_quotes" sql:"MINS_TO_BYPASS_MFA"`
-	RSAPublicKey          *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY"`
-	RSAPublicKeyFp        *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_FP"`
-	RSAPublicKey2         *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2"`
-	RSAPublicKey2Fp       *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2_FP"`
-	Type                  *UserType                `ddl:"parameter,no_quotes" sql:"TYPE"`
-	Comment               *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Password              *string                                 `ddl:"parameter,single_quotes" sql:"PASSWORD"`
+	LoginName             *string                                 `ddl:"parameter,single_quotes" sql:"LOGIN_NAME"`
+	DisplayName           *string                                 `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
+	FirstName             *string                                 `ddl:"parameter,single_quotes" sql:"FIRST_NAME"`
+	MiddleName            *string                                 `ddl:"parameter,single_quotes" sql:"MIDDLE_NAME"`
+	LastName              *string                                 `ddl:"parameter,single_quotes" sql:"LAST_NAME"`
+	Email                 *string                                 `ddl:"parameter,single_quotes" sql:"EMAIL"`
+	MustChangePassword    *bool                                   `ddl:"parameter,no_quotes" sql:"MUST_CHANGE_PASSWORD"`
+	Disable               *bool                                   `ddl:"parameter,no_quotes" sql:"DISABLED"`
+	DaysToExpiry          *int                                    `ddl:"parameter,no_quotes" sql:"DAYS_TO_EXPIRY"`
+	MinsToUnlock          *int                                    `ddl:"parameter,no_quotes" sql:"MINS_TO_UNLOCK"`
+	DefaultWarehouse      *AccountObjectIdentifier                `ddl:"identifier,equals" sql:"DEFAULT_WAREHOUSE"`
+	DefaultNamespace      *ObjectIdentifier                       `ddl:"identifier,equals" sql:"DEFAULT_NAMESPACE"`
+	DefaultRole           *AccountObjectIdentifier                `ddl:"identifier,equals" sql:"DEFAULT_ROLE"`
+	DefaultSecondaryRoles *SecondaryRoles                         `ddl:"parameter,equals" sql:"DEFAULT_SECONDARY_ROLES"`
+	MinsToBypassMFA       *int                                    `ddl:"parameter,no_quotes" sql:"MINS_TO_BYPASS_MFA"`
+	RSAPublicKey          *string                                 `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY"`
+	RSAPublicKeyFp        *string                                 `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_FP"`
+	RSAPublicKey2         *string                                 `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2"`
+	RSAPublicKey2Fp       *string                                 `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2_FP"`
+	Type                  *UserType                               `ddl:"parameter,no_quotes" sql:"TYPE"`
+	WorkloadIdentity      *[]UserObjectWorkloadIdentityProperties `ddl:"parameter,list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY"`
+	Comment               *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type UserObjectWorkloadIdentityProperties struct {
+	Type             *string                 `ddl:"parameter,no_quotes" sql:"TYPE"`
+	Arn              *string                 `ddl:"parameter,single_quotes" sql:"ARN"`
+	Issuer           *string                 `ddl:"parameter,single_quotes" sql:"ISSUER"`
+	Subject          *string                 `ddl:"parameter,single_quotes" sql:"Subject"`
+	OidcAudienceList []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OIDC_AUDIENCE_LIST"`
 }
 
 type UserAlterObjectProperties struct {
@@ -327,6 +346,7 @@ type UserObjectPropertiesUnset struct {
 	RSAPublicKey          *bool `ddl:"keyword" sql:"RSA_PUBLIC_KEY"`
 	RSAPublicKey2         *bool `ddl:"keyword" sql:"RSA_PUBLIC_KEY_2"`
 	Type                  *bool `ddl:"keyword" sql:"TYPE"`
+	WorkloadIdentity      *bool `ddl:"keyword" sql:"WORKLOAD_IDENTITY"`
 	Comment               *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
@@ -563,6 +583,7 @@ type UserDetails struct {
 	CustomLandingPageUrl                *StringProperty
 	CustomLandingPageUrlFlushNextUiLoad *BoolProperty
 	HasMfa                              *BoolProperty
+	HasWorkloadIdentity                 *BoolProperty
 }
 
 func userDetailsFromRows(rows []propertyRow) *UserDetails {
@@ -637,6 +658,8 @@ func userDetailsFromRows(rows []propertyRow) *UserDetails {
 			v.CustomLandingPageUrl = row.toStringProperty()
 		case "CUSTOM_LANDING_PAGE_URL_FLUSH_NEXT_UI_LOAD":
 			v.CustomLandingPageUrlFlushNextUiLoad = row.toBoolProperty()
+		case "HAS_WORKLOAD_IDENTITY":
+			v.HasWorkloadIdentity = row.toBoolProperty()
 		}
 	}
 	return v
