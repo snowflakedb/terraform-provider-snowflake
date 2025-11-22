@@ -1,6 +1,7 @@
 package genhelpers
 
 type SdkObjectDetails struct {
-	IdType string
+	IdType             string
+	IsDataSourceOutput bool
 	StructDetails
 }

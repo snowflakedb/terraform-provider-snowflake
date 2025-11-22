@@ -72,6 +72,11 @@ func (c *ListingClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk
 	return c.client().ShowByID(context.Background(), id)
 }
 
+func (c *ListingClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ListingDetails, error) {
+	t.Helper()
+	return c.client().Describe(context.Background(), sdk.NewDescribeListingRequest(id))
+}
+
 func (c *ListingClient) ShowVersions(t *testing.T, id sdk.AccountObjectIdentifier) ([]sdk.ListingVersion, error) {
 	t.Helper()
 	return c.client().ShowVersions(context.Background(), sdk.NewShowVersionsListingRequest(id))

@@ -3,6 +3,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
@@ -30,5 +32,8 @@ func main() {
 }
 
 func getFilename(_ genhelpers.SdkObjectDetails, model gen.SnowflakeObjectAssertionsModel) string {
+	if model.IsDataSourceOutput {
+		return strings.TrimSuffix(genhelpers.ToSnakeCase(model.Name), "_details") + "_desc_snowflake" + "_gen.go"
+	}
 	return genhelpers.ToSnakeCase(model.Name) + "_snowflake" + "_gen.go"
 }
