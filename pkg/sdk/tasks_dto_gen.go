@@ -31,6 +31,9 @@ type CreateTaskRequest struct {
 	TaskAutoRetryAttempts                   *int
 	Tag                                     []TagAssociation
 	UserTaskMinimumTriggerIntervalInSeconds *int
+	TargetCompletionInterval                *string
+	ServerlessTaskMinStatementSize          *WarehouseSize
+	ServerlessTaskMaxStatementSize          *WarehouseSize
 	After                                   []SchemaObjectIdentifier
 	When                                    *string
 	sql                                     string // required
@@ -114,6 +117,7 @@ type TaskSetRequest struct {
 	SessionParameters                       *SessionParameters
 	TaskAutoRetryAttempts                   *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
+	TargetCompletionInterval                *string
 }
 
 type TaskUnsetRequest struct {
@@ -128,6 +132,7 @@ type TaskUnsetRequest struct {
 	Comment                                 *bool
 	TaskAutoRetryAttempts                   *bool
 	UserTaskMinimumTriggerIntervalInSeconds *bool
+	TargetCompletionInterval                *bool
 	SessionParametersUnset                  *SessionParametersUnset
 }
 

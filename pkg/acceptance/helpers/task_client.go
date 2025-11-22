@@ -27,7 +27,8 @@ func (c *TaskClient) client() sdk.Tasks {
 func (c *TaskClient) defaultCreateTaskRequest(t *testing.T) *sdk.CreateTaskRequest {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifier()
-	warehouseReq := sdk.NewCreateTaskWarehouseRequest().WithWarehouse(c.ids.WarehouseId())
+	warehouseId := c.ids.WarehouseId()
+	warehouseReq := sdk.NewCreateTaskWarehouseRequest().WithWarehouse(warehouseId)
 	return sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").WithWarehouse(*warehouseReq)
 }
 
