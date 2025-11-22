@@ -45,6 +45,7 @@ func ApiAuthenticationIntegrationWithAuthorizationCodeGrant() *schema.Resource {
 			ForceNewIfChangeToEmptyString("oauth_token_endpoint"),
 			ForceNewIfChangeToEmptyString("oauth_authorization_endpoint"),
 			ForceNewIfChangeToEmptyString("oauth_client_auth_method"),
+			ForceNewIfChangeToEmptySet("oauth_allowed_scopes"),
 			ComputedIfAnyAttributeChanged(apiAuthAuthorizationCodeGrantSchema, ShowOutputAttributeName, "enabled", "comment"),
 			ComputedIfAnyAttributeChanged(apiAuthAuthorizationCodeGrantSchema, DescribeOutputAttributeName, "enabled", "comment", "oauth_access_token_validity", "oauth_refresh_token_validity",
 				"oauth_client_auth_method", "oauth_authorization_endpoint", "oauth_token_endpoint", "oauth_allowed_scopes"),

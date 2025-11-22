@@ -68,3 +68,9 @@ func (c *ApiIntegrationClient) DropApiIntegrationFunc(t *testing.T, id sdk.Accou
 		require.NoError(t, err)
 	}
 }
+
+func (c *ApiIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegration, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByIDSafely(ctx, id)
+}

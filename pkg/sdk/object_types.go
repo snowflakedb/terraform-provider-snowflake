@@ -98,6 +98,9 @@ const (
 	// ObjectTypeSecurityIntegration is a pseudo-object, only used in object and invoke action assertions.
 	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
 	ObjectTypeSecurityIntegration ObjectType = "SECURITY INTEGRATION"
+	// ObjectTypeApiIntegration is a pseudo-object, only used in object and invoke action assertions.
+	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
+	ObjectTypeApiIntegration ObjectType = "API INTEGRATION"
 )
 
 func (o ObjectType) String() string {
