@@ -1,45 +1,14 @@
-package sdk
+package defs
 
 import (
-	"fmt"
-	"slices"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-type ListingRevision string
-
-const (
-	ListingRevisionDraft     ListingRevision = "DRAFT"
-	ListingRevisionPublished ListingRevision = "PUBLISHED"
-)
-
-type ListingState string
-
-const (
-	ListingStateDraft       ListingState = "DRAFT"
-	ListingStatePublished   ListingState = "PUBLISHED"
-	ListingStateUnpublished ListingState = "UNPUBLISHED"
-)
-
-var AllListingStates = []ListingState{
-	ListingStateDraft,
-	ListingStatePublished,
-	ListingStateUnpublished,
-}
-
-func ToListingState(s string) (ListingState, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(AllListingStates, ListingState(s)) {
-		return "", fmt.Errorf("invalid listing state: %s", s)
-	}
-	return ListingState(s), nil
-}
 
 var listingWithDef = g.NewQueryStruct("ListingWith").
-	OptionalIdentifier("Share", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("SHARE")).
-	OptionalIdentifier("ApplicationPackage", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION PACKAGE")).
+	OptionalIdentifier("Share", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("SHARE")).
+	OptionalIdentifier("ApplicationPackage", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION PACKAGE")).
 	WithValidation(g.ExactlyOneValueSet, "Share", "ApplicationPackage")
 
 // There are more fields listed than in https://docs.snowflake.com/en/sql-reference/sql/show-listings.
@@ -81,7 +50,7 @@ var listing = g.PlainStruct("Listing").
 	Text("CreatedOn").
 	Text("UpdatedOn").
 	OptionalText("PublishedOn").
-	Field("State", g.KindOfT[ListingState]()).
+	Field("State", g.KindOfT[sdkcommons.ListingState]()).
 	OptionalText("ReviewState").
 	OptionalText("Comment").
 	Text("Owner").
@@ -175,9 +144,9 @@ var listingDetails = g.PlainStruct("ListingDetails").
 	OptionalText("Subtitle").
 	OptionalText("Description").
 	OptionalText("ListingTerms").
-	Field("State", g.KindOfT[ListingState]()).
-	Field("Share", g.KindOfTPointer[AccountObjectIdentifier]()).
-	Field("ApplicationPackage", g.KindOfTPointer[AccountObjectIdentifier]()).
+	Field("State", g.KindOfT[sdkcommons.ListingState]()).
+	Field("Share", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier]()).
+	Field("ApplicationPackage", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier]()).
 	OptionalText("BusinessNeeds").
 	OptionalText("UsageExamples").
 	OptionalText("DataAttributes").
@@ -253,7 +222,7 @@ var listingVersion = g.PlainStruct("ListingVersion").
 var ListingsDef = g.NewInterface(
 	"Listings",
 	"Listing",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-listing",
@@ -264,7 +233,7 @@ var ListingsDef = g.NewInterface(
 			Name().
 			OptionalQueryStructField("With", listingWithDef, g.KeywordOptions()).
 			OptionalTextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes()).
-			PredefinedQueryStructField("From", g.KindOfTPointer[Location](), g.ParameterOptions().NoQuotes().NoEquals().SQL("FROM")).
+			PredefinedQueryStructField("From", g.KindOfTPointer[sdkcommons.Location](), g.ParameterOptions().NoQuotes().NoEquals().SQL("FROM")).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
 			OptionalComment().
@@ -299,7 +268,7 @@ var ListingsDef = g.NewInterface(
 					OptionalComment(),
 				g.KeywordOptions().SQL("ADD VERSION"),
 			).
-			OptionalIdentifier("RenameTo", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("ListingSet").
@@ -347,7 +316,7 @@ var ListingsDef = g.NewInterface(
 			Describe().
 			SQL("LISTING").
 			Name().
-			OptionalAssignment("REVISION", g.KindOfT[ListingRevision](), g.ParameterOptions().NoQuotes()).
+			OptionalAssignment("REVISION", g.KindOfT[sdkcommons.ListingRevision](), g.ParameterOptions().NoQuotes()).
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	CustomShowOperation(

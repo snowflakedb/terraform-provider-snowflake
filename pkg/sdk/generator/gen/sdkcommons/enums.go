@@ -10,6 +10,9 @@ type (
 	DataMetricFunctionRefEntityDomainOption  string
 	DataType                                 string
 	EnforceMfaOnExternalAuthenticationOption string
+	ListingState                             string
+	ListingRevision                          string
+	Location                                 string
 	LogLevel                                 string
 	MetricLevel                              string
 	MfaAuthenticationMethodsOption           string
