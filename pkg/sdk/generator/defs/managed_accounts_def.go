@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var managedAccountDbRow = g.DbStruct("managedAccountDBRow").
 	OptionalText("account_name").
@@ -27,7 +31,7 @@ var managedAccount = g.PlainStruct("ManagedAccount").
 var ManagedAccountsDef = g.NewInterface(
 	"ManagedAccounts",
 	"ManagedAccount",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-managed-account",

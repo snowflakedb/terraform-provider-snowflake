@@ -25,6 +25,7 @@ func init() {
 		GitRepositoriesDef,
 		ImageRepositoriesDef,
 		ListingsDef,
+		ManagedAccountsDef,
 		NotebooksDef,
 		ProceduresDef,
 		SemanticViewsDef,
