@@ -1,13 +1,15 @@
-package sdk
+package defs
 
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var ConnectionDef = g.NewInterface(
+var ConnectionsDef = g.NewInterface(
 	"Connections",
 	"Connection",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-connection",
 	g.NewQueryStruct("CreateConnection").
@@ -17,7 +19,7 @@ var ConnectionDef = g.NewInterface(
 		Name().
 		OptionalIdentifier(
 			"AsReplicaOf",
-			g.KindOfT[ExternalObjectIdentifier](),
+			g.KindOfT[sdkcommons.ExternalObjectIdentifier](),
 			g.IdentifierOptions().SQL("AS REPLICA OF")).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").

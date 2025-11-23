@@ -16,6 +16,7 @@ func init() {
 		ApplicationsDef,
 		AuthenticationPoliciesDef,
 		ComputePoolsDef,
+		ConnectionsDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)

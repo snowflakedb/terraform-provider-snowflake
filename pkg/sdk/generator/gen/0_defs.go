@@ -119,7 +119,6 @@ func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
 
 // TODO [next PRs]: move these definitions
 // var allSdkObjectDefinitions = []*generator.Interface{
-//	sdk.ConnectionDef,
 //	sdk.CortexSearchServiceDef,
 //	sdk.DataMetricFunctionReferenceDef,
 //	sdk.EventTablesDef,
