@@ -1,37 +1,15 @@
-package sdk
+package defs
 
 import (
-	"fmt"
-	"slices"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-type OrganizationAccountEdition string
-
-var (
-	OrganizationAccountEditionEnterprise       OrganizationAccountEdition = "ENTERPRISE"
-	OrganizationAccountEditionBusinessCritical OrganizationAccountEdition = "BUSINESS_CRITICAL"
-)
-
-var AllOrganizationAccountEditions = []OrganizationAccountEdition{
-	OrganizationAccountEditionEnterprise,
-	OrganizationAccountEditionBusinessCritical,
-}
-
-func ToOrganizationAccountEdition(s string) (OrganizationAccountEdition, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(AllOrganizationAccountEditions, OrganizationAccountEdition(s)) {
-		return "", fmt.Errorf("invalid organization account edition: %s", s)
-	}
-	return OrganizationAccountEdition(s), nil
-}
 
 var OrganizationAccountsDef = g.NewInterface(
 	"OrganizationAccounts",
 	"OrganizationAccount",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-organization-account",
@@ -46,7 +24,7 @@ var OrganizationAccountsDef = g.NewInterface(
 			OptionalTextAssignment("LAST_NAME", g.ParameterOptions().SingleQuotes()).
 			TextAssignment("EMAIL", g.ParameterOptions().Required().SingleQuotes()).
 			OptionalBooleanAssignment("MUST_CHANGE_PASSWORD", g.ParameterOptions()).
-			Assignment("EDITION", g.KindOfT[OrganizationAccountEdition](), g.ParameterOptions().Required().NoQuotes()).
+			Assignment("EDITION", g.KindOfT[sdkcommons.OrganizationAccountEdition](), g.ParameterOptions().Required().NoQuotes()).
 			OptionalTextAssignment("REGION_GROUP", g.ParameterOptions().DoubleQuotes()).
 			OptionalTextAssignment("REGION", g.ParameterOptions().DoubleQuotes()).
 			OptionalComment().
@@ -58,15 +36,15 @@ var OrganizationAccountsDef = g.NewInterface(
 		g.NewQueryStruct("AlterOrganizationAccount").
 			Alter().
 			SQL("ORGANIZATION ACCOUNT").
-			OptionalIdentifier("Name", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions()).
+			OptionalIdentifier("Name", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("OrganizationAccountSet").
 					// Currently, Organization Accounts use the same set of parameters as regular accounts
-					PredefinedQueryStructField("Parameters", g.KindOfTPointer[AccountParameters](), g.ListOptions().NoParentheses()).
-					OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
-					OptionalIdentifier("PasswordPolicy", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
-					OptionalIdentifier("SessionPolicy", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
+					PredefinedQueryStructField("Parameters", g.KindOfTPointer[sdkcommons.AccountParameters](), g.ListOptions().NoParentheses()).
+					OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
+					OptionalIdentifier("PasswordPolicy", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
+					OptionalIdentifier("SessionPolicy", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
 					OptionalComment().
 					WithValidation(g.ExactlyOneValueSet, "Parameters", "ResourceMonitor", "PasswordPolicy", "SessionPolicy", "Comment"),
 				g.KeywordOptions().SQL("SET"),
@@ -74,7 +52,7 @@ var OrganizationAccountsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("OrganizationAccountUnset").
-					PredefinedQueryStructField("Parameters", g.KindOfTPointer[AccountParametersUnset](), g.ListOptions().NoParentheses()).
+					PredefinedQueryStructField("Parameters", g.KindOfTPointer[sdkcommons.AccountParametersUnset](), g.ListOptions().NoParentheses()).
 					OptionalSQL("RESOURCE_MONITOR").
 					OptionalSQL("PASSWORD POLICY").
 					OptionalSQL("SESSION POLICY").
@@ -87,7 +65,7 @@ var OrganizationAccountsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"RenameTo",
 				g.NewQueryStruct("OrganizationAccountRename").
-					Identifier("NewName", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().Required().SQL("RENAME TO")).
+					Identifier("NewName", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required().SQL("RENAME TO")).
 					OptionalBooleanAssignment("SAVE_OLD_URL", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).
@@ -128,7 +106,7 @@ var OrganizationAccountsDef = g.NewInterface(
 			Text("OrganizationName").
 			Text("AccountName").
 			Text("SnowflakeRegion").
-			Field("Edition", g.KindOfT[OrganizationAccountEdition]()).
+			Field("Edition", g.KindOfT[sdkcommons.OrganizationAccountEdition]()).
 			Text("AccountUrl").
 			Text("CreatedOn").
 			OptionalText("Comment").

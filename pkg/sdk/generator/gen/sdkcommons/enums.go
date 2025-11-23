@@ -22,6 +22,7 @@ type (
 	NetworkRuleMode                          string
 	NetworkRuleType                          string
 	NullInputBehavior                        string
+	OrganizationAccountEdition               string
 	ReturnNullValues                         string
 	ReturnResultsBehavior                    string
 	TraceLevel                               string
