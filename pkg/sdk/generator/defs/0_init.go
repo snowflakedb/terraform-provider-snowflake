@@ -15,6 +15,7 @@ func init() {
 		ApplicationRolesDef,
 		ApplicationsDef,
 		AuthenticationPoliciesDef,
+		ComputePoolsDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)
