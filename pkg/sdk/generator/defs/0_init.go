@@ -33,6 +33,7 @@ func init() {
 		NotificationIntegrationsDef,
 		OrganizationAccountsDef,
 		ProceduresDef,
+		RowAccessPoliciesDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)

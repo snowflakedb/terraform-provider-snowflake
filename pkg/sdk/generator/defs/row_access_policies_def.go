@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var rowAccessPolicyDbRow = g.DbStruct("rowAccessPolicyDBRow").
 	Text("created_on").
@@ -27,7 +31,7 @@ var rowAccessPolicy = g.PlainStruct("RowAccessPolicy").
 var RowAccessPoliciesDef = g.NewInterface(
 	"RowAccessPolicies",
 	"RowAccessPolicy",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-row-access-policy",
@@ -59,7 +63,7 @@ var RowAccessPoliciesDef = g.NewInterface(
 			Alter().
 			SQL("ROW ACCESS POLICY").
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalSetBodyWithPrecedingArrow().
 			OptionalSetTags().
 			OptionalUnsetTags().
