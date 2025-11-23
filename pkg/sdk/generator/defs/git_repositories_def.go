@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var gitRepositoryDbRow = g.DbStruct("gitRepositoriesRow").
 	Time("created_on").
@@ -31,7 +35,7 @@ var gitRepository = g.PlainStruct("GitRepository").
 var GitRepositoriesDef = g.NewInterface(
 	"GitRepositories",
 	"GitRepository",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-git-repository",
 	g.NewQueryStruct("CreateGitRepository").
@@ -41,8 +45,8 @@ var GitRepositoriesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		TextAssignment("ORIGIN", g.ParameterOptions().SingleQuotes()).
-		Identifier("ApiIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION").Equals().Required()).
-		OptionalIdentifier("GitCredentials", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("GIT_CREDENTIALS").Equals()).
+		Identifier("ApiIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION").Equals().Required()).
+		OptionalIdentifier("GitCredentials", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("GIT_CREDENTIALS").Equals()).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
@@ -59,8 +63,8 @@ var GitRepositoriesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("GitRepositorySet").
-				OptionalIdentifier("ApiIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION").Equals()).
-				OptionalIdentifier("GitCredentials", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("GIT_CREDENTIALS").Equals()).
+				OptionalIdentifier("ApiIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION").Equals()).
+				OptionalIdentifier("GitCredentials", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("GIT_CREDENTIALS").Equals()).
 				OptionalComment().
 				WithValidation(g.ValidIdentifierIfSet, "ApiIntegration").
 				WithValidation(g.ValidIdentifierIfSet, "GitCredentials"),
