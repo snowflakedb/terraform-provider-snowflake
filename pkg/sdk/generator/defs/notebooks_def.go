@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var notebookDbRow = g.DbStruct("notebookRow").
 	Time("created_on").
@@ -91,7 +95,7 @@ var notebookDetails = g.PlainStruct("NotebookDetails").
 var NotebooksDef = g.NewInterface(
 	"Notebooks",
 	"Notebook",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-notebook",
 	g.NewQueryStruct("CreateNotebook").
@@ -104,12 +108,12 @@ var NotebooksDef = g.NewInterface(
 		OptionalTextAssignment("TITLE", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
 		OptionalComment().
-		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
+		OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
 		OptionalNumberAssignment("IDLE_AUTO_SHUTDOWN_TIME_SECONDS", g.ParameterOptions().NoQuotes()).
-		OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("WAREHOUSE").Equals()).
+		OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("WAREHOUSE").Equals()).
 		OptionalTextAssignment("RUNTIME_NAME", g.ParameterOptions().SingleQuotes()).
-		OptionalIdentifier("ComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("COMPUTE_POOL").Equals()).
-		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
+		OptionalIdentifier("ComputePool", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("COMPUTE_POOL").Equals()).
+		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("RUNTIME_ENVIRONMENT_VERSION", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("DEFAULT_VERSION", g.ParameterOptions().NoQuotes()).
 		WithValidation(g.ValidIdentifier, "name").
@@ -124,19 +128,19 @@ var NotebooksDef = g.NewInterface(
 		SQL("NOTEBOOK").
 		IfExists().
 		Name().
-		Identifier("RenameTo", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("NotebookSet").
 				OptionalComment().
-				OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
+				OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("QUERY_WAREHOUSE").Equals()).
 				OptionalNumberAssignment("IDLE_AUTO_SHUTDOWN_TIME_SECONDS", g.ParameterOptions().NoQuotes()).
 				OptionalQueryStructField("Secrets", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 				OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
-				OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("WAREHOUSE").Equals()).
+				OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("WAREHOUSE").Equals()).
 				OptionalTextAssignment("RUNTIME_NAME", g.ParameterOptions().SingleQuotes()).
-				OptionalIdentifier("ComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("COMPUTE_POOL").Equals()).
-				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
+				OptionalIdentifier("ComputePool", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("COMPUTE_POOL").Equals()).
+				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
 				OptionalTextAssignment("RUNTIME_ENVIRONMENT_VERSION", g.ParameterOptions().SingleQuotes()).
 				WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 				WithValidation(g.ValidIdentifierIfSet, "Warehouse").

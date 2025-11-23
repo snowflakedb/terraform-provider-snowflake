@@ -127,7 +127,6 @@ func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
 //	sdk.MaterializedViewsDef,
 //	sdk.NetworkPoliciesDef,
 //	sdk.NetworkRuleDef,
-//	sdk.NotebooksDef,
 //	sdk.NotificationIntegrationsDef,
 //	sdk.OrganizationAccountsDef,
 //	sdk.RowAccessPoliciesDef,
