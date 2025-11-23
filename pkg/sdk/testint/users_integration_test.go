@@ -352,8 +352,13 @@ func TestInt_Users(t *testing.T) {
 			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
-			Comment:               sdk.String("some comment"),
-			Type:                  sdk.Pointer(sdk.UserTypeService),
+			WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
+				Type:    sdk.String("OIDC"),
+				Issuer:  sdk.String("https://accounts.google.com"),
+				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+			}},
+			Comment: sdk.String("some comment"),
+			Type:    sdk.Pointer(sdk.UserTypeService),
 		}}
 
 		err := client.Users.Create(ctx, id, createOpts)
@@ -414,77 +419,6 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(false).
-			HasHasWorkloadIdentity(false).
-			HasHasRsaPublicKey(true),
-		)
-	})
-
-	t.Run("create: all object properties - type service; WIF auth", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		currentRole := testClientHelper().Context.CurrentRole(t)
-
-		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			LoginName:             sdk.String(newValue),
-			DisplayName:           sdk.String(newValue),
-			Email:                 sdk.String(email),
-			Disable:               sdk.Bool(true),
-			DaysToExpiry:          sdk.Int(5),
-			MinsToUnlock:          sdk.Int(15),
-			DefaultWarehouse:      sdk.Pointer(warehouseId),
-			DefaultNamespace:      sdk.Pointer(schemaIdObjectIdentifier),
-			DefaultRole:           sdk.Pointer(roleId),
-			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
-			RSAPublicKey:          sdk.String(key),
-			RSAPublicKey2:         sdk.String(key2),
-			Comment:               sdk.String("some comment"),
-			Type:                  sdk.Pointer(sdk.UserTypeService),
-			WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
-				Type:    sdk.String("OIDC"),
-				Issuer:  sdk.String("https://accounts.google.com"),
-				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
-			}},
-		}}
-
-		err := client.Users.Create(ctx, id, createOpts)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
-
-		userDetails, err := client.Users.Describe(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, id.Name(), userDetails.Name.Value)
-		assert.Equal(t, strings.ToUpper(newValue), userDetails.LoginName.Value)
-
-		user, err := client.Users.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assertThatObject(t, objectassert.User(t, user.ID()).
-			HasName(user.Name).
-			HasType(string(sdk.UserTypeService)).
-			HasCreatedOnNotEmpty().
-			// login name is always case-insensitive
-			HasLoginName(strings.ToUpper(newValue)).
-			HasDisplayName(newValue).
-			HasFirstName("").
-			HasLastName("").
-			HasEmail(email).
-			HasMinsToUnlock("14").
-			HasDaysToExpiryNotEmpty().
-			HasComment("some comment").
-			HasDisabled(true).
-			HasMustChangePassword(false).
-			HasSnowflakeLock(false).
-			HasDefaultWarehouse(warehouseId.Name()).
-			HasDefaultNamespaceId(schemaId).
-			HasDefaultRole(roleId.Name()).
-			HasDefaultSecondaryRoles(`["ALL"]`).
-			HasExtAuthnDuo(false).
-			HasExtAuthnUid("").
-			HasMinsToBypassMfa("").
-			HasOwner(currentRole.Name()).
-			HasLastSuccessLoginEmpty().
-			HasExpiresAtTimeNotEmpty().
-			HasLockedUntilTimeNotEmpty().
-			HasHasPassword(false).
 			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
 		)
@@ -510,8 +444,13 @@ func TestInt_Users(t *testing.T) {
 			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
-			Comment:               sdk.String("some comment"),
-			Type:                  sdk.Pointer(sdk.UserTypeLegacyService),
+			WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
+				Type:    sdk.String("OIDC"),
+				Issuer:  sdk.String("https://accounts.google.com"),
+				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+			}},
+			Comment: sdk.String("some comment"),
+			Type:    sdk.Pointer(sdk.UserTypeLegacyService),
 		}}
 
 		err := client.Users.Create(ctx, id, createOpts)
@@ -572,7 +511,7 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
-			HasHasWorkloadIdentity(false).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
 		)
 	})
@@ -1082,7 +1021,12 @@ func TestInt_Users(t *testing.T) {
 					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
-					Comment:               sdk.String("some comment"),
+					WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
+						Type:    sdk.String("OIDC"),
+						Issuer:  sdk.String("https://accounts.google.com"),
+						Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+					}},
+					Comment: sdk.String("some comment"),
 				},
 			},
 		}}
@@ -1117,6 +1061,7 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(false).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
 		)
 
@@ -1134,6 +1079,7 @@ func TestInt_Users(t *testing.T) {
 				DefaultSecondaryRoles: sdk.Bool(true),
 				RSAPublicKey:          sdk.Bool(true),
 				RSAPublicKey2:         sdk.Bool(true),
+				WorkloadIdentity:      sdk.Bool(true),
 				Comment:               sdk.Bool(true),
 			},
 		}}
@@ -1178,7 +1124,12 @@ func TestInt_Users(t *testing.T) {
 					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
-					Comment:               sdk.String("some comment"),
+					WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
+						Type:    sdk.String("OIDC"),
+						Issuer:  sdk.String("https://accounts.google.com"),
+						Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+					}},
+					Comment: sdk.String("some comment"),
 				},
 			},
 		}}
@@ -1213,7 +1164,7 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
-			HasHasWorkloadIdentity(false).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
 		)
 

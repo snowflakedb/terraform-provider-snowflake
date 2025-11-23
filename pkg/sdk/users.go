@@ -77,7 +77,6 @@ type User struct {
 	HasRsaPublicKey       bool
 	Type                  string
 	HasMfa                bool
-	HasPAT                bool
 	HasWorkloadIdentity   bool
 }
 
@@ -126,7 +125,6 @@ type userDBRow struct {
 	HasRsaPublicKey       sql.NullBool   `db:"has_rsa_public_key"`
 	Type                  sql.NullString `db:"type"`
 	HasMfa                sql.NullBool   `db:"has_mfa"`
-	HasPAT                sql.NullBool   `db:"has_pat"`
 	HasWorkloadIdentity   sql.NullBool   `db:"has_workload_identity"`
 }
 
@@ -210,9 +208,6 @@ func (row userDBRow) convert() (*User, error) {
 	}
 	if row.HasMfa.Valid {
 		user.HasMfa = row.HasMfa.Bool
-	}
-	if row.HasPAT.Valid {
-		user.HasPAT = row.HasPAT.Bool
 	}
 	if row.HasWorkloadIdentity.Valid {
 		user.HasWorkloadIdentity = row.HasWorkloadIdentity.Bool
@@ -848,3 +843,75 @@ var AcceptableUserTypes = map[UserType][]string{
 	UserTypeService:       {string(UserTypeService)},
 	UserTypeLegacyService: {string(UserTypeLegacyService)},
 }
+
+// TODO: unclear how to proceed here with implementing ShowUserWorkloadIdentityAuthenticationMethods (manually or with a generator)
+//type userWorkloadIdentityAuthenticationMethodsDBRow struct {
+//	Name           string         `db:"name"`
+//	Type           string         `db:"type"`
+//	Comment        sql.NullString `db:"comment"`
+//	LastUsed       sql.NullTime   `db:"last_used"`
+//	CreatedOn      time.Time      `db:"created_on"`
+//	AdditionalInfo sql.NullString `db:"additional_info"`
+//}
+//
+//func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkloadIdentityAuthenticationMethods, error) {
+//	methods := &UserWorkloadIdentityAuthenticationMethods{
+//		Name:      row.Name,
+//		Type:      row.Type,
+//		CreatedOn: row.CreatedOn,
+//	}
+//
+//	if row.LastUsed.Valid {
+//		methods.LastUsed = row.LastUsed.Time
+//	}
+//	if row.Comment.Valid {
+//		methods.Comment = row.Comment.String
+//	}
+//	if row.AdditionalInfo.Valid {
+//		methods.AdditionalInfo = row.AdditionalInfo.String
+//	}
+//	return methods, nil
+//}
+//
+//type Methods interface {
+//	Show(ctx context.Context, opts *ShowUserAuthenticationMethodOptions) ([]UserWorkloadIdentityAuthenticationMethods, error)
+//	//ShowByID(ctx context.Context, id AccountObjectIdentifier) (*User, error)
+//}
+//
+//var _ Methods = (*methods)(nil)
+//
+//type methods struct {
+//	client *Client
+//}
+//
+//type UserWorkloadIdentityAuthenticationMethods struct {
+//	Name           string
+//	Type           string
+//	Comment        string
+//	LastUsed       time.Time
+//	CreatedOn      time.Time
+//	AdditionalInfo string
+//}
+//
+//// ShowUserAuthenticationMethodOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-user-workload-identity-authentication-methods
+//type ShowUserAuthenticationMethodOptions struct {
+//	show                            bool                    `ddl:"static" sql:"SHOW"`
+//	userWorkloadIdentityAuthMethods bool                    `ddl:"static" sql:"USER WORKLOAD IDENTITY AUTHENTICATION METHODS"`
+//	ForUser                         AccountObjectIdentifier `ddl:"identifier,no_equals" sql:"FOR USER"`
+//}
+//
+//func (opts *ShowUserAuthenticationMethodOptions) validate() error {
+//	if opts == nil {
+//		return errors.Join(ErrNilOptions)
+//	}
+//	return nil
+//}
+//
+//func (v *methods) Show(ctx context.Context, opts *ShowUserAuthenticationMethodOptions) ([]UserWorkloadIdentityAuthenticationMethods, error) {
+//	opts = createIfNil(opts)
+//	dbRows, err := validateAndQuery[userWorkloadIdentityAuthenticationMethodsDBRow](v.client, ctx, opts)
+//	if err != nil {
+//		return nil, err
+//	}
+//	return convertRows[userWorkloadIdentityAuthenticationMethodsDBRow, UserWorkloadIdentityAuthenticationMethods](dbRows)
+//}
