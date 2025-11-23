@@ -9,6 +9,8 @@ type (
 	DataMetricFunctionRefEntityDomainOption  string
 	DataType                                 string
 	EnforceMfaOnExternalAuthenticationOption string
+	LogLevel                                 string
+	MetricLevel                              string
 	MfaAuthenticationMethodsOption           string
 	MfaEnrollmentOption                      string
 	MfaPolicyAllowedMethodsOption            string
@@ -16,4 +18,5 @@ type (
 	NullInputBehavior                        string
 	ReturnNullValues                         string
 	ReturnResultsBehavior                    string
+	TraceLevel                               string
 )

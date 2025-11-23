@@ -21,6 +21,7 @@ func init() {
 		DataMetricFunctionReferenceDef,
 		EventTablesDef,
 		ExternalFunctionsDef,
+		FunctionsDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)
