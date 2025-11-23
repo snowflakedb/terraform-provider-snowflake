@@ -19,6 +19,7 @@ func init() {
 		ConnectionsDef,
 		CortexSearchServicesDef,
 		DataMetricFunctionReferenceDef,
+		EventTablesDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)

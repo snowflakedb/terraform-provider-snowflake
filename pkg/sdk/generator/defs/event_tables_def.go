@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var eventTableSet = g.NewQueryStruct("EventTableSet").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
@@ -16,13 +20,13 @@ var eventTableUnset = g.NewQueryStruct("EventTableUnset").
 
 var eventTableAddRowAccessPolicy = g.NewQueryStruct("EventTableAddRowAccessPolicy").
 	SQL("ADD").
-	Identifier("RowAccessPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	NamedListWithParens("ON", g.KindOfT[string](), g.KeywordOptions().Required()). // TODO: double quotes here?
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
 
 var eventTableDropRowAccessPolicy = g.NewQueryStruct("EventTableDropRowAccessPolicy").
 	SQL("DROP").
-	Identifier("RowAccessPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
 
 var eventTableDropAndAddRowAccessPolicy = g.NewQueryStruct("EventTableDropAndAddRowAccessPolicy").
@@ -54,7 +58,7 @@ var eventTableSearchOptimizationAction = g.NewQueryStruct("EventTableSearchOptim
 var EventTablesDef = g.NewInterface(
 	"EventTables",
 	"EventTable",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-event-table",
 	g.NewQueryStruct("CreateEventTable").
@@ -161,7 +165,7 @@ var EventTablesDef = g.NewInterface(
 		).
 		OptionalSetTags().
 		OptionalUnsetTags().
-		Identifier("RenameTo", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "ClusteringAction", "SearchOptimizationAction"),
 )
