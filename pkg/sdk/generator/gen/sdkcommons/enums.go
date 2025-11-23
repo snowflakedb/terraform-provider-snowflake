@@ -19,6 +19,8 @@ type (
 	MfaEnrollmentOption                      string
 	MfaPolicyAllowedMethodsOption            string
 	NetworkPolicyEvaluationOption            string
+	NetworkRuleMode                          string
+	NetworkRuleType                          string
 	NullInputBehavior                        string
 	ReturnNullValues                         string
 	ReturnResultsBehavior                    string

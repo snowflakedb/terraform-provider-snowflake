@@ -1,28 +1,15 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
-type NetworkRuleType string
-
-const (
-	NetworkRuleTypeIpv4             NetworkRuleType = "IPV4"
-	NetworkRuleTypeAwsVpcEndpointId NetworkRuleType = "AWSVPCEID"
-	NetworkRuleTypeAzureLinkId      NetworkRuleType = "AZURELINKID"
-	NetworkRuleTypeHostPort         NetworkRuleType = "HOST_PORT"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-type NetworkRuleMode string
-
-const (
-	NetworkRuleModeIngress       NetworkRuleMode = "INGRESS"
-	NetworkRuleModeInternalStage NetworkRuleMode = "INTERNAL_STAGE"
-	NetworkRuleModeEgress        NetworkRuleMode = "EGRESS"
-)
-
-var NetworkRuleDef = g.NewInterface(
+var NetworkRulesDef = g.NewInterface(
 	"NetworkRules",
 	"NetworkRule",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-network-rule",
@@ -31,9 +18,9 @@ var NetworkRuleDef = g.NewInterface(
 			OrReplace().
 			SQL("NETWORK RULE").
 			Name().
-			AssignmentWithFieldName("TYPE", g.KindOfT[NetworkRuleType](), g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
+			AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.NetworkRuleType](), g.ParameterOptions().Required().NoQuotes(), "NetworkRuleType").
 			ListAssignment("VALUE_LIST", "NetworkRuleValue", g.ParameterOptions().Required().Parentheses()).
-			Assignment("MODE", g.KindOfT[NetworkRuleMode](), g.ParameterOptions().Required().NoQuotes()).
+			Assignment("MODE", g.KindOfT[sdkcommons.NetworkRuleMode](), g.ParameterOptions().Required().NoQuotes()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name"),
 		g.NewQueryStruct("NetworkRuleValue").
