@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var materializedViewColumn = g.NewQueryStruct("MaterializedViewColumn").
 	Text("Name", g.KeywordOptions().DoubleQuotes().Required()).
@@ -8,12 +12,12 @@ var materializedViewColumn = g.NewQueryStruct("MaterializedViewColumn").
 
 var materializedViewColumnMaskingPolicy = g.NewQueryStruct("MaterializedViewColumnMaskingPolicy").
 	Text("Name", g.KeywordOptions().Required()).
-	Identifier("MaskingPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
+	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
 	NamedListWithParens("USING", g.KindOfT[string](), nil). // TODO: double quotes here?
 	OptionalTags()
 
 var materializedViewRowAccessPolicy = g.NewQueryStruct("MaterializedViewRowAccessPolicy").
-	Identifier("RowAccessPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	NamedListWithParens("ON", g.KindOfT[string](), g.KeywordOptions().Required()). // TODO: double quotes here?
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
 	WithValidation(g.ValidateValueSet, "On")
@@ -113,7 +117,7 @@ var materializedViewDetails = g.PlainStruct("MaterializedViewDetails").
 var MaterializedViewsDef = g.NewInterface(
 	"MaterializedViews",
 	"MaterializedView",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-materialized-view",
@@ -142,7 +146,7 @@ var MaterializedViewsDef = g.NewInterface(
 			Alter().
 			SQL("MATERIALIZED VIEW").
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalQueryStructField("ClusterBy", materializedViewClusterBy, g.KeywordOptions()).
 			OptionalSQL("DROP CLUSTERING KEY").
 			OptionalSQL("SUSPEND RECLUSTER").
