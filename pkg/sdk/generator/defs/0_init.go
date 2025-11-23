@@ -17,6 +17,7 @@ func init() {
 		AuthenticationPoliciesDef,
 		ComputePoolsDef,
 		ConnectionsDef,
+		CortexSearchServicesDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)

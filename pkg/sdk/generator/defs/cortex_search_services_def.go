@@ -1,20 +1,22 @@
-package sdk
+package defs
 
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
 var alterServiceSet = g.NewQueryStruct("CortexSearchServiceSet").
 	// Fields
 	OptionalTextAssignment("TARGET_LAG", g.ParameterOptions().SingleQuotes()).
-	OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
+	OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
 	OptionalComment().
 	WithValidation(g.AtLeastOneValueSet, "TargetLag", "Warehouse", "Comment")
 
-var CortexSearchServiceDef = g.NewInterface(
+var CortexSearchServicesDef = g.NewInterface(
 	"CortexSearchServices",
 	"CortexSearchService",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/create-cortex-search",
 	g.NewQueryStruct("CreateCortexSearchService").
@@ -32,7 +34,7 @@ var CortexSearchServiceDef = g.NewInterface(
 				List("Columns", "string", g.ListOptions().NoEquals().NoParentheses()),
 			g.KeywordOptions(),
 		).
-		Identifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().Required().SQL("WAREHOUSE")).
+		Identifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().Required().SQL("WAREHOUSE")).
 		TextAssignment("TARGET_LAG", g.ParameterOptions().SingleQuotes().Required()).
 		OptionalTextAssignment("EMBEDDING_MODEL", g.ParameterOptions().SingleQuotes()).
 		OptionalComment().
