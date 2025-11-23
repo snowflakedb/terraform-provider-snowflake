@@ -116,6 +116,7 @@ var NotebooksDef = g.NewInterface(
 		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("RUNTIME_ENVIRONMENT_VERSION", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("DEFAULT_VERSION", g.ParameterOptions().NoQuotes()).
+		OptionalQueryStructField("Secrets", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
 		WithValidation(g.ValidIdentifierIfSet, "Warehouse").
@@ -166,7 +167,7 @@ var NotebooksDef = g.NewInterface(
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
-		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags"),
+		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-notebook",
 	g.NewQueryStruct("DropNotebook").

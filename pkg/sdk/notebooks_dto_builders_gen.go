@@ -80,11 +80,12 @@ func (s *CreateNotebookRequest) WithDefaultVersion(defaultVersion string) *Creat
 	return s
 }
 
-// added manually
-func (s *CreateNotebookRequest) WithSecrets(Secrets SecretsListRequest) *CreateNotebookRequest {
-	s.Secrets = &Secrets
+func (s *CreateNotebookRequest) WithSecrets(secrets SecretsListRequest) *CreateNotebookRequest {
+	s.Secrets = &secrets
 	return s
 }
+
+// NewSecretsListRequest removed manually (redefined)
 
 func NewAlterNotebookRequest(
 	name SchemaObjectIdentifier,
@@ -178,8 +179,6 @@ func (s *NotebookSetRequest) WithRuntimeEnvironmentVersion(runtimeEnvironmentVer
 	s.RuntimeEnvironmentVersion = &runtimeEnvironmentVersion
 	return s
 }
-
-// NewSecretsListRequest removed manually (redefined)
 
 func NewNotebookUnsetRequest() *NotebookUnsetRequest {
 	s := NotebookUnsetRequest{}

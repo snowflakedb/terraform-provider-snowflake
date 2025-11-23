@@ -26,9 +26,10 @@ type CreateNotebookRequest struct {
 	ExternalAccessIntegrations  []AccountObjectIdentifier
 	RuntimeEnvironmentVersion   *string
 	DefaultVersion              *string
-	// adjusted manually
-	Secrets *SecretsListRequest
+	Secrets                     *SecretsListRequest
 }
+
+// SecretsListRequest removed manually (redefined)
 
 type AlterNotebookRequest struct {
 	IfExists  *bool
@@ -52,8 +53,6 @@ type NotebookSetRequest struct {
 	ExternalAccessIntegrations  []AccountObjectIdentifier
 	RuntimeEnvironmentVersion   *string
 }
-
-// SecretsListRequest removed manually (redefined in functions)
 
 type NotebookUnsetRequest struct {
 	Comment                    *bool

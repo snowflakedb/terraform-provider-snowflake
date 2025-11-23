@@ -113,19 +113,15 @@ func TestNotebooks_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	// name adjusted manually
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.RenameTo] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// error adjusted manually
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"))
 	})
 
-	// name adjusted manually
 	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.RenameTo] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &NotebookSet{}
 		opts.Unset = &NotebookUnset{}
-		// error adjusted manually
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"))
 	})
 
