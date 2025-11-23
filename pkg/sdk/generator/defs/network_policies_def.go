@@ -1,24 +1,10 @@
-package sdk
+package defs
 
 import (
-	"encoding/json"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-// NetworkRulesSnowflakeDto is needed to unpack the applied network rules from the JSON response from Snowflake
-type NetworkRulesSnowflakeDto struct {
-	FullyQualifiedRuleName string
-}
-
-func ParseNetworkRulesSnowflakeDto(networkRulesStringValue string) ([]NetworkRulesSnowflakeDto, error) {
-	var networkRules []NetworkRulesSnowflakeDto
-	err := json.Unmarshal([]byte(networkRulesStringValue), &networkRules)
-	if err != nil {
-		return nil, err
-	}
-	return networkRules, nil
-}
 
 var (
 	ip = g.NewQueryStruct("IP").
@@ -49,7 +35,7 @@ var (
 	NetworkPoliciesDef = g.NewInterface(
 		"NetworkPolicies",
 		"NetworkPolicy",
-		g.KindOfT[AccountObjectIdentifier](),
+		g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 	).
 		CreateOperation(
 			"https://docs.snowflake.com/en/sql-reference/sql/create-network-policy",
@@ -104,7 +90,7 @@ var (
 					networkPoliciesRemoveNetworkRule,
 					g.KeywordOptions().SQL("REMOVE"),
 				).
-				Identifier("RenameTo", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+				Identifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 				WithValidation(g.ValidIdentifier, "name").
 				WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo", "Add", "Remove").
 				WithValidation(g.ValidIdentifierIfSet, "RenameTo"),
