@@ -30,6 +30,7 @@ func init() {
 		NetworkPoliciesDef,
 		NetworkRulesDef,
 		NotebooksDef,
+		NotificationIntegrationsDef,
 		ProceduresDef,
 		SemanticViewsDef,
 		SequencesDef,
