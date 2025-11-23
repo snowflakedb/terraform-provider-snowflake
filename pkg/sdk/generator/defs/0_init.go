@@ -34,6 +34,7 @@ func init() {
 		OrganizationAccountsDef,
 		ProceduresDef,
 		RowAccessPoliciesDef,
+		SecretsDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)
