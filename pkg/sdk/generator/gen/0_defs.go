@@ -120,7 +120,6 @@ func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
 // TODO [next PRs]: move these definitions
 // var allSdkObjectDefinitions = []*generator.Interface{
 //	sdk.ExternalVolumesDef,
-//	sdk.ImageRepositoriesDef,
 //	sdk.ListingsDef,
 //	sdk.ManagedAccountsDef,
 //	sdk.MaterializedViewsDef,

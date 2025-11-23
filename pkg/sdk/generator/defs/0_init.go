@@ -23,6 +23,7 @@ func init() {
 		ExternalFunctionsDef,
 		FunctionsDef,
 		GitRepositoriesDef,
+		ImageRepositoriesDef,
 		NotebooksDef,
 		ProceduresDef,
 		SemanticViewsDef,
