@@ -988,3 +988,26 @@ func Test_User_ToUserType(t *testing.T) {
 		})
 	}
 }
+
+func TestUserCreateWIF(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+
+	t.Run("WIF - google OIDC", func(t *testing.T) {
+		wifType := "OIDC"
+		wifIssuer := "https://accounts.google.com"
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
+					{
+						Type:    &wifType,
+						Issuer:  &wifIssuer,
+						Subject: &wifSubject,
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s')`, id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
+	})
+}

@@ -303,7 +303,7 @@ type UserObjectWorkloadIdentityProperties struct {
 	Type             *string                 `ddl:"parameter,no_quotes" sql:"TYPE"`
 	Arn              *string                 `ddl:"parameter,single_quotes" sql:"ARN"`
 	Issuer           *string                 `ddl:"parameter,single_quotes" sql:"ISSUER"`
-	Subject          *string                 `ddl:"parameter,single_quotes" sql:"Subject"`
+	Subject          *string                 `ddl:"parameter,single_quotes" sql:"SUBJECT"`
 	OidcAudienceList []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OIDC_AUDIENCE_LIST"`
 }
 
