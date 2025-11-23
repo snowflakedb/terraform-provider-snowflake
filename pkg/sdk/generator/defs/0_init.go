@@ -20,6 +20,7 @@ func init() {
 		CortexSearchServicesDef,
 		DataMetricFunctionReferenceDef,
 		EventTablesDef,
+		ExternalFunctionsDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)

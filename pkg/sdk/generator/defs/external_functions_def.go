@@ -1,10 +1,14 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var externalFunctionArgument = g.NewQueryStruct("ExternalFunctionArgument").
 	Text("ArgName", g.KeywordOptions().NoQuotes().Required()).
-	PredefinedQueryStructField("ArgDataType", g.KindOfT[DataType](), g.KeywordOptions().NoQuotes().Required())
+	PredefinedQueryStructField("ArgDataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().NoQuotes().Required())
 
 var externalFunctionHeader = g.NewQueryStruct("ExternalFunctionHeader").
 	Text("Name", g.KeywordOptions().SingleQuotes().Required()).
@@ -13,7 +17,7 @@ var externalFunctionHeader = g.NewQueryStruct("ExternalFunctionHeader").
 var externalFunctionContextHeader = g.NewQueryStruct("ExternalFunctionContextHeader").Text("ContextFunction", g.KeywordOptions().NoQuotes().Required())
 
 var externalFunctionSet = g.NewQueryStruct("ExternalFunctionSet").
-	OptionalIdentifier("ApiIntegration", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION =")).
+	OptionalIdentifier("ApiIntegration", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION =")).
 	ListQueryStructField(
 		"Headers",
 		externalFunctionHeader,
@@ -26,8 +30,8 @@ var externalFunctionSet = g.NewQueryStruct("ExternalFunctionSet").
 	).
 	OptionalNumberAssignment("MAX_BATCH_ROWS", g.ParameterOptions()).
 	OptionalTextAssignment("COMPRESSION", g.ParameterOptions()).
-	OptionalIdentifier("RequestTranslator", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("REQUEST_TRANSLATOR =")).
-	OptionalIdentifier("ResponseTranslator", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RESPONSE_TRANSLATOR =")).
+	OptionalIdentifier("RequestTranslator", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("REQUEST_TRANSLATOR =")).
+	OptionalIdentifier("ResponseTranslator", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RESPONSE_TRANSLATOR =")).
 	WithValidation(g.ExactlyOneValueSet, "ApiIntegration", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "RequestTranslator", "ResponseTranslator")
 
 var externalFunctionUnset = g.NewQueryStruct("ExternalFunctionUnset").
@@ -44,7 +48,7 @@ var externalFunctionUnset = g.NewQueryStruct("ExternalFunctionUnset").
 var ExternalFunctionsDef = g.NewInterface(
 	"ExternalFunctions",
 	"ExternalFunction",
-	g.KindOfT[SchemaObjectIdentifierWithArguments](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-external-function",
 	g.NewQueryStruct("CreateExternalFunction").
@@ -52,17 +56,17 @@ var ExternalFunctionsDef = g.NewInterface(
 		OrReplace().
 		OptionalSQL("SECURE").
 		SQL("EXTERNAL FUNCTION").
-		Identifier("name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
 			externalFunctionArgument,
 			g.ListOptions().MustParentheses()).
-		PredefinedQueryStructField("ResultDataType", g.KindOfT[DataType](), g.ParameterOptions().NoEquals().SQL("RETURNS").Required()).
-		PredefinedQueryStructField("ReturnNullValues", g.KindOfTPointer[ReturnNullValues](), g.KeywordOptions()).
-		PredefinedQueryStructField("NullInputBehavior", g.KindOfTPointer[NullInputBehavior](), g.KeywordOptions()).
-		PredefinedQueryStructField("ReturnResultsBehavior", g.KindOfTPointer[ReturnResultsBehavior](), g.KeywordOptions()).
+		PredefinedQueryStructField("ResultDataType", g.KindOfT[sdkcommons.DataType](), g.ParameterOptions().NoEquals().SQL("RETURNS").Required()).
+		PredefinedQueryStructField("ReturnNullValues", g.KindOfTPointer[sdkcommons.ReturnNullValues](), g.KeywordOptions()).
+		PredefinedQueryStructField("NullInputBehavior", g.KindOfTPointer[sdkcommons.NullInputBehavior](), g.KeywordOptions()).
+		PredefinedQueryStructField("ReturnResultsBehavior", g.KindOfTPointer[sdkcommons.ReturnResultsBehavior](), g.KeywordOptions()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		Identifier("ApiIntegration", g.KindOfTPointer[AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION =").Required()).
+		Identifier("ApiIntegration", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("API_INTEGRATION =").Required()).
 		ListQueryStructField(
 			"Headers",
 			externalFunctionHeader,
@@ -75,8 +79,8 @@ var ExternalFunctionsDef = g.NewInterface(
 		).
 		OptionalNumberAssignment("MAX_BATCH_ROWS", g.ParameterOptions()).
 		OptionalTextAssignment("COMPRESSION", g.ParameterOptions()).
-		OptionalIdentifier("RequestTranslator", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("REQUEST_TRANSLATOR =")).
-		OptionalIdentifier("ResponseTranslator", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RESPONSE_TRANSLATOR =")).
+		OptionalIdentifier("RequestTranslator", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("REQUEST_TRANSLATOR =")).
+		OptionalIdentifier("ResponseTranslator", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RESPONSE_TRANSLATOR =")).
 		TextAssignment("AS", g.ParameterOptions().NoEquals().SingleQuotes().Required()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "ApiIntegration").
