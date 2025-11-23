@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var procedureArgument = g.NewQueryStruct("ProcedureArgument").
 	Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
@@ -66,14 +70,14 @@ var (
 // https://docs.snowflake.com/en/sql-reference/constructs/with and https://docs.snowflake.com/en/user-guide/queries-cte
 var procedureWithClause = g.NewQueryStruct("ProcedureWithClause").
 	SQLWithCustomFieldName("prefix", ",").
-	Identifier("CteName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+	Identifier("CteName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 	PredefinedQueryStructField("CteColumns", "[]string", g.KeywordOptions().Parentheses()).
 	PredefinedQueryStructField("Statement", "string", g.ParameterOptions().NoEquals().NoQuotes().SQL("AS").Required())
 
 var ProceduresDef = g.NewInterface(
 	"Procedures",
 	"Procedure",
-	g.KindOfT[SchemaObjectIdentifierWithArguments](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments](),
 ).CustomOperation(
 	"CreateForJava",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-procedure#java-handler",
@@ -82,7 +86,7 @@ var ProceduresDef = g.NewInterface(
 		OrReplace().
 		OptionalSQL("SECURE").
 		SQL("PROCEDURE").
-		Identifier("name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
 			procedureArgument,
@@ -127,7 +131,7 @@ var ProceduresDef = g.NewInterface(
 		OrReplace().
 		OptionalSQL("SECURE").
 		SQL("PROCEDURE").
-		Identifier("name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
 			procedureArgument,
@@ -155,7 +159,7 @@ var ProceduresDef = g.NewInterface(
 		OrReplace().
 		OptionalSQL("SECURE").
 		SQL("PROCEDURE").
-		Identifier("name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
 			procedureArgument,
@@ -199,7 +203,7 @@ var ProceduresDef = g.NewInterface(
 		OrReplace().
 		OptionalSQL("SECURE").
 		SQL("PROCEDURE").
-		Identifier("name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
 			procedureArgument,
@@ -244,7 +248,7 @@ var ProceduresDef = g.NewInterface(
 		OrReplace().
 		OptionalSQL("SECURE").
 		SQL("PROCEDURE").
-		Identifier("name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		ListQueryStructField(
 			"Arguments",
 			procedureArgument,
@@ -271,18 +275,18 @@ var ProceduresDef = g.NewInterface(
 		SQL("PROCEDURE").
 		IfExists().
 		Name().
-		OptionalIdentifier("RenameTo", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("ProcedureSet").
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", "AccountObjectIdentifier", g.ParameterOptions().Parentheses()).
 				OptionalQueryStructField("SecretsList", functionSecretsListWrapper, g.ParameterOptions().SQL("SECRETS").Parentheses()).
-				OptionalAssignment("AUTO_EVENT_LOGGING", g.KindOfTPointer[AutoEventLogging](), g.ParameterOptions().SingleQuotes()).
+				OptionalAssignment("AUTO_EVENT_LOGGING", g.KindOfTPointer[sdkcommons.AutoEventLogging](), g.ParameterOptions().SingleQuotes()).
 				OptionalBooleanAssignment("ENABLE_CONSOLE_OUTPUT", nil).
-				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[LogLevel](), g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[MetricLevel](), g.ParameterOptions().SingleQuotes()).
-				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[TraceLevel](), g.ParameterOptions().SingleQuotes()).
+				OptionalAssignment("LOG_LEVEL", g.KindOfTPointer[sdkcommons.LogLevel](), g.ParameterOptions().SingleQuotes()).
+				OptionalAssignment("METRIC_LEVEL", g.KindOfTPointer[sdkcommons.MetricLevel](), g.ParameterOptions().SingleQuotes()).
+				OptionalAssignment("TRACE_LEVEL", g.KindOfTPointer[sdkcommons.TraceLevel](), g.ParameterOptions().SingleQuotes()).
 				WithValidation(g.AtLeastOneValueSet, "Comment", "ExternalAccessIntegrations", "SecretsList", "AutoEventLogging", "EnableConsoleOutput", "LogLevel", "MetricLevel", "TraceLevel"),
 			g.ListOptions().SQL("SET"),
 		).
@@ -378,7 +382,7 @@ var ProceduresDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/call",
 	g.NewQueryStruct("Call").
 		SQL("CALL").
-		Identifier("name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 		PredefinedQueryStructField("CallArguments", "[]string", g.KeywordOptions().MustParentheses()).
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidIdentifier, "name"),
@@ -387,7 +391,7 @@ var ProceduresDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#java-and-scala",
 	g.NewQueryStruct("CreateAndCallForJava").
 		SQL("WITH").
-		Identifier("Name", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("Name", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("AS PROCEDURE").
 		ListQueryStructField(
 			"Arguments",
@@ -420,7 +424,7 @@ var ProceduresDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		SQL("CALL").
-		Identifier("ProcedureName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("ProcedureName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		PredefinedQueryStructField("CallArguments", "[]string", g.KeywordOptions().MustParentheses()).
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
@@ -433,7 +437,7 @@ var ProceduresDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#java-and-scala",
 	g.NewQueryStruct("CreateAndCallForScala").
 		SQL("WITH").
-		Identifier("Name", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("Name", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("AS PROCEDURE").
 		ListQueryStructField(
 			"Arguments",
@@ -466,7 +470,7 @@ var ProceduresDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		SQL("CALL").
-		Identifier("ProcedureName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("ProcedureName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		PredefinedQueryStructField("CallArguments", "[]string", g.KeywordOptions().MustParentheses()).
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
@@ -479,7 +483,7 @@ var ProceduresDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#javascript",
 	g.NewQueryStruct("CreateAndCallForJavaScript").
 		SQL("WITH").
-		Identifier("Name", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("Name", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("AS PROCEDURE").
 		ListQueryStructField(
 			"Arguments",
@@ -499,7 +503,7 @@ var ProceduresDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		SQL("CALL").
-		Identifier("ProcedureName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("ProcedureName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		PredefinedQueryStructField("CallArguments", "[]string", g.KeywordOptions().MustParentheses()).
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").
@@ -511,7 +515,7 @@ var ProceduresDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#python",
 	g.NewQueryStruct("CreateAndCallForPython").
 		SQL("WITH").
-		Identifier("Name", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("Name", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("AS PROCEDURE").
 		ListQueryStructField(
 			"Arguments",
@@ -544,7 +548,7 @@ var ProceduresDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		SQL("CALL").
-		Identifier("ProcedureName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("ProcedureName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		PredefinedQueryStructField("CallArguments", "[]string", g.KeywordOptions().MustParentheses()).
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidateValueSet, "RuntimeVersion").
@@ -557,7 +561,7 @@ var ProceduresDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/call-with#snowflake-scripting",
 	g.NewQueryStruct("CreateAndCallForSQL").
 		SQL("WITH").
-		Identifier("Name", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("Name", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("AS PROCEDURE").
 		ListQueryStructField(
 			"Arguments",
@@ -578,7 +582,7 @@ var ProceduresDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		SQL("CALL").
-		Identifier("ProcedureName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("ProcedureName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		PredefinedQueryStructField("CallArguments", "[]string", g.KeywordOptions().MustParentheses()).
 		PredefinedQueryStructField("ScriptingVariable", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("INTO")).
 		WithValidation(g.ValidateValueSet, "ProcedureDefinition").

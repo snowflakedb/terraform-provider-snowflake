@@ -130,7 +130,6 @@ func ExtendInterface() func(*Interface, *genhelpers.PreambleModel) *Interface {
 //	sdk.NotebooksDef,
 //	sdk.NotificationIntegrationsDef,
 //	sdk.OrganizationAccountsDef,
-//	sdk.ProceduresDef,
 //	sdk.RowAccessPoliciesDef,
 //	sdk.SecretsDef,
 //	sdk.SecurityIntegrationsDef,

@@ -22,6 +22,7 @@ func init() {
 		EventTablesDef,
 		ExternalFunctionsDef,
 		FunctionsDef,
+		ProceduresDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)

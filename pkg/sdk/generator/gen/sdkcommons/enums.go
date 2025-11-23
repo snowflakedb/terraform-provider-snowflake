@@ -4,6 +4,7 @@ type (
 	AllowedProviderOption                    string
 	ApiIntegrationAwsApiProviderType         string
 	AuthenticationMethodsOption              string
+	AutoEventLogging                         string
 	ClientTypesOption                        string
 	ComputePoolInstanceFamily                string
 	DataMetricFunctionRefEntityDomainOption  string
