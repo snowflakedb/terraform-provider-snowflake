@@ -10,11 +10,6 @@ func NewCreateNetworkPolicyRequest(
 	return &s
 }
 
-// added manually
-func (r *CreateNetworkPolicyRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 func (s *CreateNetworkPolicyRequest) WithOrReplace(orReplace bool) *CreateNetworkPolicyRequest {
 	s.OrReplace = &orReplace
 	return s

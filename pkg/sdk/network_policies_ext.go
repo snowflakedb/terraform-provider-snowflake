@@ -15,3 +15,7 @@ func ParseNetworkRulesSnowflakeDto(networkRulesStringValue string) ([]NetworkRul
 	}
 	return networkRules, nil
 }
+
+func (r *CreateNetworkPolicyRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}
