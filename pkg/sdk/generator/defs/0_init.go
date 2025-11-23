@@ -18,6 +18,7 @@ func init() {
 		ComputePoolsDef,
 		ConnectionsDef,
 		CortexSearchServicesDef,
+		DataMetricFunctionReferenceDef,
 		SemanticViewsDef,
 		SequencesDef,
 	)

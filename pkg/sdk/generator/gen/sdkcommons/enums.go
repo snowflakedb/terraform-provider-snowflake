@@ -6,6 +6,7 @@ type (
 	AuthenticationMethodsOption              string
 	ClientTypesOption                        string
 	ComputePoolInstanceFamily                string
+	DataMetricFunctionRefEntityDomainOption  string
 	EnforceMfaOnExternalAuthenticationOption string
 	MfaAuthenticationMethodsOption           string
 	MfaEnrollmentOption                      string
