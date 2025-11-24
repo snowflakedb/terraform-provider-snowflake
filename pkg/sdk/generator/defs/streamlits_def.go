@@ -1,6 +1,10 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
 
 var externalAccessIntegrations = g.NewQueryStruct("ExternalAccessIntegrations").
 	List("ExternalAccessIntegrations", "AccountObjectIdentifier", g.ListOptions().Required().MustParentheses())
@@ -8,7 +12,7 @@ var externalAccessIntegrations = g.NewQueryStruct("ExternalAccessIntegrations").
 var streamlitSet = g.NewQueryStruct("StreamlitSet").
 	OptionalTextAssignment("ROOT_LOCATION", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
-	OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
+	OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
 	OptionalQueryStructField("ExternalAccessIntegrations", externalAccessIntegrations, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("TITLE", g.ParameterOptions().SingleQuotes()).
@@ -24,7 +28,7 @@ var streamlitUnset = g.NewQueryStruct("StreamlitUnset").
 var StreamlitsDef = g.NewInterface(
 	"Streamlits",
 	"Streamlit",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-streamlit",
 	g.NewQueryStruct("CreateStreamlit").
@@ -35,7 +39,7 @@ var StreamlitsDef = g.NewInterface(
 		Name().
 		TextAssignment("ROOT_LOCATION", g.ParameterOptions().SingleQuotes().Required()).
 		TextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes().Required()).
-		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
+		OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
 		OptionalQueryStructField("ExternalAccessIntegrations", externalAccessIntegrations, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 		OptionalTextAssignment("TITLE", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
@@ -59,7 +63,7 @@ var StreamlitsDef = g.NewInterface(
 			streamlitUnset,
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
-		Identifier("RenameTo", g.KindOfTPointer[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset"),
