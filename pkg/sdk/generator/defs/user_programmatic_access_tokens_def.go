@@ -1,34 +1,10 @@
-package sdk
+package defs
 
 import (
-	"fmt"
-	"slices"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-type ProgrammaticAccessTokenStatus string
-
-const (
-	ProgrammaticAccessTokenStatusActive   ProgrammaticAccessTokenStatus = "ACTIVE"
-	ProgrammaticAccessTokenStatusExpired  ProgrammaticAccessTokenStatus = "EXPIRED"
-	ProgrammaticAccessTokenStatusDisabled ProgrammaticAccessTokenStatus = "DISABLED"
-)
-
-var allProgrammaticAccessTokenStatuses = []ProgrammaticAccessTokenStatus{
-	ProgrammaticAccessTokenStatusActive,
-	ProgrammaticAccessTokenStatusExpired,
-	ProgrammaticAccessTokenStatusDisabled,
-}
-
-func toProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(allProgrammaticAccessTokenStatuses, ProgrammaticAccessTokenStatus(s)) {
-		return "", fmt.Errorf("invalid programmatic access token status: %s", s)
-	}
-	return ProgrammaticAccessTokenStatus(s), nil
-}
 
 var programmaticAccessTokenResultDBRowDef = g.DbStruct("programmaticAccessTokenResultDBRow").
 	Text("name").
@@ -79,7 +55,7 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 	// This means that we can use double quotes, the name must be non-empty and no longer than 255 characters.
 	// We use AccountObjectIdentifier as a kind of identifier for convenience.
 	// TODO(SNOW-2183032) Handle objects that do not have identifiers.
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).CustomShowOperation(
 	"Add",
 	g.ShowMappingKindSingleValue,
@@ -90,10 +66,10 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Alter().
 		SQL("USER").
 		IfExists().
-		Identifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("ADD PROGRAMMATIC ACCESS TOKEN").
 		Name().
-		OptionalIdentifier("RoleRestriction", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("ROLE_RESTRICTION").Equals()).
+		OptionalIdentifier("RoleRestriction", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("ROLE_RESTRICTION").Equals()).
 		OptionalNumberAssignment("DAYS_TO_EXPIRY", g.ParameterOptions()).
 		OptionalNumberAssignment("MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT", g.ParameterOptions()).
 		OptionalComment().
@@ -107,7 +83,7 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Alter().
 		SQL("USER").
 		IfExists().
-		Identifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("MODIFY PROGRAMMATIC ACCESS TOKEN").
 		Name().
 		OptionalQueryStructField(
@@ -126,7 +102,7 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 				OptionalSQL("COMMENT"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
-		OptionalIdentifier("RenameTo", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO").NoEquals()).
+		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO").NoEquals()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "UserName").
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo"),
@@ -140,7 +116,7 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Alter().
 		SQL("USER").
 		IfExists().
-		Identifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("ROTATE PROGRAMMATIC ACCESS TOKEN").
 		Name().
 		OptionalNumberAssignment("EXPIRE_ROTATED_TOKEN_AFTER_HOURS", g.ParameterOptions()).
@@ -153,7 +129,7 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 		Alter().
 		SQL("USER").
 		IfExists().
-		Identifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+		Identifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		SQL("REMOVE PROGRAMMATIC ACCESS TOKEN").
 		Name().
 		WithValidation(g.ValidIdentifier, "name").
@@ -165,5 +141,5 @@ var UserProgrammaticAccessTokensDef = g.NewInterface(
 	g.NewQueryStruct("ShowUserProgrammaticAccessTokens").
 		Show().
 		SQL("USER PROGRAMMATIC ACCESS TOKENS").
-		OptionalIdentifier("UserName", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
+		OptionalIdentifier("UserName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FOR USER")),
 ).ShowByIdOperationWithNoFiltering()
