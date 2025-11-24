@@ -2,11 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
-import (
-	"fmt"
-)
-
 func NewCreateInternalStageRequest(
 	name SchemaObjectIdentifier,
 ) *CreateInternalStageRequest {
@@ -160,24 +155,6 @@ func (s *StageCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *StageCop
 }
 
 // WithSkipFile removed manually
-
-// added manually
-func (s *StageCopyOnErrorOptionsRequest) WithSkipFile() *StageCopyOnErrorOptionsRequest {
-	s.SkipFile = String("SKIP_FILE")
-	return s
-}
-
-// added manually
-func (s *StageCopyOnErrorOptionsRequest) WithSkipFileX(x int) *StageCopyOnErrorOptionsRequest {
-	s.SkipFile = String(fmt.Sprintf("SKIP_FILE_%d", x))
-	return s
-}
-
-// added manually
-func (s *StageCopyOnErrorOptionsRequest) WithSkipFileXPercent(x int) *StageCopyOnErrorOptionsRequest {
-	s.SkipFile = String(fmt.Sprintf("'SKIP_FILE_%d%%'", x))
-	return s
-}
 
 func (s *StageCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *StageCopyOnErrorOptionsRequest {
 	s.AbortStatement = &abortStatement

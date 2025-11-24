@@ -651,11 +651,11 @@ func (v *StageCopyOptionsRequest) toOpts() *StageCopyOptions {
 	}
 }
 
-func (v *StageCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
+func (s *StageCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
 	return &StageCopyOnErrorOptions{
-		Continue_:      v.Continue_,
-		SkipFile:       v.SkipFile,
-		AbortStatement: v.AbortStatement,
+		Continue_:      s.Continue_,
+		SkipFile:       s.SkipFile,
+		AbortStatement: s.AbortStatement,
 	}
 }
 
