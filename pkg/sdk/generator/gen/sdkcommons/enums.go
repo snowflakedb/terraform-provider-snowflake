@@ -38,6 +38,7 @@ type (
 	OrganizationAccountEdition                                          string
 	ReturnNullValues                                                    string
 	ReturnResultsBehavior                                               string
+	S3Protocol                                                          string
 	Saml2SecurityIntegrationSaml2ProviderOption                         string
 	Saml2SecurityIntegrationSaml2RequestedNameidFormatOption            string
 	ScimSecurityIntegrationRunAsRoleOption                              string

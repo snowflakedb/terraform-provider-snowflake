@@ -18,7 +18,7 @@ func init() {
 		ComputePoolsDef,
 		ConnectionsDef,
 		CortexSearchServicesDef,
-		DataMetricFunctionReferenceDef,
+		DataMetricFunctionReferencesDef,
 		EventTablesDef,
 		ExternalFunctionsDef,
 		FunctionsDef,
@@ -41,6 +41,7 @@ func init() {
 		ServicesDef,
 		SessionPoliciesDef,
 		StagesDef,
+		StorageIntegrationsDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

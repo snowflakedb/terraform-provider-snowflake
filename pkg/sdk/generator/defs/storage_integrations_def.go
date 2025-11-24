@@ -1,15 +1,17 @@
-package sdk
+package defs
 
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
 var StorageLocationDef = g.NewQueryStruct("StorageLocation").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
-var StorageIntegrationDef = g.NewInterface(
+var StorageIntegrationsDef = g.NewInterface(
 	"StorageIntegrations",
 	"StorageIntegration",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration",
@@ -23,7 +25,7 @@ var StorageIntegrationDef = g.NewInterface(
 			OptionalQueryStructField(
 				"S3StorageProviderParams",
 				g.NewQueryStruct("S3StorageParams").
-					PredefinedQueryStructField("Protocol", g.KindOfT[S3Protocol](), g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required()).
+					PredefinedQueryStructField("Protocol", g.KindOfT[sdkcommons.S3Protocol](), g.ParameterOptions().SQL("STORAGE_PROVIDER").SingleQuotes().Required()).
 					TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
