@@ -13,16 +13,10 @@ func HandleSchemas(config *Config, csvInput [][]string) (string, error) {
 }
 
 func MapSchemaToModel(schema SchemaRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
-	// Create the schema identifier
 	schemaId := sdk.NewDatabaseObjectIdentifier(schema.DatabaseName, schema.Name)
-
-	// Create a normalized resource ID
 	resourceId := NormalizeResourceId(fmt.Sprintf("schema_%s", schemaId.FullyQualifiedName()))
-
-	// Create the schema model
 	resourceModel := model.Schema(resourceId, schema.DatabaseName, schema.Name)
 
-	// Add optional fields
 	if schema.Comment != "" {
 		resourceModel.WithComment(schema.Comment)
 	}
@@ -53,7 +47,6 @@ func MapSchemaToModel(schema SchemaRepresentation) (accconfig.ResourceModel, *Im
 	handleOptionalFieldWithBuilder(schema.QuotedIdentifiersIgnoreCase, resourceModel.WithQuotedIdentifiersIgnoreCase)
 	handleOptionalFieldWithBuilder(schema.EnableConsoleOutput, resourceModel.WithEnableConsoleOutput)
 
-	// Create the import model with the schema identifier
 	importModel := NewImportModel(
 		resourceModel.ResourceReference(),
 		schemaId.FullyQualifiedName(),
