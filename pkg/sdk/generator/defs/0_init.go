@@ -39,6 +39,7 @@ func init() {
 		SemanticViewsDef,
 		SequencesDef,
 		ServicesDef,
+		SessionPoliciesDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {
