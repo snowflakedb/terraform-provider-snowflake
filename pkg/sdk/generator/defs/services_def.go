@@ -1,49 +1,13 @@
-package sdk
+package defs
 
 import (
-	"fmt"
-	"slices"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-type ServiceStatus string
-
-const (
-	ServiceStatusPending       ServiceStatus = "PENDING"
-	ServiceStatusRunning       ServiceStatus = "RUNNING"
-	ServiceStatusFailed        ServiceStatus = "FAILED"
-	ServiceStatusDone          ServiceStatus = "DONE"
-	ServiceStatusSuspending    ServiceStatus = "SUSPENDING"
-	ServiceStatusSuspended     ServiceStatus = "SUSPENDED"
-	ServiceStatusDeleting      ServiceStatus = "DELETING"
-	ServiceStatusDeleted       ServiceStatus = "DELETED"
-	ServiceStatusInternalError ServiceStatus = "INTERNAL_ERROR"
-)
-
-var allServiceStatuses = []ServiceStatus{
-	ServiceStatusPending,
-	ServiceStatusRunning,
-	ServiceStatusFailed,
-	ServiceStatusDone,
-	ServiceStatusSuspending,
-	ServiceStatusSuspended,
-	ServiceStatusDeleting,
-	ServiceStatusDeleted,
-	ServiceStatusInternalError,
-}
-
-func ToServiceStatus(s string) (ServiceStatus, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(allServiceStatuses, ServiceStatus(s)) {
-		return "", fmt.Errorf("invalid service status: %s", s)
-	}
-	return ServiceStatus(s), nil
-}
 
 var serviceExternalAccessIntegrationsDef = g.NewQueryStruct("ServiceExternalAccessIntegrations").
-	List("ExternalAccessIntegrations", g.KindOfT[AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
+	List("ExternalAccessIntegrations", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Required().MustParentheses())
 
 var listItemDef = g.NewQueryStruct("ListItem").
 	Text("Key", g.KeywordOptions().Required().DoubleQuotes()).
@@ -87,7 +51,7 @@ var jobServiceFromSpecificationTemplateDef = g.NewQueryStruct("JobServiceFromSpe
 var ServicesDef = g.NewInterface(
 	"Services",
 	"Service",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/create-service",
 	g.NewQueryStruct("CreateService").
@@ -96,7 +60,7 @@ var ServicesDef = g.NewInterface(
 		// Note: Currently, OR REPLACE is not supported for services.
 		IfNotExists().
 		Name().
-		Identifier("InComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
+		Identifier("InComputePool", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
 		OptionalQueryStructField("FromSpecification", serviceFromSpecificationDef, g.KeywordOptions()).
 		OptionalQueryStructField("FromSpecificationTemplate", serviceFromSpecificationTemplateDef, g.KeywordOptions()).
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
@@ -105,7 +69,7 @@ var ServicesDef = g.NewInterface(
 		OptionalNumberAssignment("MIN_INSTANCES", g.ParameterOptions()).
 		OptionalNumberAssignment("MIN_READY_INSTANCES", g.ParameterOptions()).
 		OptionalNumberAssignment("MAX_INSTANCES", g.ParameterOptions()).
-		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
+		OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
 		OptionalTags().
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
@@ -131,7 +95,7 @@ var ServicesDef = g.NewInterface(
 			g.NewQueryStruct("Restore").
 				TextAssignment("VOLUME", g.ParameterOptions().DoubleQuotes().Required().NoEquals()).
 				NamedList("INSTANCES", "int", g.KeywordOptions().Required()).
-				Identifier("FromSnapshot", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FROM SNAPSHOT").Required()).
+				Identifier("FromSnapshot", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FROM SNAPSHOT").Required()).
 				WithValidation(g.ValidIdentifier, "FromSnapshot"),
 			g.KeywordOptions().SQL("RESTORE"),
 		).
@@ -142,7 +106,7 @@ var ServicesDef = g.NewInterface(
 				OptionalNumberAssignment("MAX_INSTANCES", g.ParameterOptions()).
 				OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
 				OptionalNumberAssignment("MIN_READY_INSTANCES", g.ParameterOptions()).
-				OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
+				OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
 				OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
 				OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalComment().
@@ -323,10 +287,10 @@ var ServicesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/execute-job-service",
 	g.NewQueryStruct("ExecuteJobService").
 		SQL("EXECUTE JOB SERVICE").
-		Identifier("InComputePool", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
-		Identifier("Name", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("NAME").Equals().Required()).
+		Identifier("InComputePool", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN COMPUTE POOL").Required()).
+		Identifier("Name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("NAME").Equals().Required()).
 		OptionalBooleanAssignment("ASYNC", g.ParameterOptions()).
-		OptionalIdentifier("QueryWarehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
+		OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
 		OptionalComment().
 		OptionalQueryStructField("ExternalAccessIntegrations", serviceExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 		OptionalQueryStructField("JobServiceFromSpecification", jobServiceFromSpecificationDef, g.KeywordOptions()).
