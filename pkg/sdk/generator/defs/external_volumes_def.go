@@ -8,6 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+// TODO [next PR]: regenerate external volumes and mark manual sections correctly
+
 var externalS3StorageLocationDef = g.NewQueryStruct("S3StorageLocationParams").
 	TextAssignment("NAME", g.ParameterOptions().SingleQuotes().Required()).
 	Assignment("STORAGE_PROVIDER", g.KindOfT[sdkcommons.S3StorageProvider](), g.ParameterOptions().SingleQuotes().Required()).
