@@ -172,6 +172,11 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 	}
 }
 
+// SdkClient returns the underlying SDK client for direct SQL execution
+func (tc *TestClient) SdkClient() *sdk.Client {
+	return tc.context.client
+}
+
 type TestClientContext struct {
 	client           *sdk.Client
 	database         string
