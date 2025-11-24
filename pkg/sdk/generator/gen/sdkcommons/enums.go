@@ -45,6 +45,7 @@ type (
 	ScimSecurityIntegrationScimClientOption                             string
 	SecretType                                                          string
 	StageCopyColumnMapOption                                            string
+	TaskState                                                           string
 	TraceLevel                                                          string
 )
 

@@ -1,85 +1,10 @@
-package sdk
+package defs
 
 import (
-	"encoding/json"
-	"fmt"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-type TaskState string
-
-const (
-	TaskStateStarted   TaskState = "started"
-	TaskStateSuspended TaskState = "suspended"
-)
-
-func ToTaskState(s string) (TaskState, error) {
-	switch taskState := TaskState(strings.ToLower(s)); taskState {
-	case TaskStateStarted, TaskStateSuspended:
-		return taskState, nil
-	default:
-		return "", fmt.Errorf("unknown task state: %s", s)
-	}
-}
-
-type TaskRelationsRepresentation struct {
-	Predecessors      []string `json:"Predecessors"`
-	FinalizerTask     string   `json:"FinalizerTask"`
-	FinalizedRootTask string   `json:"FinalizedRootTask"`
-}
-
-func (r *TaskRelationsRepresentation) ToTaskRelations() (TaskRelations, error) {
-	predecessors := make([]SchemaObjectIdentifier, len(r.Predecessors))
-	for i, predecessor := range r.Predecessors {
-		id, err := ParseSchemaObjectIdentifier(predecessor)
-		if err != nil {
-			return TaskRelations{}, err
-		}
-		predecessors[i] = id
-	}
-
-	taskRelations := TaskRelations{
-		Predecessors: predecessors,
-	}
-
-	if len(r.FinalizerTask) > 0 {
-		finalizerTask, err := ParseSchemaObjectIdentifier(r.FinalizerTask)
-		if err != nil {
-			return TaskRelations{}, err
-		}
-		taskRelations.FinalizerTask = &finalizerTask
-	}
-
-	if len(r.FinalizedRootTask) > 0 {
-		finalizedRootTask, err := ParseSchemaObjectIdentifier(r.FinalizedRootTask)
-		if err != nil {
-			return TaskRelations{}, err
-		}
-		taskRelations.FinalizedRootTask = &finalizedRootTask
-	}
-
-	return taskRelations, nil
-}
-
-type TaskRelations struct {
-	Predecessors      []SchemaObjectIdentifier
-	FinalizerTask     *SchemaObjectIdentifier
-	FinalizedRootTask *SchemaObjectIdentifier
-}
-
-func ToTaskRelations(s string) (TaskRelations, error) {
-	var taskRelationsRepresentation TaskRelationsRepresentation
-	if err := json.Unmarshal([]byte(s), &taskRelationsRepresentation); err != nil {
-		return TaskRelations{}, err
-	}
-	taskRelations, err := taskRelationsRepresentation.ToTaskRelations()
-	if err != nil {
-		return TaskRelations{}, err
-	}
-	return taskRelations, nil
-}
 
 var taskDbRow = g.DbStruct("taskDBRow").
 	Text("created_on").
@@ -113,14 +38,14 @@ var task = g.PlainStruct("Task").
 	Text("SchemaName").
 	Text("Owner").
 	Text("Comment").
-	Field("Warehouse", g.KindOfTPointer[AccountObjectIdentifier]()).
+	Field("Warehouse", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier]()).
 	Text("Schedule").
-	Field("Predecessors", g.KindOfTSlice[SchemaObjectIdentifier]()).
-	Field("State", g.KindOfT[TaskState]()).
+	Field("Predecessors", g.KindOfTSlice[sdkcommons.SchemaObjectIdentifier]()).
+	Field("State", g.KindOfT[sdkcommons.TaskState]()).
 	Text("Definition").
 	Text("Condition").
 	Bool("AllowOverlappingExecution").
-	Field("ErrorIntegration", g.KindOfTPointer[AccountObjectIdentifier]()).
+	Field("ErrorIntegration", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier]()).
 	Text("LastCommittedOn").
 	Text("LastSuspendedOn").
 	Text("OwnerRoleType").
@@ -130,14 +55,14 @@ var task = g.PlainStruct("Task").
 	Text("LastSuspendedReason")
 
 var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
-	OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
+	OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
 	OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 	WithValidation(g.ExactlyOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize")
 
 var TasksDef = g.NewInterface(
 	"Tasks",
 	"Task",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-task",
@@ -154,13 +79,13 @@ var TasksDef = g.NewInterface(
 			OptionalSessionParameters().
 			OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
 			OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
-			OptionalIdentifier("ErrorIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
+			OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-			OptionalIdentifier("Finalize", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("FINALIZE")).
+			OptionalIdentifier("Finalize", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("FINALIZE")).
 			OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
 			OptionalTags().
 			OptionalNumberAssignment("USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS", g.ParameterOptions()).
-			ListAssignment("AFTER", g.KindOfT[SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
+			ListAssignment("AFTER", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
@@ -183,11 +108,11 @@ var TasksDef = g.NewInterface(
 			OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
 			OptionalSessionParameters().
 			OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
-			OptionalIdentifier("ErrorIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
+			OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-			OptionalIdentifier("Finalize", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("FINALIZE")).
+			OptionalIdentifier("Finalize", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("FINALIZE")).
 			OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", g.ParameterOptions()).
-			ListAssignment("AFTER", g.KindOfT[SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
+			ListAssignment("AFTER", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
@@ -203,7 +128,7 @@ var TasksDef = g.NewInterface(
 			SQL("TASK").
 			Name().
 			SQL("CLONE").
-			Identifier("sourceTask", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+			Identifier("sourceTask", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 			OptionalSQL("COPY GRANTS").
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifier, "sourceTask"),
@@ -222,14 +147,14 @@ var TasksDef = g.NewInterface(
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("TaskSet").
-					OptionalIdentifier("Warehouse", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
+					OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
 					OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
 					OptionalTextAssignment("CONFIG", g.ParameterOptions().NoQuotes()).
 					OptionalBooleanAssignment("ALLOW_OVERLAPPING_EXECUTION", nil).
 					OptionalNumberAssignment("USER_TASK_TIMEOUT_MS", nil).
 					OptionalNumberAssignment("SUSPEND_TASK_AFTER_NUM_FAILURES", nil).
-					OptionalIdentifier("ErrorIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
+					OptionalIdentifier("ErrorIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("ERROR_INTEGRATION")).
 					OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 					OptionalSessionParameters().
 					OptionalNumberAssignment("TASK_AUTO_RETRY_ATTEMPTS", nil).
@@ -259,7 +184,7 @@ var TasksDef = g.NewInterface(
 			).
 			OptionalSetTags().
 			OptionalUnsetTags().
-			OptionalIdentifier("SetFinalize", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("SET FINALIZE")).
+			OptionalIdentifier("SetFinalize", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Equals().SQL("SET FINALIZE")).
 			OptionalSQL("UNSET FINALIZE").
 			OptionalTextAssignment("MODIFY AS", g.ParameterOptions().NoQuotes().NoEquals()).
 			OptionalTextAssignment("MODIFY WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
