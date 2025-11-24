@@ -196,6 +196,20 @@ func TestInt_Notebooks(t *testing.T) {
 		)
 	})
 
+	t.Run("alter: set non-existing warehouse", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateNotebookRequest(id)
+
+		err := client.Notebooks.Create(ctx, request)
+		require.NoError(t, err)
+
+		setRequest := sdk.NewNotebookSetRequest().WithWarehouse(sdk.NewAccountObjectIdentifier("invalid warehouse"))
+		alterRequest := sdk.NewAlterNotebookRequest(id).WithSet(*setRequest)
+
+		err = client.Notebooks.Alter(ctx, alterRequest)
+		require.Error(t, err)
+	})
+
 	t.Run("alter: unset", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 

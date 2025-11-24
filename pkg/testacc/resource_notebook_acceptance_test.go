@@ -1,7 +1,6 @@
 package testacc
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -648,7 +647,10 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 }
 
 func TestAcc_notebook_WarehouseSchemaLevelChange(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	id := sdk.NewSchemaObjectIdentifier(schema.DatabaseName, schema.Name, "test")
 
 	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
 	t.Cleanup(warehouseCleanup)
@@ -699,13 +701,7 @@ func TestAcc_notebook_WarehouseSchemaLevelChange(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					ctx := context.Background()
-					schemaId := sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName())
-					query := fmt.Sprintf(`ALTER SCHEMA %s SET DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE = '%s'`, schemaId.FullyQualifiedName(), warehouse.ID().Name())
-					_, err := testClient().SdkClient().ExecForTests(ctx, query)
-					if err != nil {
-						t.Fatalf("Failed to alter schema: %v", err)
-					}
+					testClient().Schema.AlterDefaultStreamlitNotebookWarehouse(t, id, warehouse.ID())
 				},
 				Config: accconfig.FromModels(t, modelBasic),
 				Check:  assertThat(t, assertBasic...),
@@ -719,12 +715,10 @@ func TestAcc_Notebook_Validations(t *testing.T) {
 
 	modelInvalidIdleAutoShutdownTimeSeconds := model.NotebookFromId("test", id).WithIdleAutoShutdownTimeSeconds(0)
 
-	stage, stageCleanup := testClient().Stage.CreateStage(t)
-	t.Cleanup(stageCleanup)
+	stage := sdk.NewSchemaObjectIdentifier("db", "schema", "stage")
+	path := "test/path"
 
-	path := testClient().Stage.PutOnStageWithPath(t, stage.ID(), "testdata", "example.ipynb")
-
-	modelFromWithoutMainFile := model.NotebookFromId("test", id).WithFrom(path, stage.ID())
+	modelFromWithoutMainFile := model.NotebookFromId("test", id).WithFrom(path, stage)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
