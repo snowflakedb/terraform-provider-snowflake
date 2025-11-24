@@ -32,7 +32,7 @@ usage: migration_script [-import=<statement|block>] <object_type>
 import optional flag determines the output format for import statements. The possible values are:
 	- "statement" will print appropriate terraform import command at the end of generated content (default) (see https://developer.hashicorp.com/terraform/cli/commands/import)
 	- "block" will generate import block at the end of generated content (see https://developer.hashicorp.com/terraform/language/import)
-	
+
 object_type represents the type of Snowflake object you want to generate terraform resources for.
 	It is a required positional argument and possible values are listed below.
 	A given object_type corresponds to a specific Snowflake output expected as input to the script.
@@ -51,7 +51,13 @@ object_type represents the type of Snowflake object you want to generate terrafo
 			Limitations:
 				- grants on 'future' or on 'all' objects are not supported
 				- all_privileges and always_apply fields are not supported
-		
+		- "schemas" which expects a converted CSV output from the snowflake_schemas data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMA output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "SCHEMA".
+			For more details about using multiple sources, visit https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Supported resources:
+				- snowflake_schema
+
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
 `,
@@ -130,6 +136,52 @@ CREATE DATABASE,ACCOUNT,ACCOUNT_LOCATOR,ROLE,ROLE_NAME,false`,
 import {
   to = snowflake_grant_privileges_to_account_role.snowflake_generated_grant_on_account_to_ROLE_NAME_without_grant_option
   id = "\"ROLE_NAME\"|false|false|CREATE DATABASE|OnAccount"
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for schemas",
+			args: []string{"cmd", "-import=block", "schemas"},
+			input: `
+"comment","created_on","database_name","dropped_on","is_current","is_default","name","options","owner","owner_role_type","retention_time","catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level","default_ddl_collation_value","default_ddl_collation_level","enable_console_output_value","enable_console_output_level","external_volume_value","external_volume_level","log_level_value","log_level_level","max_data_extension_time_in_days_value","max_data_extension_time_in_days_level","pipe_execution_paused_value","pipe_execution_paused_level","quoted_identifiers_ignore_case_value","quoted_identifiers_ignore_case_level","replace_invalid_characters_value","replace_invalid_characters_level","storage_serialization_policy_value","storage_serialization_policy_level","suspend_task_after_num_failures_value","suspend_task_after_num_failures_level","task_auto_retry_attempts_value","task_auto_retry_attempts_level","trace_level_value","trace_level_level","user_task_managed_initial_warehouse_size_value","user_task_managed_initial_warehouse_size_level","user_task_minimum_trigger_interval_in_seconds_value","user_task_minimum_trigger_interval_in_seconds_level","user_task_timeout_ms_value","user_task_timeout_ms_level"
+"","2025-11-20 04:53:26.906 -0800 PST","DATABASE","0001-01-01 00:00:00 +0000 UTC",false,false,"BASIC","","ACCOUNTADMIN","ROLE","1","","","1","","","","false","","","","OFF","","14","","false","","false","","false","","OPTIMIZED","","10","","0","","OFF","","Medium","","30","","3600000",""
+"comment","2025-11-20 04:53:25.625 -0800 PST","DATABASE","0001-01-01 00:00:00 +0000 UTC",true,true,"COMPLETE","TRANSIENT, MANAGED ACCESS","ACCOUNTADMIN","ROLE","1","CATALOG","SCHEMA","1","SCHEMA","en_US-trim","SCHEMA","true","SCHEMA","EXTERNAL_VOLUME","SCHEMA","INFO","SCHEMA","10","SCHEMA","true","SCHEMA","true","SCHEMA","true","SCHEMA","COMPATIBLE","SCHEMA","10","SCHEMA","10","SCHEMA","PROPAGATE","SCHEMA","MEDIUM","SCHEMA","30","SCHEMA","3600000","SCHEMA"`,
+			expectedOutput: `resource "snowflake_schema" "snowflake_generated_schema_DATABASE_BASIC" {
+  database = "DATABASE"
+  name = "BASIC"
+}
+
+resource "snowflake_schema" "snowflake_generated_schema_DATABASE_COMPLETE" {
+  database = "DATABASE"
+  name = "COMPLETE"
+  catalog = "CATALOG"
+  comment = "comment"
+  data_retention_time_in_days = 1
+  default_ddl_collation = "en_US-trim"
+  enable_console_output = true
+  external_volume = "EXTERNAL_VOLUME"
+  is_transient = "true"
+  log_level = "INFO"
+  max_data_extension_time_in_days = 10
+  pipe_execution_paused = true
+  quoted_identifiers_ignore_case = true
+  replace_invalid_characters = true
+  storage_serialization_policy = "COMPATIBLE"
+  suspend_task_after_num_failures = 10
+  task_auto_retry_attempts = 10
+  trace_level = "PROPAGATE"
+  user_task_managed_initial_warehouse_size = "MEDIUM"
+  user_task_minimum_trigger_interval_in_seconds = 30
+  user_task_timeout_ms = 3600000
+  with_managed_access = "true"
+}
+import {
+  to = snowflake_schema.snowflake_generated_schema_DATABASE_BASIC
+  id = "\"DATABASE\".\"BASIC\""
+}
+import {
+  to = snowflake_schema.snowflake_generated_schema_DATABASE_COMPLETE
+  id = "\"DATABASE\".\"COMPLETE\""
 }
 `,
 		},

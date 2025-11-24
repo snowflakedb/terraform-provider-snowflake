@@ -69,6 +69,12 @@ where script options are:
     Limitations:
       - grants on 'future' or on 'all' objects are not supported
       - all_privileges and always_apply fields are not supported
+  - `schemas` which expects a converted CSV output from the snowflake_schemas data source
+    To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMA output, so the CSV header looks like `"comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...`
+    When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "SCHEMA".
+    For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
+    Supported resources:
+      - snowflake_schema
 - **INPUT**:
   - Migration script operates on STDIN input in CSV format. You can redirect the input from a file or pipe it from another command.
 - **OUTPUT**:
@@ -288,7 +294,7 @@ No changes. Your infrastructure matches the configuration.
 #### 5. Update generated resources
 
 The last step is optional, but highly recommended. The generated resources have generic names, which are not very user-friendly,
-and they do not depend on the existing role resources which they refer to in their configuration. 
+and they do not depend on the existing role resources which they refer to in their configuration.
 
 To rename the resources, you can use the [terraform state mv](https://developer.hashicorp.com/terraform/cli/commands/state/mv) command or [moved block](https://developer.hashicorp.com/terraform/language/moved).
 
@@ -377,7 +383,7 @@ SHOW GRANTS ON ACCOUNT;
 and filter the output to only include the grants to the roles we are interested in.
 
 > If you use SnowSight, you can click on the "Download" button and select "CSV" format.
-> 
+>
 > ![Download CSV button in SnowSight](./images/csv_output_download.png)
 
 Whatever way you choose, save the output to a CSV file as `example.csv`.
@@ -525,6 +531,58 @@ which means that the resources have been successfully imported into the state.
 Remember that, if you chose to use the import block approach, [after importing you can remove the import blocks from the configuration file](https://developer.hashicorp.com/terraform/language/import#plan-and-apply-an-impor).
 
 By following the above steps, you can migrate other existing Snowflake objects into Terraform and start managing them!
+
+### Multiple sources
+Some Snowflake objects (like schemas) have fields returned from more than one SQL command. That's why simply using one `SHOW ...` output will not work. Fields from `DESCRIBE` or `SHOW PARAMETERS` must be also processed.
+But outputs from all of these commands must be mapped to the input CSV value of the migration script. To make this easy, we can use a data source output for a given object, which already has the logic for mapping multiple
+SQL queries and returning all necessary information.
+
+In general, what we need to do is:
+1. Get the necessary objects in a object data source.
+1. Export the data source state with output blocks.
+1. Process the output blocks data to match the expected CSV in the script.
+1. Run the migration script with processed data.
+
+Now, let's look into more details.
+
+As an example, let's import all schemas in a given database. First, we need to define a data source for schemas and declare an output:
+```terraform
+data "snowflake_schemas" "test" {
+  in {
+    database = "DATABASE"
+  }
+}
+
+output "schemas" {
+  value = data.snowflake_schemas.test.schemas
+}
+```
+
+Now, get the data with `terraform apply`. The schemas should be present in your state and in the declared output. Now, we can perform some manipulations to convert
+the output format to the desired CSV format:
+1. Extract the `show_output` data to a temporary file.
+1. Extract the `parameters` data to a temporary file and convert it to a "key": "value" format instead of list of attributes.
+1. Merge the two files into one. The resulting table is a list of objects with merged fields from `show_output` and `parameters`.
+1. Convert the JSON file to a CSV file. This CSV file can be now used in the migration script.
+
+You can find the given steps in bash below:
+```bash
+tf output -json | jq '.schemas[]' > output.json
+cat output.json | jq '[.schemas.value[] | .show_output[0]]' > show_output.json
+cat output.json | jq '[.schemas.value[] | .parameters[0] | to_entries | map({("\(.key)_value"): .value[0].value, ("\(.key)_level"): .value[0].level}) | add]' > parameters.json
+jq -s 'transpose | map(add)' show_output.json parameters.json > merged.json
+jq -r '
+  (.[0] | keys_unsorted) as $keys |
+  ($keys, (.[] | [.[$keys[]]])) | @csv
+' merged.json > merged.csv
+```
+
+Now, we can run the migration script like:
+```shell
+go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@main -import=block schemas < ./merged.csv
+```
+
+This will output the generated configuration and import blocks for the specified schemas.
 
 ## Limitations
 

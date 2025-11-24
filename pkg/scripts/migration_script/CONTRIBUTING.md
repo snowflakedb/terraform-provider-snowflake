@@ -19,7 +19,7 @@ We would appreciate that any planned changes are discussed first (e.g., in an is
 
 If you want to add a new object type, you need to define it in the migration script.
 The [`program.go`](./program.go) file contains the main logic for the user interactions with the migration script through the terminal.
-At the top of the file, you need to add a new constant for the object type. Remember to reflect this change 
+At the top of the file, you need to add a new constant for the object type. Remember to reflect this change
 in the help text (in `parseInputArguments` method for the Program struct) and the readme file ([syntax section](./README.md#syntax)).
 
 Next, you can use the newly defined object type in the `generateOutput` Program method.
@@ -65,13 +65,13 @@ type databaseRow struct {
 Under schema definition, you need to provide a conversion function that takes the CSV schema struct as input and returns the corresponding SDK object.
 In our case, it would be `func (row databaseRow) convert() (*sdk.Database, error)`.
 
-> The SDK's databaseRow has the same convert method. 
+> The SDK's databaseRow has the same convert method.
 > It's worth checking as it may contain the necessary parts for converting Snowflake output for certain cases.
 
 ## 3. Providing an object migration function
 
 Now, you need to provide a function that would take the CSV input and return the generated resources and imports in the form of string (see `HandleGrants` function).
-The file with mapping function should be placed in the file named `<object_type>_migration.go`, where `<object_type>` is the name of the object type you are working with.
+The file with mapping function should be placed in the file named `mappings_<object_type>.go`, where `<object_type>` is the name of the object type you are working with.
 
 At the top of the function, you need to parse the CSV input into the CSV schema struct you have defined in the previous step.
 This is done by the predefined `ConvertCsvInput` function (see `HandleGrants` for example usage).
@@ -81,7 +81,7 @@ To do this, you should use the model package in our project that contains the lo
 It should contain the resource model struct and functions for transforming the model (if not you should add them, look at [generators documentation](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/acceptance/bettertestspoc/README.md)).
 They in combination with `TransformResourceModel` function produce the final resource definitions output.
 
-To generate the import statements or blocks, you should use the `TransformImportModel` function that expects you 
+To generate the import statements or blocks, you should use the `TransformImportModel` function that expects you
 to provide the import model with resource address and identifier used for importing a given object.
 You should look at given resource documentation to understand how to construct the resource import (e.g., https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/database#import).
 
