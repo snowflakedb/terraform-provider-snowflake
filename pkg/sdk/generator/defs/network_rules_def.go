@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var NetworkRulesDef = g.NewInterface(
+var networkRulesDef = g.NewInterface(
 	"NetworkRules",
 	"NetworkRule",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

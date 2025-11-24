@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var SessionPoliciesDef = g.NewInterface(
+var sessionPoliciesDef = g.NewInterface(
 	"SessionPolicies",
 	"SessionPolicy",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

@@ -208,7 +208,7 @@ var viewUnsetColumnTags = g.NewQueryStruct("ViewUnsetColumnTags").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 	UnsetTags()
 
-var ViewsDef = g.NewInterface(
+var viewsDef = g.NewInterface(
 	"Views",
 	"View",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

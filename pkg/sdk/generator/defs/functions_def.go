@@ -46,7 +46,7 @@ var (
 					List("SecretsList", "SecretReference", g.ListOptions().Required().MustParentheses())
 )
 
-var FunctionsDef = g.NewInterface(
+var functionsDef = g.NewInterface(
 	"Functions",
 	"Function",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments](),

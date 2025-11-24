@@ -127,7 +127,7 @@ var externalAzureStageParamsDef = g.NewQueryStruct("ExternalAzureStageParams").
 	).
 	WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
 
-var StagesDef = g.NewInterface(
+var stagesDef = g.NewInterface(
 	"Stages",
 	"Stage",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

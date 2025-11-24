@@ -48,7 +48,7 @@ var jobServiceFromSpecificationTemplateDef = g.NewQueryStruct("JobServiceFromSpe
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
 	WithValidation(g.ExactlyOneValueSet, "Location", "SpecificationTemplate")
 
-var ServicesDef = g.NewInterface(
+var servicesDef = g.NewInterface(
 	"Services",
 	"Service",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

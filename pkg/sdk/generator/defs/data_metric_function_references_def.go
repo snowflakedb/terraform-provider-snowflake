@@ -23,7 +23,7 @@ var dataMetricFunctionReferenceFunctionArgumentsDef = g.NewQueryStruct("dataMetr
 	).WithValidation(g.ValidateValueSet, "RefEntityDomain").
 	WithValidation(g.ValidateValueSet, "refEntityName")
 
-var DataMetricFunctionReferencesDef = g.NewInterface(
+var dataMetricFunctionReferencesDef = g.NewInterface(
 	"DataMetricFunctionReferences",
 	"DataMetricFunctionReference",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

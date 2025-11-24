@@ -92,7 +92,7 @@ var notebookDetails = g.PlainStruct("NotebookDetails").
 	OptionalText("LastVersionGitCommitHash").
 	OptionalText("LiveVersionLocationUri")
 
-var NotebooksDef = g.NewInterface(
+var notebooksDef = g.NewInterface(
 	"Notebooks",
 	"Notebook",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

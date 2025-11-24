@@ -45,7 +45,7 @@ var externalFunctionUnset = g.NewQueryStruct("ExternalFunctionUnset").
 	OptionalSQL("RESPONSE_TRANSLATOR").
 	WithValidation(g.AtLeastOneValueSet, "Comment", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "Secure", "RequestTranslator", "ResponseTranslator")
 
-var ExternalFunctionsDef = g.NewInterface(
+var externalFunctionsDef = g.NewInterface(
 	"ExternalFunctions",
 	"ExternalFunction",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments](),

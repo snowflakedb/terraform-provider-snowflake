@@ -25,7 +25,7 @@ var streamlitUnset = g.NewQueryStruct("StreamlitUnset").
 	OptionalSQL("TITLE").
 	WithValidation(g.AtLeastOneValueSet, "QueryWarehouse", "Title", "Comment")
 
-var StreamlitsDef = g.NewInterface(
+var streamlitsDef = g.NewInterface(
 	"Streamlits",
 	"Streamlit",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

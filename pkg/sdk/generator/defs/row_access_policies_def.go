@@ -28,7 +28,7 @@ var rowAccessPolicy = g.PlainStruct("RowAccessPolicy").
 	Text("Options").
 	Text("OwnerRoleType")
 
-var RowAccessPoliciesDef = g.NewInterface(
+var rowAccessPoliciesDef = g.NewInterface(
 	"RowAccessPolicies",
 	"RowAccessPolicy",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

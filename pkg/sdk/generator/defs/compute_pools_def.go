@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var ComputePoolsDef = g.NewInterface(
+var computePoolsDef = g.NewInterface(
 	"ComputePools",
 	"ComputePool",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

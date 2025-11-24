@@ -13,7 +13,7 @@ var alterServiceSet = g.NewQueryStruct("CortexSearchServiceSet").
 	OptionalComment().
 	WithValidation(g.AtLeastOneValueSet, "TargetLag", "Warehouse", "Comment")
 
-var CortexSearchServicesDef = g.NewInterface(
+var cortexSearchServicesDef = g.NewInterface(
 	"CortexSearchServices",
 	"CortexSearchService",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

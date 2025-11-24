@@ -114,7 +114,7 @@ var materializedViewDetails = g.PlainStruct("MaterializedViewDetails").
 	OptionalText("Expression").
 	OptionalText("Comment")
 
-var MaterializedViewsDef = g.NewInterface(
+var materializedViewsDef = g.NewInterface(
 	"MaterializedViews",
 	"MaterializedView",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

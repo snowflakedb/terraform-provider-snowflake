@@ -219,7 +219,7 @@ var listingVersion = g.PlainStruct("ListingVersion").
 	Text("SourceLocationUrl").
 	OptionalText("GitCommitHash")
 
-var ListingsDef = g.NewInterface(
+var listingsDef = g.NewInterface(
 	"Listings",
 	"Listing",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

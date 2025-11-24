@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var OrganizationAccountsDef = g.NewInterface(
+var organizationAccountsDef = g.NewInterface(
 	"OrganizationAccounts",
 	"OrganizationAccount",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

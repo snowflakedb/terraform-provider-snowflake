@@ -28,7 +28,7 @@ var managedAccount = g.PlainStruct("ManagedAccount").
 	Bool("IsReader").
 	OptionalText("Comment")
 
-var ManagedAccountsDef = g.NewInterface(
+var managedAccountsDef = g.NewInterface(
 	"ManagedAccounts",
 	"ManagedAccount",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

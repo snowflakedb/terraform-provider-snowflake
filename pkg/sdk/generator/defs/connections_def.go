@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var ConnectionsDef = g.NewInterface(
+var connectionsDef = g.NewInterface(
 	"Connections",
 	"Connection",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

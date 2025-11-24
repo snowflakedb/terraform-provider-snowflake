@@ -262,7 +262,7 @@ var scimIntegrationUnsetDef = g.NewQueryStruct("ScimIntegrationUnset").
 	OptionalSQL("SYNC_PASSWORD").
 	WithValidation(g.AtLeastOneValueSet, "Enabled", "NetworkPolicy", "SyncPassword")
 
-var SecurityIntegrationsDef = g.NewInterface(
+var securityIntegrationsDef = g.NewInterface(
 	"SecurityIntegrations",
 	"SecurityIntegration",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

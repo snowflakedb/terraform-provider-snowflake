@@ -9,7 +9,7 @@ import (
 var ApiIntegrationEndpointPrefixDef = g.NewQueryStruct("ApiIntegrationEndpointPrefix").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
 // TODO [SNOW-1016561]: all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
-var ApiIntegrationsDef = g.NewInterface(
+var apiIntegrationsDef = g.NewInterface(
 	"ApiIntegrations",
 	"ApiIntegration",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

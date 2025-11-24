@@ -35,7 +35,7 @@ var applicationReferences = g.NewQueryStruct("ApplicationReferences").ListQueryS
 	g.ParameterOptions().Parentheses().NoEquals(),
 )
 
-var ApplicationsDef = g.NewInterface(
+var applicationsDef = g.NewInterface(
 	"Applications",
 	"Application",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

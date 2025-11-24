@@ -32,7 +32,7 @@ var (
 						ListAssignment("BLOCKED_NETWORK_RULE_LIST", "SchemaObjectIdentifier", g.ParameterOptions().Parentheses()).
 						WithValidation(g.ExactlyOneValueSet, "AllowedNetworkRuleList", "BlockedNetworkRuleList")
 
-	NetworkPoliciesDef = g.NewInterface(
+	networkPoliciesDef = g.NewInterface(
 		"NetworkPolicies",
 		"NetworkPolicy",
 		g.KindOfT[sdkcommons.AccountObjectIdentifier](),

@@ -8,8 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO [next PR]: regenerate external volumes and mark manual sections correctly
-
 var externalS3StorageLocationDef = g.NewQueryStruct("S3StorageLocationParams").
 	TextAssignment("NAME", g.ParameterOptions().SingleQuotes().Required()).
 	Assignment("STORAGE_PROVIDER", g.KindOfT[sdkcommons.S3StorageProvider](), g.ParameterOptions().SingleQuotes().Required()).
@@ -61,7 +59,8 @@ var storageLocationDef = g.NewQueryStruct("ExternalVolumeStorageLocation").
 	).
 	WithValidation(g.ExactlyOneValueSet, "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams")
 
-var ExternalVolumesDef = g.NewInterface(
+// TODO [next PR]: regenerate external volumes and mark manual sections correctly
+var externalVolumesDef = g.NewInterface(
 	"ExternalVolumes",
 	"ExternalVolume",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

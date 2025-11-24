@@ -12,7 +12,7 @@ var applicationRoleKindOfRole = g.NewQueryStruct("KindOfRole").
 	OptionalIdentifier("ApplicationName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("APPLICATION")).
 	WithValidation(g.ExactlyOneValueSet, "RoleName", "ApplicationRoleName", "ApplicationName")
 
-var ApplicationRolesDef = g.NewInterface(
+var applicationRolesDef = g.NewInterface(
 	"ApplicationRoles",
 	"ApplicationRole",
 	g.KindOfT[sdkcommons.DatabaseObjectIdentifier](),

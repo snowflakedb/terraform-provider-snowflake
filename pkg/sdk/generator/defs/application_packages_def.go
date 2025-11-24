@@ -52,7 +52,7 @@ var applicationPackageUnset = g.NewQueryStruct("ApplicationPackageUnset").
 	OptionalSQL("DISTRIBUTION").
 	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "DefaultDdlCollation", "Comment", "Distribution")
 
-var ApplicationPackagesDef = g.NewInterface(
+var applicationPackagesDef = g.NewInterface(
 	"ApplicationPackages",
 	"ApplicationPackage",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

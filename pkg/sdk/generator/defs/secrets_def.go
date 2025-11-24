@@ -103,7 +103,7 @@ var secretSet = g.NewQueryStruct("SecretSet").
 var secretUnset = g.NewQueryStruct("SecretUnset").
 	PredefinedQueryStructField("Comment", "*bool", g.KeywordOptions().SQL("SET COMMENT = NULL"))
 
-var SecretsDef = g.NewInterface(
+var secretsDef = g.NewInterface(
 	"Secrets",
 	"Secret",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

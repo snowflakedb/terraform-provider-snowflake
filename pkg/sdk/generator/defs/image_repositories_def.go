@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var ImageRepositoriesDef = g.NewInterface(
+var imageRepositoriesDef = g.NewInterface(
 	"ImageRepositories",
 	"ImageRepository",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

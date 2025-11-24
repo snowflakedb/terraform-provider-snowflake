@@ -55,7 +55,7 @@ var eventTableSearchOptimizationAction = g.NewQueryStruct("EventTableSearchOptim
 		g.KeywordOptions().SQL("DROP"),
 	)
 
-var EventTablesDef = g.NewInterface(
+var eventTablesDef = g.NewInterface(
 	"EventTables",
 	"EventTable",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

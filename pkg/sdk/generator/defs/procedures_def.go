@@ -74,7 +74,7 @@ var procedureWithClause = g.NewQueryStruct("ProcedureWithClause").
 	PredefinedQueryStructField("CteColumns", "[]string", g.KeywordOptions().Parentheses()).
 	PredefinedQueryStructField("Statement", "string", g.ParameterOptions().NoEquals().NoQuotes().SQL("AS").Required())
 
-var ProceduresDef = g.NewInterface(
+var proceduresDef = g.NewInterface(
 	"Procedures",
 	"Procedure",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments](),

@@ -59,7 +59,7 @@ var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
 	OptionalAssignment("USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 	WithValidation(g.ExactlyOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize")
 
-var TasksDef = g.NewInterface(
+var tasksDef = g.NewInterface(
 	"Tasks",
 	"Task",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

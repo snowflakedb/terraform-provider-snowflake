@@ -8,7 +8,7 @@ import (
 
 var StorageLocationDef = g.NewQueryStruct("StorageLocation").Text("Path", g.KeywordOptions().SingleQuotes().Required())
 
-var StorageIntegrationsDef = g.NewInterface(
+var storageIntegrationsDef = g.NewInterface(
 	"StorageIntegrations",
 	"StorageIntegration",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

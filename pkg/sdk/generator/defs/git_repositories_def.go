@@ -32,7 +32,7 @@ var gitRepository = g.PlainStruct("GitRepository").
 	OptionalText("Comment").
 	OptionalTime("LastFetchedAt")
 
-var GitRepositoriesDef = g.NewInterface(
+var gitRepositoriesDef = g.NewInterface(
 	"GitRepositories",
 	"GitRepository",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

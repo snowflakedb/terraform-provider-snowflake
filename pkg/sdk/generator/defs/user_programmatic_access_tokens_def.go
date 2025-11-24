@@ -48,7 +48,7 @@ var rotateProgrammaticAccessTokenResultDef = g.PlainStruct("RotateProgrammaticAc
 	Text("TokenSecret").
 	Text("RotatedTokenName")
 
-var UserProgrammaticAccessTokensDef = g.NewInterface(
+var userProgrammaticAccessTokensDef = g.NewInterface(
 	"UserProgrammaticAccessTokens",
 	"UserProgrammaticAccessToken",
 	// This works on an assumption that every object has an identifier. PATs do not have identifiers, and they cannot be referenced like "USER"."PAT", but their name part behaves like an identifier.

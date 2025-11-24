@@ -40,7 +40,7 @@ var semanticViewDetails = g.PlainStruct("SemanticViewDetails").
 	Text("Property").
 	Text("PropertyValue")
 
-var SemanticViewsDef = g.NewInterface(
+var semanticViewsDef = g.NewInterface(
 	"SemanticViews",
 	"SemanticView",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

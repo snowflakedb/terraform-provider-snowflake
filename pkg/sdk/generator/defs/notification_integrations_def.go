@@ -10,7 +10,7 @@ var NotificationIntegrationAllowedRecipientDef = g.NewQueryStruct("NotificationI
 	Text("Email", g.KeywordOptions().SingleQuotes().Required())
 
 // TODO [SNOW-1016561]: all integrations reuse almost the same show, drop, and describe. For now we are copying it. Consider reusing in linked issue.
-var NotificationIntegrationsDef = g.NewInterface(
+var notificationIntegrationsDef = g.NewInterface(
 	"NotificationIntegrations",
 	"NotificationIntegration",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),

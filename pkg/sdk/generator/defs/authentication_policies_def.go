@@ -37,7 +37,7 @@ var (
 							WithValidation(g.AtLeastOneValueSet, "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers")
 )
 
-var AuthenticationPoliciesDef = g.NewInterface(
+var authenticationPoliciesDef = g.NewInterface(
 	"AuthenticationPolicies",
 	"AuthenticationPolicy",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

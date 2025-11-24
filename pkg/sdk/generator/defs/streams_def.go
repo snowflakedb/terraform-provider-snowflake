@@ -56,7 +56,7 @@ var (
 				Field("InvalidReason", "*string").
 				Field("OwnerRoleType", "*string")
 
-	StreamsDef = g.NewInterface(
+	streamsDef = g.NewInterface(
 		"Streams",
 		"Stream",
 		g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
