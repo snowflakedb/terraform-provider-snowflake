@@ -1,119 +1,42 @@
-package sdk
+package defs
 
 import (
 	"fmt"
-	"strings"
 
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-type (
-	StorageProvider   string
-	S3StorageProvider string
-	S3EncryptionType  string
-	GCSEncryptionType string
-)
-
-var (
-	S3EncryptionTypeSseS3   S3EncryptionType  = "AWS_SSE_S3"
-	S3EncryptionTypeSseKms  S3EncryptionType  = "AWS_SSE_KMS"
-	S3EncryptionNone        S3EncryptionType  = "NONE"
-	GCSEncryptionTypeSseKms GCSEncryptionType = "GCS_SSE_KMS"
-	GCSEncryptionTypeNone   GCSEncryptionType = "NONE"
-	S3StorageProviderS3     S3StorageProvider = "S3"
-	S3StorageProviderS3GOV  S3StorageProvider = "S3GOV"
-	StorageProviderGCS      StorageProvider   = "GCS"
-	StorageProviderAzure    StorageProvider   = "AZURE"
-	StorageProviderS3       StorageProvider   = "S3"
-	StorageProviderS3GOV    StorageProvider   = "S3GOV"
-)
-
-var AllStorageProviderValues = []StorageProvider{
-	StorageProviderGCS,
-	StorageProviderAzure,
-	StorageProviderS3,
-	StorageProviderS3GOV,
-}
-
-func ToS3EncryptionType(s string) (S3EncryptionType, error) {
-	switch strings.ToUpper(s) {
-	case string(S3EncryptionTypeSseS3):
-		return S3EncryptionTypeSseS3, nil
-	case string(S3EncryptionTypeSseKms):
-		return S3EncryptionTypeSseKms, nil
-	case string(S3EncryptionNone):
-		return S3EncryptionNone, nil
-	default:
-		return "", fmt.Errorf("invalid s3 encryption type: %s", s)
-	}
-}
-
-func ToGCSEncryptionType(s string) (GCSEncryptionType, error) {
-	switch strings.ToUpper(s) {
-	case string(GCSEncryptionTypeSseKms):
-		return GCSEncryptionTypeSseKms, nil
-	case string(GCSEncryptionTypeNone):
-		return GCSEncryptionTypeNone, nil
-	default:
-		return "", fmt.Errorf("invalid gcs encryption type: %s", s)
-	}
-}
-
-func ToStorageProvider(s string) (StorageProvider, error) {
-	switch strings.ToUpper(s) {
-	case string(StorageProviderGCS):
-		return StorageProviderGCS, nil
-	case string(StorageProviderAzure):
-		return StorageProviderAzure, nil
-	case string(StorageProviderS3):
-		return StorageProviderS3, nil
-	case string(StorageProviderS3GOV):
-		return StorageProviderS3GOV, nil
-	default:
-		return "", fmt.Errorf("invalid storage provider: %s", s)
-	}
-}
-
-func ToS3StorageProvider(s string) (S3StorageProvider, error) {
-	switch strings.ToUpper(s) {
-	case string(S3StorageProviderS3):
-		return S3StorageProviderS3, nil
-	case string(S3StorageProviderS3GOV):
-		return S3StorageProviderS3GOV, nil
-	default:
-		return "", fmt.Errorf("invalid s3 storage provider: %s", s)
-	}
-}
 
 var externalS3StorageLocationDef = g.NewQueryStruct("S3StorageLocationParams").
 	TextAssignment("NAME", g.ParameterOptions().SingleQuotes().Required()).
-	Assignment("STORAGE_PROVIDER", g.KindOfT[S3StorageProvider](), g.ParameterOptions().SingleQuotes().Required()).
+	Assignment("STORAGE_PROVIDER", g.KindOfT[sdkcommons.S3StorageProvider](), g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalVolumeS3Encryption").
-			Assignment("TYPE", g.KindOfT[S3EncryptionType](), g.ParameterOptions().SingleQuotes().Required()).
+			Assignment("TYPE", g.KindOfT[sdkcommons.S3EncryptionType](), g.ParameterOptions().SingleQuotes().Required()).
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 	)
 
 var externalGCSStorageLocationDef = g.NewQueryStruct("GCSStorageLocationParams").
 	TextAssignment("NAME", g.ParameterOptions().SingleQuotes().Required()).
-	PredefinedQueryStructField("StorageProviderGcs", "string", g.StaticOptions().SQL(fmt.Sprintf("STORAGE_PROVIDER = '%s'", StorageProviderGCS))).
+	PredefinedQueryStructField("StorageProviderGcs", "string", g.StaticOptions().SQL(fmt.Sprintf("STORAGE_PROVIDER = '%s'", sdkcommons.StorageProviderGCS))).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalVolumeGCSEncryption").
-			Assignment("TYPE", g.KindOfT[GCSEncryptionType](), g.ParameterOptions().SingleQuotes().Required()).
+			Assignment("TYPE", g.KindOfT[sdkcommons.GCSEncryptionType](), g.ParameterOptions().SingleQuotes().Required()).
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 	)
 
 var externalAzureStorageLocationDef = g.NewQueryStruct("AzureStorageLocationParams").
 	TextAssignment("NAME", g.ParameterOptions().SingleQuotes().Required()).
-	PredefinedQueryStructField("StorageProviderAzure", "string", g.StaticOptions().SQL(fmt.Sprintf("STORAGE_PROVIDER = '%s'", StorageProviderAzure))).
+	PredefinedQueryStructField("StorageProviderAzure", "string", g.StaticOptions().SQL(fmt.Sprintf("STORAGE_PROVIDER = '%s'", sdkcommons.StorageProviderAzure))).
 	TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required())
 
@@ -139,7 +62,7 @@ var storageLocationDef = g.NewQueryStruct("ExternalVolumeStorageLocation").
 var ExternalVolumesDef = g.NewInterface(
 	"ExternalVolumes",
 	"ExternalVolume",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-external-volume",

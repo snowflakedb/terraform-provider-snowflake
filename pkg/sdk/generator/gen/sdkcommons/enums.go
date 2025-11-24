@@ -19,6 +19,7 @@ type (
 	ExternalStageS3EncryptionOption                                     string
 	FileFormatType                                                      string
 	FileFormatTypeOptions                                               string
+	GCSEncryptionType                                                   string
 	InternalStageEncryptionOption                                       string
 	ListingState                                                        string
 	ListingRevision                                                     string
@@ -38,13 +39,16 @@ type (
 	OrganizationAccountEdition                                          string
 	ReturnNullValues                                                    string
 	ReturnResultsBehavior                                               string
+	S3EncryptionType                                                    string
 	S3Protocol                                                          string
+	S3StorageProvider                                                   string
 	Saml2SecurityIntegrationSaml2ProviderOption                         string
 	Saml2SecurityIntegrationSaml2RequestedNameidFormatOption            string
 	ScimSecurityIntegrationRunAsRoleOption                              string
 	ScimSecurityIntegrationScimClientOption                             string
 	SecretType                                                          string
 	StageCopyColumnMapOption                                            string
+	StorageProvider                                                     string
 	TaskState                                                           string
 	TraceLevel                                                          string
 	ViewDataMetricScheduleStatusOperationOption                         string
@@ -57,4 +61,9 @@ const (
 	SecretTypeGenericString                SecretType = "GENERIC_STRING"
 	SecretTypeOAuth2ClientCredentials      SecretType = "OAUTH2_CLIENT_CREDENTIALS"       // #nosec G101
 	SecretTypeOAuth2AuthorizationCodeGrant SecretType = "OAUTH2_AUTHORIZATION_CODE_GRANT" // #nosec G101
+)
+
+const (
+	StorageProviderGCS   StorageProvider = "GCS"
+	StorageProviderAzure StorageProvider = "AZURE"
 )
