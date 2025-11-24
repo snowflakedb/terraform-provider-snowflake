@@ -14,6 +14,12 @@ type (
 	ExternalOauthSecurityIntegrationAnyRoleModeOption                   string
 	ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption string
 	ExternalOauthSecurityIntegrationTypeOption                          string
+	ExternalStageAzureEncryptionOption                                  string
+	ExternalStageGCSEncryptionOption                                    string
+	ExternalStageS3EncryptionOption                                     string
+	FileFormatType                                                      string
+	FileFormatTypeOptions                                               string
+	InternalStageEncryptionOption                                       string
 	ListingState                                                        string
 	ListingRevision                                                     string
 	Location                                                            string
@@ -37,6 +43,7 @@ type (
 	ScimSecurityIntegrationRunAsRoleOption                              string
 	ScimSecurityIntegrationScimClientOption                             string
 	SecretType                                                          string
+	StageCopyColumnMapOption                                            string
 	TraceLevel                                                          string
 )
 

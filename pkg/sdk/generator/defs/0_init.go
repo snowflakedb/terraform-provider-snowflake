@@ -40,6 +40,7 @@ func init() {
 		SequencesDef,
 		ServicesDef,
 		SessionPoliciesDef,
+		StagesDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

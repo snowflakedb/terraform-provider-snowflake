@@ -1,43 +1,9 @@
-package sdk
+package defs
 
-import g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
-type InternalStageEncryptionOption string
-
-var (
-	InternalStageEncryptionFull InternalStageEncryptionOption = "SNOWFLAKE_FULL"
-	InternalStageEncryptionSSE  InternalStageEncryptionOption = "SNOWFLAKE_SSE"
-)
-
-type ExternalStageS3EncryptionOption string
-
-var (
-	ExternalStageS3EncryptionCSE    ExternalStageS3EncryptionOption = "AWS_CSE"
-	ExternalStageS3EncryptionSSES3  ExternalStageS3EncryptionOption = "AWS_SSE_S3"
-	ExternalStageS3EncryptionSSEKMS ExternalStageS3EncryptionOption = "AWS_SSE_KMS"
-	ExternalStageS3EncryptionNone   ExternalStageS3EncryptionOption = "NONE"
-)
-
-type ExternalStageGCSEncryptionOption string
-
-var (
-	ExternalStageGCSEncryptionSSEKMS ExternalStageGCSEncryptionOption = "GCS_SSE_KMS"
-	ExternalStageGCSEncryptionNone   ExternalStageGCSEncryptionOption = "NONE"
-)
-
-type ExternalStageAzureEncryptionOption string
-
-var (
-	ExternalStageAzureEncryptionCSE  ExternalStageAzureEncryptionOption = "AZURE_CSE"
-	ExternalStageAzureEncryptionNone ExternalStageAzureEncryptionOption = "NONE"
-)
-
-type StageCopyColumnMapOption string
-
-var (
-	StageCopyColumnMapCaseSensitive   StageCopyColumnMapOption = "CASE_SENSITIVE"
-	StageCopyColumnMapCaseInsensitive StageCopyColumnMapOption = "CASE_INSENSITIVE"
-	StageCopyColumnMapCaseNone        StageCopyColumnMapOption = "NONE"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
@@ -74,8 +40,8 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 
 var stageFileFormatDef = g.NewQueryStruct("StageFileFormat").
 	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes()).
-	OptionalAssignmentWithFieldName("TYPE", g.KindOfTPointer[FileFormatType](), g.ParameterOptions(), "FileFormatType").
-	PredefinedQueryStructField("Options", g.KindOfTPointer[FileFormatTypeOptions](), g.ListOptions().NoComma())
+	OptionalAssignmentWithFieldName("TYPE", g.KindOfTPointer[sdkcommons.FileFormatType](), g.ParameterOptions(), "FileFormatType").
+	PredefinedQueryStructField("Options", g.KindOfTPointer[sdkcommons.FileFormatTypeOptions](), g.ListOptions().NoComma())
 
 var stageCopyOptionsDef = g.NewQueryStruct("StageCopyOptions").
 	OptionalQueryStructField(
@@ -91,14 +57,14 @@ var stageCopyOptionsDef = g.NewQueryStruct("StageCopyOptions").
 	OptionalNumberAssignment("SIZE_LIMIT", nil).
 	OptionalBooleanAssignment("PURGE", nil).
 	OptionalBooleanAssignment("RETURN_FAILED_ONLY", nil).
-	OptionalAssignment("MATCH_BY_COLUMN_NAME", g.KindOfTPointer[StageCopyColumnMapOption](), nil).
+	OptionalAssignment("MATCH_BY_COLUMN_NAME", g.KindOfTPointer[sdkcommons.StageCopyColumnMapOption](), nil).
 	OptionalBooleanAssignment("ENFORCE_LENGTH", nil).
 	OptionalBooleanAssignment("TRUNCATECOLUMNS", nil).
 	OptionalBooleanAssignment("FORCE", nil)
 
 var externalS3StageParamsDef = g.NewQueryStruct("ExternalS3StageParams").
 	TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-	OptionalIdentifier("StorageIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
+	OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
 	OptionalQueryStructField(
 		"Credentials",
 		g.NewQueryStruct("ExternalStageS3Credentials").
@@ -112,7 +78,7 @@ var externalS3StageParamsDef = g.NewQueryStruct("ExternalS3StageParams").
 	OptionalQueryStructField("Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
 		OptionalAssignmentWithFieldName(
 			"TYPE",
-			g.KindOfT[ExternalStageS3EncryptionOption](),
+			g.KindOfT[sdkcommons.ExternalStageS3EncryptionOption](),
 			g.ParameterOptions().SingleQuotes().Required(),
 			"EncryptionType",
 		).
@@ -124,13 +90,13 @@ var externalS3StageParamsDef = g.NewQueryStruct("ExternalS3StageParams").
 
 var externalGCSStageParamsDef = g.NewQueryStruct("ExternalGCSStageParams").
 	TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-	OptionalIdentifier("StorageIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
+	OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalStageGCSEncryption").
 			OptionalAssignmentWithFieldName(
 				"TYPE",
-				g.KindOfT[ExternalStageGCSEncryptionOption](),
+				g.KindOfT[sdkcommons.ExternalStageGCSEncryptionOption](),
 				g.ParameterOptions().SingleQuotes().Required(),
 				"EncryptionType",
 			).
@@ -140,7 +106,7 @@ var externalGCSStageParamsDef = g.NewQueryStruct("ExternalGCSStageParams").
 
 var externalAzureStageParamsDef = g.NewQueryStruct("ExternalAzureStageParams").
 	TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-	OptionalIdentifier("StorageIntegration", g.KindOfT[AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
+	OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
 	OptionalQueryStructField(
 		"Credentials",
 		g.NewQueryStruct("ExternalStageAzureCredentials").
@@ -152,7 +118,7 @@ var externalAzureStageParamsDef = g.NewQueryStruct("ExternalAzureStageParams").
 		g.NewQueryStruct("ExternalStageAzureEncryption").
 			OptionalAssignmentWithFieldName(
 				"TYPE",
-				g.KindOfT[ExternalStageAzureEncryptionOption](),
+				g.KindOfT[sdkcommons.ExternalStageAzureEncryptionOption](),
 				g.ParameterOptions().SingleQuotes().Required(),
 				"EncryptionType",
 			).
@@ -164,7 +130,7 @@ var externalAzureStageParamsDef = g.NewQueryStruct("ExternalAzureStageParams").
 var StagesDef = g.NewInterface(
 	"Stages",
 	"Stage",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CustomOperation(
 		"CreateInternal",
@@ -176,7 +142,7 @@ var StagesDef = g.NewInterface(
 					g.NewQueryStruct("InternalStageEncryption").
 						OptionalAssignmentWithFieldName(
 							"TYPE",
-							g.KindOfT[InternalStageEncryptionOption](),
+							g.KindOfT[sdkcommons.InternalStageEncryptionOption](),
 							g.ParameterOptions().SingleQuotes().Required(),
 							"EncryptionType",
 						),
@@ -273,7 +239,7 @@ var StagesDef = g.NewInterface(
 			SQL("STAGE").
 			IfExists().
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalSetTags().
 			OptionalUnsetTags().
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo").
