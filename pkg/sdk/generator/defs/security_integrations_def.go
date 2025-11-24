@@ -1,325 +1,10 @@
-package sdk
+package defs
 
 import (
-	"fmt"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-const (
-	SecurityIntegrationCategory                                     = "SECURITY"
-	ApiAuthenticationSecurityIntegrationOauthGrantAuthorizationCode = "AUTHORIZATION_CODE"
-	ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials = "CLIENT_CREDENTIALS" //nolint:gosec
-	ApiAuthenticationSecurityIntegrationOauthGrantJwtBearer         = "JWT_BEARER"
-)
-
-type ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption string
-
-const (
-	ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption = "CLIENT_SECRET_POST"
-)
-
-var AllApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption = []ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption{
-	ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost,
-}
-
-func ToApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption(s string) (ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost):
-		return ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost, nil
-	default:
-		return "", fmt.Errorf("invalid ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption: %s", s)
-	}
-}
-
-type ExternalOauthSecurityIntegrationTypeOption string
-
-const (
-	ExternalOauthSecurityIntegrationTypeOkta         ExternalOauthSecurityIntegrationTypeOption = "OKTA"
-	ExternalOauthSecurityIntegrationTypeAzure        ExternalOauthSecurityIntegrationTypeOption = "AZURE"
-	ExternalOauthSecurityIntegrationTypePingFederate ExternalOauthSecurityIntegrationTypeOption = "PING_FEDERATE"
-	ExternalOauthSecurityIntegrationTypeCustom       ExternalOauthSecurityIntegrationTypeOption = "CUSTOM"
-)
-
-var AllExternalOauthSecurityIntegrationTypes = []ExternalOauthSecurityIntegrationTypeOption{
-	ExternalOauthSecurityIntegrationTypeOkta,
-	ExternalOauthSecurityIntegrationTypeAzure,
-	ExternalOauthSecurityIntegrationTypePingFederate,
-	ExternalOauthSecurityIntegrationTypeCustom,
-}
-
-func ToExternalOauthSecurityIntegrationTypeOption(s string) (ExternalOauthSecurityIntegrationTypeOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(ExternalOauthSecurityIntegrationTypeOkta):
-		return ExternalOauthSecurityIntegrationTypeOkta, nil
-	case string(ExternalOauthSecurityIntegrationTypeAzure):
-		return ExternalOauthSecurityIntegrationTypeAzure, nil
-	case string(ExternalOauthSecurityIntegrationTypePingFederate):
-		return ExternalOauthSecurityIntegrationTypePingFederate, nil
-	case string(ExternalOauthSecurityIntegrationTypeCustom):
-		return ExternalOauthSecurityIntegrationTypeCustom, nil
-	default:
-		return "", fmt.Errorf("invalid ExternalOauthSecurityIntegrationTypeOption: %s", s)
-	}
-}
-
-type ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption string
-
-const (
-	ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName    ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption = "LOGIN_NAME"
-	ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption = "EMAIL_ADDRESS"
-)
-
-var AllExternalOauthSecurityIntegrationSnowflakeUserMappingAttributes = []ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption{
-	ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName,
-	ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress,
-}
-
-func ToExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption(s string) (ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName):
-		return ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeLoginName, nil
-	case string(ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress):
-		return ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeEmailAddress, nil
-	default:
-		return "", fmt.Errorf("invalid ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption: %s", s)
-	}
-}
-
-type ExternalOauthSecurityIntegrationAnyRoleModeOption string
-
-const (
-	ExternalOauthSecurityIntegrationAnyRoleModeDisable            ExternalOauthSecurityIntegrationAnyRoleModeOption = "DISABLE"
-	ExternalOauthSecurityIntegrationAnyRoleModeEnable             ExternalOauthSecurityIntegrationAnyRoleModeOption = "ENABLE"
-	ExternalOauthSecurityIntegrationAnyRoleModeEnableForPrivilege ExternalOauthSecurityIntegrationAnyRoleModeOption = "ENABLE_FOR_PRIVILEGE"
-)
-
-var AllExternalOauthSecurityIntegrationAnyRoleModes = []ExternalOauthSecurityIntegrationAnyRoleModeOption{
-	ExternalOauthSecurityIntegrationAnyRoleModeDisable,
-	ExternalOauthSecurityIntegrationAnyRoleModeEnable,
-	ExternalOauthSecurityIntegrationAnyRoleModeEnableForPrivilege,
-}
-
-func ToExternalOauthSecurityIntegrationAnyRoleModeOption(s string) (ExternalOauthSecurityIntegrationAnyRoleModeOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(ExternalOauthSecurityIntegrationAnyRoleModeDisable):
-		return ExternalOauthSecurityIntegrationAnyRoleModeDisable, nil
-	case string(ExternalOauthSecurityIntegrationAnyRoleModeEnable):
-		return ExternalOauthSecurityIntegrationAnyRoleModeEnable, nil
-	case string(ExternalOauthSecurityIntegrationAnyRoleModeEnableForPrivilege):
-		return ExternalOauthSecurityIntegrationAnyRoleModeEnableForPrivilege, nil
-	default:
-		return "", fmt.Errorf("invalid ExternalOauthSecurityIntegrationAnyRoleModeOption: %s", s)
-	}
-}
-
-type OauthSecurityIntegrationUseSecondaryRolesOption string
-
-const (
-	OauthSecurityIntegrationUseSecondaryRolesImplicit OauthSecurityIntegrationUseSecondaryRolesOption = "IMPLICIT"
-	OauthSecurityIntegrationUseSecondaryRolesNone     OauthSecurityIntegrationUseSecondaryRolesOption = "NONE"
-)
-
-var AllOauthSecurityIntegrationUseSecondaryRoles = []OauthSecurityIntegrationUseSecondaryRolesOption{
-	OauthSecurityIntegrationUseSecondaryRolesImplicit,
-	OauthSecurityIntegrationUseSecondaryRolesNone,
-}
-
-func ToOauthSecurityIntegrationUseSecondaryRolesOption(s string) (OauthSecurityIntegrationUseSecondaryRolesOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(OauthSecurityIntegrationUseSecondaryRolesImplicit):
-		return OauthSecurityIntegrationUseSecondaryRolesImplicit, nil
-	case string(OauthSecurityIntegrationUseSecondaryRolesNone):
-		return OauthSecurityIntegrationUseSecondaryRolesNone, nil
-	default:
-		return "", fmt.Errorf("invalid OauthSecurityIntegrationUseSecondaryRolesOption: %s", s)
-	}
-}
-
-type OauthSecurityIntegrationClientTypeOption string
-
-const (
-	OauthSecurityIntegrationClientTypePublic       OauthSecurityIntegrationClientTypeOption = "PUBLIC"
-	OauthSecurityIntegrationClientTypeConfidential OauthSecurityIntegrationClientTypeOption = "CONFIDENTIAL"
-)
-
-var AllOauthSecurityIntegrationClientTypes = []OauthSecurityIntegrationClientTypeOption{
-	OauthSecurityIntegrationClientTypePublic,
-	OauthSecurityIntegrationClientTypeConfidential,
-}
-
-func ToOauthSecurityIntegrationClientTypeOption(s string) (OauthSecurityIntegrationClientTypeOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(OauthSecurityIntegrationClientTypePublic):
-		return OauthSecurityIntegrationClientTypePublic, nil
-	case string(OauthSecurityIntegrationClientTypeConfidential):
-		return OauthSecurityIntegrationClientTypeConfidential, nil
-	default:
-		return "", fmt.Errorf("invalid OauthSecurityIntegrationClientTypeOption: %s", s)
-	}
-}
-
-type OauthSecurityIntegrationClientOption string
-
-const (
-	OauthSecurityIntegrationClientLooker         OauthSecurityIntegrationClientOption = "LOOKER"
-	OauthSecurityIntegrationClientTableauDesktop OauthSecurityIntegrationClientOption = "TABLEAU_DESKTOP"
-	OauthSecurityIntegrationClientTableauServer  OauthSecurityIntegrationClientOption = "TABLEAU_SERVER"
-)
-
-var AllOauthSecurityIntegrationClients = []OauthSecurityIntegrationClientOption{
-	OauthSecurityIntegrationClientLooker,
-	OauthSecurityIntegrationClientTableauDesktop,
-	OauthSecurityIntegrationClientTableauServer,
-}
-
-func ToOauthSecurityIntegrationClientOption(s string) (OauthSecurityIntegrationClientOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(OauthSecurityIntegrationClientLooker):
-		return OauthSecurityIntegrationClientLooker, nil
-	case string(OauthSecurityIntegrationClientTableauDesktop):
-		return OauthSecurityIntegrationClientTableauDesktop, nil
-	case string(OauthSecurityIntegrationClientTableauServer):
-		return OauthSecurityIntegrationClientTableauServer, nil
-	default:
-		return "", fmt.Errorf("invalid OauthSecurityIntegrationClientOption: %s", s)
-	}
-}
-
-type Saml2SecurityIntegrationSaml2ProviderOption string
-
-const (
-	Saml2SecurityIntegrationSaml2ProviderOkta   Saml2SecurityIntegrationSaml2ProviderOption = "OKTA"
-	Saml2SecurityIntegrationSaml2ProviderAdfs   Saml2SecurityIntegrationSaml2ProviderOption = "ADFS"
-	Saml2SecurityIntegrationSaml2ProviderCustom Saml2SecurityIntegrationSaml2ProviderOption = "CUSTOM"
-)
-
-var AllSaml2SecurityIntegrationSaml2Providers = []Saml2SecurityIntegrationSaml2ProviderOption{
-	Saml2SecurityIntegrationSaml2ProviderOkta,
-	Saml2SecurityIntegrationSaml2ProviderAdfs,
-	Saml2SecurityIntegrationSaml2ProviderCustom,
-}
-
-func ToSaml2SecurityIntegrationSaml2ProviderOption(s string) (Saml2SecurityIntegrationSaml2ProviderOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(Saml2SecurityIntegrationSaml2ProviderOkta):
-		return Saml2SecurityIntegrationSaml2ProviderOkta, nil
-	case string(Saml2SecurityIntegrationSaml2ProviderAdfs):
-		return Saml2SecurityIntegrationSaml2ProviderAdfs, nil
-	case string(Saml2SecurityIntegrationSaml2ProviderCustom):
-		return Saml2SecurityIntegrationSaml2ProviderCustom, nil
-	default:
-		return "", fmt.Errorf("invalid Saml2SecurityIntegrationSaml2ProviderOption: %s", s)
-	}
-}
-
-type Saml2SecurityIntegrationSaml2RequestedNameidFormatOption string
-
-const (
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatUnspecified                Saml2SecurityIntegrationSaml2RequestedNameidFormatOption = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatEmailAddress               Saml2SecurityIntegrationSaml2RequestedNameidFormatOption = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatX509SubjectName            Saml2SecurityIntegrationSaml2RequestedNameidFormatOption = "urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName"
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatWindowsDomainQualifiedName Saml2SecurityIntegrationSaml2RequestedNameidFormatOption = "urn:oasis:names:tc:SAML:1.1:nameid-format:WindowsDomainQualifiedName"
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos                   Saml2SecurityIntegrationSaml2RequestedNameidFormatOption = "urn:oasis:names:tc:SAML:2.0:nameid-format:kerberos"
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatPersistent                 Saml2SecurityIntegrationSaml2RequestedNameidFormatOption = "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatTransient                  Saml2SecurityIntegrationSaml2RequestedNameidFormatOption = "urn:oasis:names:tc:SAML:2.0:nameid-format:transient"
-)
-
-var AllSaml2SecurityIntegrationSaml2RequestedNameidFormats = []Saml2SecurityIntegrationSaml2RequestedNameidFormatOption{
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatUnspecified,
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatEmailAddress,
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatX509SubjectName,
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatWindowsDomainQualifiedName,
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos,
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatPersistent,
-	Saml2SecurityIntegrationSaml2RequestedNameidFormatTransient,
-}
-
-func ToSaml2SecurityIntegrationSaml2RequestedNameidFormatOption(s string) (Saml2SecurityIntegrationSaml2RequestedNameidFormatOption, error) {
-	switch s {
-	case string(Saml2SecurityIntegrationSaml2RequestedNameidFormatUnspecified):
-		return Saml2SecurityIntegrationSaml2RequestedNameidFormatUnspecified, nil
-	case string(Saml2SecurityIntegrationSaml2RequestedNameidFormatEmailAddress):
-		return Saml2SecurityIntegrationSaml2RequestedNameidFormatEmailAddress, nil
-	case string(Saml2SecurityIntegrationSaml2RequestedNameidFormatX509SubjectName):
-		return Saml2SecurityIntegrationSaml2RequestedNameidFormatX509SubjectName, nil
-	case string(Saml2SecurityIntegrationSaml2RequestedNameidFormatWindowsDomainQualifiedName):
-		return Saml2SecurityIntegrationSaml2RequestedNameidFormatWindowsDomainQualifiedName, nil
-	case string(Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos):
-		return Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos, nil
-	case string(Saml2SecurityIntegrationSaml2RequestedNameidFormatPersistent):
-		return Saml2SecurityIntegrationSaml2RequestedNameidFormatPersistent, nil
-	case string(Saml2SecurityIntegrationSaml2RequestedNameidFormatTransient):
-		return Saml2SecurityIntegrationSaml2RequestedNameidFormatTransient, nil
-	default:
-		return "", fmt.Errorf("invalid Saml2SecurityIntegrationSaml2RequestedNameidFormatOption: %s", s)
-	}
-}
-
-type ScimSecurityIntegrationScimClientOption string
-
-const (
-	ScimSecurityIntegrationScimClientOkta    ScimSecurityIntegrationScimClientOption = "OKTA"
-	ScimSecurityIntegrationScimClientAzure   ScimSecurityIntegrationScimClientOption = "AZURE"
-	ScimSecurityIntegrationScimClientGeneric ScimSecurityIntegrationScimClientOption = "GENERIC"
-)
-
-var AllScimSecurityIntegrationScimClients = []ScimSecurityIntegrationScimClientOption{
-	ScimSecurityIntegrationScimClientOkta,
-	ScimSecurityIntegrationScimClientAzure,
-	ScimSecurityIntegrationScimClientGeneric,
-}
-
-func ToScimSecurityIntegrationScimClientOption(s string) (ScimSecurityIntegrationScimClientOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(ScimSecurityIntegrationScimClientOkta):
-		return ScimSecurityIntegrationScimClientOkta, nil
-	case string(ScimSecurityIntegrationScimClientAzure):
-		return ScimSecurityIntegrationScimClientAzure, nil
-	case string(ScimSecurityIntegrationScimClientGeneric):
-		return ScimSecurityIntegrationScimClientGeneric, nil
-	default:
-		return "", fmt.Errorf("invalid ScimSecurityIntegrationScimClientOption: %s", s)
-	}
-}
-
-type ScimSecurityIntegrationRunAsRoleOption string
-
-const (
-	ScimSecurityIntegrationRunAsRoleOktaProvisioner        ScimSecurityIntegrationRunAsRoleOption = "OKTA_PROVISIONER"
-	ScimSecurityIntegrationRunAsRoleAadProvisioner         ScimSecurityIntegrationRunAsRoleOption = "AAD_PROVISIONER"
-	ScimSecurityIntegrationRunAsRoleGenericScimProvisioner ScimSecurityIntegrationRunAsRoleOption = "GENERIC_SCIM_PROVISIONER"
-)
-
-var AllScimSecurityIntegrationRunAsRoles = []ScimSecurityIntegrationRunAsRoleOption{
-	ScimSecurityIntegrationRunAsRoleOktaProvisioner,
-	ScimSecurityIntegrationRunAsRoleAadProvisioner,
-	ScimSecurityIntegrationRunAsRoleGenericScimProvisioner,
-}
-
-func ToScimSecurityIntegrationRunAsRoleOption(s string) (ScimSecurityIntegrationRunAsRoleOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(ScimSecurityIntegrationRunAsRoleOktaProvisioner):
-		return ScimSecurityIntegrationRunAsRoleOktaProvisioner, nil
-	case string(ScimSecurityIntegrationRunAsRoleAadProvisioner):
-		return ScimSecurityIntegrationRunAsRoleAadProvisioner, nil
-	case string(ScimSecurityIntegrationRunAsRoleGenericScimProvisioner):
-		return ScimSecurityIntegrationRunAsRoleGenericScimProvisioner, nil
-	default:
-		return "", fmt.Errorf("invalid ScimSecurityIntegrationRunAsRoleOption: %s", s)
-	}
-}
 
 var (
 	allowedScopeDef           = g.NewQueryStruct("AllowedScope").Text("Scope", g.KeywordOptions().SingleQuotes().Required())
@@ -370,7 +55,7 @@ var apiAuthClientCredentialsFlowIntegrationSetDef = g.NewQueryStruct("ApiAuthent
 	OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment(
 		"OAUTH_CLIENT_AUTH_METHOD",
-		g.KindOfT[ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+		g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes()).
@@ -394,7 +79,7 @@ var apiAuthCodeGrantFlowIntegrationSetDef = g.NewQueryStruct("ApiAuthenticationW
 	OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment(
 		"OAUTH_CLIENT_AUTH_METHOD",
-		g.KindOfT[ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+		g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes()).
@@ -418,7 +103,7 @@ var apiAuthJwtBearerFlowIntegrationSetDef = g.NewQueryStruct("ApiAuthenticationW
 	OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment(
 		"OAUTH_CLIENT_AUTH_METHOD",
-		g.KindOfT[ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+		g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes()).
@@ -439,14 +124,14 @@ var externalOauthIntegrationSetDef = g.NewQueryStruct("ExternalOauthIntegrationS
 	OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 	OptionalAssignment(
 		"EXTERNAL_OAUTH_TYPE",
-		g.KindOfT[ExternalOauthSecurityIntegrationTypeOption](),
+		g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationTypeOption](),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("EXTERNAL_OAUTH_ISSUER", g.ParameterOptions().SingleQuotes()).
 	ListAssignment("EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM", "TokenUserMappingClaim", g.ParameterOptions().Parentheses()).
 	OptionalAssignment(
 		"EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE",
-		g.KindOfT[ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption](),
+		g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption](),
 		g.ParameterOptions().SingleQuotes(),
 	).
 	ListAssignment("EXTERNAL_OAUTH_JWS_KEYS_URL", "JwsKeysUrl", g.ParameterOptions().Parentheses()).
@@ -457,7 +142,7 @@ var externalOauthIntegrationSetDef = g.NewQueryStruct("ExternalOauthIntegrationS
 	OptionalQueryStructField("ExternalOauthAudienceList", audienceListDef, g.ParameterOptions().SQL("EXTERNAL_OAUTH_AUDIENCE_LIST").Parentheses()).
 	OptionalAssignment(
 		"EXTERNAL_OAUTH_ANY_ROLE_MODE",
-		g.KindOfT[ExternalOauthSecurityIntegrationAnyRoleModeOption](),
+		g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationAnyRoleModeOption](),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("EXTERNAL_OAUTH_SCOPE_DELIMITER", g.ParameterOptions().SingleQuotes()).
@@ -483,7 +168,7 @@ var oauthForPartnerApplicationsIntegrationSetDef = g.NewQueryStruct("OauthForPar
 	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
 	OptionalAssignment(
 		"OAUTH_USE_SECONDARY_ROLES",
-		g.KindOfT[OauthSecurityIntegrationUseSecondaryRolesOption](),
+		g.KindOfT[sdkcommons.OauthSecurityIntegrationUseSecondaryRolesOption](),
 		g.ParameterOptions(),
 	).
 	OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses()).
@@ -507,7 +192,7 @@ var oauthForCustomClientsIntegrationSetDef = g.NewQueryStruct("OauthForCustomCli
 	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
 	OptionalAssignment(
 		"OAUTH_USE_SECONDARY_ROLES",
-		g.KindOfT[OauthSecurityIntegrationUseSecondaryRolesOption](),
+		g.KindOfT[sdkcommons.OauthSecurityIntegrationUseSecondaryRolesOption](),
 		g.ParameterOptions(),
 	).
 	OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
@@ -532,7 +217,7 @@ var saml2IntegrationSetDef = g.NewQueryStruct("Saml2IntegrationSet").
 	OptionalTextAssignment("SAML2_SSO_URL", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment(
 		"SAML2_PROVIDER",
-		g.KindOfT[Saml2SecurityIntegrationSaml2ProviderOption](),
+		g.KindOfT[sdkcommons.Saml2SecurityIntegrationSaml2ProviderOption](),
 		g.ParameterOptions().SingleQuotes(),
 	).
 	OptionalTextAssignment("SAML2_X509_CERT", g.ParameterOptions().SingleQuotes()).
@@ -544,7 +229,7 @@ var saml2IntegrationSetDef = g.NewQueryStruct("Saml2IntegrationSet").
 	OptionalBooleanAssignment("SAML2_SIGN_REQUEST", g.ParameterOptions()).
 	OptionalAssignment(
 		"SAML2_REQUESTED_NAMEID_FORMAT",
-		g.KindOfT[Saml2SecurityIntegrationSaml2RequestedNameidFormatOption](),
+		g.KindOfT[sdkcommons.Saml2SecurityIntegrationSaml2RequestedNameidFormatOption](),
 		g.ParameterOptions().SingleQuotes(),
 	).
 	OptionalTextAssignment("SAML2_POST_LOGOUT_REDIRECT_URL", g.ParameterOptions().SingleQuotes()).
@@ -580,7 +265,7 @@ var scimIntegrationUnsetDef = g.NewQueryStruct("ScimIntegrationUnset").
 var SecurityIntegrationsDef = g.NewInterface(
 	"SecurityIntegrations",
 	"SecurityIntegration",
-	g.KindOfT[AccountObjectIdentifier](),
+	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	CustomOperation(
 		"CreateApiAuthenticationWithClientCredentialsFlow",
@@ -593,7 +278,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment(
 					"OAUTH_CLIENT_AUTH_METHOD",
-					g.KindOfT[ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+					g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
 					g.ParameterOptions(),
 				).
 				TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().Required().SingleQuotes()).
@@ -617,7 +302,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment(
 					"OAUTH_CLIENT_AUTH_METHOD",
-					g.KindOfT[ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+					g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
 					g.ParameterOptions(),
 				).
 				TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().Required().SingleQuotes()).
@@ -641,7 +326,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalTextAssignment("OAUTH_TOKEN_ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalAssignment(
 					"OAUTH_CLIENT_AUTH_METHOD",
-					g.KindOfT[ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
+					g.KindOfT[sdkcommons.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption](),
 					g.ParameterOptions(),
 				).
 				TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().Required().SingleQuotes()).
@@ -660,14 +345,14 @@ var SecurityIntegrationsDef = g.NewInterface(
 				BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 				Assignment(
 					"EXTERNAL_OAUTH_TYPE",
-					g.KindOfT[ExternalOauthSecurityIntegrationTypeOption](),
+					g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationTypeOption](),
 					g.ParameterOptions().Required(),
 				).
 				TextAssignment("EXTERNAL_OAUTH_ISSUER", g.ParameterOptions().Required().SingleQuotes()).
 				ListAssignment("EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM", "TokenUserMappingClaim", g.ParameterOptions().Required().Parentheses()).
 				Assignment(
 					"EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE",
-					g.KindOfT[ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption](),
+					g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOption](),
 					g.ParameterOptions().SingleQuotes().Required(),
 				).
 				ListAssignment("EXTERNAL_OAUTH_JWS_KEYS_URL", "JwsKeysUrl", g.ParameterOptions().Parentheses()).
@@ -678,7 +363,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalQueryStructField("ExternalOauthAudienceList", audienceListDef, g.ParameterOptions().SQL("EXTERNAL_OAUTH_AUDIENCE_LIST").Parentheses()).
 				OptionalAssignment(
 					"EXTERNAL_OAUTH_ANY_ROLE_MODE",
-					g.KindOfT[ExternalOauthSecurityIntegrationAnyRoleModeOption](),
+					g.KindOfT[sdkcommons.ExternalOauthSecurityIntegrationAnyRoleModeOption](),
 					g.ParameterOptions(),
 				).
 				OptionalTextAssignment("EXTERNAL_OAUTH_SCOPE_DELIMITER", g.ParameterOptions().SingleQuotes()).
@@ -702,7 +387,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				PredefinedQueryStructField("integrationType", "string", g.StaticOptions().SQL("TYPE = OAUTH")).
 				Assignment(
 					"OAUTH_CLIENT",
-					g.KindOfT[OauthSecurityIntegrationClientOption](),
+					g.KindOfT[sdkcommons.OauthSecurityIntegrationClientOption](),
 					g.ParameterOptions().Required(),
 				).
 				OptionalTextAssignment("OAUTH_REDIRECT_URI", g.ParameterOptions().SingleQuotes()).
@@ -711,7 +396,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
 				OptionalAssignment(
 					"OAUTH_USE_SECONDARY_ROLES",
-					g.KindOfT[OauthSecurityIntegrationUseSecondaryRolesOption](),
+					g.KindOfT[sdkcommons.OauthSecurityIntegrationUseSecondaryRolesOption](),
 					g.ParameterOptions(),
 				).
 				OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses())
@@ -728,7 +413,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				PredefinedQueryStructField("oauthClient", "string", g.StaticOptions().SQL("OAUTH_CLIENT = CUSTOM")).
 				Assignment(
 					"OAUTH_CLIENT_TYPE",
-					g.KindOfT[OauthSecurityIntegrationClientTypeOption](),
+					g.KindOfT[sdkcommons.OauthSecurityIntegrationClientTypeOption](),
 					g.ParameterOptions().Required().SingleQuotes(),
 				).
 				TextAssignment("OAUTH_REDIRECT_URI", g.ParameterOptions().Required().SingleQuotes()).
@@ -737,7 +422,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalBooleanAssignment("OAUTH_ENFORCE_PKCE", g.ParameterOptions()).
 				OptionalAssignment(
 					"OAUTH_USE_SECONDARY_ROLES",
-					g.KindOfT[OauthSecurityIntegrationUseSecondaryRolesOption](),
+					g.KindOfT[sdkcommons.OauthSecurityIntegrationUseSecondaryRolesOption](),
 					g.ParameterOptions(),
 				).
 				OptionalQueryStructField("PreAuthorizedRolesList", preAuthorizedRolesListDef, g.ParameterOptions().SQL("PRE_AUTHORIZED_ROLES_LIST").Parentheses()).
@@ -760,7 +445,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				TextAssignment("SAML2_SSO_URL", g.ParameterOptions().Required().SingleQuotes()).
 				Assignment(
 					"SAML2_PROVIDER",
-					g.KindOfT[Saml2SecurityIntegrationSaml2ProviderOption](),
+					g.KindOfT[sdkcommons.Saml2SecurityIntegrationSaml2ProviderOption](),
 					g.ParameterOptions().Required().SingleQuotes(),
 				).
 				TextAssignment("SAML2_X509_CERT", g.ParameterOptions().Required().SingleQuotes()).
@@ -772,7 +457,7 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalBooleanAssignment("SAML2_SIGN_REQUEST", g.ParameterOptions()).
 				OptionalAssignment(
 					"SAML2_REQUESTED_NAMEID_FORMAT",
-					g.KindOfT[Saml2SecurityIntegrationSaml2RequestedNameidFormatOption](),
+					g.KindOfT[sdkcommons.Saml2SecurityIntegrationSaml2RequestedNameidFormatOption](),
 					g.ParameterOptions().SingleQuotes(),
 				).
 				OptionalTextAssignment("SAML2_POST_LOGOUT_REDIRECT_URL", g.ParameterOptions().SingleQuotes()).
@@ -792,12 +477,12 @@ var SecurityIntegrationsDef = g.NewInterface(
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				Assignment(
 					"SCIM_CLIENT",
-					g.KindOfT[ScimSecurityIntegrationScimClientOption](),
+					g.KindOfT[sdkcommons.ScimSecurityIntegrationScimClientOption](),
 					g.ParameterOptions().SingleQuotes().Required(),
 				).
 				Assignment(
 					"RUN_AS_ROLE",
-					g.KindOfT[ScimSecurityIntegrationRunAsRoleOption](),
+					g.KindOfT[sdkcommons.ScimSecurityIntegrationRunAsRoleOption](),
 					g.ParameterOptions().SingleQuotes().Required(),
 				).
 				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
