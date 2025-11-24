@@ -47,6 +47,7 @@ type (
 	StageCopyColumnMapOption                                            string
 	TaskState                                                           string
 	TraceLevel                                                          string
+	ViewDataMetricScheduleStatusOperationOption                         string
 )
 
 // copied from SDK for now

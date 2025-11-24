@@ -1,37 +1,10 @@
-package sdk
+package defs
 
 import (
-	"fmt"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-var AllViewDataMetricScheduleMinutes = []int{5, 15, 30, 60, 720, 1440}
-
-type ViewDataMetricScheduleStatusOperationOption string
-
-const (
-	ViewDataMetricScheduleStatusOperationResume  ViewDataMetricScheduleStatusOperationOption = "RESUME"
-	ViewDataMetricScheduleStatusOperationSuspend ViewDataMetricScheduleStatusOperationOption = "SUSPEND"
-)
-
-var AllViewDataMetricScheduleStatusOperationOptions = []ViewDataMetricScheduleStatusOperationOption{
-	ViewDataMetricScheduleStatusOperationResume,
-	ViewDataMetricScheduleStatusOperationSuspend,
-}
-
-func ToViewDataMetricScheduleStatusOperationOption(s string) (ViewDataMetricScheduleStatusOperationOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(ViewDataMetricScheduleStatusOperationResume):
-		return ViewDataMetricScheduleStatusOperationResume, nil
-	case string(ViewDataMetricScheduleStatusOperationSuspend):
-		return ViewDataMetricScheduleStatusOperationSuspend, nil
-	default:
-		return "", fmt.Errorf("invalid ViewDataMetricScheduleStatusOperationOption: %s", s)
-	}
-}
 
 var viewDbRow = g.DbStruct("viewDBRow").
 	Text("created_on").
@@ -104,16 +77,16 @@ var viewUsingCron = g.NewQueryStruct("ViewUsingCron").
 	Text("Cron", g.KeywordOptions().Required())
 
 var dataMetricFunctionDef = g.NewQueryStruct("ViewDataMetricFunction").
-	Identifier("DataMetricFunction", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+	Identifier("DataMetricFunction", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "DataMetricFunction")
 
 var modifyDataMetricFunctionDef = g.NewQueryStruct("ViewModifyDataMetricFunction").
-	Identifier("DataMetricFunction", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+	Identifier("DataMetricFunction", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	Assignment(
 		"",
-		g.KindOfT[ViewDataMetricScheduleStatusOperationOption](),
+		g.KindOfT[sdkcommons.ViewDataMetricScheduleStatusOperationOption](),
 		g.ParameterOptions().NoEquals().NoQuotes(),
 	).
 	WithValidation(g.ValidIdentifier, "DataMetricFunction")
@@ -126,19 +99,19 @@ var viewColumn = g.NewQueryStruct("ViewColumn").
 	OptionalTags()
 
 var viewColumnMaskingPolicy = g.NewQueryStruct("ViewColumnMaskingPolicy").
-	Identifier("MaskingPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
+	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
 	ListAssignment("USING", "Column", g.ParameterOptions().NoEquals().Parentheses())
 
 var viewColumnProjectionPolicy = g.NewQueryStruct("ViewColumnProjectionPolicy").
-	Identifier("ProjectionPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required())
+	Identifier("ProjectionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required())
 
 var viewRowAccessPolicy = g.NewQueryStruct("ViewRowAccessPolicy").
-	Identifier("RowAccessPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
 
 var viewAggregationPolicy = g.NewQueryStruct("ViewAggregationPolicy").
-	Identifier("AggregationPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
+	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
 	ListAssignment("ENTITY KEY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "AggregationPolicy")
 
@@ -163,13 +136,13 @@ var viewUnsetDataMetricSchedule = g.NewQueryStruct("ViewUnsetDataMetricSchedule"
 
 var viewAddRowAccessPolicy = g.NewQueryStruct("ViewAddRowAccessPolicy").
 	SQL("ADD").
-	Identifier("RowAccessPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
 
 var viewDropRowAccessPolicy = g.NewQueryStruct("ViewDropRowAccessPolicy").
 	SQL("DROP").
-	Identifier("RowAccessPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
 
 var viewDropAndAddRowAccessPolicy = g.NewQueryStruct("ViewDropAndAddRowAccessPolicy").
@@ -178,7 +151,7 @@ var viewDropAndAddRowAccessPolicy = g.NewQueryStruct("ViewDropAndAddRowAccessPol
 
 var viewSetAggregationPolicy = g.NewQueryStruct("ViewSetAggregationPolicy").
 	SQL("SET").
-	Identifier("AggregationPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
+	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
 	ListAssignment("ENTITY KEY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
 	OptionalSQL("FORCE").
 	WithValidation(g.ValidIdentifier, "AggregationPolicy")
@@ -192,7 +165,7 @@ var viewSetColumnMaskingPolicy = g.NewQueryStruct("ViewSetColumnMaskingPolicy").
 	SQL("COLUMN").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 	SQL("SET").
-	Identifier("MaskingPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
+	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
 	ListAssignment("USING", "Column", g.ParameterOptions().NoEquals().Parentheses()).
 	OptionalSQL("FORCE")
 
@@ -210,7 +183,7 @@ var viewSetProjectionPolicy = g.NewQueryStruct("ViewSetProjectionPolicy").
 	SQL("COLUMN").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 	SQL("SET").
-	Identifier("ProjectionPolicy", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required()).
+	Identifier("ProjectionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required()).
 	OptionalSQL("FORCE")
 
 var viewUnsetProjectionPolicy = g.NewQueryStruct("ViewUnsetProjectionPolicy").
@@ -238,7 +211,7 @@ var viewUnsetColumnTags = g.NewQueryStruct("ViewUnsetColumnTags").
 var ViewsDef = g.NewInterface(
 	"Views",
 	"View",
-	g.KindOfT[SchemaObjectIdentifier](),
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-view",
@@ -274,7 +247,7 @@ var ViewsDef = g.NewInterface(
 			SQL("VIEW").
 			IfExists().
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalSQL("UNSET COMMENT").
 			OptionalSQL("SET SECURE").

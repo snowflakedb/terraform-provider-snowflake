@@ -46,6 +46,7 @@ func init() {
 		StreamsDef,
 		TasksDef,
 		UserProgrammaticAccessTokensDef,
+		ViewsDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {
