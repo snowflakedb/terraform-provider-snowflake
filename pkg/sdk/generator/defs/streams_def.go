@@ -1,51 +1,10 @@
-package sdk
+package defs
 
 import (
-	"fmt"
-	"strings"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
-
-type StreamSourceType string
-
-const (
-	StreamSourceTypeTable         StreamSourceType = "TABLE"
-	StreamSourceTypeExternalTable StreamSourceType = "EXTERNAL TABLE"
-	StreamSourceTypeView          StreamSourceType = "VIEW"
-	StreamSourceTypeStage         StreamSourceType = "STAGE"
-)
-
-func ToStreamSourceType(s string) (StreamSourceType, error) {
-	switch streamSourceType := StreamSourceType(strings.ToUpper(s)); streamSourceType {
-	case StreamSourceTypeTable,
-		StreamSourceTypeExternalTable,
-		StreamSourceTypeView,
-		StreamSourceTypeStage:
-		return streamSourceType, nil
-	default:
-		return "", fmt.Errorf("invalid stream source type: %s", s)
-	}
-}
-
-type StreamMode string
-
-const (
-	StreamModeDefault    StreamMode = "DEFAULT"
-	StreamModeAppendOnly StreamMode = "APPEND_ONLY"
-	StreamModeInsertOnly StreamMode = "INSERT_ONLY"
-)
-
-func ToStreamMode(s string) (StreamMode, error) {
-	switch streamMode := StreamMode(strings.ToUpper(s)); streamMode {
-	case StreamModeDefault,
-		StreamModeAppendOnly,
-		StreamModeInsertOnly:
-		return streamMode, nil
-	default:
-		return "", fmt.Errorf("invalid stream mode: %s", s)
-	}
-}
 
 var (
 	onStreamDef = g.NewQueryStruct("OnStream").
@@ -100,7 +59,7 @@ var (
 	StreamsDef = g.NewInterface(
 		"Streams",
 		"Stream",
-		g.KindOfT[SchemaObjectIdentifier](),
+		g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 	).
 		CustomOperation(
 			"CreateOnTable",
@@ -114,7 +73,7 @@ var (
 				OptionalTags().
 				OptionalCopyGrants().
 				SQL("ON TABLE").
-				Identifier("TableId", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+				Identifier("TableId", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 				OptionalQueryStructField("On", onStreamDef, g.KeywordOptions()).
 				OptionalBooleanAssignment("APPEND_ONLY", nil).
 				OptionalBooleanAssignment("SHOW_INITIAL_ROWS", nil).
@@ -135,7 +94,7 @@ var (
 				OptionalTags().
 				OptionalCopyGrants().
 				SQL("ON EXTERNAL TABLE").
-				Identifier("ExternalTableId", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+				Identifier("ExternalTableId", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 				OptionalQueryStructField("On", onStreamDef, g.KeywordOptions()).
 				OptionalBooleanAssignment("INSERT_ONLY", nil).
 				OptionalComment().
@@ -155,7 +114,7 @@ var (
 				OptionalTags().
 				OptionalCopyGrants().
 				SQL("ON STAGE").
-				Identifier("StageId", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+				Identifier("StageId", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 				OptionalComment().
 				WithValidation(g.ValidIdentifier, "name").
 				WithValidation(g.ValidIdentifier, "StageId").
@@ -173,7 +132,7 @@ var (
 				OptionalTags().
 				OptionalCopyGrants().
 				SQL("ON VIEW").
-				Identifier("ViewId", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+				Identifier("ViewId", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 				OptionalQueryStructField("On", onStreamDef, g.KeywordOptions()).
 				OptionalBooleanAssignment("APPEND_ONLY", nil).
 				OptionalBooleanAssignment("SHOW_INITIAL_ROWS", nil).
@@ -190,7 +149,7 @@ var (
 				OrReplace().
 				SQL("STREAM").
 				Name().
-				Identifier("sourceStream", g.KindOfT[SchemaObjectIdentifier](), g.IdentifierOptions().SQL("CLONE").Required()).
+				Identifier("sourceStream", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("CLONE").Required()).
 				OptionalCopyGrants().
 				WithValidation(g.ValidIdentifier, "name"),
 		).

@@ -43,6 +43,7 @@ func init() {
 		StagesDef,
 		StorageIntegrationsDef,
 		StreamlitsDef,
+		StreamsDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {
