@@ -15,7 +15,7 @@ var sequenceConstraint = g.NewQueryStruct("SequenceConstraint").
 	OptionalSQL("RESTRICT").
 	WithValidation(g.ExactlyOneValueSet, "Cascade", "Restrict")
 
-var SequencesDef = g.NewInterface(
+var sequencesDef = g.NewInterface(
 	"Sequences",
 	"Sequence",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),

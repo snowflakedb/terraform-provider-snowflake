@@ -2,7 +2,6 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"database/sql"

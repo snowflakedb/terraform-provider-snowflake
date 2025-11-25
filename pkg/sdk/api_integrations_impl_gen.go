@@ -72,10 +72,9 @@ func (v *apiIntegrations) Describe(ctx context.Context, id AccountObjectIdentifi
 
 func (r *CreateApiIntegrationRequest) toOpts() *CreateApiIntegrationOptions {
 	opts := &CreateApiIntegrationOptions{
-		OrReplace:   r.OrReplace,
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
-
+		OrReplace:          r.OrReplace,
+		IfNotExists:        r.IfNotExists,
+		name:               r.name,
 		ApiAllowedPrefixes: r.ApiAllowedPrefixes,
 		ApiBlockedPrefixes: r.ApiBlockedPrefixes,
 		Enabled:            r.Enabled,
@@ -105,9 +104,8 @@ func (r *CreateApiIntegrationRequest) toOpts() *CreateApiIntegrationOptions {
 
 func (r *AlterApiIntegrationRequest) toOpts() *AlterApiIntegrationOptions {
 	opts := &AlterApiIntegrationOptions{
-		IfExists: r.IfExists,
-		name:     r.name,
-
+		IfExists:  r.IfExists,
+		name:      r.name,
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,
 	}

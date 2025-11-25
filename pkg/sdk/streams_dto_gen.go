@@ -27,11 +27,6 @@ type CreateOnTableStreamRequest struct {
 	Comment         *string
 }
 
-// added manually
-func (r *CreateOnTableStreamRequest) GetName() SchemaObjectIdentifier {
-	return r.name
-}
-
 type OnStreamRequest struct {
 	At        *bool
 	Before    *bool
@@ -78,11 +73,6 @@ type CreateOnViewStreamRequest struct {
 	AppendOnly      *bool
 	ShowInitialRows *bool
 	Comment         *string
-}
-
-// added manually
-func (r *CreateOnViewStreamRequest) GetName() SchemaObjectIdentifier {
-	return r.name
 }
 
 type CloneStreamRequest struct {
