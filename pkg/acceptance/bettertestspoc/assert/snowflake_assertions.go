@@ -51,8 +51,9 @@ func NewSnowflakeObjectAssertWithObject[T any, I sdk.ObjectIdentifier](objectTyp
 	}
 }
 
-func (s *SnowflakeObjectAssert[T, I]) AddAssertion(assertion assertSdk[*T]) {
+func (s *SnowflakeObjectAssert[T, I]) AddAssertion(assertion assertSdk[*T]) *SnowflakeObjectAssert[T, I] {
 	s.assertions = append(s.assertions, assertion)
+	return s
 }
 
 func (s *SnowflakeObjectAssert[T, I]) GetId() I {
