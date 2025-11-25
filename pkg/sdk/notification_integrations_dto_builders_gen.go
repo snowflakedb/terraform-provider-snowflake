@@ -12,11 +12,6 @@ func NewCreateNotificationIntegrationRequest(
 	return &s
 }
 
-// added manually
-func (r *CreateNotificationIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 func (s *CreateNotificationIntegrationRequest) WithOrReplace(orReplace bool) *CreateNotificationIntegrationRequest {
 	s.OrReplace = &orReplace
 	return s

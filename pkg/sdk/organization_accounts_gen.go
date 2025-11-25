@@ -139,11 +139,6 @@ type OrganizationAccount struct {
 	IsOrganizationAccount                bool
 }
 
-// added manually
-func (v *OrganizationAccount) ID() AccountIdentifier {
-	return NewAccountIdentifier(v.OrganizationName, v.AccountName)
-}
-
 func (v *OrganizationAccount) ObjectType() ObjectType {
 	// adjusted manually
 	return ObjectTypeAccount

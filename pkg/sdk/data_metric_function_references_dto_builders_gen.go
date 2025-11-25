@@ -27,18 +27,3 @@ func NewdataMetricFunctionReferenceFunctionArgumentsRequest(
 	s.RefEntityDomain = refEntityDomain
 	return &s
 }
-
-// Added manually
-func NewGetForEntityDataMetricFunctionReferenceRequestCustom(
-	refEntityName ObjectIdentifier,
-	refEntityDomain DataMetricFunctionRefEntityDomainOption,
-) *GetForEntityDataMetricFunctionReferenceRequest {
-	return NewGetForEntityDataMetricFunctionReferenceRequest(
-		NewdataMetricFunctionReferenceParametersRequest(
-			NewdataMetricFunctionReferenceFunctionArgumentsRequest(
-				[]ObjectIdentifier{refEntityName},
-				&refEntityDomain,
-			),
-		),
-	)
-}

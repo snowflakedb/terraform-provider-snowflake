@@ -10,11 +10,6 @@ func NewCreateImageRepositoryRequest(
 	return &s
 }
 
-// added manually
-func (r *CreateImageRepositoryRequest) GetName() SchemaObjectIdentifier {
-	return r.name
-}
-
 func (s *CreateImageRepositoryRequest) WithOrReplace(orReplace bool) *CreateImageRepositoryRequest {
 	s.OrReplace = &orReplace
 	return s

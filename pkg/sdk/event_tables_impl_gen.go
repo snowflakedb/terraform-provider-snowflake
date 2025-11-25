@@ -9,6 +9,7 @@ import (
 )
 
 var _ EventTables = (*eventTables)(nil)
+
 var _ convertibleRow[EventTable] = new(eventTableRow)
 var _ convertibleRow[EventTableDetails] = new(eventTableDetailsRow)
 
