@@ -23,7 +23,7 @@ dev-cleanup: ## cleanup development dependencies
 	rm -rf tools/bin/*
 
 docs: generate-docs-additional-files ## generate docs
-	tools/bin/tfplugindocs generate
+	tools/bin/tfplugindocs generate --provider-name=terraform-provider-snowflake
 
 docs-check: docs ## check that docs have been generated
 	git diff --exit-code -- docs
