@@ -11,7 +11,9 @@ services:
       - ${SNOWFLAKE_CONFIG_PATH}:/root/.snowflake/config
       - shared_data:/shared
     working_dir: /terraform-provider-snowflake
-    command: sh -c "make --silent test-main-terraform-use-cases | tee /shared/test_output.json"
+    # Run the tests and save the results to the test_output.json file
+    # The piped output from `tee` is processed (using `jq` to get Output field and grep to skip empty lines) before being outputted to the console
+    command: sh -c "make --silent test-main-terraform-use-cases | tee /shared/test_output.json | jq -r --unbuffered 'select(.Output != null) | .Output | select(length > 0)' | grep -v '^$'"
   process-test-output:
     build:
       context: .
