@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -24,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Notebook_BasisUseCase(t *testing.T) {
+func TestAcc_Notebook_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
@@ -650,7 +651,7 @@ func TestAcc_notebook_WarehouseSchemaLevelChange(t *testing.T) {
 	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
 	t.Cleanup(schemaCleanup)
 
-	id := sdk.NewSchemaObjectIdentifier(schema.DatabaseName, schema.Name, "test")
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
 	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
 	t.Cleanup(warehouseCleanup)
@@ -658,6 +659,14 @@ func TestAcc_notebook_WarehouseSchemaLevelChange(t *testing.T) {
 	modelBasic := model.NotebookFromId("test", id)
 
 	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.Notebook(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasNoComment().
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasCodeWarehouse(sdk.NewAccountObjectIdentifier("\"SYSTEM$STREAMLIT_NOTEBOOK_WH\"")),
 		resourceassert.NotebookResource(t, modelBasic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasDatabaseString(id.DatabaseName()).
@@ -701,7 +710,7 @@ func TestAcc_notebook_WarehouseSchemaLevelChange(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					testClient().Schema.AlterDefaultStreamlitNotebookWarehouse(t, id, warehouse.ID())
+					testClient().Schema.AlterDefaultStreamlitNotebookWarehouse(t, sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName()), warehouse.ID())
 				},
 				Config: accconfig.FromModels(t, modelBasic),
 				Check:  assertThat(t, assertBasic...),
@@ -715,7 +724,7 @@ func TestAcc_Notebook_Validations(t *testing.T) {
 
 	modelInvalidIdleAutoShutdownTimeSeconds := model.NotebookFromId("test", id).WithIdleAutoShutdownTimeSeconds(0)
 
-	stage := sdk.NewSchemaObjectIdentifier("db", "schema", "stage")
+	stage := testClient().Ids.RandomSchemaObjectIdentifier()
 	path := "test/path"
 
 	modelFromWithoutMainFile := model.NotebookFromId("test", id).WithFrom(path, stage)

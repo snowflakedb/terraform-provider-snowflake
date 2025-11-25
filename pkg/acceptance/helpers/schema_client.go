@@ -156,12 +156,11 @@ func (c *SchemaClient) Alter(t *testing.T, id sdk.DatabaseObjectIdentifier, opts
 	require.NoError(t, err)
 }
 
-func (c *SchemaClient) AlterDefaultStreamlitNotebookWarehouse(t *testing.T, id sdk.SchemaObjectIdentifier, warehouse sdk.AccountObjectIdentifier) {
+func (c *SchemaClient) AlterDefaultStreamlitNotebookWarehouse(t *testing.T, id sdk.DatabaseObjectIdentifier, warehouse sdk.AccountObjectIdentifier) {
 	t.Helper()
 	ctx := context.Background()
 
-	schemaId := sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName())
-	query := fmt.Sprintf(`ALTER SCHEMA %s SET DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE = '%s'`, schemaId.FullyQualifiedName(), warehouse.Name())
+	query := fmt.Sprintf(`ALTER SCHEMA %s SET DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE = '%s'`, id.FullyQualifiedName(), warehouse.Name())
 
 	_, err := c.context.client.ExecForTests(ctx, query)
 	require.NoError(t, err)
