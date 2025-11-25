@@ -13,7 +13,8 @@ services:
     working_dir: /terraform-provider-snowflake
     # Run the tests and save the results to the test_output.json file
     # The piped output from `tee` is processed (using `jq` to get Output field and grep to skip empty lines) before being outputted to the console
-    command: sh -c "make --silent test-main-terraform-use-cases | tee /shared/test_output.json | jq -r --unbuffered 'select(.Output != null) | .Output | select(length > 0)' | grep -v '^$'"
+    # pipefail is set to ensure that if any command in the pipeline fails, the entire command fails
+    command: sh -c "set -o pipefail; make --silent test-main-terraform-use-cases | tee /shared/test_output.json | jq -r --unbuffered 'select(.Output != null) | .Output | select(length > 0)' | grep -v '^$'"
   process-test-output:
     build:
       context: .
