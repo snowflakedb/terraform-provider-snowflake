@@ -538,48 +538,74 @@ But outputs from all of these commands must be mapped to the input CSV value of 
 SQL queries and returning all necessary information.
 
 In general, what we need to do is:
-1. Get the necessary objects in a object data source.
-1. Export the data source state with output blocks.
-1. Process the output blocks data to match the expected CSV in the script.
-1. Run the migration script with processed data.
+1. Define a data source for the objects you want to import.
+1. Use HCL (Terraform's configuration language) to transform the data: merge `show_output` with flattened `parameters` for each object.
+1. Write the transformed data to a CSV file using the `local_file` resource.
+1. Run the migration script with the generated CSV file.
+
+> **Note:** It's recommended to create a fresh Terraform environment (e.g., a new local directory with a clean state) for this data extraction process to avoid collisions with any existing data sources or state in your main Terraform workspace.
 
 Now, let's look into more details.
 
-As an example, let's import all schemas in a given database. First, we need to define a data source for schemas and declare an output:
+As an example, let's import all schemas in a given database. First, we need to define a data source for schemas and use Terraform's HCL to transform the data into CSV format:
+
 ```terraform
+terraform {
+  required_providers {
+    snowflake = {
+      source = "Snowflake-Labs/snowflake"
+    }
+    local = {
+      source = "hashicorp/local"
+    }
+  }
+}
+
 data "snowflake_schemas" "test" {
   in {
     database = "DATABASE"
   }
 }
 
-output "schemas" {
-  value = data.snowflake_schemas.test.schemas
+locals {
+  # Transform each schema by merging show_output and flattened parameters
+  schemas_flattened = [
+    for schema in data.snowflake_schemas.test.schemas : merge(
+      schema.show_output[0],
+      # Flatten parameters: convert each parameter to {param_name}_value and {param_name}_level
+      {
+        for param_key, param_values in schema.parameters[0] :
+        param_key => param_values[0].value
+      },
+      {
+        for param_key, param_values in schema.parameters[0] :
+        "${param_key}_level" => param_values[0].level
+      }
+    )
+  ]
+
+  # Get all unique keys from the first schema to create CSV header
+  csv_header = join(",", [for key in keys(local.schemas_flattened[0]) : "\"${key}\""])
+
+  # Convert each schema object to CSV row
+  csv_rows = [
+    for schema in local.schemas_flattened :
+      join(",", [for key in keys(local.schemas_flattened[0]) : "\"${lookup(schema, key, "")}\""])
+  ]
+
+  # Combine header and rows
+  csv_content = join("\n", concat([local.csv_header], local.csv_rows))
+}
+
+resource "local_file" "schemas_csv" {
+  content  = local.csv_content
+  filename = "${path.module}/schemas.csv"
 }
 ```
 
-Now, get the data with `terraform apply`. The schemas should be present in your state and in the declared output. Now, we can perform some manipulations to convert
-the output format to the desired CSV format:
-1. Extract the `show_output` data to a temporary file.
-1. Extract the `parameters` data to a temporary file and convert it to a "key": "value" format instead of list of attributes.
-1. Merge the two files into one. The resulting table is a list of objects with merged fields from `show_output` and `parameters`.
-1. Convert the JSON file to a CSV file. This CSV file can be now used in the migration script.
-
-You can find the given steps in bash below:
-```bash
-tf output -json | jq '.schemas[]' > output.json
-cat output.json | jq '[.schemas.value[] | .show_output[0]]' > show_output.json
-cat output.json | jq '[.schemas.value[] | .parameters[0] | to_entries | map({("\(.key)_value"): .value[0].value, ("\(.key)_level"): .value[0].level}) | add]' > parameters.json
-jq -s 'transpose | map(add)' show_output.json parameters.json > merged.json
-jq -r '
-  (.[0] | keys_unsorted) as $keys |
-  ($keys, (.[] | [.[$keys[]]])) | @csv
-' merged.json > merged.csv
-```
-
-Now, we can run the migration script like:
+After running `terraform apply`, the CSV file will be automatically generated at `schemas.csv`. Now, we can run the migration script like:
 ```shell
-go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@main -import=block schemas < ./merged.csv
+go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@main -import=block schemas < ./schemas.csv
 ```
 
 This will output the generated configuration and import blocks for the specified schemas.

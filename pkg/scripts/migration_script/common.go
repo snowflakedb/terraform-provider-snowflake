@@ -13,6 +13,18 @@ func handleOptionalFieldWithBuilder[T any](parameter *T, builder func(T) *model.
 	}
 }
 
+func handleIfNotEmpty(value string, builder func(string) *model.SchemaModel) {
+	if value != "" {
+		builder(value)
+	}
+}
+
+func handleIf(condition bool, builder func(string) *model.SchemaModel) {
+	if condition {
+		builder("true")
+	}
+}
+
 type parameterHandler struct {
 	level sdk.ParameterType
 }

@@ -17,17 +17,9 @@ func MapSchemaToModel(schema SchemaRepresentation) (accconfig.ResourceModel, *Im
 	resourceId := NormalizeResourceId(fmt.Sprintf("schema_%s", schemaId.FullyQualifiedName()))
 	resourceModel := model.Schema(resourceId, schema.DatabaseName, schema.Name)
 
-	if schema.Comment != "" {
-		resourceModel.WithComment(schema.Comment)
-	}
-
-	if schema.IsTransient() {
-		resourceModel.WithIsTransient("true")
-	}
-
-	if schema.IsManagedAccess() {
-		resourceModel.WithWithManagedAccess("true")
-	}
+	handleIfNotEmpty(schema.Comment, resourceModel.WithComment)
+	handleIf(schema.IsTransient(), resourceModel.WithIsTransient)
+	handleIf(schema.IsManagedAccess(), resourceModel.WithWithManagedAccess)
 
 	handleOptionalFieldWithBuilder(schema.DataRetentionTimeInDays, resourceModel.WithDataRetentionTimeInDays)
 	handleOptionalFieldWithBuilder(schema.MaxDataExtensionTimeInDays, resourceModel.WithMaxDataExtensionTimeInDays)

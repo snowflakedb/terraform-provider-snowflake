@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -58,15 +57,7 @@ type SchemaCsvRow struct {
 }
 
 type SchemaRepresentation struct {
-	Name          string
-	IsDefault     bool
-	IsCurrent     bool
-	DatabaseName  string
-	Owner         string
-	Comment       string
-	Options       *string
-	RetentionTime string
-	OwnerRoleType string
+	sdk.Schema
 
 	// parameters
 	Catalog                                 *string
@@ -88,40 +79,23 @@ type SchemaRepresentation struct {
 	UserTaskTimeoutMs                       *int
 }
 
-// TODO: embed schema?
-func (s *SchemaRepresentation) IsTransient() bool {
-	if s.Options == nil {
-		return false
-	}
-	return slices.Contains(sdk.ParseCommaSeparatedStringArray(*s.Options, false), "TRANSIENT")
-}
-
-func (s *SchemaRepresentation) IsManagedAccess() bool {
-	if s.Options == nil {
-		return false
-	}
-	return slices.Contains(sdk.ParseCommaSeparatedStringArray(*s.Options, false), "MANAGED ACCESS")
-}
-
 func (row SchemaCsvRow) convert() (*SchemaRepresentation, error) {
-	isDefault := row.IsDefault == "Y" || row.IsDefault == "true"
-	isCurrent := row.IsCurrent == "Y" || row.IsCurrent == "true"
-
-	var options *string
-	if row.Options != "" {
-		options = &row.Options
-	}
 	schemaRepresentation := &SchemaRepresentation{
-		Name:          row.Name,
-		IsDefault:     isDefault,
-		IsCurrent:     isCurrent,
-		DatabaseName:  row.DatabaseName,
-		Owner:         row.Owner,
-		Comment:       row.Comment,
-		Options:       options,
-		RetentionTime: row.RetentionTime,
-		OwnerRoleType: row.OwnerRoleType,
+		Schema: sdk.Schema{
+			Name:          row.Name,
+			IsDefault:     row.IsDefault == "Y",
+			IsCurrent:     row.IsCurrent == "Y",
+			DatabaseName:  row.DatabaseName,
+			Owner:         row.Owner,
+			Comment:       row.Comment,
+			RetentionTime: row.RetentionTime,
+			OwnerRoleType: row.OwnerRoleType,
+		},
 	}
+	if row.Options != "" {
+		schemaRepresentation.Options = &row.Options
+	}
+
 	handler := newParameterHandler(sdk.ParameterTypeSchema)
 	errs := errors.Join(
 		handler.handleIntegerParameter(sdk.ParameterType(row.DataRetentionTimeInDaysLevel), row.DataRetentionTimeInDaysValue, &schemaRepresentation.DataRetentionTimeInDays),
