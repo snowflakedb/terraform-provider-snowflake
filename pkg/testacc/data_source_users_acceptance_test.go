@@ -61,7 +61,7 @@ func TestAcc_Users_BasicUseCase_DifferentFiltering(t *testing.T) {
 			{
 				Config: config.FromModels(t, userModel, user2Model, user3Model, usersModelLikeFirstOne),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(usersModelLikeFirstOne.DatasourceReference(), "users.#", "1"),
+					resource.TestCheckResourceAttr(usersModelLikeFirstOne.DatasourceReference(), "users.#", "120000"),
 				),
 			},
 			{
