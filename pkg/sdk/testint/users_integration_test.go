@@ -353,7 +353,7 @@ func TestInt_Users(t *testing.T) {
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
 			WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
-				Type:    sdk.String("OIDC"),
+				Type:    sdk.Pointer(sdk.WIFTypeOIDC),
 				Issuer:  sdk.String("https://accounts.google.com"),
 				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
 			}},
@@ -422,6 +422,12 @@ func TestInt_Users(t *testing.T) {
 			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
 		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assert.Equal(t, methods[0].Type, "OIDC")
+		assert.Equal(t, methods[0].AdditionalInfo, "{\"audienceList\":[],\"issuer\":\"https://accounts.google.com\",\"subject\":\"system:serviceaccount:service_account_namespace:service_account_name\"}")
 	})
 
 	t.Run("create: all object properties - type legacy service", func(t *testing.T) {
@@ -445,7 +451,7 @@ func TestInt_Users(t *testing.T) {
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
 			WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
-				Type:    sdk.String("OIDC"),
+				Type:    sdk.Pointer(sdk.WIFTypeOIDC),
 				Issuer:  sdk.String("https://accounts.google.com"),
 				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
 			}},
@@ -514,6 +520,12 @@ func TestInt_Users(t *testing.T) {
 			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
 		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assert.Equal(t, methods[0].Type, "OIDC")
+		assert.Equal(t, methods[0].AdditionalInfo, "{\"audienceList\":[],\"issuer\":\"https://accounts.google.com\",\"subject\":\"system:serviceaccount:service_account_namespace:service_account_name\"}")
 	})
 
 	incorrectObjectPropertiesForServiceType := []struct {
@@ -1022,7 +1034,7 @@ func TestInt_Users(t *testing.T) {
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
 					WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
-						Type:    sdk.String("OIDC"),
+						Type:    sdk.Pointer(sdk.WIFTypeOIDC),
 						Issuer:  sdk.String("https://accounts.google.com"),
 						Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
 					}},
@@ -1125,7 +1137,7 @@ func TestInt_Users(t *testing.T) {
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
 					WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
-						Type:    sdk.String("OIDC"),
+						Type:    sdk.Pointer(sdk.WIFTypeOIDC),
 						Issuer:  sdk.String("https://accounts.google.com"),
 						Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
 					}},
@@ -1167,6 +1179,12 @@ func TestInt_Users(t *testing.T) {
 			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
 		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assert.Equal(t, methods[0].Type, "OIDC")
+		assert.Equal(t, methods[0].AdditionalInfo, "{\"audienceList\":[],\"issuer\":\"https://accounts.google.com\",\"subject\":\"system:serviceaccount:service_account_namespace:service_account_name\"}")
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
 			ObjectProperties: &sdk.UserObjectPropertiesUnset{

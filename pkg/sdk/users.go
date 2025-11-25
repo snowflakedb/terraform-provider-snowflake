@@ -40,6 +40,7 @@ type Users interface {
 	ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
 	ShowProgrammaticAccessTokenByName(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 	ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
+	ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethods, error)
 }
 
 var _ Users = (*users)(nil)
@@ -249,9 +250,18 @@ func (opts *CreateUserOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		return errors.Join(ErrInvalidObjectIdentifier)
 	}
-	if valueSet(opts.ObjectProperties) && valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
-		if err := opts.ObjectProperties.DefaultSecondaryRoles.validate(); err != nil {
-			return err
+	if valueSet(opts.ObjectProperties) {
+		if valueSet(opts.ObjectProperties.WorkloadIdentity) {
+			for _, workloadIdentity := range *opts.ObjectProperties.WorkloadIdentity {
+				if err := workloadIdentity.validate(); err != nil {
+					return err
+				}
+			}
+		}
+		if valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
+			if err := opts.ObjectProperties.DefaultSecondaryRoles.validate(); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -299,12 +309,70 @@ type UserObjectProperties struct {
 	Comment               *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
+type WIFType string
+
+const (
+	WIFTypeAWS   WIFType = "AWS"
+	WIFTypeAzure WIFType = "AZURE"
+	WIFTypeGCP   WIFType = "GCP"
+	WIFTypeOIDC  WIFType = "OIDC"
+)
+
+func ToWIFTypeType(s string) (WIFType, error) {
+	switch strings.ToUpper(s) {
+	case string(WIFTypeAWS):
+		return WIFTypeAWS, nil
+	case string(WIFTypeAzure):
+		return WIFTypeAzure, nil
+	case string(WIFTypeGCP):
+		return WIFTypeGCP, nil
+	case string(WIFTypeOIDC):
+		return WIFTypeOIDC, nil
+	default:
+		return "", fmt.Errorf("invalid warehouse type: %s", s)
+	}
+}
+
+func (e WIFType) FromString(s string) (WIFType, error) {
+	return ToWIFTypeType(s)
+}
+
 type UserObjectWorkloadIdentityProperties struct {
-	Type             *string                 `ddl:"parameter,no_quotes" sql:"TYPE"`
+	Type             *WIFType                `ddl:"parameter,no_quotes" sql:"TYPE"`
 	Arn              *string                 `ddl:"parameter,single_quotes" sql:"ARN"`
 	Issuer           *string                 `ddl:"parameter,single_quotes" sql:"ISSUER"`
 	Subject          *string                 `ddl:"parameter,single_quotes" sql:"SUBJECT"`
 	OidcAudienceList []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OIDC_AUDIENCE_LIST"`
+}
+
+func (workloadIdentity *UserObjectWorkloadIdentityProperties) validate() error {
+	var errs []error
+
+	switch *workloadIdentity.Type {
+	case WIFTypeAWS:
+		if !valueSet(workloadIdentity.Arn) {
+			errs = append(errs, NewError("ARN must be set for AWS workload identity"))
+		}
+	case WIFTypeAzure:
+		if !valueSet(workloadIdentity.Issuer) {
+			errs = append(errs, NewError("Issuer must be set for Azure workload identity"))
+		}
+		if !valueSet(workloadIdentity.Subject) {
+			errs = append(errs, NewError("Subject must be set for Azure workload identity"))
+		}
+	case WIFTypeGCP:
+		if !valueSet(workloadIdentity.Subject) {
+			errs = append(errs, NewError("Subject must be set for GCP workload identity"))
+		}
+	case WIFTypeOIDC:
+		if !valueSet(workloadIdentity.Issuer) {
+			errs = append(errs, NewError("Issuer must be set for OIDC workload identity"))
+		}
+		if !valueSet(workloadIdentity.Subject) {
+			errs = append(errs, NewError("Subject must be set for OIDC workload identity"))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 type UserAlterObjectProperties struct {
@@ -845,73 +913,65 @@ var AcceptableUserTypes = map[UserType][]string{
 }
 
 // TODO: unclear how to proceed here with implementing ShowUserWorkloadIdentityAuthenticationMethods (manually or with a generator)
-//type userWorkloadIdentityAuthenticationMethodsDBRow struct {
-//	Name           string         `db:"name"`
-//	Type           string         `db:"type"`
-//	Comment        sql.NullString `db:"comment"`
-//	LastUsed       sql.NullTime   `db:"last_used"`
-//	CreatedOn      time.Time      `db:"created_on"`
-//	AdditionalInfo sql.NullString `db:"additional_info"`
-//}
-//
-//func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkloadIdentityAuthenticationMethods, error) {
-//	methods := &UserWorkloadIdentityAuthenticationMethods{
-//		Name:      row.Name,
-//		Type:      row.Type,
-//		CreatedOn: row.CreatedOn,
-//	}
-//
-//	if row.LastUsed.Valid {
-//		methods.LastUsed = row.LastUsed.Time
-//	}
-//	if row.Comment.Valid {
-//		methods.Comment = row.Comment.String
-//	}
-//	if row.AdditionalInfo.Valid {
-//		methods.AdditionalInfo = row.AdditionalInfo.String
-//	}
-//	return methods, nil
-//}
-//
-//type Methods interface {
-//	Show(ctx context.Context, opts *ShowUserAuthenticationMethodOptions) ([]UserWorkloadIdentityAuthenticationMethods, error)
-//	//ShowByID(ctx context.Context, id AccountObjectIdentifier) (*User, error)
-//}
-//
-//var _ Methods = (*methods)(nil)
-//
-//type methods struct {
-//	client *Client
-//}
-//
-//type UserWorkloadIdentityAuthenticationMethods struct {
-//	Name           string
-//	Type           string
-//	Comment        string
-//	LastUsed       time.Time
-//	CreatedOn      time.Time
-//	AdditionalInfo string
-//}
-//
-//// ShowUserAuthenticationMethodOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-user-workload-identity-authentication-methods
-//type ShowUserAuthenticationMethodOptions struct {
-//	show                            bool                    `ddl:"static" sql:"SHOW"`
-//	userWorkloadIdentityAuthMethods bool                    `ddl:"static" sql:"USER WORKLOAD IDENTITY AUTHENTICATION METHODS"`
-//	ForUser                         AccountObjectIdentifier `ddl:"identifier,no_equals" sql:"FOR USER"`
-//}
-//
-//func (opts *ShowUserAuthenticationMethodOptions) validate() error {
-//	if opts == nil {
-//		return errors.Join(ErrNilOptions)
-//	}
-//	return nil
-//}
-//
-//func (v *methods) Show(ctx context.Context, opts *ShowUserAuthenticationMethodOptions) ([]UserWorkloadIdentityAuthenticationMethods, error) {
-//	opts = createIfNil(opts)
-//	dbRows, err := validateAndQuery[userWorkloadIdentityAuthenticationMethodsDBRow](v.client, ctx, opts)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return convertRows[userWorkloadIdentityAuthenticationMethodsDBRow, UserWorkloadIdentityAuthenticationMethods](dbRows)
-//}
+type userWorkloadIdentityAuthenticationMethodsDBRow struct {
+	Name           string         `db:"name"`
+	Type           string         `db:"type"`
+	Comment        sql.NullString `db:"comment"`
+	LastUsed       sql.NullTime   `db:"last_used"`
+	CreatedOn      time.Time      `db:"created_on"`
+	AdditionalInfo sql.NullString `db:"additional_info"`
+}
+
+func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkloadIdentityAuthenticationMethods, error) {
+	methods := &UserWorkloadIdentityAuthenticationMethods{
+		Name:      row.Name,
+		Type:      row.Type,
+		CreatedOn: row.CreatedOn,
+	}
+
+	if row.LastUsed.Valid {
+		methods.LastUsed = row.LastUsed.Time
+	}
+	if row.Comment.Valid {
+		methods.Comment = row.Comment.String
+	}
+	if row.AdditionalInfo.Valid {
+		methods.AdditionalInfo = row.AdditionalInfo.String
+	}
+	return methods, nil
+}
+
+type UserWorkloadIdentityAuthenticationMethods struct {
+	Name           string
+	Type           string
+	Comment        string
+	LastUsed       time.Time
+	CreatedOn      time.Time
+	AdditionalInfo string
+}
+
+// showUserAuthenticationMethodOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-user-workload-identity-authentication-methods
+type showUserAuthenticationMethodOptions struct {
+	show                            bool                    `ddl:"static" sql:"SHOW"`
+	userWorkloadIdentityAuthMethods bool                    `ddl:"static" sql:"USER WORKLOAD IDENTITY AUTHENTICATION METHODS"`
+	ForUser                         AccountObjectIdentifier `ddl:"identifier,no_equals,no_quotes" sql:"FOR USER"`
+}
+
+func (opts *showUserAuthenticationMethodOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	return nil
+}
+
+func (v *users) ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethods, error) {
+	opts := &showUserAuthenticationMethodOptions{
+		ForUser: userId,
+	}
+	opts = createIfNil(opts)
+	dbRows, err := validateAndQuery[userWorkloadIdentityAuthenticationMethodsDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[userWorkloadIdentityAuthenticationMethodsDBRow, UserWorkloadIdentityAuthenticationMethods](dbRows)
+}

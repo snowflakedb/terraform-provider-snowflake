@@ -422,6 +422,42 @@ func TestUserAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET AUTHENTICATION POLICY", id.FullyQualifiedName())
 	})
 
+	t.Run("with setting a WIF", func(t *testing.T) {
+		wifType := WIFTypeOIDC
+		wifIssuer := "https://accounts.google.com"
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					UserObjectProperties: UserObjectProperties{
+						WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
+							{
+								Type:    &wifType,
+								Issuer:  &wifIssuer,
+								Subject: &wifSubject,
+							},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s')", id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
+	})
+
+	t.Run("with unsetting a WIF", func(t *testing.T) {
+		opts := &AlterUserOptions{
+			name: id,
+			Unset: &UserUnset{
+				ObjectProperties: &UserObjectPropertiesUnset{
+					WorkloadIdentity: Bool(true),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET WORKLOAD_IDENTITY", id.FullyQualifiedName())
+	})
+
 	t.Run("with removing delegated authorization of role", func(t *testing.T) {
 		role := "ROLE1"
 		integration := "INTEGRATION1"
@@ -993,7 +1029,7 @@ func TestUserCreateWIF(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 
 	t.Run("WIF - google OIDC", func(t *testing.T) {
-		wifType := "OIDC"
+		wifType := WIFTypeOIDC
 		wifIssuer := "https://accounts.google.com"
 		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
 		opts := &CreateUserOptions{
@@ -1009,5 +1045,72 @@ func TestUserCreateWIF(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s')`, id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
+	})
+
+	t.Run("WIF - error - AWS no ARN", func(t *testing.T) {
+		wifType := WIFTypeAWS
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
+					{
+						Type: &wifType,
+					},
+				},
+			},
+		}
+		assertOptsInvalid(t, opts, NewError("ARN must be set for AWS workload identity"))
+	})
+
+	t.Run("WIF - error - Azure no Issuer + no Subject", func(t *testing.T) {
+		wifType := WIFTypeAzure
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
+					{
+						Type: &wifType,
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errors.Join([]error{NewError("Subject must be set for Azure workload identity"), NewError("Issuer must be set for Azure workload identity")}...))
+	})
+
+	t.Run("WIF - error - GCP no Subject", func(t *testing.T) {
+		wifType := WIFTypeGCP
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
+					{
+						Type: &wifType,
+					},
+				},
+			},
+		}
+		assertOptsInvalid(t, opts, NewError("Subject must be set for GCP workload identity"))
+	})
+
+	t.Run("WIF - error - OIDC no Issuer + no Subject", func(t *testing.T) {
+		wifType := WIFTypeOIDC
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
+					{
+						Type: &wifType,
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errors.Join([]error{NewError("Subject must be set for OIDC workload identity"), NewError("Issuer must be set for OIDC workload identity")}...))
+	})
+
+	t.Run("WIF - SHOW USER WORKLOAD IDENTITY METHODS", func(t *testing.T) {
+		opts := &showUserAuthenticationMethodOptions{
+			ForUser: id,
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW USER WORKLOAD IDENTITY AUTHENTICATION METHODS FOR USER \"%s\"", id.Name())
 	})
 }
