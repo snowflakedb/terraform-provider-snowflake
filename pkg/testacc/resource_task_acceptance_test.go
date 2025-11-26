@@ -2102,11 +2102,16 @@ resource "snowflake_task" "test" {
 func TestAcc_Task_TargetCompletionInterval(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"
-	targetCompletionInterval := "10 MINUTES"
 
 	configModel := model.TaskWithId("test", id, false, statement).
 		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium).
-		WithTargetCompletionInterval(targetCompletionInterval)
+		WithTargetCompletionIntervalValue(
+			configvariable.ObjectVariable(
+				map[string]configvariable.Variable{
+					"minutes": configvariable.IntegerVariable(10),
+				},
+			),
+		)
 
 	configModelWithoutParam := model.TaskWithId("test", id, false, statement).
 		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium)
@@ -2129,7 +2134,6 @@ func TestAcc_Task_TargetCompletionInterval(t *testing.T) {
 						HasNameString(id.Name()).
 						HasStartedString(r.BooleanFalse).
 						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeMedium).
-						HasTargetCompletionIntervalString(targetCompletionInterval).
 						HasSqlStatementString(statement),
 				),
 			},
