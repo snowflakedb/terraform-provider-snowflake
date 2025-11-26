@@ -2,13 +2,9 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"strconv"
-	"strings"
 )
 
 type Tasks interface {
@@ -223,41 +219,6 @@ func (v *Task) ID() SchemaObjectIdentifier {
 
 func (v *Task) ObjectType() ObjectType {
 	return ObjectTypeTask
-}
-
-// added manually
-func (v *Task) IsStarted() bool {
-	return v.State == TaskStateStarted
-}
-
-// added manually
-type TaskSchedule struct {
-	Minutes int
-	Cron    string
-}
-
-// added manually
-func ParseTaskSchedule(schedule string) (*TaskSchedule, error) {
-	upperSchedule := strings.ToUpper(schedule)
-	switch {
-	case strings.Contains(upperSchedule, "USING CRON"):
-		// We have to do it this was because we want to get rid of the prefix and leave the casing as is (mostly because timezones like America/Los_Angeles are case-sensitive).
-		// That why the prefix trimming has to be done by slicing rather than using strings.TrimPrefix.
-		cron := schedule[len("USING CRON "):]
-		return &TaskSchedule{Cron: cron}, nil
-	case strings.HasSuffix(upperSchedule, "M") ||
-		strings.HasSuffix(upperSchedule, "MINUTE") ||
-		strings.HasSuffix(upperSchedule, "MINUTES"):
-		minuteParts := strings.Split(upperSchedule, " ")
-		minutes, err := strconv.Atoi(minuteParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Minutes: minutes}, nil
-	default:
-		return nil, fmt.Errorf("invalid schedule format: %s", schedule)
-	}
 }
 
 // DescribeTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-task.

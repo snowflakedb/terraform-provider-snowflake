@@ -37,11 +37,13 @@ func TestAcc_Streamlits_BasicUseCase_DifferentFiltering(t *testing.T) {
 	datasourceModelLikeExact := datasourcemodel.Streamlits("test").
 		WithWithDescribe(false).
 		WithLike(streamlitId1.Name()).
+		WithInAccount().
 		WithDependsOn(streamlitModel1.ResourceReference(), streamlitModel2.ResourceReference(), streamlitModel3.ResourceReference())
 
 	datasourceModelLikePrefix := datasourcemodel.Streamlits("test").
 		WithWithDescribe(false).
 		WithLike(prefix+"%").
+		WithInAccount().
 		WithDependsOn(streamlitModel1.ResourceReference(), streamlitModel2.ResourceReference(), streamlitModel3.ResourceReference())
 
 	datasourceModelInDatabase := datasourcemodel.Streamlits("test").

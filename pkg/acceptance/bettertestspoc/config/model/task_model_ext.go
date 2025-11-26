@@ -81,7 +81,40 @@ func (t *TaskModel) WithScheduleMinutes(minutes int) *TaskModel {
 
 func (t *TaskModel) WithScheduleCron(cron string) *TaskModel {
 	t.Schedule = tfconfig.MapVariable(map[string]tfconfig.Variable{
-		"cron": tfconfig.StringVariable(cron),
+		"using_cron": tfconfig.StringVariable(cron),
 	})
 	return t
+}
+
+func (t *TaskModel) WithScheduleSeconds(seconds int) *TaskModel {
+	t.Schedule = tfconfig.MapVariable(map[string]tfconfig.Variable{
+		"seconds": tfconfig.IntegerVariable(seconds),
+	})
+	return t
+}
+
+func (t *TaskModel) WithScheduleHours(hours int) *TaskModel {
+	t.Schedule = tfconfig.MapVariable(map[string]tfconfig.Variable{
+		"hours": tfconfig.IntegerVariable(hours),
+	})
+	return t
+}
+
+func (t *TaskModel) WithEmptySchedule() *TaskModel {
+	return t.WithScheduleValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+		}),
+	)
+}
+
+func (t *TaskModel) WithMultipleSchedules() *TaskModel {
+	return t.WithScheduleValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"hours":      tfconfig.IntegerVariable(1),
+			"minutes":    tfconfig.IntegerVariable(1),
+			"seconds":    tfconfig.IntegerVariable(1),
+			"using_cron": tfconfig.StringVariable("*/5 * * * * UTC"),
+		}),
+	)
 }

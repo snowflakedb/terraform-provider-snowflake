@@ -57,6 +57,8 @@ const (
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
+	NotebookResource                              feature = "snowflake_notebook_resource"
+	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
@@ -136,6 +138,8 @@ var allPreviewFeatures = []feature{
 	MaterializedViewsDatasource,
 	NetworkPolicyAttachmentResource,
 	NetworkRuleResource,
+	NotebookResource,
+	NotebooksDatasource,
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
@@ -143,9 +147,8 @@ var allPreviewFeatures = []feature{
 	PipeResource,
 	PipesDatasource,
 	CurrentRoleDatasource,
-	// TODO(SNOW-2108211): Uncomment after adjusting resource and data source
-	// SemanticViewResource,
-	// SemanticViewDatasource,
+	SemanticViewResource,
+	SemanticViewDatasource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,

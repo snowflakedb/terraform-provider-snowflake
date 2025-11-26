@@ -80,6 +80,11 @@ func (s *AlterSemanticViewRequest) WithUnsetComment(unsetComment bool) *AlterSem
 	return s
 }
 
+func (s *AlterSemanticViewRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterSemanticViewRequest {
+	s.RenameTo = &renameTo
+	return s
+}
+
 func NewDropSemanticViewRequest(
 	name SchemaObjectIdentifier,
 ) *DropSemanticViewRequest {
@@ -307,12 +312,12 @@ func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunct
 }
 
 func NewWindowFunctionMetricDefinitionRequest(
-	WindowFunction string,
-	Metric string,
+	qualifiedExpressionName *QualifiedExpressionNameRequest,
+	sqlExpression *SemanticSqlExpressionRequest,
 ) *WindowFunctionMetricDefinitionRequest {
 	s := WindowFunctionMetricDefinitionRequest{}
-	s.WindowFunction = WindowFunction
-	s.Metric = Metric
+	s.qualifiedExpressionName = qualifiedExpressionName
+	s.sqlExpression = sqlExpression
 	return &s
 }
 

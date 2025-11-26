@@ -62,4 +62,6 @@ type ConfigDTO struct {
 	WorkloadIdentityProvider       *string             `toml:"workload_identity_provider"`
 	WorkloadIdentityEntraResource  *string             `toml:"workload_identity_entra_resource"`
 	EnableSingleUseRefreshTokens   *bool               `toml:"enable_single_use_refresh_tokens"`
+	LogQueryText                   *bool               `toml:"log_query_text"`
+	LogQueryParameters             *bool               `toml:"log_query_parameters"`
 }
