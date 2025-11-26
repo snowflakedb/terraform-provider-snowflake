@@ -1,0 +1,19 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
+
+import (
+    "context"
+
+    "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+)
+
+{{ $impl := .NameLowerCased }}
+var _ {{ .Name }} = (*{{ $impl }})(nil)
+{{ template "convertGuards" . -}}
+
+type {{ $impl }} struct {
+client *Client
+}
+
+{{ template "implementationFunctions" . }}
+
+{{ template "implementationMappings" . }}

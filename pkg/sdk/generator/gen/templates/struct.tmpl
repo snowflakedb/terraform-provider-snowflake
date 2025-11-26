@@ -1,0 +1,8 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Field*/ -}}
+
+type {{ .KindNoPtr }} struct {
+{{- range .Fields }}
+    {{ .Name }} {{ .Kind }} {{ .TagsPrintable }}
+{{- end }}
+}
+

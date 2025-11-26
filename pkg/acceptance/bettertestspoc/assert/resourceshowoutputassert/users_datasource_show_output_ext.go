@@ -7,11 +7,11 @@ import (
 )
 
 // UsersDatasourceShowOutput is a temporary workaround to have better show output assertions in data source acceptance tests.
-func UsersDatasourceShowOutput(t *testing.T, name string) *UserShowOutputAssert {
+func UsersDatasourceShowOutput(t *testing.T, datasourceReference string) *UserShowOutputAssert {
 	t.Helper()
 
 	u := UserShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert("data."+name, "show_output", "users.0."),
+		ResourceAssert: assert.NewDatasourceAssert(datasourceReference, "show_output", "users.0."),
 	}
 	u.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &u

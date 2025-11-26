@@ -14,7 +14,7 @@ func TaskDatasourceShowOutput(t *testing.T, name string) *TaskShowOutputAssert {
 	t.Helper()
 
 	taskAssert := TaskShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert("data."+name, "show_output", "tasks.0."),
+		ResourceAssert: assert.NewDatasourceAssert("data.snowflake_tasks."+name, "show_output", "tasks.0."),
 	}
 	taskAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &taskAssert
@@ -78,8 +78,18 @@ func (t *TaskShowOutputAssert) HasScheduleEmpty() *TaskShowOutputAssert {
 	return t
 }
 
+func (t *TaskShowOutputAssert) HasScheduleSeconds(seconds int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("%d SECOND", seconds)))
+	return t
+}
+
 func (t *TaskShowOutputAssert) HasScheduleMinutes(minutes int) *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("%d MINUTE", minutes)))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasScheduleHours(hours int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("%d HOUR", hours)))
 	return t
 }
 

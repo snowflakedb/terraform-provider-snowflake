@@ -16,11 +16,6 @@ func NewCreateNetworkRuleRequest(
 	return &s
 }
 
-// added manually
-func (r *CreateNetworkRuleRequest) GetName() SchemaObjectIdentifier {
-	return r.name
-}
-
 func (s *CreateNetworkRuleRequest) WithOrReplace(orReplace bool) *CreateNetworkRuleRequest {
 	s.OrReplace = &orReplace
 	return s

@@ -169,6 +169,8 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.EnableSingleUseRefreshTokens, &driverCfg.EnableSingleUseRefreshTokens)
 	pointerAttributeSet(c.WorkloadIdentityProvider, &driverCfg.WorkloadIdentityProvider)
 	pointerAttributeSet(c.WorkloadIdentityEntraResource, &driverCfg.WorkloadIdentityEntraResource)
+	pointerAttributeSet(c.LogQueryText, &driverCfg.LogQueryText)
+	pointerAttributeSet(c.LogQueryParameters, &driverCfg.LogQueryParameters)
 
 	return *driverCfg, nil
 }
@@ -315,6 +317,12 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	}
 	if baseConfig.WorkloadIdentityEntraResource == "" {
 		baseConfig.WorkloadIdentityEntraResource = mergeConfig.WorkloadIdentityEntraResource
+	}
+	if !baseConfig.LogQueryText {
+		baseConfig.LogQueryText = mergeConfig.LogQueryText
+	}
+	if !baseConfig.LogQueryParameters {
+		baseConfig.LogQueryParameters = mergeConfig.LogQueryParameters
 	}
 	return baseConfig
 }

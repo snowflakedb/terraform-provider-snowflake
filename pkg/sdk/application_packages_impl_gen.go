@@ -74,9 +74,8 @@ func (r *CreateApplicationPackageRequest) toOpts() *CreateApplicationPackageOpti
 
 func (r *AlterApplicationPackageRequest) toOpts() *AlterApplicationPackageOptions {
 	opts := &AlterApplicationPackageOptions{
-		IfExists: r.IfExists,
-		name:     r.name,
-
+		IfExists:  r.IfExists,
+		name:      r.name,
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,
 	}
@@ -148,8 +147,8 @@ func (r *AlterApplicationPackageRequest) toOpts() *AlterApplicationPackageOption
 
 func (r *DropApplicationPackageRequest) toOpts() *DropApplicationPackageOptions {
 	opts := &DropApplicationPackageOptions{
-		name:     r.name,
 		IfExists: r.IfExists,
+		name:     r.name,
 	}
 	return opts
 }

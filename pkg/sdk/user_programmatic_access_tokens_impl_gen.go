@@ -72,11 +72,6 @@ func (v *userProgrammaticAccessTokens) ShowByIDSafely(ctx context.Context, userI
 	return SafeShowProgrammaticAccessTokenByName(v.client, ctx, userId, id)
 }
 
-// added manually
-func (v *userProgrammaticAccessTokens) RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
-	return SafeRemoveProgrammaticAccessToken(v.client, ctx, request)
-}
-
 func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAccessTokenOptions {
 	opts := &AddUserProgrammaticAccessTokenOptions{
 		IfExists:                             r.IfExists,

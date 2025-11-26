@@ -38,6 +38,8 @@ provider "snowflake" {
 	workload_identity_provider = "azure"
 	workload_identity_entra_resource = "workload_identity_entra_resource"
 	enable_single_use_refresh_tokens = true
+	log_query_text = false
+	log_query_parameters = false
 
 	params = {
 		param_key = "param_value"

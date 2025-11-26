@@ -412,6 +412,9 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeSecurityIntegrations(client *sdk.Client, suffix string) func() error {
+	protectedSecurityIntegrations := []sdk.AccountObjectIdentifier{
+		sdk.NewAccountObjectIdentifier("SNOWFLAKE$LOCAL_APPLICATION"),
+	}
 	return func() error {
 		ctx := context.Background()
 
@@ -438,7 +441,7 @@ func nukeSecurityIntegrations(client *sdk.Client, suffix string) func() error {
 		for idx, integration := range integrations {
 			log.Printf("[DEBUG] Processing security integration [%d/%d]: %s...", idx+1, len(integrations), integration.Name)
 
-			if integrationDropCondition(integration) {
+			if !slices.Contains(protectedSecurityIntegrations, integration.ID()) && integrationDropCondition(integration) {
 				log.Printf("[DEBUG] Dropping security integration %s", integration.Name)
 				if err := client.SecurityIntegrations.DropSafely(ctx, integration.ID()); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping security integration %s ended with an error, err = %w", integration.Name, err))

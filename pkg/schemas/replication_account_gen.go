@@ -47,9 +47,12 @@ func ReplicationAccountToSchema(replicationAccount *sdk.ReplicationAccount) map[
 	replicationAccountSchema["created_on"] = replicationAccount.CreatedOn.String()
 	replicationAccountSchema["account_name"] = replicationAccount.AccountName
 	replicationAccountSchema["account_locator"] = replicationAccount.AccountLocator
-	replicationAccountSchema["comment"] = replicationAccount.Comment
 	replicationAccountSchema["organization_name"] = replicationAccount.OrganizationName
 	replicationAccountSchema["is_org_admin"] = replicationAccount.IsOrgAdmin
+	// adjusted manually
+	if replicationAccount.Comment.Valid {
+		replicationAccountSchema["comment"] = replicationAccount.Comment.String
+	}
 	return replicationAccountSchema
 }
 

@@ -13,8 +13,7 @@ UNIT_TESTS_EXCLUDE_PATTERN=$(shell echo $(UNIT_TESTS_EXCLUDE_PACKAGES) | sed 's/
 default: help
 
 dev-setup: ## setup development dependencies
-# TODO(SNOW-2002208): Upgrade to the latest version of golangci-lint.
-	@which ./bin/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ./bin v1.64.8
+	@which ./bin/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ./bin v2.6.1
 	cd tools && mkdir -p bin/
 	cd tools && env GOBIN=$$PWD/bin go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 	cd tools && env GOBIN=$$PWD/bin go install mvdan.cc/gofumpt
@@ -24,7 +23,7 @@ dev-cleanup: ## cleanup development dependencies
 	rm -rf tools/bin/*
 
 docs: generate-docs-additional-files ## generate docs
-	tools/bin/tfplugindocs generate
+	tools/bin/tfplugindocs generate --provider-name=terraform-provider-snowflake
 
 docs-check: docs ## check that docs have been generated
 	git diff --exit-code -- docs
@@ -42,11 +41,11 @@ help:
 install: ## install the binary
 	go install -v ./...
 
-lint: # Run static code analysis, check formatting. See https://golangci-lint.run/
-	./bin/golangci-lint run ./... -v
+lint: # Run linters and formatters. Fails if there are any findings. See https://golangci-lint.run/
+	./bin/golangci-lint run -v
 
-lint-fix: ## Run static code analysis, check formatting and try to fix findings
-	./bin/golangci-lint run ./... -v --fix
+lint-fix: ## Run linters and formatters. If linters or formatters support autofix, try to fix findings.
+	./bin/golangci-lint run -v --fix
 
 mod: ## add missing and remove unused modules
 	go mod tidy -compat=1.24.9
@@ -54,7 +53,7 @@ mod: ## add missing and remove unused modules
 mod-check: mod ## check if there are any missing/unused modules
 	git diff --exit-code -- go.mod go.sum
 
-pre-push: generate-all-config-model-builders-check mod fmt generate-docs-additional-files docs lint test-architecture ## Run a few checks before pushing a change (docs, fmt, mod, etc.)
+pre-push: generate-all-config-model-builders-check mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
 pre-push-check: pre-push mod-check generate-docs-additional-files-check docs-check ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
@@ -89,7 +88,7 @@ test-acceptance-%: ## run acceptance tests (both non-account and account level o
 	TF_ACC=1 TF_LOG=DEBUG SNOWFLAKE_DRIVER_TRACING=debug SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run ^TestAcc_$* -v -timeout=20m ./pkg/testacc
 
 test-main-terraform-use-cases: ## run test for main terraform use cases
-	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_.*_BasicUseCase.*|TestAcc_.*_CompleteUseCase.*)$$" -v -cover -json -timeout=20m ./pkg/testacc
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests,account_level_tests -run "^(TestAcc_.*_BasicUseCase.*|TestAcc_.*_CompleteUseCase.*)$$" -v -cover -json -timeout=60m ./pkg/testacc
 
 test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests within docker environment
 	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
@@ -118,34 +117,27 @@ install-locally-released-tf: release-local ## installs plugin (built by the GoRe
 uninstall-tf: ## uninstalls plugin from where terraform can find it
 	rm -f $(TERRAFORM_PLUGIN_LOCAL_INSTALL)
 
+# TODO [SNOW-1501905]: decide its fate
 generate-all-dto: ## Generate all DTOs for SDK interfaces
 	go generate ./pkg/sdk/*_dto.go
 
+# TODO [SNOW-1501905]: decide its fate
 generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 	go generate $<
-
-clean-generator-poc:
-	rm -f ./pkg/sdk/poc/example/*_gen.go
-	rm -f ./pkg/sdk/poc/example/*_gen_test.go
-
-clean-generator-%: ## Clean generated files for specified resource
-	rm -f ./pkg/sdk/$**_gen.go
-	rm -f ./pkg/sdk/$**_gen_*test.go
-
-run-generator-poc:
-	go generate ./pkg/sdk/poc/example/*_def.go
-	go generate ./pkg/sdk/poc/example/*_dto_gen.go
-
-run-generator-%: ./pkg/sdk/%_def.go ## Run go generate on given object definition
-	go generate $<
-	go generate ./pkg/sdk/$*_dto_gen.go
 
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
 
-clean-sdk: ## Clean all generated SDK objects
+clean-generated-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/*_gen.go
 	rm -f ./pkg/sdk/*_gen_test.go
+
+generate-sdk-examples: ## Generate all SDK generation examples
+	go generate ./pkg/sdk/generator/example/generate.go
+
+clean-generated-sdk-examples: ## Clean all generated SDK generation examples
+	rm -f ./pkg/sdk/generator/example/*_gen.go
+	rm -f ./pkg/sdk/generator/example/*_gen_test.go
 
 generate-docs-additional-files: ## generate docs additional files
 	go run ./pkg/internal/tools/doc-gen-helper/ $$PWD
@@ -229,4 +221,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local clean-generator-poc dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf
+.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep test test-acceptance uninstall-tf

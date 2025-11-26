@@ -380,8 +380,3 @@ func (v *Stage) ID() SchemaObjectIdentifier {
 func (v *Stage) ObjectType() ObjectType {
 	return ObjectTypeStage
 }
-
-// Added manually
-func (v *Stage) Location() string {
-	return NewStageLocation(v.ID(), "").ToSql()
-}
