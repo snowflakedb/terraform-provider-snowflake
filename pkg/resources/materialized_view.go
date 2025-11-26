@@ -47,7 +47,7 @@ var materializedViewSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
 		Default:     false,
-		Description: "Overwrites the View if it exists.",
+		Description: "Specifies whether to use CREATE OR REPLACE when creating the materialized view. Note: this does not enable in-place updates when the statement changes; statement changes always trigger a drop and recreate.",
 	},
 	"is_secure": {
 		Type:        schema.TypeBool,
@@ -63,7 +63,7 @@ var materializedViewSchema = map[string]*schema.Schema{
 	"statement": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      "Specifies the query used to create the view.",
+		Description:      "Specifies the query used to create the view. Changing this value will trigger a drop and recreate of the materialized view.",
 		ForceNew:         true,
 		DiffSuppressFunc: DiffSuppressStatement,
 	},
