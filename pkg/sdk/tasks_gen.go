@@ -2,13 +2,9 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"strconv"
-	"strings"
 )
 
 type Tasks interface {
@@ -223,84 +219,6 @@ func (v *Task) ID() SchemaObjectIdentifier {
 
 func (v *Task) ObjectType() ObjectType {
 	return ObjectTypeTask
-}
-
-// added manually
-func (v *Task) IsStarted() bool {
-	return v.State == TaskStateStarted
-}
-
-// added manually
-type TaskSchedule struct {
-	Minutes int
-	Seconds int
-	Hours   int
-	Cron    string
-}
-
-// added manually
-func ParseTaskSchedule(schedule string) (*TaskSchedule, error) {
-	upperSchedule := strings.ToUpper(schedule)
-	switch {
-	case strings.Contains(upperSchedule, "USING CRON"):
-		// We have to do it this was because we want to get rid of the prefix and leave the casing as is (mostly because timezones like America/Los_Angeles are case-sensitive).
-		// That why the prefix trimming has to be done by slicing rather than using strings.TrimPrefix.
-		cron := schedule[len("USING CRON "):]
-		return &TaskSchedule{Cron: cron}, nil
-	case strings.HasSuffix(upperSchedule, "SECONDS") ||
-		strings.HasSuffix(upperSchedule, "SECOND"):
-		secondsParts := strings.Split(upperSchedule, " ")
-		seconds, err := strconv.Atoi(secondsParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Seconds: seconds}, nil
-	case strings.HasSuffix(upperSchedule, "MINUTES") ||
-		strings.HasSuffix(upperSchedule, "MINUTE"):
-		minuteParts := strings.Split(upperSchedule, " ")
-		minutes, err := strconv.Atoi(minuteParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Minutes: minutes}, nil
-	case strings.HasSuffix(upperSchedule, "HOURS") ||
-		strings.HasSuffix(upperSchedule, "HOUR"):
-		hoursParts := strings.Split(upperSchedule, " ")
-		hours, err := strconv.Atoi(hoursParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Hours: hours}, nil
-	case strings.HasSuffix(upperSchedule, "S"):
-		secondsParts := strings.Split(upperSchedule, " ")
-		seconds, err := strconv.Atoi(secondsParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Seconds: seconds}, nil
-	case strings.HasSuffix(upperSchedule, "M"):
-		minuteParts := strings.Split(upperSchedule, " ")
-		minutes, err := strconv.Atoi(minuteParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Minutes: minutes}, nil
-	case strings.HasSuffix(upperSchedule, "H"):
-		hoursParts := strings.Split(upperSchedule, " ")
-		hours, err := strconv.Atoi(hoursParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Hours: hours}, nil
-	default:
-		return nil, fmt.Errorf("invalid schedule format: %s", schedule)
-	}
 }
 
 // DescribeTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-task.
