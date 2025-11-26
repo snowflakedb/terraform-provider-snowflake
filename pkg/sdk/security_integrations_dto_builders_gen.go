@@ -530,7 +530,7 @@ func (s *CreateSaml2SecurityIntegrationRequest) WithComment(comment string) *Cre
 func NewCreateScimSecurityIntegrationRequest(
 	name AccountObjectIdentifier,
 	scimClient ScimSecurityIntegrationScimClientOption,
-	runAsRole ScimSecurityIntegrationRunAsRoleOption,
+	runAsRole AccountObjectIdentifier,
 ) *CreateScimSecurityIntegrationRequest {
 	s := CreateScimSecurityIntegrationRequest{}
 	s.name = name

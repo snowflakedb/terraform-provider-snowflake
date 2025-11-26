@@ -53,11 +53,15 @@ func (s *SecurityIntegration) SubType() (string, error) {
 	return strings.TrimSpace(typeParts[1]), nil
 }
 
-func securityIntegrationNetworkPolicyQuoted(id *AccountObjectIdentifier) *string {
+func securityIntegrationFullyQualifiedNameQuoted(id *AccountObjectIdentifier) *string {
 	if id == nil {
 		return nil
 	}
+	return Pointer(securityIntegrationFullyQualifiedNameQuotedRequired(*id))
+}
+
+func securityIntegrationFullyQualifiedNameQuotedRequired(id AccountObjectIdentifier) string {
 	// TODO(SNOW-2236323): Use a proper generation option instead.
 	// We need to use a custom parsing here, see SNOW-1833593 for more details.
-	return Pointer(fmt.Sprintf("'%s'", id.FullyQualifiedName()))
+	return fmt.Sprintf("'%s'", id.FullyQualifiedName())
 }

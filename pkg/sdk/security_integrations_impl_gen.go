@@ -10,8 +10,10 @@ import (
 
 var _ SecurityIntegrations = (*securityIntegrations)(nil)
 
-var _ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
-var _ convertibleRow[SecurityIntegration] = new(securityIntegrationShowRow)
+var (
+	_ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
+	_ convertibleRow[SecurityIntegration]         = new(securityIntegrationShowRow)
+)
 
 type securityIntegrations struct {
 	client *Client
@@ -274,7 +276,7 @@ func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) toOpts() *Create
 		OauthIssueRefreshTokens:     r.OauthIssueRefreshTokens,
 		OauthRefreshTokenValidity:   r.OauthRefreshTokenValidity,
 		// Adjusted manually.
-		NetworkPolicy:            securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
+		NetworkPolicy:            securityIntegrationFullyQualifiedNameQuoted(r.NetworkPolicy),
 		OauthClientRsaPublicKey:  r.OauthClientRsaPublicKey,
 		OauthClientRsaPublicKey2: r.OauthClientRsaPublicKey2,
 		Comment:                  r.Comment,
@@ -327,9 +329,10 @@ func (r *CreateScimSecurityIntegrationRequest) toOpts() *CreateScimSecurityInteg
 		name:        r.name,
 		Enabled:     r.Enabled,
 		ScimClient:  r.ScimClient,
-		RunAsRole:   r.RunAsRole,
 		// Adjusted manually.
-		NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
+		RunAsRole: securityIntegrationFullyQualifiedNameQuotedRequired(r.RunAsRole),
+		// Adjusted manually.
+		NetworkPolicy: securityIntegrationFullyQualifiedNameQuoted(r.NetworkPolicy),
 		SyncPassword:  r.SyncPassword,
 		Comment:       r.Comment,
 	}
@@ -526,7 +529,7 @@ func (r *AlterOauthForCustomClientsSecurityIntegrationRequest) toOpts() *AlterOa
 			OauthRefreshTokenValidity:   r.Set.OauthRefreshTokenValidity,
 			OauthUseSecondaryRoles:      r.Set.OauthUseSecondaryRoles,
 			// Adjusted manually.
-			NetworkPolicy:            securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
+			NetworkPolicy:            securityIntegrationFullyQualifiedNameQuoted(r.Set.NetworkPolicy),
 			OauthClientRsaPublicKey:  r.Set.OauthClientRsaPublicKey,
 			OauthClientRsaPublicKey2: r.Set.OauthClientRsaPublicKey2,
 			Comment:                  r.Set.Comment,
@@ -605,7 +608,7 @@ func (r *AlterScimSecurityIntegrationRequest) toOpts() *AlterScimSecurityIntegra
 		opts.Set = &ScimIntegrationSet{
 			Enabled: r.Set.Enabled,
 			// Adjusted manually.
-			NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
+			NetworkPolicy: securityIntegrationFullyQualifiedNameQuoted(r.Set.NetworkPolicy),
 			SyncPassword:  r.Set.SyncPassword,
 			Comment:       r.Set.Comment,
 		}

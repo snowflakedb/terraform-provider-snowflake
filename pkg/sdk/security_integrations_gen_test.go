@@ -364,7 +364,7 @@ func TestSecurityIntegrations_CreateOauthForCustomClients(t *testing.T) {
 		opts.BlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{role2ID}}
 		opts.OauthIssueRefreshTokens = Pointer(true)
 		opts.OauthRefreshTokenValidity = Pointer(42)
-		opts.NetworkPolicy = securityIntegrationNetworkPolicyQuoted(&npID)
+		opts.NetworkPolicy = securityIntegrationFullyQualifiedNameQuoted(&npID)
 		opts.OauthClientRsaPublicKey = Pointer("key")
 		opts.OauthClientRsaPublicKey2 = Pointer("key2")
 		opts.Comment = Pointer("a")
@@ -445,7 +445,7 @@ func TestSecurityIntegrations_CreateScim(t *testing.T) {
 			// adjusted manually
 			name:       id,
 			ScimClient: "GENERIC",
-			RunAsRole:  "GENERIC_SCIM_PROVISIONER",
+			RunAsRole:  securityIntegrationFullyQualifiedNameQuotedRequired(NewAccountObjectIdentifier("GENERIC_SCIM_PROVISIONER")),
 		}
 	}
 
@@ -478,7 +478,7 @@ func TestSecurityIntegrations_CreateScim(t *testing.T) {
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Pointer(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SCIM SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = 'GENERIC_SCIM_PROVISIONER'", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SCIM SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '"GENERIC_SCIM_PROVISIONER"'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -486,11 +486,11 @@ func TestSecurityIntegrations_CreateScim(t *testing.T) {
 		networkPolicyID := randomAccountObjectIdentifier()
 		opts.Enabled = Pointer(true)
 		opts.IfNotExists = Pointer(true)
-		opts.NetworkPolicy = securityIntegrationNetworkPolicyQuoted(&networkPolicyID)
+		opts.NetworkPolicy = securityIntegrationFullyQualifiedNameQuoted(&networkPolicyID)
 		opts.SyncPassword = Pointer(true)
 		opts.Comment = Pointer("a")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = SCIM ENABLED = true SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = 'GENERIC_SCIM_PROVISIONER'"+
-			" NETWORK_POLICY = '%s' SYNC_PASSWORD = true COMMENT = 'a'", id.FullyQualifiedName(), networkPolicyID.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = SCIM ENABLED = true SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '"GENERIC_SCIM_PROVISIONER"'`+
+			` NETWORK_POLICY = '%s' SYNC_PASSWORD = true COMMENT = 'a'`, id.FullyQualifiedName(), networkPolicyID.FullyQualifiedName())
 	})
 }
 
@@ -1113,7 +1113,7 @@ func TestSecurityIntegrations_AlterOauthForCustomClients(t *testing.T) {
 			BlockedRolesList:            &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{role2ID}},
 			OauthIssueRefreshTokens:     Pointer(true),
 			OauthRefreshTokenValidity:   Pointer(42),
-			NetworkPolicy:               securityIntegrationNetworkPolicyQuoted(&npID),
+			NetworkPolicy:               securityIntegrationFullyQualifiedNameQuoted(&npID),
 			OauthClientRsaPublicKey:     Pointer("key"),
 			OauthClientRsaPublicKey2:    Pointer("key2"),
 			Comment:                     Pointer("a"),
@@ -1324,7 +1324,7 @@ func TestSecurityIntegrations_AlterScim(t *testing.T) {
 		networkPolicyID := randomAccountObjectIdentifier()
 		opts.Set = &ScimIntegrationSet{
 			Enabled:       Pointer(true),
-			NetworkPolicy: securityIntegrationNetworkPolicyQuoted(&networkPolicyID),
+			NetworkPolicy: securityIntegrationFullyQualifiedNameQuoted(&networkPolicyID),
 			SyncPassword:  Pointer(true),
 			Comment:       Pointer(StringAllowEmpty{Value: "test"}),
 		}
