@@ -1138,6 +1138,7 @@ func TestInt_TasksShowByID(t *testing.T) {
 
 		// Verify task was created successfully
 		assert.Equal(t, id.Name(), task.Name)
+		assert.Nil(t, task.Warehouse)
 
 		// Verify parameters were set
 		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
@@ -1147,6 +1148,7 @@ func TestInt_TasksShowByID(t *testing.T) {
 		)
 		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
 		assertThatObject(t, objectassert.Task(t, id).
+			HasNoWarehouse().
 			HasTargetCompletionInterval("10 MINUTES"),
 		)
 	})
@@ -1173,6 +1175,7 @@ func TestInt_TasksShowByID(t *testing.T) {
 		)
 		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
 		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasNoWarehouse().
 			HasTargetCompletionInterval("15 MINUTES"),
 		)
 
