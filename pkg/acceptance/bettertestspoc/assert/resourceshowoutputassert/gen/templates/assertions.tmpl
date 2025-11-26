@@ -1,6 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/gen.ResourceShowOutputAssertionsModel*/ -}}
 
-{{- $assertVar := FirstLetterLowercase .Name }}
+{{- $assertVar := FirstLetterLowercase .Name | FirstLetter }}
 
 {{- $assertName := .Name | printf "%sShowOutputAssert" }}
 {{- if .IsDataSourceOutput }}
