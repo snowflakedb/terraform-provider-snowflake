@@ -18,7 +18,7 @@ type ListingDetailsAssert struct {
 func ListingDetails(t *testing.T, id sdk.AccountObjectIdentifier) *ListingDetailsAssert {
 	t.Helper()
 	return &ListingDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeListingDetails, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ListingDetails, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("ListingDetails"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ListingDetails, sdk.AccountObjectIdentifier] {
 			return testClient.Listing.Describe
 		}),
 	}

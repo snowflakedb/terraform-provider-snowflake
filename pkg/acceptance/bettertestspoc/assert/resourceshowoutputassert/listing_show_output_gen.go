@@ -37,266 +37,266 @@ func ImportedListingShowOutput(t *testing.T, id string) *ListingShowOutputAssert
 // Attribute value checks //
 ////////////////////////////
 
-func (l *ListingShowOutputAssert) HasGlobalName(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("global_name", expected))
-	return l
+func (L *ListingShowOutputAssert) HasGlobalName(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("global_name", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasName(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
-	return l
+func (L *ListingShowOutputAssert) HasName(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasTitle(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("title", expected))
-	return l
+func (L *ListingShowOutputAssert) HasTitle(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("title", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasSubtitle(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("subtitle", expected))
-	return l
+func (L *ListingShowOutputAssert) HasSubtitle(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("subtitle", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasProfile(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("profile", expected))
-	return l
+func (L *ListingShowOutputAssert) HasProfile(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("profile", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasCreatedOn(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
-	return l
+func (L *ListingShowOutputAssert) HasCreatedOn(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasUpdatedOn(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("updated_on", expected))
-	return l
+func (L *ListingShowOutputAssert) HasUpdatedOn(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("updated_on", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasPublishedOn(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("published_on", expected))
-	return l
+func (L *ListingShowOutputAssert) HasPublishedOn(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("published_on", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasState(expected sdk.ListingState) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("state", expected))
-	return l
+func (L *ListingShowOutputAssert) HasState(expected sdk.ListingState) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("state", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasReviewState(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("review_state", expected))
-	return l
+func (L *ListingShowOutputAssert) HasReviewState(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("review_state", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasComment(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
-	return l
+func (L *ListingShowOutputAssert) HasComment(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasOwner(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
-	return l
+func (L *ListingShowOutputAssert) HasOwner(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasOwnerRoleType(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
-	return l
+func (L *ListingShowOutputAssert) HasOwnerRoleType(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasRegions(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("regions", expected))
-	return l
+func (L *ListingShowOutputAssert) HasRegions(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("regions", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasTargetAccounts(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("target_accounts", expected))
-	return l
+func (L *ListingShowOutputAssert) HasTargetAccounts(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("target_accounts", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasIsMonetized(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_monetized", expected))
-	return l
+func (L *ListingShowOutputAssert) HasIsMonetized(expected bool) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_monetized", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasIsApplication(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_application", expected))
-	return l
+func (L *ListingShowOutputAssert) HasIsApplication(expected bool) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_application", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasIsTargeted(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_targeted", expected))
-	return l
+func (L *ListingShowOutputAssert) HasIsTargeted(expected bool) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_targeted", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasIsLimitedTrial(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_limited_trial", expected))
-	return l
+func (L *ListingShowOutputAssert) HasIsLimitedTrial(expected bool) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_limited_trial", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasIsByRequest(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_by_request", expected))
-	return l
+func (L *ListingShowOutputAssert) HasIsByRequest(expected bool) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_by_request", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasDistribution(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("distribution", expected))
-	return l
+func (L *ListingShowOutputAssert) HasDistribution(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("distribution", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasIsMountlessQueryable(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_mountless_queryable", expected))
-	return l
+func (L *ListingShowOutputAssert) HasIsMountlessQueryable(expected bool) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_mountless_queryable", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasRejectedOn(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("rejected_on", expected))
-	return l
+func (L *ListingShowOutputAssert) HasRejectedOn(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("rejected_on", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasOrganizationProfileName(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("organization_profile_name", expected))
-	return l
+func (L *ListingShowOutputAssert) HasOrganizationProfileName(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("organization_profile_name", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasUniformListingLocator(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("uniform_listing_locator", expected))
-	return l
+func (L *ListingShowOutputAssert) HasUniformListingLocator(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("uniform_listing_locator", expected))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasDetailedTargetAccounts(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("detailed_target_accounts", expected))
-	return l
+func (L *ListingShowOutputAssert) HasDetailedTargetAccounts(expected string) *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueSet("detailed_target_accounts", expected))
+	return L
 }
 
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
 
-func (l *ListingShowOutputAssert) HasNoGlobalName() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("global_name"))
-	return l
+func (L *ListingShowOutputAssert) HasNoGlobalName() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("global_name"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoName() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
-	return l
+func (L *ListingShowOutputAssert) HasNoName() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoTitle() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("title"))
-	return l
+func (L *ListingShowOutputAssert) HasNoTitle() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("title"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoSubtitle() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("subtitle"))
-	return l
+func (L *ListingShowOutputAssert) HasNoSubtitle() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("subtitle"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoProfile() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("profile"))
-	return l
+func (L *ListingShowOutputAssert) HasNoProfile() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("profile"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoCreatedOn() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
-	return l
+func (L *ListingShowOutputAssert) HasNoCreatedOn() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoUpdatedOn() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
-	return l
+func (L *ListingShowOutputAssert) HasNoUpdatedOn() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoPublishedOn() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("published_on"))
-	return l
+func (L *ListingShowOutputAssert) HasNoPublishedOn() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("published_on"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoState() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
-	return l
+func (L *ListingShowOutputAssert) HasNoState() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoReviewState() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("review_state"))
-	return l
+func (L *ListingShowOutputAssert) HasNoReviewState() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("review_state"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoComment() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
-	return l
+func (L *ListingShowOutputAssert) HasNoComment() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoOwner() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
-	return l
+func (L *ListingShowOutputAssert) HasNoOwner() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoOwnerRoleType() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
-	return l
+func (L *ListingShowOutputAssert) HasNoOwnerRoleType() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoRegions() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("regions"))
-	return l
+func (L *ListingShowOutputAssert) HasNoRegions() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("regions"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoTargetAccounts() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("target_accounts"))
-	return l
+func (L *ListingShowOutputAssert) HasNoTargetAccounts() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("target_accounts"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoIsMonetized() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_monetized"))
-	return l
+func (L *ListingShowOutputAssert) HasNoIsMonetized() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_monetized"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoIsApplication() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_application"))
-	return l
+func (L *ListingShowOutputAssert) HasNoIsApplication() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_application"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoIsTargeted() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_targeted"))
-	return l
+func (L *ListingShowOutputAssert) HasNoIsTargeted() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_targeted"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoIsLimitedTrial() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_limited_trial"))
-	return l
+func (L *ListingShowOutputAssert) HasNoIsLimitedTrial() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_limited_trial"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoIsByRequest() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_by_request"))
-	return l
+func (L *ListingShowOutputAssert) HasNoIsByRequest() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_by_request"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoDistribution() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("distribution"))
-	return l
+func (L *ListingShowOutputAssert) HasNoDistribution() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("distribution"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoIsMountlessQueryable() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_mountless_queryable"))
-	return l
+func (L *ListingShowOutputAssert) HasNoIsMountlessQueryable() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_mountless_queryable"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoRejectedOn() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("rejected_on"))
-	return l
+func (L *ListingShowOutputAssert) HasNoRejectedOn() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("rejected_on"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoOrganizationProfileName() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_profile_name"))
-	return l
+func (L *ListingShowOutputAssert) HasNoOrganizationProfileName() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_profile_name"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoUniformListingLocator() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("uniform_listing_locator"))
-	return l
+func (L *ListingShowOutputAssert) HasNoUniformListingLocator() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("uniform_listing_locator"))
+	return L
 }
 
-func (l *ListingShowOutputAssert) HasNoDetailedTargetAccounts() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("detailed_target_accounts"))
-	return l
+func (L *ListingShowOutputAssert) HasNoDetailedTargetAccounts() *ListingShowOutputAssert {
+	L.AddAssertion(assert.ResourceShowOutputValueNotSet("detailed_target_accounts"))
+	return L
 }

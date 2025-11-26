@@ -147,7 +147,6 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.DatabaseObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeSchema,
 		ObjectStruct: sdk.Schema{},
 	},
 	{

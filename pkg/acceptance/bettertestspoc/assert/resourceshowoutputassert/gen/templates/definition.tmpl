@@ -2,18 +2,17 @@
 
 {{- $name := .Name }}
 {{- $outputType := "Show"}}
-{{- $outputTypeLowerCase := FirstLetterLowercase $outputType }}
 {{- $assertName := $name | printf "%sShowOutputAssert" }}
-{{- $assertVar := FirstLetterLowercase $name | printf "%sAssert" }}
 
 {{- if .IsDataSourceOutput }}
     {{- $name = TrimSuffix .Name "Details" }}
 
     {{- $outputType = "Describe" }}
-    {{- $outputTypeLowerCase = FirstLetterLowercase $outputType }}
     {{- $assertName = $name | printf "%sDescribeOutputAssert" }}
-    {{- $assertVar = FirstLetterLowercase $name | printf "%sAssert" }}
 {{- end }}
+
+{{- $outputTypeLowerCase := FirstLetterLowercase $outputType }}
+{{- $assertVar := FirstLetterLowercase $name | printf "%sAssert" }}
 
 type {{ $assertName }} struct {
     *assert.ResourceAssert
