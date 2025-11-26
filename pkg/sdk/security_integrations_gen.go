@@ -243,10 +243,11 @@ type CreateScimSecurityIntegrationOptions struct {
 	integrationType     string                                  `ddl:"static" sql:"TYPE = SCIM"`
 	Enabled             *bool                                   `ddl:"parameter" sql:"ENABLED"`
 	ScimClient          ScimSecurityIntegrationScimClientOption `ddl:"parameter,single_quotes" sql:"SCIM_CLIENT"`
-	RunAsRole           string                                  `ddl:"parameter,no_quotes" sql:"RUN_AS_ROLE"`
-	NetworkPolicy       *string                                 `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY"`
-	SyncPassword        *bool                                   `ddl:"parameter" sql:"SYNC_PASSWORD"`
-	Comment             *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	// adjusted manually
+	RunAsRole     string  `ddl:"parameter,no_quotes" sql:"RUN_AS_ROLE"`
+	NetworkPolicy *string `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY"`
+	SyncPassword  *bool   `ddl:"parameter" sql:"SYNC_PASSWORD"`
+	Comment       *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-security-integration-api-auth.
