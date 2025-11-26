@@ -269,6 +269,40 @@ func ParseTaskSchedule(schedule string) (*TaskSchedule, error) {
 	}
 }
 
+// added manually
+type TargetCompletionInterval struct {
+	Hours   int
+	Minutes int
+	Seconds int
+}
+
+// added manually
+func ParseTargetCompletionInterval(interval string) (*TargetCompletionInterval, error) {
+	upperInterval := strings.ToUpper(interval)
+	parts := strings.Split(strings.TrimSpace(upperInterval), " ")
+
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid target completion interval format: %s", interval)
+	}
+
+	value, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return nil, fmt.Errorf("invalid target completion interval value: %s", interval)
+	}
+
+	unit := parts[1]
+	switch {
+	case strings.HasPrefix(unit, "HOUR"):
+		return &TargetCompletionInterval{Hours: value}, nil
+	case strings.HasPrefix(unit, "MINUTE"):
+		return &TargetCompletionInterval{Minutes: value}, nil
+	case strings.HasPrefix(unit, "SECOND"):
+		return &TargetCompletionInterval{Seconds: value}, nil
+	default:
+		return nil, fmt.Errorf("invalid target completion interval unit: %s", unit)
+	}
+}
+
 // DescribeTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-task.
 type DescribeTaskOptions struct {
 	describe bool                   `ddl:"static" sql:"DESCRIBE"`

@@ -177,6 +177,29 @@ func taskParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.SchemaObje
 func handleTaskParameterRead(d *schema.ResourceData, taskParameters []*sdk.Parameter) error {
 	for _, p := range taskParameters {
 		switch p.Key {
+		case string(sdk.TaskParameterTargetCompletionInterval):
+			if p.Value != "" {
+				targetInterval, err := sdk.ParseTargetCompletionInterval(p.Value)
+				if err != nil {
+					return err
+				}
+				var intervalBlock map[string]any
+				switch {
+				case targetInterval.Hours > 0:
+					intervalBlock = map[string]any{"hours": targetInterval.Hours}
+				case targetInterval.Minutes > 0:
+					intervalBlock = map[string]any{"minutes": targetInterval.Minutes}
+				case targetInterval.Seconds > 0:
+					intervalBlock = map[string]any{"seconds": targetInterval.Seconds}
+				}
+				if err := d.Set("target_completion_interval", []any{intervalBlock}); err != nil {
+					return err
+				}
+			} else {
+				if err := d.Set("target_completion_interval", nil); err != nil {
+					return err
+				}
+			}
 		case
 			string(sdk.TaskParameterSuspendTaskAfterNumFailures),
 			string(sdk.TaskParameterTaskAutoRetryAttempts),
