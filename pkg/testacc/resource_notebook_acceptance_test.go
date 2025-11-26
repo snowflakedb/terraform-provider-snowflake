@@ -2,13 +2,16 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -22,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Notebook_BasisUseCase(t *testing.T) {
+func TestAcc_Notebook_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
@@ -554,7 +557,6 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 	t.Cleanup(warehouseCleanup)
 
 	modelBasic := model.NotebookFromId("test", id)
-	warehouseNoQuotes := warehouse.ID().FullyQualifiedName()[1 : len(warehouse.ID().FullyQualifiedName())-1]
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -607,8 +609,8 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectDrift("snowflake_notebook.test", "warehouse", nil, sdk.String(warehouseNoQuotes)),
-						planchecks.ExpectChange("snowflake_notebook.test", "warehouse", tfjson.ActionUpdate, sdk.String(warehouseNoQuotes), nil),
+						planchecks.ExpectDrift("snowflake_notebook.test", "warehouse", nil, sdk.String(warehouse.ID().Name())),
+						planchecks.ExpectChange("snowflake_notebook.test", "warehouse", tfjson.ActionUpdate, sdk.String(warehouse.ID().Name()), nil),
 					},
 				},
 				Check: assertThat(t,
@@ -640,6 +642,109 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_notebook_WarehouseSchemaLevelChange(t *testing.T) {
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+
+	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(warehouseCleanup)
+
+	modelBasic := model.NotebookFromId("test", id)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.Notebook(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasNoComment().
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasCodeWarehouse(sdk.NewAccountObjectIdentifier("\"SYSTEM$STREAMLIT_NOTEBOOK_WH\"")),
+		resourceassert.NotebookResource(t, modelBasic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasNoFromString().
+			HasNoMainFile().
+			HasNoQueryWarehouse().
+			HasNoIdleAutoShutdownTimeSeconds().
+			HasNoWarehouse().
+			HasCommentString("").
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		resourceshowoutputassert.NotebookShowOutput(t, modelBasic.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasQueryWarehouse(sdk.NewAccountObjectIdentifier("")).
+			HasCodeWarehouse(sdk.NewAccountObjectIdentifier("\"SYSTEM$STREAMLIT_NOTEBOOK_WH\"")).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComment(""),
+		assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.main_file", "notebook_app.ipynb")),
+		assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.query_warehouse", "")),
+		assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.idle_auto_shutdown_time_seconds", "1800")),
+		assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.code_warehouse", "SYSTEM$STREAMLIT_NOTEBOOK_WH")),
+		assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
+		assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Notebook),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			{
+				PreConfig: func() {
+					testClient().Schema.AlterDefaultStreamlitNotebookWarehouse(t, sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName()), warehouse.ID())
+				},
+				Config: accconfig.FromModels(t, modelBasic),
+				Check:  assertThat(t, assertBasic...),
+			},
+		},
+	})
+}
+
+func TestAcc_Notebook_Validations(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	modelInvalidIdleAutoShutdownTimeSeconds := model.NotebookFromId("test", id).WithIdleAutoShutdownTimeSeconds(0)
+
+	stage := testClient().Ids.RandomSchemaObjectIdentifier()
+	path := "test/path"
+
+	modelFromWithoutMainFile := model.NotebookFromId("test", id).WithFrom(path, stage)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Notebook),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, modelInvalidIdleAutoShutdownTimeSeconds),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected idle_auto_shutdown_time_seconds to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, modelFromWithoutMainFile),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("\"from\": all of `from,main_file` must be specified"),
 			},
 		},
 	})

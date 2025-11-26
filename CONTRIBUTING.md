@@ -106,7 +106,7 @@ We believe that code following the same conventions is easier to maintain and ex
 
 ### Introducing a new part of the SDK
 
-To create new objects in our SDK we use quickly created generator that outputs the majority of the files needed. These files should be later edited and filled with the missing parts. We plan to improve the generator later on, but it should be enough for now. Please read more in the [generator readme](pkg/sdk/poc/README.md).
+To create new objects in our SDK we use quickly created generator that outputs the majority of the files needed. These files should be later edited and filled with the missing parts. We plan to improve the generator later on, but it should be enough for now. Please read more in the [generator readme](pkg/sdk/generator/README.md).
 
 ### Test the change
 Every introduced change should be tested. Depending on the type of the change it may require (any or mix of):
