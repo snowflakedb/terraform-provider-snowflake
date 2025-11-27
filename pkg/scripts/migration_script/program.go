@@ -151,13 +151,14 @@ object_type represents the type of Snowflake object you want to generate terrafo
 		- "schemas" which expects a converted CSV output from the snowflake_schemas data source
 			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMAS output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
 			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "SCHEMA".
-			For more details about using multiple sources, visit https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_schema
 		- "databases" which expects a converted CSV output from the snowflake_databases data source
 			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
 			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
-			For more details about using multiple sources, visit https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Warning: currently secondary databases and shared databases are treated as plain databases.
 			Supported resources:
 				- snowflake_database
 

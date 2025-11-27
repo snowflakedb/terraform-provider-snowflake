@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -82,30 +81,19 @@ type DatabaseRepresentation struct {
 func (row DatabaseCsvRow) convert() (*DatabaseRepresentation, error) {
 	databaseRepresentation := &DatabaseRepresentation{
 		Database: sdk.Database{
-			Name:      row.Name,
-			IsCurrent: row.IsCurrent == "Y",
-			IsDefault: row.IsDefault == "Y",
-			Owner:     row.Owner,
-			Comment:   row.Comment,
-			Kind:      row.Kind,
+			Name:          row.Name,
+			IsCurrent:     row.IsCurrent == "Y",
+			IsDefault:     row.IsDefault == "Y",
+			Owner:         row.Owner,
+			Comment:       row.Comment,
+			Kind:          row.Kind,
+			OwnerRoleType: row.OwnerRoleType,
+			ResourceGroup: row.ResourceGroup,
 		},
 	}
 	if row.Options != "" {
 		databaseRepresentation.Options = row.Options
-		// Check if TRANSIENT is in options
-		parts := strings.Split(row.Options, ", ")
-		for _, part := range parts {
-			if part == "TRANSIENT" {
-				databaseRepresentation.Transient = true
-				break
-			}
-		}
-	}
-	if row.OwnerRoleType != "" {
-		databaseRepresentation.OwnerRoleType = row.OwnerRoleType
-	}
-	if row.ResourceGroup != "" {
-		databaseRepresentation.ResourceGroup = row.ResourceGroup
+		databaseRepresentation.Database.SetTransient(row.Options)
 	}
 
 	handler := newParameterHandler(sdk.ParameterTypeDatabase)

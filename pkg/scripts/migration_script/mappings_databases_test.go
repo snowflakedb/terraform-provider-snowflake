@@ -16,8 +16,8 @@ func TestHandleDatabaseMappings(t *testing.T) {
 		{
 			name: "database without parameters",
 			inputRows: [][]string{
-				{"comment", "created_on", "dropped_on", "is_current", "is_default", "kind", "name", "options", "origin", "owner", "owner_role_type", "resource_group", "retention_time", "catalog_level", "catalog_value", "data_retention_time_in_days_level", "data_retention_time_in_days_value", "default_ddl_collation_level", "default_ddl_collation_value", "enable_console_output_level", "enable_console_output_value", "external_volume_level", "external_volume_value", "log_level_level", "log_level_value", "max_data_extension_time_in_days_level", "max_data_extension_time_in_days_value", "quoted_identifiers_ignore_case_level", "quoted_identifiers_ignore_case_value", "replace_invalid_characters_level", "replace_invalid_characters_value", "storage_serialization_policy_level", "storage_serialization_policy_value", "suspend_task_after_num_failures_level", "suspend_task_after_num_failures_value", "task_auto_retry_attempts_level", "task_auto_retry_attempts_value", "trace_level_level", "trace_level_value", "user_task_managed_initial_warehouse_size_level", "user_task_managed_initial_warehouse_size_value", "user_task_minimum_trigger_interval_in_seconds_level", "user_task_minimum_trigger_interval_in_seconds_value", "user_task_timeout_ms_level", "user_task_timeout_ms_value"},
-				{"", "2024-06-06 00:00:00.000 +0000 UTC", "", "false", "false", "STANDARD", "DB1", "", "", "ADMIN", "ROLE", "", "1", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""},
+				{"comment", "created_on", "dropped_on", "is_current", "is_default", "kind", "name", "options", "origin", "owner", "owner_role_type", "resource_group", "retention_time"},
+				{"", "2024-06-06 00:00:00.000 +0000 UTC", "", "false", "false", "STANDARD", "DB1", "", "", "ADMIN", "ROLE", "", "1"},
 			},
 			expectedOutput: `
 resource "snowflake_database" "snowflake_generated_database_DB1" {
