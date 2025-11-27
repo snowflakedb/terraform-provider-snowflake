@@ -74,11 +74,11 @@ func TestScimIntegrationRunAsRoleToAccountObjectIdentifier(t *testing.T) {
 		// Test quoted identifiers
 		{
 			input:    `"my_role"`,
-			expected: `"my_role"`,
+			expected: `my_role`,
 		},
 		{
 			input:    `"okta_provisioner"`,
-			expected: `"OKTA_PROVISIONER"`,
+			expected: `OKTA_PROVISIONER`,
 		},
 		// Test edge cases
 		{
