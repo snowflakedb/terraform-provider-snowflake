@@ -329,12 +329,8 @@ func ToWIFTypeType(s string) (WIFType, error) {
 	case string(WIFTypeOIDC):
 		return WIFTypeOIDC, nil
 	default:
-		return "", fmt.Errorf("invalid warehouse type: %s", s)
+		return "", fmt.Errorf("invalid WIF type: %s", s)
 	}
-}
-
-func (e WIFType) FromString(s string) (WIFType, error) {
-	return ToWIFTypeType(s)
 }
 
 type UserObjectWorkloadIdentityProperties struct {
@@ -912,7 +908,6 @@ var AcceptableUserTypes = map[UserType][]string{
 	UserTypeLegacyService: {string(UserTypeLegacyService)},
 }
 
-// TODO: unclear how to proceed here with implementing ShowUserWorkloadIdentityAuthenticationMethods (manually or with a generator)
 type userWorkloadIdentityAuthenticationMethodsDBRow struct {
 	Name           string         `db:"name"`
 	Type           string         `db:"type"`
