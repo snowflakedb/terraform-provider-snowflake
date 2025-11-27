@@ -75,12 +75,12 @@ where script options are:
     For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
     Supported resources:
       - snowflake_schema
-  - "databases" which expects a converted CSV output from the snowflake_databases data source
-			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
-			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
-			For more details about using multiple sources, visit https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
-			Supported resources:
-				- snowflake_database
+  - `databases` which expects a converted CSV output from the snowflake_databases data source
+      To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like `"comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...`
+      When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
+      For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
+      Supported resources:
+        - snowflake_database
 - **INPUT**:
   - Migration script operates on STDIN input in CSV format. You can redirect the input from a file or pipe it from another command.
 - **OUTPUT**:
