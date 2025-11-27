@@ -131,7 +131,11 @@ We can observe that in some scenarios, we have 2x-4x improvement. However, for t
 
 ## Terraform CLI version
 
-In Terraform 1.10.0 ([release notes](https://github.com/hashicorp/terraform/releases/tag/v1.10.0)), the performance of the state processing has been improved (see [PR](https://github.com/hashicorp/terraform/pull/35558)), namely internal encoding and decoding of big graphs. If the planning stage takes a long time, even before the provider sends a request to Snowflake, consider upgrading to at least this version.
+HashiCorp released two performance improvements between Terraform ~1.8 and ~1.13:
+* [core: move change encoding outside of core](https://github.com/hashicorp/terraform/pull/35558) - This improvement in Terraform 1.10.0 ([release notes](https://github.com/hashicorp/terraform/releases/tag/v1.10.0)) enhances the performance of state processing, namely internal encoding and decoding of big graphs.
+* [reduce instance change lookups in GetResource](https://github.com/hashicorp/terraform/pull/37154) - This improvement in Terraform 1.13.0 ([release notes](https://github.com/hashicorp/terraform/releases/tag/v1.13.0)) improves resource instance lookups during operations.
+
+If the planning stage takes a long time, even before the provider sends a request to Snowflake, consider upgrading to at least version 1.13.0. These improvements may significantly benefit your performance, especially when working with large workloads.
 
 ## Suggestions for users
 
