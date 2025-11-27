@@ -47,7 +47,7 @@ var materializedViewSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
 		Default:     false,
-		Description: "Specifies whether to use CREATE OR REPLACE when creating the materialized view. Note: this does not enable in-place updates when the statement changes; statement changes always trigger a drop and recreate.",
+		Description: "Specifies whether to use CREATE OR REPLACE when creating the materialized view. Note: this does not enable in-place updates when other fields forcing object recreation change; such fields always trigger delete and create operations in Terraform plan.",
 	},
 	"is_secure": {
 		Type:        schema.TypeBool,
