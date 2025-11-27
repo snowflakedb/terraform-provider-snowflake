@@ -78,7 +78,7 @@ var notebookSchema = map[string]*schema.Schema{
 	"query_warehouse": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "Specifies the warehouse where SQL queries in the notebook are run.",
+		Description:      "Specifies the warehouse where SQL queries in the notebook are run. Only upper-case identifiers are supported.",
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -91,7 +91,7 @@ var notebookSchema = map[string]*schema.Schema{
 	"warehouse": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "Specifies the warehouse that runs the notebook kernel and python code.",
+		Description:      "Specifies the warehouse that runs the notebook kernel and python code. Only upper-case identifiers are supported.",
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
