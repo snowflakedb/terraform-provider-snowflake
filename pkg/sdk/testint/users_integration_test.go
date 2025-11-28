@@ -353,9 +353,15 @@ func TestInt_Users(t *testing.T) {
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
 			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-				Type:    sdk.Pointer(sdk.WIFTypeOIDC),
-				Issuer:  sdk.String("https://accounts.google.com"),
-				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+					Issuer:  sdk.String("https://accounts.google.com"),
+					Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+					OidcAudienceList: []sdk.StringListItemWrapper{
+						{
+							Value: "https://accounts.google.com/o/oauth2/auth",
+						},
+					},
+				},
 			},
 			Comment: sdk.String("some comment"),
 			Type:    sdk.Pointer(sdk.UserTypeService),
@@ -426,8 +432,13 @@ func TestInt_Users(t *testing.T) {
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assert.Equal(t, methods[0].Type, "OIDC")
-		assert.Equal(t, methods[0].AdditionalInfo, "{\"audienceList\":[],\"issuer\":\"https://accounts.google.com\",\"subject\":\"system:serviceaccount:service_account_namespace:service_account_name\"}")
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, user.ID(), &methods[0]).
+			HasOidcAdditionalInfo(&sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
+		)
 	})
 
 	t.Run("create: all object properties - type legacy service", func(t *testing.T) {
@@ -451,9 +462,15 @@ func TestInt_Users(t *testing.T) {
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
 			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-				Type:    sdk.Pointer(sdk.WIFTypeOIDC),
-				Issuer:  sdk.String("https://accounts.google.com"),
-				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+					Issuer:  sdk.String("https://accounts.google.com"),
+					Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+					OidcAudienceList: []sdk.StringListItemWrapper{
+						{
+							Value: "https://accounts.google.com/o/oauth2/auth",
+						},
+					},
+				},
 			},
 			Comment: sdk.String("some comment"),
 			Type:    sdk.Pointer(sdk.UserTypeLegacyService),
@@ -524,8 +541,13 @@ func TestInt_Users(t *testing.T) {
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assert.Equal(t, methods[0].Type, "OIDC")
-		assert.Equal(t, methods[0].AdditionalInfo, "{\"audienceList\":[],\"issuer\":\"https://accounts.google.com\",\"subject\":\"system:serviceaccount:service_account_namespace:service_account_name\"}")
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, user.ID(), &methods[0]).
+			HasOidcAdditionalInfo(&sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
+		)
 	})
 
 	incorrectObjectPropertiesForServiceType := []struct {
@@ -1034,9 +1056,15 @@ func TestInt_Users(t *testing.T) {
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
 					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-						Type:    sdk.Pointer(sdk.WIFTypeOIDC),
-						Issuer:  sdk.String("https://accounts.google.com"),
-						Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+							Issuer:  sdk.String("https://accounts.google.com"),
+							Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+							OidcAudienceList: []sdk.StringListItemWrapper{
+								{
+									Value: "https://accounts.google.com/o/oauth2/auth",
+								},
+							},
+						},
 					},
 					Comment: sdk.String("some comment"),
 				},
@@ -1075,6 +1103,17 @@ func TestInt_Users(t *testing.T) {
 			HasHasPassword(false).
 			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, user.ID(), &methods[0]).
+			HasOidcAdditionalInfo(&sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
 		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -1137,9 +1176,15 @@ func TestInt_Users(t *testing.T) {
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
 					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-						Type:    sdk.Pointer(sdk.WIFTypeOIDC),
-						Issuer:  sdk.String("https://accounts.google.com"),
-						Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+							Issuer:  sdk.String("https://accounts.google.com"),
+							Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+							OidcAudienceList: []sdk.StringListItemWrapper{
+								{
+									Value: "https://accounts.google.com/o/oauth2/auth",
+								},
+							},
+						},
 					},
 					Comment: sdk.String("some comment"),
 				},
@@ -1183,8 +1228,13 @@ func TestInt_Users(t *testing.T) {
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assert.Equal(t, methods[0].Type, "OIDC")
-		assert.Equal(t, methods[0].AdditionalInfo, "{\"audienceList\":[],\"issuer\":\"https://accounts.google.com\",\"subject\":\"system:serviceaccount:service_account_namespace:service_account_name\"}")
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, user.ID(), &methods[0]).
+			HasOidcAdditionalInfo(&sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
+		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
 			ObjectProperties: &sdk.UserObjectPropertiesUnset{

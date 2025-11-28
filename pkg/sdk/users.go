@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -332,8 +333,30 @@ func ToWIFTypeType(s string) (WIFType, error) {
 }
 
 type UserObjectWorkloadIdentityProperties struct {
-	Type             *WIFType                `ddl:"parameter,no_quotes" sql:"TYPE"`
-	Arn              *string                 `ddl:"parameter,single_quotes" sql:"ARN"`
+	AwsType   *UserObjectWorkloadIdentityAws   `ddl:"keyword"`
+	AzureType *UserObjectWorkloadIdentityAzure `ddl:"keyword"`
+	GcpType   *UserObjectWorkloadIdentityGcp   `ddl:"keyword"`
+	OidcType  *UserObjectWorkloadIdentityOidc  `ddl:"keyword"`
+}
+
+type UserObjectWorkloadIdentityAws struct {
+	wifType string  `ddl:"static" sql:"TYPE = AWS"`
+	Arn     *string `ddl:"parameter,single_quotes" sql:"ARN"`
+}
+
+type UserObjectWorkloadIdentityAzure struct {
+	wifType string  `ddl:"static" sql:"TYPE = AZURE"`
+	Issuer  *string `ddl:"parameter,single_quotes" sql:"ISSUER"`
+	Subject *string `ddl:"parameter,single_quotes" sql:"SUBJECT"`
+}
+
+type UserObjectWorkloadIdentityGcp struct {
+	wifType string  `ddl:"static" sql:"TYPE = GCP"`
+	Subject *string `ddl:"parameter,single_quotes" sql:"SUBJECT"`
+}
+
+type UserObjectWorkloadIdentityOidc struct {
+	wifType          string                  `ddl:"static" sql:"TYPE = OIDC"`
 	Issuer           *string                 `ddl:"parameter,single_quotes" sql:"ISSUER"`
 	Subject          *string                 `ddl:"parameter,single_quotes" sql:"SUBJECT"`
 	OidcAudienceList []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OIDC_AUDIENCE_LIST"`
@@ -341,30 +364,8 @@ type UserObjectWorkloadIdentityProperties struct {
 
 func (workloadIdentity *UserObjectWorkloadIdentityProperties) validate() error {
 	var errs []error
-
-	switch *workloadIdentity.Type {
-	case WIFTypeAWS:
-		if !valueSet(workloadIdentity.Arn) {
-			errs = append(errs, NewError("ARN must be set for AWS workload identity"))
-		}
-	case WIFTypeAzure:
-		if !valueSet(workloadIdentity.Issuer) {
-			errs = append(errs, NewError("Issuer must be set for Azure workload identity"))
-		}
-		if !valueSet(workloadIdentity.Subject) {
-			errs = append(errs, NewError("Subject must be set for Azure workload identity"))
-		}
-	case WIFTypeGCP:
-		if !valueSet(workloadIdentity.Subject) {
-			errs = append(errs, NewError("Subject must be set for GCP workload identity"))
-		}
-	case WIFTypeOIDC:
-		if !valueSet(workloadIdentity.Issuer) {
-			errs = append(errs, NewError("Issuer must be set for OIDC workload identity"))
-		}
-		if !valueSet(workloadIdentity.Subject) {
-			errs = append(errs, NewError("Subject must be set for OIDC workload identity"))
-		}
+	if !exactlyOneValueSet(workloadIdentity.AwsType, workloadIdentity.AzureType, workloadIdentity.GcpType, workloadIdentity.OidcType) {
+		errs = append(errs, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
 	}
 	return errors.Join(errs...)
 }
@@ -525,9 +526,16 @@ func (opts *UserSet) validate() error {
 	if anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) && anyValueSet(opts.ObjectProperties, opts.ObjectParameters, opts.SessionParameters) {
 		return NewError("policies cannot be set with user properties or parameters at the same time")
 	}
-	if valueSet(opts.ObjectProperties) && valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
-		if err := opts.ObjectProperties.DefaultSecondaryRoles.validate(); err != nil {
-			return err
+	if valueSet(opts.ObjectProperties) {
+		if valueSet(opts.ObjectProperties.WorkloadIdentity) {
+			if err := opts.ObjectProperties.WorkloadIdentity.validate(); err != nil {
+				return err
+			}
+		}
+		if valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
+			if err := opts.ObjectProperties.DefaultSecondaryRoles.validate(); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -918,8 +926,38 @@ type userWorkloadIdentityAuthenticationMethodsDBRow struct {
 func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkloadIdentityAuthenticationMethods, error) {
 	methods := &UserWorkloadIdentityAuthenticationMethods{
 		Name:      row.Name,
-		Type:      row.Type,
 		CreatedOn: row.CreatedOn,
+	}
+
+	wifType, err := ToWIFTypeType(row.Type)
+	if err != nil {
+		return nil, err
+	}
+	switch wifType {
+	case WIFTypeAWS:
+		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{}
+		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
+			return nil, err
+		}
+		methods.AwsAdditionalInfo = additionalInfo
+	case WIFTypeAzure:
+		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{}
+		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
+			return nil, err
+		}
+		methods.AzureAdditionalInfo = additionalInfo
+	case WIFTypeGCP:
+		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{}
+		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
+			return nil, err
+		}
+		methods.GcpAdditionalInfo = additionalInfo
+	case WIFTypeOIDC:
+		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{}
+		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
+			return nil, err
+		}
+		methods.OidcAdditionalInfo = additionalInfo
 	}
 
 	if row.LastUsed.Valid {
@@ -928,19 +966,41 @@ func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorklo
 	if row.Comment.Valid {
 		methods.Comment = row.Comment.String
 	}
-	if row.AdditionalInfo.Valid {
-		methods.AdditionalInfo = row.AdditionalInfo.String
-	}
 	return methods, nil
 }
 
 type UserWorkloadIdentityAuthenticationMethods struct {
-	Name           string
-	Type           string
-	Comment        string
-	LastUsed       time.Time
-	CreatedOn      time.Time
-	AdditionalInfo string
+	Name                string
+	Type                string
+	Comment             string
+	LastUsed            time.Time
+	CreatedOn           time.Time
+	AwsAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo
+	AzureAdditionalInfo *UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo
+	GcpAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo
+	OidcAdditionalInfo  *UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo
+}
+
+type UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo struct {
+	IamRole      string `json:"iamRole"`
+	Type         string `json:"type"`
+	AwsAccount   string `json:"awsAccount"`
+	AwsPartition string `json:"awsPartition"`
+}
+
+type UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo struct {
+	Issuer  string `json:"issuer"`
+	Subject string `json:"subject"`
+}
+
+type UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo struct {
+	Subject string `json:"subject"`
+}
+
+type UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo struct {
+	Issuer       string   `json:"issuer"`
+	Subject      string   `json:"subject"`
+	AudienceList []string `json:"audienceList"`
 }
 
 // showUserAuthenticationMethodOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-user-workload-identity-authentication-methods

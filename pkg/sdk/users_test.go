@@ -17,6 +17,29 @@ func TestUserCreate(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: workload identity with multiple types", func(t *testing.T) {
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					AwsType:   &UserObjectWorkloadIdentityAws{},
+					AzureType: &UserObjectWorkloadIdentityAzure{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
+	})
+
+	t.Run("validation: empty workload identity", func(t *testing.T) {
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
+	})
+
 	t.Run("with only required attributes", func(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
@@ -65,6 +88,97 @@ func TestUserCreate(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE USER %s TYPE = LEGACY_SERVICE`, id.FullyQualifiedName())
+	})
+
+	t.Run("with setting a GCP WIF", func(t *testing.T) {
+		wifType := WIFTypeGCP
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					GcpType: &UserObjectWorkloadIdentityGcp{
+						Subject: &wifSubject,
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s SUBJECT = '%s')", id.FullyQualifiedName(), wifType, wifSubject)
+	})
+
+	t.Run("with setting an Azure WIF", func(t *testing.T) {
+		wifType := WIFTypeAzure
+		wifIssuer := "https://accounts.google.com"
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					AzureType: &UserObjectWorkloadIdentityAzure{
+						Issuer:  &wifIssuer,
+						Subject: &wifSubject,
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s')", id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
+	})
+
+	t.Run("with setting an AWS WIF", func(t *testing.T) {
+		wifType := WIFTypeAWS
+		wifArn := "arn:aws:iam::123456789012:role/test-role"
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					AwsType: &UserObjectWorkloadIdentityAws{
+						Arn: &wifArn,
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s')", id.FullyQualifiedName(), wifType, wifArn)
+	})
+
+	t.Run("with setting an OIDC WIF - basic", func(t *testing.T) {
+		wifType := WIFTypeOIDC
+		wifIssuer := "https://accounts.google.com"
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					OidcType: &UserObjectWorkloadIdentityOidc{
+						Issuer:  &wifIssuer,
+						Subject: &wifSubject,
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s')", id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
+	})
+
+	t.Run("with setting an OIDC WIF - complete", func(t *testing.T) {
+		wifType := WIFTypeOIDC
+		wifIssuer := "https://accounts.google.com"
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					OidcType: &UserObjectWorkloadIdentityOidc{
+						Issuer:  &wifIssuer,
+						Subject: &wifSubject,
+						OidcAudienceList: []StringListItemWrapper{
+							{
+								Value: "https://accounts.google.com/o/oauth2/auth",
+							},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s' OIDC_AUDIENCE_LIST = ('https://accounts.google.com/o/oauth2/auth'))", id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
 	})
 
 	t.Run("with complete options - no type", func(t *testing.T) {
@@ -192,6 +306,37 @@ func TestUserAlter(t *testing.T) {
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errors.New("policies cannot be unset with user properties or parameters at the same time"))
+	})
+
+	t.Run("validation: workload identity with multiple types", func(t *testing.T) {
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					UserObjectProperties: UserObjectProperties{
+						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+							AwsType:   &UserObjectWorkloadIdentityAws{},
+							AzureType: &UserObjectWorkloadIdentityAzure{},
+						},
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
+	})
+
+	t.Run("validation: empty workload identity", func(t *testing.T) {
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					UserObjectProperties: UserObjectProperties{
+						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{},
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
 	})
 
 	t.Run("alter: unset type", func(t *testing.T) {
@@ -422,26 +567,115 @@ func TestUserAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET AUTHENTICATION POLICY", id.FullyQualifiedName())
 	})
 
-	t.Run("with setting a WIF", func(t *testing.T) {
-		wifType := WIFTypeOIDC
-		wifIssuer := "https://accounts.google.com"
+	t.Run("with setting a GCP WIF", func(t *testing.T) {
+		wifType := WIFTypeGCP
 		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
-
 		opts := &AlterUserOptions{
 			name: id,
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
 					UserObjectProperties: UserObjectProperties{
 						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-							Type:    &wifType,
-							Issuer:  &wifIssuer,
-							Subject: &wifSubject,
+							GcpType: &UserObjectWorkloadIdentityGcp{
+								Subject: &wifSubject,
+							},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s SUBJECT = '%s')", id.FullyQualifiedName(), wifType, wifSubject)
+	})
+
+	t.Run("with setting an Azure WIF", func(t *testing.T) {
+		wifType := WIFTypeAzure
+		wifIssuer := "https://accounts.google.com"
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					UserObjectProperties: UserObjectProperties{
+						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+							AzureType: &UserObjectWorkloadIdentityAzure{
+								Issuer:  &wifIssuer,
+								Subject: &wifSubject,
+							},
 						},
 					},
 				},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s')", id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
+	})
+
+	t.Run("with setting an AWS WIF", func(t *testing.T) {
+		wifType := WIFTypeAWS
+		wifArn := "arn:aws:iam::123456789012:role/test-role"
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					UserObjectProperties: UserObjectProperties{
+						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+							AwsType: &UserObjectWorkloadIdentityAws{
+								Arn: &wifArn,
+							},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s')", id.FullyQualifiedName(), wifType, wifArn)
+	})
+
+	t.Run("with setting an OIDC WIF - basic", func(t *testing.T) {
+		wifType := WIFTypeOIDC
+		wifIssuer := "https://accounts.google.com"
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					UserObjectProperties: UserObjectProperties{
+						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+							OidcType: &UserObjectWorkloadIdentityOidc{
+								Issuer:  &wifIssuer,
+								Subject: &wifSubject,
+							},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s')", id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
+	})
+
+	t.Run("with setting an OIDC WIF - complete", func(t *testing.T) {
+		wifType := WIFTypeOIDC
+		wifIssuer := "https://accounts.google.com"
+		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					UserObjectProperties: UserObjectProperties{
+						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+							OidcType: &UserObjectWorkloadIdentityOidc{
+								Issuer:  &wifIssuer,
+								Subject: &wifSubject,
+								OidcAudienceList: []StringListItemWrapper{
+									{
+										Value: "https://accounts.google.com/o/oauth2/auth",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s' OIDC_AUDIENCE_LIST = ('https://accounts.google.com/o/oauth2/auth'))", id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
 	})
 
 	t.Run("with unsetting a WIF", func(t *testing.T) {
@@ -1021,84 +1255,4 @@ func Test_User_ToUserType(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
-}
-
-func TestUserCreateWIF(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-
-	t.Run("WIF - google OIDC", func(t *testing.T) {
-		wifType := WIFTypeOIDC
-		wifIssuer := "https://accounts.google.com"
-		wifSubject := "system:serviceaccount:service_account_namespace:service_account_name"
-		opts := &CreateUserOptions{
-			name: id,
-			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-					Type:    &wifType,
-					Issuer:  &wifIssuer,
-					Subject: &wifSubject,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ISSUER = '%s' SUBJECT = '%s')`, id.FullyQualifiedName(), wifType, wifIssuer, wifSubject)
-	})
-
-	t.Run("WIF - error - AWS no ARN", func(t *testing.T) {
-		wifType := WIFTypeAWS
-		opts := &CreateUserOptions{
-			name: id,
-			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-					Type: &wifType,
-				},
-			},
-		}
-		assertOptsInvalid(t, opts, NewError("ARN must be set for AWS workload identity"))
-	})
-
-	t.Run("WIF - error - Azure no Issuer + no Subject", func(t *testing.T) {
-		wifType := WIFTypeAzure
-		opts := &CreateUserOptions{
-			name: id,
-			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-					Type: &wifType,
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errors.Join([]error{NewError("Subject must be set for Azure workload identity"), NewError("Issuer must be set for Azure workload identity")}...))
-	})
-
-	t.Run("WIF - error - GCP no Subject", func(t *testing.T) {
-		wifType := WIFTypeGCP
-		opts := &CreateUserOptions{
-			name: id,
-			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-					Type: &wifType,
-				},
-			},
-		}
-		assertOptsInvalid(t, opts, NewError("Subject must be set for GCP workload identity"))
-	})
-
-	t.Run("WIF - error - OIDC no Issuer + no Subject", func(t *testing.T) {
-		wifType := WIFTypeOIDC
-		opts := &CreateUserOptions{
-			name: id,
-			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-					Type: &wifType,
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errors.Join([]error{NewError("Subject must be set for OIDC workload identity"), NewError("Issuer must be set for OIDC workload identity")}...))
-	})
-
-	t.Run("WIF - SHOW USER WORKLOAD IDENTITY METHODS", func(t *testing.T) {
-		opts := &showUserAuthenticationMethodOptions{
-			ForUser: id,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW USER WORKLOAD IDENTITY AUTHENTICATION METHODS FOR USER \"%s\"", id.Name())
-	})
 }
