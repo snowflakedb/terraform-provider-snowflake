@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -9,6 +10,12 @@ import (
 func handleOptionalFieldWithBuilder[T any, U any](parameter *T, builder func(T) *U) {
 	if parameter != nil {
 		builder(*parameter)
+	}
+}
+
+func handleOptionalFieldWithStringBuilder[T any, U any](parameter *T, builder func(string) *U) {
+	if parameter != nil {
+		builder(fmt.Sprintf("%v", *parameter))
 	}
 }
 

@@ -64,6 +64,13 @@ object_type represents the type of Snowflake object you want to generate terrafo
 			Warning: currently secondary databases and shared databases are treated as plain databases.
 			Supported resources:
 				- snowflake_database
+		- "warehouses" which expects a converted CSV output from the snowflake_warehouses data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like "comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "ACCOUNT".
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Warning: currently secondary warehouses and shared warehouses are treated as plain warehouses.
+			Supported resources:
+				- snowflake_warehouse
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -231,6 +238,44 @@ import {
 import {
   to = snowflake_database.snowflake_generated_database_COMPLETE
   id = "\"COMPLETE\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for warehouses",
+			args: []string{"cmd", "-import=block", "warehouses"},
+			input: `
+"actives","auto_resume","auto_suspend","available","comment","created_on","enable_query_acceleration","failed","generation","is_current","is_default","max_cluster_count","min_cluster_count","name","other","owner","owner_role_type","pendings","provisioning","query_acceleration_max_scale_factor","queued","quiescing","resource_constraint","resource_monitor","resumed_on","running","scaling_policy","size","started_clusters","state","suspended","type","u_u_i_d","updated_on","auto_resume_level","auto_resume_value","auto_suspend_level","auto_suspend_value","comment_level","comment_value","enable_query_acceleration_level","enable_query_acceleration_value","generation_level","generation_value","initially_suspended_level","initially_suspended_value","max_cluster_count_level","max_cluster_count_value","min_cluster_count_level","min_cluster_count_value","query_acceleration_max_scale_factor_level","query_acceleration_max_scale_factor_value","resource_constraint_level","resource_constraint_value","resource_monitor_level","resource_monitor_value","scaling_policy_level","scaling_policy_value","warehouse_size_level","warehouse_size_value","warehouse_type_level","warehouse_type_value"
+"0","true","600","71.43","","2024-06-06 00:00:00.000 +0000 UTC","false","0","","false","false","3","1","WH_BASIC","0","ADMIN","ROLE","0","0","0","1","0","","","2024-06-06 12:00:00.000 +0000 UTC","5","ECONOMY","XSMALL","2","AVAILABLE","0","STANDARD","abc-123","2024-06-06 00:00:00.000 +0000 UTC","","","","","","","","","","","","","","","","","","","","","","","","","","","",""
+"1","true","450","80.00","Production warehouse","2024-06-06 00:00:00.000 +0000 UTC","true","0","1","false","false","4","1","WH_PROD","0","ADMIN","ROLE","0","0","30","1","0","MEMORY_2X","MONITOR1","2024-06-06 12:00:00.000 +0000 UTC","3","CLASSIC","MEDIUM","1","SUSPENDED","0","SNOWPARK-OPTIMIZED","xyz-999","2024-06-06 00:00:00.000 +0000 UTC","WAREHOUSE","true","WAREHOUSE","450","WAREHOUSE","Production warehouse","WAREHOUSE","true","WAREHOUSE","1","WAREHOUSE","true","WAREHOUSE","4","WAREHOUSE","1","WAREHOUSE","30","WAREHOUSE","MEMORY_2X","WAREHOUSE","MONITOR1","WAREHOUSE","CLASSIC","WAREHOUSE","MEDIUM","WAREHOUSE","SNOWPARK-OPTIMIZED"`,
+			expectedOutput: `resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_BASIC" {
+  name = "WH_BASIC"
+}
+
+resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_PROD" {
+  name = "WH_PROD"
+  auto_resume = "true"
+  auto_suspend = 450
+  comment = "Production warehouse"
+  enable_query_acceleration = "true"
+  generation = "1"
+  initially_suspended = true
+  max_cluster_count = 4
+  min_cluster_count = 1
+  query_acceleration_max_scale_factor = 30
+  resource_constraint = "MEMORY_2X"
+  resource_monitor = "MONITOR1"
+  scaling_policy = "CLASSIC"
+  warehouse_size = "MEDIUM"
+  warehouse_type = "SNOWPARK-OPTIMIZED"
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_BASIC
+  id = "\"WH_BASIC\""
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_PROD
+  id = "\"WH_PROD\""
 }
 `,
 		},
