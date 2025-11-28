@@ -434,6 +434,11 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
 			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
 				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
@@ -543,6 +548,11 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
 			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
 				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
@@ -1110,6 +1120,11 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
 			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
 				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
@@ -1144,6 +1159,10 @@ func TestInt_Users(t *testing.T) {
 			HasDisplayName("").
 			HasOwner(currentRole.Name()),
 		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
 	})
 
 	t.Run("alter: set and unset object properties - type legacy service", func(t *testing.T) {
@@ -1230,6 +1249,11 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
 			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
 				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
@@ -1254,6 +1278,7 @@ func TestInt_Users(t *testing.T) {
 				RSAPublicKey:          sdk.Bool(true),
 				RSAPublicKey2:         sdk.Bool(true),
 				Comment:               sdk.Bool(true),
+				WorkloadIdentity:      sdk.Bool(true),
 			},
 		}}
 
@@ -1265,6 +1290,10 @@ func TestInt_Users(t *testing.T) {
 			HasDisplayName("").
 			HasOwner(currentRole.Name()),
 		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
 	})
 
 	incorrectAlterForServiceType := []struct {

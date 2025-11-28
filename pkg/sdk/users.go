@@ -933,6 +933,7 @@ func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorklo
 	if err != nil {
 		return nil, err
 	}
+	methods.Type = wifType
 	switch wifType {
 	case WIFTypeAWS:
 		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{}
@@ -971,7 +972,7 @@ func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorklo
 
 type UserWorkloadIdentityAuthenticationMethod struct {
 	Name                string
-	Type                string
+	Type                WIFType
 	Comment             string
 	LastUsed            time.Time
 	CreatedOn           time.Time

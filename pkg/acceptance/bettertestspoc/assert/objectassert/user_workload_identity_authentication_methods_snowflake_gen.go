@@ -38,7 +38,7 @@ func (u *UserWorkloadIdentityAuthenticationMethodsAssert) HasName(expected strin
 	return u
 }
 
-func (u *UserWorkloadIdentityAuthenticationMethodsAssert) HasType(expected string) *UserWorkloadIdentityAuthenticationMethodsAssert {
+func (u *UserWorkloadIdentityAuthenticationMethodsAssert) HasType(expected sdk.WIFType) *UserWorkloadIdentityAuthenticationMethodsAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
 		t.Helper()
 		if o.Type != expected {
@@ -130,6 +130,7 @@ func (u *UserWorkloadIdentityAuthenticationMethodsAssert) HasOidcAdditionalInfo(
 		if o.OidcAdditionalInfo == nil {
 			return fmt.Errorf("expected oidc additional info to have value; got: nil")
 		}
+		// adjusted manually
 		if !reflect.DeepEqual(*o.OidcAdditionalInfo, expected) {
 			return fmt.Errorf("expected oidc additional info: %v; got: %v", expected, *o.OidcAdditionalInfo)
 		}
