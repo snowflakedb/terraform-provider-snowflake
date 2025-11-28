@@ -28,8 +28,10 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
 
-Due to changes on the Snowflake side, the `SAML_IDENTITY_PROVIDER` parameter is now deprecated (see [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters#saml-identity-provider)).
+Due to changes on the Snowflake side, the `SAML_IDENTITY_PROVIDER` parameter is now deprecated and cannot be used in Snowflake (see [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters#saml-identity-provider)).
 Because of this, we have removed support for this parameter in the `snowflake_current_account` and `snowflake_current_organization_account` resources.
+Both of the resources are in preview, so we decided to introduce this change now despite being a breaking change as it makes those resources unusable without workarounds (see related issue).
+
 If you were using this parameter in your configuration, please follow instructions in the linked documentation to migrate away from it.
 If you were not using this parameter, no changes are required.
 
