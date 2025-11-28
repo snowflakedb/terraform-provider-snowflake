@@ -252,10 +252,8 @@ func (opts *CreateUserOptions) validate() error {
 	}
 	if valueSet(opts.ObjectProperties) {
 		if valueSet(opts.ObjectProperties.WorkloadIdentity) {
-			for _, workloadIdentity := range *opts.ObjectProperties.WorkloadIdentity {
-				if err := workloadIdentity.validate(); err != nil {
-					return err
-				}
+			if err := opts.ObjectProperties.WorkloadIdentity.validate(); err != nil {
+				return err
 			}
 		}
 		if valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
@@ -284,29 +282,29 @@ func (v *users) Create(ctx context.Context, id AccountObjectIdentifier, opts *Cr
 }
 
 type UserObjectProperties struct {
-	Password              *string                                 `ddl:"parameter,single_quotes" sql:"PASSWORD"`
-	LoginName             *string                                 `ddl:"parameter,single_quotes" sql:"LOGIN_NAME"`
-	DisplayName           *string                                 `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
-	FirstName             *string                                 `ddl:"parameter,single_quotes" sql:"FIRST_NAME"`
-	MiddleName            *string                                 `ddl:"parameter,single_quotes" sql:"MIDDLE_NAME"`
-	LastName              *string                                 `ddl:"parameter,single_quotes" sql:"LAST_NAME"`
-	Email                 *string                                 `ddl:"parameter,single_quotes" sql:"EMAIL"`
-	MustChangePassword    *bool                                   `ddl:"parameter,no_quotes" sql:"MUST_CHANGE_PASSWORD"`
-	Disable               *bool                                   `ddl:"parameter,no_quotes" sql:"DISABLED"`
-	DaysToExpiry          *int                                    `ddl:"parameter,no_quotes" sql:"DAYS_TO_EXPIRY"`
-	MinsToUnlock          *int                                    `ddl:"parameter,no_quotes" sql:"MINS_TO_UNLOCK"`
-	DefaultWarehouse      *AccountObjectIdentifier                `ddl:"identifier,equals" sql:"DEFAULT_WAREHOUSE"`
-	DefaultNamespace      *ObjectIdentifier                       `ddl:"identifier,equals" sql:"DEFAULT_NAMESPACE"`
-	DefaultRole           *AccountObjectIdentifier                `ddl:"identifier,equals" sql:"DEFAULT_ROLE"`
-	DefaultSecondaryRoles *SecondaryRoles                         `ddl:"parameter,equals" sql:"DEFAULT_SECONDARY_ROLES"`
-	MinsToBypassMFA       *int                                    `ddl:"parameter,no_quotes" sql:"MINS_TO_BYPASS_MFA"`
-	RSAPublicKey          *string                                 `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY"`
-	RSAPublicKeyFp        *string                                 `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_FP"`
-	RSAPublicKey2         *string                                 `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2"`
-	RSAPublicKey2Fp       *string                                 `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2_FP"`
-	Type                  *UserType                               `ddl:"parameter,no_quotes" sql:"TYPE"`
-	WorkloadIdentity      *[]UserObjectWorkloadIdentityProperties `ddl:"parameter,list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY"`
-	Comment               *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Password              *string                               `ddl:"parameter,single_quotes" sql:"PASSWORD"`
+	LoginName             *string                               `ddl:"parameter,single_quotes" sql:"LOGIN_NAME"`
+	DisplayName           *string                               `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
+	FirstName             *string                               `ddl:"parameter,single_quotes" sql:"FIRST_NAME"`
+	MiddleName            *string                               `ddl:"parameter,single_quotes" sql:"MIDDLE_NAME"`
+	LastName              *string                               `ddl:"parameter,single_quotes" sql:"LAST_NAME"`
+	Email                 *string                               `ddl:"parameter,single_quotes" sql:"EMAIL"`
+	MustChangePassword    *bool                                 `ddl:"parameter,no_quotes" sql:"MUST_CHANGE_PASSWORD"`
+	Disable               *bool                                 `ddl:"parameter,no_quotes" sql:"DISABLED"`
+	DaysToExpiry          *int                                  `ddl:"parameter,no_quotes" sql:"DAYS_TO_EXPIRY"`
+	MinsToUnlock          *int                                  `ddl:"parameter,no_quotes" sql:"MINS_TO_UNLOCK"`
+	DefaultWarehouse      *AccountObjectIdentifier              `ddl:"identifier,equals" sql:"DEFAULT_WAREHOUSE"`
+	DefaultNamespace      *ObjectIdentifier                     `ddl:"identifier,equals" sql:"DEFAULT_NAMESPACE"`
+	DefaultRole           *AccountObjectIdentifier              `ddl:"identifier,equals" sql:"DEFAULT_ROLE"`
+	DefaultSecondaryRoles *SecondaryRoles                       `ddl:"parameter,equals" sql:"DEFAULT_SECONDARY_ROLES"`
+	MinsToBypassMFA       *int                                  `ddl:"parameter,no_quotes" sql:"MINS_TO_BYPASS_MFA"`
+	RSAPublicKey          *string                               `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY"`
+	RSAPublicKeyFp        *string                               `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_FP"`
+	RSAPublicKey2         *string                               `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2"`
+	RSAPublicKey2Fp       *string                               `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2_FP"`
+	Type                  *UserType                             `ddl:"parameter,no_quotes" sql:"TYPE"`
+	WorkloadIdentity      *UserObjectWorkloadIdentityProperties `ddl:"list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY ="`
+	Comment               *string                               `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type WIFType string

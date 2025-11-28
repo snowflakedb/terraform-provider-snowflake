@@ -352,11 +352,11 @@ func TestInt_Users(t *testing.T) {
 			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
-			WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 				Type:    sdk.Pointer(sdk.WIFTypeOIDC),
 				Issuer:  sdk.String("https://accounts.google.com"),
 				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
-			}},
+			},
 			Comment: sdk.String("some comment"),
 			Type:    sdk.Pointer(sdk.UserTypeService),
 		}}
@@ -450,11 +450,11 @@ func TestInt_Users(t *testing.T) {
 			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
-			WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 				Type:    sdk.Pointer(sdk.WIFTypeOIDC),
 				Issuer:  sdk.String("https://accounts.google.com"),
 				Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
-			}},
+			},
 			Comment: sdk.String("some comment"),
 			Type:    sdk.Pointer(sdk.UserTypeLegacyService),
 		}}
@@ -1033,11 +1033,11 @@ func TestInt_Users(t *testing.T) {
 					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
-					WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 						Type:    sdk.Pointer(sdk.WIFTypeOIDC),
 						Issuer:  sdk.String("https://accounts.google.com"),
 						Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
-					}},
+					},
 					Comment: sdk.String("some comment"),
 				},
 			},
@@ -1136,11 +1136,11 @@ func TestInt_Users(t *testing.T) {
 					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
-					WorkloadIdentity: &[]sdk.UserObjectWorkloadIdentityProperties{sdk.UserObjectWorkloadIdentityProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 						Type:    sdk.Pointer(sdk.WIFTypeOIDC),
 						Issuer:  sdk.String("https://accounts.google.com"),
 						Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
-					}},
+					},
 					Comment: sdk.String("some comment"),
 				},
 			},

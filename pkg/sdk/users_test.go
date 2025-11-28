@@ -432,12 +432,10 @@ func TestUserAlter(t *testing.T) {
 			Set: &UserSet{
 				ObjectProperties: &UserAlterObjectProperties{
 					UserObjectProperties: UserObjectProperties{
-						WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
-							{
-								Type:    &wifType,
-								Issuer:  &wifIssuer,
-								Subject: &wifSubject,
-							},
+						WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+							Type:    &wifType,
+							Issuer:  &wifIssuer,
+							Subject: &wifSubject,
 						},
 					},
 				},
@@ -1035,12 +1033,10 @@ func TestUserCreateWIF(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
 			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
-					{
-						Type:    &wifType,
-						Issuer:  &wifIssuer,
-						Subject: &wifSubject,
-					},
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					Type:    &wifType,
+					Issuer:  &wifIssuer,
+					Subject: &wifSubject,
 				},
 			},
 		}
@@ -1052,10 +1048,8 @@ func TestUserCreateWIF(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
 			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
-					{
-						Type: &wifType,
-					},
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					Type: &wifType,
 				},
 			},
 		}
@@ -1067,10 +1061,8 @@ func TestUserCreateWIF(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
 			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
-					{
-						Type: &wifType,
-					},
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					Type: &wifType,
 				},
 			},
 		}
@@ -1082,10 +1074,8 @@ func TestUserCreateWIF(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
 			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
-					{
-						Type: &wifType,
-					},
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					Type: &wifType,
 				},
 			},
 		}
@@ -1097,10 +1087,8 @@ func TestUserCreateWIF(t *testing.T) {
 		opts := &CreateUserOptions{
 			name: id,
 			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &[]UserObjectWorkloadIdentityProperties{
-					{
-						Type: &wifType,
-					},
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					Type: &wifType,
 				},
 			},
 		}
