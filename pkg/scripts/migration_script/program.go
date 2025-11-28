@@ -18,11 +18,15 @@ import (
 type ObjectType string
 
 const (
-	ObjectTypeGrants ObjectType = "grants"
+	ObjectTypeGrants    ObjectType = "grants"
+	ObjectTypeSchemas   ObjectType = "schemas"
+	ObjectTypeDatabases ObjectType = "databases"
 )
 
 var AllObjectTypes = []ObjectType{
 	ObjectTypeGrants,
+	ObjectTypeSchemas,
+	ObjectTypeDatabases,
 }
 
 func ToObjectType(s string) (ObjectType, error) {
@@ -125,7 +129,7 @@ usage: migration_script [-import=<statement|block>] <object_type>
 import optional flag determines the output format for import statements. The possible values are:
 	- "statement" will print appropriate terraform import command at the end of generated content (default) (see https://developer.hashicorp.com/terraform/cli/commands/import)
 	- "block" will generate import block at the end of generated content (see https://developer.hashicorp.com/terraform/language/import)
-	
+
 object_type represents the type of Snowflake object you want to generate terraform resources for.
 	It is a required positional argument and possible values are listed below.
 	A given object_type corresponds to a specific Snowflake output expected as input to the script.
@@ -144,7 +148,20 @@ object_type represents the type of Snowflake object you want to generate terrafo
 			Limitations:
 				- grants on 'future' or on 'all' objects are not supported
 				- all_privileges and always_apply fields are not supported
-		
+		- "schemas" which expects a converted CSV output from the snowflake_schemas data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMAS output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "SCHEMA".
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Supported resources:
+				- snowflake_schema
+		- "databases" which expects a converted CSV output from the snowflake_databases data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Warning: currently secondary databases and shared databases are treated as plain databases.
+			Supported resources:
+				- snowflake_database
+
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
 `)
@@ -198,6 +215,10 @@ func (p *Program) generateOutput(input [][]string) (string, error) {
 	switch p.Config.ObjectType {
 	case ObjectTypeGrants:
 		return HandleGrants(p.Config, input)
+	case ObjectTypeSchemas:
+		return HandleSchemas(p.Config, input)
+	case ObjectTypeDatabases:
+		return HandleDatabases(p.Config, input)
 	default:
 		return "", fmt.Errorf("unsupported object type: %s, run -h to get more information on allowed object types", p.Config.ObjectType)
 	}

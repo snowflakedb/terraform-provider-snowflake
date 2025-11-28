@@ -96,7 +96,7 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.mfa_enrollment", "REQUIRED")),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.mfa_authentication_methods", "[PASSWORD, SAML]")),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.mfa_policy", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")),
-					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=false}")),
+					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED}")),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")),
 				),
 			},

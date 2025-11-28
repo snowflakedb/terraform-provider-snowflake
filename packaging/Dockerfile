@@ -4,7 +4,7 @@ ENV GO_VERSION 1.24.9
 ENV TERRAFORM_VERSION 1.8.4
 
 # Update packages and install necessary tools
-RUN apt-get update && apt-get install -y wget make git gnupg software-properties-common unzip
+RUN apt-get update && apt-get install -y wget make git gnupg software-properties-common unzip jq
 
 # Download, unzip, and install Terraform to a location in the PATH
 RUN wget -O terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \

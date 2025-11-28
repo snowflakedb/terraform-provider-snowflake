@@ -98,23 +98,6 @@ func (s *CreateTaskRequest) WithWhen(when string) *CreateTaskRequest {
 	return s
 }
 
-// added manually
-func NewCreateTaskWarehouseRequest() *CreateTaskWarehouseRequest {
-	return &CreateTaskWarehouseRequest{}
-}
-
-// added manually
-func (s *CreateTaskWarehouseRequest) WithWarehouse(warehouse AccountObjectIdentifier) *CreateTaskWarehouseRequest {
-	s.Warehouse = &warehouse
-	return s
-}
-
-// added manually
-func (s *CreateTaskWarehouseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateTaskWarehouseRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
-	return s
-}
-
 func NewCreateOrAlterTaskRequest(
 	name SchemaObjectIdentifier,
 	sql string,
