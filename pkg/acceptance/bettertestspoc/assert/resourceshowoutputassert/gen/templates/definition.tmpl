@@ -4,7 +4,7 @@
 {{- $outputType := "Show"}}
 {{- $assertName := $name | printf "%sShowOutputAssert" }}
 
-{{- if .IsDataSourceOutput }}
+{{- if .IsDescribeOutput }}
     {{- $name = TrimSuffix .Name "Details" }}
 
     {{- $outputType = "Describe" }}

@@ -7,9 +7,9 @@ import (
 )
 
 type ResourceShowOutputAssertionsModel struct {
-	Name               string
-	IsDataSourceOutput bool
-	Attributes         []ResourceShowOutputAssertionModel
+	Name             string
+	IsDescribeOutput bool
+	Attributes       []ResourceShowOutputAssertionModel
 
 	*genhelpers.PreambleModel
 }
@@ -29,10 +29,10 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	return ResourceShowOutputAssertionsModel{
-		Name:               name,
-		IsDataSourceOutput: sdkObject.IsDataSourceOutput,
-		Attributes:         attributes,
-		PreambleModel:      preamble,
+		Name:             name,
+		IsDescribeOutput: sdkObject.IsDataSourceOutput,
+		Attributes:       attributes,
+		PreambleModel:    preamble,
 	}
 }
 

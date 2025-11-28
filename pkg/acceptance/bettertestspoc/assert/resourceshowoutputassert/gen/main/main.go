@@ -31,7 +31,7 @@ func main() {
 }
 
 func getFilename(_ genhelpers.SdkObjectDetails, model gen.ResourceShowOutputAssertionsModel) string {
-	if model.IsDataSourceOutput {
+	if model.IsDescribeOutput {
 		return strings.TrimSuffix(genhelpers.ToSnakeCase(model.Name), "_details") + "_desc_output" + "_gen.go"
 	}
 	return genhelpers.ToSnakeCase(model.Name) + "_show_output" + "_gen.go"

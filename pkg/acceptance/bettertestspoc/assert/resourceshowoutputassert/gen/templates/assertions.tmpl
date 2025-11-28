@@ -3,7 +3,7 @@
 {{- $assertVar := FirstLetterLowercase .Name | FirstLetter }}
 
 {{- $assertName := .Name | printf "%sShowOutputAssert" }}
-{{- if .IsDataSourceOutput }}
+{{- if .IsDescribeOutput }}
     {{- $assertName = TrimSuffix .Name "Details" | printf "%sDescribeOutputAssert" }}
 {{- end}}
 
