@@ -41,7 +41,7 @@ type Users interface {
 	ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
 	ShowProgrammaticAccessTokenByName(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 	ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
-	ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethods, error)
+	ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethod, error)
 }
 
 var _ Users = (*users)(nil)
@@ -923,8 +923,8 @@ type userWorkloadIdentityAuthenticationMethodsDBRow struct {
 	AdditionalInfo sql.NullString `db:"additional_info"`
 }
 
-func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkloadIdentityAuthenticationMethods, error) {
-	methods := &UserWorkloadIdentityAuthenticationMethods{
+func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkloadIdentityAuthenticationMethod, error) {
+	methods := &UserWorkloadIdentityAuthenticationMethod{
 		Name:      row.Name,
 		CreatedOn: row.CreatedOn,
 	}
@@ -969,7 +969,7 @@ func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorklo
 	return methods, nil
 }
 
-type UserWorkloadIdentityAuthenticationMethods struct {
+type UserWorkloadIdentityAuthenticationMethod struct {
 	Name                string
 	Type                string
 	Comment             string
@@ -979,6 +979,10 @@ type UserWorkloadIdentityAuthenticationMethods struct {
 	AzureAdditionalInfo *UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo
 	GcpAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo
 	OidcAdditionalInfo  *UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo
+}
+
+func (v *UserWorkloadIdentityAuthenticationMethod) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
 }
 
 type UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo struct {
@@ -1017,7 +1021,7 @@ func (opts *showUserAuthenticationMethodOptions) validate() error {
 	return nil
 }
 
-func (v *users) ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethods, error) {
+func (v *users) ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethod, error) {
 	opts := &showUserAuthenticationMethodOptions{
 		ForUser: userId,
 	}
@@ -1026,5 +1030,5 @@ func (v *users) ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[userWorkloadIdentityAuthenticationMethodsDBRow, UserWorkloadIdentityAuthenticationMethods](dbRows)
+	return convertRows[userWorkloadIdentityAuthenticationMethodsDBRow, UserWorkloadIdentityAuthenticationMethod](dbRows)
 }

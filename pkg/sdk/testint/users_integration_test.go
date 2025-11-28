@@ -18,6 +18,7 @@ import (
 )
 
 // TODO [SNOW-1645875]: test setting/unsetting policies
+// TODO (SNOW-2272350): add tests for AWS, Azure and GCP workload identity authentication methods.
 func TestInt_Users(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -432,8 +433,8 @@ func TestInt_Users(t *testing.T) {
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, user.ID(), &methods[0]).
-			HasOidcAdditionalInfo(&sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
 				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
@@ -541,8 +542,8 @@ func TestInt_Users(t *testing.T) {
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, user.ID(), &methods[0]).
-			HasOidcAdditionalInfo(&sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
 				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
@@ -1108,8 +1109,8 @@ func TestInt_Users(t *testing.T) {
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, user.ID(), &methods[0]).
-			HasOidcAdditionalInfo(&sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
 				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
@@ -1228,8 +1229,8 @@ func TestInt_Users(t *testing.T) {
 		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
-		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, user.ID(), &methods[0]).
-			HasOidcAdditionalInfo(&sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
 				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},

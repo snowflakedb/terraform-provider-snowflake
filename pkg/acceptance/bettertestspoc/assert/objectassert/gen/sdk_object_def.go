@@ -183,6 +183,11 @@ var allStructs = []SdkObjectDef{
 		ObjectType:   sdk.ObjectTypeStreamlit,
 		ObjectStruct: sdk.Streamlit{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectType:   sdk.ObjectTypeUserWorkloadIdentityAuthenticationMethod,
+		ObjectStruct: sdk.UserWorkloadIdentityAuthenticationMethod{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
