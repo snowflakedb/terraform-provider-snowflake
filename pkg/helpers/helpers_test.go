@@ -584,7 +584,7 @@ func Test_GenerateParseExternalVolumeDescribedInput(t *testing.T) {
 				tc.Active,
 			)
 
-			assert.Equal(t, len(tc.ExpectedOutput), len(generatedInput))
+			assert.Len(t, generatedInput, len(tc.ExpectedOutput))
 			for i := range generatedInput {
 				assert.Equal(t, tc.ExpectedOutput[i].Parent, generatedInput[i].Parent)
 				assert.Equal(t, tc.ExpectedOutput[i].Name, generatedInput[i].Name)

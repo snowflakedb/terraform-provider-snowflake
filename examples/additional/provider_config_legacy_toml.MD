@@ -38,6 +38,8 @@ oauthscope = 'oauth_scope'
 workloadidentityprovider = 'azure'
 workloadidentityentraresource = 'workload_identity_entra_resource'
 enablesingleuserefreshtokens = true
+logquerytext = false
+logqueryparameters = false
 
 [example.params]
 param_key = 'param_value'

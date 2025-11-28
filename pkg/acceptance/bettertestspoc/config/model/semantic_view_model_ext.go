@@ -8,13 +8,11 @@ import (
 
 func SemanticViewWithMetrics(
 	resourceName string,
-	database string,
-	schema string,
-	name string,
+	id sdk.SchemaObjectIdentifier,
 	tables []sdk.LogicalTable,
 	metrics []sdk.MetricDefinition,
 ) *SemanticViewModel {
-	return SemanticView(resourceName, database, schema, name, tables).WithMetrics(metrics)
+	return SemanticView(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), tables).WithMetrics(metrics)
 }
 
 func (s *SemanticViewModel) WithTables(tables []sdk.LogicalTable) *SemanticViewModel {
@@ -151,9 +149,14 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 			}
 			m["semantic_expression"] = tfconfig.ListVariable(tfconfig.ObjectVariable(semExpVar))
 		} else if windFunc != nil {
-			windFuncVar := map[string]tfconfig.Variable{
-				"window_function": tfconfig.StringVariable(windFunc.WindowFunction),
-				"metric":          tfconfig.StringVariable(windFunc.Metric),
+			windFuncVar := map[string]tfconfig.Variable{}
+			qExpName := windFunc.GetQualifiedExpressionName()
+			if qExpName != nil {
+				windFuncVar["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
+			}
+			sqlExp := windFunc.GetSqlExpression()
+			if sqlExp != nil {
+				windFuncVar["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
 			}
 			if windFunc.OverClause != nil {
 				overClauseVar := map[string]tfconfig.Variable{}
@@ -284,16 +287,19 @@ func SemanticExpressionWithProps(
 }
 
 func WindowFunctionMetricDefinitionWithProps(
-	windowFunction string,
-	metric string,
+	qualifiedExpressionName string,
+	sqlExpression string,
 	overClause sdk.WindowFunctionOverClause,
 ) *sdk.WindowFunctionMetricDefinition {
 	windowFunctionMetricDefinition := &sdk.WindowFunctionMetricDefinition{
-		WindowFunction: windowFunction,
-		Metric:         metric,
-		OverClause:     &overClause,
+		OverClause: &overClause,
 	}
-
+	if qualifiedExpressionName != "" {
+		windowFunctionMetricDefinition.SetQualifiedExpressionName(qualifiedExpressionName)
+	}
+	if sqlExpression != "" {
+		windowFunctionMetricDefinition.SetSqlExpression(sqlExpression)
+	}
 	return windowFunctionMetricDefinition
 }
 

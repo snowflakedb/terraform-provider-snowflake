@@ -12,9 +12,8 @@ import (
 
 var _ Streams = (*streams)(nil)
 
-var _ convertibleRow[Stream] = new(showStreamsDbRow)
-
 // second type assert removed manually
+var _ convertibleRow[Stream] = new(showStreamsDbRow)
 
 type streams struct {
 	client *Client

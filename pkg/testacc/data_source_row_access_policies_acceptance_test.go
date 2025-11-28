@@ -42,10 +42,12 @@ func TestAcc_RowAccessPolicies_BasicUseCase_DifferentFiltering(t *testing.T) {
 
 	datasourceModelLikeExact := datasourcemodel.RowAccessPolicies("test").
 		WithLike(rowAccessPolicyId1.Name()).
+		WithInAccount().
 		WithDependsOn(rowAccessPolicyModel1.ResourceReference(), rowAccessPolicyModel2.ResourceReference(), rowAccessPolicyModel3.ResourceReference())
 
 	datasourceModelLikePrefix := datasourcemodel.RowAccessPolicies("test").
 		WithLike(prefix+"%").
+		WithInAccount().
 		WithDependsOn(rowAccessPolicyModel1.ResourceReference(), rowAccessPolicyModel2.ResourceReference(), rowAccessPolicyModel3.ResourceReference())
 
 	datasourceModelInDatabase := datasourcemodel.RowAccessPolicies("test").

@@ -36,17 +36,6 @@ type CreateTaskRequest struct {
 	sql                                     string // required
 }
 
-// added manually
-func (r *CreateTaskRequest) GetName() SchemaObjectIdentifier {
-	return r.name
-}
-
-// added manually
-type CreateTaskWarehouseRequest struct {
-	Warehouse                           *AccountObjectIdentifier
-	UserTaskManagedInitialWarehouseSize *WarehouseSize
-}
-
 type CreateOrAlterTaskRequest struct {
 	name SchemaObjectIdentifier // required
 	// adjusted manually
@@ -64,11 +53,6 @@ type CreateOrAlterTaskRequest struct {
 	After                       []SchemaObjectIdentifier
 	When                        *string
 	sql                         string // required
-}
-
-// added manually
-func (r *CreateOrAlterTaskRequest) GetName() SchemaObjectIdentifier {
-	return r.name
 }
 
 type CloneTaskRequest struct {
@@ -94,11 +78,6 @@ type AlterTaskRequest struct {
 	ModifyAs      *string
 	ModifyWhen    *string
 	RemoveWhen    *bool
-}
-
-// added manually
-func (r *AlterTaskRequest) GetName() SchemaObjectIdentifier {
-	return r.name
 }
 
 type TaskSetRequest struct {

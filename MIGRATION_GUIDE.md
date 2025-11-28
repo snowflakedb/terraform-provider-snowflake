@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.10.2 ➞ v2.11.0
+## v2.10.x ➞ v2.11.0
 
 ### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
 
@@ -35,7 +35,97 @@ If you were not using this parameter, no changes are required.
 
 Related: [#4010](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4010)
 
-## v2.10.1 ➞ v2.10.2
+### *(new feature)* snowflake_notebook
+
+#### Added resource
+Added a new preview resource for managing notebooks. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_notebook_resource` to `preview_features_enabled` field in the provider configuration.
+
+#### Added data source
+Added a new preview data source for notebooks. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-notebooks).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_notebooks_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Semantic views preview feature
+
+This version of the provider introduces support for the `SEMANTIC VIEWS`. Check the [official Snowflake documentation](https://docs.snowflake.com/en/user-guide/views-semantic/overview) to know more.
+
+You can enable resource and data source by adding `snowflake_semantic_view_resource` or `snowflake_semantic_views_datasource` to `preview_features_enabled` field in the provider configuration. You can read about the resource and data source current limitations in the documentation in the registry.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version.
+
+#### Add support for semantic views in `snowflake_grant_ownership` resource
+Add a missing option in `snowflake_grant_ownership` to support semantic views (see [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/grant-ownership)).
+
+### *(improvement)* Upgraded gosnowflake driver to v1.18.0
+
+The provider now uses [gosnowflake driver v1.18.0](https://github.com/snowflakedb/gosnowflake).
+
+**Important note about query logging:** With this driver version, queries are not logged by default. If you need query-level debugging, ensure you configure appropriate logging settings.
+
+We added new provider configuration options to control query logging behavior:
+  - `log_query_text` - when set to `true`, query text will be logged
+  - `log_query_parameters` - when set to `true`, query parameters will be logged
+
+These options can be set in the provider configuration, TOML configuration file, or via environment variables. Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+
+Note that you still need to set the `INFO` level in `driver_tracing` field to see the query logs.
+
+**Note:** Enabling these options may log sensitive information. Use with caution and ensure appropriate security measures are in place.
+
+References: [#4092](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4092).
+
+### *(new feature)* Added missing `object_types` in grant resources
+
+Previously, the following resources did not support all object types that can be specified in `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources.
+With this change, we added support for the following missing object types:
+
+In the `snowflake_grant_privileges_to_account_role` resource, we enabled support for:
+- `CONNECTION` object type in the `on_account_object.object_type` field
+- `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
+
+In the `snowflake_grant_privileges_to_database_role` resource, we enabled support for:
+- `ONLINE FEATURE TABLE` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `STORAGE LIFECYCLE POLICY` and `WORKSPACE` object type in the `on_schema_object.object_type` field
+
+### *(improvement)* `describe_output` will now recompute whenever `comment` field is changed in secret resources
+
+Previously, in the following resources:
+- `snowflake_secret_with_generic_string`
+- `snowflake_secret_with_basic_authentication`
+- `snowflake_secret_with_oauth_authorization_code`
+- `snowflake_secret_with_client_credentials`
+
+when the `comment` field was changed, the `describe_output` field was not recomputed, although it contains the `comment` field.
+Now, changing the `comment` field will trigger recomputing the `describe_output` field. It doesn't affect current resource behavior
+(in terms of applying or ignoring changes on the actual Snowflake object), but keeps the consistency with logic in other resources.
+
+No changes in configuration and state are required.
+
+### *(improvement)* Functions reading TOML configuration now clean path
+
+Previously, the provider's file reading functions did not clean paths. In this version, all functions handling files use Go's [filepath.Clean](https://pkg.go.dev/path/filepath#Clean) function for each file path.
+
+No changes in configuration and state are required. The supported TOML location `~/.snowflake/config` stays the same and the behavior shouldn't be affected.
+
+### Task parameter validation handling
+
+Recently, Snowflake moved validation from runtime (task execution) to CREATE/ALTER operations for two parameters ([`AUTOCOMMIT`](https://docs.snowflake.com/en/sql-reference/parameters#autocommit) and [`SEARCH_PATH`](https://docs.snowflake.com/en/sql-reference/parameters#search-path)).
+Because of this, both parameters for tasks fail during those operations for invalid values.
+The `AUTOCOMMIT` parameter can be only set to `TRUE` (default value for this parameter), and `SEARCH_PATH` cannot be set at all. Both parameters can be unset.
+Now, when either `AUTOCOMMIT` is set to `FALSE` or `SEARCH_PATH` is set in the configuration (when creating or changing), the task resource will return warnings saying:
+
+```
+Invalid value for AUTOCOMMIT parameter: cannot be set to FALSE on a task
+Invalid value for SEARCH_PATH parameter: cannot be set on a task
+```
+
+If you have any of these parameters set in your configuration,
+please remove them to avoid the Terraform warnings and potential errors from the Snowflake side.
+The parameters may be removed in the next major version of the provider.
+Other than this, no changes in the configuration are required.
 
 ### *(bugfix)* Improved validation of identifiers with arguments
 Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:
@@ -68,6 +158,60 @@ In a few releases, we will address other similar faulty object type cases in pri
 No changes in configuration are required.
 
 Community PR: [#4185](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4185)
+
+### *(new feature)* Task seconds and hours scheduling support
+
+Added support for scheduling tasks using seconds and hours intervals in addition to the existing minutes and cron support. The `snowflake_task` resource now supports:
+
+- `schedule.seconds` - Schedule tasks to run at intervals specified in seconds (e.g., every 30 seconds)
+- `schedule.hours` - Schedule tasks to run at intervals specified in hours (e.g., every 2 hours)
+
+These new scheduling options work alongside the existing `schedule.minutes` and `schedule.using_cron` options. Only one scheduling method can be specified at a time.
+
+**Example usage:**
+
+```terraform
+resource "snowflake_task" "example_seconds" {
+  database      = "my_database"
+  schema        = "my_schema"
+  name          = "my_task_seconds"
+  sql_statement = "SELECT 1"
+  started       = true
+
+  schedule {
+    seconds = 30  # Run every 30 seconds
+  }
+}
+
+resource "snowflake_task" "example_hours" {
+  database      = "my_database"
+  schema        = "my_schema"
+  name          = "my_task_hours"
+  sql_statement = "SELECT 1"
+  started       = true
+
+  schedule {
+    hours = 2  # Run every 2 hours
+  }
+}
+```
+
+### *(improvement)* Handling show_output in warehouses
+
+In v2.7.0 ([migration guide](./MIGRATION_GUIDE.md#new-feature-added-support-for-generation-2-standard-warehouses-and-resource-constraints-for-snowpark-optimized-warehouses)),
+we added support for gen2 warehouses. In this change, we added new fields to `show_output`: `generation`, and `resource_constraint`. Before the 2025_07 bundle, the `generation` column was not available in `SHOW WAREHOUSES`. Internally, we dispatched
+`resource_constraint` value based on the warehouse type, and filled the values in the resource state.
+
+The 2025_07 bundle adds the `generation` column (read our [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#new-generation-column-in-output-in-show-warehouses)). Now, instead of dispatching the `resource_constraint` value, the provider simply passes the `generation` field from Snowflake to the `show_output`.
+If the bundle is disabled, then the `generation` column is not present in Snowflake, and the providers behaves in the old way.
+
+No changes in the configuration are necessary.
+
+### *(improvement)* Granting privileges on a database during share update
+
+When updating the `accounts` field in the `share` resource, the provider creates a temporary database from the share. Before, it granted only the `USAGE` grant. Now, it also grants `REFERENCE_USAGE` because of the changes in the [2025_07](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#disallow-grant-reference_usage-on-a-database-if-grant-usage-isnt-set-first) bundle.
+
+No changes in the configuration are necessary.
 
 ## v2.10.0 ➞ v2.10.1
 
@@ -129,17 +273,6 @@ Now, this behavior is fixed. Here's the list of affected resources:
 - `snowflake_secret_with_client_credentials`
 
 No changes in configuration and state are required.
-
-### *(improvement)* Handling show_output in warehouses
-
-In v2.7.0 ([migration guide](./MIGRATION_GUIDE.md#new-feature-added-support-for-generation-2-standard-warehouses-and-resource-constraints-for-snowpark-optimized-warehouses)),
-we added support for gen2 warehouses. In this change, we added new fields to `show_output`: `generation`, and `resource_constraint`. Before the 2025_07 bundle, the `generation` column was not available in `SHOW WAREHOUSES`. Internally, we dispatched
-`resource_constraint` value based on the warehouse type, and filled the values in the resource state.
-
-The 2025_07 bundle adds the `generation` column (read our [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#new-generation-column-in-output-in-show-warehouses)). Now, instead of dispatching the `resource_constraint` value, the provider simply passes the `generation` field from Snowflake to the `show_output`.
-If the bundle is disabled, then the `generation` column is not present in Snowflake, and the providers behaves in the old way.
-
-No changes in the configuration are necessary.
 
 ## v2.9.x ➞ v2.10.0
 
@@ -283,6 +416,7 @@ Now, the behavior is the following:
 Note that in v3, we are planning to remove the logic for setting the default authenticator in the provider based on other fields.
 
 ## v2.7.x ➞ v2.8.0
+
 
 ### *(new feature)* Added handling private link in S3 and Azure storage integrations
 

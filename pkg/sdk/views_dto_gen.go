@@ -26,11 +26,6 @@ type CreateViewRequest struct {
 	sql               string // required
 }
 
-// added manually
-func (r *CreateViewRequest) GetName() SchemaObjectIdentifier {
-	return r.name
-}
-
 type ViewColumnRequest struct {
 	Name             string // required
 	ProjectionPolicy *ViewColumnProjectionPolicyRequest
