@@ -91,6 +91,9 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--filter-generation-part-names=
 make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ```
 
+##### Known issues
+- The implementation of nested fields causes problems when reusing nested definitions (the same `[]Fields` slice is reused causing parent redefinition and incorrect mapping; the root cause being the lack of separation between the definition and model structs). It's currently validated programmatically and the panic is raised (`Field <field> already has a parent`). When it happens, create a function wrapper instead of directly creating a `var` with a definition.
+
 [//]: # (TODO [next PRs]: update this section)
 ### Next steps
 
