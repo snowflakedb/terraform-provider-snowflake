@@ -76,7 +76,7 @@ func preprocessDefinition(definition *Interface) {
 func setParent(field *Field) {
 	for idx, f := range field.Fields {
 		if f.Parent != nil {
-			log.Printf("[WARN] Field %s already has a parent: %s (path: %s); new parent: %s (path: %s)", f.Name, f.Parent.KindNoPtr(), f.Parent.PathWithRoot(), field.Name, field.PathWithRoot())
+			log.Panicf("Field %s already has a parent\nold parent: %s (path: %s)\nnew parent: %s (path: %s);\n\nit is caused by the current incorrect implementation of nested fields;\nreuse the common definition by wrapping it in function invocation", f.Name, f.Parent.KindNoPtr(), f.Parent.PathWithRoot(), field.Name, field.PathWithRoot())
 		}
 		(&(field.Fields[idx])).Parent = field
 		setParent(&(field.Fields[idx]))
