@@ -172,14 +172,12 @@ func (r *AlterEventTableRequest) toOpts() *AlterEventTableOptions {
 	}
 	if r.AddRowAccessPolicy != nil {
 		opts.AddRowAccessPolicy = &EventTableAddRowAccessPolicy{
-			// manually changed DropAndAddRowAccessPolicy.Add to AddRowAccessPolicy
 			RowAccessPolicy: r.AddRowAccessPolicy.RowAccessPolicy,
 			On:              r.AddRowAccessPolicy.On,
 		}
 	}
 	if r.DropRowAccessPolicy != nil {
 		opts.DropRowAccessPolicy = &EventTableDropRowAccessPolicy{
-			// manually changed DropAndAddRowAccessPolicy.Drop to DropRowAccessPolicy
 			RowAccessPolicy: r.DropRowAccessPolicy.RowAccessPolicy,
 		}
 	}
@@ -205,7 +203,6 @@ func (r *AlterEventTableRequest) toOpts() *AlterEventTableOptions {
 		opts.SearchOptimizationAction = &EventTableSearchOptimizationAction{}
 		if r.SearchOptimizationAction.Add != nil {
 			opts.SearchOptimizationAction.Add = &SearchOptimization{
-				// manually changed Drop to Add
 				On: r.SearchOptimizationAction.Add.On,
 			}
 		}
