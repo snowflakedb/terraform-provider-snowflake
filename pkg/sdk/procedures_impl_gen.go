@@ -611,7 +611,6 @@ func (r *CreateAndCallForJavaProcedureRequest) toOpts() *CreateAndCallForJavaPro
 	}
 	if r.WithClause != nil {
 		opts.WithClause = &ProcedureWithClause{
-			// adjusted manually
 			CteName:    r.WithClause.CteName,
 			CteColumns: r.WithClause.CteColumns,
 			Statement:  r.WithClause.Statement,
