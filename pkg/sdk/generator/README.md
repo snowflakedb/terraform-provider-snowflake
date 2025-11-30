@@ -202,5 +202,3 @@ find a better solution to solve the issue (add more logic to the templates ?)
 
 ##### Known issues
 - generating two converts when Show and Desc use the same data structure
-- cannot re-generate when client.go is using generated interface
-- spaces in templates (especially nested validations)
