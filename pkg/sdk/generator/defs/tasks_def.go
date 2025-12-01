@@ -28,7 +28,8 @@ var taskDbRow = g.DbStruct("taskDBRow").
 	OptionalText("config").
 	OptionalText("budget").
 	Text("task_relations").
-	OptionalText("last_suspended_reason")
+	OptionalText("last_suspended_reason").
+	OptionalText("target_completion_interval")
 
 var task = g.PlainStruct("Task").
 	Text("CreatedOn").
@@ -52,7 +53,8 @@ var task = g.PlainStruct("Task").
 	Text("Config").
 	Text("Budget").
 	Field("TaskRelations", "TaskRelations").
-	Text("LastSuspendedReason")
+	Text("LastSuspendedReason").
+	Text("TargetCompletionInterval")
 
 var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
 	OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
@@ -88,7 +90,7 @@ var tasksDef = g.NewInterface(
 			OptionalTextAssignment("TARGET_COMPLETION_INTERVAL", g.ParameterOptions().SingleQuotes()).
 			OptionalAssignment("SERVERLESS_TASK_MIN_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
 			OptionalAssignment("SERVERLESS_TASK_MAX_STATEMENT_SIZE", "WarehouseSize", g.ParameterOptions().SingleQuotes()).
-			ListAssignment("AFTER", g.KindOfT[SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
+			ListAssignment("AFTER", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().NoEquals()).
 			OptionalTextAssignment("WHEN", g.ParameterOptions().NoQuotes().NoEquals()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).

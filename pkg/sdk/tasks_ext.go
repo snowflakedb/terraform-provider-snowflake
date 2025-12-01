@@ -150,20 +150,6 @@ type CreateTaskWarehouseRequest struct {
 	UserTaskManagedInitialWarehouseSize *WarehouseSize
 }
 
-func NewCreateTaskWarehouseRequest() *CreateTaskWarehouseRequest {
-	return &CreateTaskWarehouseRequest{}
-}
-
-func (s *CreateTaskWarehouseRequest) WithWarehouse(warehouse AccountObjectIdentifier) *CreateTaskWarehouseRequest {
-	s.Warehouse = &warehouse
-	return s
-}
-
-func (s *CreateTaskWarehouseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateTaskWarehouseRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
-	return s
-}
-
 func (r *CreateTaskRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }
@@ -267,4 +253,38 @@ func GetRootTasks(v Tasks, ctx context.Context, id SchemaObjectIdentifier) ([]Ta
 	}
 
 	return rootTasks, nil
+}
+
+// added manually
+type TargetCompletionInterval struct {
+	Hours   int
+	Minutes int
+	Seconds int
+}
+
+// added manually
+func ParseTargetCompletionInterval(interval string) (*TargetCompletionInterval, error) {
+	upperInterval := strings.ToUpper(interval)
+	parts := strings.Split(strings.TrimSpace(upperInterval), " ")
+
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid target completion interval format: %s", interval)
+	}
+
+	value, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return nil, fmt.Errorf("invalid target completion interval value: %s", interval)
+	}
+
+	unit := parts[1]
+	switch {
+	case strings.HasPrefix(unit, "HOUR"):
+		return &TargetCompletionInterval{Hours: value}, nil
+	case strings.HasPrefix(unit, "MINUTE"):
+		return &TargetCompletionInterval{Minutes: value}, nil
+	case strings.HasPrefix(unit, "SECOND"):
+		return &TargetCompletionInterval{Seconds: value}, nil
+	default:
+		return nil, fmt.Errorf("invalid target completion interval unit: %s", unit)
+	}
 }
