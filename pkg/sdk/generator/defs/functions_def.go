@@ -19,27 +19,25 @@ var functionColumn = g.NewQueryStruct("FunctionColumn").
 	PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 	WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
 
-var functionReturns = func() *g.QueryStruct {
-	return g.NewQueryStruct("FunctionReturns").
-		OptionalQueryStructField(
-			"ResultDataType",
-			g.NewQueryStruct("FunctionReturnsResultDataType").
-				PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
-				PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-				WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
-			g.KeywordOptions(),
-		).
-		OptionalQueryStructField(
-			"Table",
-			g.NewQueryStruct("FunctionReturnsTable").
-				ListQueryStructField(
-					"Columns",
-					functionColumn,
-					g.ParameterOptions().Parentheses().NoEquals(),
-				),
-			g.KeywordOptions().SQL("TABLE"),
-		).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
-}
+var functionReturns = g.NewQueryStruct("FunctionReturns").
+	OptionalQueryStructField(
+		"ResultDataType",
+		g.NewQueryStruct("FunctionReturnsResultDataType").
+			PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
+			PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
+			WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
+		g.KeywordOptions(),
+	).
+	OptionalQueryStructField(
+		"Table",
+		g.NewQueryStruct("FunctionReturnsTable").
+			ListQueryStructField(
+				"Columns",
+				functionColumn,
+				g.ParameterOptions().Parentheses().NoEquals(),
+			),
+		g.KeywordOptions().SQL("TABLE"),
+	).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 
 var (
 	functionImports            = g.NewQueryStruct("FunctionImport").Text("FunctionImport", g.KeywordOptions().SingleQuotes())
@@ -70,7 +68,7 @@ var functionsDef = g.NewInterface(
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
-			functionReturns(),
+			functionReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		PredefinedQueryStructField("ReturnNullValues", "*ReturnNullValues", g.KeywordOptions()).
@@ -118,7 +116,7 @@ var functionsDef = g.NewInterface(
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
-			functionReturns(),
+			functionReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		PredefinedQueryStructField("ReturnNullValues", "*ReturnNullValues", g.KeywordOptions()).
@@ -152,7 +150,7 @@ var functionsDef = g.NewInterface(
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
-			functionReturns(),
+			functionReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		PredefinedQueryStructField("ReturnNullValues", "*ReturnNullValues", g.KeywordOptions()).
@@ -248,7 +246,7 @@ var functionsDef = g.NewInterface(
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
-			functionReturns(),
+			functionReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		PredefinedQueryStructField("ReturnNullValues", "*ReturnNullValues", g.KeywordOptions()).

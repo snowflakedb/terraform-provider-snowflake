@@ -28,6 +28,8 @@ func preprocessDefinition(definition *Interface) {
 	for _, o := range definition.Operations {
 		o.ObjectInterface = definition
 		if o.OptsField != nil {
+			o.OptsField = deepCopyFieldHierarchy(o.OptsField)
+
 			o.OptsField.Name = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			o.OptsField.Kind = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			setParent(o.OptsField)
@@ -71,6 +73,19 @@ func preprocessDefinition(definition *Interface) {
 			o.DtosToGenerate = dtosToGenerate
 		}
 	}
+}
+
+func deepCopyFieldHierarchy(field *Field) *Field {
+	newField := *field
+	if field.Fields != nil && len(field.Fields) > 0 {
+		children := make([]Field, len(field.Fields))
+		for idx, f := range field.Fields {
+			newF := deepCopyFieldHierarchy(&f)
+			children[idx] = *newF
+		}
+		newField.Fields = children
+	}
+	return &newField
 }
 
 func setParent(field *Field) {

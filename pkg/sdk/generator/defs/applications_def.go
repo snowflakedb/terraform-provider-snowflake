@@ -14,12 +14,10 @@ var versionAndPatch = g.NewQueryStruct("VersionAndPatch").
 	TextAssignment("VERSION", g.ParameterOptions().NoEquals().NoQuotes().Required()).
 	OptionalNumberAssignment("PATCH", g.ParameterOptions().NoEquals().Required())
 
-var applicationVersion = func() *g.QueryStruct {
-	return g.NewQueryStruct("ApplicationVersion").
-		OptionalText("VersionDirectory", g.KeywordOptions().SingleQuotes()).
-		OptionalQueryStructField("VersionAndPatch", versionAndPatch, g.KeywordOptions().NoQuotes()).
-		WithValidation(g.ExactlyOneValueSet, "VersionDirectory", "VersionAndPatch")
-}
+var applicationVersion = g.NewQueryStruct("ApplicationVersion").
+	OptionalText("VersionDirectory", g.KeywordOptions().SingleQuotes()).
+	OptionalQueryStructField("VersionAndPatch", versionAndPatch, g.KeywordOptions().NoQuotes()).
+	WithValidation(g.ExactlyOneValueSet, "VersionDirectory", "VersionAndPatch")
 
 var applicationSet = g.NewQueryStruct("ApplicationSet").
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
@@ -51,7 +49,7 @@ var applicationsDef = g.NewInterface(
 		Identifier("PackageName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		OptionalQueryStructField(
 			"Version",
-			applicationVersion(),
+			applicationVersion,
 			g.KeywordOptions().SQL("USING"),
 		).
 		OptionalBooleanAssignment("DEBUG_MODE", g.ParameterOptions()).
@@ -88,7 +86,7 @@ var applicationsDef = g.NewInterface(
 		OptionalSQL("UPGRADE").
 		OptionalQueryStructField(
 			"UpgradeVersion",
-			applicationVersion(),
+			applicationVersion,
 			g.KeywordOptions().SQL("UPGRADE USING"),
 		).
 		OptionalQueryStructField(

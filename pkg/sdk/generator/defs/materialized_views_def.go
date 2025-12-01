@@ -25,12 +25,10 @@ var materializedViewRowAccessPolicy = g.NewQueryStruct("MaterializedViewRowAcces
 var materializedViewClusterByExpression = g.NewQueryStruct("MaterializedViewClusterByExpression").
 	Text("Name", g.KeywordOptions().DoubleQuotes().Required())
 
-var materializedViewClusterBy = func() *g.QueryStruct {
-	return g.NewQueryStruct("MaterializedViewClusterBy").
-		SQL("CLUSTER BY").
-		ListQueryStructField("Expressions", materializedViewClusterByExpression, g.ListOptions().Parentheses()).
-		WithValidation(g.ValidateValueSet, "Expressions")
-}
+var materializedViewClusterBy = g.NewQueryStruct("MaterializedViewClusterBy").
+	SQL("CLUSTER BY").
+	ListQueryStructField("Expressions", materializedViewClusterByExpression, g.ListOptions().Parentheses()).
+	WithValidation(g.ValidateValueSet, "Expressions")
 
 var materializedViewSet = g.NewQueryStruct("MaterializedViewSet").
 	OptionalSQL("SECURE").
@@ -136,7 +134,7 @@ var materializedViewsDef = g.NewInterface(
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalQueryStructField("RowAccessPolicy", materializedViewRowAccessPolicy, g.KeywordOptions()).
 			OptionalTags().
-			OptionalQueryStructField("ClusterBy", materializedViewClusterBy(), g.KeywordOptions()).
+			OptionalQueryStructField("ClusterBy", materializedViewClusterBy, g.KeywordOptions()).
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
 			WithValidation(g.ValidIdentifier, "name").
@@ -149,7 +147,7 @@ var materializedViewsDef = g.NewInterface(
 			SQL("MATERIALIZED VIEW").
 			Name().
 			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
-			OptionalQueryStructField("ClusterBy", materializedViewClusterBy(), g.KeywordOptions()).
+			OptionalQueryStructField("ClusterBy", materializedViewClusterBy, g.KeywordOptions()).
 			OptionalSQL("DROP CLUSTERING KEY").
 			OptionalSQL("SUSPEND RECLUSTER").
 			OptionalSQL("RESUME RECLUSTER").
