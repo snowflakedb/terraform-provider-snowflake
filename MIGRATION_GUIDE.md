@@ -24,6 +24,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.11.x ➞ v2.12.0
+
+### *(new feature)* Added serverless task parameters
+Added support for new serverless task parameters:
+- `target_completion_interval` - Specifies the target completion interval for serverless tasks
+- `serverless_task_min_statement_size` - Minimum statement size for serverless tasks
+- `serverless_task_max_statement_size` - Maximum statement size for serverless tasks
+
+These parameters are available in the `snowflake_task` resource for serverless task configurations.
+
+No changes in configuration are required for existing tasks. You can optionally update your configurations to use these new parameters.
+
 ## v2.10.x ➞ v2.11.0
 
 ### *(new feature)* snowflake_notebook
@@ -319,7 +331,7 @@ Configuring this field is still possible, but only with disabled 2025_06.
 This object supports renaming. It was also available in the provider, but did not work correctly due to a bug in name parsing. This has been fixed.
 
 #### Changes in output fields
-We adjusted the `show_output` by adding the missing `kind` field.
+We adjusted the `show_output` by adding the missing `kind` field. Also, we adjusted the `describe_output` by adding the missing `mfa_policy`, `pat_policy`, and `workload_identity_policy` fields.
 
 The state is migrated automatically.
 
@@ -337,23 +349,8 @@ See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-authen
 This feature will be marked as a stable feature in future releases.
 Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_authentication_policies_datasource` to `preview_features_enabled` field in the provider configuration.
 
-### *(new feature)* snowflake_semantic_view resource
-Added a new preview resource for managing semantic views. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view). You can read about the resources' limitations in the documentation in the registry.
-
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_semantic_view_resource` to `preview_features_enabled` field in the provider configuration.
-
 ### *(new feature)* New instance families in the compute_pool resource
 Added missing instance families that are available in Snowflake: `CPU_X64_SL`, `GPU_GCP_NV_L4_1_24G`, `GPU_GCP_NV_L4_4_24G`, and `GPU_GCP_NV_A100_8_40G`.
-
-### *(new feature)* Added serverless task parameters
-Added support for new serverless task parameters:
-- `target_completion_interval` - Specifies the target completion interval for serverless tasks
-- `serverless_task_min_statement_size` - Minimum statement size for serverless tasks
-- `serverless_task_max_statement_size` - Maximum statement size for serverless tasks
-
-These parameters are available in the `snowflake_task` resource for serverless task configurations.
-
-No changes in configuration are required for existing tasks. You can optionally update your configurations to use these new parameters.
 
 ### *(new experiment)* Improved show query for warehouses
 
