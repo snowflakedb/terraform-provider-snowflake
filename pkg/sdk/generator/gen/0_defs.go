@@ -75,6 +75,8 @@ func preprocessDefinition(definition *Interface) {
 	}
 }
 
+// deepCopyFieldHierarchy is a temporary workaround to have correct hierarchies when reusing the nested definitions.
+// It should be removed with the definition-model separation.
 func deepCopyFieldHierarchy(field *Field) *Field {
 	newField := *field
 	if field.Fields != nil && len(field.Fields) > 0 {
@@ -91,7 +93,7 @@ func deepCopyFieldHierarchy(field *Field) *Field {
 func setParent(field *Field) {
 	for idx, f := range field.Fields {
 		if f.Parent != nil {
-			log.Panicf("Field %s already has a parent\nold parent: %s (path: %s)\nnew parent: %s (path: %s);\n\nit is caused by the current incorrect implementation of nested fields;\nreuse the common definition by wrapping it in function invocation", f.Name, f.Parent.KindNoPtr(), f.Parent.PathWithRoot(), field.Name, field.PathWithRoot())
+			log.Panicf("Field %s already has a parent\nold parent: %s (path: %s)\nnew parent: %s (path: %s);\n\nit is caused by the current incorrect implementation of nested fields;\nthis should not happen as fields hierarchy is temporarily deep copied before the generation\nif it happens, reuse the common definition by wrapping it in function invocation and ivestigate what the cause is", f.Name, f.Parent.KindNoPtr(), f.Parent.PathWithRoot(), field.Name, field.PathWithRoot())
 		}
 		(&(field.Fields[idx])).Parent = field
 		setParent(&(field.Fields[idx]))
