@@ -17,20 +17,10 @@ func MapWarehouseToModel(warehouse WarehouseRepresentation) (accconfig.ResourceM
 	resourceId := NormalizeResourceId(fmt.Sprintf("warehouse_%s", warehouseId.FullyQualifiedName()))
 	resourceModel := model.Warehouse(resourceId, warehouse.Name)
 
-	handleOptionalFieldWithStringBuilder(warehouse.Comment, resourceModel.WithComment)
-	handleOptionalFieldWithStringBuilder(warehouse.AutoResume, resourceModel.WithAutoResume)
-	handleOptionalFieldWithBuilder(warehouse.AutoSuspend, resourceModel.WithAutoSuspend)
-	handleOptionalFieldWithStringBuilder(warehouse.EnableQueryAcceleration, resourceModel.WithEnableQueryAcceleration)
-	handleOptionalFieldWithBuilder(warehouse.Generation, resourceModel.WithGeneration)
-	handleOptionalFieldWithBuilder(warehouse.InitiallySuspended, resourceModel.WithInitiallySuspended)
-	handleOptionalFieldWithBuilder(warehouse.MaxClusterCount, resourceModel.WithMaxClusterCount)
-	handleOptionalFieldWithBuilder(warehouse.MinClusterCount, resourceModel.WithMinClusterCount)
-	handleOptionalFieldWithBuilder(warehouse.QueryAccelerationMaxScaleFactor, resourceModel.WithQueryAccelerationMaxScaleFactor)
-	handleOptionalFieldWithBuilder(warehouse.ResourceConstraint, resourceModel.WithResourceConstraint)
-	handleOptionalFieldWithBuilder(warehouse.ResourceMonitor, resourceModel.WithResourceMonitor)
-	handleOptionalFieldWithBuilder(warehouse.ScalingPolicy, resourceModel.WithScalingPolicy)
-	handleOptionalFieldWithBuilder(warehouse.WarehouseSize, resourceModel.WithWarehouseSize)
-	handleOptionalFieldWithBuilder(warehouse.WarehouseType, resourceModel.WithWarehouseType)
+	handleIfNotEmpty(warehouse.Comment, resourceModel.WithComment)
+	handleOptionalFieldWithBuilder(warehouse.MaxConcurrencyLevel, resourceModel.WithMaxConcurrencyLevel)
+	handleOptionalFieldWithBuilder(warehouse.StatementQueuedTimeoutInSeconds, resourceModel.WithStatementQueuedTimeoutInSeconds)
+	handleOptionalFieldWithBuilder(warehouse.StatementTimeoutInSeconds, resourceModel.WithStatementTimeoutInSeconds)
 
 	importModel := NewImportModel(
 		resourceModel.ResourceReference(),
