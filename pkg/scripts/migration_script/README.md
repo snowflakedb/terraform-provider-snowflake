@@ -85,7 +85,6 @@ where script options are:
       To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like `"comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...`
       When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "ACCOUNT".
       For more details about using multiple sources, visit [Multiple sources section](#multiple-sources).
-      Warning: currently secondary warehouses and shared warehouses are treated as plain warehouses.
       Supported resources:
         - snowflake_warehouse
 - **INPUT**:
