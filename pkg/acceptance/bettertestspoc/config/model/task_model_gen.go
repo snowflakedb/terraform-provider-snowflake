@@ -408,10 +408,7 @@ func (t *TaskModel) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures 
 	return t
 }
 
-func (t *TaskModel) WithTargetCompletionInterval(targetCompletionInterval string) *TaskModel {
-	t.TargetCompletionInterval = tfconfig.StringVariable(targetCompletionInterval)
-	return t
-}
+// target_completion_interval attribute type is not yet supported, so WithTargetCompletionInterval can't be generated
 
 func (t *TaskModel) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) *TaskModel {
 	t.TaskAutoRetryAttempts = tfconfig.IntegerVariable(taskAutoRetryAttempts)

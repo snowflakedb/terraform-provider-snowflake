@@ -661,11 +661,6 @@ func (t *TaskResourceAssert) HasNoSuspendTaskAfterNumFailures() *TaskResourceAss
 	return t
 }
 
-func (t *TaskResourceAssert) HasNoTargetCompletionInterval() *TaskResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("target_completion_interval"))
-	return t
-}
-
 func (t *TaskResourceAssert) HasNoTaskAutoRetryAttempts() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("task_auto_retry_attempts"))
 	return t
@@ -1021,7 +1016,7 @@ func (t *TaskResourceAssert) HasSuspendTaskAfterNumFailuresEmpty() *TaskResource
 }
 
 func (t *TaskResourceAssert) HasTargetCompletionIntervalEmpty() *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("target_completion_interval", ""))
+	t.AddAssertion(assert.ValueSet("target_completion_interval.#", "0"))
 	return t
 }
 
@@ -1391,11 +1386,6 @@ func (t *TaskResourceAssert) HasStrictJsonOutputNotEmpty() *TaskResourceAssert {
 
 func (t *TaskResourceAssert) HasSuspendTaskAfterNumFailuresNotEmpty() *TaskResourceAssert {
 	t.AddAssertion(assert.ValuePresent("suspend_task_after_num_failures"))
-	return t
-}
-
-func (t *TaskResourceAssert) HasTargetCompletionIntervalNotEmpty() *TaskResourceAssert {
-	t.AddAssertion(assert.ValuePresent("target_completion_interval"))
 	return t
 }
 

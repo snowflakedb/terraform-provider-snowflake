@@ -222,6 +222,16 @@ func (t *TaskResourceParametersAssert) HasSearchPath(expected string) *TaskResou
 	return t
 }
 
+func (t *TaskResourceParametersAssert) HasServerlessTaskMaxStatementSize(expected string) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasServerlessTaskMinStatementSize(expected string) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
+	return t
+}
+
 func (t *TaskResourceParametersAssert) HasStatementQueuedTimeoutInSeconds(expected int) *TaskResourceParametersAssert {
 	t.AddAssertion(assert.ResourceParameterIntValueSet(sdk.TaskParameterStatementQueuedTimeoutInSeconds, expected))
 	return t
@@ -513,6 +523,16 @@ func (t *TaskResourceParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.P
 
 func (t *TaskResourceParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
 	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterSearchPath, expected))
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasServerlessTaskMaxStatementSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
+	return t
+}
+
+func (t *TaskResourceParametersAssert) HasServerlessTaskMinStatementSizeLevel(expected sdk.ParameterType) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterLevelSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
 	return t
 }
 

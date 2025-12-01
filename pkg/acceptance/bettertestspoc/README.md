@@ -90,7 +90,7 @@ func (w *WarehouseAssert) HasStateOneOf(expected ...sdk.WarehouseState) *Warehou
 
 ### Adding new Snowflake object parameters assertions
 Snowflake object parameters assertions can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/main/main.go`
+- add object you want to generate to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/object_parameters_def.go`
 - make sure that test helper method `acc.TestClient().Parameter.ShowAbcParameters` exists in `/pkg/acceptance/helpers/parameter_client.go`
 - to add custom (not generated) assertions create file `abc_parameters_snowflake_ext.go` in the `objectparametersassert` package. Example would be:
 ```go
