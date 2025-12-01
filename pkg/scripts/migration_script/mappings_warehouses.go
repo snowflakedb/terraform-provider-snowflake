@@ -9,14 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// Default warehouse values
-const (
-	defaultAutoSuspend                     = 600
-	defaultMinClusterCount                 = 1
-	defaultMaxClusterCount                 = 1
-	defaultQueryAccelerationMaxScaleFactor = 8
-)
-
 func HandleWarehouses(config *Config, csvInput [][]string) (string, error) {
 	return HandleResources[WarehouseCsvRow, WarehouseRepresentation](config, csvInput, MapWarehouseToModel)
 }
@@ -26,46 +18,25 @@ func MapWarehouseToModel(warehouse WarehouseRepresentation) (accconfig.ResourceM
 	resourceId := NormalizeResourceId(fmt.Sprintf("warehouse_%s", warehouseId.FullyQualifiedName()))
 	resourceModel := model.Warehouse(resourceId, warehouse.Name)
 
-	handleIfNotEmpty(warehouse.Comment, resourceModel.WithComment)
-
-	if warehouse.Type != sdk.WarehouseTypeStandard {
-		resourceModel.WithWarehouseTypeEnum(warehouse.Type)
-	}
-
-	if warehouse.Size != sdk.WarehouseSizeXSmall {
-		resourceModel.WithWarehouseSizeEnum(warehouse.Size)
-	}
-
-	if warehouse.AutoSuspend != defaultAutoSuspend {
-		resourceModel.WithAutoSuspend(warehouse.AutoSuspend)
-	}
-
-	if !warehouse.AutoResume {
+	// always include fields with default values
+	if warehouse.AutoResume {
+		resourceModel.WithAutoResume(r.BooleanTrue)
+	} else {
 		resourceModel.WithAutoResume(r.BooleanFalse)
 	}
+	resourceModel.WithWarehouseTypeEnum(warehouse.Type)
+	resourceModel.WithWarehouseSizeEnum(warehouse.Size)
+	resourceModel.WithScalingPolicyEnum(warehouse.ScalingPolicy)
+	resourceModel.WithAutoSuspend(warehouse.AutoSuspend)
+	resourceModel.WithMinClusterCount(warehouse.MinClusterCount)
+	resourceModel.WithMaxClusterCount(warehouse.MaxClusterCount)
+	resourceModel.WithQueryAccelerationMaxScaleFactor(warehouse.QueryAccelerationMaxScaleFactor)
 
-	if warehouse.MinClusterCount != defaultMinClusterCount {
-		resourceModel.WithMinClusterCount(warehouse.MinClusterCount)
-	}
-	if warehouse.MaxClusterCount != defaultMaxClusterCount {
-		resourceModel.WithMaxClusterCount(warehouse.MaxClusterCount)
-	}
-
-	if warehouse.ScalingPolicy != sdk.ScalingPolicyStandard {
-		resourceModel.WithScalingPolicyEnum(warehouse.ScalingPolicy)
-	}
-
-	if warehouse.EnableQueryAcceleration {
-		resourceModel.WithEnableQueryAcceleration(r.BooleanTrue)
-	}
-
-	if warehouse.QueryAccelerationMaxScaleFactor != defaultQueryAccelerationMaxScaleFactor {
-		resourceModel.WithQueryAccelerationMaxScaleFactor(warehouse.QueryAccelerationMaxScaleFactor)
-	}
-
-	if warehouse.ResourceMonitor.Name() != "" {
-		resourceModel.WithResourceMonitor(warehouse.ResourceMonitor.Name())
-	}
+	handleIfNotEmpty(warehouse.Comment, resourceModel.WithComment)
+	handleIf(warehouse.EnableQueryAcceleration, resourceModel.WithEnableQueryAcceleration)
+	handleIfNotEmpty(warehouse.ResourceMonitor.Name(), resourceModel.WithResourceMonitor)
+	handleOptionalFieldWithBuilder(warehouse.Generation, resourceModel.WithGenerationEnum)
+	handleOptionalFieldWithBuilder(warehouse.ResourceConstraint, resourceModel.WithResourceConstraintEnum)
 
 	handleOptionalFieldWithBuilder(warehouse.MaxConcurrencyLevel, resourceModel.WithMaxConcurrencyLevel)
 	handleOptionalFieldWithBuilder(warehouse.StatementQueuedTimeoutInSeconds, resourceModel.WithStatementQueuedTimeoutInSeconds)

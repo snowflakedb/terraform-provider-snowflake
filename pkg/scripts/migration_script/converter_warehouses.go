@@ -96,6 +96,15 @@ func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
 		},
 	}
 
+	if row.Generation != "" {
+		generation := sdk.WarehouseGeneration(row.Generation)
+		warehouseRepresentation.Generation = &generation
+	}
+	if row.ResourceConstraint != "" {
+		resourceConstraint := sdk.WarehouseResourceConstraint(row.ResourceConstraint)
+		warehouseRepresentation.ResourceConstraint = &resourceConstraint
+	}
+
 	handler := newParameterHandler(sdk.ParameterTypeWarehouse)
 	errs := errors.Join(
 		handler.handleIntegerParameter(sdk.ParameterType(row.MaxConcurrencyLevelLevel), row.MaxConcurrencyLevelValue, &warehouseRepresentation.MaxConcurrencyLevel),

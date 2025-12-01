@@ -245,37 +245,64 @@ import {
 			args: []string{"cmd", "-import=block", "warehouses"},
 			input: `
 "auto_resume","auto_suspend","available","comment","created_on","enable_query_acceleration","generation","is_current","is_default","max_cluster_count","min_cluster_count","name","other","owner","owner_role_type","provisioning","query_acceleration_max_scale_factor","queued","quiescing","resource_constraint","resource_monitor","resumed_on","running","scaling_policy","size","started_clusters","state","type","updated_on","max_concurrency_level_level","max_concurrency_level_value","statement_queued_timeout_in_seconds_level","statement_queued_timeout_in_seconds_value","statement_timeout_in_seconds_level","statement_timeout_in_seconds_value"
-"true","600","71.43","","2024-06-06 00:00:00.000 +0000 UTC","false","","false","false","3","1","WH_BASIC","0","ADMIN","ROLE","0","0","1","0","","","2024-06-06 12:00:00.000 +0000 UTC","5","ECONOMY","XSMALL","2","AVAILABLE","STANDARD","2024-06-06 00:00:00.000 +0000 UTC","","","","","",""
-"true","450","80.00","Production warehouse","2024-06-06 00:00:00.000 +0000 UTC","true","1","false","false","4","1","WH_PROD","0","ADMIN","ROLE","0","30","1","0","MEMORY_2X","MONITOR1","2024-06-06 12:00:00.000 +0000 UTC","3","CLASSIC","MEDIUM","1","SUSPENDED","SNOWPARK-OPTIMIZED","2024-06-06 00:00:00.000 +0000 UTC","WAREHOUSE","10","WAREHOUSE","600","WAREHOUSE","300"`,
+"true","600","100","","2024-06-06 00:00:00.000 +0000 UTC","false","","false","false","1","1","WH_BASIC","0","ADMIN","ROLE","0","8","0","0","","","2024-06-06 12:00:00.000 +0000 UTC","0","STANDARD","XSMALL","1","AVAILABLE","STANDARD","2024-06-06 00:00:00.000 +0000 UTC","","","","","",""
+"false","1200","80.00","Production warehouse with all fields","2024-06-06 00:00:00.000 +0000 UTC","true","","false","false","4","2","WH_COMPLETE","0","ADMIN","ROLE","0","16","1","0","MEMORY_16X","MONITOR1","2024-06-06 12:00:00.000 +0000 UTC","3","ECONOMY","MEDIUM","1","SUSPENDED","SNOWPARK-OPTIMIZED","2024-06-06 00:00:00.000 +0000 UTC","WAREHOUSE","8","WAREHOUSE","300","WAREHOUSE","86400"
+"true","600","100","Gen2 warehouse","2024-06-06 00:00:00.000 +0000 UTC","false","2","false","false","1","1","WH_GEN2","0","ADMIN","ROLE","0","8","0","0","","","2024-06-06 12:00:00.000 +0000 UTC","0","STANDARD","LARGE","1","AVAILABLE","STANDARD","2024-06-06 00:00:00.000 +0000 UTC","","","","","",""`,
 			expectedOutput: `resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_BASIC" {
   name = "WH_BASIC"
-  max_cluster_count = 3
-  query_acceleration_max_scale_factor = 0
-  scaling_policy = "ECONOMY"
+  auto_resume = "true"
+  auto_suspend = 600
+  max_cluster_count = 1
+  min_cluster_count = 1
+  query_acceleration_max_scale_factor = 8
+  scaling_policy = "STANDARD"
+  warehouse_size = "XSMALL"
+  warehouse_type = "STANDARD"
 }
 
-resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_PROD" {
-  name = "WH_PROD"
-  auto_suspend = 450
-  comment = "Production warehouse"
+resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_COMPLETE" {
+  name = "WH_COMPLETE"
+  auto_resume = "false"
+  auto_suspend = 1200
+  comment = "Production warehouse with all fields"
   enable_query_acceleration = "true"
   max_cluster_count = 4
-  max_concurrency_level = 10
-  query_acceleration_max_scale_factor = 30
+  max_concurrency_level = 8
+  min_cluster_count = 2
+  query_acceleration_max_scale_factor = 16
+  resource_constraint = "MEMORY_16X"
   resource_monitor = "MONITOR1"
-  scaling_policy = "CLASSIC"
-  statement_queued_timeout_in_seconds = 600
-  statement_timeout_in_seconds = 300
+  scaling_policy = "ECONOMY"
+  statement_queued_timeout_in_seconds = 300
+  statement_timeout_in_seconds = 86400
   warehouse_size = "MEDIUM"
   warehouse_type = "SNOWPARK-OPTIMIZED"
+}
+
+resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_GEN2" {
+  name = "WH_GEN2"
+  auto_resume = "true"
+  auto_suspend = 600
+  comment = "Gen2 warehouse"
+  generation = "2"
+  max_cluster_count = 1
+  min_cluster_count = 1
+  query_acceleration_max_scale_factor = 8
+  scaling_policy = "STANDARD"
+  warehouse_size = "LARGE"
+  warehouse_type = "STANDARD"
 }
 import {
   to = snowflake_warehouse.snowflake_generated_warehouse_WH_BASIC
   id = "\"WH_BASIC\""
 }
 import {
-  to = snowflake_warehouse.snowflake_generated_warehouse_WH_PROD
-  id = "\"WH_PROD\""
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_COMPLETE
+  id = "\"WH_COMPLETE\""
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_GEN2
+  id = "\"WH_GEN2\""
 }
 `,
 		},
