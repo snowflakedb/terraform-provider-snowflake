@@ -3,23 +3,22 @@ package main
 import (
 	"strconv"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func handleOptionalFieldWithBuilder[T any](parameter *T, builder func(T) *model.SchemaModel) {
+func handleOptionalFieldWithBuilder[T any, U any](parameter *T, builder func(T) *U) {
 	if parameter != nil {
 		builder(*parameter)
 	}
 }
 
-func handleIfNotEmpty(value string, builder func(string) *model.SchemaModel) {
+func handleIfNotEmpty[T any](value string, builder func(string) *T) {
 	if value != "" {
 		builder(value)
 	}
 }
 
-func handleIf(condition bool, builder func(string) *model.SchemaModel) {
+func handleIf[T any](condition bool, builder func(string) *T) {
 	if condition {
 		builder("true")
 	}

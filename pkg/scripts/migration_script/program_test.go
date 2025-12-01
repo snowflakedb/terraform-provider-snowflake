@@ -52,11 +52,18 @@ object_type represents the type of Snowflake object you want to generate terrafo
 				- grants on 'future' or on 'all' objects are not supported
 				- all_privileges and always_apply fields are not supported
 		- "schemas" which expects a converted CSV output from the snowflake_schemas data source
-			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMA output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMAS output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
 			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "SCHEMA".
-			For more details about using multiple sources, visit https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_schema
+		- "databases" which expects a converted CSV output from the snowflake_databases data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Warning: currently secondary databases and shared databases are treated as plain databases.
+			Supported resources:
+				- snowflake_database
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -182,6 +189,48 @@ import {
 import {
   to = snowflake_schema.snowflake_generated_schema_DATABASE_COMPLETE
   id = "\"DATABASE\".\"COMPLETE\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for databases",
+			args: []string{"cmd", "-import=block", "databases"},
+			input: `
+"comment","created_on","dropped_on","is_current","is_default","kind","name","options","origin","owner","owner_role_type","resource_group","retention_time","catalog_level","catalog_value","data_retention_time_in_days_level","data_retention_time_in_days_value","default_ddl_collation_level","default_ddl_collation_value","enable_console_output_level","enable_console_output_value","external_volume_level","external_volume_value","log_level_level","log_level_value","max_data_extension_time_in_days_level","max_data_extension_time_in_days_value","quoted_identifiers_ignore_case_level","quoted_identifiers_ignore_case_value","replace_invalid_characters_level","replace_invalid_characters_value","storage_serialization_policy_level","storage_serialization_policy_value","suspend_task_after_num_failures_level","suspend_task_after_num_failures_value","task_auto_retry_attempts_level","task_auto_retry_attempts_value","trace_level_level","trace_level_value","user_task_managed_initial_warehouse_size_level","user_task_managed_initial_warehouse_size_value","user_task_minimum_trigger_interval_in_seconds_level","user_task_minimum_trigger_interval_in_seconds_value","user_task_timeout_ms_level","user_task_timeout_ms_value"
+"","2025-11-20 04:53:26.906 -0800 PST","0001-01-01 00:00:00 +0000 UTC","false","false","STANDARD","BASIC","","","ACCOUNTADMIN","ROLE","","1","","","","1","","","","false","","","","OFF","","14","","false","","false","","OPTIMIZED","","10","","0","","OFF","","Medium","","30","","3600000"
+"comment","2025-11-20 04:53:25.625 -0800 PST","0001-01-01 00:00:00 +0000 UTC","true","true","STANDARD","COMPLETE","TRANSIENT","","ACCOUNTADMIN","ROLE","","1","DATABASE","CATALOG","DATABASE","1","DATABASE","en_US-trim","DATABASE","true","DATABASE","EXTERNAL_VOLUME","DATABASE","INFO","DATABASE","10","DATABASE","true","DATABASE","true","DATABASE","COMPATIBLE","DATABASE","10","DATABASE","10","DATABASE","PROPAGATE","DATABASE","MEDIUM","DATABASE","30","DATABASE","3600000"`,
+			expectedOutput: `resource "snowflake_database" "snowflake_generated_database_BASIC" {
+  name = "BASIC"
+}
+
+resource "snowflake_database" "snowflake_generated_database_COMPLETE" {
+  name = "COMPLETE"
+  catalog = "CATALOG"
+  comment = "comment"
+  data_retention_time_in_days = 1
+  default_ddl_collation = "en_US-trim"
+  enable_console_output = true
+  external_volume = "EXTERNAL_VOLUME"
+  is_transient = true
+  log_level = "INFO"
+  max_data_extension_time_in_days = 10
+  quoted_identifiers_ignore_case = true
+  replace_invalid_characters = true
+  storage_serialization_policy = "COMPATIBLE"
+  suspend_task_after_num_failures = 10
+  task_auto_retry_attempts = 10
+  trace_level = "PROPAGATE"
+  user_task_managed_initial_warehouse_size = "MEDIUM"
+  user_task_minimum_trigger_interval_in_seconds = 30
+  user_task_timeout_ms = 3600000
+}
+import {
+  to = snowflake_database.snowflake_generated_database_BASIC
+  id = "\"BASIC\""
+}
+import {
+  to = snowflake_database.snowflake_generated_database_COMPLETE
+  id = "\"COMPLETE\""
 }
 `,
 		},

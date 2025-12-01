@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 )
 
@@ -45,9 +44,6 @@ func main() {
 
 	// Write test results
 	for _, result := range testResults {
-		if result.Action == "output" {
-			log.Print(result.Output)
-		}
 		if result.Test != "" && (result.Action == "pass" || result.Action == "fail") {
 			record := []string{
 				result.Package,
