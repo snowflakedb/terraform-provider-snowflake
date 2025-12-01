@@ -113,20 +113,6 @@ func (s *CreateTaskRequest) WithWhen(when string) *CreateTaskRequest {
 	return s
 }
 
-func NewCreateTaskWarehouseRequest() *CreateTaskWarehouseRequest {
-	return &CreateTaskWarehouseRequest{}
-}
-
-func (s *CreateTaskWarehouseRequest) WithWarehouse(warehouse AccountObjectIdentifier) *CreateTaskWarehouseRequest {
-	s.Warehouse = &warehouse
-	return s
-}
-
-func (s *CreateTaskWarehouseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateTaskWarehouseRequest {
-	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
-	return s
-}
-
 func NewCreateOrAlterTaskRequest(
 	name SchemaObjectIdentifier,
 	sql string,
@@ -366,8 +352,18 @@ func (s *TaskSetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskMin
 	return s
 }
 
-func (s *TaskSetRequest) WithTargetCompletionInterval(TargetCompletionInterval string) *TaskSetRequest {
-	s.TargetCompletionInterval = &TargetCompletionInterval
+func (s *TaskSetRequest) WithTargetCompletionInterval(targetCompletionInterval string) *TaskSetRequest {
+	s.TargetCompletionInterval = &targetCompletionInterval
+	return s
+}
+
+func (s *TaskSetRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize WarehouseSize) *TaskSetRequest {
+	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
+	return s
+}
+
+func (s *TaskSetRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize WarehouseSize) *TaskSetRequest {
+	s.ServerlessTaskMaxStatementSize = &serverlessTaskMaxStatementSize
 	return s
 }
 
@@ -433,6 +429,16 @@ func (s *TaskUnsetRequest) WithUserTaskMinimumTriggerIntervalInSeconds(userTaskM
 
 func (s *TaskUnsetRequest) WithTargetCompletionInterval(targetCompletionInterval bool) *TaskUnsetRequest {
 	s.TargetCompletionInterval = &targetCompletionInterval
+	return s
+}
+
+func (s *TaskUnsetRequest) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize bool) *TaskUnsetRequest {
+	s.ServerlessTaskMinStatementSize = &serverlessTaskMinStatementSize
+	return s
+}
+
+func (s *TaskUnsetRequest) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize bool) *TaskUnsetRequest {
+	s.ServerlessTaskMaxStatementSize = &serverlessTaskMaxStatementSize
 	return s
 }
 

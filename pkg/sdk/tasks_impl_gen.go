@@ -202,6 +202,8 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			TaskAutoRetryAttempts:                   r.Set.TaskAutoRetryAttempts,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Set.UserTaskMinimumTriggerIntervalInSeconds,
 			TargetCompletionInterval:                r.Set.TargetCompletionInterval,
+			ServerlessTaskMinStatementSize:          r.Set.ServerlessTaskMinStatementSize,
+			ServerlessTaskMaxStatementSize:          r.Set.ServerlessTaskMaxStatementSize,
 		}
 		// added manually
 		if r.Set.Config != nil {
@@ -222,6 +224,8 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			TaskAutoRetryAttempts:                   r.Unset.TaskAutoRetryAttempts,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Unset.UserTaskMinimumTriggerIntervalInSeconds,
 			TargetCompletionInterval:                r.Unset.TargetCompletionInterval,
+			ServerlessTaskMinStatementSize:          r.Unset.ServerlessTaskMinStatementSize,
+			ServerlessTaskMaxStatementSize:          r.Unset.ServerlessTaskMaxStatementSize,
 			SessionParametersUnset:                  r.Unset.SessionParametersUnset,
 		}
 	}
@@ -328,6 +332,9 @@ func (r taskDBRow) convert() (*Task, error) {
 	}
 	if r.LastSuspendedReason.Valid {
 		task.LastSuspendedReason = r.LastSuspendedReason.String
+	}
+	if r.TargetCompletionInterval.Valid {
+		task.TargetCompletionInterval = r.TargetCompletionInterval.String
 	}
 	return &task, nil
 }

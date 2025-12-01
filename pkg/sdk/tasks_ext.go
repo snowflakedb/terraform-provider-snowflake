@@ -150,6 +150,20 @@ type CreateTaskWarehouseRequest struct {
 	UserTaskManagedInitialWarehouseSize *WarehouseSize
 }
 
+func NewCreateTaskWarehouseRequest() *CreateTaskWarehouseRequest {
+	return &CreateTaskWarehouseRequest{}
+}
+
+func (s *CreateTaskWarehouseRequest) WithWarehouse(warehouse AccountObjectIdentifier) *CreateTaskWarehouseRequest {
+	s.Warehouse = &warehouse
+	return s
+}
+
+func (s *CreateTaskWarehouseRequest) WithUserTaskManagedInitialWarehouseSize(userTaskManagedInitialWarehouseSize WarehouseSize) *CreateTaskWarehouseRequest {
+	s.UserTaskManagedInitialWarehouseSize = &userTaskManagedInitialWarehouseSize
+	return s
+}
+
 func (r *CreateTaskRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }

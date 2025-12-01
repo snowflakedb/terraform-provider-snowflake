@@ -290,7 +290,6 @@ func TestTasks_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errIntValue("SessionParameters", "JsonIndent", IntErrGreaterOrEqual, 0))
 	})
 
-	// validation adjusted manually to include TargetCompletionInterval and serverless task statement size fields
 	t.Run("validation: at least one of the fields [opts.Set.Warehouse opts.Set.UserTaskManagedInitialWarehouseSize opts.Set.Schedule opts.Set.Config opts.Set.AllowOverlappingExecution opts.Set.UserTaskTimeoutMs opts.Set.SuspendTaskAfterNumFailures opts.Set.ErrorIntegration opts.Set.Comment opts.Set.SessionParameters opts.Set.TaskAutoRetryAttempts opts.Set.UserTaskMinimumTriggerIntervalInSeconds opts.Set.TargetCompletionInterval opts.Set.ServerlessTaskMinStatementSize opts.Set.ServerlessTaskMaxStatementSize] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TaskSet{}
@@ -318,11 +317,10 @@ func TestTasks_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TaskUnset{}
 		opts.Unset.SessionParametersUnset = &SessionParametersUnset{}
-		// arror adjusted manually
+		// error adjusted manually
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
 	})
 
-	// validation adjusted manually to include TargetCompletionInterval and serverless task statement size fields
 	t.Run("validation: at least one of the fields [opts.Unset.Warehouse opts.Unset.UserTaskManagedInitialWarehouseSize opts.Unset.Schedule opts.Unset.Config opts.Unset.AllowOverlappingExecution opts.Unset.UserTaskTimeoutMs opts.Unset.SuspendTaskAfterNumFailures opts.Unset.ErrorIntegration opts.Unset.Comment opts.Unset.SessionParametersUnset opts.Unset.TaskAutoRetryAttempts opts.Unset.UserTaskMinimumTriggerIntervalInSeconds opts.Unset.TargetCompletionInterval opts.Unset.ServerlessTaskMinStatementSize opts.Unset.ServerlessTaskMaxStatementSize] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TaskUnset{}

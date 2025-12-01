@@ -97,6 +97,8 @@ type TaskSetRequest struct {
 	TaskAutoRetryAttempts                   *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
 	TargetCompletionInterval                *string
+	ServerlessTaskMinStatementSize          *WarehouseSize
+	ServerlessTaskMaxStatementSize          *WarehouseSize
 }
 
 type TaskUnsetRequest struct {
@@ -112,6 +114,8 @@ type TaskUnsetRequest struct {
 	TaskAutoRetryAttempts                   *bool
 	UserTaskMinimumTriggerIntervalInSeconds *bool
 	TargetCompletionInterval                *bool
+	ServerlessTaskMinStatementSize          *bool
+	ServerlessTaskMaxStatementSize          *bool
 	SessionParametersUnset                  *SessionParametersUnset
 }
 

@@ -195,6 +195,7 @@ type taskDBRow struct {
 	Budget                    sql.NullString `db:"budget"`
 	TaskRelations             string         `db:"task_relations"`
 	LastSuspendedReason       sql.NullString `db:"last_suspended_reason"`
+	TargetCompletionInterval  sql.NullString `db:"target_completion_interval"`
 }
 
 type Task struct {
@@ -220,6 +221,7 @@ type Task struct {
 	Budget                    string
 	TaskRelations             TaskRelations
 	LastSuspendedReason       string
+	TargetCompletionInterval  string
 }
 
 func (v *Task) ID() SchemaObjectIdentifier {
