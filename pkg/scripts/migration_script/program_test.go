@@ -66,7 +66,7 @@ object_type represents the type of Snowflake object you want to generate terrafo
 				- snowflake_database
 		- "warehouses" which expects a converted CSV output from the snowflake_warehouses data source
 			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like "comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...
-			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "ACCOUNT".
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
 			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_warehouse
@@ -249,14 +249,25 @@ import {
 "true","450","80.00","Production warehouse","2024-06-06 00:00:00.000 +0000 UTC","true","1","false","false","4","1","WH_PROD","0","ADMIN","ROLE","0","30","1","0","MEMORY_2X","MONITOR1","2024-06-06 12:00:00.000 +0000 UTC","3","CLASSIC","MEDIUM","1","SUSPENDED","SNOWPARK-OPTIMIZED","2024-06-06 00:00:00.000 +0000 UTC","WAREHOUSE","10","WAREHOUSE","600","WAREHOUSE","300"`,
 			expectedOutput: `resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_BASIC" {
   name = "WH_BASIC"
+  max_cluster_count = 3
+  query_acceleration_max_scale_factor = 0
+  scaling_policy = "ECONOMY"
 }
 
 resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_PROD" {
   name = "WH_PROD"
+  auto_suspend = 450
   comment = "Production warehouse"
+  enable_query_acceleration = "true"
+  max_cluster_count = 4
   max_concurrency_level = 10
+  query_acceleration_max_scale_factor = 30
+  resource_monitor = "MONITOR1"
+  scaling_policy = "CLASSIC"
   statement_queued_timeout_in_seconds = 600
   statement_timeout_in_seconds = 300
+  warehouse_size = "MEDIUM"
+  warehouse_type = "SNOWPARK-OPTIMIZED"
 }
 import {
   to = snowflake_warehouse.snowflake_generated_warehouse_WH_BASIC

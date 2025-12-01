@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -56,19 +57,42 @@ type WarehouseRepresentation struct {
 }
 
 func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
+	autoSuspend, err := strconv.Atoi(row.AutoSuspend)
+	if err != nil {
+		return nil, err
+	}
+	minClusterCount, err := strconv.Atoi(row.MinClusterCount)
+	if err != nil {
+		return nil, err
+	}
+	maxClusterCount, err := strconv.Atoi(row.MaxClusterCount)
+	if err != nil {
+		return nil, err
+	}
+	queryAccelerationMaxScaleFactor, err := strconv.Atoi(row.QueryAccelerationMaxScaleFactor)
+	if err != nil {
+		return nil, err
+	}
+
 	warehouseRepresentation := &WarehouseRepresentation{
 		Warehouse: sdk.Warehouse{
-			Name:                    row.Name,
-			IsCurrent:               row.IsCurrent == "Y",
-			IsDefault:               row.IsDefault == "Y",
-			Owner:                   row.Owner,
-			Comment:                 row.Comment,
-			Type:                    sdk.WarehouseType(row.Type),
-			Size:                    sdk.WarehouseSize(row.Size),
-			OwnerRoleType:           row.OwnerRoleType,
-			State:                   sdk.WarehouseState(row.State),
-			ScalingPolicy:           sdk.ScalingPolicy(row.ScalingPolicy),
-			EnableQueryAcceleration: row.EnableQueryAcceleration == "true",
+			Name:                            row.Name,
+			IsCurrent:                       row.IsCurrent == "Y",
+			IsDefault:                       row.IsDefault == "Y",
+			Owner:                           row.Owner,
+			Comment:                         row.Comment,
+			Type:                            sdk.WarehouseType(row.Type),
+			Size:                            sdk.WarehouseSize(row.Size),
+			OwnerRoleType:                   row.OwnerRoleType,
+			State:                           sdk.WarehouseState(row.State),
+			ScalingPolicy:                   sdk.ScalingPolicy(row.ScalingPolicy),
+			EnableQueryAcceleration:         row.EnableQueryAcceleration == "true",
+			AutoSuspend:                     autoSuspend,
+			AutoResume:                      row.AutoResume == "true",
+			MinClusterCount:                 minClusterCount,
+			MaxClusterCount:                 maxClusterCount,
+			QueryAccelerationMaxScaleFactor: queryAccelerationMaxScaleFactor,
+			ResourceMonitor:                 sdk.NewAccountObjectIdentifier(row.ResourceMonitor),
 		},
 	}
 

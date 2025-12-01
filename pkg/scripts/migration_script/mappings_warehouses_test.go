@@ -22,6 +22,9 @@ func TestHandleWarehousesMappings(t *testing.T) {
 			expectedOutput: `
 resource "snowflake_warehouse" "snowflake_generated_warehouse_WH1" {
   name = "WH1"
+  max_cluster_count = 3
+  query_acceleration_max_scale_factor = 0
+  scaling_policy = "ECONOMY"
 }
 import {
   to = snowflake_warehouse.snowflake_generated_warehouse_WH1
@@ -38,6 +41,9 @@ import {
 			expectedOutput: `
 resource "snowflake_warehouse" "snowflake_generated_warehouse_COMPUTE_WH" {
   name = "COMPUTE_WH"
+  max_cluster_count = 3
+  query_acceleration_max_scale_factor = 0
+  scaling_policy = "ECONOMY"
 }
 import {
   to = snowflake_warehouse.snowflake_generated_warehouse_COMPUTE_WH
@@ -54,10 +60,17 @@ import {
 			expectedOutput: `
 resource "snowflake_warehouse" "snowflake_generated_warehouse_PROD_WH" {
   name = "PROD_WH"
+  auto_suspend = 300
   comment = "Production warehouse"
+  enable_query_acceleration = "true"
+  max_cluster_count = 5
   max_concurrency_level = 10
+  min_cluster_count = 2
+  query_acceleration_max_scale_factor = 50
+  resource_monitor = "MONITOR1"
   statement_queued_timeout_in_seconds = 600
   statement_timeout_in_seconds = 300
+  warehouse_size = "LARGE"
 }
 import {
   to = snowflake_warehouse.snowflake_generated_warehouse_PROD_WH
@@ -74,7 +87,15 @@ import {
 			expectedOutput: `
 resource "snowflake_warehouse" "snowflake_generated_warehouse_TEST_WH" {
   name = "TEST_WH"
+  auto_suspend = 450
   comment = "Test warehouse"
+  enable_query_acceleration = "true"
+  max_cluster_count = 4
+  query_acceleration_max_scale_factor = 30
+  resource_monitor = "MONITOR2"
+  scaling_policy = "CLASSIC"
+  warehouse_size = "MEDIUM"
+  warehouse_type = "SNOWPARK-OPTIMIZED"
 }
 import {
   to = snowflake_warehouse.snowflake_generated_warehouse_TEST_WH
