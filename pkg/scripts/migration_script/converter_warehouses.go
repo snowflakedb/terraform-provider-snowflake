@@ -41,7 +41,7 @@ type WarehouseCsvRow struct {
 	State                                string `csv:"state"`
 	Suspended                            string `csv:"suspended"`
 	Type                                 string `csv:"type"`
-	UUID                                 string `csv:"u_u_i_d"`
+	UUID                                 string `csv:"uuid"`
 	UpdatedOn                            string `csv:"updated_on"`
 	AutoResumeLevel                      string `csv:"auto_resume_level"`
 	AutoResumeValue                      string `csv:"auto_resume_value"`
