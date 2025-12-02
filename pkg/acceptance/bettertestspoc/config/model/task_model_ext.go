@@ -128,3 +128,45 @@ func (t *TaskModel) WithMultipleSchedules() *TaskModel {
 		}),
 	)
 }
+
+func (t *TaskModel) WithTargetCompletionIntervalSeconds(seconds int) *TaskModel {
+	return t.WithTargetCompletionIntervalValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"seconds": tfconfig.IntegerVariable(seconds),
+		}),
+	)
+}
+
+func (t *TaskModel) WithTargetCompletionIntervalMinutes(minutes int) *TaskModel {
+	return t.WithTargetCompletionIntervalValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"minutes": tfconfig.IntegerVariable(minutes),
+		}),
+	)
+}
+
+func (t *TaskModel) WithTargetCompletionIntervalHours(hours int) *TaskModel {
+	return t.WithTargetCompletionIntervalValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"hours": tfconfig.IntegerVariable(hours),
+		}),
+	)
+}
+
+func (t *TaskModel) WithEmptyTargetCompletionInterval() *TaskModel {
+	return t.WithTargetCompletionIntervalValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+		}),
+	)
+}
+
+func (t *TaskModel) WithMultipleTargetCompletionIntervalValue() *TaskModel {
+	return t.WithTargetCompletionIntervalValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"hours":   tfconfig.IntegerVariable(1),
+			"minutes": tfconfig.IntegerVariable(1),
+			"seconds": tfconfig.IntegerVariable(1),
+		}),
+	)
+}

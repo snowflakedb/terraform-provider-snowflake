@@ -97,3 +97,28 @@ func (t *TaskShowOutputAssert) HasScheduleCron(cron string) *TaskShowOutputAsser
 	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("USING CRON %s", cron)))
 	return t
 }
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalEmpty() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", ""))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalSeconds(seconds int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d SECOND", seconds)))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalMinutes(minutes int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d MINUTE", minutes)))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalHours(hours int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d HOUR", hours)))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasWarehouseEmpty() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("warehouse", ""))
+	return t
+}

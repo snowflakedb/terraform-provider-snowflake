@@ -27,12 +27,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ## v2.11.x ➞ v2.12.0
 
 ### *(new feature)* Added serverless task parameters
-Added support for new serverless task parameters:
-- `target_completion_interval` - Specifies the target completion interval for serverless tasks
-- `serverless_task_min_statement_size` - Minimum statement size for serverless tasks
-- `serverless_task_max_statement_size` - Maximum statement size for serverless tasks
+Added support for new serverless task fields:
+- `target_completion_interval` - Specifies the target completion interval for serverless tasks; also added as a computed value to `show_output`.
+- `serverless_task_min_statement_size` (parameter) - Minimum statement size for serverless tasks; also added as a computed value to `parameters`.
+- `serverless_task_max_statement_size` (parameter) - Maximum statement size for serverless tasks; also added as a computed value to `parameters`.
 
-These parameters are available in the `snowflake_task` resource for serverless task configurations.
+These fields are available in the `snowflake_task` resource for serverless task configurations.
 
 No changes in configuration are required for existing tasks. You can optionally update your configurations to use these new parameters.
 
