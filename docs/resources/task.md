@@ -274,7 +274,7 @@ resource "snowflake_task" "test" {
 - `statement_timeout_in_seconds` (Number) Amount of time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system. For more information, check [STATEMENT_TIMEOUT_IN_SECONDS docs](https://docs.snowflake.com/en/sql-reference/parameters#statement-timeout-in-seconds).
 - `strict_json_output` (Boolean) This parameter specifies whether JSON output in a session is compatible with the general standard (as described by [http://json.org](http://json.org)). By design, Snowflake allows JSON input that contains non-standard values; however, these non-standard values might result in Snowflake outputting JSON that is incompatible with other platforms and languages. This parameter, when enabled, ensures that Snowflake outputs valid/compatible JSON. For more information, check [STRICT_JSON_OUTPUT docs](https://docs.snowflake.com/en/sql-reference/parameters#strict-json-output).
 - `suspend_task_after_num_failures` (Number) Specifies the number of consecutive failed task runs after which the current task is suspended automatically. The default is 0 (no automatic suspension). For more information, check [SUSPEND_TASK_AFTER_NUM_FAILURES docs](https://docs.snowflake.com/en/sql-reference/parameters#suspend-task-after-num-failures).
-- `target_completion_interval` (String) Specifies the target completion interval for tasks. Format: '<num> { HOURS | MINUTES | SECONDS }' (e.g., '10 MINUTES'). For more information, check [TARGET_COMPLETION_INTERVAL docs](https://docs.snowflake.com/en/sql-reference/parameters#target-completion-interval).
+- `target_completion_interval` (Block List, Max: 1) Specifies the target completion interval for tasks. This can be specified in hours, minutes, or seconds. (when set, one of the sub-fields `hours`, `minutes`, or `seconds` should be set) (see [below for nested schema](#nestedblock--target_completion_interval))
 - `task_auto_retry_attempts` (Number) Specifies the number of automatic task graph retry attempts. If any task graphs complete in a FAILED state, Snowflake can automatically retry the task graphs from the last task in the graph that failed. For more information, check [TASK_AUTO_RETRY_ATTEMPTS docs](https://docs.snowflake.com/en/sql-reference/parameters#task-auto-retry-attempts).
 - `time_input_format` (String) Specifies the input format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). Any valid, supported time format or AUTO (AUTO specifies that Snowflake attempts to automatically detect the format of times stored in the system during the session). For more information, check [TIME_INPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#time-input-format).
 - `time_output_format` (String) Specifies the display format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). For more information, check [TIME_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#time-output-format).
@@ -317,6 +317,16 @@ Optional:
 - `minutes` (Number) Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `hours`, and `using_cron`)
 - `seconds` (Number) Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `minutes`, `hours`, and `using_cron`)
 - `using_cron` (String) Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `seconds`, `minutes`, and `hours`)
+
+
+<a id="nestedblock--target_completion_interval"></a>
+### Nested Schema for `target_completion_interval`
+
+Optional:
+
+- `hours` (Number) Specifies the target completion interval in hours. (conflicts with `minutes` and `seconds`)
+- `minutes` (Number) Specifies the target completion interval in minutes. (conflicts with `hours` and `seconds`)
+- `seconds` (Number) Specifies the target completion interval in seconds. (conflicts with `hours` and `minutes`)
 
 
 <a id="nestedblock--timeouts"></a>
@@ -367,6 +377,8 @@ Read-Only:
 - `rows_per_resultset` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--rows_per_resultset))
 - `s3_stage_vpce_dns_name` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--s3_stage_vpce_dns_name))
 - `search_path` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--search_path))
+- `serverless_task_max_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--serverless_task_max_statement_size))
+- `serverless_task_min_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--serverless_task_min_statement_size))
 - `statement_queued_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--statement_queued_timeout_in_seconds))
 - `statement_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--statement_timeout_in_seconds))
 - `strict_json_output` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--strict_json_output))
@@ -768,6 +780,30 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--search_path"></a>
 ### Nested Schema for `parameters.search_path`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--serverless_task_max_statement_size"></a>
+### Nested Schema for `parameters.serverless_task_max_statement_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--serverless_task_min_statement_size"></a>
+### Nested Schema for `parameters.serverless_task_min_statement_size`
 
 Read-Only:
 
