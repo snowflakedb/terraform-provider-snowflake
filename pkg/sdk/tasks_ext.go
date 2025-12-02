@@ -269,14 +269,12 @@ func GetRootTasks(v Tasks, ctx context.Context, id SchemaObjectIdentifier) ([]Ta
 	return rootTasks, nil
 }
 
-// added manually
 type TargetCompletionInterval struct {
 	Hours   int
 	Minutes int
 	Seconds int
 }
 
-// added manually
 func ParseTargetCompletionInterval(interval string) (*TargetCompletionInterval, error) {
 	upperInterval := strings.ToUpper(interval)
 	parts := strings.Split(strings.TrimSpace(upperInterval), " ")

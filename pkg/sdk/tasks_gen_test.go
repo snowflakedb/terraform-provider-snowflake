@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTasks_Create(t *testing.T) {
@@ -702,6 +703,88 @@ func TestParseTaskSchedule(t *testing.T) {
 				assert.EqualValues(t, tc.ExpectedTaskSchedule, taskSchedule)
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+// added manually
+func TestParseTargetCompletionInterval(t *testing.T) {
+	valid := map[string]struct {
+		Input    string
+		Expected *TargetCompletionInterval
+	}{
+		"valid hours singular": {
+			Input:    "1 HOUR",
+			Expected: &TargetCompletionInterval{Hours: 1},
+		},
+		"valid hours plural": {
+			Input:    "2 HOURS",
+			Expected: &TargetCompletionInterval{Hours: 2},
+		},
+		"valid minutes singular": {
+			Input:    "1 MINUTE",
+			Expected: &TargetCompletionInterval{Minutes: 1},
+		},
+		"valid minutes plural": {
+			Input:    "10 MINUTES",
+			Expected: &TargetCompletionInterval{Minutes: 10},
+		},
+		"valid seconds singular": {
+			Input:    "1 SECOND",
+			Expected: &TargetCompletionInterval{Seconds: 1},
+		},
+		"valid seconds plural": {
+			Input:    "30 SECONDS",
+			Expected: &TargetCompletionInterval{Seconds: 30},
+		},
+		"valid lowercase": {
+			Input:    "5 minutes",
+			Expected: &TargetCompletionInterval{Minutes: 5},
+		},
+		"leading/trailing spaces": {
+			Input:    " 7 HOURS ",
+			Expected: &TargetCompletionInterval{Hours: 7},
+		},
+	}
+
+	for name, tc := range valid {
+		t.Run(name, func(t *testing.T) {
+			got, err := ParseTargetCompletionInterval(tc.Input)
+			require.NoError(t, err)
+			require.NotNil(t, got)
+			assert.Equal(t, tc.Expected, got)
+		})
+	}
+	invalid := map[string]struct {
+		Input string
+		Error string
+	}{
+		"invalid format: missing value": {
+			Input: "MINUTES",
+			Error: "invalid target completion interval format",
+		},
+		"invalid format: extra parts": {
+			Input: "1 HOURS EXTRA",
+			Error: "invalid target completion interval format",
+		},
+		"invalid value: not a number": {
+			Input: "foo HOURS",
+			Error: "invalid target completion interval value",
+		},
+		"invalid unit: nonsense": {
+			Input: "5 CATS",
+			Error: "invalid target completion interval unit",
+		},
+		"empty input": {
+			Input: "",
+			Error: "invalid target completion interval format",
+		},
+	}
+	for name, tc := range invalid {
+		t.Run(name, func(t *testing.T) {
+			got, err := ParseTargetCompletionInterval(tc.Input)
+			assert.Nil(t, got)
+			assert.ErrorContains(t, err, tc.Error)
 		})
 	}
 }
