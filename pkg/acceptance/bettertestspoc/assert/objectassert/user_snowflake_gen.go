@@ -339,3 +339,14 @@ func (u *UserAssert) HasHasMfa(expected bool) *UserAssert {
 	})
 	return u
 }
+
+func (u *UserAssert) HasHasWorkloadIdentity(expected bool) *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.HasWorkloadIdentity != expected {
+			return fmt.Errorf("expected has workload identity: %v; got: %v", expected, o.HasWorkloadIdentity)
+		}
+		return nil
+	})
+	return u
+}

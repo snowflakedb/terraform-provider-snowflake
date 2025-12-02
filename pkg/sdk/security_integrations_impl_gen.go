@@ -219,19 +219,16 @@ func (r *CreateExternalOauthSecurityIntegrationRequest) toOpts() *CreateExternal
 	}
 	if r.ExternalOauthBlockedRolesList != nil {
 		opts.ExternalOauthBlockedRolesList = &BlockedRolesList{
-			// adjusted manually
 			BlockedRolesList: r.ExternalOauthBlockedRolesList.BlockedRolesList,
 		}
 	}
 	if r.ExternalOauthAllowedRolesList != nil {
 		opts.ExternalOauthAllowedRolesList = &AllowedRolesList{
-			// adjusted manually
 			AllowedRolesList: r.ExternalOauthAllowedRolesList.AllowedRolesList,
 		}
 	}
 	if r.ExternalOauthAudienceList != nil {
 		opts.ExternalOauthAudienceList = &AudienceList{
-			// adjusted manually
 			AudienceList: r.ExternalOauthAudienceList.AudienceList,
 		}
 	}
@@ -253,7 +250,6 @@ func (r *CreateOauthForPartnerApplicationsSecurityIntegrationRequest) toOpts() *
 	}
 	if r.BlockedRolesList != nil {
 		opts.BlockedRolesList = &BlockedRolesList{
-			// adjusted manually
 			BlockedRolesList: r.BlockedRolesList.BlockedRolesList,
 		}
 	}
@@ -281,13 +277,11 @@ func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) toOpts() *Create
 	}
 	if r.PreAuthorizedRolesList != nil {
 		opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{
-			// adjusted manually
 			PreAuthorizedRolesList: r.PreAuthorizedRolesList.PreAuthorizedRolesList,
 		}
 	}
 	if r.BlockedRolesList != nil {
 		opts.BlockedRolesList = &BlockedRolesList{
-			// adjusted manually
 			BlockedRolesList: r.BlockedRolesList.BlockedRolesList,
 		}
 	}
@@ -451,7 +445,6 @@ func (r *AlterExternalOauthSecurityIntegrationRequest) toOpts() *AlterExternalOa
 		}
 		if r.Set.ExternalOauthBlockedRolesList != nil {
 			opts.Set.ExternalOauthBlockedRolesList = &BlockedRolesList{
-				// Adjusted manually
 				BlockedRolesList: r.Set.ExternalOauthBlockedRolesList.BlockedRolesList,
 			}
 		}

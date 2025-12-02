@@ -83,21 +83,18 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 		Comment:                  r.Comment,
 	}
 	if r.MfaPolicy != nil {
-		// adjusted manually
 		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
 			EnforceMfaOnExternalAuthentication: r.MfaPolicy.EnforceMfaOnExternalAuthentication,
 			AllowedMethods:                     r.MfaPolicy.AllowedMethods,
 		}
 	}
 	if r.SecurityIntegrations != nil {
-		// adjusted manually
 		opts.SecurityIntegrations = &SecurityIntegrationsOption{
 			All:                  r.SecurityIntegrations.All,
 			SecurityIntegrations: r.SecurityIntegrations.SecurityIntegrations,
 		}
 	}
 	if r.PatPolicy != nil {
-		// adjusted manually
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
 			DefaultExpiryInDays:     r.PatPolicy.DefaultExpiryInDays,
 			MaxExpiryInDays:         r.PatPolicy.MaxExpiryInDays,
@@ -105,7 +102,6 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 		}
 	}
 	if r.WorkloadIdentityPolicy != nil {
-		// adjusted manually
 		opts.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{
 			AllowedProviders:    r.WorkloadIdentityPolicy.AllowedProviders,
 			AllowedAwsAccounts:  r.WorkloadIdentityPolicy.AllowedAwsAccounts,

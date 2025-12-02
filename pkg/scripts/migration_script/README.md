@@ -79,7 +79,7 @@ where script options are:
 
     Supported resources:
       - snowflake_schema
-  - `databases`: which expects a converted CSV output from the snowflake_databases data source. To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like `"comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...`
+  - `databases` which expects a converted CSV output from the snowflake_databases data source. To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like `"comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...`
       When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
       For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
 
@@ -89,9 +89,9 @@ where script options are:
   - `warehouses` which expects a converted CSV output from the snowflake_warehouses data source.
       To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like `"comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...`
       When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
-      The script always outputs fields that have non-empty default values in Snowflake
+      The script always outputs fields that have non-empty default values in Snowflake (they can be removed from the output)
 
-      Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid)
+      Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended)
 
       For more details about using multiple sources, visit [Multiple sources section](#multiple-sources).
 
