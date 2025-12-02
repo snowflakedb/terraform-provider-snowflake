@@ -34,10 +34,16 @@ func newParameterHandler(level sdk.ParameterType) parameterHandler {
 	}
 }
 
-func (h *parameterHandler) handleIntegerParameter(level sdk.ParameterType, value string, setField **int) error {
-	if h.level != level {
+func (h *parameterHandler) handleIntegerParameter(level string, value string, setField **int) error {
+	levelParameterType, err := sdk.ToParameterType(level)
+	if err != nil {
+		return err
+	}
+
+	if h.level != levelParameterType {
 		return nil
 	}
+
 	v, err := strconv.Atoi(value)
 	if err != nil {
 		return err
@@ -46,10 +52,16 @@ func (h *parameterHandler) handleIntegerParameter(level sdk.ParameterType, value
 	return nil
 }
 
-func (h *parameterHandler) handleBooleanParameter(level sdk.ParameterType, value string, setField **bool) error {
-	if h.level != level {
+func (h *parameterHandler) handleBooleanParameter(level string, value string, setField **bool) error {
+	levelParameterType, err := sdk.ToParameterType(level)
+	if err != nil {
+		return err
+	}
+
+	if h.level != levelParameterType {
 		return nil
 	}
+
 	b, err := strconv.ParseBool(value)
 	if err != nil {
 		return err
@@ -58,10 +70,16 @@ func (h *parameterHandler) handleBooleanParameter(level sdk.ParameterType, value
 	return nil
 }
 
-func (h *parameterHandler) handleStringParameter(level sdk.ParameterType, value string, setField **string) error {
-	if h.level != level {
+func (h *parameterHandler) handleStringParameter(level string, value string, setField **string) error {
+	levelParameterType, err := sdk.ToParameterType(level)
+	if err != nil {
+		return err
+	}
+
+	if h.level != levelParameterType {
 		return nil
 	}
+
 	*setField = &value
 	return nil
 }

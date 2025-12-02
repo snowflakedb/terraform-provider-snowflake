@@ -1,6 +1,8 @@
 package sdk
 
 import (
+	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -21,6 +23,27 @@ func ToBool(s string) bool {
 		panic(err)
 	}
 	return b
+}
+
+var AllParameterTypes = []ParameterType{
+	ParameterTypeAccount,
+	ParameterTypeUser,
+	ParameterTypeSession,
+	ParameterTypeObject,
+	ParameterTypeWarehouse,
+	ParameterTypeDatabase,
+	ParameterTypeSchema,
+	ParameterTypeTask,
+	ParameterTypeFunction,
+	ParameterTypeProcedure,
+	ParameterTypeSnowflakeDefault,
+}
+
+func ToParameterType(s string) (ParameterType, error) {
+	if slices.Contains(AllParameterTypes, ParameterType(s)) {
+		return ParameterType(s), nil
+	}
+	return "", fmt.Errorf("invalid parameter type: %s", s)
 }
 
 // Int returns a pointer to the given int.
