@@ -26,9 +26,15 @@ type AccountRoleRepresentation struct {
 func (row AccountRoleCsvRow) convert() (*AccountRoleRepresentation, error) {
 	accountRoleRepresentation := &AccountRoleRepresentation{
 		Role: sdk.Role{
-			Name:    row.Name,
-			Comment: row.Comment,
-			Owner:   row.Owner,
+			Name:            row.Name,
+			Comment:         row.Comment,
+			Owner:           row.Owner,
+			AssignedToUsers: sdk.ToIntWithDefault(row.AssignedToUsers, 0),
+			GrantedRoles:    sdk.ToIntWithDefault(row.GrantedRoles, 0),
+			GrantedToRoles:  sdk.ToIntWithDefault(row.GrantedToRoles, 0),
+			IsCurrent:       row.IsCurrent == "Y",
+			IsDefault:       row.IsDefault == "Y",
+			IsInherited:     row.IsInherited == "Y",
 		},
 	}
 

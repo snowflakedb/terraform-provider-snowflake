@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 )
 
 // String returns a pointer to the given string.
@@ -40,7 +41,7 @@ var AllParameterTypes = []ParameterType{
 }
 
 func ToParameterType(s string) (ParameterType, error) {
-	if slices.Contains(AllParameterTypes, ParameterType(s)) {
+	if slices.Contains(AllParameterTypes, ParameterType(strings.ToUpper(s))) {
 		return ParameterType(s), nil
 	}
 	return "", fmt.Errorf("invalid parameter type: %s", s)
@@ -56,6 +57,14 @@ func ToInt(s string) int {
 	i, err := strconv.Atoi(s)
 	if err != nil {
 		panic(err)
+	}
+	return i
+}
+
+func ToIntWithDefault(s string, defaultValue int) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return defaultValue
 	}
 	return i
 }

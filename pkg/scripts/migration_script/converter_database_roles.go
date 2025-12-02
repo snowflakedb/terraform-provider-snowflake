@@ -28,10 +28,17 @@ type DatabaseRoleRepresentation struct {
 func (row DatabaseRoleCsvRow) convert() (*DatabaseRoleRepresentation, error) {
 	databaseRoleRepresentation := &DatabaseRoleRepresentation{
 		DatabaseRole: sdk.DatabaseRole{
-			Name:         row.Name,
-			DatabaseName: row.DatabaseName,
-			Comment:      row.Comment,
-			Owner:        row.Owner,
+			Name:                   row.Name,
+			DatabaseName:           row.DatabaseName,
+			Comment:                row.Comment,
+			Owner:                  row.Owner,
+			GrantedToRoles:         sdk.ToIntWithDefault(row.GrantedToRoles, 0),
+			GrantedToDatabaseRoles: sdk.ToIntWithDefault(row.GrantedToDatabaseRoles, 0),
+			GrantedDatabaseRoles:   sdk.ToIntWithDefault(row.GrantedDatabaseRoles, 0),
+			IsCurrent:              row.IsCurrent == "Y",
+			IsDefault:              row.IsDefault == "Y",
+			IsInherited:            row.IsInherited == "Y",
+			OwnerRoleType:          row.OwnerRoleType,
 		},
 	}
 
