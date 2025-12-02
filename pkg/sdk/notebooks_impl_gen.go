@@ -91,7 +91,6 @@ func (r *CreateNotebookRequest) toOpts() *CreateNotebookOptions {
 	}
 	if r.Secrets != nil {
 		opts.Secrets = &SecretsList{
-			// adjusted manually (Set.SecretsList -> Secrets)
 			SecretsList: r.Secrets.SecretsList,
 		}
 	}
@@ -120,7 +119,6 @@ func (r *AlterNotebookRequest) toOpts() *AlterNotebookOptions {
 		}
 		if r.Set.Secrets != nil {
 			opts.Set.Secrets = &SecretsList{
-				// adjusted manually
 				SecretsList: r.Set.Secrets.SecretsList,
 			}
 		}

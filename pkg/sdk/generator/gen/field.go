@@ -11,7 +11,7 @@ type Field struct {
 	// Parent allows to traverse fields hierarchy more easily, nil for root
 	Parent *Field
 	// Fields defines children, use for struct fields
-	Fields []*Field
+	Fields []Field
 	// Validations defines validations on given field level (e.g. oneOf for children)
 	Validations []*Validation
 	// Name is how field is called in parent struct
@@ -42,13 +42,15 @@ func NewField(name string, kind string, tagBuilder *TagBuilder, transformer Fiel
 	return f
 }
 
-func (f *Field) withField(fields *Field) *Field {
-	f.Fields = append(f.Fields, fields)
+func (f *Field) withField(field *Field) *Field {
+	f.Fields = append(f.Fields, *field)
 	return f
 }
 
 func (f *Field) withFields(fields ...*Field) *Field {
-	f.Fields = append(f.Fields, fields...)
+	for _, field := range fields {
+		f.Fields = append(f.Fields, *field)
+	}
 	return f
 }
 

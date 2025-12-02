@@ -159,7 +159,6 @@ func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 		}
 		if r.Set.ExternalAccessIntegrations != nil {
 			opts.Set.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
-				// adjusted manually
 				ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations.ExternalAccessIntegrations,
 			}
 		}
