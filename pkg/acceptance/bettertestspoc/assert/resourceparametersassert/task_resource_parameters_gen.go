@@ -222,13 +222,13 @@ func (t *TaskResourceParametersAssert) HasSearchPath(expected string) *TaskResou
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasServerlessTaskMaxStatementSize(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
+func (t *TaskResourceParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk.WarehouseSize) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
 	return t
 }
 
-func (t *TaskResourceParametersAssert) HasServerlessTaskMinStatementSize(expected string) *TaskResourceParametersAssert {
-	t.AddAssertion(assert.ResourceParameterValueSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
+func (t *TaskResourceParametersAssert) HasServerlessTaskMinStatementSize(expected sdk.WarehouseSize) *TaskResourceParametersAssert {
+	t.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
 	return t
 }
 

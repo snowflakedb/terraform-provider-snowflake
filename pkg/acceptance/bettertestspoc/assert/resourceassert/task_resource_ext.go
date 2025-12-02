@@ -112,6 +112,6 @@ func (t *TaskResourceAssert) HasDefaultServerlessTaskMaxStatementSize() *TaskRes
 }
 
 func (t *TaskResourceAssert) HasDefaultUserTaskManagedInitialWarehouseSize() *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", string(sdk.WarehouseSizeMedium)))
+	t.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", "Medium"))
 	return t
 }

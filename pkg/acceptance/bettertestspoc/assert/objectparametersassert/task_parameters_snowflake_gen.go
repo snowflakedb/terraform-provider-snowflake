@@ -384,13 +384,13 @@ func (t *TaskParametersAssert) HasSearchPath(expected string) *TaskParametersAss
 	return t
 }
 
-func (t *TaskParametersAssert) HasServerlessTaskMaxStatementSize(expected string) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
+func (t *TaskParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk.WarehouseSize) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
 	return t
 }
 
-func (t *TaskParametersAssert) HasServerlessTaskMinStatementSize(expected string) *TaskParametersAssert {
-	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
+func (t *TaskParametersAssert) HasServerlessTaskMinStatementSize(expected sdk.WarehouseSize) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
 	return t
 }
 
@@ -1200,11 +1200,11 @@ func (t *TaskParametersAssert) HasDefaultSearchPathValueExplicit() *TaskParamete
 }
 
 func (t *TaskParametersAssert) HasDefaultServerlessTaskMaxStatementSizeValueExplicit() *TaskParametersAssert {
-	return t.HasServerlessTaskMaxStatementSize("X2Large")
+	return t.HasServerlessTaskMaxStatementSize(sdk.WarehouseSize("X2Large"))
 }
 
 func (t *TaskParametersAssert) HasDefaultServerlessTaskMinStatementSizeValueExplicit() *TaskParametersAssert {
-	return t.HasServerlessTaskMinStatementSize("XSMALL")
+	return t.HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall)
 }
 
 func (t *TaskParametersAssert) HasDefaultStatementQueuedTimeoutInSecondsValueExplicit() *TaskParametersAssert {

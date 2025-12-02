@@ -104,17 +104,17 @@ func (t *TaskShowOutputAssert) HasTargetCompletionIntervalEmpty() *TaskShowOutpu
 }
 
 func (t *TaskShowOutputAssert) HasTargetCompletionIntervalSeconds(seconds int) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d SECOND", seconds)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d SECONDS", seconds)))
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasTargetCompletionIntervalMinutes(minutes int) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d MINUTE", minutes)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d MINUTES", minutes)))
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasTargetCompletionIntervalHours(hours int) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d HOUR", hours)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d HOURS", hours)))
 	return t
 }
 
