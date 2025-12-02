@@ -18,10 +18,12 @@ import (
 type ObjectType string
 
 const (
-	ObjectTypeGrants     ObjectType = "grants"
-	ObjectTypeSchemas    ObjectType = "schemas"
-	ObjectTypeDatabases  ObjectType = "databases"
-	ObjectTypeWarehouses ObjectType = "warehouses"
+	ObjectTypeGrants        ObjectType = "grants"
+	ObjectTypeSchemas       ObjectType = "schemas"
+	ObjectTypeDatabases     ObjectType = "databases"
+	ObjectTypeWarehouses    ObjectType = "warehouses"
+	ObjectTypeAccountRoles  ObjectType = "account_roles"
+	ObjectTypeDatabaseRoles ObjectType = "database_roles"
 )
 
 var AllObjectTypes = []ObjectType{
@@ -29,6 +31,8 @@ var AllObjectTypes = []ObjectType{
 	ObjectTypeSchemas,
 	ObjectTypeDatabases,
 	ObjectTypeWarehouses,
+	ObjectTypeAccountRoles,
+	ObjectTypeDatabaseRoles,
 }
 
 func ToObjectType(s string) (ObjectType, error) {
@@ -171,6 +175,14 @@ object_type represents the type of Snowflake object you want to generate terrafo
 			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_warehouse
+		- "account_roles" which expects a converted CSV output from the snowflake_account_roles data source
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Supported resources:
+				- snowflake_account_role
+		- "database_roles" which expects a converted CSV output from the snowflake_database_roles data source
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Supported resources:
+				- snowflake_database_role
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -231,6 +243,10 @@ func (p *Program) generateOutput(input [][]string) (string, error) {
 		return HandleDatabases(p.Config, input)
 	case ObjectTypeWarehouses:
 		return HandleWarehouses(p.Config, input)
+	case ObjectTypeAccountRoles:
+		return HandleAccountRoles(p.Config, input)
+	case ObjectTypeDatabaseRoles:
+		return HandleDatabaseRoles(p.Config, input)
 	default:
 		return "", fmt.Errorf("unsupported object type: %s, run -h to get more information on allowed object types", p.Config.ObjectType)
 	}
