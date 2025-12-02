@@ -510,6 +510,39 @@ func TestInt_Tasks(t *testing.T) {
 		assert.Equal(t, sdk.Pointer("v1"), returnedTagValue)
 	})
 
+	t.Run("create task: with serverless task parameters", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		// Create a serverless task (no warehouse specified) with serverless parameters
+		err := testClient(t).Tasks.Create(ctx, sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").
+			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)).
+			WithTargetCompletionInterval("10 MINUTES").
+			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Task.DropFunc(t, id))
+
+		task, err := testClientHelper().Task.Show(t, id)
+		require.NoError(t, err)
+		require.NotNil(t, task)
+
+		// Verify task was created successfully
+		assert.Equal(t, id.Name(), task.Name)
+		assert.Nil(t, task.Warehouse)
+
+		// Verify parameters were set
+		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
+			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		)
+		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
+		assertThatObject(t, objectassert.Task(t, id).
+			HasNoWarehouse().
+			HasTargetCompletionInterval("10 MINUTES"),
+		)
+	})
+
 	t.Run("clone task: default", func(t *testing.T) {
 		rootTask, rootTaskCleanup := testClientHelper().Task.Create(t)
 		t.Cleanup(rootTaskCleanup)
@@ -1090,68 +1123,6 @@ func TestInt_Tasks(t *testing.T) {
 		require.Equal(t, sdk.TaskStateStarted, childTaskStatus.State)
 	})
 
-	// TODO(SNOW-1277135): Create more tests with different sets of roots/children and see if the current implementation
-	// acts correctly in certain situations/edge cases.
-}
-
-func TestInt_TasksShowByID(t *testing.T) {
-	client := testClient(t)
-	ctx := testContext(t)
-
-	t.Run("show by id - same name in different schemas", func(t *testing.T) {
-		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
-		t.Cleanup(schemaCleanup)
-
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(id1.Name(), schema.ID())
-
-		_, t1Cleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(id1, "SELECT CURRENT_TIMESTAMP"))
-		_, t2Cleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(id2, "SELECT CURRENT_TIMESTAMP"))
-		t.Cleanup(t1Cleanup)
-		t.Cleanup(t2Cleanup)
-
-		e1, err := client.Tasks.ShowByID(ctx, id1)
-		require.NoError(t, err)
-		require.Equal(t, id1, e1.ID())
-
-		e2, err := client.Tasks.ShowByID(ctx, id2)
-		require.NoError(t, err)
-		require.Equal(t, id2, e2.ID())
-	})
-
-	t.Run("create task: with serverless task parameters", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		// Create a serverless task (no warehouse specified) with serverless parameters
-		err := testClient(t).Tasks.Create(ctx, sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").
-			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)).
-			WithTargetCompletionInterval("10 MINUTES").
-			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
-			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().Task.DropFunc(t, id))
-
-		task, err := testClientHelper().Task.Show(t, id)
-		require.NoError(t, err)
-		require.NotNil(t, task)
-
-		// Verify task was created successfully
-		assert.Equal(t, id.Name(), task.Name)
-		assert.Nil(t, task.Warehouse)
-
-		// Verify parameters were set
-		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
-			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
-			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
-			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
-		)
-		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
-		assertThatObject(t, objectassert.Task(t, id).
-			HasNoWarehouse().
-			HasTargetCompletionInterval("10 MINUTES"),
-		)
-	})
-
 	t.Run("alter task: set and unset serverless task parameters", func(t *testing.T) {
 		// Create a serverless task (with USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE)
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
@@ -1284,5 +1255,34 @@ func TestInt_TasksShowByID(t *testing.T) {
 		assertThatObject(t, objectassert.Task(t, task.ID()).
 			HasNoTargetCompletionInterval(),
 		)
+	})
+
+	// TODO(SNOW-1277135): Create more tests with different sets of roots/children and see if the current implementation
+	// acts correctly in certain situations/edge cases.
+}
+
+func TestInt_TasksShowByID(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	t.Run("show by id - same name in different schemas", func(t *testing.T) {
+		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
+		t.Cleanup(schemaCleanup)
+
+		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(id1.Name(), schema.ID())
+
+		_, t1Cleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(id1, "SELECT CURRENT_TIMESTAMP"))
+		_, t2Cleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(id2, "SELECT CURRENT_TIMESTAMP"))
+		t.Cleanup(t1Cleanup)
+		t.Cleanup(t2Cleanup)
+
+		e1, err := client.Tasks.ShowByID(ctx, id1)
+		require.NoError(t, err)
+		require.Equal(t, id1, e1.ID())
+
+		e2, err := client.Tasks.ShowByID(ctx, id2)
+		require.NoError(t, err)
+		require.Equal(t, id2, e2.ID())
 	})
 }
