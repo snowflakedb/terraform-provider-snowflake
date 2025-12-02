@@ -26,6 +26,9 @@ func main() {
 		if err := json.Unmarshal(scanner.Bytes(), &entry); err != nil {
 			continue // Skip malformed JSON entries
 		}
+		if entry.Action == "output" {
+			log.Print(entry.Output)
+		}
 		testResults = append(testResults, entry)
 	}
 	if err := scanner.Err(); err != nil {
