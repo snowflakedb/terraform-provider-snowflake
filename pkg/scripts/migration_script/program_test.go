@@ -67,8 +67,8 @@ object_type represents the type of Snowflake object you want to generate terrafo
 		- "warehouses" which expects a converted CSV output from the snowflake_warehouses data source
 			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like "comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...
 			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
-			The script always outputs fields that have non-empty default values in Snowflake
-			Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid)
+			The script always outputs fields that have non-empty default values in Snowflake (they can be removed from the output)
+			Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended)
 			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_warehouse
