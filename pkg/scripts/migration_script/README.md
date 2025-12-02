@@ -98,17 +98,15 @@ where script options are:
     Supported resources:
       - snowflake_warehouse
 
-  - `account_roles` which expects a converted CSV output from the snowflake_account_roles data source
-      The expected input is in the form of [`SHOW ROLES`](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output.
+  - `account_roles` which expects input in the form of [`SHOW ROLES`](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output. Can also be obtained as a converted CSV output from the snowflake_account_roles data source.
 
-      Supported resources:
-        - snowflake_account_role
+    Supported resources:
+      - snowflake_account_role
 
-  - `database_roles` which expects a converted CSV output from the snowflake_database_roles data source
-      The expected input is in the form of [`SHOW DATABASE ROLES`](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output.
+  - `database_roles` which expects input in the form of [`SHOW DATABASE ROLES`](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
 
-      Supported resources:
-        - snowflake_database_role
+    Supported resources:
+      - snowflake_database_role
 
 - **INPUT**:
   - Migration script operates on STDIN input in CSV format. You can redirect the input from a file or pipe it from another command.

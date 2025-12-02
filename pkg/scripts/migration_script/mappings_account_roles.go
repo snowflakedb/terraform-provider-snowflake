@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -16,7 +13,7 @@ func HandleAccountRoles(config *Config, csvInput [][]string) (string, error) {
 
 func MapAccountRoleToModel(role AccountRoleRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	roleId := sdk.NewAccountObjectIdentifier(role.Name)
-	resourceId := NormalizeResourceId(fmt.Sprintf("%s_%s", strings.TrimPrefix(string(resources.AccountRole), "snowflake_"), roleId.FullyQualifiedName()))
+	resourceId := ResourceId(string(resources.AccountRole), roleId.FullyQualifiedName())
 	resourceModel := model.AccountRole(resourceId, role.Name)
 
 	handleIfNotEmpty(role.Comment, resourceModel.WithComment)

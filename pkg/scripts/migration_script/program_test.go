@@ -72,12 +72,10 @@ object_type represents the type of Snowflake object you want to generate terrafo
 			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_warehouse
-		- "account_roles" which expects a converted CSV output from the snowflake_account_roles data source
-			The expected input is in the form of [SHOW ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output.
+		- "account_roles" which expects input in the form of [SHOW ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output. Can also be obtained as a converted CSV output from the snowflake_account_roles data source.
 			Supported resources:
 				- snowflake_account_role
-		- "database_roles" which expects a converted CSV output from the snowflake_database_roles data source
-			The expected input is in the form of [SHOW DATABASE ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output.
+		- "database_roles" which expects input in the form of [SHOW DATABASE ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
 			Supported resources:
 				- snowflake_database_role
 

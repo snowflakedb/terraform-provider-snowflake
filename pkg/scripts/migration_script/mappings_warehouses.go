@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -17,7 +14,7 @@ func HandleWarehouses(config *Config, csvInput [][]string) (string, error) {
 
 func MapWarehouseToModel(warehouse WarehouseRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	warehouseId := sdk.NewAccountObjectIdentifier(warehouse.Name)
-	resourceId := NormalizeResourceId(fmt.Sprintf("%s_%s", strings.TrimPrefix(string(resources.Warehouse), "snowflake_"), warehouseId.FullyQualifiedName()))
+	resourceId := ResourceId(string(resources.Warehouse), warehouseId.FullyQualifiedName())
 	resourceModel := model.Warehouse(resourceId, warehouse.Name)
 
 	// always include fields with default values
