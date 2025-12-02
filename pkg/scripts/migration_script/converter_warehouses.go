@@ -96,12 +96,13 @@ func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
 		},
 	}
 
-	if row.Generation != "" {
-		generation := sdk.WarehouseGeneration(row.Generation)
+	generation, err := sdk.ToWarehouseGeneration(row.Generation)
+	if err == nil {
 		warehouseRepresentation.Generation = &generation
 	}
-	if row.ResourceConstraint != "" {
-		resourceConstraint := sdk.WarehouseResourceConstraint(row.ResourceConstraint)
+
+	resourceConstraint, err := sdk.ToWarehouseResourceConstraint(row.ResourceConstraint)
+	if err == nil {
 		warehouseRepresentation.ResourceConstraint = &resourceConstraint
 	}
 

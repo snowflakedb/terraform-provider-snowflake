@@ -38,7 +38,7 @@ import {
 `,
 		},
 		{
-			name: "warehouse without parameters",
+			name: "minimal warehouse with all parameters set on account level",
 			inputRows: [][]string{
 				{"auto_resume", "auto_suspend", "comment", "max_cluster_count", "min_cluster_count", "name", "query_acceleration_max_scale_factor", "scaling_policy", "size", "type", "max_concurrency_level_level", "max_concurrency_level_value", "statement_queued_timeout_in_seconds_level", "statement_queued_timeout_in_seconds_value", "statement_timeout_in_seconds_level", "statement_timeout_in_seconds_value"},
 				{"true", "600", "Warehouse with params set on account level", "1", "1", "WAREHOUSE", "8", "STANDARD", "XSMALL", "STANDARD", "ACCOUNT", "8", "ACCOUNT", "300", "ACCOUNT", "86400"},
