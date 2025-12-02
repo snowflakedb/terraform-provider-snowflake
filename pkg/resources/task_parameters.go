@@ -203,7 +203,6 @@ func handleTaskParameterRead(d *schema.ResourceData, taskParameters []*sdk.Param
 				return err
 			}
 		case
-			string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize),
 			string(sdk.TaskParameterBinaryInputFormat),
 			string(sdk.TaskParameterBinaryOutputFormat),
 			string(sdk.TaskParameterClientTimestampTypeMapping),
@@ -215,6 +214,8 @@ func handleTaskParameterRead(d *schema.ResourceData, taskParameters []*sdk.Param
 			string(sdk.TaskParameterQueryTag),
 			string(sdk.TaskParameterS3StageVpceDnsName),
 			string(sdk.TaskParameterSearchPath),
+			string(sdk.TaskParameterServerlessTaskMinStatementSize),
+			string(sdk.TaskParameterServerlessTaskMaxStatementSize),
 			string(sdk.TaskParameterTimestampInputFormat),
 			string(sdk.TaskParameterTimestampLtzOutputFormat),
 			string(sdk.TaskParameterTimestampNtzOutputFormat),
@@ -226,7 +227,8 @@ func handleTaskParameterRead(d *schema.ResourceData, taskParameters []*sdk.Param
 			string(sdk.TaskParameterTimeOutputFormat),
 			string(sdk.TaskParameterTraceLevel),
 			string(sdk.TaskParameterTransactionDefaultIsolationLevel),
-			string(sdk.TaskParameterUnsupportedDdlAction):
+			string(sdk.TaskParameterUnsupportedDdlAction),
+			string(sdk.TaskParameterUserTaskManagedInitialWarehouseSize):
 			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
 				return err
 			}
@@ -380,6 +382,8 @@ func handleTaskParametersUpdate(d *schema.ResourceData, set *sdk.TaskSetRequest,
 		handleParameterUpdate(d, sdk.TaskParameterSuspendTaskAfterNumFailures, &set.SuspendTaskAfterNumFailures, &unset.SuspendTaskAfterNumFailures),
 		handleParameterUpdate(d, sdk.TaskParameterTaskAutoRetryAttempts, &set.TaskAutoRetryAttempts, &unset.TaskAutoRetryAttempts),
 		handleParameterUpdate(d, sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, &set.UserTaskMinimumTriggerIntervalInSeconds, &unset.UserTaskMinimumTriggerIntervalInSeconds),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterServerlessTaskMinStatementSize, &set.ServerlessTaskMinStatementSize, &unset.ServerlessTaskMinStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
+		handleParameterUpdateWithMapping(d, sdk.TaskParameterServerlessTaskMaxStatementSize, &set.ServerlessTaskMaxStatementSize, &unset.ServerlessTaskMaxStatementSize, stringToStringEnumProvider(sdk.ToWarehouseSize)),
 		// session parameters
 		handleParameterUpdate(d, sdk.TaskParameterAbortDetachedQuery, &set.SessionParameters.AbortDetachedQuery, &unset.SessionParametersUnset.AbortDetachedQuery),
 		handleParameterUpdateWithMapping(d, sdk.TaskParameterBinaryInputFormat, &set.SessionParameters.BinaryInputFormat, &unset.SessionParametersUnset.BinaryInputFormat, stringToStringEnumProvider(sdk.ToBinaryInputFormat)),
