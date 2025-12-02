@@ -131,6 +131,10 @@ var UserDescribeSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	"has_workload_identity": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
 }
 
 var _ = UserDescribeSchema
@@ -229,6 +233,9 @@ func UserDescriptionToSchema(userDetails sdk.UserDetails) []map[string]any {
 	}
 	if userDetails.HasMfa != nil {
 		userDetailsSchema["has_mfa"] = userDetails.HasMfa.Value
+	}
+	if userDetails.HasWorkloadIdentity != nil {
+		userDetailsSchema["has_workload_identity"] = userDetails.HasWorkloadIdentity.Value
 	}
 	return []map[string]any{
 		userDetailsSchema,

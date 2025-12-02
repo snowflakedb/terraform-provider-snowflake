@@ -24,6 +24,11 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.11.0 ➞ v2.11.1
+
+### *(improvement)* New fields in user resources and data sources output fields
+We adjusted the `show_output` by adding the missing `has_workload_identity ` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
+
 ## v2.10.x ➞ v2.11.0
 
 ### *(new feature)* snowflake_notebook
