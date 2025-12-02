@@ -721,6 +721,10 @@ func TestParseTargetCompletionInterval(t *testing.T) {
 			Input:    "2 HOURS",
 			Expected: &TargetCompletionInterval{Hours: 2},
 		},
+		"valid hours - short form": {
+			Input:    "2 h",
+			Expected: &TargetCompletionInterval{Hours: 2},
+		},
 		"valid minutes singular": {
 			Input:    "1 MINUTE",
 			Expected: &TargetCompletionInterval{Minutes: 1},
@@ -729,12 +733,20 @@ func TestParseTargetCompletionInterval(t *testing.T) {
 			Input:    "10 MINUTES",
 			Expected: &TargetCompletionInterval{Minutes: 10},
 		},
+		"valid minutes - short form": {
+			Input:    "5 m",
+			Expected: &TargetCompletionInterval{Minutes: 5},
+		},
 		"valid seconds singular": {
 			Input:    "1 SECOND",
 			Expected: &TargetCompletionInterval{Seconds: 1},
 		},
 		"valid seconds plural": {
 			Input:    "30 SECONDS",
+			Expected: &TargetCompletionInterval{Seconds: 30},
+		},
+		"valid seconds - short form": {
+			Input:    "30 s",
 			Expected: &TargetCompletionInterval{Seconds: 30},
 		},
 		"valid lowercase": {

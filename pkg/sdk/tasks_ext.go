@@ -290,11 +290,11 @@ func ParseTargetCompletionInterval(interval string) (*TargetCompletionInterval, 
 
 	unit := parts[1]
 	switch {
-	case strings.HasPrefix(unit, "HOUR"):
+	case strings.HasPrefix(unit, "HOUR") || unit == "H":
 		return &TargetCompletionInterval{Hours: value}, nil
-	case strings.HasPrefix(unit, "MINUTE"):
+	case strings.HasPrefix(unit, "MINUTE") || unit == "M":
 		return &TargetCompletionInterval{Minutes: value}, nil
-	case strings.HasPrefix(unit, "SECOND"):
+	case strings.HasPrefix(unit, "SECOND") || unit == "S":
 		return &TargetCompletionInterval{Seconds: value}, nil
 	default:
 		return nil, fmt.Errorf("invalid target completion interval unit: %s", unit)
