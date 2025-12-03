@@ -1,10 +1,7 @@
 package sdk
 
 import (
-	"fmt"
-	"slices"
 	"strconv"
-	"strings"
 )
 
 // String returns a pointer to the given string.
@@ -24,27 +21,6 @@ func ToBool(s string) bool {
 		panic(err)
 	}
 	return b
-}
-
-var AllParameterTypes = []ParameterType{
-	ParameterTypeAccount,
-	ParameterTypeUser,
-	ParameterTypeSession,
-	ParameterTypeObject,
-	ParameterTypeWarehouse,
-	ParameterTypeDatabase,
-	ParameterTypeSchema,
-	ParameterTypeTask,
-	ParameterTypeFunction,
-	ParameterTypeProcedure,
-	ParameterTypeSnowflakeDefault,
-}
-
-func ToParameterType(s string) (ParameterType, error) {
-	if slices.Contains(AllParameterTypes, ParameterType(strings.ToUpper(s))) {
-		return ParameterType(s), nil
-	}
-	return "", fmt.Errorf("invalid parameter type: %s", s)
 }
 
 // Int returns a pointer to the given int.
