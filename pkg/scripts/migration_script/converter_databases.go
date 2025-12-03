@@ -98,22 +98,22 @@ func (row DatabaseCsvRow) convert() (*DatabaseRepresentation, error) {
 
 	handler := newParameterHandler(sdk.ParameterTypeDatabase)
 	errs := errors.Join(
-		handler.handleStringParameter(sdk.ParameterType(row.CatalogLevel), row.CatalogValue, &databaseRepresentation.Catalog),
-		handler.handleIntegerParameter(sdk.ParameterType(row.DataRetentionTimeInDaysLevel), row.DataRetentionTimeInDaysValue, &databaseRepresentation.DataRetentionTimeInDays),
-		handler.handleStringParameter(sdk.ParameterType(row.DefaultDDLCollationLevel), row.DefaultDDLCollationValue, &databaseRepresentation.DefaultDDLCollation),
-		handler.handleBooleanParameter(sdk.ParameterType(row.EnableConsoleOutputLevel), row.EnableConsoleOutputValue, &databaseRepresentation.EnableConsoleOutput),
-		handler.handleStringParameter(sdk.ParameterType(row.ExternalVolumeLevel), row.ExternalVolumeValue, &databaseRepresentation.ExternalVolume),
-		handler.handleStringParameter(sdk.ParameterType(row.LogLevelLevel), row.LogLevelValue, &databaseRepresentation.LogLevel),
-		handler.handleIntegerParameter(sdk.ParameterType(row.MaxDataExtensionTimeInDaysLevel), row.MaxDataExtensionTimeInDaysValue, &databaseRepresentation.MaxDataExtensionTimeInDays),
-		handler.handleBooleanParameter(sdk.ParameterType(row.QuotedIdentifiersIgnoreCaseLevel), row.QuotedIdentifiersIgnoreCaseValue, &databaseRepresentation.QuotedIdentifiersIgnoreCase),
-		handler.handleBooleanParameter(sdk.ParameterType(row.ReplaceInvalidCharactersLevel), row.ReplaceInvalidCharactersValue, &databaseRepresentation.ReplaceInvalidCharacters),
-		handler.handleStringParameter(sdk.ParameterType(row.StorageSerializationPolicyLevel), row.StorageSerializationPolicyValue, &databaseRepresentation.StorageSerializationPolicy),
-		handler.handleIntegerParameter(sdk.ParameterType(row.SuspendTaskAfterNumFailuresLevel), row.SuspendTaskAfterNumFailuresValue, &databaseRepresentation.SuspendTaskAfterNumFailures),
-		handler.handleIntegerParameter(sdk.ParameterType(row.TaskAutoRetryAttemptsLevel), row.TaskAutoRetryAttemptsValue, &databaseRepresentation.TaskAutoRetryAttempts),
-		handler.handleStringParameter(sdk.ParameterType(row.TraceLevelLevel), row.TraceLevelValue, &databaseRepresentation.TraceLevel),
-		handler.handleStringParameter(sdk.ParameterType(row.UserTaskManagedInitialWarehouseSizeLevel), row.UserTaskManagedInitialWarehouseSizeValue, &databaseRepresentation.UserTaskManagedInitialWarehouseSize),
-		handler.handleIntegerParameter(sdk.ParameterType(row.UserTaskMinimumTriggerIntervalInSecondsLevel), row.UserTaskMinimumTriggerIntervalInSecondsValue, &databaseRepresentation.UserTaskMinimumTriggerIntervalInSeconds),
-		handler.handleIntegerParameter(sdk.ParameterType(row.UserTaskTimeoutMsLevel), row.UserTaskTimeoutMsValue, &databaseRepresentation.UserTaskTimeoutMs),
+		handler.handleStringParameter(row.CatalogLevel, row.CatalogValue, &databaseRepresentation.Catalog),
+		handler.handleIntegerParameter(row.DataRetentionTimeInDaysLevel, row.DataRetentionTimeInDaysValue, &databaseRepresentation.DataRetentionTimeInDays),
+		handler.handleStringParameter(row.DefaultDDLCollationLevel, row.DefaultDDLCollationValue, &databaseRepresentation.DefaultDDLCollation),
+		handler.handleBooleanParameter(row.EnableConsoleOutputLevel, row.EnableConsoleOutputValue, &databaseRepresentation.EnableConsoleOutput),
+		handler.handleStringParameter(row.ExternalVolumeLevel, row.ExternalVolumeValue, &databaseRepresentation.ExternalVolume),
+		handler.handleStringParameter(row.LogLevelLevel, row.LogLevelValue, &databaseRepresentation.LogLevel),
+		handler.handleIntegerParameter(row.MaxDataExtensionTimeInDaysLevel, row.MaxDataExtensionTimeInDaysValue, &databaseRepresentation.MaxDataExtensionTimeInDays),
+		handler.handleBooleanParameter(row.QuotedIdentifiersIgnoreCaseLevel, row.QuotedIdentifiersIgnoreCaseValue, &databaseRepresentation.QuotedIdentifiersIgnoreCase),
+		handler.handleBooleanParameter(row.ReplaceInvalidCharactersLevel, row.ReplaceInvalidCharactersValue, &databaseRepresentation.ReplaceInvalidCharacters),
+		handler.handleStringParameter(row.StorageSerializationPolicyLevel, row.StorageSerializationPolicyValue, &databaseRepresentation.StorageSerializationPolicy),
+		handler.handleIntegerParameter(row.SuspendTaskAfterNumFailuresLevel, row.SuspendTaskAfterNumFailuresValue, &databaseRepresentation.SuspendTaskAfterNumFailures),
+		handler.handleIntegerParameter(row.TaskAutoRetryAttemptsLevel, row.TaskAutoRetryAttemptsValue, &databaseRepresentation.TaskAutoRetryAttempts),
+		handler.handleStringParameter(row.TraceLevelLevel, row.TraceLevelValue, &databaseRepresentation.TraceLevel),
+		handler.handleStringParameter(row.UserTaskManagedInitialWarehouseSizeLevel, row.UserTaskManagedInitialWarehouseSizeValue, &databaseRepresentation.UserTaskManagedInitialWarehouseSize),
+		handler.handleIntegerParameter(row.UserTaskMinimumTriggerIntervalInSecondsLevel, row.UserTaskMinimumTriggerIntervalInSecondsValue, &databaseRepresentation.UserTaskMinimumTriggerIntervalInSeconds),
+		handler.handleIntegerParameter(row.UserTaskTimeoutMsLevel, row.UserTaskTimeoutMsValue, &databaseRepresentation.UserTaskTimeoutMs),
 	)
 	if errs != nil {
 		return nil, errs

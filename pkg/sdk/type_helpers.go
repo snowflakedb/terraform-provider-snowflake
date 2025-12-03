@@ -37,6 +37,14 @@ func ToInt(s string) int {
 	return i
 }
 
+func ToIntWithDefault(s string, defaultValue int) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return defaultValue
+	}
+	return i
+}
+
 // Float64 returns a pointer to the given float64.
 func Float64(f float64) *float64 {
 	return &f

@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
-
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -14,7 +13,7 @@ func HandleDatabases(config *Config, csvInput [][]string) (string, error) {
 
 func MapDatabaseToModel(database DatabaseRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	databaseId := sdk.NewAccountObjectIdentifier(database.Name)
-	resourceId := NormalizeResourceId(fmt.Sprintf("database_%s", databaseId.FullyQualifiedName()))
+	resourceId := ResourceId(string(resources.Database), databaseId.FullyQualifiedName())
 	resourceModel := model.Database(resourceId, database.Name)
 
 	handleIfNotEmpty(database.Comment, resourceModel.WithComment)
