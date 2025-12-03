@@ -64,6 +64,14 @@ object_type represents the type of Snowflake object you want to generate terrafo
 			Warning: currently secondary databases and shared databases are treated as plain databases.
 			Supported resources:
 				- snowflake_database
+		- "warehouses" which expects a converted CSV output from the snowflake_warehouses data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like "comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
+			The script always outputs fields that have non-empty default values in Snowflake (they can be removed from the output)
+			Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended)
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Supported resources:
+				- snowflake_warehouse
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -231,6 +239,72 @@ import {
 import {
   to = snowflake_database.snowflake_generated_database_COMPLETE
   id = "\"COMPLETE\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for warehouses",
+			args: []string{"cmd", "-import=block", "warehouses"},
+			input: `
+"auto_resume","auto_suspend","available","comment","created_on","enable_query_acceleration","generation","is_current","is_default","max_cluster_count","min_cluster_count","name","other","owner","owner_role_type","provisioning","query_acceleration_max_scale_factor","queued","quiescing","resource_constraint","resource_monitor","resumed_on","running","scaling_policy","size","started_clusters","state","type","updated_on","max_concurrency_level_level","max_concurrency_level_value","statement_queued_timeout_in_seconds_level","statement_queued_timeout_in_seconds_value","statement_timeout_in_seconds_level","statement_timeout_in_seconds_value"
+"true","600","100","","2024-06-06 00:00:00.000 +0000 UTC","false","","false","false","1","1","WH_BASIC","0","ADMIN","ROLE","0","8","0","0","","","2024-06-06 12:00:00.000 +0000 UTC","0","STANDARD","XSMALL","1","AVAILABLE","STANDARD","2024-06-06 00:00:00.000 +0000 UTC","","","","","",""
+"false","1200","80.00","Production warehouse with all fields","2024-06-06 00:00:00.000 +0000 UTC","true","","false","false","4","2","WH_COMPLETE","0","ADMIN","ROLE","0","16","1","0","MEMORY_16X","MONITOR1","2024-06-06 12:00:00.000 +0000 UTC","3","ECONOMY","MEDIUM","1","SUSPENDED","SNOWPARK-OPTIMIZED","2024-06-06 00:00:00.000 +0000 UTC","WAREHOUSE","8","WAREHOUSE","300","WAREHOUSE","86400"
+"true","600","100","Gen2 warehouse","2024-06-06 00:00:00.000 +0000 UTC","false","2","false","false","1","1","WH_GEN2","0","ADMIN","ROLE","0","8","0","0","","","2024-06-06 12:00:00.000 +0000 UTC","0","STANDARD","LARGE","1","AVAILABLE","STANDARD","2024-06-06 00:00:00.000 +0000 UTC","","","","","",""`,
+			expectedOutput: `resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_BASIC" {
+  name = "WH_BASIC"
+  auto_resume = "true"
+  auto_suspend = 600
+  max_cluster_count = 1
+  min_cluster_count = 1
+  query_acceleration_max_scale_factor = 8
+  scaling_policy = "STANDARD"
+  warehouse_size = "XSMALL"
+  warehouse_type = "STANDARD"
+}
+
+resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_COMPLETE" {
+  name = "WH_COMPLETE"
+  auto_resume = "false"
+  auto_suspend = 1200
+  comment = "Production warehouse with all fields"
+  enable_query_acceleration = "true"
+  max_cluster_count = 4
+  max_concurrency_level = 8
+  min_cluster_count = 2
+  query_acceleration_max_scale_factor = 16
+  resource_constraint = "MEMORY_16X"
+  resource_monitor = "MONITOR1"
+  scaling_policy = "ECONOMY"
+  statement_queued_timeout_in_seconds = 300
+  statement_timeout_in_seconds = 86400
+  warehouse_size = "MEDIUM"
+  warehouse_type = "SNOWPARK-OPTIMIZED"
+}
+
+resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_GEN2" {
+  name = "WH_GEN2"
+  auto_resume = "true"
+  auto_suspend = 600
+  comment = "Gen2 warehouse"
+  generation = "2"
+  max_cluster_count = 1
+  min_cluster_count = 1
+  query_acceleration_max_scale_factor = 8
+  scaling_policy = "STANDARD"
+  warehouse_size = "LARGE"
+  warehouse_type = "STANDARD"
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_BASIC
+  id = "\"WH_BASIC\""
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_COMPLETE
+  id = "\"WH_COMPLETE\""
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_GEN2
+  id = "\"WH_GEN2\""
 }
 `,
 		},

@@ -36,6 +36,9 @@ These fields are available in the `snowflake_task` resource for serverless task 
 
 No changes in configuration are required for existing tasks. You can optionally update your configurations to use these new parameters.
 
+### *(improvement)* New fields in user resources and data sources output fields
+We adjusted the `show_output` by adding the missing `has_workload_identity` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
+
 ## v2.10.x ➞ v2.11.0
 
 ### *(new feature)* snowflake_notebook
