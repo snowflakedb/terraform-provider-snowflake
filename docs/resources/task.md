@@ -1152,6 +1152,7 @@ Read-Only:
 - `schedule` (String)
 - `schema_name` (String)
 - `state` (String)
+- `target_completion_interval` (String)
 - `task_relations` (List of Object) (see [below for nested schema](#nestedobjatt--show_output--task_relations))
 - `warehouse` (String)
 
