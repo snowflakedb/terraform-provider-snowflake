@@ -192,10 +192,10 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
 	// adjusted manually
 	policy := &AuthenticationPolicy{
-		Name:          r.Name,
-		Kind:          r.Kind,
-		Options:       r.Options,
-		Comment:       r.Comment,
+		Name:    r.Name,
+		Kind:    r.Kind,
+		Options: r.Options,
+		Comment: r.Comment,
 	}
 	mapNullTime(&policy.CreatedOn, r.CreatedOn)
 	mapNullString(&policy.DatabaseName, r.DatabaseName)
