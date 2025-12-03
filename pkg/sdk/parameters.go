@@ -2011,6 +2011,27 @@ const (
 	ParameterTypeProcedure        ParameterType = "PROCEDURE"
 )
 
+var AllParameterTypes = []ParameterType{
+	ParameterTypeAccount,
+	ParameterTypeUser,
+	ParameterTypeSession,
+	ParameterTypeObject,
+	ParameterTypeWarehouse,
+	ParameterTypeDatabase,
+	ParameterTypeSchema,
+	ParameterTypeTask,
+	ParameterTypeFunction,
+	ParameterTypeProcedure,
+	ParameterTypeSnowflakeDefault,
+}
+
+func ToParameterType(s string) (ParameterType, error) {
+	if slices.Contains(AllParameterTypes, ParameterType(strings.ToUpper(s))) {
+		return ParameterType(s), nil
+	}
+	return "", fmt.Errorf("invalid parameter type: %s", s)
+}
+
 type Parameter struct {
 	Key         string
 	Value       string

@@ -101,6 +101,8 @@ const (
 	// ObjectTypeSecurityIntegration is a pseudo-object, only used in object and invoke action assertions.
 	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
 	ObjectTypeSecurityIntegration ObjectType = "SECURITY INTEGRATION"
+	// TODO(SNOW-2683939): Remove in the following prs
+	ObjectTypeListingDetails ObjectType = "LISTING DETAILS"
 )
 
 func (o ObjectType) String() string {
