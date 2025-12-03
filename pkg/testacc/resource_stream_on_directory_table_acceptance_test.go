@@ -40,7 +40,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 	snowflakeEnv := testenvs.GetSnowflakeEnvironmentWithProdDefault()
 	expectedStageId := stage.ID().Name()
 	if snowflakeEnv == testenvs.SnowflakeNonProdEnvironment {
-		expectedStageId = stage.ID().FullyQualifiedName()
+		expectedStageId = fmt.Sprintf(`"%s"."%s".%s`, stage.DatabaseName, stage.SchemaName, stage.Name)
 	}
 
 	assertBasic := []assert.TestCheckFuncProvider{
