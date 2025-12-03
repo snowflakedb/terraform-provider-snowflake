@@ -13,7 +13,7 @@ func HandleSchemas(config *Config, csvInput [][]string) (string, error) {
 
 func MapSchemaToModel(schema SchemaRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	schemaId := sdk.NewDatabaseObjectIdentifier(schema.DatabaseName, schema.Name)
-	resourceId := ResourceId(string(resources.Schema), schemaId.FullyQualifiedName())
+	resourceId := ResourceId(resources.Schema, schemaId.FullyQualifiedName())
 	resourceModel := model.Schema(resourceId, schema.DatabaseName, schema.Name)
 
 	handleIfNotEmpty(schema.Comment, resourceModel.WithComment)

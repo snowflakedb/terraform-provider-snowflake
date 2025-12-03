@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 )
 
 var resourceIdDisallowedCharacters = regexp.MustCompile("[^a-zA-Z0-9\\-_]")
@@ -18,8 +19,8 @@ func NormalizeResourceId(resourceId string) string {
 	return "snowflake_generated_" + string(resourceIdDisallowedCharacters.ReplaceAll([]byte(resourceId), []byte("")))
 }
 
-func ResourceId(resource string, id string) string {
-	return NormalizeResourceId(fmt.Sprintf("%s_%s", strings.TrimPrefix(string(resource), "snowflake_"), id))
+func ResourceId(resource resources.Resource, id string) string {
+	return NormalizeResourceId(fmt.Sprintf("%s_%s", strings.TrimPrefix(resource.String(), "snowflake_"), id))
 }
 
 // ResourceFromModel is a copy of config.ResourceFromModel function, but it doesn't use testing.T internally.

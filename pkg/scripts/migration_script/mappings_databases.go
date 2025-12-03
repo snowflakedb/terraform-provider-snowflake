@@ -13,7 +13,7 @@ func HandleDatabases(config *Config, csvInput [][]string) (string, error) {
 
 func MapDatabaseToModel(database DatabaseRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	databaseId := sdk.NewAccountObjectIdentifier(database.Name)
-	resourceId := ResourceId(string(resources.Database), databaseId.FullyQualifiedName())
+	resourceId := ResourceId(resources.Database, databaseId.FullyQualifiedName())
 	resourceModel := model.Database(resourceId, database.Name)
 
 	handleIfNotEmpty(database.Comment, resourceModel.WithComment)
