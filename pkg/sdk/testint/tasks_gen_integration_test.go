@@ -533,8 +533,8 @@ func TestInt_Tasks(t *testing.T) {
 		// Verify parameters were set
 		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
 			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
-			HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
-			HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge),
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
 		)
 		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
 		assertThatObject(t, objectassert.Task(t, id).
@@ -1140,8 +1140,8 @@ func TestInt_Tasks(t *testing.T) {
 
 		// Verify parameters were set
 		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
-			HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
-			HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge),
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
 		)
 		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
 		assertThatObject(t, objectassert.Task(t, task.ID()).
@@ -1214,8 +1214,8 @@ func TestInt_Tasks(t *testing.T) {
 
 		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
 			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
-			HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeXSmall).
-			HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeMedium),
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeMedium),
 		)
 		assertThatObject(t, objectassert.Task(t, task.ID()).
 			HasNoWarehouse().
