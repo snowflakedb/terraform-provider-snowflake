@@ -2433,6 +2433,35 @@ func TestAcc_Task_ServerlessTaskFields(t *testing.T) {
 						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
 				),
 			},
+			// external changes
+			{
+				PreConfig: func() {
+					// This step migrates the task to serverless by setting the new serverless parameters. We update the task directly in Snowflake.
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().
+						WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+						WithTargetCompletionInterval("2 HOURS").
+						WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+						WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeXXLarge),
+					))
+				},
+				Config: config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
 		},
 	})
 }
