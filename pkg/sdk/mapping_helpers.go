@@ -3,7 +3,14 @@ package sdk
 import (
 	"database/sql"
 	"log"
+	"time"
 )
+
+func mapNullTime(timeField **time.Time, sqlValue sql.NullTime) {
+	if sqlValue.Valid {
+		*timeField = &sqlValue.Time
+	}
+}
 
 func mapNullString(stringField **string, sqlValue sql.NullString) {
 	if sqlValue.Valid {

@@ -191,17 +191,18 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 
 func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
 	// adjusted manually
-	return &AuthenticationPolicy{
-		CreatedOn:     r.CreatedOn,
+	policy := &AuthenticationPolicy{
 		Name:          r.Name,
-		DatabaseName:  r.DatabaseName,
-		SchemaName:    r.SchemaName,
 		Kind:          r.Kind,
-		Owner:         r.Owner,
-		OwnerRoleType: r.OwnerRoleType,
 		Options:       r.Options,
 		Comment:       r.Comment,
-	}, nil
+	}
+	mapNullTime(&policy.CreatedOn, r.CreatedOn)
+	mapNullString(&policy.DatabaseName, r.DatabaseName)
+	mapNullString(&policy.SchemaName, r.SchemaName)
+	mapNullString(&policy.Owner, r.Owner)
+	mapNullString(&policy.OwnerRoleType, r.OwnerRoleType)
+	return policy, nil
 }
 
 func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPolicyOptions {
