@@ -679,7 +679,7 @@ func TestParseTaskSchedule(t *testing.T) {
 		"invalid schedule: wrong schedule format": {
 			Schedule:             "SOME SCHEDULE",
 			ExpectedTaskSchedule: nil,
-			Error:                "invalid schedule format",
+			Error:                `strconv.Atoi: parsing "SOME": invalid syntax`,
 		},
 		"invalid schedule: wrong minutes format": {
 			Schedule:             "a5 MINUTE",

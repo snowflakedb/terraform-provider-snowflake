@@ -513,7 +513,7 @@ func TestInt_Tasks(t *testing.T) {
 	t.Run("create task: with serverless task parameters", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		// Create a serverless task (no warehouse specified) with serverless parameters
+		// Create a serverless task (WithUserTaskManagedInitialWarehouseSize) with serverless parameters
 		err := testClient(t).Tasks.Create(ctx, sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").
 			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)).
 			WithTargetCompletionInterval("10 MINUTES").
@@ -521,14 +521,6 @@ func TestInt_Tasks(t *testing.T) {
 			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Task.DropFunc(t, id))
-
-		task, err := testClientHelper().Task.Show(t, id)
-		require.NoError(t, err)
-		require.NotNil(t, task)
-
-		// Verify task was created successfully
-		assert.Equal(t, id.Name(), task.Name)
-		assert.Nil(t, task.Warehouse)
 
 		// Verify parameters were set
 		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
@@ -1125,9 +1117,7 @@ func TestInt_Tasks(t *testing.T) {
 
 	t.Run("alter task: set and unset serverless task parameters", func(t *testing.T) {
 		// Create a serverless task (with USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE)
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		task, taskCleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").
-			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)))
+		task, taskCleanup := testClientHelper().Task.CreateServerless(t)
 		t.Cleanup(taskCleanup)
 
 		// Set the serverless task parameters

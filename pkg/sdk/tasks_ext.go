@@ -83,63 +83,32 @@ type TaskSchedule struct {
 
 func ParseTaskSchedule(schedule string) (*TaskSchedule, error) {
 	upperSchedule := strings.ToUpper(schedule)
-	switch {
-	case strings.Contains(upperSchedule, "USING CRON"):
-		// We have to do it this was because we want to get rid of the prefix and leave the casing as is (mostly because timezones like America/Los_Angeles are case-sensitive).
-		// That why the prefix trimming has to be done by slicing rather than using strings.TrimPrefix.
+
+	// Handle cron schedules - preserve original casing for timezone (e.g., America/Los_Angeles)
+	if strings.HasPrefix(upperSchedule, "USING CRON ") {
 		cron := schedule[len("USING CRON "):]
 		return &TaskSchedule{Cron: cron}, nil
-	case strings.HasSuffix(upperSchedule, "SECONDS") ||
-		strings.HasSuffix(upperSchedule, "SECOND"):
-		secondsParts := strings.Split(upperSchedule, " ")
-		seconds, err := strconv.Atoi(secondsParts[0])
-		if err != nil {
-			return nil, err
-		}
+	}
 
-		return &TaskSchedule{Seconds: seconds}, nil
-	case strings.HasSuffix(upperSchedule, "MINUTES") ||
-		strings.HasSuffix(upperSchedule, "MINUTE"):
-		minuteParts := strings.Split(upperSchedule, " ")
-		minutes, err := strconv.Atoi(minuteParts[0])
-		if err != nil {
-			return nil, err
-		}
+	parts := strings.Split(strings.TrimSpace(upperSchedule), " ")
 
-		return &TaskSchedule{Minutes: minutes}, nil
-	case strings.HasSuffix(upperSchedule, "HOURS") ||
-		strings.HasSuffix(upperSchedule, "HOUR"):
-		hoursParts := strings.Split(upperSchedule, " ")
-		hours, err := strconv.Atoi(hoursParts[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid schedule format: %s", schedule)
+	}
 
-		return &TaskSchedule{Hours: hours}, nil
-	case strings.HasSuffix(upperSchedule, "S"):
-		secondsParts := strings.Split(upperSchedule, " ")
-		seconds, err := strconv.Atoi(secondsParts[0])
-		if err != nil {
-			return nil, err
-		}
+	unit := parts[1]
+	value, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return nil, err
+	}
 
-		return &TaskSchedule{Seconds: seconds}, nil
-	case strings.HasSuffix(upperSchedule, "M"):
-		minuteParts := strings.Split(upperSchedule, " ")
-		minutes, err := strconv.Atoi(minuteParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Minutes: minutes}, nil
-	case strings.HasSuffix(upperSchedule, "H"):
-		hoursParts := strings.Split(upperSchedule, " ")
-		hours, err := strconv.Atoi(hoursParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Hours: hours}, nil
+	switch {
+	case slices.Contains([]string{"HOURS", "HOUR", "H"}, unit):
+		return &TaskSchedule{Hours: value}, nil
+	case slices.Contains([]string{"MINUTES", "MINUTE", "M"}, unit):
+		return &TaskSchedule{Minutes: value}, nil
+	case slices.Contains([]string{"SECONDS", "SECOND", "S"}, unit):
+		return &TaskSchedule{Seconds: value}, nil
 	default:
 		return nil, fmt.Errorf("invalid schedule format: %s", schedule)
 	}
@@ -290,11 +259,11 @@ func ParseTargetCompletionInterval(interval string) (*TargetCompletionInterval, 
 
 	unit := parts[1]
 	switch {
-	case strings.HasPrefix(unit, "HOUR") || unit == "H":
+	case slices.Contains([]string{"HOURS", "HOUR", "H"}, unit):
 		return &TargetCompletionInterval{Hours: value}, nil
-	case strings.HasPrefix(unit, "MINUTE") || unit == "M":
+	case slices.Contains([]string{"MINUTES", "MINUTE", "M"}, unit):
 		return &TargetCompletionInterval{Minutes: value}, nil
-	case strings.HasPrefix(unit, "SECOND") || unit == "S":
+	case slices.Contains([]string{"SECONDS", "SECOND", "S"}, unit):
 		return &TargetCompletionInterval{Seconds: value}, nil
 	default:
 		return nil, fmt.Errorf("invalid target completion interval unit: %s", unit)
