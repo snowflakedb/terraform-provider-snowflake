@@ -159,7 +159,9 @@ type AuthenticationPolicy struct {
 }
 
 func (v *AuthenticationPolicy) ID() SchemaObjectIdentifier {
-	// TODO: Change
+	if v.DatabaseName == nil && v.SchemaName == nil {
+		return NewSchemaObjectIdentifier("", "", v.Name)
+	}
 	return NewSchemaObjectIdentifier(*v.DatabaseName, *v.SchemaName, v.Name)
 }
 
