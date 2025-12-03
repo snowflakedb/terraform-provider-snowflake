@@ -155,7 +155,6 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeUserWorkloadIdentityAuthenticationMethod,
 		ObjectStruct: sdk.UserWorkloadIdentityAuthenticationMethod{},
 	},
 }

@@ -19,7 +19,7 @@ func NormalizeResourceId(resourceId string) string {
 }
 
 func ResourceId(resource string, id string) string {
-	return NormalizeResourceId(fmt.Sprintf("%s_%s", strings.TrimPrefix(string(resource), "snowflake_"), id))
+	return NormalizeResourceId(fmt.Sprintf("%s_%s", strings.TrimPrefix(resource, "snowflake_"), id))
 }
 
 // ResourceFromModel is a copy of config.ResourceFromModel function, but it doesn't use testing.T internally.
