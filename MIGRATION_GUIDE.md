@@ -29,6 +29,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ### *(improvement)* New fields in user resources and data sources output fields
 We adjusted the `show_output` by adding the missing `has_workload_identity ` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
 
+### *(bugfix)* authentication policy related resources and data sources
+Snowflake recently introduced a new, default authentication policy at the account level, which is applied when no user-defined policy is set.
+
+Due to the structure of this built-in authentication policy
+(specifically, the `null` values for columns like `database_name`, `schema_name`, `owner`, `owner_role_type`, and `created_on`),
+our internal output conversion was failing.
+
+This issue could cause resources or data sources related to authentication policies, such as snowflake_authentication_policies, to fail with errors similar to the following:
+
+```
+sql: Scan error on column index 0, name "created_on": unsupported Scan, storing driver.Value type <nil> into type *time.Time
+```
+
+The internal implementation for authentication policy has now been updated to correctly handle this built-in entity, which lacks the aforementioned field values.
+
 ## v2.10.x ➞ v2.11.0
 
 ### *(new feature)* snowflake_notebook
