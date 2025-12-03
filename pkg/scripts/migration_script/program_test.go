@@ -72,6 +72,12 @@ object_type represents the type of Snowflake object you want to generate terrafo
 			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_warehouse
+		- "account_roles" which expects input in the form of [SHOW ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output. Can also be obtained as a converted CSV output from the snowflake_account_roles data source.
+			Supported resources:
+				- snowflake_account_role
+		- "database_roles" which expects input in the form of [SHOW DATABASE ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
+			Supported resources:
+				- snowflake_database_role
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -305,6 +311,58 @@ import {
 import {
   to = snowflake_warehouse.snowflake_generated_warehouse_WH_GEN2
   id = "\"WH_GEN2\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for account_roles",
+			args: []string{"cmd", "-import=block", "account_roles"},
+			input: `
+"assigned_to_users","comment","created_on","granted_roles","granted_to_roles","is_current","is_default","is_inherited","name","owner"
+"0","","2024-06-06 00:00:00.000 +0000 UTC","0","0","N","N","N","MINIMAL_ROLE","ACCOUNTADMIN"
+"5","This is a test role","2024-06-06 00:00:00.000 +0000 UTC","2","1","Y","N","Y","ADMIN_ROLE","ACCOUNTADMIN"`,
+			expectedOutput: `resource "snowflake_account_role" "snowflake_generated_account_role_MINIMAL_ROLE" {
+  name = "MINIMAL_ROLE"
+}
+
+resource "snowflake_account_role" "snowflake_generated_account_role_ADMIN_ROLE" {
+  name = "ADMIN_ROLE"
+  comment = "This is a test role"
+}
+import {
+  to = snowflake_account_role.snowflake_generated_account_role_MINIMAL_ROLE
+  id = "\"MINIMAL_ROLE\""
+}
+import {
+  to = snowflake_account_role.snowflake_generated_account_role_ADMIN_ROLE
+  id = "\"ADMIN_ROLE\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for database_roles",
+			args: []string{"cmd", "-import=block", "database_roles"},
+			input: `
+"comment","created_on","database_name","granted_database_roles","granted_to_database_roles","granted_to_roles","is_current","is_default","is_inherited","name","owner","owner_role_type"
+"","2024-06-06 00:00:00.000 +0000 UTC","TEST_DB","0","0","0","N","N","N","MINIMAL_ROLE","ACCOUNTADMIN","ROLE"
+"This is a database role","2024-06-06 00:00:00.000 +0000 UTC","PROD_DB","2","1","3","Y","N","Y","ADMIN_ROLE","ACCOUNTADMIN","ROLE"`,
+			expectedOutput: `resource "snowflake_database_role" "snowflake_generated_database_role_TEST_DB_MINIMAL_ROLE" {
+  database = "TEST_DB"
+  name = "MINIMAL_ROLE"
+}
+
+resource "snowflake_database_role" "snowflake_generated_database_role_PROD_DB_ADMIN_ROLE" {
+  database = "PROD_DB"
+  name = "ADMIN_ROLE"
+  comment = "This is a database role"
+}
+import {
+  to = snowflake_database_role.snowflake_generated_database_role_TEST_DB_MINIMAL_ROLE
+  id = "\"TEST_DB\".\"MINIMAL_ROLE\""
+}
+import {
+  to = snowflake_database_role.snowflake_generated_database_role_PROD_DB_ADMIN_ROLE
+  id = "\"PROD_DB\".\"ADMIN_ROLE\""
 }
 `,
 		},

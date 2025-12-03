@@ -291,6 +291,11 @@ type ListingDetails struct {
 	LegacyUniformListingLocators *string
 }
 
+// added manually
+func (v *ListingDetails) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}
+
 // ShowVersionsListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-versions-in-listing.
 type ShowVersionsListingOptions struct {
 	show              bool                    `ddl:"static" sql:"SHOW"`
