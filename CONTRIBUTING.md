@@ -201,7 +201,7 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
   - Validate identifiers with the provider’s identifier validators (e.g., `IsValidIdentifier[...]`) and suppress quoting-only diffs for identifier fields (`suppressIdentifierQuoting`).
 
 - Update semantics
-  - If it's possible implement rename in-place (`ALTER … RENAME TO …`) rather than ForceNew. Align with how recently refactored resources handle renames.
+  - If it's possible, implement rename in-place (`ALTER … RENAME TO …`) rather than ForceNew. Align with how recently refactored resources handle renames.
 
   - Detect external changes for derived outputs via SHOW/DESC triggers when possible. If a particular field cannot be detected externally (e.g., notebooks “from” location due to Snowflake limitations), document that limitation explicitly in the resource docs.
 
