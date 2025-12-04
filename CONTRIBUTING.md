@@ -146,6 +146,99 @@ During our review we try to point out the unhandled special cases, missing tests
 
 **⚠️ Important ⚠️** Tests and checks are not run automatically after your PR. We run them manually, when we are happy with the state of the change (even if some corrections are still necessary).
 
+## Adding Support for a new Snowflake Object
+This guide describes the end-to-end process to add support for a new Snowflake object in the Terraform provider. Work is typically split into multiple PRs: SDK first, then SDK integration tests, followed by the Terraform resource, and finally the data source (SDK → integration tests → resource → data source).
+
+### Prerequisites and conventions
+- Use the SDK generator to define the object and produce the bulk of implementation and validations. See the SDK generator [README](pkg/sdk/generator/README.md) for file layout, generation parts, and commands.
+
+- Do not edit generated files; place any custom helpers or overrides in *_ext.go files. This is the pattern used across the SDK
+
+- Map both SHOW and DESCRIBE outputs. If the outputs differ, generate separate mapping structs and conversion paths; do not force a shared struct across both operations.
+
+### Add the object to the SDK
+- Create `<object_name_plural>_def.go` in the SDK generator defs directory
+
+- Use the DSL to configure operations: CREATE/ALTER/DROP, DESCRIBE, SHOW, and optional ShowById helpers. For example, notebooks use DescribeOperation, ShowOperation, and ShowByIdOperationWithFiltering to support both SHOW and DESCRIBE flows plus a by-ID retrieval.
+
+- If the server returns different shapes for SHOW and DESCRIBE, generate and map them separately.
+
+- From repository root, run make generate-sdk to build all parts
+
+- Expect the generator to create interface, DTOs, builders, validations, impl, and unit test placeholders (e.g., `_gen.go`, `_dto_gen.go`, `_dto_builders_gen.go`, `_validations_gen.go`, `_impl_gen.go`, `_gen_test.go`).
+
+- Avoid encoding server-side numeric ranges unless they are stable and guaranteed (rely on Snowflake for ranges/limits validations, check for only basic cases like integers being non-negative).
+
+- Implement unit tests.
+
+Take a look at [generator readme](pkg/sdk/generator/README.md) and an example [SDK implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4084).
+
+### Add integration tests
+Add integration tests under the SDK’s testint package to validate the SDK behavior against a live Snowflake connection.
+
+Recommended coverage:
+- Lifecycle: create, show, describe, alter (set/unset combinations), rename, drop, and show-by-id where applicable. Prefer asserting fields you directly control (e.g., comment) and anything with server defaults you depend on.
+
+- Nil handling: ensure tests don’t panic on optional pointers (e.g., check for `nil` before calling `.Name()` on an identifier pointer).
+
+- ALTER validations: test both invalid “none set” and “more than one set” branches when you have ExactlyOneValueSet or AtLeastOneValueSet rules.
+
+- Error parity: assert the correct error kinds for missing objects (e.g., prefer consistent “object does not exist or not authorized” variants).
+
+- Assertion helpers: the generator can produce “object asserts” for SHOW/DESC outputs. Use generated assertion structs for concision, but add nil-checks to avoid panics in optional fields.
+
+Take a look at [generator readme](pkg/sdk/generator/README.md) and an example [Integration tests implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4123).
+
+### Add resource
+Implement the resource schema, read/create/update/delete, acceptance tests, and docs. Use the SDK as the source of truth and mirror its SHOW/DESC coverage and validations.
+
+- Schema design
+  - Prefer nested blocks for structured inputs. For example, “create from a stage” is modeled as a `from { stage = "<db>.<schema>.<stage>" path = "path/to/file" }` block rather than a flat string, to align with Snowflake semantics and improve validation.
+
+  - Validate identifiers with the provider’s identifier validators (e.g., `IsValidIdentifier[...]`) and suppress quoting-only diffs for identifier fields (`suppressIdentifierQuoting`).
+
+- Update semantics
+  - Implement rename in-place (`ALTER … RENAME TO …`) rather than ForceNew. Align with how recently refactored resources handle renames.
+
+  - Detect external changes for derived outputs via SHOW/DESC triggers when possible. If a particular field cannot be detected externally (e.g., notebooks “from” location due to Snowflake limitations), document that limitation explicitly in the resource docs.
+
+- Defaults and constraints surfaced in docs
+  - Where Snowflake restricts identifier casing (e.g., only upper-case identifiers are valid for specific warehouse references), document it explicitly and add validators to prevent invalid inputs in plans.
+
+- Documentation and migration guide
+  - Add resource docs under `docs/resources/<object>.md`, including a Preview feature banner where applicable and explicit limitations (e.g., non-detectable external changes).
+
+  - If the object is in preview, update `docs/index.md` to list the preview gating flag (e.g., `snowflake_<object>_resource`) so users can enable the feature via `preview_features_enabled`.
+
+  - Add a Migration Guide entry under the correct version, grouping object support under a single H3 “(new feature) snowflake_” heading with H4 subsections for “Added resource” and “Added data source”.
+
+  - When server capabilities are incomplete , document current limitations and ensure Update/Create sequences handle supported paths without requiring double-applies.
+
+- Implement acceptance tests
+  - Provide “basic” and “complete” cases; test rename, validations, and plan drift (ConfigPlanChecks). Avoid relying on “Safe” client wrappers for correctness checks; validate against the same paths real users hit.
+
+Take a look at an example [Resource implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4195)
+
+### Add data source
+While not strictly required to “support” the object, a data source improves discoverability and enables read-only use cases. For parity with other objects, we recommend adding one.
+
+Example patterns validated by the data source:
+- Filtering aligned to SHOW
+  - Support `like`, `starts_with`, and `limit { rows, from }` to mirror SHOW filters; include `with_describe` to optionally call DESCRIBE for each item. Keep `with_describe` default-on but allow turning it off to reduce calls in large accounts.
+
+- Output shape
+  - Aggregate into a single `<object_name_plural>` collection with nested `show_output` (SHOW) and `describe_output` (DESCRIBE) blocks containing fields as strings/numbers
+
+- Documentation and examples
+  - Provide simple, filter, and pagination examples; include a note about default behavior of `with_describe`.
+
+- Provider preview gate and migration guide
+  - Add the `_datasource` flag to `docs/index.md` under preview/stable features (e.g., `snowflake_<objects>_datasource`)
+
+  - Add the “Added data source” H4 subsection under the same feature entry in the Migration Guide and link Snowflake’s SHOW docs where appropriate.
+
+Take a look at [Data source implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4209) and its follow up with extra tests [Extended test coverage for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4237)
+
 ## Advanced Debugging
 
 If you want to build and test the provider locally (manually, not through acceptance tests), build the binary first using `make build-local` or install to the proper local directory by invoking `make install-tf` (to uninstall run `make uninstall-tf`).
