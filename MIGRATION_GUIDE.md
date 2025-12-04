@@ -43,6 +43,8 @@ sql: Scan error on column index 0, name "created_on": unsupported Scan, storing 
 ```
 
 The internal implementation for authentication policy has now been updated to correctly handle this built-in entity, which lacks the aforementioned field values.
+The `snowflake_authentication_policies` data source was slightly adjusted to not query describe output for the new built-in authentication policy
+as without database name and schema name it cannot be referenced.
 
 ## v2.10.x ➞ v2.11.0
 

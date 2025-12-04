@@ -88,7 +88,7 @@ func ReadAuthenticationPolicies(ctx context.Context, d *schema.ResourceData, met
 	for i, authenticationPolicy := range authenticationPolicies {
 		authenticationPolicy := authenticationPolicy
 		var authenticationPolicyDescriptions []map[string]any
-		if d.Get("with_describe").(bool) {
+		if d.Get("with_describe").(bool) && authenticationPolicy.DatabaseName != nil && authenticationPolicy.SchemaName != nil {
 			describeResult, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
 			if err != nil {
 				return diag.FromErr(err)
