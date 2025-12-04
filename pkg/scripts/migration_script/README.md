@@ -111,6 +111,9 @@ where script options are:
   - `users` which expects a converted CSV output from the snowflake_users data source.
       To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW USERS output, so the CSV header looks like `"comment","created_on",...,"abort_detached_query_value","abort_detached_query_level","timezone_value","timezone_level",...`
       When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "USER".
+
+      Caution: password parameter is not supported as it is returned in the form of `"***"` from the data source.
+
       For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
 
     Different user types are mapped to their respective Terraform resources based on the `type` attribute:
@@ -601,7 +604,7 @@ As an example, let's import all schemas in a given database. First, we need to d
 terraform {
   required_providers {
     snowflake = {
-      source = "Snowflake-Labs/snowflake"
+      source = "snowflakedb/snowflake"
     }
     local = {
       source = "hashicorp/local"
@@ -613,13 +616,19 @@ data "snowflake_schemas" "test" {
   in {
     database = "DATABASE"
   }
+
+  # Enable describe and parameters output
+  with_describe   = true
+  with_parameters = true
 }
 
 locals {
-  # Transform each schema by merging show_output and flattened parameters
+  # Transform each schema by merging show_output, describe_output, and flattened parameters
   schemas_flattened = [
     for schema in data.snowflake_schemas.test.schemas : merge(
       schema.show_output[0],
+      # Include describe output fields (if describe_output is present)
+      length(schema.describe_output) > 0 ? schema.describe_output[0] : {},
       # Flatten parameters: convert each parameter to {param_name}_value and {param_name}_level
       {
         for param_key, param_values in schema.parameters[0] :
@@ -635,12 +644,12 @@ locals {
   # Get all unique keys from the first schema to create CSV header
   csv_header = join(",", [for key in keys(local.schemas_flattened[0]) : "\"${key}\""])
 
-  # Convert each schema object to CSV row (properly escape quotes for CSV format)
+  # Convert each schema object to CSV row (properly escape quotes and remove newlines for CSV format)
   csv_rows = [
     for schema in local.schemas_flattened :
       join(",", [
         for key in keys(local.schemas_flattened[0]) :
-        "\"${replace(tostring(lookup(schema, key, "")), "\"", "\"\"")}\""
+        "\"${replace(replace(tostring(lookup(schema, key, "")), "\n", " "), "\"", "\"\"")}\""
       ])
   ]
 
@@ -660,76 +669,6 @@ go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migrat
 ```
 
 This will output the generated configuration and import blocks for the specified schemas.
-
-#### Users example
-
-Similarly, you can import users with their parameters. The following example shows how to generate a CSV file for users:
-
-```terraform
-terraform {
-  required_providers {
-    snowflake = {
-      source = "Snowflake-Labs/snowflake"
-    }
-    local = {
-      source = "hashicorp/local"
-    }
-  }
-}
-
-data "snowflake_users" "all" {
-  # Optional: filter users by pattern (recommended to avoid loading all users)
-  # like = "TEST_%"
-}
-
-locals {
-  # Transform each user by merging show_output and flattened parameters
-  users_flattened = [
-    for user in data.snowflake_users.all.users : merge(
-      user.show_output[0],
-      # Flatten parameters: convert each parameter to {param_name}_value and {param_name}_level
-      {
-        for param_key, param_values in user.parameters[0] :
-        "${param_key}_value" => param_values[0].value
-      },
-      {
-        for param_key, param_values in user.parameters[0] :
-        "${param_key}_level" => param_values[0].level
-      }
-    )
-  ]
-
-  # Get all unique keys from the first user to create CSV header
-  users_csv_header = join(",", [for key in keys(local.users_flattened[0]) : "\"${key}\""])
-
-  # Convert each user object to CSV row (properly escape quotes for CSV format)
-  users_csv_rows = [
-    for user in local.users_flattened :
-      join(",", [
-        for key in keys(local.users_flattened[0]) :
-        "\"${replace(tostring(lookup(user, key, "")), "\"", "\"\"")}\""
-      ])
-  ]
-
-  # Combine header and rows
-  users_csv_content = join("\n", concat([local.users_csv_header], local.users_csv_rows))
-}
-
-resource "local_file" "users_csv" {
-  content  = local.users_csv_content
-  filename = "${path.module}/users.csv"
-}
-```
-
-After running `terraform apply`, run the migration script:
-```shell
-go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@main -import=block users < ./users.csv
-```
-
-The script will automatically map users to the correct Terraform resource type based on their `type` attribute:
-- Users with `type = "PERSON"` (or empty) will generate `snowflake_user` resources
-- Users with `type = "SERVICE"` will generate `snowflake_service_user` resources
-- Users with `type = "LEGACY_SERVICE"` will generate `snowflake_legacy_service_user` resources
 
 ## Limitations
 

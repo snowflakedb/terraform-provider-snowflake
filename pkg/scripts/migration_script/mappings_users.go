@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -19,41 +17,7 @@ const (
 )
 
 func HandleUsers(config *Config, csvInput [][]string) (string, error) {
-	users, err := ConvertCsvInput[UserCsvRow, UserRepresentation](csvInput)
-	if err != nil {
-		return "", err
-	}
-
-	resourceModels := make([]accconfig.ResourceModel, 0)
-	importModels := make([]ImportModel, 0)
-
-	for _, user := range users {
-		mappedModel, importModel, err := MapUserToModel(user)
-		if err != nil {
-			log.Printf("Error converting user: %+v to model: %v. Skipping user and continuing with other mappings.", user, err)
-		} else {
-			resourceModels = append(resourceModels, mappedModel)
-			importModels = append(importModels, *importModel)
-		}
-	}
-
-	mappedModels, err := collections.MapErr(resourceModels, ResourceFromModel)
-	if err != nil {
-		return "", fmt.Errorf("errors from resource model to HCL conversion: %w", err)
-	}
-
-	mappedImports, err := collections.MapErr(importModels, func(importModel ImportModel) (string, error) {
-		return TransformImportModel(config, importModel)
-	})
-	if err != nil {
-		return "", fmt.Errorf("errors during import transformations: %w", err)
-	}
-
-	outputBuilder := new(strings.Builder)
-	outputBuilder.WriteString(collections.JoinStrings(mappedModels, "\n"))
-	outputBuilder.WriteString(collections.JoinStrings(mappedImports, ""))
-
-	return outputBuilder.String(), nil
+	return HandleResources[UserCsvRow, UserRepresentation](config, csvInput, MapUserToModel)
 }
 
 func MapUserToModel(user UserRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
@@ -81,8 +45,11 @@ func MapToUser(user UserRepresentation) (accconfig.ResourceModel, *ImportModel, 
 	handleIfNotEmpty(user.LoginName, resourceModel.WithLoginName)
 	handleIfNotEmpty(user.DisplayName, resourceModel.WithDisplayName)
 	handleIfNotEmpty(user.FirstName, resourceModel.WithFirstName)
+	handleIfNotEmpty(user.MiddleName, resourceModel.WithMiddleName)
 	handleIfNotEmpty(user.LastName, resourceModel.WithLastName)
 	handleIfNotEmpty(user.Email, resourceModel.WithEmail)
+	handleIfNotEmpty(user.RsaPublicKey, resourceModel.WithRsaPublicKey)
+	handleIfNotEmpty(user.RsaPublicKey2, resourceModel.WithRsaPublicKey2)
 	handleIfNotEmpty(user.DefaultWarehouse, resourceModel.WithDefaultWarehouse)
 	handleIfNotEmpty(user.DefaultNamespace, resourceModel.WithDefaultNamespace)
 	handleIfNotEmpty(user.DefaultRole, resourceModel.WithDefaultRole)
@@ -177,6 +144,8 @@ func MapToServiceUser(user UserRepresentation) (accconfig.ResourceModel, *Import
 	handleIfNotEmpty(user.DefaultNamespace, resourceModel.WithDefaultNamespace)
 	handleIfNotEmpty(user.DefaultRole, resourceModel.WithDefaultRole)
 	handleIf(user.Disabled, resourceModel.WithDisabled)
+	handleIfNotEmpty(user.RsaPublicKey, resourceModel.WithRsaPublicKey)
+	handleIfNotEmpty(user.RsaPublicKey2, resourceModel.WithRsaPublicKey2)
 
 	// Secondary roles
 	secondaryRolesOption := user.GetSecondaryRolesOption()
@@ -268,6 +237,8 @@ func MapToLegacyServiceUser(user UserRepresentation) (accconfig.ResourceModel, *
 	handleIfNotEmpty(user.DefaultRole, resourceModel.WithDefaultRole)
 	handleIf(user.Disabled, resourceModel.WithDisabled)
 	handleIf(user.MustChangePassword, resourceModel.WithMustChangePassword)
+	handleIfNotEmpty(user.RsaPublicKey, resourceModel.WithRsaPublicKey)
+	handleIfNotEmpty(user.RsaPublicKey2, resourceModel.WithRsaPublicKey2)
 
 	// Secondary roles
 	secondaryRolesOption := user.GetSecondaryRolesOption()

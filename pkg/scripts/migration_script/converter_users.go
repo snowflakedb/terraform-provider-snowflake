@@ -22,6 +22,8 @@ type UserCsvRow struct {
 	ExpiresAtTime                                 string `csv:"expires_at_time"`
 	ExtAuthnDuo                                   string `csv:"ext_authn_duo"`
 	ExtAuthnUid                                   string `csv:"ext_authn_uid"`
+	CustomLandingPageUrl                          string `csv:"custom_landing_page_url"`
+	CustomLandingPageUrlFlushNextUiLoad           string `csv:"custom_landing_page_url_flush_next_ui_load"`
 	FirstName                                     string `csv:"first_name"`
 	HasMfa                                        string `csv:"has_mfa"`
 	HasPassword                                   string `csv:"has_password"`
@@ -31,12 +33,21 @@ type UserCsvRow struct {
 	LastSuccessLogin                              string `csv:"last_success_login"`
 	LockedUntilTime                               string `csv:"locked_until_time"`
 	LoginName                                     string `csv:"login_name"`
+	MiddleName                                    string `csv:"middle_name"`
 	MinsToBypassMfa                               string `csv:"mins_to_bypass_mfa"`
+	MinsToBypassNetworkPolicy                     string `csv:"mins_to_bypass_network_policy"`
 	MinsToUnlock                                  string `csv:"mins_to_unlock"`
 	MustChangePassword                            string `csv:"must_change_password"`
 	Name                                          string `csv:"name"`
 	Owner                                         string `csv:"owner"`
+	Password                                      string `csv:"password"`
+	PasswordLastSetTime                           string `csv:"password_last_set_time"`
+	RsaPublicKey                                  string `csv:"rsa_public_key"`
+	RsaPublicKey2                                 string `csv:"rsa_public_key2"`
+	RsaPublicKey2Fp                               string `csv:"rsa_public_key2_fp"`
+	RsaPublicKeyFp                                string `csv:"rsa_public_key_fp"`
 	SnowflakeLock                                 string `csv:"snowflake_lock"`
+	SnowflakeSupport                              string `csv:"snowflake_support"`
 	Type                                          string `csv:"type"`
 	AbortDetachedQueryLevel                       string `csv:"abort_detached_query_level"`
 	AbortDetachedQueryValue                       string `csv:"abort_detached_query_value"`
@@ -175,6 +186,19 @@ type UserCsvRow struct {
 type UserRepresentation struct {
 	sdk.User
 
+	// describe output fields (not in sdk.User)
+	MiddleName                          string
+	Password                            string
+	PasswordLastSetTime                 string
+	SnowflakeSupport                    bool
+	MinsToBypassNetworkPolicy           string
+	RsaPublicKey                        string
+	RsaPublicKeyFp                      string
+	RsaPublicKey2                       string
+	RsaPublicKey2Fp                     string
+	CustomLandingPageUrl                string
+	CustomLandingPageUrlFlushNextUiLoad bool
+
 	// parameters
 	AbortDetachedQuery                       *bool
 	ActivePythonProfiler                     *string
@@ -273,6 +297,18 @@ func (row UserCsvRow) convert() (*UserRepresentation, error) {
 			HasMfa:                row.HasMfa == "true",
 			HasWorkloadIdentity:   row.HasWorkloadIdentity == "true",
 		},
+		// describe output fields
+		MiddleName:                          row.MiddleName,
+		Password:                            row.Password,
+		PasswordLastSetTime:                 row.PasswordLastSetTime,
+		SnowflakeSupport:                    row.SnowflakeSupport == "true",
+		MinsToBypassNetworkPolicy:           row.MinsToBypassNetworkPolicy,
+		RsaPublicKey:                        row.RsaPublicKey,
+		RsaPublicKeyFp:                      row.RsaPublicKeyFp,
+		RsaPublicKey2:                       row.RsaPublicKey2,
+		RsaPublicKey2Fp:                     row.RsaPublicKey2Fp,
+		CustomLandingPageUrl:                row.CustomLandingPageUrl,
+		CustomLandingPageUrlFlushNextUiLoad: row.CustomLandingPageUrlFlushNextUiLoad == "true",
 	}
 
 	handler := newParameterHandler(sdk.ParameterTypeUser)

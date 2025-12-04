@@ -183,8 +183,8 @@ object_type represents the type of Snowflake object you want to generate terrafo
 		- "database_roles" which expects input in the form of [SHOW DATABASE ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
 			Supported resources:
 				- snowflake_database_role
-		- "users" which expects input in the form of [SHOW USERS](https://docs.snowflake.com/en/sql-reference/sql/show-users) output. Can also be obtained as a converted CSV output from the snowflake_users data source.
-			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW USERS output.
+		- "users" which expects a converted CSV output from the snowflake_users data source.
+      		To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW USERS output, so the CSV header looks like "comment","created_on",...,"abort_detached_query_value","abort_detached_query_level","timezone_value","timezone_level",...
 			Different user types (PERSON, SERVICE, LEGACY_SERVICE) are mapped to their respective terraform resources:
 				- PERSON (or empty) -> snowflake_user
 				- SERVICE -> snowflake_service_user
