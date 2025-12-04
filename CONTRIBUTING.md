@@ -8,12 +8,13 @@
 - [Making a contribution](#making-a-contribution)
   - [Discuss a change with us!](#discuss-a-change-with-us)
   - [Follow the code conventions inside the repository](#follow-the-code-conventions-inside-the-repository)
-  - [Introducing a new part of the SDK](#introducing-a-new-part-of-the-sdk)
   - [Test the change](#test-the-change)
   - [Describe the breaking changes](#describe-the-breaking-changes)
   - [Before submitting the PR](#before-submitting-the-pr)
   - [Naming and describing the PR](#naming-and-describing-the-pr)
   - [Requesting the review](#requesting-the-review)
+  - [Adding support for a new snowflake object](#adding-support-for-a-new-snowflake-object)
+    - [Introducing a new part of the SDK](#add-the-object-to-the-sdk)
 - [Advanced Debugging](#advanced-debugging)
 - [Extending the migration script](#extending-the-migration-script)
 
@@ -104,10 +105,6 @@ It's best to approach us through the GitHub issues: either by commenting the alr
 ### Follow the code conventions inside the repository
 We believe that code following the same conventions is easier to maintain and extend. When working on the given part of the provider try to follow the local solutions and not introduce too much new ideas.
 
-### Introducing a new part of the SDK
-
-To create new objects in our SDK we use quickly created generator that outputs the majority of the files needed. These files should be later edited and filled with the missing parts. We plan to improve the generator later on, but it should be enough for now. Please read more in the [generator readme](pkg/sdk/generator/README.md).
-
 ### Test the change
 Every introduced change should be tested. Depending on the type of the change it may require (any or mix of):
 - adding/modifying existing unit tests (e.g. changing the behavior of validation in the SDK)
@@ -144,6 +141,8 @@ We check for the new PRs in our repository every day Monday-Friday. We usually n
 
 During our review we try to point out the unhandled special cases, missing tests, and deviations from the established conventions. Remember, review comment is like an invitation to dance: you don't have to agree but please provide the substantive reasons.
 
+Please do not resolve our comments. We prefer to resolve ourselves after the comments are followed up by the contributor.
+
 **⚠️ Important ⚠️** Tests and checks are not run automatically after your PR. We run them manually, when we are happy with the state of the change (even if some corrections are still necessary).
 
 ## Adding Support for a new Snowflake Object
@@ -171,6 +170,8 @@ This guide describes the end-to-end process to add support for a new Snowflake o
 
 - Implement unit tests.
 
+-
+
 Take a look at [generator readme](pkg/sdk/generator/README.md) and an example [SDK implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4084).
 
 ### Add integration tests
@@ -187,6 +188,8 @@ Recommended coverage:
 
 - Assertion helpers: the generator can produce “object asserts” for SHOW/DESC outputs. Use generated assertion structs for concision, but add nil-checks to avoid panics in optional fields.
 
+- use `make generate-snowflake-object-assertions` to generate the assertions for the integration tests.
+
 Take a look at [generator readme](pkg/sdk/generator/README.md) and an example [Integration tests implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4123).
 
 ### Add resource
@@ -198,7 +201,7 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
   - Validate identifiers with the provider’s identifier validators (e.g., `IsValidIdentifier[...]`) and suppress quoting-only diffs for identifier fields (`suppressIdentifierQuoting`).
 
 - Update semantics
-  - Implement rename in-place (`ALTER … RENAME TO …`) rather than ForceNew. Align with how recently refactored resources handle renames.
+  - If it's possible implement rename in-place (`ALTER … RENAME TO …`) rather than ForceNew. Align with how recently refactored resources handle renames.
 
   - Detect external changes for derived outputs via SHOW/DESC triggers when possible. If a particular field cannot be detected externally (e.g., notebooks “from” location due to Snowflake limitations), document that limitation explicitly in the resource docs.
 
@@ -208,11 +211,9 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
 - Documentation and migration guide
   - Add resource docs under `docs/resources/<object>.md`, including a Preview feature banner where applicable and explicit limitations (e.g., non-detectable external changes).
 
-  - If the object is in preview, update `docs/index.md` to list the preview gating flag (e.g., `snowflake_<object>_resource`) so users can enable the feature via `preview_features_enabled`.
-
   - Add a Migration Guide entry under the correct version, grouping object support under a single H3 “(new feature) snowflake_” heading with H4 subsections for “Added resource” and “Added data source”.
 
-  - When server capabilities are incomplete , document current limitations and ensure Update/Create sequences handle supported paths without requiring double-applies.
+  - When server capabilities are incomplete, document current limitations and ensure Update/Create sequences handle supported paths without requiring double-applies. Remember to use the model builder and assertions that you can automatically generate.
 
 - Implement acceptance tests
   - Provide “basic” and “complete” cases; test rename, validations, and plan drift (ConfigPlanChecks). Avoid relying on “Safe” client wrappers for correctness checks; validate against the same paths real users hit.
