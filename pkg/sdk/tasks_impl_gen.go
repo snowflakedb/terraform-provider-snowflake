@@ -334,7 +334,12 @@ func (r taskDBRow) convert() (*Task, error) {
 		task.LastSuspendedReason = r.LastSuspendedReason.String
 	}
 	if r.TargetCompletionInterval.Valid {
-		task.TargetCompletionInterval = r.TargetCompletionInterval.String
+		targetCompletionInterval, err := parseTargetCompletionInterval(r.TargetCompletionInterval.String)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse target completion interval: %w", err)
+		} else {
+			task.TargetCompletionInterval = targetCompletionInterval
+		}
 	}
 	return &task, nil
 }

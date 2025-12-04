@@ -716,27 +716,24 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 				return d.Set("schedule", nil)
 			}(),
 			func() error {
-				if len(task.TargetCompletionInterval) > 0 {
-					targetInterval, err := sdk.ParseTargetCompletionInterval(task.TargetCompletionInterval)
-					if err != nil {
-						return err
-					}
+				if task.TargetCompletionInterval != nil {
+					targetInterval := *task.TargetCompletionInterval
 					switch {
-					case targetInterval.Hours > 0:
+					case targetInterval.Hours != nil:
 						if err := d.Set("target_completion_interval", []any{map[string]any{
-							"hours": targetInterval.Hours,
+							"hours": *targetInterval.Hours,
 						}}); err != nil {
 							return err
 						}
-					case targetInterval.Minutes > 0:
+					case targetInterval.Minutes != nil:
 						if err := d.Set("target_completion_interval", []any{map[string]any{
-							"minutes": targetInterval.Minutes,
+							"minutes": *targetInterval.Minutes,
 						}}); err != nil {
 							return err
 						}
-					case targetInterval.Seconds > 0:
+					case targetInterval.Seconds != nil:
 						if err := d.Set("target_completion_interval", []any{map[string]any{
-							"seconds": targetInterval.Seconds,
+							"seconds": *targetInterval.Seconds,
 						}}); err != nil {
 							return err
 						}

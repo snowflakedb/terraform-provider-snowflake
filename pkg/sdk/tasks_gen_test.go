@@ -711,59 +711,58 @@ func TestParseTaskSchedule(t *testing.T) {
 func TestParseTargetCompletionInterval(t *testing.T) {
 	valid := map[string]struct {
 		Input    string
-		Expected *TargetCompletionInterval
+		Expected *TaskTargetCompletionInterval
 	}{
 		"valid hours singular": {
 			Input:    "1 HOUR",
-			Expected: &TargetCompletionInterval{Hours: 1},
+			Expected: &TaskTargetCompletionInterval{Hours: Pointer(1)},
 		},
 		"valid hours plural": {
 			Input:    "2 HOURS",
-			Expected: &TargetCompletionInterval{Hours: 2},
+			Expected: &TaskTargetCompletionInterval{Hours: Pointer(2)},
 		},
 		"valid hours - short form": {
 			Input:    "2 h",
-			Expected: &TargetCompletionInterval{Hours: 2},
+			Expected: &TaskTargetCompletionInterval{Hours: Pointer(2)},
 		},
 		"valid minutes singular": {
 			Input:    "1 MINUTE",
-			Expected: &TargetCompletionInterval{Minutes: 1},
+			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(1)},
 		},
 		"valid minutes plural": {
 			Input:    "10 MINUTES",
-			Expected: &TargetCompletionInterval{Minutes: 10},
+			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(10)},
 		},
 		"valid minutes - short form": {
 			Input:    "5 m",
-			Expected: &TargetCompletionInterval{Minutes: 5},
+			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(5)},
 		},
 		"valid seconds singular": {
 			Input:    "1 SECOND",
-			Expected: &TargetCompletionInterval{Seconds: 1},
+			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(1)},
 		},
 		"valid seconds plural": {
 			Input:    "30 SECONDS",
-			Expected: &TargetCompletionInterval{Seconds: 30},
+			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(30)},
 		},
 		"valid seconds - short form": {
 			Input:    "30 s",
-			Expected: &TargetCompletionInterval{Seconds: 30},
+			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(30)},
 		},
 		"valid lowercase": {
 			Input:    "5 minutes",
-			Expected: &TargetCompletionInterval{Minutes: 5},
+			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(5)},
 		},
 		"leading/trailing spaces": {
 			Input:    " 7 HOURS ",
-			Expected: &TargetCompletionInterval{Hours: 7},
+			Expected: &TaskTargetCompletionInterval{Hours: Pointer(7)},
 		},
 	}
 
 	for name, tc := range valid {
 		t.Run(name, func(t *testing.T) {
-			got, err := ParseTargetCompletionInterval(tc.Input)
+			got, err := parseTargetCompletionInterval(tc.Input)
 			require.NoError(t, err)
-			require.NotNil(t, got)
 			assert.Equal(t, tc.Expected, got)
 		})
 	}
@@ -773,29 +772,29 @@ func TestParseTargetCompletionInterval(t *testing.T) {
 	}{
 		"invalid format: missing value": {
 			Input: "MINUTES",
-			Error: "invalid target completion interval format",
+			Error: "invalid task target completion interval format",
 		},
 		"invalid format: extra parts": {
 			Input: "1 HOURS EXTRA",
-			Error: "invalid target completion interval format",
+			Error: "invalid task target completion interval format",
 		},
 		"invalid value: not a number": {
 			Input: "foo HOURS",
-			Error: "invalid target completion interval value",
+			Error: "invalid task target completion interval value",
 		},
 		"invalid unit: nonsense": {
 			Input: "5 CATS",
-			Error: "invalid target completion interval unit",
+			Error: "invalid task target completion interval unit",
 		},
 		"empty input": {
 			Input: "",
-			Error: "invalid target completion interval format",
+			Error: "invalid task target completion interval format",
 		},
 	}
 	for name, tc := range invalid {
 		t.Run(name, func(t *testing.T) {
-			got, err := ParseTargetCompletionInterval(tc.Input)
-			assert.Nil(t, got)
+			got, err := parseTargetCompletionInterval(tc.Input)
+			assert.Empty(t, got)
 			assert.ErrorContains(t, err, tc.Error)
 		})
 	}

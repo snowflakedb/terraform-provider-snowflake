@@ -238,34 +238,34 @@ func GetRootTasks(v Tasks, ctx context.Context, id SchemaObjectIdentifier) ([]Ta
 	return rootTasks, nil
 }
 
-type TargetCompletionInterval struct {
-	Hours   int
-	Minutes int
-	Seconds int
+type TaskTargetCompletionInterval struct {
+	Hours   *int
+	Minutes *int
+	Seconds *int
 }
 
-func ParseTargetCompletionInterval(interval string) (*TargetCompletionInterval, error) {
+func parseTargetCompletionInterval(interval string) (*TaskTargetCompletionInterval, error) {
 	upperInterval := strings.ToUpper(interval)
 	parts := strings.Split(strings.TrimSpace(upperInterval), " ")
 
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid target completion interval format: %s", interval)
+		return nil, fmt.Errorf("invalid task target completion interval format: %s", interval)
 	}
 
 	value, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return nil, fmt.Errorf("invalid target completion interval value: %s", interval)
+		return nil, fmt.Errorf("invalid task target completion interval value: %s", interval)
 	}
 
 	unit := parts[1]
 	switch {
 	case slices.Contains([]string{"HOURS", "HOUR", "H"}, unit):
-		return &TargetCompletionInterval{Hours: value}, nil
+		return &TaskTargetCompletionInterval{Hours: &value}, nil
 	case slices.Contains([]string{"MINUTES", "MINUTE", "M"}, unit):
-		return &TargetCompletionInterval{Minutes: value}, nil
+		return &TaskTargetCompletionInterval{Minutes: &value}, nil
 	case slices.Contains([]string{"SECONDS", "SECOND", "S"}, unit):
-		return &TargetCompletionInterval{Seconds: value}, nil
+		return &TaskTargetCompletionInterval{Seconds: &value}, nil
 	default:
-		return nil, fmt.Errorf("invalid target completion interval unit: %s", unit)
+		return nil, fmt.Errorf("invalid task target completion interval unit: %s", unit)
 	}
 }

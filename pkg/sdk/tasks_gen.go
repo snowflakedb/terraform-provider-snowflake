@@ -221,7 +221,7 @@ type Task struct {
 	Budget                    string
 	TaskRelations             TaskRelations
 	LastSuspendedReason       string
-	TargetCompletionInterval  string
+	TargetCompletionInterval  *TaskTargetCompletionInterval
 }
 
 func (v *Task) ID() SchemaObjectIdentifier {

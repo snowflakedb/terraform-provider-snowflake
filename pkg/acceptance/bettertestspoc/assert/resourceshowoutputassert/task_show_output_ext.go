@@ -99,22 +99,31 @@ func (t *TaskShowOutputAssert) HasScheduleCron(cron string) *TaskShowOutputAsser
 }
 
 func (t *TaskShowOutputAssert) HasTargetCompletionIntervalEmpty() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", ""))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "0"))
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasTargetCompletionIntervalSeconds(seconds int) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d SECONDS", seconds)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "1"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.seconds", strconv.Itoa(seconds)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.minutes", "0"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.hours", "0"))
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasTargetCompletionIntervalMinutes(minutes int) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d MINUTES", minutes)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "1"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.minutes", strconv.Itoa(minutes)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.seconds", "0"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.hours", "0"))
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasTargetCompletionIntervalHours(hours int) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", fmt.Sprintf("%d HOURS", hours)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "1"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.hours", strconv.Itoa(hours)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.seconds", "0"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.minutes", "0"))
 	return t
 }
 

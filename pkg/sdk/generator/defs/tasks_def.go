@@ -54,7 +54,7 @@ var task = g.PlainStruct("Task").
 	Text("Budget").
 	Field("TaskRelations", "TaskRelations").
 	Text("LastSuspendedReason").
-	Text("TargetCompletionInterval")
+	Field("TargetCompletionInterval", "*TaskTargetCompletionInterval")
 
 var taskCreateWarehouse = g.NewQueryStruct("CreateTaskWarehouse").
 	OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).

@@ -999,9 +999,19 @@ Read-Only:
 - `schedule` (String)
 - `schema_name` (String)
 - `state` (String)
-- `target_completion_interval` (String)
+- `target_completion_interval` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--show_output--target_completion_interval))
 - `task_relations` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--show_output--task_relations))
 - `warehouse` (String)
+
+<a id="nestedobjatt--tasks--show_output--target_completion_interval"></a>
+### Nested Schema for `tasks.show_output.target_completion_interval`
+
+Read-Only:
+
+- `hours` (Number)
+- `minutes` (Number)
+- `seconds` (Number)
+
 
 <a id="nestedobjatt--tasks--show_output--task_relations"></a>
 ### Nested Schema for `tasks.show_output.task_relations`

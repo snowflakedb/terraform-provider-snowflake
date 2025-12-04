@@ -531,7 +531,7 @@ func TestInt_Tasks(t *testing.T) {
 		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
 		assertThatObject(t, objectassert.Task(t, id).
 			HasNoWarehouse().
-			HasTargetCompletionInterval("10 MINUTES"),
+			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(10)}),
 		)
 	})
 
@@ -1136,7 +1136,7 @@ func TestInt_Tasks(t *testing.T) {
 		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
 		assertThatObject(t, objectassert.Task(t, task.ID()).
 			HasNoWarehouse().
-			HasTargetCompletionInterval("15 MINUTES"),
+			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(15)}),
 		)
 
 		// Unset the serverless task parameters
@@ -1209,7 +1209,7 @@ func TestInt_Tasks(t *testing.T) {
 		)
 		assertThatObject(t, objectassert.Task(t, task.ID()).
 			HasNoWarehouse().
-			HasTargetCompletionInterval("10 MINUTES"),
+			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(10)}),
 		)
 
 		// Convert back to warehouse-based task - fails

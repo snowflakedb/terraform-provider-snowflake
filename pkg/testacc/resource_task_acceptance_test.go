@@ -2445,6 +2445,11 @@ func TestAcc_Task_ServerlessTaskFields(t *testing.T) {
 					))
 				},
 				Config: config.FromModels(t, serverlessModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(serverlessModel.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
