@@ -209,14 +209,16 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
   - Where Snowflake restricts identifier casing (e.g., only upper-case identifiers are valid for specific warehouse references), document it explicitly and add validators to prevent invalid inputs in plans.
 
 - Documentation and migration guide
-  - Add resource docs under `docs/resources/<object>.md`, including a Preview feature banner where applicable and explicit limitations (e.g., non-detectable external changes).
-
   - Add a Migration Guide entry under the correct version, grouping object support under a single H3 “(new feature) snowflake_” heading with H4 subsections for “Added resource” and “Added data source”.
 
   - When server capabilities are incomplete, document current limitations and ensure Update/Create sequences handle supported paths without requiring double-applies. Remember to use the model builder and assertions that you can automatically generate.
 
 - Implement acceptance tests
   - Provide “basic” and “complete” cases; test rename, validations, and plan drift (ConfigPlanChecks). Avoid relying on “Safe” client wrappers for correctness checks; validate against the same paths real users hit.
+
+- use `make generate-show-output-schemas` to generate show schemas.
+
+- use `make generate-all-assertions-and-config-models` to generate assertions and config models.
 
 Take a look at an example [Resource implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4195)
 
@@ -234,9 +236,11 @@ Example patterns validated by the data source:
   - Provide simple, filter, and pagination examples; include a note about default behavior of `with_describe`.
 
 - Provider preview gate and migration guide
-  - Add the `_datasource` flag to `docs/index.md` under preview/stable features (e.g., `snowflake_<objects>_datasource`)
-
   - Add the “Added data source” H4 subsection under the same feature entry in the Migration Guide and link Snowflake’s SHOW docs where appropriate.
+
+- use `make generate-all-assertions-and-config-models` to generate config model.
+
+- use `make docs` to generate documentation based on the `.md.tmpl` file (which is the file you should edit instead of `.md` file).
 
 Take a look at [Data source implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4209) and its follow up with extra tests [Extended test coverage for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4237)
 
