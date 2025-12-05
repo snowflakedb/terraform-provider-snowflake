@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -290,7 +291,8 @@ func (t *TaskAssert) HasTargetCompletionInterval(expected sdk.TaskTargetCompleti
 		if o.TargetCompletionInterval == nil {
 			return fmt.Errorf("expected target completion interval to have value; got: nil")
 		}
-		if *o.TargetCompletionInterval != expected {
+		// adjusted manually
+		if !reflect.DeepEqual(*o.TargetCompletionInterval, expected) {
 			return fmt.Errorf("expected target completion interval: %v; got: %v", expected, *o.TargetCompletionInterval)
 		}
 		return nil
