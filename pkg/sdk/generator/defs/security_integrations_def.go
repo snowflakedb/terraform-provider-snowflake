@@ -480,11 +480,7 @@ var securityIntegrationsDef = g.NewInterface(
 					g.KindOfT[sdkcommons.ScimSecurityIntegrationScimClientOption](),
 					g.ParameterOptions().SingleQuotes().Required(),
 				).
-				Identifier(
-					"RunAsRole",
-					g.KindOfT[sdkcommons.AccountObjectIdentifier](),
-					g.IdentifierOptions().Equals().SQL("RUN_AS_ROLE").Required(),
-				).
+				TextAssignment("RUN_AS_ROLE", g.ParameterOptions().Required().NoQuotes()).
 				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().NoQuotes()).
 				OptionalBooleanAssignment("SYNC_PASSWORD", g.ParameterOptions())
 		}),

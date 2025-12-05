@@ -175,7 +175,7 @@ type CreateScimSecurityIntegrationRequest struct {
 	name        AccountObjectIdentifier // required
 	Enabled     *bool
 	ScimClient  ScimSecurityIntegrationScimClientOption // required
-	RunAsRole   AccountObjectIdentifier                 // required
+	RunAsRole   string                                  // required
 	// adjusted manually
 	NetworkPolicy *AccountObjectIdentifier
 	SyncPassword  *bool

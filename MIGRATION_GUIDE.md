@@ -28,7 +28,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(improvement)* snowflake_scim_integration now accepts custom role names for run_as_role
 
-Previously, the `run_as_role` field in the `snowflake_scim_integration` resource only accepted predefined role names: `OKTA_PROVISIONER`, `AAD_PROVISIONER`, or `GENERIC_SCIM_PROVISIONER`.
+Previously, the `run_as_role` field in the [snowflake_scim_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/2.11.0/docs/resources/scim_integration) resource only accepted predefined role names: `OKTA_PROVISIONER`, `AAD_PROVISIONER`, or `GENERIC_SCIM_PROVISIONER`.
 
 Now, the field accepts any custom role name, allowing you to use organization-specific roles for SCIM provisioning. This field is now case-sensitive. The exception is if you set any of `okta_provisioner`, `aad_provisioner`, or `generic_scim_provisioner`.
 To maintain compatibility and avoid breaking changes, for these values, the provider makes them uppercase (like it was doing before). This will be changed in the v3 version of the provider (the field will behave like all other identifier fields).

@@ -628,6 +628,9 @@ func TestAcc_ScimIntegration_RunAsRole(t *testing.T) {
 	scimUppercaseRunAsRole := model.ScimSecurityIntegration("test", id.Name(), false, uppercaseRole.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 	scimLowercaseRunAsRole := model.ScimSecurityIntegration("test", id.Name(), false, lowercaseRole.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
+	nonExistingRoleId := testClient().Ids.RandomAccountObjectIdentifier()
+	scimNonExistingRole := model.ScimSecurityIntegration("test", id.Name(), false, nonExistingRoleId.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+
 	assertBasicUppercase := []assert.TestCheckFuncProvider{
 		resourceassert.ScimSecurityIntegrationResource(t, scimUppercaseRunAsRole.ResourceReference()).
 			HasNameString(id.Name()).
@@ -663,7 +666,7 @@ func TestAcc_ScimIntegration_RunAsRole(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().SecurityIntegration.DropSecurityIntegrationFunc(t, id)()
-					testClient().SecurityIntegration.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientGeneric, uppercaseRole.ID()).WithEnabled(false))
+					testClient().SecurityIntegration.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientGeneric, uppercaseRole.ID().FullyQualifiedName()).WithEnabled(false))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -682,6 +685,11 @@ func TestAcc_ScimIntegration_RunAsRole(t *testing.T) {
 				},
 				Config: accconfig.FromModels(t, scimUppercaseRunAsRole),
 				Check:  assertThat(t, assertBasicUppercase...),
+			},
+			// update to non-existing role - error
+			{
+				Config:      accconfig.FromModels(t, scimNonExistingRole),
+				ExpectError: regexp.MustCompile(fmt.Sprintf(`invalid value \[%s\] for parameter 'RUN_AS_ROLE'`, nonExistingRoleId.Name())),
 			},
 		},
 	})

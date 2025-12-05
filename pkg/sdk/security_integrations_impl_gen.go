@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -276,7 +277,7 @@ func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) toOpts() *Create
 		OauthIssueRefreshTokens:     r.OauthIssueRefreshTokens,
 		OauthRefreshTokenValidity:   r.OauthRefreshTokenValidity,
 		// Adjusted manually.
-		NetworkPolicy:            securityIntegrationFullyQualifiedNameQuoted(r.NetworkPolicy),
+		NetworkPolicy:            securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
 		OauthClientRsaPublicKey:  r.OauthClientRsaPublicKey,
 		OauthClientRsaPublicKey2: r.OauthClientRsaPublicKey2,
 		Comment:                  r.Comment,
@@ -330,9 +331,9 @@ func (r *CreateScimSecurityIntegrationRequest) toOpts() *CreateScimSecurityInteg
 		Enabled:     r.Enabled,
 		ScimClient:  r.ScimClient,
 		// Adjusted manually.
-		RunAsRole: securityIntegrationFullyQualifiedNameQuotedRequired(r.RunAsRole),
+		RunAsRole: fmt.Sprintf("'%s'", r.RunAsRole),
 		// Adjusted manually.
-		NetworkPolicy: securityIntegrationFullyQualifiedNameQuoted(r.NetworkPolicy),
+		NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
 		SyncPassword:  r.SyncPassword,
 		Comment:       r.Comment,
 	}
@@ -529,7 +530,7 @@ func (r *AlterOauthForCustomClientsSecurityIntegrationRequest) toOpts() *AlterOa
 			OauthRefreshTokenValidity:   r.Set.OauthRefreshTokenValidity,
 			OauthUseSecondaryRoles:      r.Set.OauthUseSecondaryRoles,
 			// Adjusted manually.
-			NetworkPolicy:            securityIntegrationFullyQualifiedNameQuoted(r.Set.NetworkPolicy),
+			NetworkPolicy:            securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
 			OauthClientRsaPublicKey:  r.Set.OauthClientRsaPublicKey,
 			OauthClientRsaPublicKey2: r.Set.OauthClientRsaPublicKey2,
 			Comment:                  r.Set.Comment,
@@ -608,7 +609,7 @@ func (r *AlterScimSecurityIntegrationRequest) toOpts() *AlterScimSecurityIntegra
 		opts.Set = &ScimIntegrationSet{
 			Enabled: r.Set.Enabled,
 			// Adjusted manually.
-			NetworkPolicy: securityIntegrationFullyQualifiedNameQuoted(r.Set.NetworkPolicy),
+			NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.Set.NetworkPolicy),
 			SyncPassword:  r.Set.SyncPassword,
 			Comment:       r.Set.Comment,
 		}

@@ -46,7 +46,7 @@ var scimIntegrationSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Required: true,
 		ForceNew: true,
-		Description: joinWithSpace("Specify the SCIM role in Snowflake that owns any users and roles that are imported from the identity provider into Snowflake using SCIM. Provider assumes that the specified role is already provided." +
+		Description: joinWithSpace("Specify the SCIM role in Snowflake that owns any users and roles that are imported from the identity provider into Snowflake using SCIM. Provider assumes that the specified role is already provided.",
 			"This field is case-sensitive. The exception is using `generic_scim_provisioner`, `okta_provisioner`, or `aad_provisioner`, which are automatically converted to uppercase for backwards compatibility."),
 		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, NormalizeAndCompare(scimIntegrationRunAsRoleToAccountObjectIdentifier)),
 	},
@@ -200,7 +200,7 @@ func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 	runAsRoleRaw := d.Get("run_as_role").(string)
 
 	runAsRole, _ := scimIntegrationRunAsRoleToAccountObjectIdentifier(runAsRoleRaw)
-	req := sdk.NewCreateScimSecurityIntegrationRequest(id, scimClient, runAsRole).WithEnabled(d.Get("enabled").(bool))
+	req := sdk.NewCreateScimSecurityIntegrationRequest(id, scimClient, runAsRole.FullyQualifiedName()).WithEnabled(d.Get("enabled").(bool))
 
 	if v, ok := d.GetOk("network_policy"); ok {
 		req.WithNetworkPolicy(sdk.NewAccountObjectIdentifier(v.(string)))

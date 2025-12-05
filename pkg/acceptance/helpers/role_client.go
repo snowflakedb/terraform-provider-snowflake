@@ -65,15 +65,7 @@ func (c *RoleClient) CreateRoleGrantedToCurrentUser(t *testing.T) (*sdk.Role, fu
 
 func (c *RoleClient) CreateRoleGrantedToCurrentRole(t *testing.T) (*sdk.Role, func()) {
 	t.Helper()
-	ctx := context.Background()
-
-	role, roleCleanup := c.CreateRole(t)
-
-	currentRole, err := c.context.client.ContextFunctions.CurrentRole(ctx)
-	require.NoError(t, err)
-
-	c.GrantRoleToRole(t, role.ID(), currentRole)
-	return role, roleCleanup
+	return c.CreateRoleWithIdentifierGrantedToCurrentRole(t, c.ids.RandomAccountObjectIdentifier())
 }
 
 func (c *RoleClient) CreateRoleWithIdentifierGrantedToCurrentRole(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Role, func()) {
