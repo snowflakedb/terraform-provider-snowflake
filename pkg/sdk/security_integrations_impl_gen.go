@@ -4,14 +4,17 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ SecurityIntegrations = (*securityIntegrations)(nil)
 
-var _ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
-var _ convertibleRow[SecurityIntegration] = new(securityIntegrationShowRow)
+var (
+	_ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
+	_ convertibleRow[SecurityIntegration]         = new(securityIntegrationShowRow)
+)
 
 type securityIntegrations struct {
 	client *Client
@@ -321,7 +324,8 @@ func (r *CreateScimSecurityIntegrationRequest) toOpts() *CreateScimSecurityInteg
 		name:        r.name,
 		Enabled:     r.Enabled,
 		ScimClient:  r.ScimClient,
-		RunAsRole:   r.RunAsRole,
+		// Adjusted manually.
+		RunAsRole: fmt.Sprintf("'%s'", r.RunAsRole),
 		// Adjusted manually.
 		NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
 		SyncPassword:  r.SyncPassword,
