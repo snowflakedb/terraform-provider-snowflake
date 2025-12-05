@@ -283,3 +283,17 @@ func (t *TaskAssert) HasLastSuspendedReason(expected string) *TaskAssert {
 	})
 	return t
 }
+
+func (t *TaskAssert) HasTargetCompletionInterval(expected sdk.TaskTargetCompletionInterval) *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.TargetCompletionInterval == nil {
+			return fmt.Errorf("expected target completion interval to have value; got: nil")
+		}
+		if *o.TargetCompletionInterval != expected {
+			return fmt.Errorf("expected target completion interval: %v; got: %v", expected, *o.TargetCompletionInterval)
+		}
+		return nil
+	})
+	return t
+}

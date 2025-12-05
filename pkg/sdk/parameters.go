@@ -846,6 +846,8 @@ type TaskParameter string
 
 const (
 	// Task Parameters
+	TaskParameterServerlessTaskMaxStatementSize          TaskParameter = "SERVERLESS_TASK_MAX_STATEMENT_SIZE"
+	TaskParameterServerlessTaskMinStatementSize          TaskParameter = "SERVERLESS_TASK_MIN_STATEMENT_SIZE"
 	TaskParameterSuspendTaskAfterNumFailures             TaskParameter = "SUSPEND_TASK_AFTER_NUM_FAILURES"
 	TaskParameterTaskAutoRetryAttempts                   TaskParameter = "TASK_AUTO_RETRY_ATTEMPTS"
 	TaskParameterUserTaskManagedInitialWarehouseSize     TaskParameter = "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"
@@ -910,6 +912,8 @@ const (
 
 var AllTaskParameters = []TaskParameter{
 	// Task Parameters
+	TaskParameterServerlessTaskMaxStatementSize,
+	TaskParameterServerlessTaskMinStatementSize,
 	TaskParameterSuspendTaskAfterNumFailures,
 	TaskParameterTaskAutoRetryAttempts,
 	TaskParameterUserTaskManagedInitialWarehouseSize,

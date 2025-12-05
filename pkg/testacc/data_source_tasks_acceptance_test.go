@@ -145,6 +145,7 @@ func TestAcc_Tasks_CompleteUseCase(t *testing.T) {
 		HasConfig("").
 		HasBudget("").
 		HasTaskRelations(sdk.TaskRelations{}).
+		HasTargetCompletionIntervalEmpty().
 		HasLastSuspendedReason("")
 
 	resource.Test(t, resource.TestCase{

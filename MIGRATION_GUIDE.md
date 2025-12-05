@@ -24,10 +24,20 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.11.0 ➞ v2.11.1
+## v2.11.x ➞ v2.12.0
+
+### *(new feature)* Added serverless task parameters
+Added support for new serverless task fields:
+- `target_completion_interval` - Specifies the target completion interval for serverless tasks; also added as a computed value to `show_output`.
+- `serverless_task_min_statement_size` (parameter) - Minimum statement size for serverless tasks; also added as a computed value to `parameters`.
+- `serverless_task_max_statement_size` (parameter) - Maximum statement size for serverless tasks; also added as a computed value to `parameters`.
+
+These fields are available in the `snowflake_task` resource for serverless task configurations.
+
+No changes in configuration are required for existing tasks. You can optionally update your configurations to use these new parameters.
 
 ### *(improvement)* New fields in user resources and data sources output fields
-We adjusted the `show_output` by adding the missing `has_workload_identity ` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
+We adjusted the `show_output` by adding the missing `has_workload_identity` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
 
 ## v2.10.x ➞ v2.11.0
 
