@@ -644,12 +644,27 @@ locals {
   # Get all unique keys from the first schema to create CSV header
   csv_header = join(",", [for key in keys(local.schemas_flattened[0]) : "\"${key}\""])
 
-  # Convert each schema object to CSV row (properly escape quotes and remove newlines for CSV format)
+  # Convert each schema object to CSV row (properly escape quotes and newlines for CSV format)
+  csv_escape = {
+    for schema in local.schemas_flattened :
+    schema.name => {
+      for key in keys(local.schemas_flattened[0]) :
+      key => replace(
+        replace(
+          replace(tostring(lookup(schema, key, "")), "\\", "\\\\"),
+          "\n", "\\n"
+        ),
+        "\"", "\"\""
+      )
+    }
+  }
+
+  # Convert each schema object to CSV row
   csv_rows = [
     for schema in local.schemas_flattened :
       join(",", [
         for key in keys(local.schemas_flattened[0]) :
-        "\"${replace(replace(tostring(lookup(schema, key, "")), "\n", " "), "\"", "\"\"")}\""
+        "\"${local.csv_escape[schema.name][key]}\""
       ])
   ]
 
