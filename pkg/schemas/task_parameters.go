@@ -12,6 +12,8 @@ var (
 	ShowTaskParametersSchema = make(map[string]*schema.Schema)
 	taskParameters           = []sdk.TaskParameter{
 		// task parameters
+		sdk.TaskParameterServerlessTaskMaxStatementSize,
+		sdk.TaskParameterServerlessTaskMinStatementSize,
 		sdk.TaskParameterSuspendTaskAfterNumFailures,
 		sdk.TaskParameterTaskAutoRetryAttempts,
 		sdk.TaskParameterUserTaskManagedInitialWarehouseSize,

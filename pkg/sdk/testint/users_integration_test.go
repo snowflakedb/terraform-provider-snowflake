@@ -18,6 +18,7 @@ import (
 )
 
 // TODO [SNOW-1645875]: test setting/unsetting policies
+// TODO (SNOW-2272350): add tests for AWS, Azure and GCP workload identity authentication methods.
 func TestInt_Users(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -156,6 +157,7 @@ func TestInt_Users(t *testing.T) {
 		assertThatObject(t, objectassert.UserFromObject(t, user).
 			HasName(id.Name()).
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(false).
 			HasLoginName(strings.ToUpper(loginName)).
 			HasDefaultRole(defaultRole),
 		)
@@ -328,6 +330,7 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(false).
 			HasHasRsaPublicKey(true),
 		)
 	})
@@ -350,8 +353,19 @@ func TestInt_Users(t *testing.T) {
 			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
-			Comment:               sdk.String("some comment"),
-			Type:                  sdk.Pointer(sdk.UserTypeService),
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+					Issuer:  sdk.String("https://accounts.google.com"),
+					Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+					OidcAudienceList: []sdk.StringListItemWrapper{
+						{
+							Value: "https://accounts.google.com/o/oauth2/auth",
+						},
+					},
+				},
+			},
+			Comment: sdk.String("some comment"),
+			Type:    sdk.Pointer(sdk.UserTypeService),
 		}}
 
 		err := client.Users.Create(ctx, id, createOpts)
@@ -412,7 +426,24 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(false).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
 		)
 	})
 
@@ -436,8 +467,19 @@ func TestInt_Users(t *testing.T) {
 			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
-			Comment:               sdk.String("some comment"),
-			Type:                  sdk.Pointer(sdk.UserTypeLegacyService),
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+					Issuer:  sdk.String("https://accounts.google.com"),
+					Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+					OidcAudienceList: []sdk.StringListItemWrapper{
+						{
+							Value: "https://accounts.google.com/o/oauth2/auth",
+						},
+					},
+				},
+			},
+			Comment: sdk.String("some comment"),
+			Type:    sdk.Pointer(sdk.UserTypeLegacyService),
 		}}
 
 		err := client.Users.Create(ctx, id, createOpts)
@@ -498,7 +540,24 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
 		)
 	})
 
@@ -937,6 +996,7 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(false).
 			HasHasRsaPublicKey(true).
 			HasType(string(sdk.UserTypePerson)),
 		)
@@ -1006,7 +1066,18 @@ func TestInt_Users(t *testing.T) {
 					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
-					Comment:               sdk.String("some comment"),
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+							Issuer:  sdk.String("https://accounts.google.com"),
+							Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+							OidcAudienceList: []sdk.StringListItemWrapper{
+								{
+									Value: "https://accounts.google.com/o/oauth2/auth",
+								},
+							},
+						},
+					},
+					Comment: sdk.String("some comment"),
 				},
 			},
 		}}
@@ -1041,7 +1112,24 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(false).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
 		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -1058,6 +1146,7 @@ func TestInt_Users(t *testing.T) {
 				DefaultSecondaryRoles: sdk.Bool(true),
 				RSAPublicKey:          sdk.Bool(true),
 				RSAPublicKey2:         sdk.Bool(true),
+				WorkloadIdentity:      sdk.Bool(true),
 				Comment:               sdk.Bool(true),
 			},
 		}}
@@ -1070,6 +1159,10 @@ func TestInt_Users(t *testing.T) {
 			HasDisplayName("").
 			HasOwner(currentRole.Name()),
 		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
 	})
 
 	t.Run("alter: set and unset object properties - type legacy service", func(t *testing.T) {
@@ -1102,7 +1195,18 @@ func TestInt_Users(t *testing.T) {
 					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
-					Comment:               sdk.String("some comment"),
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+							Issuer:  sdk.String("https://accounts.google.com"),
+							Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+							OidcAudienceList: []sdk.StringListItemWrapper{
+								{
+									Value: "https://accounts.google.com/o/oauth2/auth",
+								},
+							},
+						},
+					},
+					Comment: sdk.String("some comment"),
 				},
 			},
 		}}
@@ -1137,7 +1241,24 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
 		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -1157,6 +1278,7 @@ func TestInt_Users(t *testing.T) {
 				RSAPublicKey:          sdk.Bool(true),
 				RSAPublicKey2:         sdk.Bool(true),
 				Comment:               sdk.Bool(true),
+				WorkloadIdentity:      sdk.Bool(true),
 			},
 		}}
 
@@ -1168,6 +1290,10 @@ func TestInt_Users(t *testing.T) {
 			HasDisplayName("").
 			HasOwner(currentRole.Name()),
 		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
 	})
 
 	incorrectAlterForServiceType := []struct {
@@ -1841,7 +1967,8 @@ func TestInt_Users(t *testing.T) {
 			HasHasPassword(false).
 			HasHasRsaPublicKey(false).
 			HasType(""). // underlying null
-			HasHasMfa(false),
+			HasHasMfa(false).
+			HasHasWorkloadIdentity(false),
 		)
 	})
 

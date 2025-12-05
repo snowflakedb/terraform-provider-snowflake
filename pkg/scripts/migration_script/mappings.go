@@ -18,6 +18,10 @@ func NormalizeResourceId(resourceId string) string {
 	return "snowflake_generated_" + string(resourceIdDisallowedCharacters.ReplaceAll([]byte(resourceId), []byte("")))
 }
 
+func ResourceId(resource string, id string) string {
+	return NormalizeResourceId(fmt.Sprintf("%s_%s", strings.TrimPrefix(resource, "snowflake_"), id))
+}
+
 // ResourceFromModel is a copy of config.ResourceFromModel function, but it doesn't use testing.T internally.
 func ResourceFromModel(model config.ResourceModel) (string, error) {
 	resourceJson, err := config.DefaultJsonConfigProvider.ResourceJsonFromModel(model)

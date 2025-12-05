@@ -52,11 +52,32 @@ object_type represents the type of Snowflake object you want to generate terrafo
 				- grants on 'future' or on 'all' objects are not supported
 				- all_privileges and always_apply fields are not supported
 		- "schemas" which expects a converted CSV output from the snowflake_schemas data source
-			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMA output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMAS output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
 			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "SCHEMA".
-			For more details about using multiple sources, visit https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_schema
+		- "databases" which expects a converted CSV output from the snowflake_databases data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Warning: currently secondary databases and shared databases are treated as plain databases.
+			Supported resources:
+				- snowflake_database
+		- "warehouses" which expects a converted CSV output from the snowflake_warehouses data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like "comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
+			The script always outputs fields that have non-empty default values in Snowflake (they can be removed from the output)
+			Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended)
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Supported resources:
+				- snowflake_warehouse
+		- "account_roles" which expects input in the form of [SHOW ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output. Can also be obtained as a converted CSV output from the snowflake_account_roles data source.
+			Supported resources:
+				- snowflake_account_role
+		- "database_roles" which expects input in the form of [SHOW DATABASE ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
+			Supported resources:
+				- snowflake_database_role
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -182,6 +203,166 @@ import {
 import {
   to = snowflake_schema.snowflake_generated_schema_DATABASE_COMPLETE
   id = "\"DATABASE\".\"COMPLETE\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for databases",
+			args: []string{"cmd", "-import=block", "databases"},
+			input: `
+"comment","created_on","dropped_on","is_current","is_default","kind","name","options","origin","owner","owner_role_type","resource_group","retention_time","catalog_level","catalog_value","data_retention_time_in_days_level","data_retention_time_in_days_value","default_ddl_collation_level","default_ddl_collation_value","enable_console_output_level","enable_console_output_value","external_volume_level","external_volume_value","log_level_level","log_level_value","max_data_extension_time_in_days_level","max_data_extension_time_in_days_value","quoted_identifiers_ignore_case_level","quoted_identifiers_ignore_case_value","replace_invalid_characters_level","replace_invalid_characters_value","storage_serialization_policy_level","storage_serialization_policy_value","suspend_task_after_num_failures_level","suspend_task_after_num_failures_value","task_auto_retry_attempts_level","task_auto_retry_attempts_value","trace_level_level","trace_level_value","user_task_managed_initial_warehouse_size_level","user_task_managed_initial_warehouse_size_value","user_task_minimum_trigger_interval_in_seconds_level","user_task_minimum_trigger_interval_in_seconds_value","user_task_timeout_ms_level","user_task_timeout_ms_value"
+"","2025-11-20 04:53:26.906 -0800 PST","0001-01-01 00:00:00 +0000 UTC","false","false","STANDARD","BASIC","","","ACCOUNTADMIN","ROLE","","1","","","","1","","","","false","","","","OFF","","14","","false","","false","","OPTIMIZED","","10","","0","","OFF","","Medium","","30","","3600000"
+"comment","2025-11-20 04:53:25.625 -0800 PST","0001-01-01 00:00:00 +0000 UTC","true","true","STANDARD","COMPLETE","TRANSIENT","","ACCOUNTADMIN","ROLE","","1","DATABASE","CATALOG","DATABASE","1","DATABASE","en_US-trim","DATABASE","true","DATABASE","EXTERNAL_VOLUME","DATABASE","INFO","DATABASE","10","DATABASE","true","DATABASE","true","DATABASE","COMPATIBLE","DATABASE","10","DATABASE","10","DATABASE","PROPAGATE","DATABASE","MEDIUM","DATABASE","30","DATABASE","3600000"`,
+			expectedOutput: `resource "snowflake_database" "snowflake_generated_database_BASIC" {
+  name = "BASIC"
+}
+
+resource "snowflake_database" "snowflake_generated_database_COMPLETE" {
+  name = "COMPLETE"
+  catalog = "CATALOG"
+  comment = "comment"
+  data_retention_time_in_days = 1
+  default_ddl_collation = "en_US-trim"
+  enable_console_output = true
+  external_volume = "EXTERNAL_VOLUME"
+  is_transient = true
+  log_level = "INFO"
+  max_data_extension_time_in_days = 10
+  quoted_identifiers_ignore_case = true
+  replace_invalid_characters = true
+  storage_serialization_policy = "COMPATIBLE"
+  suspend_task_after_num_failures = 10
+  task_auto_retry_attempts = 10
+  trace_level = "PROPAGATE"
+  user_task_managed_initial_warehouse_size = "MEDIUM"
+  user_task_minimum_trigger_interval_in_seconds = 30
+  user_task_timeout_ms = 3600000
+}
+import {
+  to = snowflake_database.snowflake_generated_database_BASIC
+  id = "\"BASIC\""
+}
+import {
+  to = snowflake_database.snowflake_generated_database_COMPLETE
+  id = "\"COMPLETE\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for warehouses",
+			args: []string{"cmd", "-import=block", "warehouses"},
+			input: `
+"auto_resume","auto_suspend","available","comment","created_on","enable_query_acceleration","generation","is_current","is_default","max_cluster_count","min_cluster_count","name","other","owner","owner_role_type","provisioning","query_acceleration_max_scale_factor","queued","quiescing","resource_constraint","resource_monitor","resumed_on","running","scaling_policy","size","started_clusters","state","type","updated_on","max_concurrency_level_level","max_concurrency_level_value","statement_queued_timeout_in_seconds_level","statement_queued_timeout_in_seconds_value","statement_timeout_in_seconds_level","statement_timeout_in_seconds_value"
+"true","600","100","","2024-06-06 00:00:00.000 +0000 UTC","false","","false","false","1","1","WH_BASIC","0","ADMIN","ROLE","0","8","0","0","","","2024-06-06 12:00:00.000 +0000 UTC","0","STANDARD","XSMALL","1","AVAILABLE","STANDARD","2024-06-06 00:00:00.000 +0000 UTC","","","","","",""
+"false","1200","80.00","Production warehouse with all fields","2024-06-06 00:00:00.000 +0000 UTC","true","","false","false","4","2","WH_COMPLETE","0","ADMIN","ROLE","0","16","1","0","MEMORY_16X","MONITOR1","2024-06-06 12:00:00.000 +0000 UTC","3","ECONOMY","MEDIUM","1","SUSPENDED","SNOWPARK-OPTIMIZED","2024-06-06 00:00:00.000 +0000 UTC","WAREHOUSE","8","WAREHOUSE","300","WAREHOUSE","86400"
+"true","600","100","Gen2 warehouse","2024-06-06 00:00:00.000 +0000 UTC","false","2","false","false","1","1","WH_GEN2","0","ADMIN","ROLE","0","8","0","0","","","2024-06-06 12:00:00.000 +0000 UTC","0","STANDARD","LARGE","1","AVAILABLE","STANDARD","2024-06-06 00:00:00.000 +0000 UTC","","","","","",""`,
+			expectedOutput: `resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_BASIC" {
+  name = "WH_BASIC"
+  auto_resume = "true"
+  auto_suspend = 600
+  max_cluster_count = 1
+  min_cluster_count = 1
+  query_acceleration_max_scale_factor = 8
+  scaling_policy = "STANDARD"
+  warehouse_size = "XSMALL"
+  warehouse_type = "STANDARD"
+}
+
+resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_COMPLETE" {
+  name = "WH_COMPLETE"
+  auto_resume = "false"
+  auto_suspend = 1200
+  comment = "Production warehouse with all fields"
+  enable_query_acceleration = "true"
+  max_cluster_count = 4
+  max_concurrency_level = 8
+  min_cluster_count = 2
+  query_acceleration_max_scale_factor = 16
+  resource_constraint = "MEMORY_16X"
+  resource_monitor = "MONITOR1"
+  scaling_policy = "ECONOMY"
+  statement_queued_timeout_in_seconds = 300
+  statement_timeout_in_seconds = 86400
+  warehouse_size = "MEDIUM"
+  warehouse_type = "SNOWPARK-OPTIMIZED"
+}
+
+resource "snowflake_warehouse" "snowflake_generated_warehouse_WH_GEN2" {
+  name = "WH_GEN2"
+  auto_resume = "true"
+  auto_suspend = 600
+  comment = "Gen2 warehouse"
+  generation = "2"
+  max_cluster_count = 1
+  min_cluster_count = 1
+  query_acceleration_max_scale_factor = 8
+  scaling_policy = "STANDARD"
+  warehouse_size = "LARGE"
+  warehouse_type = "STANDARD"
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_BASIC
+  id = "\"WH_BASIC\""
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_COMPLETE
+  id = "\"WH_COMPLETE\""
+}
+import {
+  to = snowflake_warehouse.snowflake_generated_warehouse_WH_GEN2
+  id = "\"WH_GEN2\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for account_roles",
+			args: []string{"cmd", "-import=block", "account_roles"},
+			input: `
+"assigned_to_users","comment","created_on","granted_roles","granted_to_roles","is_current","is_default","is_inherited","name","owner"
+"0","","2024-06-06 00:00:00.000 +0000 UTC","0","0","N","N","N","MINIMAL_ROLE","ACCOUNTADMIN"
+"5","This is a test role","2024-06-06 00:00:00.000 +0000 UTC","2","1","Y","N","Y","ADMIN_ROLE","ACCOUNTADMIN"`,
+			expectedOutput: `resource "snowflake_account_role" "snowflake_generated_account_role_MINIMAL_ROLE" {
+  name = "MINIMAL_ROLE"
+}
+
+resource "snowflake_account_role" "snowflake_generated_account_role_ADMIN_ROLE" {
+  name = "ADMIN_ROLE"
+  comment = "This is a test role"
+}
+import {
+  to = snowflake_account_role.snowflake_generated_account_role_MINIMAL_ROLE
+  id = "\"MINIMAL_ROLE\""
+}
+import {
+  to = snowflake_account_role.snowflake_generated_account_role_ADMIN_ROLE
+  id = "\"ADMIN_ROLE\""
+}
+`,
+		},
+		{
+			name: "basic usage - block import format for database_roles",
+			args: []string{"cmd", "-import=block", "database_roles"},
+			input: `
+"comment","created_on","database_name","granted_database_roles","granted_to_database_roles","granted_to_roles","is_current","is_default","is_inherited","name","owner","owner_role_type"
+"","2024-06-06 00:00:00.000 +0000 UTC","TEST_DB","0","0","0","N","N","N","MINIMAL_ROLE","ACCOUNTADMIN","ROLE"
+"This is a database role","2024-06-06 00:00:00.000 +0000 UTC","PROD_DB","2","1","3","Y","N","Y","ADMIN_ROLE","ACCOUNTADMIN","ROLE"`,
+			expectedOutput: `resource "snowflake_database_role" "snowflake_generated_database_role_TEST_DB_MINIMAL_ROLE" {
+  database = "TEST_DB"
+  name = "MINIMAL_ROLE"
+}
+
+resource "snowflake_database_role" "snowflake_generated_database_role_PROD_DB_ADMIN_ROLE" {
+  database = "PROD_DB"
+  name = "ADMIN_ROLE"
+  comment = "This is a database role"
+}
+import {
+  to = snowflake_database_role.snowflake_generated_database_role_TEST_DB_MINIMAL_ROLE
+  id = "\"TEST_DB\".\"MINIMAL_ROLE\""
+}
+import {
+  to = snowflake_database_role.snowflake_generated_database_role_PROD_DB_ADMIN_ROLE
+  id = "\"PROD_DB\".\"ADMIN_ROLE\""
 }
 `,
 		},

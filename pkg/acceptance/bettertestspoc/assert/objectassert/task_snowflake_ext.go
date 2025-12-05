@@ -83,3 +83,14 @@ func (t *TaskAssert) HasNoErrorIntegration() *TaskAssert {
 	})
 	return t
 }
+
+func (t *TaskAssert) HasNoTargetCompletionInterval() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.TargetCompletionInterval != nil {
+			return fmt.Errorf("expected target completion interval to have no value; got: %s", o.TargetCompletionInterval)
+		}
+		return nil
+	})
+	return t
+}

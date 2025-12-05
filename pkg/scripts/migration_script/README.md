@@ -56,25 +56,58 @@ where script options are:
     - `block`: Generates [import blocks](https://developer.hashicorp.com/terraform/language/import) at the bottom of the generated Terraform configuration.
     - `statement`: Generates commented [import commands](https://developer.hashicorp.com/terraform/cli/commands/import) at the bottom of the generated Terraform configuration.
 - **OBJECT_TYPES**:
-  - `grants`: Generates resources and import statements for Snowflake grants. The expected input is in the form of [`SHOW GRANTS`](https://docs.snowflake.com/en/sql-reference/sql/show-grants) output. The allowed SHOW GRANTS commands are:
+  - `grants`: Generates resources and import statements for Snowflake grants. The expected input is in the form of [`SHOW GRANTS`](https://docs.snowflake.com/en/sql-reference/sql/show-grants) output.
+
+    The allowed SHOW GRANTS commands are:
       - `SHOW GRANTS ON ACCOUNT`
       - `SHOW GRANTS ON <object_type>`
       - `SHOW GRANTS TO ROLE <role_name>`
       - `SHOW GRANTS TO DATABASE ROLE <database_role_name>`
+
     Supported resources:
       - snowflake_grant_privileges_to_account_role
       - snowflake_grant_privileges_to_database_role
       - snowflake_grant_account_role
       - snowflake_grant_database_role
+
     Limitations:
       - grants on 'future' or on 'all' objects are not supported
       - all_privileges and always_apply fields are not supported
-  - `schemas` which expects a converted CSV output from the snowflake_schemas data source
-    To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMA output, so the CSV header looks like `"comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...`
+  - `schemas` which expects a converted CSV output from the snowflake_schemas data source. To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMAS output, so the CSV header looks like `"comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...`
     When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "SCHEMA".
     For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
+
     Supported resources:
       - snowflake_schema
+  - `databases` which expects a converted CSV output from the snowflake_databases data source. To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like `"comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...`
+      When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
+      For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
+
+    Supported resources:
+      - snowflake_database
+
+  - `warehouses` which expects a converted CSV output from the snowflake_warehouses data source.
+      To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like `"comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...`
+      When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
+      The script always outputs fields that have non-empty default values in Snowflake (they can be removed from the output)
+
+      Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended)
+
+      For more details about using multiple sources, visit [Multiple sources section](#multiple-sources).
+
+    Supported resources:
+      - snowflake_warehouse
+
+  - `account_roles` which expects input in the form of [`SHOW ROLES`](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output. Can also be obtained as a converted CSV output from the snowflake_account_roles data source.
+
+    Supported resources:
+      - snowflake_account_role
+
+  - `database_roles` which expects input in the form of [`SHOW DATABASE ROLES`](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
+
+    Supported resources:
+      - snowflake_database_role
+
 - **INPUT**:
   - Migration script operates on STDIN input in CSV format. You can redirect the input from a file or pipe it from another command.
 - **OUTPUT**:

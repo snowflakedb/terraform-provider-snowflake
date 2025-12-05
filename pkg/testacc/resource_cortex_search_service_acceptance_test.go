@@ -16,7 +16,8 @@ import (
 func TestAcc_CortexSearchService_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
-	newWarehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	newWarehouse, newWarehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(newWarehouseCleanup)
 	m := func() map[string]config.Variable {
 		return map[string]config.Variable{
 			"name":       config.StringVariable(id.Name()),
@@ -31,7 +32,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 	}
 	variableSet2 := m()
 	variableSet2["attributes"] = config.SetVariable(config.StringVariable("SOME_OTHER_TEXT"))
-	variableSet2["warehouse"] = config.StringVariable(newWarehouseId.Name())
+	variableSet2["warehouse"] = config.StringVariable(newWarehouse.ID().Name())
 	variableSet2["comment"] = config.StringVariable("Terraform acceptance test - updated")
 	variableSet2["query"] = config.StringVariable(fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()))
 	variableSet2["embedding_model"] = config.StringVariable("snowflake-arctic-embed-m-v1.5")
@@ -103,7 +104,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "on", "SOME_TEXT"),
 					resource.TestCheckResourceAttr(resourceName, "attributes.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "attributes.0", "SOME_OTHER_TEXT"),
-					resource.TestCheckResourceAttr(resourceName, "warehouse", newWarehouseId.Name()),
+					resource.TestCheckResourceAttr(resourceName, "warehouse", newWarehouse.ID().Name()),
 					resource.TestCheckResourceAttr(resourceName, "target_lag", "2 minutes"),
 					resource.TestCheckResourceAttr(resourceName, "comment", "Terraform acceptance test - updated"),
 					resource.TestCheckResourceAttr(resourceName, "query", fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName())),
@@ -115,7 +116,7 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.database_name", TestDatabaseName),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.schema_name", TestSchemaName),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.target_lag", "2 minutes"),
-					resource.TestCheckResourceAttr(resourceName, "describe_output.0.warehouse", newWarehouseId.Name()),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.warehouse", newWarehouse.ID().Name()),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.search_column", "SOME_TEXT"),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.attribute_columns.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.attribute_columns.0", "SOME_OTHER_TEXT"),
