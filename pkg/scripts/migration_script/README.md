@@ -618,10 +618,6 @@ data "snowflake_schemas" "test" {
   in {
     database = "DATABASE"
   }
-
-  # Enable describe and parameters output
-  with_describe   = true
-  with_parameters = true
 }
 
 locals {
