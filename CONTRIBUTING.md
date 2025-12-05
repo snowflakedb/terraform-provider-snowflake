@@ -170,8 +170,6 @@ This guide describes the end-to-end process to add support for a new Snowflake o
 
 - Implement unit tests.
 
--
-
 Take a look at [generator readme](pkg/sdk/generator/README.md) and an example [SDK implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4084).
 
 ### Add integration tests
