@@ -19,28 +19,26 @@ var procedureColumn = g.NewQueryStruct("ProcedureColumn").
 	PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 	WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
 
-var procedureReturns = func() *g.QueryStruct {
-	return g.NewQueryStruct("ProcedureReturns").
-		OptionalQueryStructField(
-			"ResultDataType",
-			g.NewQueryStruct("ProcedureReturnsResultDataType").
-				PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
-				PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-				OptionalSQL("NULL").OptionalSQL("NOT NULL").
-				WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
-			g.KeywordOptions(),
-		).
-		OptionalQueryStructField(
-			"Table",
-			g.NewQueryStruct("ProcedureReturnsTable").
-				ListQueryStructField(
-					"Columns",
-					procedureColumn,
-					g.ListOptions().MustParentheses(),
-				),
-			g.KeywordOptions().SQL("TABLE"),
-		).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
-}
+var procedureReturns = g.NewQueryStruct("ProcedureReturns").
+	OptionalQueryStructField(
+		"ResultDataType",
+		g.NewQueryStruct("ProcedureReturnsResultDataType").
+			PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
+			PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
+			OptionalSQL("NULL").OptionalSQL("NOT NULL").
+			WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
+		g.KeywordOptions(),
+	).
+	OptionalQueryStructField(
+		"Table",
+		g.NewQueryStruct("ProcedureReturnsTable").
+			ListQueryStructField(
+				"Columns",
+				procedureColumn,
+				g.ListOptions().MustParentheses(),
+			),
+		g.KeywordOptions().SQL("TABLE"),
+	).WithValidation(g.ExactlyOneValueSet, "ResultDataType", "Table")
 
 var procedureSQLReturns = g.NewQueryStruct("ProcedureSQLReturns").
 	OptionalQueryStructField(
@@ -97,7 +95,7 @@ var proceduresDef = g.NewInterface(
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
-			procedureReturns(),
+			procedureReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		SQL("LANGUAGE JAVA").
@@ -170,7 +168,7 @@ var proceduresDef = g.NewInterface(
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
-			procedureReturns(),
+			procedureReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		SQL("LANGUAGE PYTHON").
@@ -214,7 +212,7 @@ var proceduresDef = g.NewInterface(
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
-			procedureReturns(),
+			procedureReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		SQL("LANGUAGE SCALA").
@@ -402,7 +400,7 @@ var proceduresDef = g.NewInterface(
 		).
 		QueryStructField(
 			"Returns",
-			procedureReturns(),
+			procedureReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		SQL("LANGUAGE JAVA").
@@ -448,7 +446,7 @@ var proceduresDef = g.NewInterface(
 		).
 		QueryStructField(
 			"Returns",
-			procedureReturns(),
+			procedureReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		SQL("LANGUAGE SCALA").
@@ -526,7 +524,7 @@ var proceduresDef = g.NewInterface(
 		).
 		QueryStructField(
 			"Returns",
-			procedureReturns(),
+			procedureReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		SQL("LANGUAGE PYTHON").
@@ -572,7 +570,7 @@ var proceduresDef = g.NewInterface(
 		).
 		QueryStructField(
 			"Returns",
-			procedureReturns(),
+			procedureReturns,
 			g.KeywordOptions().SQL("RETURNS").Required(),
 		).
 		SQL("LANGUAGE SQL").
