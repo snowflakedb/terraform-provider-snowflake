@@ -211,24 +211,30 @@ func TestSemanticViews_Create(t *testing.T) {
 				},
 			},
 		}
-		factsObj := []SemanticExpression{
+		factsObj := []FactDefinition{
 			{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, factName)},
-				sqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
-				synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
-				Comment:                 String("fact_comment"),
+				PrivateFact: String("PRIVATE"),
+				semanticExpression: &SemanticExpression{
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, factName)},
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
+					synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
+					Comment:                 String("fact_comment"),
+				},
 			},
 		}
-		dimensionsObj := []SemanticExpression{
+		dimensionsObj := []DimensionDefinition{
 			{
-				qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, dimensionName)},
-				sqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
-				synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
-				Comment:                 String("dimension_comment"),
+				semanticExpression: &SemanticExpression{
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, dimensionName)},
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
+					synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
+					Comment:                 String("dimension_comment"),
+				},
 			},
 		}
 		metricsObj := []MetricDefinition{
 			{
+				PrivateMetric: String("PRIVATE"),
 				semanticExpression: &SemanticExpression{
 					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
 					sqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
@@ -259,7 +265,7 @@ func TestSemanticViews_Create(t *testing.T) {
 			semanticViewDimensions:    dimensionsObj,
 			semanticViewMetrics:       metricsObj,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES ("%s" AS %s PRIMARY KEY ("pk1.1", "pk1.2") UNIQUE ("uk1.3") UNIQUE ("uk1.4") WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', "%s" AS %s PRIMARY KEY ("pk2.1", "pk2.2") WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS ("%s" AS "%s" ("pk1.1", "pk1.2") REFERENCES "%s" ("pk2.1", "pk2.2")) FACTS ("%s" AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS ("%s" AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (%s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES ("%s" AS %s PRIMARY KEY ("pk1.1", "pk1.2") UNIQUE ("uk1.3") UNIQUE ("uk1.4") WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', "%s" AS %s PRIMARY KEY ("pk2.1", "pk2.2") WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS ("%s" AS "%s" ("pk1.1", "pk1.2") REFERENCES "%s" ("pk2.1", "pk2.2")) FACTS (PRIVATE "%s" AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS ("%s" AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (PRIVATE %s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
 			id.FullyQualifiedName(),
 			tableAlias1,
 			logicalTableId1.FullyQualifiedName(),
@@ -272,10 +278,10 @@ func TestSemanticViews_Create(t *testing.T) {
 			tableAlias2,
 			factName,
 			factExpression,
-			*factsObj[0].Comment,
+			*factsObj[0].semanticExpression.Comment,
 			dimensionName,
 			dimensionExpression,
-			*dimensionsObj[0].Comment,
+			*dimensionsObj[0].semanticExpression.Comment,
 			metricName,
 			metricExpression,
 			*metricsObj[0].semanticExpression.Comment,

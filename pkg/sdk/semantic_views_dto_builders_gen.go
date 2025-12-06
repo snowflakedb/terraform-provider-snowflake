@@ -30,13 +30,13 @@ func (s *CreateSemanticViewRequest) WithSemanticViewRelationships(semanticViewRe
 }
 
 // adjusted manually
-func (s *CreateSemanticViewRequest) WithSemanticViewFacts(semanticViewFacts []SemanticExpressionRequest) *CreateSemanticViewRequest {
+func (s *CreateSemanticViewRequest) WithSemanticViewFacts(semanticViewFacts []FactDefinitionRequest) *CreateSemanticViewRequest {
 	s.semanticViewFacts = semanticViewFacts
 	return s
 }
 
 // adjusted manually
-func (s *CreateSemanticViewRequest) WithSemanticViewDimensions(semanticViewDimensions []SemanticExpressionRequest) *CreateSemanticViewRequest {
+func (s *CreateSemanticViewRequest) WithSemanticViewDimensions(semanticViewDimensions []DimensionDefinitionRequest) *CreateSemanticViewRequest {
 	s.semanticViewDimensions = semanticViewDimensions
 	return s
 }

@@ -21,25 +21,6 @@ func (opts *CreateSemanticViewOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
 	}
-	// Adjusted manually
-	if valueSet(opts.semanticViewRelationships) {
-		for _, v := range opts.semanticViewRelationships {
-			if !exactlyOneValueSet(v.tableNameOrAlias.RelationshipTableName, v.tableNameOrAlias.RelationshipTableAlias) {
-				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
-			}
-			if !exactlyOneValueSet(v.refTableNameOrAlias.RelationshipTableName, v.refTableNameOrAlias.RelationshipTableAlias) {
-				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
-			}
-		}
-	}
-	// adjusted manually
-	if valueSet(opts.semanticViewMetrics) {
-		for _, v := range opts.semanticViewMetrics {
-			if !exactlyOneValueSet(v.semanticExpression, v.windowFunctionMetricDefinition) {
-				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewMetrics", "semanticExpression", "windowFunctionMetricDefinition"))
-			}
-		}
-	}
 	return JoinErrors(errs...)
 }
 
