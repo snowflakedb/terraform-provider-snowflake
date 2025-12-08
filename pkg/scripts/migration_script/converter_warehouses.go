@@ -108,9 +108,9 @@ func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
 
 	handler := newParameterHandler(sdk.ParameterTypeWarehouse)
 	errs := errors.Join(
-		handler.handleIntegerParameter(sdk.ParameterType(row.MaxConcurrencyLevelLevel), row.MaxConcurrencyLevelValue, &warehouseRepresentation.MaxConcurrencyLevel),
-		handler.handleIntegerParameter(sdk.ParameterType(row.StatementQueuedTimeoutInSecondsLevel), row.StatementQueuedTimeoutInSecondsValue, &warehouseRepresentation.StatementQueuedTimeoutInSeconds),
-		handler.handleIntegerParameter(sdk.ParameterType(row.StatementTimeoutInSecondsLevel), row.StatementTimeoutInSecondsValue, &warehouseRepresentation.StatementTimeoutInSeconds),
+		handler.handleIntegerParameter(row.MaxConcurrencyLevelLevel, row.MaxConcurrencyLevelValue, &warehouseRepresentation.MaxConcurrencyLevel),
+		handler.handleIntegerParameter(row.StatementQueuedTimeoutInSecondsLevel, row.StatementQueuedTimeoutInSecondsValue, &warehouseRepresentation.StatementQueuedTimeoutInSeconds),
+		handler.handleIntegerParameter(row.StatementTimeoutInSecondsLevel, row.StatementTimeoutInSecondsValue, &warehouseRepresentation.StatementTimeoutInSeconds),
 	)
 	if errs != nil {
 		return nil, errs

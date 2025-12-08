@@ -97,6 +97,37 @@ where script options are:
 
     Supported resources:
       - snowflake_warehouse
+
+  - `account_roles` which expects input in the form of [`SHOW ROLES`](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output. Can also be obtained as a converted CSV output from the snowflake_account_roles data source.
+
+    Supported resources:
+      - snowflake_account_role
+
+  - `database_roles` which expects input in the form of [`SHOW DATABASE ROLES`](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
+
+    Supported resources:
+      - snowflake_database_role
+
+  - `users` which expects a converted CSV output from the snowflake_users data source.
+      To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW USERS output, so the CSV header looks like `"comment","created_on",...,"abort_detached_query_value","abort_detached_query_level","timezone_value","timezone_level",...`
+      When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "USER".
+
+      Caution: password parameter is not supported as it is returned in the form of `"***"` from the data source.
+
+      Note: Newlines are allowed only in the `comment`, `rsa_public_key` and `rsa_public_key2` fields, they might cause errors and require manual corrections elsewhere.
+
+      For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
+
+    Different user types are mapped to their respective Terraform resources based on the `type` attribute:
+      - `PERSON` (or empty) → `snowflake_user` - A human user who can interact with Snowflake
+      - `SERVICE` → `snowflake_service_user` - A service or application user without human interaction (cannot use password/SAML authentication, cannot have first_name, last_name, must_change_password)
+      - `LEGACY_SERVICE` → `snowflake_legacy_service_user` - Similar to SERVICE but allows password and SAML authentication (cannot have first_name, last_name)
+
+    Supported resources:
+      - snowflake_user
+      - snowflake_service_user
+      - snowflake_legacy_service_user
+
 - **INPUT**:
   - Migration script operates on STDIN input in CSV format. You can redirect the input from a file or pipe it from another command.
 - **OUTPUT**:
@@ -575,7 +606,7 @@ As an example, let's import all schemas in a given database. First, we need to d
 terraform {
   required_providers {
     snowflake = {
-      source = "Snowflake-Labs/snowflake"
+      source = "snowflakedb/snowflake"
     }
     local = {
       source = "hashicorp/local"
@@ -590,14 +621,16 @@ data "snowflake_schemas" "test" {
 }
 
 locals {
-  # Transform each schema by merging show_output and flattened parameters
+  # Transform each schema by merging show_output, describe_output, and flattened parameters
   schemas_flattened = [
     for schema in data.snowflake_schemas.test.schemas : merge(
       schema.show_output[0],
+      # Include describe output fields (if describe_output is present)
+      length(schema.describe_output) > 0 ? schema.describe_output[0] : {},
       # Flatten parameters: convert each parameter to {param_name}_value and {param_name}_level
       {
         for param_key, param_values in schema.parameters[0] :
-        param_key => param_values[0].value
+        "${param_key}_value" => param_values[0].value
       },
       {
         for param_key, param_values in schema.parameters[0] :
@@ -609,10 +642,28 @@ locals {
   # Get all unique keys from the first schema to create CSV header
   csv_header = join(",", [for key in keys(local.schemas_flattened[0]) : "\"${key}\""])
 
+  # Convert each schema object to CSV row (properly escape quotes and newlines for CSV format)
+  csv_escape = {
+    for schema in local.schemas_flattened :
+    schema.name => {
+      for key in keys(local.schemas_flattened[0]) :
+      key => replace(
+        replace(
+          replace(tostring(lookup(schema, key, "")), "\\", "\\\\"),
+          "\n", "\\n"
+        ),
+        "\"", "\"\""
+      )
+    }
+  }
+
   # Convert each schema object to CSV row
   csv_rows = [
     for schema in local.schemas_flattened :
-      join(",", [for key in keys(local.schemas_flattened[0]) : "\"${lookup(schema, key, "")}\""])
+      join(",", [
+        for key in keys(local.schemas_flattened[0]) :
+        "\"${local.csv_escape[schema.name][key]}\""
+      ])
   ]
 
   # Combine header and rows

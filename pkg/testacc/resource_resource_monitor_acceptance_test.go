@@ -867,3 +867,46 @@ resource "snowflake_resource_monitor" "test" {
 		},
 	})
 }
+
+func TestAcc_ResourceMonitor_StartTimestampImmediately(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	configModel := model.ResourceMonitor("test", id.Name()).
+		WithFrequency(string(sdk.FrequencyWeekly)).
+		WithStartTimestamp("IMMEDIATELY")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasFrequencyString(string(sdk.FrequencyWeekly)).
+						HasStartTimestampString("IMMEDIATELY"),
+					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
+						HasName(id.Name()).
+						HasFrequency(sdk.FrequencyWeekly).
+						HasStartTimeNotEmpty(),
+				),
+			},
+			{
+				ResourceName: "snowflake_resource_monitor.test",
+				ImportState:  true,
+				Config:       config.FromModels(t, configModel),
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasFrequencyString(string(sdk.FrequencyWeekly)).
+						HasStartTimestampNotEmpty(),
+				),
+			},
+		},
+	})
+}

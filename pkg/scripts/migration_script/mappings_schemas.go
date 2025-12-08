@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
-
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -14,7 +13,7 @@ func HandleSchemas(config *Config, csvInput [][]string) (string, error) {
 
 func MapSchemaToModel(schema SchemaRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	schemaId := sdk.NewDatabaseObjectIdentifier(schema.DatabaseName, schema.Name)
-	resourceId := NormalizeResourceId(fmt.Sprintf("schema_%s", schemaId.FullyQualifiedName()))
+	resourceId := ResourceId(resources.Schema, schemaId.FullyQualifiedName())
 	resourceModel := model.Schema(resourceId, schema.DatabaseName, schema.Name)
 
 	handleIfNotEmpty(schema.Comment, resourceModel.WithComment)

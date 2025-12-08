@@ -3,6 +3,8 @@
 package main
 
 import (
+	"strings"
+
 	objectassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/gen"
@@ -29,5 +31,8 @@ func main() {
 }
 
 func getFilename(_ genhelpers.SdkObjectDetails, model gen.ResourceShowOutputAssertionsModel) string {
+	if model.IsDescribeOutput {
+		return strings.TrimSuffix(genhelpers.ToSnakeCase(model.Name), "_details") + "_desc_output" + "_gen.go"
+	}
 	return genhelpers.ToSnakeCase(model.Name) + "_show_output" + "_gen.go"
 }

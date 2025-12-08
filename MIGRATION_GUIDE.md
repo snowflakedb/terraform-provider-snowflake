@@ -24,10 +24,33 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.11.0 ➞ v2.11.1
+## v2.11.x ➞ v2.12.0
+
+### *(improvement)* snowflake_scim_integration now accepts custom role names for run_as_role
+
+Previously, the `run_as_role` field in the [snowflake_scim_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/2.11.0/docs/resources/scim_integration) resource only accepted predefined role names: `OKTA_PROVISIONER`, `AAD_PROVISIONER`, or `GENERIC_SCIM_PROVISIONER`.
+
+Now, the field accepts any custom role name, allowing you to use organization-specific roles for SCIM provisioning. This field is now case-sensitive. The exception is if you set any of `okta_provisioner`, `aad_provisioner`, or `generic_scim_provisioner`.
+To maintain compatibility and avoid breaking changes, for these values, the provider makes them uppercase (like it was doing before). This will be changed in the v3 version of the provider (the field will behave like all other identifier fields).
+- If you use `OKTA_PROVISIONER`, `AAD_PROVISIONER`, or `GENERIC_SCIM_PROVISIONER` roles in Snowflake, please make them uppercase in your configuration (this will result in an empty plan).
+- If you use `okta_provisioner`, `aad_provisioner`, or `generic_scim_provisioner` roles in Snowflake, please handle them in provider with snowflake_execute, or rename the roles entirely.
+
+Existing configurations using predefined roles will continue to work without modifications, but please bear in mind the potential case-sensitive changes in v3.
+
+References: [#3917](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3917).
+
+### *(new feature)* Added serverless task parameters
+Added support for new serverless task fields:
+- `target_completion_interval` - Specifies the target completion interval for serverless tasks; also added as a computed value to `show_output`.
+- `serverless_task_min_statement_size` (parameter) - Minimum statement size for serverless tasks; also added as a computed value to `parameters`.
+- `serverless_task_max_statement_size` (parameter) - Maximum statement size for serverless tasks; also added as a computed value to `parameters`.
+
+These fields are available in the `snowflake_task` resource for serverless task configurations.
+
+No changes in configuration are required for existing tasks. You can optionally update your configurations to use these new parameters.
 
 ### *(improvement)* New fields in user resources and data sources output fields
-We adjusted the `show_output` by adding the missing `has_workload_identity ` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
+We adjusted the `show_output` by adding the missing `has_workload_identity` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
 
 ### *(bugfix)* authentication policy related resources and data sources
 Snowflake recently introduced a new, default authentication policy at the account level, which is applied when no user-defined policy is set.
@@ -48,7 +71,7 @@ as without database name and schema name it cannot be referenced.
 
 ## v2.10.x ➞ v2.11.0
 
-### *(new feature)* snowflake_notebook
+### *(new feature)* Notebooks preview feature
 
 #### Added resource
 Added a new preview resource for managing notebooks. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-notebook).

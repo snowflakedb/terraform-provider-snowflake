@@ -1127,6 +1127,8 @@ func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 	taskConfigInvalidScheduleNegativeHours := model.TaskWithId("test", id, false, "SELECT 1").WithScheduleHours(0)
 	taskConfigWithEmptySchedule := model.TaskWithId("test", id, false, "SELECT 1").WithEmptySchedule()
 	taskConfigWithMultipleSchedules := model.TaskWithId("test", id, false, "SELECT 1").WithMultipleSchedules()
+	taskConfigWithEmptyTargetCompletionInterval := model.TaskWithId("test", id, false, "SELECT 1").WithEmptyTargetCompletionInterval()
+	taskConfigWithMultipleTargetCompletionIntervalValue := model.TaskWithId("test", id, false, "SELECT 1").WithMultipleTargetCompletionIntervalValue()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1153,6 +1155,14 @@ func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 			},
 			{
 				Config:      config.FromModels(t, taskConfigWithMultipleSchedules),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigWithEmptyTargetCompletionInterval),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigWithMultipleTargetCompletionIntervalValue),
 				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
 			},
 		},
@@ -2337,4 +2347,333 @@ resource "snowflake_task" "test" {
 		userTaskTimeoutMs,
 		comment,
 	)
+}
+
+func TestAcc_Task_ServerlessTaskFields(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	serverlessModel := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+		WithTargetCompletionIntervalMinutes(10).
+		WithServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+		WithServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge)
+
+	configModelWithoutParams := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// CREATE with all serverless task parameters
+			{
+				Config: config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+			// ALTER UNSET all serverless task parameters
+			{
+				Config: config.FromModels(t, configModelWithoutParams),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithoutParams.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasNoTargetCompletionInterval().
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize().
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalEmpty(),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize(),
+				),
+			},
+			// ALTER SET all serverless task parameters back
+			{
+				Config: config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+			// external changes
+			{
+				PreConfig: func() {
+					// This step migrates the task to serverless by setting the new serverless parameters. We update the task directly in Snowflake.
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().
+						WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+						WithTargetCompletionInterval("2 HOURS").
+						WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+						WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeXXLarge),
+					))
+				},
+				Config: config.FromModels(t, serverlessModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(serverlessModel.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_ServerlessTaskFieldsWithMixedTaskTypes(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	serverlessModel := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+		WithTargetCompletionIntervalMinutes(10).
+		WithServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+		WithServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge)
+
+	warehouseBasedModel := model.TaskWithId("test", id, false, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// CREATE a non-serverless task
+			{
+				Config: config.FromModels(t, warehouseBasedModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, warehouseBasedModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouse(testClient().Ids.WarehouseId()).
+						HasTargetCompletionIntervalEmpty(),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasDefaultUserTaskManagedInitialWarehouseSize().
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize(),
+				),
+			},
+			// ALTER SET serverless task parameters on a non-serverless task
+			{
+				Config: config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasWarehouseEmpty().
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+			// Go back to warehouse task
+			{
+				Config: config.FromModels(t, warehouseBasedModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, warehouseBasedModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouse(testClient().Ids.WarehouseId()).
+						HasTargetCompletionIntervalEmpty(),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasDefaultUserTaskManagedInitialWarehouseSize().
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_migrateFromVersion_2_11_0_warehouseTask(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	warehouseModel := model.TaskWithId("test", id, false, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// CREATE a warehouse task
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
+				Config:            config.FromModels(t, warehouseModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, warehouseModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasSqlStatementString(statement),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, warehouseModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(warehouseModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, warehouseModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDefaultUserTaskManagedInitialWarehouseSize().
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, warehouseModel.ResourceReference()).
+						HasWarehouse(testClient().Ids.WarehouseId()).
+						HasTargetCompletionIntervalEmpty(),
+					resourceparametersassert.TaskResourceParameters(t, warehouseModel.ResourceReference()).
+						HasDefaultUserTaskManagedInitialWarehouseSize().
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_migrateFromVersion_2_11_0_serverlessTask(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	serverlessModel := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall)
+	serverlessModelWithNewFields := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+		WithTargetCompletionIntervalMinutes(10).
+		WithServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+		WithServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// CREATE a warehouse task
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
+				Config:            config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasWarehouseEmpty().
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasSqlStatementString(statement),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				PreConfig: func() {
+					// This step migrates the task to serverless by setting the new serverless parameters. We update the task directly in Snowflake.
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().
+						WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						WithTargetCompletionInterval("10 MINUTES").
+						WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+					))
+				},
+				Config: config.FromModels(t, serverlessModelWithNewFields),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(serverlessModelWithNewFields.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModelWithNewFields.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasWarehouseEmpty().
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModelWithNewFields.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModelWithNewFields.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+		},
+	})
 }
