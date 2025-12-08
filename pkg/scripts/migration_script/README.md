@@ -114,6 +114,8 @@ where script options are:
 
       Caution: password parameter is not supported as it is returned in the form of `"***"` from the data source.
 
+      Note: Newlines are allowed only in the `comment`, `rsa_public_key` and `rsa_public_key2` fields, they might cause errors and require manual corrections elsewhere.
+
       For more details about using multiple sources, visit the [Multiple sources section](#multiple-sources).
 
     Different user types are mapped to their respective Terraform resources based on the `type` attribute:
@@ -616,10 +618,6 @@ data "snowflake_schemas" "test" {
   in {
     database = "DATABASE"
   }
-
-  # Enable describe and parameters output
-  with_describe   = true
-  with_parameters = true
 }
 
 locals {
