@@ -13,7 +13,7 @@ func HandleAccountRoles(config *Config, csvInput [][]string) (string, error) {
 
 func MapAccountRoleToModel(role AccountRoleRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	roleId := sdk.NewAccountObjectIdentifier(role.Name)
-	resourceId := ResourceId(string(resources.AccountRole), roleId.FullyQualifiedName())
+	resourceId := ResourceId(resources.AccountRole, roleId.FullyQualifiedName())
 	resourceModel := model.AccountRole(resourceId, role.Name)
 
 	handleIfNotEmpty(role.Comment, resourceModel.WithComment)
