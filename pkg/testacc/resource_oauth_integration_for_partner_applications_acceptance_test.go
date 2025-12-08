@@ -8,6 +8,7 @@ package testacc
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -25,7 +26,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/snowflakedefaults"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -50,18 +51,15 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
 		WithComment(comment)
 
-	snowflakeEnv := testenvs.GetSnowflakeEnvironmentWithProdDefault()
-	enabledSnowflakeDefault := r.BooleanFalse
-	if snowflakeEnv == testenvs.SnowflakeNonProdEnvironment {
-		enabledSnowflakeDefault = r.BooleanTrue
-	}
+	enabledSnowflakeDefault := snowflakedefaults.EnabledValueForSnowflakeOauthSecurityIntegration()
+	enabledSnowflakeDefaultString := strconv.FormatBool(enabledSnowflakeDefault)
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.SecurityIntegration(t, id).
 			HasName(id.Name()).
 			HasIntegrationType("OAUTH - LOOKER").
 			HasCategory("SECURITY").
-			HasEnabledSnowflakeDefault().
+			HasEnabled(enabledSnowflakeDefault).
 			HasComment(""),
 
 		resourceassert.OauthIntegrationForPartnerApplicationsResource(t, basic.ResourceReference()).
@@ -81,13 +79,13 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasIntegrationType("OAUTH - LOOKER").
 			HasCategory("SECURITY").
-			HasEnabledSnowflakeDefault().
+			HasEnabled(enabledSnowflakeDefault).
 			HasComment(""),
 
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
 		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", enabledSnowflakeDefault)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", enabledSnowflakeDefaultString)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", r.BooleanTrue)),

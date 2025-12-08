@@ -5,9 +5,11 @@ package testacc
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/snowflakedefaults"
 	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -17,7 +19,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -52,18 +53,15 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
 		WithComment(comment)
 
-	snowflakeEnv := testenvs.GetSnowflakeEnvironmentWithProdDefault()
-	enabledSnowflakeDefault := resources.BooleanFalse
-	if snowflakeEnv == testenvs.SnowflakeNonProdEnvironment {
-		enabledSnowflakeDefault = resources.BooleanTrue
-	}
+	enabledSnowflakeDefault := snowflakedefaults.EnabledValueForSnowflakeOauthSecurityIntegration()
+	enabledSnowflakeDefaultString := strconv.FormatBool(enabledSnowflakeDefault)
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.SecurityIntegration(t, id).
 			HasName(id.Name()).
 			HasIntegrationType("OAUTH - CUSTOM").
 			HasCategory("SECURITY").
-			HasEnabledSnowflakeDefault().
+			HasEnabled(enabledSnowflakeDefault).
 			HasComment(""),
 
 		resourceassert.OauthIntegrationForCustomClientsResource(t, basic.ResourceReference()).
@@ -91,7 +89,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
 		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", enabledSnowflakeDefault)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", enabledSnowflakeDefaultString)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
