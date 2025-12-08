@@ -247,6 +247,16 @@ func (t *TaskResourceAssert) HasSearchPathString(expected string) *TaskResourceA
 	return t
 }
 
+func (t *TaskResourceAssert) HasServerlessTaskMaxStatementSizeString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("serverless_task_max_statement_size", expected))
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMinStatementSizeString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("serverless_task_min_statement_size", expected))
+	return t
+}
+
 func (t *TaskResourceAssert) HasSqlStatementString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("sql_statement", expected))
 	return t
@@ -274,6 +284,11 @@ func (t *TaskResourceAssert) HasStrictJsonOutputString(expected string) *TaskRes
 
 func (t *TaskResourceAssert) HasSuspendTaskAfterNumFailuresString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", expected))
+	return t
+}
+
+func (t *TaskResourceAssert) HasTargetCompletionIntervalString(expected string) *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("target_completion_interval", expected))
 	return t
 }
 
@@ -603,6 +618,16 @@ func (t *TaskResourceAssert) HasNoS3StageVpceDnsName() *TaskResourceAssert {
 
 func (t *TaskResourceAssert) HasNoSearchPath() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueNotSet("search_path"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasNoServerlessTaskMaxStatementSize() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("serverless_task_max_statement_size"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasNoServerlessTaskMinStatementSize() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueNotSet("serverless_task_min_statement_size"))
 	return t
 }
 
@@ -960,6 +985,16 @@ func (t *TaskResourceAssert) HasSearchPathEmpty() *TaskResourceAssert {
 	return t
 }
 
+func (t *TaskResourceAssert) HasServerlessTaskMaxStatementSizeEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("serverless_task_max_statement_size", ""))
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMinStatementSizeEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("serverless_task_min_statement_size", ""))
+	return t
+}
+
 func (t *TaskResourceAssert) HasStatementQueuedTimeoutInSecondsEmpty() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", ""))
 	return t
@@ -977,6 +1012,11 @@ func (t *TaskResourceAssert) HasStrictJsonOutputEmpty() *TaskResourceAssert {
 
 func (t *TaskResourceAssert) HasSuspendTaskAfterNumFailuresEmpty() *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", ""))
+	return t
+}
+
+func (t *TaskResourceAssert) HasTargetCompletionIntervalEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValueSet("target_completion_interval.#", "0"))
 	return t
 }
 
@@ -1306,6 +1346,16 @@ func (t *TaskResourceAssert) HasS3StageVpceDnsNameNotEmpty() *TaskResourceAssert
 
 func (t *TaskResourceAssert) HasSearchPathNotEmpty() *TaskResourceAssert {
 	t.AddAssertion(assert.ValuePresent("search_path"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMaxStatementSizeNotEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValuePresent("serverless_task_max_statement_size"))
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMinStatementSizeNotEmpty() *TaskResourceAssert {
+	t.AddAssertion(assert.ValuePresent("serverless_task_min_statement_size"))
 	return t
 }
 
