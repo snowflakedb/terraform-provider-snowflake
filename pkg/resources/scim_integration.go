@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -45,10 +46,9 @@ var scimIntegrationSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Required: true,
 		ForceNew: true,
-		Description: fmt.Sprintf("Specify the SCIM role in Snowflake that owns any users and roles that are imported from the identity provider into Snowflake using SCIM."+
-			" Provider assumes that the specified role is already provided. Valid options are: %v.", possibleValuesListed(sdk.AllScimSecurityIntegrationRunAsRoles)),
-		ValidateDiagFunc: sdkValidation(sdk.ToScimSecurityIntegrationRunAsRoleOption),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToScimSecurityIntegrationRunAsRoleOption),
+		Description: joinWithSpace("Specify the SCIM role in Snowflake that owns any users and roles that are imported from the identity provider into Snowflake using SCIM. Provider assumes that the specified role is already provided.",
+			"This field is case-sensitive. The exception is using `generic_scim_provisioner`, `okta_provisioner`, or `aad_provisioner`, which are automatically converted to uppercase for backwards compatibility."),
+		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, NormalizeAndCompare(scimIntegrationRunAsRoleToAccountObjectIdentifier)),
 	},
 	"network_policy": {
 		Type:             schema.TypeString,
@@ -197,12 +197,10 @@ func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	runAsRole, err := sdk.ToScimSecurityIntegrationRunAsRoleOption(d.Get("run_as_role").(string))
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	runAsRoleRaw := d.Get("run_as_role").(string)
 
-	req := sdk.NewCreateScimSecurityIntegrationRequest(id, scimClient, runAsRole).WithEnabled(d.Get("enabled").(bool))
+	runAsRole, _ := scimIntegrationRunAsRoleToAccountObjectIdentifier(runAsRoleRaw)
+	req := sdk.NewCreateScimSecurityIntegrationRequest(id, scimClient, runAsRole.FullyQualifiedName()).WithEnabled(d.Get("enabled").(bool))
 
 	if v, ok := d.GetOk("network_policy"); ok {
 		req.WithNetworkPolicy(sdk.NewAccountObjectIdentifier(v.(string)))
@@ -237,6 +235,14 @@ func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
 	return ReadContextSCIMIntegration(false)(ctx, d, meta)
+}
+
+func scimIntegrationRunAsRoleToAccountObjectIdentifier(runAsRole string) (sdk.AccountObjectIdentifier, error) {
+	id := sdk.NewAccountObjectIdentifier(runAsRole)
+	if slices.Contains([]string{"OKTA_PROVISIONER", "AAD_PROVISIONER", "GENERIC_SCIM_PROVISIONER"}, strings.ToUpper(id.Name())) {
+		id = sdk.NewAccountObjectIdentifier(strings.ToUpper(runAsRole))
+	}
+	return id, nil
 }
 
 func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadContextFunc {

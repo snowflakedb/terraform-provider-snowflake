@@ -290,31 +290,3 @@ func ToScimSecurityIntegrationScimClientOption(s string) (ScimSecurityIntegratio
 		return "", fmt.Errorf("invalid ScimSecurityIntegrationScimClientOption: %s", s)
 	}
 }
-
-type ScimSecurityIntegrationRunAsRoleOption string
-
-const (
-	ScimSecurityIntegrationRunAsRoleOktaProvisioner        ScimSecurityIntegrationRunAsRoleOption = "OKTA_PROVISIONER"
-	ScimSecurityIntegrationRunAsRoleAadProvisioner         ScimSecurityIntegrationRunAsRoleOption = "AAD_PROVISIONER"
-	ScimSecurityIntegrationRunAsRoleGenericScimProvisioner ScimSecurityIntegrationRunAsRoleOption = "GENERIC_SCIM_PROVISIONER"
-)
-
-var AllScimSecurityIntegrationRunAsRoles = []ScimSecurityIntegrationRunAsRoleOption{
-	ScimSecurityIntegrationRunAsRoleOktaProvisioner,
-	ScimSecurityIntegrationRunAsRoleAadProvisioner,
-	ScimSecurityIntegrationRunAsRoleGenericScimProvisioner,
-}
-
-func ToScimSecurityIntegrationRunAsRoleOption(s string) (ScimSecurityIntegrationRunAsRoleOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(ScimSecurityIntegrationRunAsRoleOktaProvisioner):
-		return ScimSecurityIntegrationRunAsRoleOktaProvisioner, nil
-	case string(ScimSecurityIntegrationRunAsRoleAadProvisioner):
-		return ScimSecurityIntegrationRunAsRoleAadProvisioner, nil
-	case string(ScimSecurityIntegrationRunAsRoleGenericScimProvisioner):
-		return ScimSecurityIntegrationRunAsRoleGenericScimProvisioner, nil
-	default:
-		return "", fmt.Errorf("invalid ScimSecurityIntegrationRunAsRoleOption: %s", s)
-	}
-}

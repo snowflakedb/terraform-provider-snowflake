@@ -143,6 +143,11 @@ func (t *TaskShowOutputAssert) HasLastSuspendedReason(expected string) *TaskShow
 	return t
 }
 
+func (t *TaskShowOutputAssert) HasTargetCompletionInterval(expected string) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", expected))
+	return t
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -254,5 +259,10 @@ func (t *TaskShowOutputAssert) HasNoTaskRelations() *TaskShowOutputAssert {
 
 func (t *TaskShowOutputAssert) HasNoLastSuspendedReason() *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueNotSet("last_suspended_reason"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasNoTargetCompletionInterval() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueNotSet("target_completion_interval"))
 	return t
 }

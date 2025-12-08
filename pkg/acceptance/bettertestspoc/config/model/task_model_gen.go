@@ -54,12 +54,15 @@ type TaskModel struct {
 	S3StageVpceDnsName                       tfconfig.Variable `json:"s3_stage_vpce_dns_name,omitempty"`
 	Schedule                                 tfconfig.Variable `json:"schedule,omitempty"`
 	SearchPath                               tfconfig.Variable `json:"search_path,omitempty"`
+	ServerlessTaskMaxStatementSize           tfconfig.Variable `json:"serverless_task_max_statement_size,omitempty"`
+	ServerlessTaskMinStatementSize           tfconfig.Variable `json:"serverless_task_min_statement_size,omitempty"`
 	SqlStatement                             tfconfig.Variable `json:"sql_statement,omitempty"`
 	Started                                  tfconfig.Variable `json:"started,omitempty"`
 	StatementQueuedTimeoutInSeconds          tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
 	StatementTimeoutInSeconds                tfconfig.Variable `json:"statement_timeout_in_seconds,omitempty"`
 	StrictJsonOutput                         tfconfig.Variable `json:"strict_json_output,omitempty"`
 	SuspendTaskAfterNumFailures              tfconfig.Variable `json:"suspend_task_after_num_failures,omitempty"`
+	TargetCompletionInterval                 tfconfig.Variable `json:"target_completion_interval,omitempty"`
 	TaskAutoRetryAttempts                    tfconfig.Variable `json:"task_auto_retry_attempts,omitempty"`
 	TimeInputFormat                          tfconfig.Variable `json:"time_input_format,omitempty"`
 	TimeOutputFormat                         tfconfig.Variable `json:"time_output_format,omitempty"`
@@ -365,6 +368,16 @@ func (t *TaskModel) WithSearchPath(searchPath string) *TaskModel {
 	return t
 }
 
+func (t *TaskModel) WithServerlessTaskMaxStatementSize(serverlessTaskMaxStatementSize string) *TaskModel {
+	t.ServerlessTaskMaxStatementSize = tfconfig.StringVariable(serverlessTaskMaxStatementSize)
+	return t
+}
+
+func (t *TaskModel) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize string) *TaskModel {
+	t.ServerlessTaskMinStatementSize = tfconfig.StringVariable(serverlessTaskMinStatementSize)
+	return t
+}
+
 func (t *TaskModel) WithSqlStatement(sqlStatement string) *TaskModel {
 	t.SqlStatement = tfconfig.StringVariable(sqlStatement)
 	return t
@@ -394,6 +407,8 @@ func (t *TaskModel) WithSuspendTaskAfterNumFailures(suspendTaskAfterNumFailures 
 	t.SuspendTaskAfterNumFailures = tfconfig.IntegerVariable(suspendTaskAfterNumFailures)
 	return t
 }
+
+// target_completion_interval attribute type is not yet supported, so WithTargetCompletionInterval can't be generated
 
 func (t *TaskModel) WithTaskAutoRetryAttempts(taskAutoRetryAttempts int) *TaskModel {
 	t.TaskAutoRetryAttempts = tfconfig.IntegerVariable(taskAutoRetryAttempts)
@@ -734,6 +749,16 @@ func (t *TaskModel) WithSearchPathValue(value tfconfig.Variable) *TaskModel {
 	return t
 }
 
+func (t *TaskModel) WithServerlessTaskMaxStatementSizeValue(value tfconfig.Variable) *TaskModel {
+	t.ServerlessTaskMaxStatementSize = value
+	return t
+}
+
+func (t *TaskModel) WithServerlessTaskMinStatementSizeValue(value tfconfig.Variable) *TaskModel {
+	t.ServerlessTaskMinStatementSize = value
+	return t
+}
+
 func (t *TaskModel) WithSqlStatementValue(value tfconfig.Variable) *TaskModel {
 	t.SqlStatement = value
 	return t
@@ -761,6 +786,11 @@ func (t *TaskModel) WithStrictJsonOutputValue(value tfconfig.Variable) *TaskMode
 
 func (t *TaskModel) WithSuspendTaskAfterNumFailuresValue(value tfconfig.Variable) *TaskModel {
 	t.SuspendTaskAfterNumFailures = value
+	return t
+}
+
+func (t *TaskModel) WithTargetCompletionIntervalValue(value tfconfig.Variable) *TaskModel {
+	t.TargetCompletionInterval = value
 	return t
 }
 

@@ -5,8 +5,11 @@ package testacc
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -156,10 +159,11 @@ func TestAcc_ScimIntegration_complete(t *testing.T) {
 	t.Cleanup(networkPolicyCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	role := snowflakeroles.GenericScimProvisioner
+	role, roleCleanup := testClient().Role.CreateRoleGrantedToCurrentRole(t)
+	t.Cleanup(roleCleanup)
 	comment := random.Comment()
 
-	scimCompleteModel := model.ScimSecurityIntegration("test", id.Name(), false, role.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
+	scimCompleteModel := model.ScimSecurityIntegration("test", id.Name(), false, role.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric)).
 		WithSyncPassword(r.BooleanFalse).
 		WithNetworkPolicy(networkPolicy.ID().Name()).
 		WithComment(comment)
@@ -178,7 +182,7 @@ func TestAcc_ScimIntegration_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(scimCompleteModel.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(scimCompleteModel.ResourceReference(), "enabled", "false"),
 					resource.TestCheckResourceAttr(scimCompleteModel.ResourceReference(), "scim_client", "GENERIC"),
-					resource.TestCheckResourceAttr(scimCompleteModel.ResourceReference(), "run_as_role", role.Name()),
+					resource.TestCheckResourceAttr(scimCompleteModel.ResourceReference(), "run_as_role", role.ID().Name()),
 					resource.TestCheckResourceAttr(scimCompleteModel.ResourceReference(), "network_policy", networkPolicy.ID().Name()),
 					resource.TestCheckResourceAttr(scimCompleteModel.ResourceReference(), "sync_password", "false"),
 					resource.TestCheckResourceAttr(scimCompleteModel.ResourceReference(), "comment", comment),
@@ -250,26 +254,6 @@ func TestAcc_ScimIntegration_InvalidScimClient(t *testing.T) {
 				Config:      accconfig.FromModels(t, scimModelBasic),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`invalid ScimSecurityIntegrationScimClientOption: INVALID`),
-			},
-		},
-	})
-}
-
-func TestAcc_ScimIntegration_InvalidRunAsRole(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-
-	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, "invalid", string(sdk.ScimSecurityIntegrationScimClientGeneric))
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			{
-				Config:      accconfig.FromModels(t, scimModelBasic),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`invalid ScimSecurityIntegrationRunAsRoleOption: INVALID`),
 			},
 		},
 	})
@@ -570,6 +554,142 @@ func TestAcc_ScimIntegration_IdentifierQuotingDiffSuppression(t *testing.T) {
 					resource.TestCheckResourceAttr(scimModelBasic.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(scimModelBasic.ResourceReference(), "id", id.Name()),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_ScimIntegration_migrateFromV2_11_0_LowercasedGenericScimProvisioner(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	lowercaseRoleName := strings.ToLower(snowflakeroles.GenericScimProvisioner.Name())
+	uppercaseRoleName := snowflakeroles.GenericScimProvisioner.Name()
+
+	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, lowercaseRoleName, string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimModelBasicUppercase := model.ScimSecurityIntegration("test", id.Name(), false, uppercaseRoleName, string(sdk.ScimSecurityIntegrationScimClientGeneric))
+
+	assertBasicUppercase := []assert.TestCheckFuncProvider{
+		resourceassert.ScimSecurityIntegrationResource(t, scimModelBasic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasRunAsRoleString(uppercaseRoleName).
+			HasScimClientString("GENERIC").
+			HasEnabledString("false").
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		assert.Check(resource.TestCheckResourceAttr(scimModelBasicUppercase.ResourceReference(), "describe_output.0.run_as_role.0.value", uppercaseRoleName)),
+	}
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ScimSecurityIntegration),
+		Steps: []resource.TestStep{
+			// Create resource with current provider using lowercase role
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
+				Config:            accconfig.FromModels(t, scimModelBasic),
+				Check:             assertThat(t, assertBasicUppercase...),
+			},
+			// Verify no diff on refresh - the lowercase value should be normalized
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, scimModelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(scimModelBasic.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(scimModelBasic.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t, assertBasicUppercase...),
+			},
+			// Update to uppercase - diff is suppressed
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, scimModelBasicUppercase),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(scimModelBasicUppercase.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t, assertBasicUppercase...),
+			},
+		},
+	})
+}
+
+func TestAcc_ScimIntegration_RunAsRole(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	uppercaseRole, uppercaseRoleCleanup := testClient().Role.CreateRoleGrantedToCurrentRole(t)
+	t.Cleanup(uppercaseRoleCleanup)
+	lowercaseRole, lowercaseRoleCleanup := testClient().Role.CreateRoleWithIdentifierGrantedToCurrentRole(t, sdk.NewAccountObjectIdentifier(strings.ToLower(uppercaseRole.ID().Name())))
+	t.Cleanup(lowercaseRoleCleanup)
+
+	scimUppercaseRunAsRole := model.ScimSecurityIntegration("test", id.Name(), false, uppercaseRole.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+	scimLowercaseRunAsRole := model.ScimSecurityIntegration("test", id.Name(), false, lowercaseRole.ID().Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+
+	nonExistingRoleId := testClient().Ids.RandomAccountObjectIdentifier()
+	scimNonExistingRole := model.ScimSecurityIntegration("test", id.Name(), false, nonExistingRoleId.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
+
+	assertBasicUppercase := []assert.TestCheckFuncProvider{
+		resourceassert.ScimSecurityIntegrationResource(t, scimUppercaseRunAsRole.ResourceReference()).
+			HasNameString(id.Name()).
+			HasRunAsRoleString(uppercaseRole.ID().Name()).
+			HasScimClientString("GENERIC").
+			HasEnabledString("false").
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		assert.Check(resource.TestCheckResourceAttr(scimUppercaseRunAsRole.ResourceReference(), "describe_output.0.run_as_role.0.value", uppercaseRole.ID().Name())),
+	}
+
+	assertBasicLowercase := []assert.TestCheckFuncProvider{
+		resourceassert.ScimSecurityIntegrationResource(t, scimLowercaseRunAsRole.ResourceReference()).
+			HasNameString(id.Name()).
+			HasRunAsRoleString(lowercaseRole.ID().Name()).
+			HasScimClientString("GENERIC").
+			HasEnabledString("false").
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		assert.Check(resource.TestCheckResourceAttr(scimLowercaseRunAsRole.ResourceReference(), "describe_output.0.run_as_role.0.value", lowercaseRole.ID().Name())),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ScimSecurityIntegration),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, scimLowercaseRunAsRole),
+				Check:  assertThat(t, assertBasicLowercase...),
+			},
+			// change role externally
+			{
+				PreConfig: func() {
+					testClient().SecurityIntegration.DropSecurityIntegrationFunc(t, id)()
+					testClient().SecurityIntegration.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(id, sdk.ScimSecurityIntegrationScimClientGeneric, uppercaseRole.ID().FullyQualifiedName()).WithEnabled(false))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(scimUppercaseRunAsRole.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, scimLowercaseRunAsRole),
+				Check:  assertThat(t, assertBasicLowercase...),
+			},
+			// update to uppercase - diff is not suppressed
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(scimUppercaseRunAsRole.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, scimUppercaseRunAsRole),
+				Check:  assertThat(t, assertBasicUppercase...),
+			},
+			// update to non-existing role - error
+			{
+				Config:      accconfig.FromModels(t, scimNonExistingRole),
+				ExpectError: regexp.MustCompile(fmt.Sprintf(`invalid value \[%s\] for parameter 'RUN_AS_ROLE'`, nonExistingRoleId.Name())),
 			},
 		},
 	})
