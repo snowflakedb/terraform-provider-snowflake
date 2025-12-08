@@ -81,7 +81,7 @@ Please refer to [this document](https://github.com/snowflakedb/terraform-provide
 - For a new way of referencing object identifiers in resources, take a look at the ["New computed fully qualified name field in resources" ](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/docs/guides/identifiers_rework_design_decisions.md#new-computed-fully-qualified-name-field-in-resources) section.
 
 ### Is this provider compatible with OpenTofu?
-OpenTofu is not currently supported. While it's mostly compatible with Terraform,
-OpenTofu's [reactive implementation of new Terraform features based on community demand](https://opentofu.org/faq/#opentofu-compatibility) may decrease compatibility over time.
+Although, the provider is present in the OpenTofu Registry ([see](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3874)), it is not currently supported.
+While it's mostly compatible with Terraform, OpenTofu's [reactive implementation of new Terraform features based on community demand](https://opentofu.org/faq/#opentofu-compatibility) may decrease compatibility over time.
 We plan to research OpenTofu support in the future, but there's no timeline yet (once planned, it will appear in the [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md)).
 For now, you must research and assess the risk of provider incompatibility.

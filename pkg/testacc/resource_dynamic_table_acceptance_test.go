@@ -19,7 +19,8 @@ import (
 func TestAcc_DynamicTable_basic(t *testing.T) {
 	dynamicTableId := testClient().Ids.RandomSchemaObjectIdentifier()
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
-	newWarehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	newWarehouse, newWarehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(newWarehouseCleanup)
 	comment := random.Comment()
 	newComment := random.Comment()
 
@@ -35,7 +36,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 		}
 	}
 	variableSet2 := m()
-	variableSet2["warehouse"] = config.StringVariable(newWarehouseId.Name())
+	variableSet2["warehouse"] = config.StringVariable(newWarehouse.ID().Name())
 	variableSet2["comment"] = config.StringVariable(newComment)
 
 	variableSet3 := m()
@@ -103,7 +104,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", dynamicTableId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "database", TestDatabaseName),
 					resource.TestCheckResourceAttr(resourceName, "schema", TestSchemaName),
-					resource.TestCheckResourceAttr(resourceName, "warehouse", newWarehouseId.Name()),
+					resource.TestCheckResourceAttr(resourceName, "warehouse", newWarehouse.ID().Name()),
 					resource.TestCheckResourceAttr(resourceName, "target_lag.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "target_lag.0.downstream", "true"),
 					resource.TestCheckResourceAttr(resourceName, "comment", newComment),

@@ -169,6 +169,37 @@ var taskSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: SuppressIfAny(DiffSuppressStatement, IgnoreChangeToCurrentSnowflakeValueInShow("definition")),
 		Description:      "Any single SQL statement, or a call to a stored procedure, executed when the task runs.",
 	},
+	"target_completion_interval": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Specifies the target completion interval for tasks. This can be specified in hours, minutes, or seconds. (when set, one of the sub-fields `hours`, `minutes`, or `seconds` should be set)",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"hours": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies the target completion interval in hours. (conflicts with `minutes` and `seconds`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ExactlyOneOf:     []string{"target_completion_interval.0.hours", "target_completion_interval.0.minutes", "target_completion_interval.0.seconds"},
+				},
+				"minutes": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies the target completion interval in minutes. (conflicts with `hours` and `seconds`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ExactlyOneOf:     []string{"target_completion_interval.0.hours", "target_completion_interval.0.minutes", "target_completion_interval.0.seconds"},
+				},
+				"seconds": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies the target completion interval in seconds. (conflicts with `hours` and `minutes`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ExactlyOneOf:     []string{"target_completion_interval.0.hours", "target_completion_interval.0.minutes", "target_completion_interval.0.seconds"},
+				},
+			},
+		},
+	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -202,7 +233,7 @@ func Task() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Task, customdiff.All(
-			ComputedIfAnyAttributeChanged(taskSchema, ShowOutputAttributeName, "name", "started", "warehouse", "user_task_managed_initial_warehouse_size", "schedule", "config", "allow_overlapping_execution", "error_integration", "comment", "finalize", "after", "when"),
+			ComputedIfAnyAttributeChanged(taskSchema, ShowOutputAttributeName, "name", "started", "warehouse", "user_task_managed_initial_warehouse_size", "schedule", "config", "allow_overlapping_execution", "error_integration", "comment", "finalize", "after", "when", "target_completion_interval"),
 			ComputedIfAnyAttributeChanged(taskParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllTaskParameters), strings.ToLower)...),
 			ComputedIfAnyAttributeChanged(taskSchema, FullyQualifiedNameAttributeName, "name"),
 			taskParametersCustomDiff,
@@ -286,6 +317,21 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		accountObjectIdentifierAttributeCreate(d, "error_integration", &req.ErrorIntegration),
 		stringAttributeCreate(d, "comment", &req.Comment),
 		stringAttributeCreate(d, "when", &req.When),
+		attributeMappedValueCreate(d, "target_completion_interval", &req.TargetCompletionInterval, func(v any) (*string, error) {
+			if len(v.([]any)) > 0 {
+				if hours, ok := d.GetOk("target_completion_interval.0.hours"); ok {
+					return sdk.String(fmt.Sprintf("%d HOURS", hours)), nil
+				}
+				if minutes, ok := d.GetOk("target_completion_interval.0.minutes"); ok {
+					return sdk.String(fmt.Sprintf("%d MINUTES", minutes)), nil
+				}
+				if seconds, ok := d.GetOk("target_completion_interval.0.seconds"); ok {
+					return sdk.String(fmt.Sprintf("%d SECONDS", seconds)), nil
+				}
+				return nil, fmt.Errorf("when setting target_completion_interval, one of hours, minutes, or seconds field should be set")
+			}
+			return nil, nil
+		}),
 	); errs != nil {
 		return diag.FromErr(errs)
 	}
@@ -403,6 +449,24 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 	)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("target_completion_interval") {
+		_, newTargetCompletionInterval := d.GetChange("target_completion_interval")
+
+		if newTargetCompletionInterval != nil && len(newTargetCompletionInterval.([]any)) == 1 {
+			if _, newHours := d.GetChange("target_completion_interval.0.hours"); newHours.(int) > 0 {
+				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d HOURS", newHours.(int)))
+			}
+			if _, newMinutes := d.GetChange("target_completion_interval.0.minutes"); newMinutes.(int) > 0 {
+				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d MINUTES", newMinutes.(int)))
+			}
+			if _, newSeconds := d.GetChange("target_completion_interval.0.seconds"); newSeconds.(int) > 0 {
+				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d SECONDS", newSeconds.(int)))
+			}
+		} else {
+			unset.TargetCompletionInterval = sdk.Bool(true)
+		}
 	}
 
 	if d.HasChange("schedule") {
@@ -650,6 +714,33 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 					return nil
 				}
 				return d.Set("schedule", nil)
+			}(),
+			func() error {
+				if task.TargetCompletionInterval != nil {
+					targetInterval := *task.TargetCompletionInterval
+					switch {
+					case targetInterval.Hours != nil:
+						if err := d.Set("target_completion_interval", []any{map[string]any{
+							"hours": *targetInterval.Hours,
+						}}); err != nil {
+							return err
+						}
+					case targetInterval.Minutes != nil:
+						if err := d.Set("target_completion_interval", []any{map[string]any{
+							"minutes": *targetInterval.Minutes,
+						}}); err != nil {
+							return err
+						}
+					case targetInterval.Seconds != nil:
+						if err := d.Set("target_completion_interval", []any{map[string]any{
+							"seconds": *targetInterval.Seconds,
+						}}); err != nil {
+							return err
+						}
+					}
+					return nil
+				}
+				return d.Set("target_completion_interval", nil)
 			}(),
 			d.Set("started", task.IsStarted()),
 			d.Set("when", task.Condition),

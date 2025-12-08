@@ -7,10 +7,11 @@ import (
 )
 
 type SnowflakeObjectAssertionsModel struct {
-	Name    string
-	SdkType string
-	IdType  string
-	Fields  []SnowflakeObjectFieldAssertion
+	Name               string
+	SdkType            string
+	IdType             string
+	IsDataSourceOutput bool
+	Fields             []SnowflakeObjectFieldAssertion
 
 	*genhelpers.PreambleModel
 }
@@ -32,11 +33,12 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 	}
 
 	return SnowflakeObjectAssertionsModel{
-		Name:          name,
-		SdkType:       sdkObject.Name,
-		IdType:        sdkObject.IdType,
-		Fields:        fields,
-		PreambleModel: preamble,
+		Name:               name,
+		SdkType:            sdkObject.Name,
+		IdType:             sdkObject.IdType,
+		IsDataSourceOutput: sdkObject.IsDataSourceOutput,
+		Fields:             fields,
+		PreambleModel:      preamble,
 	}
 }
 
