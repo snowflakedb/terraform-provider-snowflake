@@ -93,6 +93,18 @@ manual_tests/
 │   ├── expected_output.tf   # Expected migration script output
 │   ├── objects.csv          # Generated CSV (after terraform apply)
 │   └── actual_output.tf     # Generated output (after test run)
+├── account_roles/           # Account roles test
+│   ├── objects_def.tf
+│   ├── datasource.tf
+│   └── expected_output.tf
+├── database_roles/          # Database roles test
+├── databases/               # Databases test
+├── warehouses/              # Warehouses test
+├── schemas/                 # Schemas test
+├── grants/                  # Grants test (complex - multiple grant types)
+│   ├── objects_def.tf       # Creates roles, databases, schemas, tables, views
+│   ├── datasource.tf        # Fetches grants TO and OF roles
+│   └── expected_output.tf   # Expected grant resources and imports
 └── <new_object_type>/       # Add new object types here
 ```
 

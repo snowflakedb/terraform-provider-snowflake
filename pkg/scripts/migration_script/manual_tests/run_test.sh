@@ -20,6 +20,12 @@
 #
 # Supported object types (must have a folder with test files):
 #   - users
+#   - account_roles
+#   - database_roles
+#   - schemas
+#   - databases
+#   - warehouses
+#   - grants
 # =============================================================================
 
 set -e
