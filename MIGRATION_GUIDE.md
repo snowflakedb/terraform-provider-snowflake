@@ -26,6 +26,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.11.x ➞ v2.12.0
 
+### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
+
+Due to changes on the Snowflake side, the `SAML_IDENTITY_PROVIDER` parameter is now deprecated and cannot be used in Snowflake (see [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters#saml-identity-provider)).
+Because of this, we have removed support for this parameter in the `snowflake_current_account` and `snowflake_current_organization_account` resources.
+Both of the resources are in preview, so we decided to introduce this change now despite being a breaking change as it makes those resources unusable without workarounds (see related issue).
+
+If you were using this parameter in your configuration, please follow instructions in the linked documentation to migrate away from it.
+If you were not using this parameter, no changes are required.
+
+Related: [#4010](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4010)
+
 ### *(improvement)* snowflake_scim_integration now accepts custom role names for run_as_role
 
 Previously, the `run_as_role` field in the [snowflake_scim_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/2.11.0/docs/resources/scim_integration) resource only accepted predefined role names: `OKTA_PROVISIONER`, `AAD_PROVISIONER`, or `GENERIC_SCIM_PROVISIONER`.
@@ -53,17 +64,6 @@ No changes in configuration are required for existing tasks. You can optionally 
 We adjusted the `show_output` by adding the missing `has_workload_identity` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
 
 ## v2.10.x ➞ v2.11.0
-
-### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
-
-Due to changes on the Snowflake side, the `SAML_IDENTITY_PROVIDER` parameter is now deprecated and cannot be used in Snowflake (see [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters#saml-identity-provider)).
-Because of this, we have removed support for this parameter in the `snowflake_current_account` and `snowflake_current_organization_account` resources.
-Both of the resources are in preview, so we decided to introduce this change now despite being a breaking change as it makes those resources unusable without workarounds (see related issue).
-
-If you were using this parameter in your configuration, please follow instructions in the linked documentation to migrate away from it.
-If you were not using this parameter, no changes are required.
-
-Related: [#4010](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4010)
 
 ### *(new feature)* Notebooks preview feature
 
