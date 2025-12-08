@@ -5,6 +5,8 @@ description: |-
   Data source used to get details of filtered authentication policies. Filtering is aligned with the current possibilities for SHOW AUTHENTICATION POLICIES https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies query. The results of SHOW and DESCRIBE are encapsulated in one output collection authentication_policies.
 ---
 
+!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+
 !> **Warning** The data source will not run describe query (regardless of the `with_describe` setting) for authentication policies with missing database and schema names in the output (e.g., the `BUILT-IN` authentication policy that is Snowflake default set at the account level, only if no user-defined policy is set).
 
 # snowflake_authentication_policies (Data Source)

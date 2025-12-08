@@ -159,10 +159,16 @@ type AuthenticationPolicy struct {
 }
 
 func (v *AuthenticationPolicy) ID() SchemaObjectIdentifier {
-	if v.DatabaseName == nil && v.SchemaName == nil {
-		return NewSchemaObjectIdentifier("", "", v.Name)
+	// adjusted manually
+	databaseName := ""
+	schemaName := ""
+	if v.DatabaseName != nil {
+		databaseName = *v.DatabaseName
 	}
-	return NewSchemaObjectIdentifier(*v.DatabaseName, *v.SchemaName, v.Name)
+	if v.SchemaName != nil {
+		schemaName = *v.SchemaName
+	}
+	return NewSchemaObjectIdentifier(databaseName, schemaName, v.Name)
 }
 
 func (v *AuthenticationPolicy) ObjectType() ObjectType {
