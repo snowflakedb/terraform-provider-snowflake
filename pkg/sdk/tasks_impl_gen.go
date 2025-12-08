@@ -6,10 +6,7 @@ package sdk
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"log"
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -93,103 +90,6 @@ func (v *tasks) Execute(ctx context.Context, request *ExecuteTaskRequest) error 
 	return validateAndExec(v.client, ctx, opts)
 }
 
-// added manually
-func (v *tasks) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
-	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
-		In: &ParametersIn{
-			Task: id,
-		},
-	})
-}
-
-// added manually
-// TODO(SNOW-1277135): See if depId is necessary or could be removed
-func (v *tasks) SuspendRootTasks(ctx context.Context, taskId SchemaObjectIdentifier, id SchemaObjectIdentifier) ([]SchemaObjectIdentifier, error) {
-	rootTasks, err := GetRootTasks(v.client.Tasks, ctx, taskId)
-	if err != nil {
-		return nil, err
-	}
-
-	tasksToResume := make([]SchemaObjectIdentifier, 0)
-	suspendErrs := make([]error, 0)
-
-	for _, rootTask := range rootTasks {
-		// If a root task is started, then it needs to be suspended before the child tasks can be created
-		if rootTask.IsStarted() {
-			err := v.client.Tasks.Alter(ctx, NewAlterTaskRequest(rootTask.ID()).WithSuspend(true))
-			if err != nil {
-				log.Printf("[WARN] failed to suspend task %s", rootTask.ID().FullyQualifiedName())
-				suspendErrs = append(suspendErrs, err)
-			}
-
-			// Resume the task after modifications are complete as long as it is not a standalone task
-			// TODO(SNOW-1277135): Document the purpose of this check and why we need different value for GetRootTasks (depId).
-			if rootTask.Name != id.Name() {
-				tasksToResume = append(tasksToResume, rootTask.ID())
-			}
-		}
-	}
-
-	return tasksToResume, errors.Join(suspendErrs...)
-}
-
-// added manually
-func (v *tasks) ResumeTasks(ctx context.Context, ids []SchemaObjectIdentifier) error {
-	resumeErrs := make([]error, 0)
-	for _, id := range ids {
-		err := v.client.Tasks.Alter(ctx, NewAlterTaskRequest(id).WithResume(true))
-		if err != nil {
-			log.Printf("[WARN] failed to resume task %s", id.FullyQualifiedName())
-			resumeErrs = append(resumeErrs, err)
-		}
-	}
-	return errors.Join(resumeErrs...)
-}
-
-// added manually
-// GetRootTasks is a way to get all root tasks for the given tasks.
-// Snowflake does not have (yet) a method to do it without traversing the task graph manually.
-// Task DAG should have a single root but this is checked when the root task is being resumed; that's why we return here multiple roots.
-// Cycles should not be possible in a task DAG, but it is checked when the root task is being resumed; that's why this method has to be cycle-proof.
-func GetRootTasks(v Tasks, ctx context.Context, id SchemaObjectIdentifier) ([]Task, error) {
-	tasksToExamine := collections.NewQueue[SchemaObjectIdentifier]()
-	alreadyExaminedTasksNames := make([]string, 0)
-	rootTasks := make([]Task, 0)
-
-	tasksToExamine.Push(id)
-
-	for tasksToExamine.Head() != nil {
-		current := tasksToExamine.Pop()
-
-		if slices.Contains(alreadyExaminedTasksNames, current.Name()) {
-			continue
-		}
-
-		task, err := v.ShowByID(ctx, *current)
-		if err != nil {
-			return nil, err
-		}
-
-		if task.TaskRelations.FinalizedRootTask != nil {
-			tasksToExamine.Push(*task.TaskRelations.FinalizedRootTask)
-			alreadyExaminedTasksNames = append(alreadyExaminedTasksNames, current.Name())
-			continue
-		}
-
-		predecessors := task.Predecessors
-		if len(predecessors) == 0 {
-			rootTasks = append(rootTasks, *task)
-		} else {
-			for _, p := range predecessors {
-				tasksToExamine.Push(p)
-			}
-		}
-		alreadyExaminedTasksNames = append(alreadyExaminedTasksNames, current.Name())
-	}
-
-	return rootTasks, nil
-}
-
 func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 	opts := &CreateTaskOptions{
 		OrReplace:   r.OrReplace,
@@ -208,6 +108,9 @@ func (r *CreateTaskRequest) toOpts() *CreateTaskOptions {
 		TaskAutoRetryAttempts:                   r.TaskAutoRetryAttempts,
 		Tag:                                     r.Tag,
 		UserTaskMinimumTriggerIntervalInSeconds: r.UserTaskMinimumTriggerIntervalInSeconds,
+		TargetCompletionInterval:                r.TargetCompletionInterval,
+		ServerlessTaskMinStatementSize:          r.ServerlessTaskMinStatementSize,
+		ServerlessTaskMaxStatementSize:          r.ServerlessTaskMaxStatementSize,
 		After:                                   r.After,
 		When:                                    r.When,
 		sql:                                     r.sql,
@@ -298,6 +201,9 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			SessionParameters:                       r.Set.SessionParameters,
 			TaskAutoRetryAttempts:                   r.Set.TaskAutoRetryAttempts,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Set.UserTaskMinimumTriggerIntervalInSeconds,
+			TargetCompletionInterval:                r.Set.TargetCompletionInterval,
+			ServerlessTaskMinStatementSize:          r.Set.ServerlessTaskMinStatementSize,
+			ServerlessTaskMaxStatementSize:          r.Set.ServerlessTaskMaxStatementSize,
 		}
 		// added manually
 		if r.Set.Config != nil {
@@ -317,6 +223,9 @@ func (r *AlterTaskRequest) toOpts() *AlterTaskOptions {
 			Comment:                                 r.Unset.Comment,
 			TaskAutoRetryAttempts:                   r.Unset.TaskAutoRetryAttempts,
 			UserTaskMinimumTriggerIntervalInSeconds: r.Unset.UserTaskMinimumTriggerIntervalInSeconds,
+			TargetCompletionInterval:                r.Unset.TargetCompletionInterval,
+			ServerlessTaskMinStatementSize:          r.Unset.ServerlessTaskMinStatementSize,
+			ServerlessTaskMaxStatementSize:          r.Unset.ServerlessTaskMaxStatementSize,
 			SessionParametersUnset:                  r.Unset.SessionParametersUnset,
 		}
 	}
@@ -423,6 +332,14 @@ func (r taskDBRow) convert() (*Task, error) {
 	}
 	if r.LastSuspendedReason.Valid {
 		task.LastSuspendedReason = r.LastSuspendedReason.String
+	}
+	if r.TargetCompletionInterval.Valid {
+		targetCompletionInterval, err := parseTargetCompletionInterval(r.TargetCompletionInterval.String)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse target completion interval: %w", err)
+		} else {
+			task.TargetCompletionInterval = targetCompletionInterval
+		}
 	}
 	return &task, nil
 }

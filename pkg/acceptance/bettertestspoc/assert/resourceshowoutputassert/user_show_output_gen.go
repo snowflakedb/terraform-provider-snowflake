@@ -177,6 +177,11 @@ func (u *UserShowOutputAssert) HasHasMfa(expected bool) *UserShowOutputAssert {
 	return u
 }
 
+func (u *UserShowOutputAssert) HasHasWorkloadIdentity(expected bool) *UserShowOutputAssert {
+	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("has_workload_identity", expected))
+	return u
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -318,5 +323,10 @@ func (u *UserShowOutputAssert) HasNoType() *UserShowOutputAssert {
 
 func (u *UserShowOutputAssert) HasNoHasMfa() *UserShowOutputAssert {
 	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("has_mfa"))
+	return u
+}
+
+func (u *UserShowOutputAssert) HasNoHasWorkloadIdentity() *UserShowOutputAssert {
+	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("has_workload_identity"))
 	return u
 }

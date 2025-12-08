@@ -11,6 +11,32 @@ resource "snowflake_task" "task" {
   sql_statement = "select 1"
 }
 
+# Basic task with seconds schedule
+resource "snowflake_task" "task_seconds" {
+  database  = "database"
+  schema    = "schema"
+  name      = "task_seconds"
+  warehouse = "warehouse"
+  started   = true
+  schedule {
+    seconds = 30
+  }
+  sql_statement = "select 1"
+}
+
+# Basic task with hours schedule
+resource "snowflake_task" "task_hours" {
+  database  = "database"
+  schema    = "schema"
+  name      = "task_hours"
+  warehouse = "warehouse"
+  started   = true
+  schedule {
+    hours = 2
+  }
+  sql_statement = "select 1"
+}
+
 # Basic serverless task
 resource "snowflake_task" "serverless_task" {
   database                                 = "database"
@@ -46,6 +72,44 @@ resource "snowflake_task" "child_task" {
   # You can do it by referring to task by computed fully_qualified_name field or write the task name in manually if it's not managed by Terraform
   finalize      = snowflake_task.root_task.fully_qualified_name
   sql_statement = "select 1"
+}
+
+# Complete child task
+resource "snowflake_task" "complete_child_task" {
+  database      = "database"
+  schema        = "schema"
+  name          = "complete_child_task"
+  started       = true
+  sql_statement = "CALL my_stored_procedure()"
+
+  after                       = [snowflake_task.root_task.fully_qualified_name]
+  config                      = "{\"output_dir\": \"/temp/\", \"learning_rate\": 0.1}"
+  allow_overlapping_execution = true
+  error_integration           = snowflake_notification_integration.example.fully_qualified_name
+  when                        = "SYSTEM$STREAM_HAS_DATA('my_stream')"
+  comment                     = "complete child task with all parameters"
+  target_completion_interval  = "10 MINUTES"
+
+  # Task Parameters
+  suspend_task_after_num_failures               = 5
+  task_auto_retry_attempts                      = 3
+  user_task_managed_initial_warehouse_size      = "MEDIUM"
+  user_task_minimum_trigger_interval_in_seconds = 60
+  user_task_timeout_ms                          = 7200000
+  serverless_task_min_statement_size            = "SMALL"
+  serverless_task_max_statement_size            = "LARGE"
+
+  # Session Parameters
+  abort_detached_query         = false
+  autocommit                   = true
+  binary_input_format          = "HEX"
+  binary_output_format         = "HEX"
+  json_indent                  = 4
+  lock_timeout                 = 21600
+  log_level                    = "INFO"
+  query_tag                    = "child_task_query"
+  statement_timeout_in_seconds = 86400
+  timezone                     = "America/New_York"
 }
 
 # Complete standalone task

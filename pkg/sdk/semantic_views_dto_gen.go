@@ -29,6 +29,7 @@ type AlterSemanticViewRequest struct {
 	name         SchemaObjectIdentifier // required
 	SetComment   *string
 	UnsetComment *bool
+	RenameTo     *SchemaObjectIdentifier
 }
 
 type DropSemanticViewRequest struct {
@@ -117,9 +118,9 @@ type MetricDefinitionRequest struct {
 }
 
 type WindowFunctionMetricDefinitionRequest struct {
-	WindowFunction string // required
-	Metric         string // required
-	OverClause     *WindowFunctionOverClauseRequest
+	qualifiedExpressionName *QualifiedExpressionNameRequest // required
+	sqlExpression           *SemanticSqlExpressionRequest   // required
+	OverClause              *WindowFunctionOverClauseRequest
 }
 
 type WindowFunctionOverClauseRequest struct {

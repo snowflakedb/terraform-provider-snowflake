@@ -78,12 +78,56 @@ func (t *TaskShowOutputAssert) HasScheduleEmpty() *TaskShowOutputAssert {
 	return t
 }
 
+func (t *TaskShowOutputAssert) HasScheduleSeconds(seconds int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("%d SECOND", seconds)))
+	return t
+}
+
 func (t *TaskShowOutputAssert) HasScheduleMinutes(minutes int) *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("%d MINUTE", minutes)))
 	return t
 }
 
+func (t *TaskShowOutputAssert) HasScheduleHours(hours int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("%d HOUR", hours)))
+	return t
+}
+
 func (t *TaskShowOutputAssert) HasScheduleCron(cron string) *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("USING CRON %s", cron)))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalEmpty() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "0"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalSeconds(seconds int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "1"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.seconds", strconv.Itoa(seconds)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.minutes", "0"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.hours", "0"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalMinutes(minutes int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "1"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.minutes", strconv.Itoa(minutes)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.seconds", "0"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.hours", "0"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalHours(hours int) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "1"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.hours", strconv.Itoa(hours)))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.seconds", "0"))
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.0.minutes", "0"))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasWarehouseEmpty() *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("warehouse", ""))
 	return t
 }

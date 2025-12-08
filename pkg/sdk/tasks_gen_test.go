@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTasks_Create(t *testing.T) {
@@ -107,10 +108,13 @@ func TestTasks_Create(t *testing.T) {
 			Value: "v1",
 		}}
 		opts.UserTaskMinimumTriggerIntervalInSeconds = Int(10)
+		opts.TargetCompletionInterval = String("10 MINUTES")
+		opts.ServerlessTaskMinStatementSize = Pointer(WarehouseSizeSmall)
+		opts.ServerlessTaskMaxStatementSize = Pointer(WarehouseSizeLarge)
 		opts.After = []SchemaObjectIdentifier{otherTaskId}
 		opts.When = String(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`)
 
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${\"output_dir\": \"/temp/test_directory/\", \"learning_rate\": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true JSON_INDENT = 10, LOCK_TIMEOUT = 5 USER_TASK_TIMEOUT_MS = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = \"some_error_integration\" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 TAG (%s = 'v1') USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 AFTER %s WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP", id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), tagId.FullyQualifiedName(), otherTaskId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${\"output_dir\": \"/temp/test_directory/\", \"learning_rate\": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true JSON_INDENT = 10, LOCK_TIMEOUT = 5 USER_TASK_TIMEOUT_MS = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = \"some_error_integration\" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 TAG (%s = 'v1') USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 TARGET_COMPLETION_INTERVAL = '10 MINUTES' SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL' SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE' AFTER %s WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP", id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), tagId.FullyQualifiedName(), otherTaskId.FullyQualifiedName())
 	})
 }
 
@@ -287,10 +291,10 @@ func TestTasks_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errIntValue("SessionParameters", "JsonIndent", IntErrGreaterOrEqual, 0))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.Warehouse opts.Set.UserTaskManagedInitialWarehouseSize opts.Set.Schedule opts.Set.Config opts.Set.AllowOverlappingExecution opts.Set.UserTaskTimeoutMs opts.Set.SuspendTaskAfterNumFailures opts.Set.ErrorIntegration opts.Set.Comment opts.Set.SessionParameters opts.Set.TaskAutoRetryAttempts opts.Set.UserTaskMinimumTriggerIntervalInSeconds] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.Warehouse opts.Set.UserTaskManagedInitialWarehouseSize opts.Set.Schedule opts.Set.Config opts.Set.AllowOverlappingExecution opts.Set.UserTaskTimeoutMs opts.Set.SuspendTaskAfterNumFailures opts.Set.ErrorIntegration opts.Set.Comment opts.Set.SessionParameters opts.Set.TaskAutoRetryAttempts opts.Set.UserTaskMinimumTriggerIntervalInSeconds opts.Set.TargetCompletionInterval opts.Set.ServerlessTaskMinStatementSize opts.Set.ServerlessTaskMaxStatementSize] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TaskSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"))
 	})
 
 	t.Run("validation: conflicting fields for [opts.Set.Warehouse opts.Set.UserTaskManagedInitialWarehouseSize]", func(t *testing.T) {
@@ -314,14 +318,14 @@ func TestTasks_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TaskUnset{}
 		opts.Unset.SessionParametersUnset = &SessionParametersUnset{}
-		// arror adjusted manually
+		// error adjusted manually
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.Warehouse opts.Unset.UserTaskManagedInitialWarehouseSize opts.Unset.Schedule opts.Unset.Config opts.Unset.AllowOverlappingExecution opts.Unset.UserTaskTimeoutMs opts.Unset.SuspendTaskAfterNumFailures opts.Unset.ErrorIntegration opts.Unset.Comment opts.Unset.SessionParametersUnset opts.Unset.TaskAutoRetryAttempts opts.Unset.UserTaskMinimumTriggerIntervalInSeconds] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Unset.Warehouse opts.Unset.UserTaskManagedInitialWarehouseSize opts.Unset.Schedule opts.Unset.Config opts.Unset.AllowOverlappingExecution opts.Unset.UserTaskTimeoutMs opts.Unset.SuspendTaskAfterNumFailures opts.Unset.ErrorIntegration opts.Unset.Comment opts.Unset.SessionParametersUnset opts.Unset.TaskAutoRetryAttempts opts.Unset.UserTaskMinimumTriggerIntervalInSeconds opts.Unset.TargetCompletionInterval opts.Unset.ServerlessTaskMinStatementSize opts.Unset.ServerlessTaskMaxStatementSize] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TaskUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterTaskOptions.Unset", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterTaskOptions.Unset", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"))
 	})
 
 	// all variants added manually
@@ -360,10 +364,13 @@ func TestTasks_Alter(t *testing.T) {
 	t.Run("alter set: multiple", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TaskSet{
-			UserTaskTimeoutMs: Int(2000),
-			Comment:           String("some comment"),
+			UserTaskTimeoutMs:              Int(2000),
+			Comment:                        String("some comment"),
+			TargetCompletionInterval:       String("15 MINUTES"),
+			ServerlessTaskMinStatementSize: Pointer(WarehouseSizeXSmall),
+			ServerlessTaskMaxStatementSize: Pointer(WarehouseSizeXLarge),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET USER_TASK_TIMEOUT_MS = 2000, COMMENT = 'some comment'", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET USER_TASK_TIMEOUT_MS = 2000, COMMENT = 'some comment', TARGET_COMPLETION_INTERVAL = '15 MINUTES', SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'XSMALL', SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'XLARGE'", id.FullyQualifiedName())
 	})
 
 	t.Run("alter set warehouse", func(t *testing.T) {
@@ -396,10 +403,13 @@ func TestTasks_Alter(t *testing.T) {
 	t.Run("alter unset: multiple", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TaskUnset{
-			UserTaskTimeoutMs: Bool(true),
-			Comment:           Bool(true),
+			UserTaskTimeoutMs:              Bool(true),
+			Comment:                        Bool(true),
+			TargetCompletionInterval:       Bool(true),
+			ServerlessTaskMinStatementSize: Bool(true),
+			ServerlessTaskMaxStatementSize: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET USER_TASK_TIMEOUT_MS, COMMENT", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET USER_TASK_TIMEOUT_MS, COMMENT, TARGET_COMPLETION_INTERVAL, SERVERLESS_TASK_MIN_STATEMENT_SIZE, SERVERLESS_TASK_MAX_STATEMENT_SIZE", id.FullyQualifiedName())
 	})
 
 	t.Run("alter set tags", func(t *testing.T) {
@@ -626,6 +636,38 @@ func TestParseTaskSchedule(t *testing.T) {
 			Schedule:             "5 MINUTES",
 			ExpectedTaskSchedule: &TaskSchedule{Minutes: 5},
 		},
+		"valid schedule: s seconds": {
+			Schedule:             "30 s",
+			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
+		},
+		"valid schedule: S seconds": {
+			Schedule:             "30 S",
+			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
+		},
+		"valid schedule: SECOND seconds": {
+			Schedule:             "30 SECOND",
+			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
+		},
+		"valid schedule: SECONDS seconds": {
+			Schedule:             "30 SECONDS",
+			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
+		},
+		"valid schedule: h hours": {
+			Schedule:             "2 h",
+			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
+		},
+		"valid schedule: H hours": {
+			Schedule:             "2 H",
+			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
+		},
+		"valid schedule: HOUR hours": {
+			Schedule:             "2 HOUR",
+			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
+		},
+		"valid schedule: HOURS hours": {
+			Schedule:             "2 HOURS",
+			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
+		},
 		"valid schedule: cron": {
 			Schedule:             "USING CRON * * * * * UTC",
 			ExpectedTaskSchedule: &TaskSchedule{Cron: "* * * * * UTC"},
@@ -637,7 +679,7 @@ func TestParseTaskSchedule(t *testing.T) {
 		"invalid schedule: wrong schedule format": {
 			Schedule:             "SOME SCHEDULE",
 			ExpectedTaskSchedule: nil,
-			Error:                "invalid schedule format",
+			Error:                `strconv.Atoi: parsing "SOME": invalid syntax`,
 		},
 		"invalid schedule: wrong minutes format": {
 			Schedule:             "a5 MINUTE",
@@ -661,6 +703,99 @@ func TestParseTaskSchedule(t *testing.T) {
 				assert.EqualValues(t, tc.ExpectedTaskSchedule, taskSchedule)
 				assert.NoError(t, err)
 			}
+		})
+	}
+}
+
+// added manually
+func TestParseTargetCompletionInterval(t *testing.T) {
+	valid := map[string]struct {
+		Input    string
+		Expected *TaskTargetCompletionInterval
+	}{
+		"valid hours singular": {
+			Input:    "1 HOUR",
+			Expected: &TaskTargetCompletionInterval{Hours: Pointer(1)},
+		},
+		"valid hours plural": {
+			Input:    "2 HOURS",
+			Expected: &TaskTargetCompletionInterval{Hours: Pointer(2)},
+		},
+		"valid hours - short form": {
+			Input:    "2 h",
+			Expected: &TaskTargetCompletionInterval{Hours: Pointer(2)},
+		},
+		"valid minutes singular": {
+			Input:    "1 MINUTE",
+			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(1)},
+		},
+		"valid minutes plural": {
+			Input:    "10 MINUTES",
+			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(10)},
+		},
+		"valid minutes - short form": {
+			Input:    "5 m",
+			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(5)},
+		},
+		"valid seconds singular": {
+			Input:    "1 SECOND",
+			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(1)},
+		},
+		"valid seconds plural": {
+			Input:    "30 SECONDS",
+			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(30)},
+		},
+		"valid seconds - short form": {
+			Input:    "30 s",
+			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(30)},
+		},
+		"valid lowercase": {
+			Input:    "5 minutes",
+			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(5)},
+		},
+		"leading/trailing spaces": {
+			Input:    " 7 HOURS ",
+			Expected: &TaskTargetCompletionInterval{Hours: Pointer(7)},
+		},
+	}
+
+	for name, tc := range valid {
+		t.Run(name, func(t *testing.T) {
+			got, err := parseTargetCompletionInterval(tc.Input)
+			require.NoError(t, err)
+			assert.Equal(t, tc.Expected, got)
+		})
+	}
+	invalid := map[string]struct {
+		Input string
+		Error string
+	}{
+		"invalid format: missing value": {
+			Input: "MINUTES",
+			Error: "invalid task target completion interval format",
+		},
+		"invalid format: extra parts": {
+			Input: "1 HOURS EXTRA",
+			Error: "invalid task target completion interval format",
+		},
+		"invalid value: not a number": {
+			Input: "foo HOURS",
+			Error: "invalid task target completion interval value",
+		},
+		"invalid unit: nonsense": {
+			Input: "5 CATS",
+			Error: "invalid task target completion interval unit",
+		},
+		"empty input": {
+			Input: "",
+			Error: "invalid task target completion interval format",
+		},
+	}
+	for name, tc := range invalid {
+		t.Run(name, func(t *testing.T) {
+			got, err := parseTargetCompletionInterval(tc.Input)
+			assert.Empty(t, got)
+			assert.ErrorContains(t, err, tc.Error)
 		})
 	}
 }

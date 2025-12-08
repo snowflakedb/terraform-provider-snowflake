@@ -65,26 +65,46 @@ var taskSchema = map[string]*schema.Schema{
 		ConflictsWith:    []string{"user_task_managed_initial_warehouse_size"},
 	},
 	"schedule": {
-		Type:          schema.TypeList,
-		Optional:      true,
-		MaxItems:      1,
-		Description:   "The schedule for periodically running the task. This can be a cron or interval in minutes. (Conflicts with finalize and after; when set, one of the sub-fields `minutes` or `using_cron` should be set)",
+		Type:     schema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Description: joinWithSpace(
+			"The schedule for periodically running the task. This can be a cron or interval in seconds, minutes, or hours. (Conflicts with finalize and after; when set, one of the sub-fields `seconds`, `minutes`, `hours`, or `using_cron` should be set)",
+			"For [Triggered tasks](https://docs.snowflake.com/en/user-guide/tasks-triggered), a schedule is not required. For other tasks,",
+			"a schedule must be defined for a standalone task or the root task in a [task graph](https://docs.snowflake.com/en/user-guide/tasks-graphs#label-task-dag); otherwise,",
+			"the task only runs if manually executed using [EXECUTE TASK](https://docs.snowflake.com/en/sql-reference/sql/execute-task) in, for example, the [snowflake_execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource.",
+			"A schedule cannot be specified for child tasks in a task graph. For more information on schedule restrictions, consult the [official documentation for Task object](https://docs.snowflake.com/en/user-guide/tasks-intro).",
+		),
 		ConflictsWith: []string{"finalize", "after"},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"seconds": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `minutes`, `hours`, and `using_cron`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
+				},
 				"minutes": {
 					Type:             schema.TypeInt,
 					Optional:         true,
-					Description:      "Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers only. (conflicts with `using_cron`)",
+					Description:      "Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `hours`, and `using_cron`)",
 					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
-					ExactlyOneOf:     []string{"schedule.0.minutes", "schedule.0.using_cron"},
+					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
+				},
+				"hours": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies an interval (in hours) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `minutes`, and `using_cron`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
 				},
 				"using_cron": {
 					Type:             schema.TypeString,
 					Optional:         true,
-					Description:      "Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `minutes`)",
+					Description:      "Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `seconds`, `minutes`, and `hours`)",
 					DiffSuppressFunc: ignoreCaseSuppressFunc,
-					ExactlyOneOf:     []string{"schedule.0.minutes", "schedule.0.using_cron"},
+					ExactlyOneOf:     []string{"schedule.0.seconds", "schedule.0.minutes", "schedule.0.hours", "schedule.0.using_cron"},
 				},
 			},
 		},
@@ -149,6 +169,37 @@ var taskSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: SuppressIfAny(DiffSuppressStatement, IgnoreChangeToCurrentSnowflakeValueInShow("definition")),
 		Description:      "Any single SQL statement, or a call to a stored procedure, executed when the task runs.",
 	},
+	"target_completion_interval": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Specifies the target completion interval for tasks. This can be specified in hours, minutes, or seconds. (when set, one of the sub-fields `hours`, `minutes`, or `seconds` should be set)",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"hours": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies the target completion interval in hours. (conflicts with `minutes` and `seconds`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ExactlyOneOf:     []string{"target_completion_interval.0.hours", "target_completion_interval.0.minutes", "target_completion_interval.0.seconds"},
+				},
+				"minutes": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies the target completion interval in minutes. (conflicts with `hours` and `seconds`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ExactlyOneOf:     []string{"target_completion_interval.0.hours", "target_completion_interval.0.minutes", "target_completion_interval.0.seconds"},
+				},
+				"seconds": {
+					Type:             schema.TypeInt,
+					Optional:         true,
+					Description:      "Specifies the target completion interval in seconds. (conflicts with `hours` and `minutes`)",
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ExactlyOneOf:     []string{"target_completion_interval.0.hours", "target_completion_interval.0.minutes", "target_completion_interval.0.seconds"},
+				},
+			},
+		},
+	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -182,7 +233,7 @@ func Task() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Task, customdiff.All(
-			ComputedIfAnyAttributeChanged(taskSchema, ShowOutputAttributeName, "name", "started", "warehouse", "user_task_managed_initial_warehouse_size", "schedule", "config", "allow_overlapping_execution", "error_integration", "comment", "finalize", "after", "when"),
+			ComputedIfAnyAttributeChanged(taskSchema, ShowOutputAttributeName, "name", "started", "warehouse", "user_task_managed_initial_warehouse_size", "schedule", "config", "allow_overlapping_execution", "error_integration", "comment", "finalize", "after", "when", "target_completion_interval"),
 			ComputedIfAnyAttributeChanged(taskParametersSchema, ParametersAttributeName, collections.Map(sdk.AsStringList(sdk.AllTaskParameters), strings.ToLower)...),
 			ComputedIfAnyAttributeChanged(taskSchema, FullyQualifiedNameAttributeName, "name"),
 			taskParametersCustomDiff,
@@ -245,13 +296,19 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		}),
 		attributeMappedValueCreate(d, "schedule", &req.Schedule, func(v any) (*string, error) {
 			if len(v.([]any)) > 0 {
+				if seconds, ok := d.GetOk("schedule.0.seconds"); ok {
+					return sdk.String(fmt.Sprintf("%d SECOND", seconds)), nil
+				}
 				if minutes, ok := d.GetOk("schedule.0.minutes"); ok {
 					return sdk.String(fmt.Sprintf("%d MINUTE", minutes)), nil
+				}
+				if hours, ok := d.GetOk("schedule.0.hours"); ok {
+					return sdk.String(fmt.Sprintf("%d HOUR", hours)), nil
 				}
 				if cron, ok := d.GetOk("schedule.0.using_cron"); ok {
 					return sdk.String(fmt.Sprintf("USING CRON %s", cron)), nil
 				}
-				return nil, fmt.Errorf("when setting a schedule either minutes or using_cron field should be set")
+				return nil, fmt.Errorf("when setting a schedule one of seconds, minutes, hours, or using_cron field should be set")
 			}
 			return nil, nil
 		}),
@@ -260,6 +317,21 @@ func CreateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		accountObjectIdentifierAttributeCreate(d, "error_integration", &req.ErrorIntegration),
 		stringAttributeCreate(d, "comment", &req.Comment),
 		stringAttributeCreate(d, "when", &req.When),
+		attributeMappedValueCreate(d, "target_completion_interval", &req.TargetCompletionInterval, func(v any) (*string, error) {
+			if len(v.([]any)) > 0 {
+				if hours, ok := d.GetOk("target_completion_interval.0.hours"); ok {
+					return sdk.String(fmt.Sprintf("%d HOURS", hours)), nil
+				}
+				if minutes, ok := d.GetOk("target_completion_interval.0.minutes"); ok {
+					return sdk.String(fmt.Sprintf("%d MINUTES", minutes)), nil
+				}
+				if seconds, ok := d.GetOk("target_completion_interval.0.seconds"); ok {
+					return sdk.String(fmt.Sprintf("%d SECONDS", seconds)), nil
+				}
+				return nil, fmt.Errorf("when setting target_completion_interval, one of hours, minutes, or seconds field should be set")
+			}
+			return nil, nil
+		}),
 	); errs != nil {
 		return diag.FromErr(errs)
 	}
@@ -379,12 +451,36 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 		return diag.FromErr(err)
 	}
 
+	if d.HasChange("target_completion_interval") {
+		_, newTargetCompletionInterval := d.GetChange("target_completion_interval")
+
+		if newTargetCompletionInterval != nil && len(newTargetCompletionInterval.([]any)) == 1 {
+			if _, newHours := d.GetChange("target_completion_interval.0.hours"); newHours.(int) > 0 {
+				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d HOURS", newHours.(int)))
+			}
+			if _, newMinutes := d.GetChange("target_completion_interval.0.minutes"); newMinutes.(int) > 0 {
+				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d MINUTES", newMinutes.(int)))
+			}
+			if _, newSeconds := d.GetChange("target_completion_interval.0.seconds"); newSeconds.(int) > 0 {
+				set.TargetCompletionInterval = sdk.String(fmt.Sprintf("%d SECONDS", newSeconds.(int)))
+			}
+		} else {
+			unset.TargetCompletionInterval = sdk.Bool(true)
+		}
+	}
+
 	if d.HasChange("schedule") {
 		_, newSchedule := d.GetChange("schedule")
 
 		if newSchedule != nil && len(newSchedule.([]any)) == 1 {
+			if _, newSeconds := d.GetChange("schedule.0.seconds"); newSeconds.(int) > 0 {
+				set.Schedule = sdk.String(fmt.Sprintf("%d SECOND", newSeconds.(int)))
+			}
 			if _, newMinutes := d.GetChange("schedule.0.minutes"); newMinutes.(int) > 0 {
 				set.Schedule = sdk.String(fmt.Sprintf("%d MINUTE", newMinutes.(int)))
+			}
+			if _, newHours := d.GetChange("schedule.0.hours"); newHours.(int) > 0 {
+				set.Schedule = sdk.String(fmt.Sprintf("%d HOUR", newHours.(int)))
 			}
 			if _, newCron := d.GetChange("schedule.0.using_cron"); newCron.(string) != "" {
 				set.Schedule = sdk.String(fmt.Sprintf("USING CRON %s", newCron.(string)))
@@ -596,9 +692,21 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 						}}); err != nil {
 							return err
 						}
+					case taskSchedule.Seconds > 0:
+						if err := d.Set("schedule", []any{map[string]any{
+							"seconds": taskSchedule.Seconds,
+						}}); err != nil {
+							return err
+						}
 					case taskSchedule.Minutes > 0:
 						if err := d.Set("schedule", []any{map[string]any{
 							"minutes": taskSchedule.Minutes,
+						}}); err != nil {
+							return err
+						}
+					case taskSchedule.Hours > 0:
+						if err := d.Set("schedule", []any{map[string]any{
+							"hours": taskSchedule.Hours,
 						}}); err != nil {
 							return err
 						}
@@ -606,6 +714,33 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 					return nil
 				}
 				return d.Set("schedule", nil)
+			}(),
+			func() error {
+				if task.TargetCompletionInterval != nil {
+					targetInterval := *task.TargetCompletionInterval
+					switch {
+					case targetInterval.Hours != nil:
+						if err := d.Set("target_completion_interval", []any{map[string]any{
+							"hours": *targetInterval.Hours,
+						}}); err != nil {
+							return err
+						}
+					case targetInterval.Minutes != nil:
+						if err := d.Set("target_completion_interval", []any{map[string]any{
+							"minutes": *targetInterval.Minutes,
+						}}); err != nil {
+							return err
+						}
+					case targetInterval.Seconds != nil:
+						if err := d.Set("target_completion_interval", []any{map[string]any{
+							"seconds": *targetInterval.Seconds,
+						}}); err != nil {
+							return err
+						}
+					}
+					return nil
+				}
+				return d.Set("target_completion_interval", nil)
 			}(),
 			d.Set("started", task.IsStarted()),
 			d.Set("when", task.Condition),

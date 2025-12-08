@@ -54,6 +54,17 @@ func intAttributeWithSpecialDefaultUpdate(d *schema.ResourceData, key string, se
 	return nil
 }
 
+func intAttributeUnsetFallbackUpdateWithZeroDefault(d *schema.ResourceData, key string, setField **int, fallbackValue int) error {
+	if d.HasChange(key) {
+		if v := d.Get(key).(int); v != 0 {
+			*setField = sdk.Int(v)
+		} else {
+			*setField = sdk.Int(fallbackValue)
+		}
+	}
+	return nil
+}
+
 func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField **bool, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(string); v != BooleanDefault {

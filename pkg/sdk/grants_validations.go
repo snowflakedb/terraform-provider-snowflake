@@ -54,6 +54,7 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeSchema,
 	ObjectTypeSessionPolicy,
 	ObjectTypeSecret,
+	ObjectTypeSemanticView,
 	ObjectTypeSequence,
 	ObjectTypeStage,
 	ObjectTypeStream,
@@ -101,6 +102,7 @@ var validGrantOwnershipBulkObjectTypes = []ObjectType{
 	ObjectTypeSchema,
 	ObjectTypeSessionPolicy,
 	ObjectTypeSecret,
+	ObjectTypeSemanticView,
 	ObjectTypeSequence,
 	ObjectTypeStage,
 	ObjectTypeStream,
@@ -119,6 +121,7 @@ var validGrantToAccountObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
 	ObjectTypeDatabase,
 	ObjectTypeIntegration,
+	ObjectTypeConnection,
 	ObjectTypeFailoverGroup,
 	ObjectTypeReplicationGroup,
 	ObjectTypeExternalVolume,
@@ -161,22 +164,45 @@ var validGrantToSchemaObjectTypes = []ObjectType{
 	ObjectTypeService,
 	ObjectTypeSessionPolicy,
 	ObjectTypeSequence,
+	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeSnapshot,
 	ObjectTypeSnapshotPolicy,
 	ObjectTypeSnapshotSet,
 	ObjectTypeStage,
 	ObjectTypeStream,
 	ObjectTypeStreamlit,
+	ObjectTypeOnlineFeatureTable,
 	ObjectTypeTable,
 	ObjectTypeTag,
 	ObjectTypeTask,
 	ObjectTypeView,
+	ObjectTypeWorkspace,
+}
+
+// TODO(SNOW-2370066): Adjust after adding tests
+// based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
+var invalidGrantToAllObjectTypes = []ObjectType{
+	ObjectTypeComputePool,
+	ObjectTypeExternalFunction,
+	ObjectTypeExperiment,
+	// ObjectTypeImageRepository,
+	// ObjectTypeAggregationPolicy,
+	// ObjectTypeMaskingPolicy,
+	// ObjectTypePackagesPolicy,
+	// ObjectTypeProjectionPolicy,
+	// ObjectTypeRowAccessPolicy,
+	// ObjectTypeSessionPolicy,
+	ObjectTypeStorageLifecyclePolicy,
+	// ObjectTypeTag,
+	ObjectTypeWarehouse,
+	ObjectTypeWorkspace,
 }
 
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
 var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
 	ObjectTypeExternalFunction,
+	ObjectTypeExperiment,
 	ObjectTypeImageRepository,
 	ObjectTypeAggregationPolicy,
 	ObjectTypeMaskingPolicy,
@@ -184,7 +210,10 @@ var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeProjectionPolicy,
 	ObjectTypeRowAccessPolicy,
 	ObjectTypeSessionPolicy,
+	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeTag,
+	ObjectTypeWarehouse,
+	ObjectTypeWorkspace,
 }
 
 var (
@@ -192,7 +221,7 @@ var (
 	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipBulkObjectTypes))
 	ValidGrantToAccountObjectTypesString       = make([]string, len(validGrantToAccountObjectTypes))
 	ValidGrantToSchemaObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
-	ValidGrantToPluralObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
+	ValidGrantToAllPluralObjectTypesString     = make([]string, 0)
 	ValidGrantToFuturePluralObjectTypesString  = make([]string, 0)
 )
 
@@ -208,7 +237,9 @@ func init() {
 	}
 	for i, objectType := range validGrantToSchemaObjectTypes {
 		ValidGrantToSchemaObjectTypesString[i] = objectType.String()
-		ValidGrantToPluralObjectTypesString[i] = objectType.Plural().String()
+		if !slices.Contains(invalidGrantToAllObjectTypes, objectType) {
+			ValidGrantToAllPluralObjectTypesString = append(ValidGrantToAllPluralObjectTypesString, objectType.Plural().String())
+		}
 		if !slices.Contains(invalidGrantToFutureObjectTypes, objectType) {
 			ValidGrantToFuturePluralObjectTypesString = append(ValidGrantToFuturePluralObjectTypesString, objectType.Plural().String())
 		}

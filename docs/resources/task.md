@@ -7,6 +7,10 @@ description: |-
 
 !> **Sensitive values** This resource's `config`, `show_output.config` and `show_output.definition` fields are not marked as sensitive in the provider. Ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
 
+!> **Warning** Due to complex conditional logic in Snowflake regarding required fields for a given type (serverless or not) and use case (scheduled, run after another task, conditional, or other) of a task, please make sure you went through the [Snowflake documentation for tasks](https://docs.snowflake.com/en/user-guide/tasks-intro) to understand which fields are required for your use case.
+
+!> **Warning** Setting `AUTOCOMMIT` to `false` and `SEARCH_PATH` to any value is now not possible for tasks in Snowflake, thus it's recommended to not configure them within the resource. The only exception is leaving (or setting) `AUTOCOMMIT` with `true` value explicitly set in the configuration, is to override the parameter that may be set to `false` value on the higher parameter hierarchy level. The parameters may be removed in the next major version of the provider.
+
 # snowflake_task (Resource)
 
 Resource used to manage task objects. For more information, check [task documentation](https://docs.snowflake.com/en/user-guide/tasks-intro).
@@ -23,6 +27,32 @@ resource "snowflake_task" "task" {
   started   = true
   schedule {
     minutes = 5
+  }
+  sql_statement = "select 1"
+}
+
+# Basic task with seconds schedule
+resource "snowflake_task" "task_seconds" {
+  database  = "database"
+  schema    = "schema"
+  name      = "task_seconds"
+  warehouse = "warehouse"
+  started   = true
+  schedule {
+    seconds = 30
+  }
+  sql_statement = "select 1"
+}
+
+# Basic task with hours schedule
+resource "snowflake_task" "task_hours" {
+  database  = "database"
+  schema    = "schema"
+  name      = "task_hours"
+  warehouse = "warehouse"
+  started   = true
+  schedule {
+    hours = 2
   }
   sql_statement = "select 1"
 }
@@ -62,6 +92,44 @@ resource "snowflake_task" "child_task" {
   # You can do it by referring to task by computed fully_qualified_name field or write the task name in manually if it's not managed by Terraform
   finalize      = snowflake_task.root_task.fully_qualified_name
   sql_statement = "select 1"
+}
+
+# Complete child task
+resource "snowflake_task" "complete_child_task" {
+  database      = "database"
+  schema        = "schema"
+  name          = "complete_child_task"
+  started       = true
+  sql_statement = "CALL my_stored_procedure()"
+
+  after                       = [snowflake_task.root_task.fully_qualified_name]
+  config                      = "{\"output_dir\": \"/temp/\", \"learning_rate\": 0.1}"
+  allow_overlapping_execution = true
+  error_integration           = snowflake_notification_integration.example.fully_qualified_name
+  when                        = "SYSTEM$STREAM_HAS_DATA('my_stream')"
+  comment                     = "complete child task with all parameters"
+  target_completion_interval  = "10 MINUTES"
+
+  # Task Parameters
+  suspend_task_after_num_failures               = 5
+  task_auto_retry_attempts                      = 3
+  user_task_managed_initial_warehouse_size      = "MEDIUM"
+  user_task_minimum_trigger_interval_in_seconds = 60
+  user_task_timeout_ms                          = 7200000
+  serverless_task_min_statement_size            = "SMALL"
+  serverless_task_max_statement_size            = "LARGE"
+
+  # Session Parameters
+  abort_detached_query         = false
+  autocommit                   = true
+  binary_input_format          = "HEX"
+  binary_output_format         = "HEX"
+  json_indent                  = 4
+  lock_timeout                 = 21600
+  log_level                    = "INFO"
+  query_tag                    = "child_task_query"
+  statement_timeout_in_seconds = 86400
+  timezone                     = "America/New_York"
 }
 
 # Complete standalone task
@@ -198,12 +266,15 @@ resource "snowflake_task" "test" {
 - `quoted_identifiers_ignore_case` (Boolean) Specifies whether letters in double-quoted object identifiers are stored and resolved as uppercase letters. By default, Snowflake preserves the case of alphabetic characters when storing and resolving double-quoted identifiers (see [Identifier resolution](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html#label-identifier-casing)). You can use this parameter in situations in which [third-party applications always use double quotes around identifiers](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html#label-identifier-casing-parameter). For more information, check [QUOTED_IDENTIFIERS_IGNORE_CASE docs](https://docs.snowflake.com/en/sql-reference/parameters#quoted-identifiers-ignore-case).
 - `rows_per_resultset` (Number) Specifies the maximum number of rows returned in a result set. A value of 0 specifies no maximum. For more information, check [ROWS_PER_RESULTSET docs](https://docs.snowflake.com/en/sql-reference/parameters#rows-per-resultset).
 - `s3_stage_vpce_dns_name` (String) Specifies the DNS name of an Amazon S3 interface endpoint. Requests sent to the internal stage of an account via [AWS PrivateLink for Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/privatelink-interface-endpoints.html) use this endpoint to connect. For more information, see [Accessing Internal stages with dedicated interface endpoints](https://docs.snowflake.com/en/user-guide/private-internal-stages-aws.html#label-aws-privatelink-internal-stage-network-isolation). For more information, check [S3_STAGE_VPCE_DNS_NAME docs](https://docs.snowflake.com/en/sql-reference/parameters#s3-stage-vpce-dns-name).
-- `schedule` (Block List, Max: 1) The schedule for periodically running the task. This can be a cron or interval in minutes. (Conflicts with finalize and after; when set, one of the sub-fields `minutes` or `using_cron` should be set) (see [below for nested schema](#nestedblock--schedule))
+- `schedule` (Block List, Max: 1) The schedule for periodically running the task. This can be a cron or interval in seconds, minutes, or hours. (Conflicts with finalize and after; when set, one of the sub-fields `seconds`, `minutes`, `hours`, or `using_cron` should be set) For [Triggered tasks](https://docs.snowflake.com/en/user-guide/tasks-triggered), a schedule is not required. For other tasks, a schedule must be defined for a standalone task or the root task in a [task graph](https://docs.snowflake.com/en/user-guide/tasks-graphs#label-task-dag); otherwise, the task only runs if manually executed using [EXECUTE TASK](https://docs.snowflake.com/en/sql-reference/sql/execute-task) in, for example, the [snowflake_execute](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/execute) resource. A schedule cannot be specified for child tasks in a task graph. For more information on schedule restrictions, consult the [official documentation for Task object](https://docs.snowflake.com/en/user-guide/tasks-intro). (see [below for nested schema](#nestedblock--schedule))
 - `search_path` (String) Specifies the path to search to resolve unqualified object names in queries. For more information, see [Name resolution in queries](https://docs.snowflake.com/en/sql-reference/name-resolution.html#label-object-name-resolution-search-path). Comma-separated list of identifiers. An identifier can be a fully or partially qualified schema name. For more information, check [SEARCH_PATH docs](https://docs.snowflake.com/en/sql-reference/parameters#search-path).
+- `serverless_task_max_statement_size` (String) Specifies the maximum warehouse size for serverless tasks. Valid values are (case-insensitive): `XSMALL` | `X-SMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `X-LARGE` | `XXLARGE` | `X2LARGE` | `2X-LARGE` | `XXXLARGE` | `X3LARGE` | `3X-LARGE` | `X4LARGE` | `4X-LARGE` | `X5LARGE` | `5X-LARGE` | `X6LARGE` | `6X-LARGE`. For more information, check [SERVERLESS_TASK_MAX_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-max-statement-size).
+- `serverless_task_min_statement_size` (String) Specifies the minimum warehouse size for serverless tasks. Valid values are (case-insensitive): `XSMALL` | `X-SMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `X-LARGE` | `XXLARGE` | `X2LARGE` | `2X-LARGE` | `XXXLARGE` | `X3LARGE` | `3X-LARGE` | `X4LARGE` | `4X-LARGE` | `X5LARGE` | `5X-LARGE` | `X6LARGE` | `6X-LARGE`. For more information, check [SERVERLESS_TASK_MIN_STATEMENT_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#serverless-task-min-statement-size).
 - `statement_queued_timeout_in_seconds` (Number) Amount of time, in seconds, a SQL statement (query, DDL, DML, etc.) remains queued for a warehouse before it is canceled by the system. This parameter can be used in conjunction with the [MAX_CONCURRENCY_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#label-max-concurrency-level) parameter to ensure a warehouse is never backlogged. For more information, check [STATEMENT_QUEUED_TIMEOUT_IN_SECONDS docs](https://docs.snowflake.com/en/sql-reference/parameters#statement-queued-timeout-in-seconds).
 - `statement_timeout_in_seconds` (Number) Amount of time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system. For more information, check [STATEMENT_TIMEOUT_IN_SECONDS docs](https://docs.snowflake.com/en/sql-reference/parameters#statement-timeout-in-seconds).
 - `strict_json_output` (Boolean) This parameter specifies whether JSON output in a session is compatible with the general standard (as described by [http://json.org](http://json.org)). By design, Snowflake allows JSON input that contains non-standard values; however, these non-standard values might result in Snowflake outputting JSON that is incompatible with other platforms and languages. This parameter, when enabled, ensures that Snowflake outputs valid/compatible JSON. For more information, check [STRICT_JSON_OUTPUT docs](https://docs.snowflake.com/en/sql-reference/parameters#strict-json-output).
 - `suspend_task_after_num_failures` (Number) Specifies the number of consecutive failed task runs after which the current task is suspended automatically. The default is 0 (no automatic suspension). For more information, check [SUSPEND_TASK_AFTER_NUM_FAILURES docs](https://docs.snowflake.com/en/sql-reference/parameters#suspend-task-after-num-failures).
+- `target_completion_interval` (Block List, Max: 1) Specifies the target completion interval for tasks. This can be specified in hours, minutes, or seconds. (when set, one of the sub-fields `hours`, `minutes`, or `seconds` should be set) (see [below for nested schema](#nestedblock--target_completion_interval))
 - `task_auto_retry_attempts` (Number) Specifies the number of automatic task graph retry attempts. If any task graphs complete in a FAILED state, Snowflake can automatically retry the task graphs from the last task in the graph that failed. For more information, check [TASK_AUTO_RETRY_ATTEMPTS docs](https://docs.snowflake.com/en/sql-reference/parameters#task-auto-retry-attempts).
 - `time_input_format` (String) Specifies the input format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). Any valid, supported time format or AUTO (AUTO specifies that Snowflake attempts to automatically detect the format of times stored in the system during the session). For more information, check [TIME_INPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#time-input-format).
 - `time_output_format` (String) Specifies the display format for the TIME data type. For more information, see [Date and time input and output formats](https://docs.snowflake.com/en/sql-reference/date-time-input-output). For more information, check [TIME_OUTPUT_FORMAT docs](https://docs.snowflake.com/en/sql-reference/parameters#time-output-format).
@@ -242,8 +313,20 @@ resource "snowflake_task" "test" {
 
 Optional:
 
-- `minutes` (Number) Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers only. (conflicts with `using_cron`)
-- `using_cron` (String) Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `minutes`)
+- `hours` (Number) Specifies an interval (in hours) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `minutes`, and `using_cron`)
+- `minutes` (Number) Specifies an interval (in minutes) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `seconds`, `hours`, and `using_cron`)
+- `seconds` (Number) Specifies an interval (in seconds) of wait time inserted between runs of the task. Accepts positive integers. (conflicts with `minutes`, `hours`, and `using_cron`)
+- `using_cron` (String) Specifies a cron expression and time zone for periodically running the task. Supports a subset of standard cron utility syntax. (conflicts with `seconds`, `minutes`, and `hours`)
+
+
+<a id="nestedblock--target_completion_interval"></a>
+### Nested Schema for `target_completion_interval`
+
+Optional:
+
+- `hours` (Number) Specifies the target completion interval in hours. (conflicts with `minutes` and `seconds`)
+- `minutes` (Number) Specifies the target completion interval in minutes. (conflicts with `hours` and `seconds`)
+- `seconds` (Number) Specifies the target completion interval in seconds. (conflicts with `hours` and `minutes`)
 
 
 <a id="nestedblock--timeouts"></a>
@@ -294,6 +377,8 @@ Read-Only:
 - `rows_per_resultset` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--rows_per_resultset))
 - `s3_stage_vpce_dns_name` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--s3_stage_vpce_dns_name))
 - `search_path` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--search_path))
+- `serverless_task_max_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--serverless_task_max_statement_size))
+- `serverless_task_min_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--serverless_task_min_statement_size))
 - `statement_queued_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--statement_queued_timeout_in_seconds))
 - `statement_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--statement_timeout_in_seconds))
 - `strict_json_output` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--strict_json_output))
@@ -705,6 +790,30 @@ Read-Only:
 - `value` (String)
 
 
+<a id="nestedobjatt--parameters--serverless_task_max_statement_size"></a>
+### Nested Schema for `parameters.serverless_task_max_statement_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--serverless_task_min_statement_size"></a>
+### Nested Schema for `parameters.serverless_task_min_statement_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
 <a id="nestedobjatt--parameters--statement_queued_timeout_in_seconds"></a>
 ### Nested Schema for `parameters.statement_queued_timeout_in_seconds`
 
@@ -1043,8 +1152,19 @@ Read-Only:
 - `schedule` (String)
 - `schema_name` (String)
 - `state` (String)
+- `target_completion_interval` (List of Object) (see [below for nested schema](#nestedobjatt--show_output--target_completion_interval))
 - `task_relations` (List of Object) (see [below for nested schema](#nestedobjatt--show_output--task_relations))
 - `warehouse` (String)
+
+<a id="nestedobjatt--show_output--target_completion_interval"></a>
+### Nested Schema for `show_output.target_completion_interval`
+
+Read-Only:
+
+- `hours` (Number)
+- `minutes` (Number)
+- `seconds` (Number)
+
 
 <a id="nestedobjatt--show_output--task_relations"></a>
 ### Nested Schema for `show_output.task_relations`

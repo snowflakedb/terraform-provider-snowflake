@@ -139,6 +139,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.NetworkPolicy().Schema,
 	},
 	{
+		name:   "Notebook",
+		schema: resources.Notebook().Schema,
+	},
+	{
 		name:   "OauthIntegrationForCustomClients",
 		schema: resources.OauthIntegrationForCustomClients().Schema,
 	},

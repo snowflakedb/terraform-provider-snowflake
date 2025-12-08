@@ -17,7 +17,7 @@ resource "snowflake_task" "test" {
     for_each = [for element in [var.schedule] : element if element != null]
     content {
       minutes    = lookup(var.schedule, "minutes", null)
-      using_cron = lookup(var.schedule, "cron", null)
+      using_cron = lookup(var.schedule, "using_cron", null)
     }
   }
 

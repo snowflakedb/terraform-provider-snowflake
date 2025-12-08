@@ -43,6 +43,14 @@ func (c *NotebookClient) CreateWithRequest(t *testing.T, req *sdk.CreateNotebook
 	return notebook, c.DropFunc(t, req.GetName())
 }
 
+func (c *NotebookClient) Alter(t *testing.T, req *sdk.AlterNotebookRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *NotebookClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

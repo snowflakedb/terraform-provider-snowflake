@@ -45,7 +45,7 @@ type LogicalTable struct {
 }
 
 type LogicalTableAlias struct {
-	LogicalTableAlias string `ddl:"keyword"`
+	LogicalTableAlias string `ddl:"keyword,double_quotes"`
 	as                bool   `ddl:"static" sql:"AS"`
 }
 
@@ -75,17 +75,17 @@ type SemanticViewRelationship struct {
 }
 
 type RelationshipAlias struct {
-	RelationshipAlias string `ddl:"keyword"`
+	RelationshipAlias string `ddl:"keyword,double_quotes"`
 	as                bool   `ddl:"static" sql:"AS"`
 }
 
 type RelationshipTableAlias struct {
 	RelationshipTableName  *SchemaObjectIdentifier `ddl:"identifier"`
-	RelationshipTableAlias *string                 `ddl:"keyword"`
+	RelationshipTableAlias *string                 `ddl:"keyword,double_quotes"`
 }
 
 type SemanticViewColumn struct {
-	Name string `ddl:"keyword"`
+	Name string `ddl:"keyword,double_quotes"`
 }
 
 type SemanticExpression struct {
@@ -110,10 +110,10 @@ type MetricDefinition struct {
 }
 
 type WindowFunctionMetricDefinition struct {
-	WindowFunction string                    `ddl:"keyword"`
-	as             bool                      `ddl:"static" sql:"AS"`
-	Metric         string                    `ddl:"keyword"`
-	OverClause     *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
+	qualifiedExpressionName *QualifiedExpressionName  `ddl:"keyword"`
+	as                      bool                      `ddl:"static" sql:"AS"`
+	sqlExpression           *SemanticSqlExpression    `ddl:"keyword"`
+	OverClause              *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
 }
 
 type WindowFunctionOverClause struct {
@@ -124,12 +124,13 @@ type WindowFunctionOverClause struct {
 
 // AlterSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view.
 type AlterSemanticViewOptions struct {
-	alter        bool                   `ddl:"static" sql:"ALTER"`
-	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
-	IfExists     *bool                  `ddl:"keyword" sql:"IF EXISTS"`
-	name         SchemaObjectIdentifier `ddl:"identifier"`
-	SetComment   *string                `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
-	UnsetComment *bool                  `ddl:"keyword" sql:"UNSET COMMENT"`
+	alter        bool                    `ddl:"static" sql:"ALTER"`
+	semanticView bool                    `ddl:"static" sql:"SEMANTIC VIEW"`
+	IfExists     *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	name         SchemaObjectIdentifier  `ddl:"identifier"`
+	SetComment   *string                 `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
+	UnsetComment *bool                   `ddl:"keyword" sql:"UNSET COMMENT"`
+	RenameTo     *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.

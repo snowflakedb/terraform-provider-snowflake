@@ -56,6 +56,14 @@ The provider offers two main types of logging:
 - Terraform execution (check [Terraform Debugging Documentation](https://www.terraform.io/internals/debugging)) - you can set it through the `TF_LOG` environment variable, e.g.: `TF_LOG=DEBUG`; it will make output of the Terraform execution more verbose.
 - Snowflake communication (using the logs from the underlying [Go Snowflake driver](https://github.com/snowflakedb/gosnowflake)) - you can set it directly in the provider config ([`driver_tracing`](https://registry.terraform.io/providers/snowflakedb/snowflake/1.0.3/docs#driver_tracing-3) attribute), by `SNOWFLAKE_DRIVER_TRACING` environmental variable (e.g. `SNOWFLAKE_DRIVER_TRACING=info`), or by `drivertracing` field in the TOML file. To see the communication with Snowflake (including the SQL commands run) we recommend setting it to `info`.
 
+**Note:** Since v2.11.0 provider version, queries are not logged by default. If you need query-level debugging, ensure you configure appropriate logging settings:
+  - `log_query_text` - when set to `true`, query text will be logged
+  - `log_query_parameters` - when set to `true`, query parameters will be logged
+
+These options can be set in the provider configuration, TOML configuration file, or via environment variables. Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+
+Note that you still need to set the `INFO` level in `driver_tracing` field to see the query logs.
+
 As driver logs may seem cluttered, to locate the SQL commands run, search for:
 - (preferred) `--terraform_provider_usage_tracking`
 - `msg="Query:`
@@ -73,7 +81,7 @@ Please refer to [this document](https://github.com/snowflakedb/terraform-provide
 - For a new way of referencing object identifiers in resources, take a look at the ["New computed fully qualified name field in resources" ](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/docs/guides/identifiers_rework_design_decisions.md#new-computed-fully-qualified-name-field-in-resources) section.
 
 ### Is this provider compatible with OpenTofu?
-OpenTofu is not currently supported. While it's mostly compatible with Terraform,
-OpenTofu's [reactive implementation of new Terraform features based on community demand](https://opentofu.org/faq/#opentofu-compatibility) may decrease compatibility over time. 
+Although, the provider is present in the OpenTofu Registry ([see](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3874)), it is not currently supported.
+While it's mostly compatible with Terraform, OpenTofu's [reactive implementation of new Terraform features based on community demand](https://opentofu.org/faq/#opentofu-compatibility) may decrease compatibility over time.
 We plan to research OpenTofu support in the future, but there's no timeline yet (once planned, it will appear in the [roadmap](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md)).
 For now, you must research and assess the risk of provider incompatibility.

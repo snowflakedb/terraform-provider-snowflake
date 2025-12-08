@@ -846,6 +846,8 @@ type TaskParameter string
 
 const (
 	// Task Parameters
+	TaskParameterServerlessTaskMaxStatementSize          TaskParameter = "SERVERLESS_TASK_MAX_STATEMENT_SIZE"
+	TaskParameterServerlessTaskMinStatementSize          TaskParameter = "SERVERLESS_TASK_MIN_STATEMENT_SIZE"
 	TaskParameterSuspendTaskAfterNumFailures             TaskParameter = "SUSPEND_TASK_AFTER_NUM_FAILURES"
 	TaskParameterTaskAutoRetryAttempts                   TaskParameter = "TASK_AUTO_RETRY_ATTEMPTS"
 	TaskParameterUserTaskManagedInitialWarehouseSize     TaskParameter = "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"
@@ -910,6 +912,8 @@ const (
 
 var AllTaskParameters = []TaskParameter{
 	// Task Parameters
+	TaskParameterServerlessTaskMaxStatementSize,
+	TaskParameterServerlessTaskMinStatementSize,
 	TaskParameterSuspendTaskAfterNumFailures,
 	TaskParameterTaskAutoRetryAttempts,
 	TaskParameterUserTaskManagedInitialWarehouseSize,
@@ -2006,6 +2010,27 @@ const (
 	ParameterTypeFunction         ParameterType = "FUNCTION"
 	ParameterTypeProcedure        ParameterType = "PROCEDURE"
 )
+
+var AllParameterTypes = []ParameterType{
+	ParameterTypeAccount,
+	ParameterTypeUser,
+	ParameterTypeSession,
+	ParameterTypeObject,
+	ParameterTypeWarehouse,
+	ParameterTypeDatabase,
+	ParameterTypeSchema,
+	ParameterTypeTask,
+	ParameterTypeFunction,
+	ParameterTypeProcedure,
+	ParameterTypeSnowflakeDefault,
+}
+
+func ToParameterType(s string) (ParameterType, error) {
+	if slices.Contains(AllParameterTypes, ParameterType(strings.ToUpper(s))) {
+		return ParameterType(s), nil
+	}
+	return "", fmt.Errorf("invalid parameter type: %s", s)
+}
 
 type Parameter struct {
 	Key         string
