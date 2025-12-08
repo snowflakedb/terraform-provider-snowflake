@@ -118,15 +118,17 @@ locals {
     [for g in data.snowflake_grants.of_priv_db_role.grants : g]
   )
 
-  # Filter to only our test grants:
+  # Filter to only privilege grants:
   # - Must contain MIGRATION_TEST in grantee_name or name
   # - Must have a non-empty granted_by (implicit grants from Snowflake have empty granted_by
   #   and cannot be managed by Terraform)
-  # Note: grants_of returns rows with empty privilege (role-to-role grants) which we still want
+  # - Must have a non-empty privilege (grants_of returns role membership info with empty privilege,
+  #   these are not privilege grants and the migration script can't handle them)
   test_grants = [
     for g in local.all_grants : g
     if (can(regex("MIGRATION_TEST", g.grantee_name)) || can(regex("MIGRATION_TEST", g.name))) &&
-       g.granted_by != ""
+       g.granted_by != "" &&
+       g.privilege != ""
   ]
 
   # CSV header - matches the GrantCsvRow struct
@@ -158,13 +160,21 @@ locals {
   grants_csv_rows_unique = tolist(toset(local.grants_csv_rows))
 
   # Combine header and rows
-  grants_csv_content = length(local.grants_csv_rows_unique) > 0 ? join("\n", concat([local.grants_csv_header], local.grants_csv_rows_unique)) : "# No grants found"
+  grants_csv_content = join("\n", concat([local.grants_csv_header], local.grants_csv_rows_unique))
 }
 
 # Write the CSV file
 resource "local_file" "grants_csv" {
   content  = local.grants_csv_content
   filename = "${path.module}/objects.csv"
+
+  # Fail if no grants found - this is a test assertion
+  lifecycle {
+    precondition {
+      condition     = length(local.grants_csv_rows_unique) > 0
+      error_message = "TEST ASSERTION FAILED: No grants found. Make sure objects_def.tf resources were created first."
+    }
+  }
 }
 
 # Output for debugging

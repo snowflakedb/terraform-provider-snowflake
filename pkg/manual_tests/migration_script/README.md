@@ -13,16 +13,6 @@ The test validates the migration script by:
 
 ## Quick Start
 
-### Prerequisites
-
-Set account information in environment variables:
-- SNOWFLAKE_ACCOUNT
-- SNOWFLAKE_ORGANIZATION
-- SNOWFLAKE_HOST
-- SNOWFLAKE_USER
-- SNOWFLAKE_PASSWORD
-- SNOWFLAKE_ROLE
-
 ### Step 1: Navigate to object type folder
 
 ```bash
@@ -212,14 +202,3 @@ cd manual_tests/warehouses
 terraform apply -auto-approve
 terraform plan  # Should show no changes!
 ```
-
-## CSV Format Notes
-
-The CSV files use proper RFC 4180 escaping:
-
-- **Double quotes** are escaped by doubling: `"` → `""`
-- **Backslashes** are escaped: `\` → `\\`
-- **Newlines** are converted to literal `\n` for multi-line values (like RSA keys)
-- All fields are quoted
-
-The migration script's `csvUnescape` function handles decoding these escape sequences.

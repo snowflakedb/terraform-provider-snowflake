@@ -31,6 +31,8 @@ terraform {
 }
 
 provider "snowflake" {
+#  config_path              = "~/.snowflake/config"
+#  profile                  = "default"
   preview_features_enabled = ["snowflake_table_resource"]
 }
 
@@ -61,7 +63,7 @@ resource "snowflake_account_role" "priv_role" {
 # ------------------------------------------------------------------------------
 resource "snowflake_database" "test_db" {
   name    = "MIGRATION_TEST_GRANT_DB"
-  comment = "Database for grant testing"
+  comment = "Database for grant testing\nLine 2 of comment\nLine 3 with special chars: \"quotes\" and \\backslash"
 }
 
 # ------------------------------------------------------------------------------
