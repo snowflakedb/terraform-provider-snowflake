@@ -40,9 +40,9 @@ func preprocessDefinition(definition *Interface) {
 					structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
 				}
 			}
-			for _, f := range o.OptsField.Fields {
+			for idx, f := range o.OptsField.Fields {
 				if len(f.Fields) > 0 && !slices.Contains(generatedStructs, f.KindNoPtr()) {
-					structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
+					structsToGenerate, generatedStructs = addStructToGenerate(&(o.OptsField.Fields[idx]), structsToGenerate, generatedStructs)
 				}
 			}
 			log.Printf("[DEBUG] Structs to generate (length: %d): %v", len(structsToGenerate), structsToGenerate)
@@ -74,22 +74,27 @@ func preprocessDefinition(definition *Interface) {
 }
 
 func setParent(field *Field) {
-	for _, f := range field.Fields {
-		f.Parent = field
-		setParent(f)
+	for idx, f := range field.Fields {
+		if f.Parent != nil {
+			log.Panicf("Field %s already has a parent\nold parent: %s (path: %s)\nnew parent: %s (path: %s);\n\nit is caused by the current incorrect implementation of nested fields;\nreuse the common definition by wrapping it in function invocation", f.Name, f.Parent.KindNoPtr(), f.Parent.PathWithRoot(), field.Name, field.PathWithRoot())
+		}
+		(&(field.Fields[idx])).Parent = field
+		setParent(&(field.Fields[idx]))
 	}
 }
 
 func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStructs []string) ([]*Field, []string) {
 	if !slices.Contains(generatedStructs, field.KindNoPtr()) {
-		log.Printf("[DEBUG] Adding %s to structs to be generated", field.KindNoPtr())
+		log.Printf("[DEBUG] Adding %s (path: %s) to structs to be generated", field.KindNoPtr(), field.PathWithRoot())
 		structsToGenerate = append(structsToGenerate, field)
 		generatedStructs = append(generatedStructs, field.KindNoPtr())
+	} else {
+		log.Printf("[DEBUG] Struct %s (path: %s) already queued for generation", field.KindNoPtr(), field.PathWithRoot())
 	}
 
-	for _, f := range field.Fields {
+	for idx, f := range field.Fields {
 		if len(f.Fields) > 0 && !slices.Contains(generatedStructs, f.Name) {
-			structsToGenerate, generatedStructs = addStructToGenerate(f, structsToGenerate, generatedStructs)
+			structsToGenerate, generatedStructs = addStructToGenerate(&(field.Fields[idx]), structsToGenerate, generatedStructs)
 		}
 	}
 	return structsToGenerate, generatedStructs
@@ -97,15 +102,17 @@ func addStructToGenerate(field *Field, structsToGenerate []*Field, generatedStru
 
 func addDtoToGenerate(field *Field, dtosToGenerate []*Field, generatedDtos []string) ([]*Field, []string) {
 	if !slices.Contains(generatedDtos, field.DtoDecl()) {
-		log.Printf("[DEBUG] Adding %s to structs to be generated", field.DtoDecl())
+		log.Printf("[DEBUG] Adding %s (path: %s) to structs to be generated", field.DtoDecl(), field.PathWithRoot())
 		dtosToGenerate = append(dtosToGenerate, field)
 		generatedDtos = append(generatedDtos, field.DtoDecl())
 
-		for _, f := range field.Fields {
+		for idx, f := range field.Fields {
 			if f.IsStruct() {
-				dtosToGenerate, generatedDtos = addDtoToGenerate(f, dtosToGenerate, generatedDtos)
+				dtosToGenerate, generatedDtos = addDtoToGenerate(&(field.Fields[idx]), dtosToGenerate, generatedDtos)
 			}
 		}
+	} else {
+		log.Printf("[DEBUG] Struct %s (path: %s) already queued for generation", field.DtoDecl(), field.PathWithRoot())
 	}
 	return dtosToGenerate, generatedDtos
 }

@@ -18,13 +18,21 @@ import (
 type ObjectType string
 
 const (
-	ObjectTypeGrants  ObjectType = "grants"
-	ObjectTypeSchemas ObjectType = "schemas"
+	ObjectTypeGrants        ObjectType = "grants"
+	ObjectTypeSchemas       ObjectType = "schemas"
+	ObjectTypeDatabases     ObjectType = "databases"
+	ObjectTypeWarehouses    ObjectType = "warehouses"
+	ObjectTypeAccountRoles  ObjectType = "account_roles"
+	ObjectTypeDatabaseRoles ObjectType = "database_roles"
 )
 
 var AllObjectTypes = []ObjectType{
 	ObjectTypeGrants,
 	ObjectTypeSchemas,
+	ObjectTypeDatabases,
+	ObjectTypeWarehouses,
+	ObjectTypeAccountRoles,
+	ObjectTypeDatabaseRoles,
 }
 
 func ToObjectType(s string) (ObjectType, error) {
@@ -147,11 +155,32 @@ object_type represents the type of Snowflake object you want to generate terrafo
 				- grants on 'future' or on 'all' objects are not supported
 				- all_privileges and always_apply fields are not supported
 		- "schemas" which expects a converted CSV output from the snowflake_schemas data source
-			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMA output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW SCHEMAS output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
 			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "SCHEMA".
-			For more details about using multiple sources, visit https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
 			Supported resources:
 				- snowflake_schema
+		- "databases" which expects a converted CSV output from the snowflake_databases data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW DATABASES output, so the CSV header looks like "comment","created_on",...,"catalog_value","catalog_level","data_retention_time_in_days_value","data_retention_time_in_days_level",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "DATABASE".
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Warning: currently secondary databases and shared databases are treated as plain databases.
+			Supported resources:
+				- snowflake_database
+		- "warehouses" which expects a converted CSV output from the snowflake_warehouses data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like "comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
+			The script always outputs fields that have non-empty default values in Snowflake (they can be removed from the output)
+			Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended)
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Supported resources:
+				- snowflake_warehouse
+		- "account_roles" which expects input in the form of [SHOW ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output. Can also be obtained as a converted CSV output from the snowflake_account_roles data source.
+			Supported resources:
+				- snowflake_account_role
+		- "database_roles" which expects input in the form of [SHOW DATABASE ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
+			Supported resources:
+				- snowflake_database_role
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -208,6 +237,14 @@ func (p *Program) generateOutput(input [][]string) (string, error) {
 		return HandleGrants(p.Config, input)
 	case ObjectTypeSchemas:
 		return HandleSchemas(p.Config, input)
+	case ObjectTypeDatabases:
+		return HandleDatabases(p.Config, input)
+	case ObjectTypeWarehouses:
+		return HandleWarehouses(p.Config, input)
+	case ObjectTypeAccountRoles:
+		return HandleAccountRoles(p.Config, input)
+	case ObjectTypeDatabaseRoles:
+		return HandleDatabaseRoles(p.Config, input)
 	default:
 		return "", fmt.Errorf("unsupported object type: %s, run -h to get more information on allowed object types", p.Config.ObjectType)
 	}

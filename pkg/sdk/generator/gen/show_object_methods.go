@@ -38,7 +38,7 @@ func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, i
 	return false
 }
 
-func containsFieldNames(fields []*Field, names ...string) bool {
+func containsFieldNames(fields []Field, names ...string) bool {
 	fieldNames := []string{}
 	for _, field := range fields {
 		fieldNames = append(fieldNames, field.Name)

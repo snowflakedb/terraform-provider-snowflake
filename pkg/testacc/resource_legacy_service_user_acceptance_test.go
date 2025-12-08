@@ -646,3 +646,43 @@ func legacyServiceUserConfigWithIncompatibleAttribute(userId sdk.AccountObjectId
         }
 	`, userId.FullyQualifiedName(), key, value)
 }
+
+func TestAcc_LegacyServiceUser_migrateFromV2_11_0(t *testing.T) {
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	basicModel := model.LegacyServiceUser("w", userId.Name())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
+				Config:            config.FromModels(t, basicModel),
+				Check: assertThat(t,
+					resourceassert.UserResource(t, basicModel.ResourceReference()).
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, basicModel.ResourceReference()).
+						HasNoHasWorkloadIdentity(),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, basicModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basicModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserResource(t, basicModel.ResourceReference()).
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, basicModel.ResourceReference()).
+						HasHasWorkloadIdentity(false),
+				),
+			},
+		},
+	})
+}

@@ -68,6 +68,15 @@ type Database struct {
 	OwnerRoleType string
 }
 
+func (v *Database) SetTransient(value string) {
+	parts := strings.Split(value, ", ")
+	for _, part := range parts {
+		if part == "TRANSIENT" {
+			v.Transient = true
+		}
+	}
+}
+
 func (v *Database) ID() AccountObjectIdentifier {
 	return NewAccountObjectIdentifier(v.Name)
 }
@@ -134,12 +143,7 @@ func (row databaseRow) convert() (*Database, error) {
 		database.DroppedOn = row.DroppedOn.Time
 	}
 	if row.Options.Valid {
-		parts := strings.Split(row.Options.String, ", ")
-		for _, part := range parts {
-			if part == "TRANSIENT" {
-				database.Transient = true
-			}
-		}
+		database.SetTransient(row.Options.String)
 	}
 	if row.Kind.Valid {
 		database.Kind = row.Kind.String

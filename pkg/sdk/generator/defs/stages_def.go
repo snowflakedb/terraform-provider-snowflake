@@ -17,7 +17,7 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 	qs = apply(qs)
 	return qs.
 		OptionalQueryStructField("FileFormat", stageFileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-		OptionalQueryStructField("CopyOptions", stageCopyOptionsDef, g.ListOptions().Parentheses().NoComma().SQL("COPY_OPTIONS =")).
+		OptionalQueryStructField("CopyOptions", stageCopyOptionsDef(), g.ListOptions().Parentheses().NoComma().SQL("COPY_OPTIONS =")).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
@@ -33,7 +33,7 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 	qs = apply(qs)
 	return qs.
 		OptionalQueryStructField("FileFormat", stageFileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-		OptionalQueryStructField("CopyOptions", stageCopyOptionsDef, g.ListOptions().Parentheses().NoComma().SQL("COPY_OPTIONS =")).
+		OptionalQueryStructField("CopyOptions", stageCopyOptionsDef(), g.ListOptions().Parentheses().NoComma().SQL("COPY_OPTIONS =")).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name")
 }
@@ -43,89 +43,97 @@ var stageFileFormatDef = g.NewQueryStruct("StageFileFormat").
 	OptionalAssignmentWithFieldName("TYPE", g.KindOfTPointer[sdkcommons.FileFormatType](), g.ParameterOptions(), "FileFormatType").
 	PredefinedQueryStructField("Options", g.KindOfTPointer[sdkcommons.FileFormatTypeOptions](), g.ListOptions().NoComma())
 
-var stageCopyOptionsDef = g.NewQueryStruct("StageCopyOptions").
-	OptionalQueryStructField(
-		"OnError",
-		g.NewQueryStruct("StageCopyOnErrorOptions").
-			OptionalSQLWithCustomFieldName("Continue_", "CONTINUE").
-			OptionalSQL("SKIP_FILE").
-			// OptionalSQL("SKIP_FILE_n"). // TODO templated value - not even supported by structToSQL (could be keyword without space in-between)
-			// OptionalSQL("SKIP_FILE_n%"). // TODO templated value with % - not even supported by structToSQL (could be keyword without space in-between)
-			OptionalSQL("ABORT_STATEMENT"),
-		g.ParameterOptions().SQL("ON_ERROR"),
-	).
-	OptionalNumberAssignment("SIZE_LIMIT", nil).
-	OptionalBooleanAssignment("PURGE", nil).
-	OptionalBooleanAssignment("RETURN_FAILED_ONLY", nil).
-	OptionalAssignment("MATCH_BY_COLUMN_NAME", g.KindOfTPointer[sdkcommons.StageCopyColumnMapOption](), nil).
-	OptionalBooleanAssignment("ENFORCE_LENGTH", nil).
-	OptionalBooleanAssignment("TRUNCATECOLUMNS", nil).
-	OptionalBooleanAssignment("FORCE", nil)
-
-var externalS3StageParamsDef = g.NewQueryStruct("ExternalS3StageParams").
-	TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-	OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
-	OptionalQueryStructField(
-		"Credentials",
-		g.NewQueryStruct("ExternalStageS3Credentials").
-			OptionalTextAssignment("AWS_KEY_ID", g.ParameterOptions().SingleQuotes()).
-			OptionalTextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes()).
-			OptionalTextAssignment("AWS_TOKEN", g.ParameterOptions().SingleQuotes()).
-			OptionalTextAssignment("AWS_ROLE", g.ParameterOptions().SingleQuotes()).
-			WithValidation(g.ConflictingFields, "AwsKeyId", "AwsRole"),
-		g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
-	).
-	OptionalQueryStructField("Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
-		OptionalAssignmentWithFieldName(
-			"TYPE",
-			g.KindOfT[sdkcommons.ExternalStageS3EncryptionOption](),
-			g.ParameterOptions().SingleQuotes().Required(),
-			"EncryptionType",
+var stageCopyOptionsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("StageCopyOptions").
+		OptionalQueryStructField(
+			"OnError",
+			g.NewQueryStruct("StageCopyOnErrorOptions").
+				OptionalSQLWithCustomFieldName("Continue_", "CONTINUE").
+				OptionalSQL("SKIP_FILE").
+				// OptionalSQL("SKIP_FILE_n"). // TODO templated value - not even supported by structToSQL (could be keyword without space in-between)
+				// OptionalSQL("SKIP_FILE_n%"). // TODO templated value with % - not even supported by structToSQL (could be keyword without space in-between)
+				OptionalSQL("ABORT_STATEMENT"),
+			g.ParameterOptions().SQL("ON_ERROR"),
 		).
-		OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()).
-		OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
-		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
-	).
-	WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
+		OptionalNumberAssignment("SIZE_LIMIT", nil).
+		OptionalBooleanAssignment("PURGE", nil).
+		OptionalBooleanAssignment("RETURN_FAILED_ONLY", nil).
+		OptionalAssignment("MATCH_BY_COLUMN_NAME", g.KindOfTPointer[sdkcommons.StageCopyColumnMapOption](), nil).
+		OptionalBooleanAssignment("ENFORCE_LENGTH", nil).
+		OptionalBooleanAssignment("TRUNCATECOLUMNS", nil).
+		OptionalBooleanAssignment("FORCE", nil)
+}
 
-var externalGCSStageParamsDef = g.NewQueryStruct("ExternalGCSStageParams").
-	TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-	OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
-	OptionalQueryStructField(
-		"Encryption",
-		g.NewQueryStruct("ExternalStageGCSEncryption").
+var externalS3StageParamsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("ExternalS3StageParams").
+		TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
+		OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
+		OptionalQueryStructField(
+			"Credentials",
+			g.NewQueryStruct("ExternalStageS3Credentials").
+				OptionalTextAssignment("AWS_KEY_ID", g.ParameterOptions().SingleQuotes()).
+				OptionalTextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes()).
+				OptionalTextAssignment("AWS_TOKEN", g.ParameterOptions().SingleQuotes()).
+				OptionalTextAssignment("AWS_ROLE", g.ParameterOptions().SingleQuotes()).
+				WithValidation(g.ConflictingFields, "AwsKeyId", "AwsRole"),
+			g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
+		).
+		OptionalQueryStructField("Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
 			OptionalAssignmentWithFieldName(
 				"TYPE",
-				g.KindOfT[sdkcommons.ExternalStageGCSEncryptionOption](),
+				g.KindOfT[sdkcommons.ExternalStageS3EncryptionOption](),
 				g.ParameterOptions().SingleQuotes().Required(),
 				"EncryptionType",
 			).
+			OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()).
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
-		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
-	)
+			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
+		).
+		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
+}
 
-var externalAzureStageParamsDef = g.NewQueryStruct("ExternalAzureStageParams").
-	TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-	OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
-	OptionalQueryStructField(
-		"Credentials",
-		g.NewQueryStruct("ExternalStageAzureCredentials").
-			TextAssignment("AZURE_SAS_TOKEN", g.ParameterOptions().SingleQuotes()),
-		g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
-	).
-	OptionalQueryStructField(
-		"Encryption",
-		g.NewQueryStruct("ExternalStageAzureEncryption").
-			OptionalAssignmentWithFieldName(
-				"TYPE",
-				g.KindOfT[sdkcommons.ExternalStageAzureEncryptionOption](),
-				g.ParameterOptions().SingleQuotes().Required(),
-				"EncryptionType",
-			).
-			OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()),
-		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
-	).
-	WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
+var externalGCSStageParamsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("ExternalGCSStageParams").
+		TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
+		OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
+		OptionalQueryStructField(
+			"Encryption",
+			g.NewQueryStruct("ExternalStageGCSEncryption").
+				OptionalAssignmentWithFieldName(
+					"TYPE",
+					g.KindOfT[sdkcommons.ExternalStageGCSEncryptionOption](),
+					g.ParameterOptions().SingleQuotes().Required(),
+					"EncryptionType",
+				).
+				OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
+		)
+}
+
+var externalAzureStageParamsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("ExternalAzureStageParams").
+		TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
+		OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
+		OptionalQueryStructField(
+			"Credentials",
+			g.NewQueryStruct("ExternalStageAzureCredentials").
+				TextAssignment("AZURE_SAS_TOKEN", g.ParameterOptions().SingleQuotes()),
+			g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
+		).
+		OptionalQueryStructField(
+			"Encryption",
+			g.NewQueryStruct("ExternalStageAzureEncryption").
+				OptionalAssignmentWithFieldName(
+					"TYPE",
+					g.KindOfT[sdkcommons.ExternalStageAzureEncryptionOption](),
+					g.ParameterOptions().SingleQuotes().Required(),
+					"EncryptionType",
+				).
+				OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()),
+			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
+		).
+		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
+}
 
 var stagesDef = g.NewInterface(
 	"Stages",
@@ -162,7 +170,7 @@ var stagesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-stage",
 		createStageOperation("CreateExternalS3Stage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				OptionalQueryStructField("ExternalStageParams", externalS3StageParamsDef, nil).
+				OptionalQueryStructField("ExternalStageParams", externalS3StageParamsDef(), nil).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("ExternalS3DirectoryTableOptions").
@@ -178,7 +186,7 @@ var stagesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-stage",
 		createStageOperation("CreateExternalGCSStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				OptionalQueryStructField("ExternalStageParams", externalGCSStageParamsDef, nil).
+				OptionalQueryStructField("ExternalStageParams", externalGCSStageParamsDef(), nil).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("ExternalGCSDirectoryTableOptions").
@@ -195,7 +203,7 @@ var stagesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-stage",
 		createStageOperation("CreateExternalAzureStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				OptionalQueryStructField("ExternalStageParams", externalAzureStageParamsDef, nil).
+				OptionalQueryStructField("ExternalStageParams", externalAzureStageParamsDef(), nil).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("ExternalAzureDirectoryTableOptions").
@@ -256,21 +264,21 @@ var stagesDef = g.NewInterface(
 		"AlterExternalS3Stage",
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-stage",
 		alterStageOperation("AlterExternalS3Stage", func(qs *g.QueryStruct) *g.QueryStruct {
-			return qs.OptionalQueryStructField("ExternalStageParams", externalS3StageParamsDef, nil)
+			return qs.OptionalQueryStructField("ExternalStageParams", externalS3StageParamsDef(), nil)
 		}),
 	).
 	CustomOperation(
 		"AlterExternalGCSStage",
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-stage",
 		alterStageOperation("AlterExternalGCSStage", func(qs *g.QueryStruct) *g.QueryStruct {
-			return qs.OptionalQueryStructField("ExternalStageParams", externalGCSStageParamsDef, nil)
+			return qs.OptionalQueryStructField("ExternalStageParams", externalGCSStageParamsDef(), nil)
 		}),
 	).
 	CustomOperation(
 		"AlterExternalAzureStage",
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-stage",
 		alterStageOperation("AlterExternalAzureStage", func(qs *g.QueryStruct) *g.QueryStruct {
-			return qs.OptionalQueryStructField("ExternalStageParams", externalAzureStageParamsDef, nil)
+			return qs.OptionalQueryStructField("ExternalStageParams", externalAzureStageParamsDef(), nil)
 		}),
 	).
 	CustomOperation(
