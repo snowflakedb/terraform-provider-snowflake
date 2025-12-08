@@ -111,6 +111,7 @@ locals {
   # Combine all grants from different sources
   all_grants = concat(
     [for g in data.snowflake_grants.to_priv_role.grants : g],
+    [for g in data.snowflake_grants.to_parent_role.grants : g],
     [for g in data.snowflake_grants.of_child_role.grants : g],
     [for g in data.snowflake_grants.to_priv_db_role.grants : g],
     [for g in data.snowflake_grants.to_parent_db_role.grants : g],
