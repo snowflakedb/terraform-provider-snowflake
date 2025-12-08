@@ -12,80 +12,75 @@ This directory contains end-to-end tests for the migration script. Each object t
 - SNOWFLAKE_PASSWORD
 - SNOWFLAKE_ROLE
 
-## Steps using script
-
-```bash
-# List available object types
-./run_test.sh --list
-
-# Run a test
-./run_test.sh users
-
-# Skip object creation (if objects already exist)
-./run_test.sh users --skip-create
-
-# Destroy test resources
-./run_test.sh users --destroy
-```
-
-## Manual Steps (Without Script)
-
-If you prefer to run the steps manually or need more control:
-
 ### Step 1: Navigate to object type folder
 
 ```bash
 cd users  # or account_roles, etc.
 ```
 
-### Step 2: Initialize Terraform (first time only)
+### Step 2: Clean up any previous state
+
+```bash
+rm -rf .terraform terraform.tfstate terraform.tfstate.backup actual_output.tf
+```
+
+### Step 3: Move expected_output.tf out of the way (it has import blocks)
+
+```bash
+mv expected_output.tf expected_output.tf.bak
+```
+
+### Step 4: Initialize Terraform
 
 ```bash
 terraform init
 ```
 
-### Step 3: Create test objects on Snowflake
+### Step 5: Create test objects on Snowflake
 
 ```bash
 terraform apply -auto-approve
 ```
 
-### Step 4: Fetch objects and generate CSV
-
-The same `terraform apply` also runs the data source and generates `objects.csv`.
-
-### Step 5: Run migration script
+### Step 6: Restore expected_output.tf
 
 ```bash
-cd ..  # back to migration_script folder
+mv expected_output.tf.bak expected_output.tf
+```
+
+### Step 7: Fetch objects via data source and generate CSV
+
+```bash
+terraform apply -auto-approve -target=data.snowflake_users.test_users -target=local_file.users_csv
+```
+
+### Step 8: Run migration script
+
+```bash
+cd ../..
 go run . -import=block users < manual_tests/users/objects.csv > manual_tests/users/actual_output.tf
 ```
 
-### Step 6: Compare output
+### Step 9: Compare output
 
 ```bash
 cd manual_tests/users
-diff expected_output.tf actual_output.tf
-```
-
-Or for a cleaner comparison (ignoring comments):
-
-```bash
 diff <(grep -v '^#' expected_output.tf | grep -v '^$') \
      <(grep -v '^#' actual_output.tf | grep -v '^$')
 ```
 
-### Step 7: Cleanup (when done)
+### Step 10: Cleanup
 
 ```bash
+mv expected_output.tf expected_output.tf.bak
 terraform destroy -auto-approve
+mv expected_output.tf.bak expected_output.tf
 ```
 
 ## Directory Structure
 
 ```
 manual_tests/
-├── run_test.sh              # Main test runner
 ├── README.md                # This file
 ├── users/                   # Users test
 │   ├── objects_def.tf       # Creates test users on Snowflake
@@ -95,25 +90,6 @@ manual_tests/
 │   └── actual_output.tf     # Generated output (after test run)
 └── <new_object_type>/       # Add new object types here
 ```
-
-## Test Workflow
-
-The test runner (`run_test.sh`) performs the following steps:
-
-1. **Create Objects** (`terraform apply` targeting `objects_def.tf` resources)
-   - Creates test objects on Snowflake with various configurations
-
-2. **Fetch Objects** (`terraform apply` targeting `datasource.tf` resources)
-   - Fetches objects using the appropriate data source
-   - Generates `objects.csv` with proper CSV escaping
-
-3. **Run Migration Script**
-   - Runs: `go run .. -import=block <object_type> < objects.csv`
-   - Saves output to `actual_output.tf`
-
-4. **Compare Output**
-   - Compares `actual_output.tf` with `expected_output.tf`
-   - Reports differences
 
 ## Adding a New Object Type
 
@@ -228,7 +204,7 @@ terraform init
 terraform apply
 
 # Run migration script to see output
-cd ..
+cd ../..
 go run . -import=block warehouses < warehouses/objects.csv
 
 # Copy the output to expected_output.tf and add comments
@@ -252,12 +228,6 @@ import {
 }
 ```
 
-### Step 5: Test
-
-```bash
-./run_test.sh warehouses
-```
-
 ## CSV Format Notes
 
 The CSV files use proper RFC 4180 escaping:
@@ -270,30 +240,6 @@ The CSV files use proper RFC 4180 escaping:
 The migration script's `csvUnescape` function handles decoding these escape sequences.
 
 ## Common Issues
-
-### "Object type not found"
-
-Make sure the folder exists and contains `objects_def.tf`, `datasource.tf`, and `expected_output.tf`.
-
-### "Object already exists" errors
-
-If objects already exist on Snowflake, use `--skip-create`:
-
-```bash
-./run_test.sh users --skip-create
-```
-
-Or manually skip Step 3 and go directly to fetching.
-
-### Terraform state issues
-
-Each object type folder has its own Terraform state. If state gets corrupted:
-
-```bash
-cd <object_type>
-rm -rf .terraform terraform.tfstate*
-terraform init
-```
 
 ### Differences in expected output
 
