@@ -114,6 +114,8 @@ Every introduced change should be tested. Depending on the type of the change it
 - adding/modifying existing integration tests (e.g. adding missing SDK invocations)
 - adding/modifying existing acceptance tests (e.g. fixing the parameter on the resource level)
 
+When writing acceptance tests, use the configuration and assertion generators instead of manually writing config strings. See [this guide](./pkg/acceptance/bettertestspoc/README.md) for more details.
+
 It's best to discuss with us what checks we expect prior to making the change.
 
 ### Describe the breaking changes

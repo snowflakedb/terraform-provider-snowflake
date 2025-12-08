@@ -33,6 +33,9 @@ This data source focuses on base query commands (SHOW LISTINGS and DESCRIBE LIST
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listings_datasource` to `preview_features_enabled` field in the provider configuration.
 
+### *(improvement)* New fields in user resources and data sources output fields
+We adjusted the `show_output` by adding the missing `has_workload_identity ` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
+
 ## v2.10.x ➞ v2.11.0
 
 ### *(new feature)* snowflake_notebook

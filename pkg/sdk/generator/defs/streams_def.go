@@ -7,20 +7,22 @@ import (
 )
 
 var (
-	onStreamDef = g.NewQueryStruct("OnStream").
+	onStreamDef = func() *g.QueryStruct {
+		return g.NewQueryStruct("OnStream").
 			OptionalSQL("AT").
 			OptionalSQL("BEFORE").
 			QueryStructField(
-			"Statement",
-			g.NewQueryStruct("OnStreamStatement").
-				OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().ArrowEquals().SingleQuotes()).
-				OptionalTextAssignment("OFFSET", g.ParameterOptions().ArrowEquals()).
-				OptionalTextAssignment("STATEMENT", g.ParameterOptions().ArrowEquals().SingleQuotes()).
-				OptionalTextAssignment("STREAM", g.ParameterOptions().ArrowEquals().SingleQuotes()).
-				WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset", "Statement", "Stream"),
-			g.ListOptions().Parentheses(),
-		).
-		WithValidation(g.ExactlyOneValueSet, "At", "Before")
+				"Statement",
+				g.NewQueryStruct("OnStreamStatement").
+					OptionalTextAssignment("TIMESTAMP", g.ParameterOptions().ArrowEquals().SingleQuotes()).
+					OptionalTextAssignment("OFFSET", g.ParameterOptions().ArrowEquals()).
+					OptionalTextAssignment("STATEMENT", g.ParameterOptions().ArrowEquals().SingleQuotes()).
+					OptionalTextAssignment("STREAM", g.ParameterOptions().ArrowEquals().SingleQuotes()).
+					WithValidation(g.ExactlyOneValueSet, "Timestamp", "Offset", "Statement", "Stream"),
+				g.ListOptions().Parentheses(),
+			).
+			WithValidation(g.ExactlyOneValueSet, "At", "Before")
+	}
 
 	showStreamDbRowDef = g.DbStruct("showStreamsDbRow").
 				Field("created_on", "time.Time").
@@ -74,7 +76,7 @@ var (
 				OptionalCopyGrants().
 				SQL("ON TABLE").
 				Identifier("TableId", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-				OptionalQueryStructField("On", onStreamDef, g.KeywordOptions()).
+				OptionalQueryStructField("On", onStreamDef(), g.KeywordOptions()).
 				OptionalBooleanAssignment("APPEND_ONLY", nil).
 				OptionalBooleanAssignment("SHOW_INITIAL_ROWS", nil).
 				OptionalComment().
@@ -95,7 +97,7 @@ var (
 				OptionalCopyGrants().
 				SQL("ON EXTERNAL TABLE").
 				Identifier("ExternalTableId", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-				OptionalQueryStructField("On", onStreamDef, g.KeywordOptions()).
+				OptionalQueryStructField("On", onStreamDef(), g.KeywordOptions()).
 				OptionalBooleanAssignment("INSERT_ONLY", nil).
 				OptionalComment().
 				WithValidation(g.ValidIdentifier, "name").
@@ -133,7 +135,7 @@ var (
 				OptionalCopyGrants().
 				SQL("ON VIEW").
 				Identifier("ViewId", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-				OptionalQueryStructField("On", onStreamDef, g.KeywordOptions()).
+				OptionalQueryStructField("On", onStreamDef(), g.KeywordOptions()).
 				OptionalBooleanAssignment("APPEND_ONLY", nil).
 				OptionalBooleanAssignment("SHOW_INITIAL_ROWS", nil).
 				OptionalComment().

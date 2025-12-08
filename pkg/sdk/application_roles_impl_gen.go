@@ -54,7 +54,6 @@ func (r *GrantApplicationRoleRequest) toOpts() *GrantApplicationRoleOptions {
 		name: r.name,
 	}
 	opts.To = KindOfRole{
-		// Edited manually (From -> To)
 		RoleName:            r.To.RoleName,
 		ApplicationRoleName: r.To.ApplicationRoleName,
 		ApplicationName:     r.To.ApplicationName,
