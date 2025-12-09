@@ -37,6 +37,13 @@ If you were not using this parameter, no changes are required.
 
 Related: [#4010](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4010)
 
+### *(new feature)* snowflake_listings datasource
+Added a new preview data source for listings. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-listings).
+
+This data source focuses on base query commands (SHOW LISTINGS and DESCRIBE LISTING). Other query commands like SHOW AVAILABLE LISTINGS, DESCRIBE AVAILABLE LISTING, SHOW LISTING OFFERS, SHOW OFFERS, SHOW PRICING PLANS, and SHOW VERSIONS IN LISTING are not included and will be added depending on demand.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listings_datasource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(improvement)* snowflake_scim_integration now accepts custom role names for run_as_role
 
 Previously, the `run_as_role` field in the [snowflake_scim_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/2.11.0/docs/resources/scim_integration) resource only accepted predefined role names: `OKTA_PROVISIONER`, `AAD_PROVISIONER`, or `GENERIC_SCIM_PROVISIONER`.
