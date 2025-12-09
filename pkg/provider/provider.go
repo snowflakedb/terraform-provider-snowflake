@@ -511,6 +511,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: envNameFieldDescription("The password of the proxy to use for the connection.", snowflakeenvs.ProxyPassword),
 			Optional:    true,
+			Sensitive:   true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.ProxyPassword, nil),
 		},
 		"proxy_protocol": {
