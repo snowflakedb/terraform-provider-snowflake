@@ -146,6 +146,14 @@ please remove them to avoid the Terraform warnings and potential errors from the
 The parameters may be removed in the next major version of the provider.
 Other than this, no changes in the configuration are required.
 
+### *(bugfix)* Adjusted `oauth_allowed_scopes` handling in api integration resources (`snowflake_api_integration_with_client_credentials` and `snowflake_api_integration_with_oauth_authorization_code`)
+
+Both resources had incorrect handling of the `oauth_allowed_scopes` field during updates.
+The parameter can be set on the Snowflake side, but it cannot be unset (or set to an empty value).
+The resources were adjusted to correctly handle this behavior and propose to recreate the resource in case the field was set to an empty value.
+
+No changes in configuration are required.
+
 ### *(bugfix)* Improved validation of identifiers with arguments
 Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:
 ```
