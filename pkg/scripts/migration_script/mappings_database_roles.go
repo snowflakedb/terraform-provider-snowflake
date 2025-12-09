@@ -13,7 +13,7 @@ func HandleDatabaseRoles(config *Config, csvInput [][]string) (string, error) {
 
 func MapDatabaseRoleToModel(role DatabaseRoleRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	roleId := sdk.NewDatabaseObjectIdentifier(role.DatabaseName, role.Name)
-	resourceId := ResourceId(string(resources.DatabaseRole), roleId.FullyQualifiedName())
+	resourceId := ResourceId(resources.DatabaseRole, roleId.FullyQualifiedName())
 	resourceModel := model.DatabaseRole(resourceId, role.DatabaseName, role.Name)
 
 	handleIfNotEmpty(role.Comment, resourceModel.WithComment)

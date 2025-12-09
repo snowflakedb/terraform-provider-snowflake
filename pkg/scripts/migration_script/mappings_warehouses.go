@@ -14,7 +14,7 @@ func HandleWarehouses(config *Config, csvInput [][]string) (string, error) {
 
 func MapWarehouseToModel(warehouse WarehouseRepresentation) (accconfig.ResourceModel, *ImportModel, error) {
 	warehouseId := sdk.NewAccountObjectIdentifier(warehouse.Name)
-	resourceId := ResourceId(string(resources.Warehouse), warehouseId.FullyQualifiedName())
+	resourceId := ResourceId(resources.Warehouse, warehouseId.FullyQualifiedName())
 	resourceModel := model.Warehouse(resourceId, warehouse.Name)
 
 	// always include fields with default values
