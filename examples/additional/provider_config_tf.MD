@@ -45,7 +45,7 @@ provider "snowflake" {
 	proxy_user = "username"
 	proxy_password = "****"
 	proxy_protocol = "https"
-	no_proxy = "localhost,snowlfake.computing.com"
+	no_proxy = "localhost,snowflake.computing.com"
 
 	params = {
 		param_key = "param_value"

@@ -45,7 +45,7 @@ proxy_port = 443
 proxy_user = 'username'
 proxy_password = '****'
 proxy_protocol = 'https'
-no_proxy = 'localhost,snowlfake.computing.com'
+no_proxy = 'localhost,snowflake.computing.com'
 
 [example.params]
 param_key = 'param_value'

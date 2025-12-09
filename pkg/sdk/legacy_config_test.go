@@ -286,7 +286,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithProxyUser("username").
 			WithProxyPassword("****").
 			WithProxyProtocol("https").
-			WithNoProxy("localhost,snowlfake.computing.com"),
+			WithNoProxy("localhost,snowflake.computing.com"),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
@@ -361,7 +361,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, "username", config.ProxyUser)
 		assert.Equal(t, "****", config.ProxyPassword)
 		assert.Equal(t, "https", config.ProxyProtocol)
-		assert.Equal(t, "localhost,snowlfake.computing.com", config.NoProxy)
+		assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -477,7 +477,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				WithProxyUser("username").
 				WithProxyPassword("****").
 				WithProxyProtocol("https").
-				WithNoProxy("localhost,snowlfake.computing.com"),
+				WithNoProxy("localhost,snowflake.computing.com"),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -531,7 +531,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "username", got.ProxyUser)
 				assert.Equal(t, "****", got.ProxyPassword)
 				assert.Equal(t, "https", got.ProxyProtocol)
-				assert.Equal(t, "localhost,snowlfake.computing.com", got.NoProxy)
+				assert.Equal(t, "localhost,snowflake.computing.com", got.NoProxy)
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
 				gotUnencryptedKey := pem.EncodeToMemory(
