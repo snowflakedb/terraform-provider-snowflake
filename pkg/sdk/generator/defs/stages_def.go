@@ -6,6 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+// TODO(SNOW-1019005): add validations for fields like `CREDENTIALS = ( {  { AWS_KEY_ID...`
+// TODO(SNOW-1019005): add parsers for DESC output and return a nice struct
+// TODO(SNOW-1019005): next PRs - use a custom file format struct with a nice nesting
+// TODO(SNOW-1019005): next PRs - what about unset tags with if exists?
+// TODO(SNOW-1019005): next PRs - what about copy options?
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -66,7 +71,8 @@ var stageCopyOptionsDef = func() *g.QueryStruct {
 
 var externalS3StageParamsDef = func() *g.QueryStruct {
 	return g.NewQueryStruct("ExternalS3StageParams").
-		TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
+		TextAssignment("URL", g.ParameterOptions().Required().SingleQuotes()).
+		OptionalTextAssignment("AWS_ACCESS_POINT_ARN", g.ParameterOptions().SingleQuotes()).
 		OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
 		OptionalQueryStructField(
 			"Credentials",
@@ -89,6 +95,7 @@ var externalS3StageParamsDef = func() *g.QueryStruct {
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
+		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
 		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
 }
 
@@ -132,6 +139,7 @@ var externalAzureStageParamsDef = func() *g.QueryStruct {
 				OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
+		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
 		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
 }
 
@@ -160,7 +168,7 @@ var stagesDef = g.NewInterface(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("InternalDirectoryTableOptions").
 						OptionalBooleanAssignment("ENABLE", nil).
-						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil),
+						OptionalBooleanAssignment("AUTO_REFRESH", nil),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),
@@ -220,6 +228,7 @@ var stagesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-stage",
 		createStageOperation("CreateExternalS3CompatibleStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
+				// TODO: source as a separate struct
 				TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
 				TextAssignment("ENDPOINT", g.ParameterOptions().SingleQuotes()).
 				OptionalQueryStructField(
@@ -229,7 +238,7 @@ var stagesDef = g.NewInterface(
 						OptionalTextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes().Required()),
 					g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
 				).
-				// TODO: Can be used with compat ?
+				// TODO(SNOW-1019005): next PRs - Can we just use s3 directory table options?
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("ExternalS3DirectoryTableOptions").

@@ -49,8 +49,8 @@ type InternalStageEncryption struct {
 }
 
 type InternalDirectoryTableOptions struct {
-	Enable          *bool `ddl:"parameter" sql:"ENABLE"`
-	RefreshOnCreate *bool `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
+	Enable      *bool `ddl:"parameter" sql:"ENABLE"`
+	AutoRefresh *bool `ddl:"parameter" sql:"AUTO_REFRESH"`
 }
 
 type StageFileFormat struct {
@@ -94,10 +94,12 @@ type CreateOnS3StageOptions struct {
 }
 
 type ExternalS3StageParams struct {
-	Url                string                      `ddl:"parameter,single_quotes" sql:"URL"`
-	StorageIntegration *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
-	Credentials        *ExternalStageS3Credentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
-	Encryption         *ExternalStageS3Encryption  `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	Url                    string                      `ddl:"parameter,single_quotes" sql:"URL"`
+	AwsAccessPointArn      *string                     `ddl:"parameter,single_quotes" sql:"AWS_ACCESS_POINT_ARN"`
+	StorageIntegration     *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
+	Credentials            *ExternalStageS3Credentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
+	Encryption             *ExternalStageS3Encryption  `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	UsePrivatelinkEndpoint *bool                       `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type ExternalStageS3Credentials struct {
@@ -170,10 +172,11 @@ type CreateOnAzureStageOptions struct {
 }
 
 type ExternalAzureStageParams struct {
-	Url                string                         `ddl:"parameter,single_quotes" sql:"URL"`
-	StorageIntegration *AccountObjectIdentifier       `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
-	Credentials        *ExternalStageAzureCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
-	Encryption         *ExternalStageAzureEncryption  `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	Url                    string                         `ddl:"parameter,single_quotes" sql:"URL"`
+	StorageIntegration     *AccountObjectIdentifier       `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
+	Credentials            *ExternalStageAzureCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
+	Encryption             *ExternalStageAzureEncryption  `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	UsePrivatelinkEndpoint *bool                          `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type ExternalStageAzureCredentials struct {

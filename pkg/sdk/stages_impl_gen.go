@@ -132,8 +132,8 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 	}
 	if r.DirectoryTableOptions != nil {
 		opts.DirectoryTableOptions = &InternalDirectoryTableOptions{
-			Enable:          r.DirectoryTableOptions.Enable,
-			RefreshOnCreate: r.DirectoryTableOptions.RefreshOnCreate,
+			Enable:      r.DirectoryTableOptions.Enable,
+			AutoRefresh: r.DirectoryTableOptions.AutoRefresh,
 		}
 	}
 	if r.FileFormat != nil {
@@ -172,8 +172,10 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 	}
 	if r.ExternalStageParams != nil {
 		opts.ExternalStageParams = &ExternalS3StageParams{
-			Url:                r.ExternalStageParams.Url,
-			StorageIntegration: r.ExternalStageParams.StorageIntegration,
+			Url:                    r.ExternalStageParams.Url,
+			AwsAccessPointArn:      r.ExternalStageParams.AwsAccessPointArn,
+			StorageIntegration:     r.ExternalStageParams.StorageIntegration,
+			UsePrivatelinkEndpoint: r.ExternalStageParams.UsePrivatelinkEndpoint,
 		}
 		if r.ExternalStageParams.Credentials != nil {
 			opts.ExternalStageParams.Credentials = &ExternalStageS3Credentials{
@@ -296,8 +298,9 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 	}
 	if r.ExternalStageParams != nil {
 		opts.ExternalStageParams = &ExternalAzureStageParams{
-			Url:                r.ExternalStageParams.Url,
-			StorageIntegration: r.ExternalStageParams.StorageIntegration,
+			Url:                    r.ExternalStageParams.Url,
+			StorageIntegration:     r.ExternalStageParams.StorageIntegration,
+			UsePrivatelinkEndpoint: r.ExternalStageParams.UsePrivatelinkEndpoint,
 		}
 		if r.ExternalStageParams.Credentials != nil {
 			opts.ExternalStageParams.Credentials = &ExternalStageAzureCredentials{
@@ -455,8 +458,10 @@ func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOp
 	}
 	if r.ExternalStageParams != nil {
 		opts.ExternalStageParams = &ExternalS3StageParams{
-			Url:                r.ExternalStageParams.Url,
-			StorageIntegration: r.ExternalStageParams.StorageIntegration,
+			Url:                    r.ExternalStageParams.Url,
+			AwsAccessPointArn:      r.ExternalStageParams.AwsAccessPointArn,
+			StorageIntegration:     r.ExternalStageParams.StorageIntegration,
+			UsePrivatelinkEndpoint: r.ExternalStageParams.UsePrivatelinkEndpoint,
 		}
 		if r.ExternalStageParams.Credentials != nil {
 			opts.ExternalStageParams.Credentials = &ExternalStageS3Credentials{
@@ -558,8 +563,9 @@ func (r *AlterExternalAzureStageStageRequest) toOpts() *AlterExternalAzureStageS
 	}
 	if r.ExternalStageParams != nil {
 		opts.ExternalStageParams = &ExternalAzureStageParams{
-			Url:                r.ExternalStageParams.Url,
-			StorageIntegration: r.ExternalStageParams.StorageIntegration,
+			Url:                    r.ExternalStageParams.Url,
+			StorageIntegration:     r.ExternalStageParams.StorageIntegration,
+			UsePrivatelinkEndpoint: r.ExternalStageParams.UsePrivatelinkEndpoint,
 		}
 		if r.ExternalStageParams.Credentials != nil {
 			opts.ExternalStageParams.Credentials = &ExternalStageAzureCredentials{

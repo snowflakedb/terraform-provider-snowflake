@@ -73,8 +73,8 @@ func (s *InternalDirectoryTableOptionsRequest) WithEnable(enable bool) *Internal
 	return s
 }
 
-func (s *InternalDirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *InternalDirectoryTableOptionsRequest {
-	s.RefreshOnCreate = &refreshOnCreate
+func (s *InternalDirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *InternalDirectoryTableOptionsRequest {
+	s.AutoRefresh = &autoRefresh
 	return s
 }
 
@@ -222,6 +222,11 @@ func NewExternalS3StageParamsRequest(
 	return &s
 }
 
+func (s *ExternalS3StageParamsRequest) WithAwsAccessPointArn(awsAccessPointArn string) *ExternalS3StageParamsRequest {
+	s.AwsAccessPointArn = &awsAccessPointArn
+	return s
+}
+
 func (s *ExternalS3StageParamsRequest) WithStorageIntegration(storageIntegration AccountObjectIdentifier) *ExternalS3StageParamsRequest {
 	s.StorageIntegration = &storageIntegration
 	return s
@@ -234,6 +239,11 @@ func (s *ExternalS3StageParamsRequest) WithCredentials(credentials ExternalStage
 
 func (s *ExternalS3StageParamsRequest) WithEncryption(encryption ExternalStageS3EncryptionRequest) *ExternalS3StageParamsRequest {
 	s.Encryption = &encryption
+	return s
+}
+
+func (s *ExternalS3StageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ExternalS3StageParamsRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
 }
 
@@ -482,6 +492,11 @@ func (s *ExternalAzureStageParamsRequest) WithCredentials(credentials ExternalSt
 
 func (s *ExternalAzureStageParamsRequest) WithEncryption(encryption ExternalStageAzureEncryptionRequest) *ExternalAzureStageParamsRequest {
 	s.Encryption = &encryption
+	return s
+}
+
+func (s *ExternalAzureStageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ExternalAzureStageParamsRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
 }
 

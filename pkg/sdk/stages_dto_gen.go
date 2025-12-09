@@ -37,8 +37,8 @@ type InternalStageEncryptionRequest struct {
 }
 
 type InternalDirectoryTableOptionsRequest struct {
-	Enable          *bool
-	RefreshOnCreate *bool
+	Enable      *bool
+	AutoRefresh *bool
 }
 
 type StageFileFormatRequest struct {
@@ -80,10 +80,12 @@ type CreateOnS3StageRequest struct {
 }
 
 type ExternalS3StageParamsRequest struct {
-	Url                string // required
-	StorageIntegration *AccountObjectIdentifier
-	Credentials        *ExternalStageS3CredentialsRequest
-	Encryption         *ExternalStageS3EncryptionRequest
+	Url                    string // required
+	AwsAccessPointArn      *string
+	StorageIntegration     *AccountObjectIdentifier
+	Credentials            *ExternalStageS3CredentialsRequest
+	Encryption             *ExternalStageS3EncryptionRequest
+	UsePrivatelinkEndpoint *bool
 }
 
 type ExternalStageS3CredentialsRequest struct {
@@ -150,10 +152,11 @@ type CreateOnAzureStageRequest struct {
 }
 
 type ExternalAzureStageParamsRequest struct {
-	Url                string // required
-	StorageIntegration *AccountObjectIdentifier
-	Credentials        *ExternalStageAzureCredentialsRequest
-	Encryption         *ExternalStageAzureEncryptionRequest
+	Url                    string // required
+	StorageIntegration     *AccountObjectIdentifier
+	Credentials            *ExternalStageAzureCredentialsRequest
+	Encryption             *ExternalStageAzureEncryptionRequest
+	UsePrivatelinkEndpoint *bool
 }
 
 type ExternalStageAzureCredentialsRequest struct {
