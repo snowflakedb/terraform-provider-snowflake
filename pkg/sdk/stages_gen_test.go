@@ -116,7 +116,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 				AwsRole:  String("aws-role"),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
 	})
 
 	// variants added manually
@@ -779,8 +779,10 @@ func TestStages_Show(t *testing.T) {
 		opts.Like = &Like{
 			Pattern: String("some pattern"),
 		}
-		opts.In = &In{
-			Schema: schemaId,
+		opts.In = &ExtendedIn{
+			In: In{
+				Schema: schemaId,
+			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES LIKE 'some pattern' IN SCHEMA %s`, schemaId.FullyQualifiedName())
 	})

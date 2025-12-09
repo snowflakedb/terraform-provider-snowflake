@@ -329,10 +329,10 @@ type StageProperty struct {
 
 // ShowStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-stages.
 type ShowStageOptions struct {
-	show   bool  `ddl:"static" sql:"SHOW"`
-	stages bool  `ddl:"static" sql:"STAGES"`
-	Like   *Like `ddl:"keyword" sql:"LIKE"`
-	In     *In   `ddl:"keyword" sql:"IN"`
+	show   bool        `ddl:"static" sql:"SHOW"`
+	stages bool        `ddl:"static" sql:"STAGES"`
+	Like   *Like       `ddl:"keyword" sql:"LIKE"`
+	In     *ExtendedIn `ddl:"keyword" sql:"IN"`
 }
 
 type stageShowRow struct {

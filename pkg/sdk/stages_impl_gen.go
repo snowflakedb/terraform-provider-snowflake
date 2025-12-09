@@ -103,7 +103,7 @@ func (v *stages) Show(ctx context.Context, request *ShowStageRequest) ([]Stage, 
 
 func (v *stages) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Stage, error) {
 	request := NewShowStageRequest().
-		WithIn(In{Schema: id.SchemaId()}).
+		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
 		WithLike(Like{Pattern: String(id.Name())})
 	stages, err := v.Show(ctx, request)
 	if err != nil {

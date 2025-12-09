@@ -44,7 +44,7 @@ func (opts *CreateOnS3StageOptions) validate() error {
 		}
 		if valueSet(opts.ExternalStageParams.Credentials) {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsKeyId, opts.ExternalStageParams.Credentials.AwsRole) {
-				errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
+				errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
 			}
 		}
 	}

@@ -825,7 +825,7 @@ func (s *ShowStageRequest) WithLike(like Like) *ShowStageRequest {
 	return s
 }
 
-func (s *ShowStageRequest) WithIn(in In) *ShowStageRequest {
+func (s *ShowStageRequest) WithIn(in ExtendedIn) *ShowStageRequest {
 	s.In = &in
 	return s
 }

@@ -261,5 +261,5 @@ type DescribeStageRequest struct {
 
 type ShowStageRequest struct {
 	Like *Like
-	In   *In
+	In   *ExtendedIn
 }

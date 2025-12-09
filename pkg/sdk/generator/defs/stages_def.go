@@ -347,6 +347,7 @@ var stagesDef = g.NewInterface(
 			Field("region", "sql.NullString").
 			Field("type", "string").
 			Field("cloud", "sql.NullString").
+			// notification_channel is deprecated in Snowflake.
 			Field("storage_integration", "sql.NullString").
 			Field("endpoint", "sql.NullString").
 			Field("owner_role_type", "sql.NullString").
@@ -364,6 +365,7 @@ var stagesDef = g.NewInterface(
 			Field("Region", "*string").
 			Field("Type", "string").
 			Field("Cloud", "*string").
+			// notification_channel is deprecated in Snowflake.
 			Field("StorageIntegration", "*string").
 			Field("Endpoint", "*string").
 			Field("OwnerRoleType", "*string").
@@ -372,9 +374,9 @@ var stagesDef = g.NewInterface(
 			Show().
 			SQL("STAGES").
 			OptionalLike().
-			OptionalIn(),
+			OptionalExtendedIn(),
 	).
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
-		g.ShowByIDInFiltering,
+		g.ShowByIDExtendedInFiltering,
 	)
