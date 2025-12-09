@@ -527,11 +527,6 @@ func (a *AccountResourceParametersAssert) HasS3StageVpceDnsName(expected string)
 	return a
 }
 
-func (a *AccountResourceParametersAssert) HasSamlIdentityProvider(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterSamlIdentityProvider, expected))
-	return a
-}
-
 func (a *AccountResourceParametersAssert) HasSearchPath(expected string) *AccountResourceParametersAssert {
 	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterSearchPath, expected))
 	return a
@@ -1113,11 +1108,6 @@ func (a *AccountResourceParametersAssert) HasQueryTagLevel(expected sdk.Paramete
 
 func (a *AccountResourceParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
 	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterS3StageVpceDnsName, expected))
-	return a
-}
-
-func (a *AccountResourceParametersAssert) HasSamlIdentityProviderLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterSamlIdentityProvider, expected))
 	return a
 }
 
