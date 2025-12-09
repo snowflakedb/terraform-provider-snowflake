@@ -83,7 +83,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasIntegrationType("OAUTH - CUSTOM").
 			HasCategory("SECURITY").
-			HasEnabledSnowflakeDefault().
+			HasEnabled(enabledSnowflakeDefault).
 			HasComment(""),
 
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
