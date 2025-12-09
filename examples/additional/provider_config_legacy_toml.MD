@@ -43,7 +43,7 @@ logqueryparameters = false
 proxyhost = 'proxy.example.com'
 proxyport = 443
 proxyuser = 'username'
-proxypassword = '*****'
+proxypassword = '****'
 proxyprotocol = 'https'
 noproxy = 'localhost,snowlfake.computing.com'
 

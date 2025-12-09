@@ -436,7 +436,7 @@ log_query_parameters = false
 proxy_host = 'proxy.example.com'
 proxy_port = 443
 proxy_user = 'username'
-proxy_password = '*****'
+proxy_password = '****'
 proxy_protocol = 'https'
 no_proxy = 'localhost,snowlfake.computing.com'
 
@@ -492,7 +492,7 @@ logqueryparameters = false
 proxyhost = 'proxy.example.com'
 proxyport = 443
 proxyuser = 'username'
-proxypassword = '*****'
+proxypassword = '****'
 proxyprotocol = 'https'
 noproxy = 'localhost,snowlfake.computing.com'
 
@@ -548,7 +548,7 @@ provider "snowflake" {
 	proxy_host = "proxy.example.com"
 	proxy_port = 443
 	proxy_user = "username"
-	proxy_password = "*****"
+	proxy_password = "****"
 	proxy_protocol = "https"
 	no_proxy = "localhost,snowlfake.computing.com"
 
