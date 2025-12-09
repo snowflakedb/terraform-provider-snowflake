@@ -66,6 +66,12 @@ type LegacyConfigDTO struct {
 	EnableSingleUseRefreshTokens   *bool               `toml:"enablesingleuserefreshtokens"`
 	LogQueryText                   *bool               `toml:"logquerytext"`
 	LogQueryParameters             *bool               `toml:"logqueryparameters"`
+	ProxyHost                      *string             `toml:"proxyhost"`
+	ProxyPort                      *int                `toml:"proxyport"`
+	ProxyUser                      *string             `toml:"proxyuser"`
+	ProxyPassword                  *string             `toml:"proxypassword"`
+	ProxyProtocol                  *string             `toml:"proxyprotocol"`
+	NoProxy                        *string             `toml:"noproxy"`
 }
 
 func (c *LegacyConfigDTO) DriverConfig() (gosnowflake.Config, error) {

@@ -128,6 +128,7 @@ provider "snowflake" {
 - `log_query_text` (Boolean) When set to true, the full query text will be logged. Be aware that it may include sensitive information. Default value is false. Can also be sourced from the `SNOWFLAKE_LOG_QUERY_TEXT` environment variable.
 - `login_timeout` (Number) Login retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_LOGIN_TIMEOUT` environment variable.
 - `max_retry_count` (Number) Specifies how many times non-periodic HTTP request can be retried by the driver. Can also be sourced from the `SNOWFLAKE_MAX_RETRY_COUNT` environment variable.
+- `no_proxy` (String) A comma-separated list of hostnames, domains, and IP addresses to exclude from proxying. Can also be sourced from the `SNOWFLAKE_NO_PROXY` environment variable.
 - `oauth_authorization_url` (String, Sensitive) Authorization URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_AUTHORIZATION_URL` environment variable.
 - `oauth_client_id` (String, Sensitive) Client id for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_ID` environment variable.
 - `oauth_client_secret` (String, Sensitive) Client secret for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_SECRET` environment variable.
@@ -147,6 +148,11 @@ provider "snowflake" {
 - `private_key_passphrase` (String, Sensitive) Supports the encryption ciphers aes-128-cbc, aes-128-gcm, aes-192-cbc, aes-192-gcm, aes-256-cbc, aes-256-gcm, and des-ede3-cbc. Can also be sourced from the `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE` environment variable.
 - `profile` (String) Sets the profile to read from ~/.snowflake/config file. Can also be sourced from the `SNOWFLAKE_PROFILE` environment variable.
 - `protocol` (String) A protocol used in the connection. Valid options are: `http` | `https`. Can also be sourced from the `SNOWFLAKE_PROTOCOL` environment variable.
+- `proxy_host` (String) The host of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_HOST` environment variable.
+- `proxy_password` (String) The password of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_PASSWORD` environment variable.
+- `proxy_port` (Number) The port of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_PORT` environment variable.
+- `proxy_protocol` (String) The protocol of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_PROTOCOL` environment variable.
+- `proxy_user` (String) The user of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_USER` environment variable.
 - `request_timeout` (Number) request retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_REQUEST_TIMEOUT` environment variable.
 - `role` (String) Specifies the role to use by default for accessing Snowflake objects in the client session. Can also be sourced from the `SNOWFLAKE_ROLE` environment variable.
 - `skip_toml_file_permission_verification` (Boolean) False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations). Can also be sourced from the `SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION` environment variable.
@@ -427,6 +433,12 @@ workload_identity_entra_resource = 'workload_identity_entra_resource'
 enable_single_use_refresh_tokens = true
 log_query_text = false
 log_query_parameters = false
+proxy_host = 'proxy.example.com'
+proxy_port = 443
+proxy_user = 'username'
+proxy_password = '*****'
+proxy_protocol = 'https'
+no_proxy = 'localhost,snowlfake.computing.com'
 
 [example.params]
 param_key = 'param_value'
@@ -477,6 +489,12 @@ workloadidentityentraresource = 'workload_identity_entra_resource'
 enablesingleuserefreshtokens = true
 logquerytext = false
 logqueryparameters = false
+proxyhost = 'proxy.example.com'
+proxyport = 443
+proxyuser = 'username'
+proxypassword = '*****'
+proxyprotocol = 'https'
+noproxy = 'localhost,snowlfake.computing.com'
 
 [example.params]
 param_key = 'param_value'
@@ -527,6 +545,12 @@ provider "snowflake" {
 	enable_single_use_refresh_tokens = true
 	log_query_text = false
 	log_query_parameters = false
+	proxy_host = "proxy.example.com"
+	proxy_port = 443
+	proxy_user = "username"
+	proxy_password = "*****"
+	proxy_protocol = "https"
+	no_proxy = "localhost,snowlfake.computing.com"
 
 	params = {
 		param_key = "param_value"

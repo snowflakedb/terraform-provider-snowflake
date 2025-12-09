@@ -64,4 +64,10 @@ type ConfigDTO struct {
 	EnableSingleUseRefreshTokens   *bool               `toml:"enable_single_use_refresh_tokens"`
 	LogQueryText                   *bool               `toml:"log_query_text"`
 	LogQueryParameters             *bool               `toml:"log_query_parameters"`
+	ProxyHost                      *string             `toml:"proxy_host"`
+	ProxyPort                      *int                `toml:"proxy_port"`
+	ProxyUser                      *string             `toml:"proxy_user"`
+	ProxyPassword                  *string             `toml:"proxy_password"`
+	ProxyProtocol                  *string             `toml:"proxy_protocol"`
+	NoProxy                        *string             `toml:"no_proxy"`
 }

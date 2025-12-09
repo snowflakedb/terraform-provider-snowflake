@@ -113,6 +113,11 @@ func TestLoadConfigFileWithInvalidFieldTypeFailsLegacy(t *testing.T) {
 		{name: "EnableSingleUseRefreshTokens", fieldName: "enablesingleuserefreshtokens", wantType: "*bool"},
 		{name: "LogQueryText", fieldName: "logquerytext", wantType: "*bool"},
 		{name: "LogQueryParameters", fieldName: "logqueryparameters", wantType: "*bool"},
+		{name: "ProxyHost", fieldName: "proxyhost", wantType: "*string"},
+		{name: "ProxyUser", fieldName: "proxyuser", wantType: "*string"},
+		{name: "ProxyPassword", fieldName: "proxypassword", wantType: "*string"},
+		{name: "ProxyProtocol", fieldName: "proxyprotocol", wantType: "*string"},
+		{name: "NoProxy", fieldName: "noproxy", wantType: "*string"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -141,6 +146,7 @@ func TestLoadConfigFileWithInvalidFieldTypeIntFailsLegacy(t *testing.T) {
 		{name: "JwtExpireTimeout", fieldName: "jwtexpiretimeout"},
 		{name: "ExternalBrowserTimeout", fieldName: "externalbrowsertimeout"},
 		{name: "MaxRetryCount", fieldName: "maxretrycount"},
+		{name: "ProxyPort", fieldName: "proxyport"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -274,7 +280,13 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 			WithEnableSingleUseRefreshTokens(true).
 			WithLogQueryText(true).
-			WithLogQueryParameters(true),
+			WithLogQueryParameters(true).
+			WithProxyHost("proxy.example.com").
+			WithProxyPort(443).
+			WithProxyUser("username").
+			WithProxyPassword("****").
+			WithProxyProtocol("https").
+			WithNoProxy("localhost,snowlfake.computing.com"),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
@@ -344,6 +356,12 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.True(t, config.EnableSingleUseRefreshTokens)
 		assert.True(t, config.LogQueryText)
 		assert.True(t, config.LogQueryParameters)
+		assert.Equal(t, "proxy.example.com", config.ProxyHost)
+		assert.Equal(t, 443, config.ProxyPort)
+		assert.Equal(t, "username", config.ProxyUser)
+		assert.Equal(t, "****", config.ProxyPassword)
+		assert.Equal(t, "https", config.ProxyProtocol)
+		assert.Equal(t, "localhost,snowlfake.computing.com", config.NoProxy)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -453,7 +471,13 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 				WithEnableSingleUseRefreshTokens(true).
 				WithLogQueryText(true).
-				WithLogQueryParameters(true),
+				WithLogQueryParameters(true).
+				WithProxyHost("proxy.example.com").
+				WithProxyPort(443).
+				WithProxyUser("username").
+				WithProxyPassword("****").
+				WithProxyProtocol("https").
+				WithNoProxy("localhost,snowlfake.computing.com"),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -502,6 +526,12 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.True(t, got.EnableSingleUseRefreshTokens)
 				assert.True(t, got.LogQueryText)
 				assert.True(t, got.LogQueryParameters)
+				assert.Equal(t, "proxy.example.com", got.ProxyHost)
+				assert.Equal(t, 443, got.ProxyPort)
+				assert.Equal(t, "username", got.ProxyUser)
+				assert.Equal(t, "****", got.ProxyPassword)
+				assert.Equal(t, "https", got.ProxyProtocol)
+				assert.Equal(t, "localhost,snowlfake.computing.com", got.NoProxy)
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
 				gotUnencryptedKey := pem.EncodeToMemory(

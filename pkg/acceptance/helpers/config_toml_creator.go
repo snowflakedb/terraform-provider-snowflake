@@ -58,7 +58,13 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 		WithEnableSingleUseRefreshTokens(true).
 		WithLogQueryText(true).
-		WithLogQueryParameters(true),
+		WithLogQueryParameters(true).
+		WithProxyHost("proxy_host").
+		WithProxyPort(443).
+		WithProxyUser("proxy_user").
+		WithProxyPassword("proxy_password").
+		WithProxyProtocol("proxy_protocol").
+		WithNoProxy("no_proxy"),
 	)
 }
 

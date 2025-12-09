@@ -166,6 +166,11 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		{name: "WorkloadIdentityEntraResource", fieldName: "workload_identity_entra_resource", wantType: "*string"},
 		{name: "LogQueryText", fieldName: "log_query_text", wantType: "*bool"},
 		{name: "LogQueryParameters", fieldName: "log_query_parameters", wantType: "*bool"},
+		{name: "ProxyHost", fieldName: "proxy_host", wantType: "*string"},
+		{name: "ProxyUser", fieldName: "proxy_user", wantType: "*string"},
+		{name: "ProxyPassword", fieldName: "proxy_password", wantType: "*string"},
+		{name: "ProxyProtocol", fieldName: "proxy_protocol", wantType: "*string"},
+		{name: "NoProxy", fieldName: "no_proxy", wantType: "*string"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -194,6 +199,7 @@ func TestLoadConfigFileWithInvalidFieldTypeIntFails(t *testing.T) {
 		{name: "JwtExpireTimeout", fieldName: "jwt_expire_timeout"},
 		{name: "ExternalBrowserTimeout", fieldName: "external_browser_timeout"},
 		{name: "MaxRetryCount", fieldName: "max_retry_count"},
+		{name: "ProxyPort", fieldName: "proxy_port"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -328,7 +334,13 @@ func TestProfileConfig(t *testing.T) {
 		WithWorkloadIdentityProvider("workload_identity_provider").
 		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 		WithLogQueryText(true).
-		WithLogQueryParameters(true),
+		WithLogQueryParameters(true).
+		WithProxyHost("proxy.example.com").
+		WithProxyPort(443).
+		WithProxyUser("username").
+		WithProxyPassword("****").
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowlfake.computing.com"),
 		"securityadmin",
 	)
 	bytes, err := cfg.MarshalToml()
@@ -398,6 +410,12 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 		assert.True(t, config.LogQueryText)
 		assert.True(t, config.LogQueryParameters)
+		assert.Equal(t, "proxy.example.com", config.ProxyHost)
+		assert.Equal(t, 443, config.ProxyPort)
+		assert.Equal(t, "username", config.ProxyUser)
+		assert.Equal(t, "****", config.ProxyPassword)
+		assert.Equal(t, "https", config.ProxyProtocol)
+		assert.Equal(t, "localhost,snowlfake.computing.com", config.NoProxy)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -487,6 +505,12 @@ func Test_MergeConfig(t *testing.T) {
 		WorkloadIdentityEntraResource:  "workload_identity_entra_resource1",
 		LogQueryText:                   false,
 		LogQueryParameters:             false,
+		ProxyHost:                      "proxy_host1",
+		ProxyPort:                      443,
+		ProxyUser:                      "proxy_user1",
+		ProxyPassword:                  "proxy_password1",
+		ProxyProtocol:                  "proxy_protocol1",
+		NoProxy:                        "no_proxy1",
 	}
 
 	config2 := &gosnowflake.Config{
@@ -538,6 +562,12 @@ func Test_MergeConfig(t *testing.T) {
 		WorkloadIdentityEntraResource:  "workload_identity_entra_resource2",
 		LogQueryText:                   true,
 		LogQueryParameters:             true,
+		ProxyHost:                      "proxy_host2",
+		ProxyPort:                      443,
+		ProxyUser:                      "proxy_user2",
+		ProxyPassword:                  "proxy_password2",
+		ProxyProtocol:                  "proxy_protocol2",
+		NoProxy:                        "no_proxy2",
 	}
 
 	t.Run("base config empty", func(t *testing.T) {
@@ -888,7 +918,13 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithWorkloadIdentityProvider("workload_identity_provider").
 				WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 				WithLogQueryText(true).
-				WithLogQueryParameters(true),
+				WithLogQueryParameters(true).
+				WithProxyHost("proxy.example.com").
+				WithProxyPort(443).
+				WithProxyUser("username").
+				WithProxyPassword("****").
+				WithProxyProtocol("https").
+				WithNoProxy("localhost,snowlfake.computing.com"),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -937,6 +973,12 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "workload_identity_entra_resource", got.WorkloadIdentityEntraResource)
 				assert.True(t, got.LogQueryText)
 				assert.True(t, got.LogQueryParameters)
+				assert.Equal(t, "proxy.example.com", got.ProxyHost)
+				assert.Equal(t, 443, got.ProxyPort)
+				assert.Equal(t, "username", got.ProxyUser)
+				assert.Equal(t, "****", got.ProxyPassword)
+				assert.Equal(t, "https", got.ProxyProtocol)
+				assert.Equal(t, "localhost,snowlfake.computing.com", got.NoProxy)
 
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)

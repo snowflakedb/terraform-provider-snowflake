@@ -47,7 +47,13 @@ func FullLegacyTomlConfigForServiceUser(t *testing.T, profile string, userId sdk
 			WithDisableConsoleLogin(true).
 			WithParams(map[string]*string{"foo": sdk.Pointer("bar")}).
 			WithLogQueryText(true).
-			WithLogQueryParameters(true),
+			WithLogQueryParameters(true).
+			WithProxyHost("proxy_host").
+			WithProxyPort(443).
+			WithProxyUser("proxy_user").
+			WithProxyPassword("proxy_password").
+			WithProxyProtocol("proxy_protocol").
+			WithNoProxy("no_proxy"),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
