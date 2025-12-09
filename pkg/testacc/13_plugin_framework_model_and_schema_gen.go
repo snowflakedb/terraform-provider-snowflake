@@ -300,7 +300,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	"proxy_password": schema.StringAttribute{
 		Description: existingSchema["proxy_password"].Description,
 		Optional:    true,
-		Sensitive:   false,
+		Sensitive:   true,
 	},
 	"proxy_port": schema.Int64Attribute{
 		Description: existingSchema["proxy_port"].Description,
