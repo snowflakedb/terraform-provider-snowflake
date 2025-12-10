@@ -125,6 +125,8 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+			WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
+			WithUsePrivatelinkEndpoint(true).
 			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
 				WithAwsKeyId(awsKeyId).
 				WithAwsSecretKey(awsSecretKey))
@@ -137,6 +139,31 @@ func TestInt_Stages(t *testing.T) {
 		stage, err := client.Stages.ShowByID(ctx, id)
 		require.NoError(t, err)
 		assertStage(t, stage, id, "EXTERNAL", "some comment", "AWS", awsBucketUrl, "")
+
+		stageProperties, err := client.Stages.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, stageProperties)
+		assert.Contains(t, stageProperties, sdk.StageProperty{
+			Parent:  "STAGE_LOCATION",
+			Name:    "URL",
+			Type:    "String",
+			Value:   fmt.Sprintf("[\"%s\"]", awsBucketUrl),
+			Default: "",
+		})
+		assert.Contains(t, stageProperties, sdk.StageProperty{
+			Parent:  "STAGE_LOCATION",
+			Name:    "AWS_ACCESS_POINT_ARN",
+			Type:    "String",
+			Value:   "arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap",
+			Default: "",
+		})
+		assert.Contains(t, stageProperties, sdk.StageProperty{
+			Parent:  "PRIVATELINK",
+			Name:    "USE_PRIVATELINK_ENDPOINT",
+			Type:    "Boolean",
+			Value:   "true",
+			Default: "false",
+		})
 	})
 
 	t.Run("CreateOnS3 - temporary - Storage Integration", func(t *testing.T) {
@@ -190,6 +217,7 @@ func TestInt_Stages(t *testing.T) {
 		assertStage(t, stage, id, "EXTERNAL", "some comment", "AZURE", azureBucketUrl, azureStorageIntegration.Name)
 	})
 
+	// TODO(SNOW-2356128): Test use_privatelink_endpoint
 	t.Run("CreateOnAzure - Shared Access Signature", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
