@@ -10,11 +10,16 @@ import (
 	"strings"
 	"testing"
 
+	tfjson "github.com/hashicorp/terraform-json"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfjson "github.com/hashicorp/terraform-json"
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -28,22 +33,22 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_BasicUseCase(t *testing.T) {
 	t.Cleanup(roleCleanup)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
-			config.StringVariable(string(sdk.GlobalPrivilegeCreateRole)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateRole)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
-	configVariablesUpdated := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
-			config.StringVariable(string(sdk.GlobalPrivilegeCreateNetworkPolicy)),
+	configVariablesUpdated := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateNetworkPolicy)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -128,10 +133,10 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_gh3153(t *testing.T) {
 	t.Cleanup(roleCleanup)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.GlobalPrivilegeManageShareTarget)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeManageShareTarget)),
 		),
 	}
 
@@ -164,13 +169,13 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_gh3507(t *testing.T) {
 	t.Cleanup(roleCleanup)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name":         config.StringVariable(roleFullyQualifiedName),
-		"always_apply": config.BoolVariable(false),
+	configVariables := tfconfig.Variables{
+		"name":         tfconfig.StringVariable(roleFullyQualifiedName),
+		"always_apply": tfconfig.BoolVariable(false),
 	}
-	configVariablesWithAlwaysApply := config.Variables{
-		"name":         config.StringVariable(roleFullyQualifiedName),
-		"always_apply": config.BoolVariable(true),
+	configVariablesWithAlwaysApply := tfconfig.Variables{
+		"name":         tfconfig.StringVariable(roleFullyQualifiedName),
+		"always_apply": tfconfig.BoolVariable(true),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -235,20 +240,20 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_ErrorOnPrivilegesNotGranted(
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	grantablePrivilege1 := config.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase))
-	grantablePrivilege2 := config.StringVariable(string(sdk.GlobalPrivilegeApplyAggregationPolicy))
-	nonGrantablePrivilege := config.StringVariable("MANAGE LISTING AUTO FULFILLMENT")
+	grantablePrivilege1 := tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase))
+	grantablePrivilege2 := tfconfig.StringVariable(string(sdk.GlobalPrivilegeApplyAggregationPolicy))
+	nonGrantablePrivilege := tfconfig.StringVariable("MANAGE LISTING AUTO FULFILLMENT")
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 
-	configVariablesWithGrantablePrivileges := config.Variables{
-		"name":              config.StringVariable(roleFullyQualifiedName),
-		"privileges":        config.ListVariable(grantablePrivilege1),
-		"with_grant_option": config.BoolVariable(true),
+	configVariablesWithGrantablePrivileges := tfconfig.Variables{
+		"name":              tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges":        tfconfig.ListVariable(grantablePrivilege1),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
-	configVariablesWithNonGrantablePrivileges := config.Variables{
-		"name":              config.StringVariable(roleFullyQualifiedName),
-		"privileges":        config.ListVariable(grantablePrivilege1, grantablePrivilege2, nonGrantablePrivilege),
-		"with_grant_option": config.BoolVariable(true),
+	configVariablesWithNonGrantablePrivileges := tfconfig.Variables{
+		"name":              tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges":        tfconfig.ListVariable(grantablePrivilege1, grantablePrivilege2, nonGrantablePrivilege),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -279,16 +284,16 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_ChangeListOfPrivilegesToAllP
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	grantablePrivilege1 := config.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase))
+	grantablePrivilege1 := tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase))
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 
-	configVariablesWithGrantablePrivileges := config.Variables{
-		"name":              config.StringVariable(roleFullyQualifiedName),
-		"privileges":        config.ListVariable(grantablePrivilege1),
-		"with_grant_option": config.BoolVariable(false),
+	configVariablesWithGrantablePrivileges := tfconfig.Variables{
+		"name":              tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges":        tfconfig.ListVariable(grantablePrivilege1),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
-	configVariablesOnlyName := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
+	configVariablesOnlyName := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -323,13 +328,13 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_PrivilegesReversed(t *testin
 	t.Cleanup(roleCleanup)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.GlobalPrivilegeCreateRole)),
-			config.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateRole)),
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -370,24 +375,24 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_BasicUseCase(t *testin
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name":     config.StringVariable(roleFullyQualifiedName),
-		"database": config.StringVariable(databaseName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
-			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateSchema)),
+	configVariables := tfconfig.Variables{
+		"name":     tfconfig.StringVariable(roleFullyQualifiedName),
+		"database": tfconfig.StringVariable(databaseName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeCreateSchema)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
-	configVariablesUpdated := config.Variables{
-		"name":     config.StringVariable(roleFullyQualifiedName),
-		"database": config.StringVariable(databaseName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
-			config.StringVariable(string(sdk.AccountObjectPrivilegeMonitor)),
+	configVariablesUpdated := tfconfig.Variables{
+		"name":     tfconfig.StringVariable(roleFullyQualifiedName),
+		"database": tfconfig.StringVariable(databaseName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeMonitor)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -486,11 +491,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_gh2717(t *testing.T) {
 	t.Cleanup(computePoolCleanup)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name":         config.StringVariable(roleFullyQualifiedName),
-		"compute_pool": config.StringVariable(computePool.ID().Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.AccountObjectPrivilegeUsage)),
+	configVariables := tfconfig.Variables{
+		"name":         tfconfig.StringVariable(roleFullyQualifiedName),
+		"compute_pool": tfconfig.StringVariable(computePool.ID().Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeUsage)),
 		),
 	}
 
@@ -536,9 +541,9 @@ func TestAcc_GrantPrivilegesToApplicationRole_OnAccountObject_InfinitePlan(t *te
 		Steps: []resource.TestStep{
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject_InfinitePlan"),
-				ConfigVariables: config.Variables{
-					"name":     config.StringVariable(roleId.Name()),
-					"database": config.StringVariable(TestDatabaseName),
+				ConfigVariables: tfconfig.Variables{
+					"name":     tfconfig.StringVariable(roleId.Name()),
+					"database": tfconfig.StringVariable(TestDatabaseName),
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
@@ -556,26 +561,26 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema_BasicUseCase(t *testing.T) {
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	schemaId := testClient().Ids.SchemaId()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
-			config.StringVariable(string(sdk.SchemaPrivilegeModify)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeModify)),
 		),
-		"database":          config.StringVariable(schemaId.DatabaseName()),
-		"schema":            config.StringVariable(schemaId.Name()),
-		"with_grant_option": config.BoolVariable(false),
+		"database":          tfconfig.StringVariable(schemaId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(schemaId.Name()),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
 
-	configVariablesUpdated := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
-			config.StringVariable(string(sdk.SchemaPrivilegeCreateAlert)),
+	configVariablesUpdated := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeCreateAlert)),
 		),
-		"database":          config.StringVariable(schemaId.DatabaseName()),
-		"schema":            config.StringVariable(schemaId.Name()),
-		"with_grant_option": config.BoolVariable(false),
+		"database":          tfconfig.StringVariable(schemaId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(schemaId.Name()),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -681,14 +686,14 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAllSchemasInDatabase(t *testing.T) {
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
-			config.StringVariable(string(sdk.SchemaPrivilegeModify)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeModify)),
 		),
-		"database":          config.StringVariable(databaseName),
-		"with_grant_option": config.BoolVariable(false),
+		"database":          tfconfig.StringVariable(databaseName),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -730,14 +735,14 @@ func TestAcc_GrantPrivilegesToAccountRole_OnFutureSchemasInDatabase(t *testing.T
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
-			config.StringVariable(string(sdk.SchemaPrivilegeModify)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeCreateTable)),
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeModify)),
 		),
-		"database":          config.StringVariable(databaseName),
-		"with_grant_option": config.BoolVariable(false),
+		"database":          tfconfig.StringVariable(databaseName),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -779,16 +784,16 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnObject(t *testing.T) 
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
-	configVariables := config.Variables{
-		"name":       config.StringVariable(roleFullyQualifiedName),
-		"table_name": config.StringVariable(tableId.Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeInsert)),
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeUpdate)),
+	configVariables := tfconfig.Variables{
+		"name":       tfconfig.StringVariable(roleFullyQualifiedName),
+		"table_name": tfconfig.StringVariable(tableId.Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeInsert)),
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeUpdate)),
 		),
-		"database":          config.StringVariable(tableId.DatabaseName()),
-		"schema":            config.StringVariable(tableId.SchemaName()),
-		"with_grant_option": config.BoolVariable(false),
+		"database":          tfconfig.StringVariable(tableId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(tableId.SchemaName()),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -832,16 +837,16 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFunctionWithArguments
 	function := testClient().Function.CreateSecure(t, sdk.DataTypeFloat)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name":          config.StringVariable(roleFullyQualifiedName),
-		"function_name": config.StringVariable(function.ID().Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
+	configVariables := tfconfig.Variables{
+		"name":          tfconfig.StringVariable(roleFullyQualifiedName),
+		"function_name": tfconfig.StringVariable(function.ID().Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
 		),
-		"database":          config.StringVariable(function.ID().DatabaseName()),
-		"schema":            config.StringVariable(function.ID().SchemaName()),
-		"with_grant_option": config.BoolVariable(false),
-		"argument_type":     config.StringVariable(string(sdk.DataTypeFloat)),
+		"database":          tfconfig.StringVariable(function.ID().DatabaseName()),
+		"schema":            tfconfig.StringVariable(function.ID().SchemaName()),
+		"with_grant_option": tfconfig.BoolVariable(false),
+		"argument_type":     tfconfig.StringVariable(string(sdk.DataTypeFloat)),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -884,16 +889,16 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFunctionWithoutArgume
 	function := testClient().Function.CreateSecure(t)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name":          config.StringVariable(roleFullyQualifiedName),
-		"function_name": config.StringVariable(function.ID().Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
+	configVariables := tfconfig.Variables{
+		"name":          tfconfig.StringVariable(roleFullyQualifiedName),
+		"function_name": tfconfig.StringVariable(function.ID().Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
 		),
-		"database":          config.StringVariable(function.ID().DatabaseName()),
-		"schema":            config.StringVariable(function.ID().SchemaName()),
-		"with_grant_option": config.BoolVariable(false),
-		"argument_type":     config.StringVariable(""),
+		"database":          tfconfig.StringVariable(function.ID().DatabaseName()),
+		"schema":            tfconfig.StringVariable(function.ID().SchemaName()),
+		"with_grant_option": tfconfig.BoolVariable(false),
+		"argument_type":     tfconfig.StringVariable(""),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -952,15 +957,15 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnAll_InDatabase(t *tes
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeInsert)),
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeUpdate)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeInsert)),
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeUpdate)),
 		),
-		"database":           config.StringVariable(databaseName),
-		"object_type_plural": config.StringVariable(sdk.PluralObjectTypeTables.String()),
-		"with_grant_option":  config.BoolVariable(false),
+		"database":           tfconfig.StringVariable(databaseName),
+		"object_type_plural": tfconfig.StringVariable(sdk.PluralObjectTypeTables.String()),
+		"with_grant_option":  tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1004,13 +1009,13 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnAllPipes(t *testing.T
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeMonitor)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeMonitor)),
 		),
-		"database":          config.StringVariable(databaseName),
-		"with_grant_option": config.BoolVariable(false),
+		"database":          tfconfig.StringVariable(databaseName),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1053,15 +1058,15 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_InDatabase(t *
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeInsert)),
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeUpdate)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeInsert)),
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeUpdate)),
 		),
-		"database":           config.StringVariable(databaseName),
-		"object_type_plural": config.StringVariable(sdk.PluralObjectTypeTables.String()),
-		"with_grant_option":  config.BoolVariable(false),
+		"database":           tfconfig.StringVariable(databaseName),
+		"object_type_plural": tfconfig.StringVariable(sdk.PluralObjectTypeTables.String()),
+		"with_grant_option":  tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1105,14 +1110,14 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Streamlits_InD
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
 		),
-		"database":           config.StringVariable(databaseName),
-		"object_type_plural": config.StringVariable(sdk.PluralObjectTypeStreamlits.String()),
-		"with_grant_option":  config.BoolVariable(false),
+		"database":           tfconfig.StringVariable(databaseName),
+		"object_type_plural": tfconfig.StringVariable(sdk.PluralObjectTypeStreamlits.String()),
+		"with_grant_option":  tfconfig.BoolVariable(false),
 	}
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
 
@@ -1148,14 +1153,14 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnAll_Streamlits_InData
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
 		),
-		"database":           config.StringVariable(databaseName),
-		"object_type_plural": config.StringVariable(sdk.PluralObjectTypeStreamlits.String()),
-		"with_grant_option":  config.BoolVariable(false),
+		"database":           tfconfig.StringVariable(databaseName),
+		"object_type_plural": tfconfig.StringVariable(sdk.PluralObjectTypeStreamlits.String()),
+		"with_grant_option":  tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1191,20 +1196,20 @@ func TestAcc_GrantPrivilegesToAccountRole_UpdatePrivileges(t *testing.T) {
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := func(allPrivileges bool, privileges []sdk.AccountObjectPrivilege) config.Variables {
-		configVariables := config.Variables{
-			"name":     config.StringVariable(roleFullyQualifiedName),
-			"database": config.StringVariable(databaseName),
+	configVariables := func(allPrivileges bool, privileges []sdk.AccountObjectPrivilege) tfconfig.Variables {
+		configVariables := tfconfig.Variables{
+			"name":     tfconfig.StringVariable(roleFullyQualifiedName),
+			"database": tfconfig.StringVariable(databaseName),
 		}
 		if allPrivileges {
-			configVariables["all_privileges"] = config.BoolVariable(allPrivileges)
+			configVariables["all_privileges"] = tfconfig.BoolVariable(allPrivileges)
 		}
 		if len(privileges) > 0 {
-			configPrivileges := make([]config.Variable, len(privileges))
+			configPrivileges := make([]tfconfig.Variable, len(privileges))
 			for i, privilege := range privileges {
-				configPrivileges[i] = config.StringVariable(string(privilege))
+				configPrivileges[i] = tfconfig.StringVariable(string(privilege))
 			}
-			configVariables["privileges"] = config.ListVariable(configPrivileges...)
+			configVariables["privileges"] = tfconfig.ListVariable(configPrivileges...)
 		}
 		return configVariables
 	}
@@ -1281,23 +1286,23 @@ func TestAcc_GrantPrivilegesToAccountRole_UpdatePrivileges_SnowflakeChecked(t *t
 	roleId := role.ID()
 	schemaId := testClient().Ids.RandomDatabaseObjectIdentifier()
 
-	configVariables := func(allPrivileges bool, privileges []string, schemaName string) config.Variables {
-		configVariables := config.Variables{
-			"name":     config.StringVariable(roleId.FullyQualifiedName()),
-			"database": config.StringVariable(schemaId.DatabaseName()),
+	configVariables := func(allPrivileges bool, privileges []string, schemaName string) tfconfig.Variables {
+		configVariables := tfconfig.Variables{
+			"name":     tfconfig.StringVariable(roleId.FullyQualifiedName()),
+			"database": tfconfig.StringVariable(schemaId.DatabaseName()),
 		}
 		if allPrivileges {
-			configVariables["all_privileges"] = config.BoolVariable(allPrivileges)
+			configVariables["all_privileges"] = tfconfig.BoolVariable(allPrivileges)
 		}
 		if len(privileges) > 0 {
-			configPrivileges := make([]config.Variable, len(privileges))
+			configPrivileges := make([]tfconfig.Variable, len(privileges))
 			for i, privilege := range privileges {
-				configPrivileges[i] = config.StringVariable(privilege)
+				configPrivileges[i] = tfconfig.StringVariable(privilege)
 			}
-			configVariables["privileges"] = config.ListVariable(configPrivileges...)
+			configVariables["privileges"] = tfconfig.ListVariable(configPrivileges...)
 		}
 		if len(schemaName) > 0 {
-			configVariables["schema_name"] = config.StringVariable(schemaName)
+			configVariables["schema_name"] = tfconfig.StringVariable(schemaName)
 		}
 		return configVariables
 	}
@@ -1371,12 +1376,12 @@ func TestAcc_GrantPrivilegesToAccountRole_AlwaysApply(t *testing.T) {
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := func(alwaysApply bool) config.Variables {
-		return config.Variables{
-			"name":           config.StringVariable(roleFullyQualifiedName),
-			"all_privileges": config.BoolVariable(true),
-			"database":       config.StringVariable(databaseName),
-			"always_apply":   config.BoolVariable(alwaysApply),
+	configVariables := func(alwaysApply bool) tfconfig.Variables {
+		return tfconfig.Variables{
+			"name":           tfconfig.StringVariable(roleFullyQualifiedName),
+			"all_privileges": tfconfig.BoolVariable(true),
+			"database":       tfconfig.StringVariable(databaseName),
+			"always_apply":   tfconfig.BoolVariable(alwaysApply),
 		}
 	}
 
@@ -1598,10 +1603,10 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivilegesOnSnowflakeDatabase(
 	t.Cleanup(roleCleanup)
 
 	roleName := role.ID().Name()
-	configVariables := config.Variables{
-		"role_name": config.StringVariable(roleName),
-		"privileges": config.ListVariable(
-			config.StringVariable(sdk.AccountObjectPrivilegeImportedPrivileges.String()),
+	configVariables := tfconfig.Variables{
+		"role_name": tfconfig.StringVariable(roleName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(sdk.AccountObjectPrivilegeImportedPrivileges.String()),
 		),
 	}
 
@@ -1647,13 +1652,13 @@ func TestAcc_GrantPrivilegesToAccountRole_MultiplePartsInRoleName(t *testing.T) 
 	t.Cleanup(roleCleanup)
 
 	roleName := roleId.Name()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
-			config.StringVariable(string(sdk.GlobalPrivilegeCreateRole)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateDatabase)),
+			tfconfig.StringVariable(string(sdk.GlobalPrivilegeCreateRole)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1682,13 +1687,13 @@ func TestAcc_GrantPrivilegesToAccountRole_OnExternalVolume(t *testing.T) {
 	externalVolumeId, cleanupExternalVolume := testClient().ExternalVolume.Create(t)
 	t.Cleanup(cleanupExternalVolume)
 
-	configVariables := config.Variables{
-		"name":            config.StringVariable(role.ID().FullyQualifiedName()),
-		"external_volume": config.StringVariable(externalVolumeId.Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.AccountObjectPrivilegeUsage)),
+	configVariables := tfconfig.Variables{
+		"name":            tfconfig.StringVariable(role.ID().FullyQualifiedName()),
+		"external_volume": tfconfig.StringVariable(externalVolumeId.Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeUsage)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1724,15 +1729,15 @@ func TestAcc_GrantPrivilegesToAccountRole_MLPrivileges(t *testing.T) {
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	schemaId := testClient().Ids.SchemaId()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaPrivilegeCreateSnowflakeMlAnomalyDetection)),
-			config.StringVariable(string(sdk.SchemaPrivilegeCreateSnowflakeMlForecast)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeCreateSnowflakeMlAnomalyDetection)),
+			tfconfig.StringVariable(string(sdk.SchemaPrivilegeCreateSnowflakeMlForecast)),
 		),
-		"database":          config.StringVariable(schemaId.DatabaseName()),
-		"schema":            config.StringVariable(schemaId.Name()),
-		"with_grant_option": config.BoolVariable(false),
+		"database":          tfconfig.StringVariable(schemaId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(schemaId.Name()),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -1774,15 +1779,15 @@ func TestAcc_GrantPrivilegesToAccountRole_ChangeWithGrantOptionsOutsideOfTerrafo
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	configVariables := config.Variables{
-		"name":       config.StringVariable(roleFullyQualifiedName),
-		"table_name": config.StringVariable(tableId.Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(sdk.SchemaObjectPrivilegeTruncate.String()),
+	configVariables := tfconfig.Variables{
+		"name":       tfconfig.StringVariable(roleFullyQualifiedName),
+		"table_name": tfconfig.StringVariable(tableId.Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(sdk.SchemaObjectPrivilegeTruncate.String()),
 		),
-		"database":          config.StringVariable(tableId.DatabaseName()),
-		"schema":            config.StringVariable(tableId.SchemaName()),
-		"with_grant_option": config.BoolVariable(true),
+		"database":          tfconfig.StringVariable(tableId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(tableId.SchemaName()),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -1831,15 +1836,15 @@ func TestAcc_GrantPrivilegesToAccountRole_ChangeWithGrantOptionsOutsideOfTerrafo
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	configVariables := config.Variables{
-		"name":       config.StringVariable(roleFullyQualifiedName),
-		"table_name": config.StringVariable(tableId.Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(sdk.SchemaObjectPrivilegeTruncate.String()),
+	configVariables := tfconfig.Variables{
+		"name":       tfconfig.StringVariable(roleFullyQualifiedName),
+		"table_name": tfconfig.StringVariable(tableId.Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(sdk.SchemaObjectPrivilegeTruncate.String()),
 		),
-		"database":          config.StringVariable(tableId.DatabaseName()),
-		"schema":            config.StringVariable(tableId.SchemaName()),
-		"with_grant_option": config.BoolVariable(false),
+		"database":          tfconfig.StringVariable(tableId.DatabaseName()),
+		"schema":            tfconfig.StringVariable(tableId.SchemaName()),
+		"with_grant_option": tfconfig.BoolVariable(false),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -1905,14 +1910,14 @@ func TestAcc_GrantPrivilegesToAccountRole_RemoveGrantedObjectOutsideTerraform(t 
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 
-	configVariables := config.Variables{
-		"name":     config.StringVariable(roleFullyQualifiedName),
-		"database": config.StringVariable(database.ID().Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
-			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateSchema)),
+	configVariables := tfconfig.Variables{
+		"name":     tfconfig.StringVariable(roleFullyQualifiedName),
+		"database": tfconfig.StringVariable(database.ID().Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeCreateSchema)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -1944,14 +1949,14 @@ func TestAcc_GrantPrivilegesToAccountRole_RemoveAccountRoleOutsideTerraform(t *t
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseId := testClient().Ids.DatabaseId()
-	configVariables := config.Variables{
-		"name":     config.StringVariable(roleFullyQualifiedName),
-		"database": config.StringVariable(databaseId.Name()),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
-			config.StringVariable(string(sdk.AccountObjectPrivilegeCreateSchema)),
+	configVariables := tfconfig.Variables{
+		"name":     tfconfig.StringVariable(roleFullyQualifiedName),
+		"database": tfconfig.StringVariable(databaseId.Name()),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeCreateDatabaseRole)),
+			tfconfig.StringVariable(string(sdk.AccountObjectPrivilegeCreateSchema)),
 		),
-		"with_grant_option": config.BoolVariable(true),
+		"with_grant_option": tfconfig.BoolVariable(true),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -1983,12 +1988,12 @@ func TestAcc_GrantPrivilegesToAccountRole_AlwaysApply_SetAfterCreate(t *testing.
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := func(alwaysApply bool) config.Variables {
-		return config.Variables{
-			"name":           config.StringVariable(roleFullyQualifiedName),
-			"all_privileges": config.BoolVariable(true),
-			"database":       config.StringVariable(databaseName),
-			"always_apply":   config.BoolVariable(alwaysApply),
+	configVariables := func(alwaysApply bool) tfconfig.Variables {
+		return tfconfig.Variables{
+			"name":           tfconfig.StringVariable(roleFullyQualifiedName),
+			"all_privileges": tfconfig.BoolVariable(true),
+			"database":       tfconfig.StringVariable(databaseName),
+			"always_apply":   tfconfig.BoolVariable(alwaysApply),
 		}
 	}
 
@@ -2157,14 +2162,14 @@ func TestAcc_GrantPrivilegesToAccountRole_OnDataset_issue2807(t *testing.T) {
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	databaseName := testClient().Ids.DatabaseId().FullyQualifiedName()
-	configVariables := config.Variables{
-		"name": config.StringVariable(roleFullyQualifiedName),
-		"privileges": config.ListVariable(
-			config.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
+	configVariables := tfconfig.Variables{
+		"name": tfconfig.StringVariable(roleFullyQualifiedName),
+		"privileges": tfconfig.ListVariable(
+			tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeUsage)),
 		),
-		"database":           config.StringVariable(databaseName),
-		"object_type_plural": config.StringVariable(sdk.PluralObjectTypeDatasets.String()),
-		"with_grant_option":  config.BoolVariable(false),
+		"database":           tfconfig.StringVariable(databaseName),
+		"object_type_plural": tfconfig.StringVariable(sdk.PluralObjectTypeDatasets.String()),
+		"with_grant_option":  tfconfig.BoolVariable(false),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"
@@ -2255,14 +2260,14 @@ func TestAcc_GrantPrivileges_OnObject_HybridTable_ToAccountRole_Fails(t *testing
 	hybridTableId, hybridTableCleanup := testClient().HybridTable.Create(t)
 	t.Cleanup(hybridTableCleanup)
 
-	configVariables := func(objectType sdk.ObjectType) config.Variables {
-		cfg := config.Variables{
-			"account_role_name": config.StringVariable(role.ID().FullyQualifiedName()),
-			"privileges": config.ListVariable(
-				config.StringVariable(string(sdk.SchemaObjectPrivilegeApplyBudget)),
+	configVariables := func(objectType sdk.ObjectType) tfconfig.Variables {
+		cfg := tfconfig.Variables{
+			"account_role_name": tfconfig.StringVariable(role.ID().FullyQualifiedName()),
+			"privileges": tfconfig.ListVariable(
+				tfconfig.StringVariable(string(sdk.SchemaObjectPrivilegeApplyBudget)),
 			),
-			"hybrid_table_fully_qualified_name": config.StringVariable(hybridTableId.FullyQualifiedName()),
-			"object_type":                       config.StringVariable(string(objectType)),
+			"hybrid_table_fully_qualified_name": tfconfig.StringVariable(hybridTableId.FullyQualifiedName()),
+			"object_type":                       tfconfig.StringVariable(string(objectType)),
 		}
 		return cfg
 	}
@@ -2293,13 +2298,17 @@ func queriedPrivilegesEqualTo(query func() ([]sdk.Grant, error), privileges ...s
 		if err != nil {
 			return err
 		}
-		for _, grant := range grants {
+
+		grantedPrivileges := collections.Map(grants, func(grant sdk.Grant) string {
 			if (grant.GrantTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeDatabaseRole) && grant.Privilege == "USAGE" {
-				continue
+				return ""
 			}
-			if !slices.Contains(privileges, grant.Privilege) {
-				return fmt.Errorf("grant not expected, grant: %v, not in %v", grants, privileges)
-			}
+			return grant.Privilege
+		})
+		grantedPrivileges = slices.DeleteFunc(grantedPrivileges, func(privilege string) bool { return privilege == "" })
+
+		if !slices.Equal(grantedPrivileges, privileges) {
+			return fmt.Errorf("granted privileges: %v, not equal to expected set: %v", grantedPrivileges, privileges)
 		}
 
 		return nil
@@ -2401,4 +2410,473 @@ variable "privilege" {
   default = "USAGE"
 }
 `, roleId.Name(), dbId.Name())
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_OnCreate(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
+
+	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+	resourceModelWithStrictRoleManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
+		WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"object_type": tfconfig.StringVariable(sdk.ObjectTypeDatabase.String()),
+			"object_name": tfconfig.StringVariable(database.ID().Name()),
+		})).
+		WithStrictPrivilegeManagement(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges.0", string(sdk.AccountObjectPrivilegeMonitor)),
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "strict_privilege_management", "true"),
+					queriedAccountRolePrivilegesEqualTo(t, role.ID(), string(sdk.AccountObjectPrivilegeMonitor), string(sdk.AccountObjectPrivilegeUsage)),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceModelWithStrictRoleManagement.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
+							sdk.String(fmt.Sprintf("[%s %s]", sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
+							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
+						),
+					},
+				},
+				Config: config.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges.0", string(sdk.AccountObjectPrivilegeMonitor)),
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "strict_privilege_management", "true"),
+					queriedAccountRolePrivilegesEqualTo(t, role.ID(), string(sdk.AccountObjectPrivilegeMonitor)),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
+		WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"object_type": tfconfig.StringVariable(sdk.ObjectTypeDatabase.String()),
+			"object_name": tfconfig.StringVariable(database.ID().Name()),
+		}))
+	resourceModelWithStrictRoleManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
+		WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"object_type": tfconfig.StringVariable(sdk.ObjectTypeDatabase.String()),
+			"object_name": tfconfig.StringVariable(database.ID().Name()),
+		})).
+		WithStrictPrivilegeManagement(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModel, resourceModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "account_role_name", role.ID().Name()),
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "privileges.0", string(sdk.AccountObjectPrivilegeMonitor)),
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "strict_privilege_management", "false"),
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "on_account_object.#", "1"),
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "on_account_object.0.object_type", string(sdk.ObjectTypeDatabase)),
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "on_account_object.0.object_name", database.ID().Name()),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, providerModel, resourceModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceModel.ResourceReference(), "privileges.0", string(sdk.AccountObjectPrivilegeMonitor)),
+					queriedAccountRolePrivilegesContainAtLeast(t, role.ID(), string(sdk.AccountObjectPrivilegeMonitor), string(sdk.AccountObjectPrivilegeUsage)),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceModel.ResourceReference(), plancheck.ResourceActionUpdate),
+						// TODO: change to: from 2 to 1 privilege
+						planchecks.ExpectChange(resourceModel.ResourceReference(), "privileges", tfjson.ActionUpdate, sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)), sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor))),
+						//planchecks.ExpectChange(resourceName, "strict_privilege_management", tfjson.ActionUpdate, sdk.String("false"), sdk.String("true")),
+					},
+				},
+				Config: config.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges.#", "1"),
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges.0", string(sdk.AccountObjectPrivilegeMonitor)),
+					resource.TestCheckResourceAttr(resourceModelWithStrictRoleManagement.ResourceReference(), "strict_privilege_management", "true"),
+					queriedAccountRolePrivilegesEqualTo(t, role.ID(), string(sdk.AccountObjectPrivilegeMonitor)),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Validation(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	databaseId := testClient().Ids.DatabaseId()
+	schemaId := testClient().Ids.SchemaId()
+
+	providerModelWithExperiment := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+	resourceModelMissingExperiment := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_missing_experiment", role.ID().Name()).
+		WithPrivileges(string(sdk.GlobalPrivilegeCreateDatabase)).
+		WithOnAccount(true).
+		WithStrictPrivilegeManagement(true)
+	resourceModelAllPrivileges := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_all_privileges", role.ID().Name()).
+		WithOnAccount(true).
+		WithAllPrivileges(true).
+		WithStrictPrivilegeManagement(true)
+	resourceModelOnSchemaAll := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_all", role.ID().Name()).
+		WithPrivileges(string(sdk.SchemaPrivilegeUsage)).
+		WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"all_schemas_in_database": tfconfig.StringVariable(databaseId.FullyQualifiedName()),
+		})).
+		WithStrictPrivilegeManagement(true)
+	resourceModelOnSchemaFuture := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_future", role.ID().Name()).
+		WithPrivileges(string(sdk.SchemaPrivilegeUsage)).
+		WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"future_schemas_in_database": tfconfig.StringVariable(databaseId.FullyQualifiedName()),
+		})).
+		WithStrictPrivilegeManagement(true)
+	resourceModelOnSchemaObjectAll := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_object_all", role.ID().Name()).
+		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
+		WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"all": tfconfig.ListVariable(
+				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"object_type_plural": tfconfig.StringVariable(string(sdk.PluralObjectTypeTables)),
+					"in_schema":          tfconfig.StringVariable(schemaId.FullyQualifiedName()),
+				}),
+			),
+		})).
+		WithStrictPrivilegeManagement(true)
+	resourceModelOnSchemaObjectFuture := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_object_future", role.ID().Name()).
+		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
+		WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"future": tfconfig.ListVariable(
+				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"object_type_plural": tfconfig.StringVariable(string(sdk.PluralObjectTypeTables)),
+					"in_schema":          tfconfig.StringVariable(schemaId.FullyQualifiedName()),
+				}),
+			),
+		})).
+		WithStrictPrivilegeManagement(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, resourceModelMissingExperiment),
+				ExpectError: regexp.MustCompile(
+					"`strict_privilege_management`.*`GRANTS_STRICT_PRIVILEGE_MANAGEMENT`"),
+			},
+			{
+				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelAllPrivileges),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with all_privileges`),
+			},
+			{
+				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelOnSchemaAll),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema\.0\.all_schemas_in_database`),
+			},
+			{
+				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelOnSchemaFuture),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema\.0\.future_schemas_in_database`),
+			},
+			{
+				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelOnSchemaObjectAll),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema_object\.0\.all`),
+			},
+			{
+				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelOnSchemaObjectFuture),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema_object\.0\.future`),
+			},
+		},
+	})
+}
+
+// TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_PrivilegesThatCannotBeRevoked tests edge cases
+// for strict_privilege_management with privileges that have special behavior or cannot be revoked.
+//
+// Edge cases covered:
+//   - OWNERSHIP: Cannot be specified in this resource (blocked at validation level, tested separately in
+//     TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnObject_OwnershipPrivilege)
+//   - External OWNERSHIP grants: When ownership is granted externally to the role, it should be ignored
+//     by strict_privilege_management because OWNERSHIP grants have empty grantedBy field and the resource
+//     filters these out (see ReadGrantPrivilegesToAccountRole implementation)
+//   - USAGE privilege: May come from IMPORTED_PRIVILEGES and has special handling in the resource
+//   - Privileges granted externally with different grant option: Should be handled correctly
+func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_PrivilegesThatCannotBeRevoked(t *testing.T) {
+	// Test 1: External ownership grant should be ignored by strict_privilege_management
+	// because ownership grants have empty grantedBy and are filtered out
+	t.Run("ExternalOwnershipGrantIsIgnored", func(t *testing.T) {
+		role, roleCleanup := testClient().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		database, databaseCleanup := testClient().Database.CreateDatabase(t)
+		t.Cleanup(databaseCleanup)
+
+		// Grant OWNERSHIP on the database to the role externally
+		testClient().Grant.GrantOwnershipToAccountRole(t, role.ID(), sdk.ObjectTypeDatabase, database.ID())
+
+		providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+		// Only manage MONITOR privilege, not OWNERSHIP
+		resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+			WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
+			WithOnAccountObjectValue(tfconfig.StringVariable(database.ID().Name())).
+			WithStrictPrivilegeManagement(true)
+		resourceName := resourceModel.ResourceReference()
+
+		resource.Test(t, resource.TestCase{
+			TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+				tfversion.RequireAbove(tfversion.Version1_5_0),
+			},
+			ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				{
+					// Create the grant with strict_privilege_management enabled
+					// The external OWNERSHIP grant should be ignored (not added to state)
+					Config: config.FromModels(t, providerModel, resourceModel),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+						resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.AccountObjectPrivilegeMonitor)),
+						resource.TestCheckResourceAttr(resourceName, "strict_privilege_management", "true"),
+					),
+				},
+				{
+					// Verify no changes on re-apply (OWNERSHIP should not cause drift)
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
+						},
+					},
+					Config: config.FromModels(t, providerModel, resourceModel),
+				},
+			},
+		})
+	})
+
+	// Test 2: External privilege grant with different WITH GRANT OPTION should be detected
+	// and revoked when strict_privilege_management is enabled
+	t.Run("ExternalPrivilegeWithDifferentGrantOption", func(t *testing.T) {
+		role, roleCleanup := testClient().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		database, databaseCleanup := testClient().Database.CreateDatabase(t)
+		t.Cleanup(databaseCleanup)
+
+		providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+		// Configure resource with MONITOR privilege without grant option
+		resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+			WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
+			WithOnAccountObjectValue(tfconfig.StringVariable(database.ID().Name())).
+			WithWithGrantOption(false).
+			WithStrictPrivilegeManagement(true)
+		resourceName := resourceModel.ResourceReference()
+
+		resource.Test(t, resource.TestCase{
+			TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+				tfversion.RequireAbove(tfversion.Version1_5_0),
+			},
+			ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+			CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+			Steps: []resource.TestStep{
+				{
+					// Create the resource first
+					Config: config.FromModels(t, providerModel, resourceModel),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+						resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.AccountObjectPrivilegeMonitor)),
+					),
+				},
+				{
+					PreConfig: func() {
+						// Grant USAGE privilege externally (this should be detected and revoked)
+						testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(
+							t,
+							role.ID(),
+							database.ID(),
+							[]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage},
+							false,
+						)
+					},
+					// With strict_privilege_management, the external USAGE grant should be detected
+					// and the plan should show it needs to be revoked
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+						},
+					},
+					Config: config.FromModels(t, providerModel, resourceModel),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+						resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.AccountObjectPrivilegeMonitor)),
+						// Verify the external USAGE privilege was revoked
+						queriedAccountRolePrivilegesEqualTo(
+							t,
+							role.ID(),
+							string(sdk.AccountObjectPrivilegeMonitor),
+						),
+					),
+				},
+			},
+		})
+	})
+
+	// Test 3: USAGE privilege from IMPORTED_PRIVILEGES handling
+	// When IMPORTED_PRIVILEGES is granted, it shows as USAGE in the grants
+	// This test verifies the special handling in the resource works correctly
+	//t.Run("ImportedPrivilegesUsageHandling", func(t *testing.T) {
+	//	role, roleCleanup := testClient().Role.CreateRole(t)
+	//	t.Cleanup(roleCleanup)
+	//
+	//	// Create a database from a share (which allows IMPORTED_PRIVILEGES)
+	//	shareExternalId := createShareableDatabase(t)
+	//	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShare(t, shareExternalId)
+	//	t.Cleanup(databaseFromShareCleanup)
+	//
+	//	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+	//	// Use IMPORTED_PRIVILEGES (which internally maps to USAGE)
+	//	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+	//		WithPrivileges(string(sdk.AccountObjectPrivilegeImportedPrivileges)).
+	//		WithOnAccountObjectValue(tfconfig.StringVariable(databaseFromShare.ID().Name())).
+	//		WithStrictPrivilegeManagement(true)
+	//	resourceName := resourceModel.ResourceReference()
+	//
+	//	resource.Test(t, resource.TestCase{
+	//		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+	//			tfversion.RequireAbove(tfversion.Version1_5_0),
+	//		},
+	//		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+	//		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+	//		Steps: []resource.TestStep{
+	//			{
+	//				Config: config.FromModels(t, providerModel, resourceModel),
+	//				Check: resource.ComposeAggregateTestCheckFunc(
+	//					resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
+	//					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.AccountObjectPrivilegeImportedPrivileges)),
+	//					resource.TestCheckResourceAttr(resourceName, "strict_privilege_management", "true"),
+	//				),
+	//			},
+	//			{
+	//				// Verify no changes on re-apply (IMPORTED_PRIVILEGES/USAGE mapping should be stable)
+	//				ConfigPlanChecks: resource.ConfigPlanChecks{
+	//					PreApply: []plancheck.PlanCheck{
+	//						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
+	//					},
+	//				},
+	//				Config: config.FromModels(t, providerModel, resourceModel),
+	//			},
+	//		},
+	//	})
+	//})
+
+	// Test 4: Multiple privileges with one added externally
+	// Strict privilege management should detect and revoke only the external one
+	t.Run("MultiplePrivilegesWithExternalAddition", func(t *testing.T) {
+		role, roleCleanup := testClient().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		database, databaseCleanup := testClient().Database.CreateDatabase(t)
+		t.Cleanup(databaseCleanup)
+
+		providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+		resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+			WithPrivileges(
+				string(sdk.AccountObjectPrivilegeMonitor),
+				string(sdk.AccountObjectPrivilegeUsage),
+			).
+			WithOnAccountObjectValue(tfconfig.StringVariable(database.ID().Name())).
+			WithStrictPrivilegeManagement(true)
+		resourceName := resourceModel.ResourceReference()
+
+		resource.Test(t, resource.TestCase{
+			TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+				tfversion.RequireAbove(tfversion.Version1_5_0),
+			},
+			ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+			CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+			Steps: []resource.TestStep{
+				{
+					Config: config.FromModels(t, providerModel, resourceModel),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+					),
+				},
+				{
+					PreConfig: func() {
+						// Grant CREATE_SCHEMA privilege externally
+						testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(
+							t,
+							role.ID(),
+							database.ID(),
+							[]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateSchema},
+							false,
+						)
+					},
+					// The external CREATE_SCHEMA grant should be detected and the plan should update
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+						},
+					},
+					Config: config.FromModels(t, providerModel, resourceModel),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+						// Verify only the configured privileges remain, CREATE_SCHEMA was revoked
+						queriedAccountRolePrivilegesEqualTo(
+							t,
+							role.ID(),
+							string(sdk.AccountObjectPrivilegeMonitor),
+							string(sdk.AccountObjectPrivilegeUsage),
+						),
+					),
+				},
+			},
+		})
+	})
 }

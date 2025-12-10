@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
@@ -73,6 +74,23 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     "",
 		Description: "This is a helper field and should not be set. Its main purpose is to help to achieve the functionality described by the always_apply field.",
+	},
+	"strict_privilege_management": {
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  false,
+		ConflictsWith: []string{
+			"all_privileges",
+			"on_schema.0.all_schemas_in_database",
+			"on_schema.0.future_schemas_in_database",
+			"on_schema_object.0.all",
+			"on_schema_object.0.future",
+		},
+		Description: joinWithSpace(
+			"If true, the resource will revoke all privileges that are not explicitly defined in the config making it a central source of truth for the privileges granted on an object to an account role.",
+			"If false, the resource will be only concerned with the privileges that are explicitly defined in the config.",
+			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the `experimental_features_enabled` field.",
+		),
 	},
 	"on_account": {
 		Type:        schema.TypeBool,
@@ -743,6 +761,14 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 }
 
 func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
+	strictPrivilegeManagement := d.Get("strict_privilege_management").(bool)
+	if strictPrivilegeManagement && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement, providerCtx.EnabledExperiments) {
+		return diag.Errorf("to use `strict_privilege_management`, you need to first specify the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` feature in the `experimental_features_enabled` field at the provider level")
+	}
+
 	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
 	if err != nil {
 		return diag.Diagnostics{
@@ -798,8 +824,6 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 
-	client := meta.(*provider.Context).Client
-
 	if _, err := client.Roles.ShowByID(ctx, id.RoleName); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
 		d.SetId("")
 		return diag.Diagnostics{
@@ -843,36 +867,43 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 	}
 
 	for _, grant := range grants {
-		// Accept only (account) ROLEs
-		if grant.GrantTo != sdk.ObjectTypeRole && grant.GrantedTo != sdk.ObjectTypeRole {
+		// Process only (ACCOUNT) ROLE specified in the config
+		if (grant.GrantTo != sdk.ObjectTypeRole && grant.GrantedTo != sdk.ObjectTypeRole) || grant.GranteeName.Name() != id.RoleName.Name() {
 			continue
 		}
-		// Only consider privileges that are already present in the ID, so we
-		// don't delete privileges managed by other resources.
-		if !slices.Contains(expectedPrivileges, grant.Privilege) {
-			continue
-		}
-		if grant.GrantOption == id.WithGrantOption && grant.GranteeName.Name() == id.RoleName.Name() {
-			// Future grants do not have grantedBy, only current grants do.
-			// If grantedby is an empty string, it means terraform could not have created the grant.
-			// The same goes for the default SNOWFLAKE database, but we don't want to skip in this case
-			if (opts.Future == nil || !*opts.Future) && grant.GrantedBy.Name() == "" && grant.Name.Name() != "SNOWFLAKE" {
-				continue
-			}
 
-			// grant_on is for future grants, granted_on is for current grants.
-			// They function the same way though in a test for matching the object type
-			//
-			// To `grant privilege on application to a role` the user has to use `object_type = "DATABASE"`.
-			// It's because Snowflake treats applications as if they were databases. One exception to the rule is
-			// the default application named SNOWFLAKE that could be granted with `object_type = "APPLICATION"`.
-			// To make the logic simpler, we do not allow it and `object_type = "DATABASE"` should be used for all applications.
-			// TODO When implementing SNOW-991421 see if logic added in SNOW-887897 could be moved to the SDK to simplify the resource implementation.
-			if grantedOn == sdk.ObjectTypeDatabase && (sdk.ObjectTypeApplication == grant.GrantedOn || sdk.ObjectTypeApplication == grant.GrantOn) {
-				actualPrivileges = append(actualPrivileges, grant.Privilege)
-			} else if grantedOn == grant.GrantedOn || grantedOn == grant.GrantOn {
-				actualPrivileges = append(actualPrivileges, grant.Privilege)
-			}
+		// Only consider privileges specified by the configuration, so we don't delete privileges managed by other resources.
+		// The privilege should also match grant option with the one stored in the configuration.
+		//
+		// The strict privilege management skips this check, because we want to take into account all privileges
+		// (not only those specified in the config) and we want to get privileges regardless of grant option setting.
+		if !strictPrivilegeManagement && (!slices.Contains(expectedPrivileges, grant.Privilege) || grant.GrantOption != id.WithGrantOption) {
+			continue
+		}
+
+		// Future grants do not have grantedBy, only current grants do.
+		// If grantedBy is an empty string, it means terraform could not have created the grant.
+		// The same goes for the default SNOWFLAKE database, but we don't want to skip in this case
+		//
+		// The strict privilege management doesn't support future grants, thus any future privileges should be skipped.
+		// TODO: See if that's necessary
+		if ((opts.Future == nil || !*opts.Future) && grant.GrantedBy.Name() == "" && grant.Name.Name() != "SNOWFLAKE") ||
+			(strictPrivilegeManagement && (opts.Future != nil && *opts.Future)) {
+			continue
+		}
+
+		// grant_on is for future grants, granted_on is for current grants.
+		// They function the same way though in a test for matching the object type
+		//
+		// To `grant privilege on application to a role` the user has to use `object_type = "DATABASE"`.
+		// It's because Snowflake treats applications as if they were databases. One exception to the rule is
+		// the default application named SNOWFLAKE that could be granted with `object_type = "APPLICATION"`.
+		// To make the logic simpler, we do not allow it and `object_type = "DATABASE"` should be used for all applications.
+		// TODO When implementing SNOW-991421 see if logic added in SNOW-887897 could be moved to the SDK to simplify the resource implementation.
+		if grantedOn == sdk.ObjectTypeDatabase && (sdk.ObjectTypeApplication == grant.GrantedOn || sdk.ObjectTypeApplication == grant.GrantOn) {
+			actualPrivileges = append(actualPrivileges, grant.Privilege)
+		} else if grantedOn == grant.GrantedOn || grantedOn == grant.GrantOn {
+			actualPrivileges = append(actualPrivileges, grant.Privilege)
 		}
 	}
 
