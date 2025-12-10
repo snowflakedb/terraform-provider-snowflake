@@ -375,8 +375,8 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 			Url:      "some url",
 			Endpoint: "some endpoint",
 			Credentials: &ExternalStageS3CompatibleCredentials{
-				AwsKeyId:     String("aws-key-id"),
-				AwsSecretKey: String("aws-secret-key"),
+				AwsKeyId:     "aws-key-id",
+				AwsSecretKey: "aws-secret-key",
 			},
 		}
 		opts.FileFormat = &StageFileFormat{

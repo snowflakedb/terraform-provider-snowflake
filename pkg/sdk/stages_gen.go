@@ -79,13 +79,13 @@ type StageCopyOnErrorOptions struct {
 
 // CreateOnS3StageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3StageOptions struct {
-	create                bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                   `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier `ddl:"identifier"`
-	ExternalStageParams   ExternalS3StageParams
+	create                bool                             `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                            `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                            `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                             `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                            `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier           `ddl:"identifier"`
+	ExternalStageParams   ExternalS3StageParams            `ddl:"keyword"`
 	DirectoryTableOptions *ExternalS3DirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                 `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	CopyOptions           *StageCopyOptions                `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
@@ -123,13 +123,13 @@ type ExternalS3DirectoryTableOptions struct {
 
 // CreateOnGCSStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnGCSStageOptions struct {
-	create                bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                   `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier `ddl:"identifier"`
-	ExternalStageParams   ExternalGCSStageParams
+	create                bool                              `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                             `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                             `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                              `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                             `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier            `ddl:"identifier"`
+	ExternalStageParams   ExternalGCSStageParams            `ddl:"keyword"`
 	DirectoryTableOptions *ExternalGCSDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                  `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	CopyOptions           *StageCopyOptions                 `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
@@ -157,13 +157,13 @@ type ExternalGCSDirectoryTableOptions struct {
 
 // CreateOnAzureStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnAzureStageOptions struct {
-	create                bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                   `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier `ddl:"identifier"`
-	ExternalStageParams   ExternalAzureStageParams
+	create                bool                                `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                               `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                               `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                                `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                               `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier              `ddl:"identifier"`
+	ExternalStageParams   ExternalAzureStageParams            `ddl:"keyword"`
 	DirectoryTableOptions *ExternalAzureDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                    `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	CopyOptions           *StageCopyOptions                   `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
@@ -197,13 +197,13 @@ type ExternalAzureDirectoryTableOptions struct {
 
 // CreateOnS3CompatibleStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3CompatibleStageOptions struct {
-	create                bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                   `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier `ddl:"identifier"`
-	ExternalStageParams   ExternalS3CompatibleStageParams
+	create                bool                             `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                            `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                            `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                             `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                            `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier           `ddl:"identifier"`
+	ExternalStageParams   ExternalS3CompatibleStageParams  `ddl:"keyword"`
 	DirectoryTableOptions *ExternalS3DirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                 `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	CopyOptions           *StageCopyOptions                `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
@@ -218,8 +218,8 @@ type ExternalS3CompatibleStageParams struct {
 }
 
 type ExternalStageS3CompatibleCredentials struct {
-	AwsKeyId     *string `ddl:"parameter,single_quotes" sql:"AWS_KEY_ID"`
-	AwsSecretKey *string `ddl:"parameter,single_quotes" sql:"AWS_SECRET_KEY"`
+	AwsKeyId     string `ddl:"parameter,single_quotes" sql:"AWS_KEY_ID"`
+	AwsSecretKey string `ddl:"parameter,single_quotes" sql:"AWS_SECRET_KEY"`
 }
 
 // AlterStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.

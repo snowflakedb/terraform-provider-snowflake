@@ -46,29 +46,30 @@ func TestInt_Stages(t *testing.T) {
 			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
 				WithAwsKeyId(awsKeyId).
 				WithAwsSecretKey(awsSecretKey))
-		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(stageId).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*s3Req))
+		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(stageId, *s3Req).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
 
 	createBasicGcsStage := func(t *testing.T, stageId sdk.SchemaObjectIdentifier) {
 		t.Helper()
-		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(stageId).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)))
+		externalGcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
+
+		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(stageId, *externalGcsReq).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
 
 	createBasicAzureStage := func(t *testing.T, stageId sdk.SchemaObjectIdentifier) {
 		t.Helper()
-		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(stageId).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))))
+		externalAzureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
+
+		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(stageId, *externalAzureReq).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
@@ -127,9 +128,8 @@ func TestInt_Stages(t *testing.T) {
 			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
 				WithAwsKeyId(awsKeyId).
 				WithAwsSecretKey(awsSecretKey))
-		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id).
+		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id, *s3Req).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*s3Req).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -144,10 +144,9 @@ func TestInt_Stages(t *testing.T) {
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
-		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id).
+		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id, *s3Req).
 			WithTemporary(true).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*s3Req).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -160,10 +159,11 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateOnGCS", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(id).
+		externalGcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
+
+		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(id, *externalGcsReq).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -176,10 +176,11 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateOnAzure - Storage Integration", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id).
+		externalAzureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+			WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)
+
+		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id, *externalAzureReq).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -192,10 +193,11 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateOnAzure - Shared Access Signature", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id).
+		externalAzureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
+
+		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id, *externalAzureReq).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)

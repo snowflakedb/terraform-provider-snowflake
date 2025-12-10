@@ -163,9 +163,11 @@ func (s *StageCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool)
 
 func NewCreateOnS3StageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalS3StageParamsRequest,
 ) *CreateOnS3StageRequest {
 	s := CreateOnS3StageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -181,11 +183,6 @@ func (s *CreateOnS3StageRequest) WithTemporary(temporary bool) *CreateOnS3StageR
 
 func (s *CreateOnS3StageRequest) WithIfNotExists(ifNotExists bool) *CreateOnS3StageRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOnS3StageRequest) WithExternalStageParams(externalStageParams ExternalS3StageParamsRequest) *CreateOnS3StageRequest {
-	s.ExternalStageParams = externalStageParams
 	return s
 }
 
@@ -312,9 +309,11 @@ func (s *ExternalS3DirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh boo
 
 func NewCreateOnGCSStageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalGCSStageParamsRequest,
 ) *CreateOnGCSStageRequest {
 	s := CreateOnGCSStageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -330,11 +329,6 @@ func (s *CreateOnGCSStageRequest) WithTemporary(temporary bool) *CreateOnGCSStag
 
 func (s *CreateOnGCSStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnGCSStageRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOnGCSStageRequest) WithExternalStageParams(externalStageParams ExternalGCSStageParamsRequest) *CreateOnGCSStageRequest {
-	s.ExternalStageParams = externalStageParams
 	return s
 }
 
@@ -421,9 +415,11 @@ func (s *ExternalGCSDirectoryTableOptionsRequest) WithNotificationIntegration(no
 
 func NewCreateOnAzureStageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalAzureStageParamsRequest,
 ) *CreateOnAzureStageRequest {
 	s := CreateOnAzureStageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -439,11 +435,6 @@ func (s *CreateOnAzureStageRequest) WithTemporary(temporary bool) *CreateOnAzure
 
 func (s *CreateOnAzureStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnAzureStageRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOnAzureStageRequest) WithExternalStageParams(externalStageParams ExternalAzureStageParamsRequest) *CreateOnAzureStageRequest {
-	s.ExternalStageParams = externalStageParams
 	return s
 }
 
@@ -548,9 +539,11 @@ func (s *ExternalAzureDirectoryTableOptionsRequest) WithNotificationIntegration(
 
 func NewCreateOnS3CompatibleStageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalS3CompatibleStageParamsRequest,
 ) *CreateOnS3CompatibleStageRequest {
 	s := CreateOnS3CompatibleStageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -566,11 +559,6 @@ func (s *CreateOnS3CompatibleStageRequest) WithTemporary(temporary bool) *Create
 
 func (s *CreateOnS3CompatibleStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnS3CompatibleStageRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOnS3CompatibleStageRequest) WithExternalStageParams(externalStageParams ExternalS3CompatibleStageParamsRequest) *CreateOnS3CompatibleStageRequest {
-	s.ExternalStageParams = externalStageParams
 	return s
 }
 
@@ -614,19 +602,14 @@ func (s *ExternalS3CompatibleStageParamsRequest) WithCredentials(credentials Ext
 	return s
 }
 
-func NewExternalStageS3CompatibleCredentialsRequest() *ExternalStageS3CompatibleCredentialsRequest {
+func NewExternalStageS3CompatibleCredentialsRequest(
+	awsKeyId string,
+	awsSecretKey string,
+) *ExternalStageS3CompatibleCredentialsRequest {
 	s := ExternalStageS3CompatibleCredentialsRequest{}
+	s.AwsKeyId = awsKeyId
+	s.AwsSecretKey = awsSecretKey
 	return &s
-}
-
-func (s *ExternalStageS3CompatibleCredentialsRequest) WithAwsKeyId(awsKeyId string) *ExternalStageS3CompatibleCredentialsRequest {
-	s.AwsKeyId = &awsKeyId
-	return s
-}
-
-func (s *ExternalStageS3CompatibleCredentialsRequest) WithAwsSecretKey(awsSecretKey string) *ExternalStageS3CompatibleCredentialsRequest {
-	s.AwsSecretKey = &awsSecretKey
-	return s
 }
 
 func NewAlterStageRequest(

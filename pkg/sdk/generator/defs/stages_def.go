@@ -6,13 +6,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO (SNOW-1019005): Move parameters below to the AlterStageOptions as they're common across stage types (+ remove from other alter option structs)
 // TODO(SNOW-1019005): part 2 - use a custom file format struct with a nice nesting
 // TODO(SNOW-1019005): part 2 - generate assertions
 // TODO(SNOW-1019005): part 2 - add parsers for DESC output and return a nice struct; use them in integration tests assertions
 // TODO(SNOW-1019005): part 2 - improve integration tests
-// TODO(SNOW-1019005): part 3 - needs clarification - what about unset tags with if exists?
+// TODO(SNOW-1019005): part 3 - needs clarification - what about differences between behavior and documentation?
 // TODO(SNOW-1019005): part 3 - needs clarification - what about copy options?
+// TODO(SNOW-1019005): part 3 - after we resolve copy options first - Move common fields like FileFormat, CopyOptions, Comment to the AlterStageOptions and CreateStageOptions
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -154,8 +154,8 @@ var externalS3CompatibleStageParamsDef = func() *g.QueryStruct {
 		OptionalQueryStructField(
 			"Credentials",
 			g.NewQueryStruct("ExternalStageS3CompatibleCredentials").
-				OptionalTextAssignment("AWS_KEY_ID", g.ParameterOptions().SingleQuotes()).
-				OptionalTextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes()),
+				TextAssignment("AWS_KEY_ID", g.ParameterOptions().Required().SingleQuotes()).
+				TextAssignment("AWS_SECRET_KEY", g.ParameterOptions().Required().SingleQuotes()),
 			g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
 		)
 }

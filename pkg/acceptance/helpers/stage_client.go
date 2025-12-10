@@ -38,8 +38,9 @@ func (c *StageClient) CreateStageWithURL(t *testing.T) (*sdk.Stage, func()) {
 
 	id := c.ids.RandomSchemaObjectIdentifier()
 
-	err := c.client().CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id).
-		WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(nycWeatherDataURL)))
+	externalS3Req := sdk.NewExternalS3StageParamsRequest(nycWeatherDataURL)
+
+	err := c.client().CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id, *externalS3Req))
 	require.NoError(t, err)
 
 	stage, err := c.client().ShowByID(ctx, id)

@@ -70,8 +70,8 @@ type CreateOnS3StageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ExternalStageParams   ExternalS3StageParamsRequest
+	name                  SchemaObjectIdentifier       // required
+	ExternalStageParams   ExternalS3StageParamsRequest // required
 	DirectoryTableOptions *ExternalS3DirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
@@ -111,8 +111,8 @@ type CreateOnGCSStageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ExternalStageParams   ExternalGCSStageParamsRequest
+	name                  SchemaObjectIdentifier        // required
+	ExternalStageParams   ExternalGCSStageParamsRequest // required
 	DirectoryTableOptions *ExternalGCSDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
@@ -142,8 +142,8 @@ type CreateOnAzureStageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ExternalStageParams   ExternalAzureStageParamsRequest
+	name                  SchemaObjectIdentifier          // required
+	ExternalStageParams   ExternalAzureStageParamsRequest // required
 	DirectoryTableOptions *ExternalAzureDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
@@ -179,8 +179,8 @@ type CreateOnS3CompatibleStageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ExternalStageParams   ExternalS3CompatibleStageParamsRequest
+	name                  SchemaObjectIdentifier                 // required
+	ExternalStageParams   ExternalS3CompatibleStageParamsRequest // required
 	DirectoryTableOptions *ExternalS3DirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
@@ -195,8 +195,8 @@ type ExternalS3CompatibleStageParamsRequest struct {
 }
 
 type ExternalStageS3CompatibleCredentialsRequest struct {
-	AwsKeyId     *string // required
-	AwsSecretKey *string // required
+	AwsKeyId     string // required
+	AwsSecretKey string // required
 }
 
 type AlterStageRequest struct {
