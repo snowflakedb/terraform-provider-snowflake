@@ -26,7 +26,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/snowflakedefaults"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -51,7 +50,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
 		WithComment(comment)
 
-	enabledSnowflakeDefault := snowflakedefaults.EnabledValueForSnowflakeOauthSecurityIntegration()
+	enabledSnowflakeDefault := testClient().SnowflakeDefaults.EnabledForSnowflakeOauthSecurityIntegration(t)
 	enabledSnowflakeDefaultString := strconv.FormatBool(enabledSnowflakeDefault)
 
 	assertBasic := []assert.TestCheckFuncProvider{

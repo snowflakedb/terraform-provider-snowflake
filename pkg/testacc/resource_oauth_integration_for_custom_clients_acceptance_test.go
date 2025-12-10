@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/snowflakedefaults"
 	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -53,7 +52,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
 		WithComment(comment)
 
-	enabledSnowflakeDefault := snowflakedefaults.EnabledValueForSnowflakeOauthSecurityIntegration()
+	enabledSnowflakeDefault := testClient().SnowflakeDefaults.EnabledForSnowflakeOauthSecurityIntegration(t)
 	enabledSnowflakeDefaultString := strconv.FormatBool(enabledSnowflakeDefault)
 
 	assertBasic := []assert.TestCheckFuncProvider{

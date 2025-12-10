@@ -16,7 +16,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/snowflakedefaults"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -37,7 +36,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 	complete := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName()).
 		WithComment(comment)
 
-	expectedStageId := snowflakedefaults.StageIdentifierOutputFormatForStreamOnDirectoryTable(stage.ID())
+	expectedStageId := testClient().SnowflakeDefaults.StageIdentifierOutputFormatForStreamOnDirectoryTable(stage.ID())
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		resourceassert.StreamOnDirectoryTableResource(t, basic.ResourceReference()).

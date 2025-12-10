@@ -1,4 +1,4 @@
-package snowflakedefaults
+package testenvs
 
 import (
 	"testing"
@@ -55,8 +55,6 @@ func TestParseSnowflakeEnvironment(t *testing.T) {
 		for _, input := range testCases {
 			input := input
 			t.Run(input, func(t *testing.T) {
-				t.Parallel()
-
 				_, err := parseSnowflakeEnvironment(input)
 				require.Error(t, err)
 				require.ErrorContains(t, err, "invalid Snowflake environment")
