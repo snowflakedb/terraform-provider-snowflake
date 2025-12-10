@@ -59,7 +59,7 @@ data "snowflake_grants" "of_child_role" {
 # Fetch all grants TO the privilege database role
 data "snowflake_grants" "to_priv_db_role" {
   grants_to {
-    database_role = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.priv_db_role.name}\""
+    database_role = snowflake_database_role.priv_db_role.fully_qualified_name
   }
 
   depends_on = [
@@ -73,7 +73,7 @@ data "snowflake_grants" "to_priv_db_role" {
 # Fetch all grants TO the parent database role
 data "snowflake_grants" "to_parent_db_role" {
   grants_to {
-    database_role = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.parent_db_role.name}\""
+    database_role = snowflake_database_role.parent_db_role.fully_qualified_name
   }
 
   depends_on = [
@@ -88,7 +88,7 @@ data "snowflake_grants" "to_parent_db_role" {
 # Fetch grants OF the child database role
 data "snowflake_grants" "of_child_db_role" {
   grants_of {
-    database_role = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.child_db_role.name}\""
+    database_role = snowflake_database_role.child_db_role.fully_qualified_name
   }
 
   depends_on = [
@@ -99,7 +99,7 @@ data "snowflake_grants" "of_child_db_role" {
 # Fetch grants OF the priv database role (granted to account role)
 data "snowflake_grants" "of_priv_db_role" {
   grants_of {
-    database_role = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.priv_db_role.name}\""
+    database_role = snowflake_database_role.priv_db_role.fully_qualified_name
   }
 
   depends_on = [
@@ -119,42 +119,38 @@ locals {
     [for g in data.snowflake_grants.of_priv_db_role.grants : g]
   )
 
-  # Filter to only privilege grants:
-  # - Must contain MIGRATION_TEST in grantee_name or name
-  # - Must have a non-empty granted_by (implicit grants from Snowflake have empty granted_by
-  #   and cannot be managed by Terraform)
-  # - Must have a non-empty privilege (grants_of returns role membership info with empty privilege,
-  #   these are not privilege grants and the migration script can't handle them)
+  # Filter grants:
+  # - Must contain MIGRATION_TEST in grantee_name or name (test objects only)
+  # - Must have a non-empty privilege (grants_of returns role membership rows with
+  #   empty privilege - the migration script can't handle these)
   test_grants = [
     for g in local.all_grants : g
     if (can(regex("MIGRATION_TEST", g.grantee_name)) || can(regex("MIGRATION_TEST", g.name))) &&
-       g.granted_by != "" &&
        g.privilege != ""
   ]
 
-  # CSV header - matches the GrantCsvRow struct
-  grants_csv_header = "\"privilege\",\"granted_on\",\"grant_on\",\"name\",\"granted_to\",\"grant_to\",\"grantee_name\",\"grant_option\",\"granted_by\""
+  # CSV column definitions - order matters for output
+  csv_columns = ["privilege", "granted_on", "grant_on", "name", "granted_to", "grant_to", "grantee_name", "grant_option", "granted_by"]
 
-  # CSV escape function
-  csv_escape_grant = {
+  # CSV header - matches the GrantCsvRow struct
+  grants_csv_header = join(",", [for col in local.csv_columns : "\"${col}\""])
+
+  # CSV escape helper - escapes special chars for CSV format
+  csv_escape = {
     for idx, grant in local.test_grants :
     idx => {
-      privilege   = replace(replace(replace(tostring(grant.privilege), "\\", "\\\\"), "\n", "\\n"), "\"", "\"\"")
-      granted_on  = replace(replace(replace(tostring(grant.granted_on), "\\", "\\\\"), "\n", "\\n"), "\"", "\"\"")
-      grant_on    = ""
-      name        = replace(replace(replace(tostring(grant.name), "\\", "\\\\"), "\n", "\\n"), "\"", "\"\"")
-      granted_to  = replace(replace(replace(tostring(grant.granted_to), "\\", "\\\\"), "\n", "\\n"), "\"", "\"\"")
-      grant_to    = ""
-      grantee_name = replace(replace(replace(tostring(grant.grantee_name), "\\", "\\\\"), "\n", "\\n"), "\"", "\"\"")
-      grant_option = tostring(grant.grant_option)
-      granted_by  = replace(replace(replace(tostring(grant.granted_by), "\\", "\\\\"), "\n", "\\n"), "\"", "\"\"")
+      for col in local.csv_columns :
+      col => col == "grant_on" || col == "grant_to" ? "" : (
+        col == "grant_option" ? tostring(grant[col]) :
+        replace(replace(replace(tostring(grant[col]), "\\", "\\\\"), "\n", "\\n"), "\"", "\"\"")
+      )
     }
   }
 
   # Convert each grant to CSV row
   grants_csv_rows = [
     for idx, grant in local.test_grants :
-    "\"${local.csv_escape_grant[idx].privilege}\",\"${local.csv_escape_grant[idx].granted_on}\",\"${local.csv_escape_grant[idx].grant_on}\",\"${local.csv_escape_grant[idx].name}\",\"${local.csv_escape_grant[idx].granted_to}\",\"${local.csv_escape_grant[idx].grant_to}\",\"${local.csv_escape_grant[idx].grantee_name}\",\"${local.csv_escape_grant[idx].grant_option}\",\"${local.csv_escape_grant[idx].granted_by}\""
+    join(",", [for col in local.csv_columns : "\"${local.csv_escape[idx][col]}\""])
   ]
 
   # Remove duplicates by converting to set and back

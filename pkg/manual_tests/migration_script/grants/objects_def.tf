@@ -145,15 +145,15 @@ resource "snowflake_grant_account_role" "role_to_role" {
 # Grant Database Role to Database Role
 # ------------------------------------------------------------------------------
 resource "snowflake_grant_database_role" "dbrole_to_dbrole" {
-  database_role_name        = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.child_db_role.name}\""
-  parent_database_role_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.parent_db_role.name}\""
+  database_role_name        = snowflake_database_role.child_db_role.fully_qualified_name
+  parent_database_role_name = snowflake_database_role.parent_db_role.fully_qualified_name
 }
 
 # ------------------------------------------------------------------------------
 # Grant Database Role to Account Role
 # ------------------------------------------------------------------------------
 resource "snowflake_grant_database_role" "dbrole_to_role" {
-  database_role_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.priv_db_role.name}\""
+  database_role_name = snowflake_database_role.priv_db_role.fully_qualified_name
   parent_role_name   = snowflake_account_role.priv_role.name
 }
 
@@ -204,7 +204,7 @@ resource "snowflake_grant_privileges_to_account_role" "on_schema" {
   privileges        = ["USAGE", "CREATE TABLE", "CREATE VIEW"]
 
   on_schema {
-    schema_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_schema.test_schema.name}\""
+    schema_name = snowflake_schema.test_schema.fully_qualified_name
   }
 }
 
@@ -217,7 +217,7 @@ resource "snowflake_grant_privileges_to_account_role" "on_table" {
 
   on_schema_object {
     object_type = "TABLE"
-    object_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_schema.test_schema.name}\".\"${snowflake_table.test_table.name}\""
+    object_name = snowflake_table.test_table.fully_qualified_name
   }
 }
 
@@ -231,7 +231,7 @@ resource "snowflake_grant_privileges_to_account_role" "with_grant_option" {
 
   on_schema_object {
     object_type = "TABLE"
-    object_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_schema.test_schema.name}\".\"${snowflake_table.test_table.name}\""
+    object_name = snowflake_table.test_table.fully_qualified_name
   }
 }
 
@@ -243,7 +243,7 @@ resource "snowflake_grant_privileges_to_account_role" "with_grant_option" {
 # Grant Privileges on Database (to database role)
 # ------------------------------------------------------------------------------
 resource "snowflake_grant_privileges_to_database_role" "on_database" {
-  database_role_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.priv_db_role.name}\""
+  database_role_name = snowflake_database_role.priv_db_role.fully_qualified_name
   privileges         = ["USAGE"]
   on_database        = snowflake_database.test_db.name
 }
@@ -252,11 +252,11 @@ resource "snowflake_grant_privileges_to_database_role" "on_database" {
 # Grant Privileges on Schema (to database role)
 # ------------------------------------------------------------------------------
 resource "snowflake_grant_privileges_to_database_role" "on_schema" {
-  database_role_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.priv_db_role.name}\""
+  database_role_name = snowflake_database_role.priv_db_role.fully_qualified_name
   privileges         = ["USAGE", "CREATE TABLE"]
 
   on_schema {
-    schema_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_schema.test_schema.name}\""
+    schema_name = snowflake_schema.test_schema.fully_qualified_name
   }
 }
 
@@ -264,12 +264,12 @@ resource "snowflake_grant_privileges_to_database_role" "on_schema" {
 # Grant Privileges on Schema Object (Table, to database role)
 # ------------------------------------------------------------------------------
 resource "snowflake_grant_privileges_to_database_role" "on_table" {
-  database_role_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.priv_db_role.name}\""
+  database_role_name = snowflake_database_role.priv_db_role.fully_qualified_name
   privileges         = ["SELECT"]
 
   on_schema_object {
     object_type = "TABLE"
-    object_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_schema.test_schema.name}\".\"${snowflake_table.test_table.name}\""
+    object_name = snowflake_table.test_table.fully_qualified_name
   }
 }
 
@@ -277,12 +277,12 @@ resource "snowflake_grant_privileges_to_database_role" "on_table" {
 # Grant Privileges to Database Role with grant_option
 # ------------------------------------------------------------------------------
 resource "snowflake_grant_privileges_to_database_role" "with_grant_option" {
-  database_role_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_database_role.priv_db_role.name}\""
+  database_role_name = snowflake_database_role.priv_db_role.fully_qualified_name
   privileges         = ["INSERT"]
   with_grant_option  = true
 
   on_schema_object {
     object_type = "TABLE"
-    object_name = "\"${snowflake_database.test_db.name}\".\"${snowflake_schema.test_schema.name}\".\"${snowflake_table.test_table.name}\""
+    object_name = snowflake_table.test_table.fully_qualified_name
   }
 }
