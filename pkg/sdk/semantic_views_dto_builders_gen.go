@@ -4,7 +4,7 @@ package sdk
 
 func NewCreateSemanticViewRequest(
 	name SchemaObjectIdentifier,
-	// adjusted manually
+// adjusted manually
 	logicalTables []LogicalTableRequest,
 ) *CreateSemanticViewRequest {
 	s := CreateSemanticViewRequest{}
@@ -297,6 +297,20 @@ func (s *SemanticSqlExpressionRequest) WithSqlExpression(SqlExpression string) *
 	return s
 }
 
+func NewFactDefinitionRequest() *FactDefinitionRequest {
+	return &FactDefinitionRequest{}
+}
+
+func (f *FactDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *FactDefinitionRequest {
+	f.semanticExpression = &semanticExpression
+	return f
+}
+
+func (f *FactDefinitionRequest) WithPrivateFact() *FactDefinitionRequest {
+	f.PrivateFact = String("PRIVATE")
+	return f
+}
+
 func NewMetricDefinitionRequest() *MetricDefinitionRequest {
 	return &MetricDefinitionRequest{}
 }
@@ -309,6 +323,20 @@ func (s *MetricDefinitionRequest) WithSemanticExpression(semanticExpression Sema
 func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunctionMetricDefinition WindowFunctionMetricDefinitionRequest) *MetricDefinitionRequest {
 	s.windowFunctionMetricDefinition = &windowFunctionMetricDefinition
 	return s
+}
+
+func (s *MetricDefinitionRequest) WithPrivateMetric() *MetricDefinitionRequest {
+	s.PrivateMetric = String("PRIVATE")
+	return s
+}
+
+func NewDimensionDefinitionRequest() *DimensionDefinitionRequest {
+	return &DimensionDefinitionRequest{}
+}
+
+func (d *DimensionDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *DimensionDefinitionRequest {
+	d.semanticExpression = &semanticExpression
+	return d
 }
 
 func NewWindowFunctionMetricDefinitionRequest(

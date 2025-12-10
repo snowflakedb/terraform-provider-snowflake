@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -173,26 +175,32 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 			}
 			m["window_function"] = tfconfig.ListVariable(tfconfig.ObjectVariable(windFuncVar))
 		}
+		privateMetric := v.GetPrivateMetric()
+		if privateMetric != nil {
+			m["private_metric"] = tfconfig.StringVariable(*privateMetric)
+		}
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
 	s.Metrics = tfconfig.ListVariable(maps...)
 	return s
 }
 
-func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticViewModel {
+func (s *SemanticViewModel) WithFacts(facts []sdk.FactDefinition) *SemanticViewModel {
 	maps := make([]tfconfig.Variable, len(facts))
-	for i, semExp := range facts {
+	for i, v := range facts {
+		semExp := v.GetSemanticExpression()
 		m := map[string]tfconfig.Variable{}
+		semExpVar := map[string]tfconfig.Variable{}
 		if semExp.Comment != nil {
-			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
+			semExpVar["comment"] = tfconfig.StringVariable(*semExp.Comment)
 		}
 		qExpName := semExp.GetQualifiedExpressionName()
 		if qExpName != nil {
-			m["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
+			semExpVar["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
 		}
 		sqlExp := semExp.GetSqlExpression()
 		if sqlExp != nil {
-			m["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
+			semExpVar["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
 		}
 		synonyms := semExp.GetSynonyms()
 		if synonyms != nil {
@@ -200,7 +208,12 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticV
 			for j, synonym := range synonyms.WithSynonyms {
 				syns[j] = tfconfig.StringVariable(synonym.Synonym)
 			}
-			m["synonym"] = tfconfig.SetVariable(syns...)
+			semExpVar["synonym"] = tfconfig.SetVariable(syns...)
+		}
+		m["semantic_expression"] = tfconfig.ListVariable(tfconfig.ObjectVariable(semExpVar))
+		privateFact := v.GetPrivateFact()
+		if privateFact != nil {
+			m["private_fact"] = tfconfig.StringVariable(*privateFact)
 		}
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
@@ -208,20 +221,22 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticV
 	return s
 }
 
-func (s *SemanticViewModel) WithDimensions(dimensions []sdk.SemanticExpression) *SemanticViewModel {
+func (s *SemanticViewModel) WithDimensions(dimensions []sdk.DimensionDefinition) *SemanticViewModel {
 	maps := make([]tfconfig.Variable, len(dimensions))
-	for i, semExp := range dimensions {
+	for i, v := range dimensions {
+		semExp := v.GetSemanticExpression()
 		m := map[string]tfconfig.Variable{}
+		semExpVar := map[string]tfconfig.Variable{}
 		if semExp.Comment != nil {
-			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
+			semExpVar["comment"] = tfconfig.StringVariable(*semExp.Comment)
 		}
 		qExpName := semExp.GetQualifiedExpressionName()
 		if qExpName != nil {
-			m["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
+			semExpVar["qualified_expression_name"] = tfconfig.StringVariable(qExpName.QualifiedExpressionName)
 		}
 		sqlExp := semExp.GetSqlExpression()
 		if sqlExp != nil {
-			m["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
+			semExpVar["sql_expression"] = tfconfig.StringVariable(sqlExp.SqlExpression)
 		}
 		synonyms := semExp.GetSynonyms()
 		if synonyms != nil {
@@ -229,8 +244,9 @@ func (s *SemanticViewModel) WithDimensions(dimensions []sdk.SemanticExpression) 
 			for j, synonym := range synonyms.WithSynonyms {
 				syns[j] = tfconfig.StringVariable(synonym.Synonym)
 			}
-			m["synonym"] = tfconfig.SetVariable(syns...)
+			semExpVar["synonym"] = tfconfig.SetVariable(syns...)
 		}
+		m["semantic_expression"] = tfconfig.ListVariable(tfconfig.ObjectVariable(semExpVar))
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
 	s.Dimensions = tfconfig.ListVariable(maps...)
@@ -303,15 +319,50 @@ func WindowFunctionMetricDefinitionWithProps(
 	return windowFunctionMetricDefinition
 }
 
-func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition) *sdk.MetricDefinition {
+func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition, privateMetric *string) *sdk.MetricDefinition {
 	metric := &sdk.MetricDefinition{}
 	if semExp != nil {
+		fmt.Println("setting metric semantic expression")
 		metric.SetSemanticExpression(semExp)
 	} else if windowFunc != nil {
+		fmt.Println("setting metric window function")
 		metric.SetWindowFunctionMetricDefinition(windowFunc)
 	}
-
+	if privateMetric != nil {
+		fmt.Println("setting metric private")
+		metric.SetPrivateMetric(privateMetric)
+	} else {
+		fmt.Println("setting metric public")
+	}
+	fmt.Printf("private value: %v \n", metric.GetPrivateMetric())
+	fmt.Println("----------------------------------------")
 	return metric
+}
+
+func FactDefinitionWithProps(semExp *sdk.SemanticExpression, privateFact *string) *sdk.FactDefinition {
+	fact := &sdk.FactDefinition{}
+	if semExp != nil {
+		fact.SetSemanticExpression(semExp)
+		fmt.Println(semExp)
+	}
+	if privateFact != nil {
+		fmt.Println("setting fact private")
+		fact.SetPrivateFact(privateFact)
+	} else {
+		fmt.Println("setting fact public")
+	}
+	fmt.Printf("private value: %v \n", fact.GetPrivateFact())
+	fmt.Println("----------------------------------------")
+	return fact
+}
+
+func DimensionDefinitionWithProps(semExp *sdk.SemanticExpression) *sdk.DimensionDefinition {
+	dimension := &sdk.DimensionDefinition{}
+	if semExp != nil {
+		dimension.SetSemanticExpression(semExp)
+	}
+
+	return dimension
 }
 
 func RelationshipTableAliasWithProps(

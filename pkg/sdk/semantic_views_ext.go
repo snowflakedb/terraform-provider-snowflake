@@ -58,6 +58,42 @@ func (m *MetricDefinition) SetWindowFunctionMetricDefinition(windowFunc *WindowF
 	m.windowFunctionMetricDefinition = windowFunc
 }
 
+func (m *MetricDefinition) GetPrivateMetric() *string {
+	return m.PrivateMetric
+}
+
+func (m *MetricDefinition) SetPrivateMetric(privateMetric *string) {
+	if privateMetric != nil {
+		m.PrivateMetric = privateMetric
+	}
+}
+
+func (f *FactDefinition) GetSemanticExpression() *SemanticExpression {
+	return f.semanticExpression
+}
+
+func (f *FactDefinition) SetSemanticExpression(semExp *SemanticExpression) {
+	f.semanticExpression = semExp
+}
+
+func (f *FactDefinition) GetPrivateFact() *string {
+	return f.PrivateFact
+}
+
+func (f *FactDefinition) SetPrivateFact(privateFact *string) {
+	if privateFact != nil {
+		f.PrivateFact = privateFact
+	}
+}
+
+func (d *DimensionDefinition) GetSemanticExpression() *SemanticExpression {
+	return d.semanticExpression
+}
+
+func (d *DimensionDefinition) SetSemanticExpression(semExp *SemanticExpression) {
+	d.semanticExpression = semExp
+}
+
 func (s *SemanticExpression) GetQualifiedExpressionName() *QualifiedExpressionName {
 	return s.qualifiedExpressionName
 }

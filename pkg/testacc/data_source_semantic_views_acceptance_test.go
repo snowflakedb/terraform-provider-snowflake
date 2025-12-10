@@ -33,7 +33,7 @@ func TestAcc_SemanticViews_Basic(t *testing.T) {
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, nil, "logical table 1")
 	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
 
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil, nil)
 
 	semanticViewModel := model.SemanticViewWithMetrics(
 		"test",
@@ -91,6 +91,7 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 	})
 	t.Cleanup(table3Cleanup)
 
+	privateModifier := "PRIVATE"
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 1")
 	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 2")
 	logicalTable3 := model.LogicalTableWithProps("lt3", table3.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 3")
@@ -98,9 +99,9 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 	semExp2 := model.SemanticExpressionWithProps(`"lt2"."se1"`, `SUM("lt2"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
 	semExp3 := model.SemanticExpressionWithProps(`"lt3"."se1"`, `SUM("lt3"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
 
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
-	metric2 := model.MetricDefinitionWithProps(semExp2, nil)
-	metric3 := model.MetricDefinitionWithProps(semExp3, nil)
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil, nil)
+	metric2 := model.MetricDefinitionWithProps(semExp2, nil, &privateModifier)
+	metric3 := model.MetricDefinitionWithProps(semExp3, nil, nil)
 
 	prefix := random.AlphaUpperN(4)
 

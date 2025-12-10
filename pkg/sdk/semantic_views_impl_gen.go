@@ -223,6 +223,9 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 					}
 				}
 			}
+			if v.PrivateMetric != nil {
+				s[i].PrivateMetric = v.PrivateMetric
+			}
 		}
 		opts.semanticViewMetrics = s
 	}

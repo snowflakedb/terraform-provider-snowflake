@@ -182,31 +182,46 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Description: externalChangesNotDetectedFieldDescription("The list of facts in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"qualified_expression_name": {
-					Type:     schema.TypeString,
-					Required: true,
-					Description: joinWithSpace(
-						"Specifies a qualified name for the fact, including the table name and a unique identifier for the fact: `<table_alias>.<semantic_expression_name>`.",
-						"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
-					),
-				},
-				"sql_expression": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "The SQL expression used to compute the fact.",
-				},
-				"synonym": {
-					Type:        schema.TypeSet,
+				"semantic_expression": {
+					Type:        schema.TypeList,
 					Optional:    true,
-					Description: "List of synonyms for the fact.",
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
+					Description: "Specifies a semantic expression for a fact definition.",
+					MaxItems:    1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"qualified_expression_name": {
+								Type:     schema.TypeString,
+								Required: true,
+								Description: joinWithSpace(
+									"Specifies a qualified name for the fact, including the table name and a unique identifier for the fact: `<table_alias>.<semantic_expression_name>`.",
+									"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+								),
+							},
+							"sql_expression": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "The SQL expression used to compute the fact.",
+							},
+							"synonym": {
+								Type:        schema.TypeSet,
+								Optional:    true,
+								Description: "List of synonyms for the fact.",
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+							},
+							"comment": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Specifies a comment for the fact.",
+							},
+						},
 					},
 				},
-				"comment": {
+				"private_fact": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "Specifies a comment for the fact.",
+					Description: "Specifies whether the fact is private.",
 				},
 			},
 		},
@@ -218,37 +233,43 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Description: externalChangesNotDetectedFieldDescription("The list of dimensions in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"qualified_expression_name": {
-					Type:     schema.TypeString,
-					Required: true,
-					Description: joinWithSpace(
-						"Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension: `<table_alias>.<semantic_expression_name>`.",
-						"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
-					),
-				},
-				"sql_expression": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "The SQL expression used to compute the dimension.",
-				},
-				"synonym": {
-					Type:        schema.TypeSet,
+				"semantic_expression": {
+					Type:        schema.TypeList,
 					Optional:    true,
-					Description: "List of synonyms for the dimension.",
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
+					Description: "Specifies a semantic expression for a dimension definition.",
+					MaxItems:    1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"qualified_expression_name": {
+								Type:     schema.TypeString,
+								Required: true,
+								Description: joinWithSpace(
+									"Specifies a qualified name for the dimension, including the table name and a unique identifier for the dimension: `<table_alias>.<semantic_expression_name>`.",
+									"Remember to wrap each part in double quotes like `\"\\\"<table_alias>\\\".\\\"<semantic_expression_name>\\\"\"`.",
+								),
+							},
+							"sql_expression": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "The SQL expression used to compute the dimension.",
+							},
+							"synonym": {
+								Type:        schema.TypeSet,
+								Optional:    true,
+								Description: "List of synonyms for the dimension.",
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+							},
+							"comment": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Specifies a comment for the dimension.",
+							},
+						},
 					},
 				},
-				"comment": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Specifies a comment for the dimension.",
-				},
 			},
-		},
-		AtLeastOneOf: []string{
-			"dimensions",
-			"metrics",
 		},
 	},
 	"metrics": {
@@ -355,6 +376,11 @@ var semanticViewsSchema = map[string]*schema.Schema{
 						},
 					},
 				},
+				"private_metric": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Specifies whether the metric is private.",
+				},
 			},
 		},
 		AtLeastOneOf: []string{
@@ -431,14 +457,14 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 		request.WithSemanticViewRelationships(relationshipsRequests)
 	}
 	if d.Get("facts") != nil {
-		factsRequests, err := getSemanticExpressionRequests(d.Get("facts").([]any))
+		factsRequests, err := getFactDefinitionRequests(d.Get("facts").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		request.WithSemanticViewFacts(factsRequests)
 	}
 	if d.Get("dimensions") != nil {
-		dimensionsRequests, err := getSemanticExpressionRequests(d.Get("dimensions").([]any))
+		dimensionsRequests, err := getDimensionDefinitionRequests(d.Get("dimensions").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -620,7 +646,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				semExpRequest = semExpRequest.WithSynonyms(sRequest)
 			}
 		}
-		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
+		metricDefinitionRequest = metricDefinitionRequest.WithSemanticExpression(*semExpRequest)
 	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
@@ -644,44 +670,85 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				windowFuncRequest = windowFuncRequest.WithOverClause(*overClauseRequest)
 			}
 		}
-		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest), nil
+		metricDefinitionRequest = metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest)
 	default:
 		return nil, fmt.Errorf("either semantic expression or window function is required")
 	}
+
+	if c["private_metric"] != nil {
+		metricDefinitionRequest = metricDefinitionRequest.WithPrivateMetric()
+	}
+	return metricDefinitionRequest, nil
 }
 
-func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, error) {
+func getFactDefinitionRequest(from any) (*sdk.FactDefinitionRequest, error) {
 	c := from.(map[string]any)
-	qualifiedExpressionName := c["qualified_expression_name"].(string)
-	if qualifiedExpressionName == "" {
-		return nil, fmt.Errorf("qualified_expression_name is required")
-	}
-	qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
-		WithQualifiedExpressionName(qualifiedExpressionName)
+	factDefinitionRequest := sdk.NewFactDefinitionRequest()
 
-	sqlExpression := c["sql_expression"].(string)
-	if sqlExpression == "" {
-		return nil, fmt.Errorf("sql_expression is required")
-	}
-	sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
-		WithSqlExpression(sqlExpression)
-	semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
+	if len(c["semantic_expression"].([]any)) > 0 {
+		semanticExpression := c["semantic_expression"].([]any)[0].(map[string]any)
+		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
+			WithQualifiedExpressionName(semanticExpression["qualified_expression_name"].(string))
+		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
+			WithSqlExpression(semanticExpression["sql_expression"].(string))
+		semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
 
-	if c["comment"] != nil && c["comment"].(string) != "" {
-		semExpRequest = semExpRequest.WithComment(c["comment"].(string))
-	}
-
-	if c["synonym"] != nil {
-		if synonyms, ok := c["synonym"].(*schema.Set); ok && synonyms.Len() > 0 {
-			var syns []sdk.Synonym
-			for _, s := range synonyms.List() {
-				syns = append(syns, sdk.Synonym{Synonym: s.(string)})
-			}
-			sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
-			semExpRequest = semExpRequest.WithSynonyms(sRequest)
+		if semanticExpression["comment"] != nil && semanticExpression["comment"].(string) != "" {
+			semExpRequest = semExpRequest.WithComment(semanticExpression["comment"].(string))
 		}
+
+		if semanticExpression["synonym"] != nil {
+			if synonyms, ok := semanticExpression["synonym"].(*schema.Set); ok && synonyms.Len() > 0 {
+				var syns []sdk.Synonym
+				for _, s := range synonyms.List() {
+					syns = append(syns, sdk.Synonym{Synonym: s.(string)})
+				}
+				sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
+				semExpRequest = semExpRequest.WithSynonyms(sRequest)
+			}
+		}
+
+		factDefinitionRequest = factDefinitionRequest.WithSemanticExpression(*semExpRequest)
+	} else {
+		return nil, fmt.Errorf("semantic expression is required in fact definition")
 	}
-	return semExpRequest, nil
+	if c["private_fact"] != nil {
+		factDefinitionRequest = factDefinitionRequest.WithPrivateFact()
+	}
+	return factDefinitionRequest, nil
+}
+
+func getDimensionDefinitionRequest(from any) (*sdk.DimensionDefinitionRequest, error) {
+	c := from.(map[string]any)
+	dimensionDefinitionRequest := sdk.NewDimensionDefinitionRequest()
+
+	if len(c["semantic_expression"].([]any)) > 0 {
+		semanticExpression := c["semantic_expression"].([]any)[0].(map[string]any)
+		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
+			WithQualifiedExpressionName(semanticExpression["qualified_expression_name"].(string))
+		sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
+			WithSqlExpression(semanticExpression["sql_expression"].(string))
+		semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
+
+		if semanticExpression["comment"] != nil && semanticExpression["comment"].(string) != "" {
+			semExpRequest = semExpRequest.WithComment(semanticExpression["comment"].(string))
+		}
+
+		if semanticExpression["synonym"] != nil {
+			if synonyms, ok := semanticExpression["synonym"].(*schema.Set); ok && synonyms.Len() > 0 {
+				var syns []sdk.Synonym
+				for _, s := range synonyms.List() {
+					syns = append(syns, sdk.Synonym{Synonym: s.(string)})
+				}
+				sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
+				semExpRequest = semExpRequest.WithSynonyms(sRequest)
+			}
+		}
+
+		return dimensionDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
+	} else {
+		return nil, fmt.Errorf("semantic expression is required in dimension definition")
+	}
 }
 
 func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, error) {
@@ -775,14 +842,30 @@ func getMetricDefinitionRequests(from any) ([]sdk.MetricDefinitionRequest, error
 	return to, nil
 }
 
-func getSemanticExpressionRequests(from any) ([]sdk.SemanticExpressionRequest, error) {
+func getFactDefinitionRequests(from any) ([]sdk.FactDefinitionRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
 		return nil, fmt.Errorf("type assertion failure")
 	}
-	to := make([]sdk.SemanticExpressionRequest, len(cols))
+	to := make([]sdk.FactDefinitionRequest, len(cols))
 	for i, c := range cols {
-		cReq, err := getSemanticExpressionRequest(c)
+		cReq, err := getFactDefinitionRequest(c)
+		if err != nil {
+			return nil, err
+		}
+		to[i] = *cReq
+	}
+	return to, nil
+}
+
+func getDimensionDefinitionRequests(from any) ([]sdk.DimensionDefinitionRequest, error) {
+	cols, ok := from.([]any)
+	if !ok {
+		return nil, fmt.Errorf("type assertion failure")
+	}
+	to := make([]sdk.DimensionDefinitionRequest, len(cols))
+	for i, c := range cols {
+		cReq, err := getDimensionDefinitionRequest(c)
 		if err != nil {
 			return nil, err
 		}
