@@ -46,6 +46,12 @@ func (opts *CreateOnS3StageOptions) validate() error {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsKeyId, opts.ExternalStageParams.Credentials.AwsRole) {
 				errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
 			}
+			if everyValueSet(opts.ExternalStageParams.Credentials.AwsSecretKey, opts.ExternalStageParams.Credentials.AwsRole) {
+				errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsSecretKey", "AwsRole"))
+			}
+			if everyValueSet(opts.ExternalStageParams.Credentials.AwsToken, opts.ExternalStageParams.Credentials.AwsRole) {
+				errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
+			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -135,6 +141,12 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 		if valueSet(opts.ExternalStageParams.Credentials) {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsKeyId, opts.ExternalStageParams.Credentials.AwsRole) {
 				errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
+			}
+			if everyValueSet(opts.ExternalStageParams.Credentials.AwsSecretKey, opts.ExternalStageParams.Credentials.AwsRole) {
+				errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsSecretKey", "AwsRole"))
+			}
+			if everyValueSet(opts.ExternalStageParams.Credentials.AwsToken, opts.ExternalStageParams.Credentials.AwsRole) {
+				errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
 			}
 		}
 	}

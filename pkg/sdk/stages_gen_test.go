@@ -116,6 +116,27 @@ func TestStages_CreateOnS3(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsSecretKey opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Credentials: &ExternalStageS3Credentials{
+				AwsSecretKey: String("aws-secret-key"),
+				AwsRole:      String("aws-role"),
+			},
+		}
+	})
+
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsToken opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Credentials: &ExternalStageS3Credentials{
+				AwsToken: String("aws-token"),
+				AwsRole:  String("aws-role"),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s URL = 's3://example.com'", id.FullyQualifiedName())
@@ -530,6 +551,27 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsSecretKey opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Credentials: &ExternalStageS3Credentials{
+				AwsSecretKey: String("aws-secret-key"),
+				AwsRole:      String("aws-role"),
+			},
+		}
+	})
+
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsToken opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Credentials: &ExternalStageS3Credentials{
+				AwsToken: String("aws-token"),
+				AwsRole:  String("aws-role"),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
 	})
 
 	// basic removed manually

@@ -6,11 +6,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO(SNOW-1019005): add validations for fields like `CREDENTIALS = ( {  { AWS_KEY_ID...`
-// TODO(SNOW-1019005): add parsers for DESC output and return a nice struct
-// TODO(SNOW-1019005): next PRs - use a custom file format struct with a nice nesting
-// TODO(SNOW-1019005): next PRs - what about unset tags with if exists?
-// TODO(SNOW-1019005): next PRs - what about copy options?
+// TODO(SNOW-1019005): part 2 - use a custom file format struct with a nice nesting
+// TODO(SNOW-1019005): part 2 - generate assertions
+// TODO(SNOW-1019005): part 2 - add parsers for DESC output and return a nice struct; use them in integration tests assertions
+// TODO(SNOW-1019005): part 2 - improve integration tests
+// TODO(SNOW-1019005): part 3 - needs clarification - what about unset tags with if exists?
+// TODO(SNOW-1019005): part 3 - needs clarification - what about copy options?
+// TODO(SNOW-1019005): part 3 - needs clarification - what about copy options?
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -81,7 +83,9 @@ var externalS3StageParamsDef = func() *g.QueryStruct {
 				OptionalTextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("AWS_TOKEN", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("AWS_ROLE", g.ParameterOptions().SingleQuotes()).
-				WithValidation(g.ConflictingFields, "AwsKeyId", "AwsRole"),
+				WithValidation(g.ConflictingFields, "AwsKeyId", "AwsRole").
+				WithValidation(g.ConflictingFields, "AwsSecretKey", "AwsRole").
+				WithValidation(g.ConflictingFields, "AwsToken", "AwsRole"),
 			g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
 		).
 		OptionalQueryStructField("Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
