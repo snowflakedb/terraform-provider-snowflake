@@ -27,7 +27,8 @@ func (c *SnowflakeDefaultsClient) EnabledForSnowflakeOauthSecurityIntegration(t 
 	return false
 }
 
-func (c *SnowflakeDefaultsClient) StageIdentifierOutputFormatForStreamOnDirectoryTable(id sdk.SchemaObjectIdentifier) string {
+func (c *SnowflakeDefaultsClient) StageIdentifierOutputFormatForStreamOnDirectoryTable(t *testing.T, id sdk.SchemaObjectIdentifier) string {
+	t.Helper()
 	if c.context.snowflakeEnvironment == testenvs.SnowflakeNonProdEnvironment {
 		return fmt.Sprintf(`"%s"."%s".%s`, id.DatabaseName(), id.SchemaName(), id.Name())
 	}

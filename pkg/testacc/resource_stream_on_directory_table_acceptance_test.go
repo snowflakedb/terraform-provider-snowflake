@@ -36,7 +36,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 	complete := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName()).
 		WithComment(comment)
 
-	expectedStageId := testClient().SnowflakeDefaults.StageIdentifierOutputFormatForStreamOnDirectoryTable(stage.ID())
+	expectedStageId := testClient().SnowflakeDefaults.StageIdentifierOutputFormatForStreamOnDirectoryTable(t, stage.ID())
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		resourceassert.StreamOnDirectoryTableResource(t, basic.ResourceReference()).
