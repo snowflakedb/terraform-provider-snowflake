@@ -5,6 +5,7 @@ package testint
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
@@ -236,7 +237,22 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("CreateOnS3Compatible", func(t *testing.T) {
-		// TODO: (SNOW-1012064) create s3 compat service for tests
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		compatibleBucketUrl := strings.Replace(awsBucketUrl, "s3://", "s3compat://", 1)
+		endpoint := "s3.us-west-2.amazonaws.com"
+
+		s3Req := sdk.NewExternalS3CompatibleStageParamsRequest(compatibleBucketUrl, endpoint).WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
+		err := client.Stages.CreateOnS3Compatible(ctx, sdk.NewCreateOnS3CompatibleStageRequest(id, *s3Req).
+			WithTemporary(true).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithDirectoryTableOptions(*sdk.NewExternalS3DirectoryTableOptionsRequest().WithEnable(true)).
+			WithComment("some comment"))
+		require.NoError(t, err)
+		cleanupStage(t, id)
+
+		stage, err := client.Stages.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assertStage(t, stage, id, "EXTERNAL TEMPORARY", "some comment", "AWS", compatibleBucketUrl, "")
 	})
 
 	t.Run("Alter - rename", func(t *testing.T) {
