@@ -56,7 +56,7 @@ func (s *CreateInternalStageRequest) WithTag(tag []TagAssociation) *CreateIntern
 }
 
 func NewInternalStageEncryptionRequest(
-	encryptionType *InternalStageEncryptionOption,
+	encryptionType InternalStageEncryptionOption,
 ) *InternalStageEncryptionRequest {
 	s := InternalStageEncryptionRequest{}
 	s.EncryptionType = encryptionType
@@ -69,7 +69,7 @@ func NewInternalDirectoryTableOptionsRequest() *InternalDirectoryTableOptionsReq
 }
 
 func (s *InternalDirectoryTableOptionsRequest) WithEnable(enable bool) *InternalDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -185,7 +185,7 @@ func (s *CreateOnS3StageRequest) WithIfNotExists(ifNotExists bool) *CreateOnS3St
 }
 
 func (s *CreateOnS3StageRequest) WithExternalStageParams(externalStageParams ExternalS3StageParamsRequest) *CreateOnS3StageRequest {
-	s.ExternalStageParams = &externalStageParams
+	s.ExternalStageParams = externalStageParams
 	return s
 }
 
@@ -296,7 +296,7 @@ func NewExternalS3DirectoryTableOptionsRequest() *ExternalS3DirectoryTableOption
 }
 
 func (s *ExternalS3DirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalS3DirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -334,7 +334,7 @@ func (s *CreateOnGCSStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnGCS
 }
 
 func (s *CreateOnGCSStageRequest) WithExternalStageParams(externalStageParams ExternalGCSStageParamsRequest) *CreateOnGCSStageRequest {
-	s.ExternalStageParams = &externalStageParams
+	s.ExternalStageParams = externalStageParams
 	return s
 }
 
@@ -400,7 +400,7 @@ func NewExternalGCSDirectoryTableOptionsRequest() *ExternalGCSDirectoryTableOpti
 }
 
 func (s *ExternalGCSDirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalGCSDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -443,7 +443,7 @@ func (s *CreateOnAzureStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnA
 }
 
 func (s *CreateOnAzureStageRequest) WithExternalStageParams(externalStageParams ExternalAzureStageParamsRequest) *CreateOnAzureStageRequest {
-	s.ExternalStageParams = &externalStageParams
+	s.ExternalStageParams = externalStageParams
 	return s
 }
 
@@ -527,7 +527,7 @@ func NewExternalAzureDirectoryTableOptionsRequest() *ExternalAzureDirectoryTable
 }
 
 func (s *ExternalAzureDirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalAzureDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -548,13 +548,9 @@ func (s *ExternalAzureDirectoryTableOptionsRequest) WithNotificationIntegration(
 
 func NewCreateOnS3CompatibleStageRequest(
 	name SchemaObjectIdentifier,
-	url string,
-	endpoint string,
 ) *CreateOnS3CompatibleStageRequest {
 	s := CreateOnS3CompatibleStageRequest{}
 	s.name = name
-	s.Url = url
-	s.Endpoint = endpoint
 	return &s
 }
 
@@ -573,8 +569,8 @@ func (s *CreateOnS3CompatibleStageRequest) WithIfNotExists(ifNotExists bool) *Cr
 	return s
 }
 
-func (s *CreateOnS3CompatibleStageRequest) WithCredentials(credentials ExternalStageS3CompatibleCredentialsRequest) *CreateOnS3CompatibleStageRequest {
-	s.Credentials = &credentials
+func (s *CreateOnS3CompatibleStageRequest) WithExternalStageParams(externalStageParams ExternalS3CompatibleStageParamsRequest) *CreateOnS3CompatibleStageRequest {
+	s.ExternalStageParams = externalStageParams
 	return s
 }
 
@@ -603,14 +599,34 @@ func (s *CreateOnS3CompatibleStageRequest) WithTag(tag []TagAssociation) *Create
 	return s
 }
 
-func NewExternalStageS3CompatibleCredentialsRequest(
-	awsKeyId *string,
-	awsSecretKey *string,
-) *ExternalStageS3CompatibleCredentialsRequest {
-	s := ExternalStageS3CompatibleCredentialsRequest{}
-	s.AwsKeyId = awsKeyId
-	s.AwsSecretKey = awsSecretKey
+func NewExternalS3CompatibleStageParamsRequest(
+	url string,
+	endpoint string,
+) *ExternalS3CompatibleStageParamsRequest {
+	s := ExternalS3CompatibleStageParamsRequest{}
+	s.Url = url
+	s.Endpoint = endpoint
 	return &s
+}
+
+func (s *ExternalS3CompatibleStageParamsRequest) WithCredentials(credentials ExternalStageS3CompatibleCredentialsRequest) *ExternalS3CompatibleStageParamsRequest {
+	s.Credentials = &credentials
+	return s
+}
+
+func NewExternalStageS3CompatibleCredentialsRequest() *ExternalStageS3CompatibleCredentialsRequest {
+	s := ExternalStageS3CompatibleCredentialsRequest{}
+	return &s
+}
+
+func (s *ExternalStageS3CompatibleCredentialsRequest) WithAwsKeyId(awsKeyId string) *ExternalStageS3CompatibleCredentialsRequest {
+	s.AwsKeyId = &awsKeyId
+	return s
+}
+
+func (s *ExternalStageS3CompatibleCredentialsRequest) WithAwsSecretKey(awsSecretKey string) *ExternalStageS3CompatibleCredentialsRequest {
+	s.AwsSecretKey = &awsSecretKey
+	return s
 }
 
 func NewAlterStageRequest(

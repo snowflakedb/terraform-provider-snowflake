@@ -6,12 +6,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+// TODO (SNOW-1019005): Move parameters below to the AlterStageOptions as they're common across stage types (+ remove from other alter option structs)
 // TODO(SNOW-1019005): part 2 - use a custom file format struct with a nice nesting
 // TODO(SNOW-1019005): part 2 - generate assertions
 // TODO(SNOW-1019005): part 2 - add parsers for DESC output and return a nice struct; use them in integration tests assertions
 // TODO(SNOW-1019005): part 2 - improve integration tests
 // TODO(SNOW-1019005): part 3 - needs clarification - what about unset tags with if exists?
-// TODO(SNOW-1019005): part 3 - needs clarification - what about copy options?
 // TODO(SNOW-1019005): part 3 - needs clarification - what about copy options?
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
@@ -147,6 +147,19 @@ var externalAzureStageParamsDef = func() *g.QueryStruct {
 		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
 }
 
+var externalS3CompatibleStageParamsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("ExternalS3CompatibleStageParams").
+		TextAssignment("URL", g.ParameterOptions().Required().SingleQuotes()).
+		TextAssignment("ENDPOINT", g.ParameterOptions().Required().SingleQuotes()).
+		OptionalQueryStructField(
+			"Credentials",
+			g.NewQueryStruct("ExternalStageS3CompatibleCredentials").
+				OptionalTextAssignment("AWS_KEY_ID", g.ParameterOptions().SingleQuotes()).
+				OptionalTextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes()),
+			g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
+		)
+}
+
 var stagesDef = g.NewInterface(
 	"Stages",
 	"Stage",
@@ -160,7 +173,7 @@ var stagesDef = g.NewInterface(
 				OptionalQueryStructField(
 					"Encryption",
 					g.NewQueryStruct("InternalStageEncryption").
-						OptionalAssignmentWithFieldName(
+						AssignmentWithFieldName(
 							"TYPE",
 							g.KindOfT[sdkcommons.InternalStageEncryptionOption](),
 							g.ParameterOptions().SingleQuotes().Required(),
@@ -171,7 +184,7 @@ var stagesDef = g.NewInterface(
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("InternalDirectoryTableOptions").
-						OptionalBooleanAssignment("ENABLE", nil).
+						BooleanAssignment("ENABLE", nil).
 						OptionalBooleanAssignment("AUTO_REFRESH", nil),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
@@ -182,11 +195,11 @@ var stagesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-stage",
 		createStageOperation("CreateExternalS3Stage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				OptionalQueryStructField("ExternalStageParams", externalS3StageParamsDef(), nil).
+				QueryStructField("ExternalStageParams", externalS3StageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("ExternalS3DirectoryTableOptions").
-						OptionalBooleanAssignment("ENABLE", nil).
+						BooleanAssignment("ENABLE", nil).
 						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
 						OptionalBooleanAssignment("AUTO_REFRESH", nil),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
@@ -198,11 +211,11 @@ var stagesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-stage",
 		createStageOperation("CreateExternalGCSStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				OptionalQueryStructField("ExternalStageParams", externalGCSStageParamsDef(), nil).
+				QueryStructField("ExternalStageParams", externalGCSStageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("ExternalGCSDirectoryTableOptions").
-						OptionalBooleanAssignment("ENABLE", nil).
+						BooleanAssignment("ENABLE", nil).
 						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
 						OptionalBooleanAssignment("AUTO_REFRESH", nil).
 						OptionalTextAssignment("NOTIFICATION_INTEGRATION", g.ParameterOptions().SingleQuotes()),
@@ -215,11 +228,11 @@ var stagesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-stage",
 		createStageOperation("CreateExternalAzureStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				OptionalQueryStructField("ExternalStageParams", externalAzureStageParamsDef(), nil).
+				QueryStructField("ExternalStageParams", externalAzureStageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("ExternalAzureDirectoryTableOptions").
-						OptionalBooleanAssignment("ENABLE", nil).
+						BooleanAssignment("ENABLE", nil).
 						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
 						OptionalBooleanAssignment("AUTO_REFRESH", nil).
 						OptionalTextAssignment("NOTIFICATION_INTEGRATION", g.ParameterOptions().SingleQuotes()),
@@ -232,21 +245,12 @@ var stagesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-stage",
 		createStageOperation("CreateExternalS3CompatibleStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
-				// TODO: source as a separate struct
-				TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-				TextAssignment("ENDPOINT", g.ParameterOptions().SingleQuotes()).
-				OptionalQueryStructField(
-					"Credentials",
-					g.NewQueryStruct("ExternalStageS3CompatibleCredentials").
-						OptionalTextAssignment("AWS_KEY_ID", g.ParameterOptions().SingleQuotes().Required()).
-						OptionalTextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes().Required()),
-					g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
-				).
+				QueryStructField("ExternalStageParams", externalS3CompatibleStageParamsDef(), g.KeywordOptions().Required()).
 				// TODO(SNOW-1019005): next PRs - Can we just use s3 directory table options?
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
 					g.NewQueryStruct("ExternalS3DirectoryTableOptions").
-						OptionalBooleanAssignment("ENABLE", nil).
+						BooleanAssignment("ENABLE", nil).
 						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
 						OptionalBooleanAssignment("AUTO_REFRESH", nil),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),

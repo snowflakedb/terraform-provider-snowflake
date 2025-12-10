@@ -170,27 +170,25 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
-	if r.ExternalStageParams != nil {
-		opts.ExternalStageParams = &ExternalS3StageParams{
-			Url:                    r.ExternalStageParams.Url,
-			AwsAccessPointArn:      r.ExternalStageParams.AwsAccessPointArn,
-			StorageIntegration:     r.ExternalStageParams.StorageIntegration,
-			UsePrivatelinkEndpoint: r.ExternalStageParams.UsePrivatelinkEndpoint,
+	opts.ExternalStageParams = ExternalS3StageParams{
+		Url:                    r.ExternalStageParams.Url,
+		AwsAccessPointArn:      r.ExternalStageParams.AwsAccessPointArn,
+		StorageIntegration:     r.ExternalStageParams.StorageIntegration,
+		UsePrivatelinkEndpoint: r.ExternalStageParams.UsePrivatelinkEndpoint,
+	}
+	if r.ExternalStageParams.Credentials != nil {
+		opts.ExternalStageParams.Credentials = &ExternalStageS3Credentials{
+			AwsKeyId:     r.ExternalStageParams.Credentials.AwsKeyId,
+			AwsSecretKey: r.ExternalStageParams.Credentials.AwsSecretKey,
+			AwsToken:     r.ExternalStageParams.Credentials.AwsToken,
+			AwsRole:      r.ExternalStageParams.Credentials.AwsRole,
 		}
-		if r.ExternalStageParams.Credentials != nil {
-			opts.ExternalStageParams.Credentials = &ExternalStageS3Credentials{
-				AwsKeyId:     r.ExternalStageParams.Credentials.AwsKeyId,
-				AwsSecretKey: r.ExternalStageParams.Credentials.AwsSecretKey,
-				AwsToken:     r.ExternalStageParams.Credentials.AwsToken,
-				AwsRole:      r.ExternalStageParams.Credentials.AwsRole,
-			}
-		}
-		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
-				KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
-			}
+	}
+	if r.ExternalStageParams.Encryption != nil {
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
+			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
+			MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
+			KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -238,16 +236,14 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
-	if r.ExternalStageParams != nil {
-		opts.ExternalStageParams = &ExternalGCSStageParams{
-			Url:                r.ExternalStageParams.Url,
-			StorageIntegration: r.ExternalStageParams.StorageIntegration,
-		}
-		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
-			}
+	opts.ExternalStageParams = ExternalGCSStageParams{
+		Url:                r.ExternalStageParams.Url,
+		StorageIntegration: r.ExternalStageParams.StorageIntegration,
+	}
+	if r.ExternalStageParams.Encryption != nil {
+		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{
+			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
+			KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -296,22 +292,20 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
-	if r.ExternalStageParams != nil {
-		opts.ExternalStageParams = &ExternalAzureStageParams{
-			Url:                    r.ExternalStageParams.Url,
-			StorageIntegration:     r.ExternalStageParams.StorageIntegration,
-			UsePrivatelinkEndpoint: r.ExternalStageParams.UsePrivatelinkEndpoint,
+	opts.ExternalStageParams = ExternalAzureStageParams{
+		Url:                    r.ExternalStageParams.Url,
+		StorageIntegration:     r.ExternalStageParams.StorageIntegration,
+		UsePrivatelinkEndpoint: r.ExternalStageParams.UsePrivatelinkEndpoint,
+	}
+	if r.ExternalStageParams.Credentials != nil {
+		opts.ExternalStageParams.Credentials = &ExternalStageAzureCredentials{
+			AzureSasToken: r.ExternalStageParams.Credentials.AzureSasToken,
 		}
-		if r.ExternalStageParams.Credentials != nil {
-			opts.ExternalStageParams.Credentials = &ExternalStageAzureCredentials{
-				AzureSasToken: r.ExternalStageParams.Credentials.AzureSasToken,
-			}
-		}
-		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
-			}
+	}
+	if r.ExternalStageParams.Encryption != nil {
+		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{
+			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
+			MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -357,15 +351,17 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 		Temporary:   r.Temporary,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		Url:         r.Url,
-		Endpoint:    r.Endpoint,
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
-	if r.Credentials != nil {
-		opts.Credentials = &ExternalStageS3CompatibleCredentials{
-			AwsKeyId:     r.Credentials.AwsKeyId,
-			AwsSecretKey: r.Credentials.AwsSecretKey,
+	opts.ExternalStageParams = ExternalS3CompatibleStageParams{
+		Url:      r.ExternalStageParams.Url,
+		Endpoint: r.ExternalStageParams.Endpoint,
+	}
+	if r.ExternalStageParams.Credentials != nil {
+		opts.ExternalStageParams.Credentials = &ExternalStageS3CompatibleCredentials{
+			AwsKeyId:     r.ExternalStageParams.Credentials.AwsKeyId,
+			AwsSecretKey: r.ExternalStageParams.Credentials.AwsSecretKey,
 		}
 	}
 	if r.DirectoryTableOptions != nil {
