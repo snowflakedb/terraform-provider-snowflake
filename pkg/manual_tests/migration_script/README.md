@@ -20,7 +20,7 @@ rm -rf .terraform terraform.tfstate terraform.tfstate.backup import/.terraform i
 
 ```bash
 terraform init
-terraform apply -auto-approve
+terraform apply
 ```
 
 This creates objects from `objects_def.tf` and generates `objects.csv` via `datasource.tf`.
