@@ -42,6 +42,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiAuthenticationIntegrationWithClientCredentials().Schema,
 	},
 	{
+		name:   "ApiAuthenticationIntegrationWithJwtBearer",
+		schema: resources.ApiAuthenticationIntegrationWithJwtBearer().Schema,
+	},
+	{
 		name:   "AuthenticationPolicy",
 		schema: resources.AuthenticationPolicy().Schema,
 	},

@@ -5,6 +5,6 @@ import (
 )
 
 func (s *SecurityIntegrationShowOutputAssert) HasCreatedOnNotEmpty() *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ValuePresent("show_output.0.created_on"))
+	s.AddAssertion(assert.ResourceShowOutputValuePresent("created_on"))
 	return s
 }
