@@ -141,12 +141,12 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 		WithLogQueryText(true).
 		WithLogQueryParameters(true).
-		WithProxyHost(""). // TODO: Remove empty proxy after testing
+		WithProxyHost("").
 		WithProxyPort(443).
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
-		WithProxyProtocol("proxy_protocol").
-		WithNoProxy("no_proxy")
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com")
 }
 
 func PatConfig(h helpers.TmpServiceUserWithPat) *SnowflakeModel {

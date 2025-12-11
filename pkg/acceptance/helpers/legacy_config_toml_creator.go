@@ -48,7 +48,7 @@ func FullLegacyTomlConfigForServiceUser(t *testing.T, profile string, userId sdk
 			WithParams(map[string]*string{"foo": sdk.Pointer("bar")}).
 			WithLogQueryText(true).
 			WithLogQueryParameters(true).
-			WithProxyHost(""). // TODO: Remove empty proxy after testing
+			WithProxyHost("").
 			WithProxyPort(443).
 			WithProxyUser("proxy_user").
 			WithProxyPassword("proxy_password").

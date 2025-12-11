@@ -123,8 +123,8 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithProxyPort(443).
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
-		WithProxyProtocol("proxy_protocol").
-		WithNoProxy("no_proxy")
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com")
 	return configDtoToTomlString(t, profile, dto)
 }
 
