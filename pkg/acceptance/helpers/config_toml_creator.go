@@ -59,7 +59,7 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithEnableSingleUseRefreshTokens(true).
 		WithLogQueryText(true).
 		WithLogQueryParameters(true).
-		WithProxyHost("proxy_host").
+		WithProxyHost("").
 		WithProxyPort(443).
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
@@ -119,7 +119,7 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithEnableSingleUseRefreshTokens(true).
 		WithLogQueryText(true).
 		WithLogQueryParameters(true).
-		WithProxyHost("proxy_host").
+		WithProxyHost("").
 		WithProxyPort(443).
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
@@ -200,7 +200,8 @@ func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.Acc
 func TomlConfigForLegacyServiceUserWithoutAuthenticator(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, pass string) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.ConfigForSnowflakeAuth(accountIdentifier, userId, pass, roleId, warehouseId).WithAuthenticatorNil())
+	return configDtoToTomlString(t, profile, sdk.ConfigForSnowflakeAuth(accountIdentifier, userId, pass, roleId, warehouseId).
+		WithAuthenticatorNil())
 }
 
 // TomlConfigForServiceUserWithModifiers is a temporary function used to test provider configuration allowing to modify the toml config

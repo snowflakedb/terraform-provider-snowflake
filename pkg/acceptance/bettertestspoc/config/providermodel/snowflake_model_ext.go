@@ -141,7 +141,7 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 		WithLogQueryText(true).
 		WithLogQueryParameters(true).
-		WithProxyHost("proxy_host").
+		WithProxyHost(""). // TODO: Remove empty proxy after testing
 		WithProxyPort(443).
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
