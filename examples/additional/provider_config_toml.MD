@@ -43,8 +43,8 @@ log_query_parameters = false
 proxy_host = 'proxy.example.com'
 proxy_port = 443
 proxy_user = 'username'
-proxy_password = '****'
-proxy_protocol = 'https'
+proxy_password = 'proxy_password'
+proxy_protocol = 'proxy_protocol'
 no_proxy = 'localhost,snowflake.computing.com'
 
 [example.params]
