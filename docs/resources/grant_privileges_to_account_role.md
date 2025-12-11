@@ -258,6 +258,20 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 }
 
 ## ID: "\"role_name\"|false|false|SELECT,INSERT|OnSchemaObject|OnFuture|TABLES|InSchema|\"database\".\"my_schema\""
+
+##################################
+### strict privilege management
+##################################
+
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges                  = ["SELECT", "REFERENCES"]
+  account_role_name           = snowflake_account_role.db_role.name
+  strict_privilege_management = true
+  on_schema_object {
+    object_type = "VIEW"
+    object_name = snowflake_view.my_view.fully_qualified_name # note this is a fully qualified name!
+  }
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
@@ -281,6 +295,7 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 - `on_schema` (Block List, Max: 1) Specifies the schema on which privileges will be granted. (see [below for nested schema](#nestedblock--on_schema))
 - `on_schema_object` (Block List, Max: 1) Specifies the schema object on which privileges will be granted. (see [below for nested schema](#nestedblock--on_schema_object))
 - `privileges` (Set of String) The privileges to grant on the account role. This field is case-sensitive; use only upper-case privileges.
+- `strict_privilege_management` (Boolean) (Default: `false`) If true, the resource will revoke all privileges that are not explicitly defined in the config making it a central source of truth for the privileges granted on an object to an account role. If false, the resource will be only concerned with the privileges that are explicitly defined in the config. The potential privilege removals will be planned only after second `terraform apply` run, when the flag is set in the state. This means, the resource creation and flag update doesn't revoke immediately any externally granted privileges. External privileges will be detected regardless of their grant option. The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the `experimental_features_enabled` field.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `with_grant_option` (Boolean) (Default: `false`) Specifies whether the grantee can grant the privileges to other users.
 

@@ -2664,19 +2664,16 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_ImportedPrivilege
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	// Create a database from a share (which allows IMPORTED_PRIVILEGES)
-	shareExternalId := createShareableDatabase(t)
+	shareExternalId := createSharedDatabaseOnSecondaryAccount(t)
 	databaseFromShare, databaseFromShareCleanup := testClient().Database.CreateDatabaseFromShare(t, shareExternalId)
 	t.Cleanup(databaseFromShareCleanup)
 
-	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
-
-	// Use IMPORTED_PRIVILEGES (which internally maps to USAGE)
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
 	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
 		WithPrivileges(string(sdk.AccountObjectPrivilegeImportedPrivileges)).
-		WithOnAccountObjectValue(tfconfig.StringVariable(databaseFromShare.ID().Name())).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, databaseFromShare.ID()).
 		WithStrictPrivilegeManagement(true)
-	resourceName := resourceModel.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2685,22 +2682,28 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_ImportedPrivilege
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
+			// Create the grant with IMPORTED_PRIVILEGES and strict_privilege_management
 			{
 				Config: config.FromModels(t, providerModel, resourceModel),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "privileges.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "privileges.0", string(sdk.AccountObjectPrivilegeImportedPrivileges)),
-					resource.TestCheckResourceAttr(resourceName, "strict_privilege_management", "true"),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasPrivileges(string(sdk.AccountObjectPrivilegeImportedPrivileges)).
+						HasStrictPrivilegeManagementString("true"),
 				),
 			},
+			// Verify no changes on re-apply (IMPORTED_PRIVILEGES/USAGE mapping is stable)
 			{
-				// Verify no changes on re-apply (IMPORTED_PRIVILEGES/USAGE mapping should be stable)
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(resourceModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				Config: config.FromModels(t, providerModel, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasPrivileges(string(sdk.AccountObjectPrivilegeImportedPrivileges)).
+						HasStrictPrivilegeManagementString("true"),
+				),
 			},
 		},
 	})
