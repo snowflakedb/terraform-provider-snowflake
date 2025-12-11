@@ -26,6 +26,9 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.11.x ➞ v2.12.0
 
+TODO: Document that roles that contain ownership privilege shouldn't be defined as fundamentally it's wrong (as ownership == all privileges)
+
+ 
 ### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
 
 Due to changes on the Snowflake side, the `SAML_IDENTITY_PROVIDER` parameter is now deprecated and cannot be used in Snowflake (see [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters#saml-identity-provider)).
