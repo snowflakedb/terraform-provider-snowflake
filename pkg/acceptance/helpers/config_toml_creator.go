@@ -118,7 +118,13 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithWorkloadIdentityEntraResource("invalid").
 		WithEnableSingleUseRefreshTokens(true).
 		WithLogQueryText(true).
-		WithLogQueryParameters(true)
+		WithLogQueryParameters(true).
+		WithProxyHost("proxy_host").
+		WithProxyPort(443).
+		WithProxyUser("proxy_user").
+		WithProxyPassword("proxy_password").
+		WithProxyProtocol("proxy_protocol").
+		WithNoProxy("no_proxy")
 	return configDtoToTomlString(t, profile, dto)
 }
 

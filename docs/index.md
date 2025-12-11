@@ -151,7 +151,7 @@ provider "snowflake" {
 - `proxy_host` (String) The host of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_HOST` environment variable.
 - `proxy_password` (String, Sensitive) The password of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_PASSWORD` environment variable.
 - `proxy_port` (Number) The port of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_PORT` environment variable.
-- `proxy_protocol` (String) The protocol of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_PROTOCOL` environment variable.
+- `proxy_protocol` (String) The protocol of the proxy to use for the connection. Valid options are: `http` | `https`. Can also be sourced from the `SNOWFLAKE_PROXY_PROTOCOL` environment variable.
 - `proxy_user` (String) The user of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_USER` environment variable.
 - `request_timeout` (Number) request retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_REQUEST_TIMEOUT` environment variable.
 - `role` (String) Specifies the role to use by default for accessing Snowflake objects in the client session. Can also be sourced from the `SNOWFLAKE_ROLE` environment variable.

@@ -515,10 +515,11 @@ func GetProviderSchema() map[string]*schema.Schema {
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.ProxyPassword, nil),
 		},
 		"proxy_protocol": {
-			Type:        schema.TypeString,
-			Description: envNameFieldDescription("The protocol of the proxy to use for the connection.", snowflakeenvs.ProxyProtocol),
-			Optional:    true,
-			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.ProxyProtocol, nil),
+			Type:             schema.TypeString,
+			Description:      envNameFieldDescription(fmt.Sprintf("The protocol of the proxy to use for the connection. Valid options are: %v.", docs.PossibleValuesListed(allProtocols)), snowflakeenvs.ProxyProtocol),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.ProxyProtocol, nil),
+			ValidateDiagFunc: validators.NormalizeValidation(toProtocol),
 		},
 		"no_proxy": {
 			Type:        schema.TypeString,

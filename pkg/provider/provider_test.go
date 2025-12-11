@@ -73,6 +73,12 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Empty(t, config.WorkloadIdentityEntraResource)
 	assert.False(t, config.LogQueryText)
 	assert.False(t, config.LogQueryParameters)
+	assert.Empty(t, config.ProxyHost)
+	assert.Zero(t, config.ProxyPort)
+	assert.Empty(t, config.ProxyUser)
+	assert.Empty(t, config.ProxyPassword)
+	assert.Empty(t, config.ProxyProtocol)
+	assert.Empty(t, config.NoProxy)
 }
 
 func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
