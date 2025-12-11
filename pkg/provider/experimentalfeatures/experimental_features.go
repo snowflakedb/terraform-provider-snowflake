@@ -16,11 +16,13 @@ type ExperimentalFeature string
 const (
 	ParametersIgnoreValueChangesIfNotOnObjectLevel ExperimentalFeature = "PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL"
 	WarehouseShowImprovedPerformance               ExperimentalFeature = "WAREHOUSE_SHOW_IMPROVED_PERFORMANCE"
+	GrantsStrictPrivilegeManagement                ExperimentalFeature = "GRANTS_STRICT_PRIVILEGE_MANAGEMENT"
 )
 
 var allExperimentalFeatures = []ExperimentalFeature{
 	ParametersIgnoreValueChangesIfNotOnObjectLevel,
 	WarehouseShowImprovedPerformance,
+	GrantsStrictPrivilegeManagement,
 }
 
 var AllExperimentalFeatures = sdk.AsStringList(allExperimentalFeatures)
