@@ -52,6 +52,12 @@ provider "snowflake" {
 	}
 }
 
+# Password for the proxy.
+variable "proxy_password" {
+  type      = string
+  sensitive = true
+}
+
 # Client ID from the Okta application.
 variable "oauth_client_id" {
   type      = string

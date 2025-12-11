@@ -436,7 +436,7 @@ log_query_parameters = false
 proxy_host = 'proxy.example.com'
 proxy_port = 443
 proxy_user = 'username'
-proxy_password = '****'
+proxy_password = 'proxy_password'
 proxy_protocol = 'https'
 no_proxy = 'localhost,snowflake.computing.com'
 
@@ -548,13 +548,19 @@ provider "snowflake" {
 	proxy_host = "proxy.example.com"
 	proxy_port = 443
 	proxy_user = "username"
-	proxy_password = "****"
+	proxy_password = var.proxy_password
 	proxy_protocol = "https"
 	no_proxy = "localhost,snowflake.computing.com"
 
 	params = {
 		param_key = "param_value"
 	}
+}
+
+# Password for the proxy.
+variable "proxy_password" {
+  type      = string
+  sensitive = true
 }
 
 # Client ID from the Okta application.
