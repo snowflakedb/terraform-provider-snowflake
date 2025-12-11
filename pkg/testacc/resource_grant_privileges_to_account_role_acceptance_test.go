@@ -2412,7 +2412,7 @@ variable "privilege" {
 `, roleId.Name(), dbId.Name())
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_OnCreate(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -2424,10 +2424,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_OnCreate(t *testi
 	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
 	resourceModelWithStrictRoleManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
 		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
-		WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"object_type": tfconfig.StringVariable(sdk.ObjectTypeDatabase.String()),
-			"object_name": tfconfig.StringVariable(database.ID().Name()),
-		})).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
 		WithStrictPrivilegeManagement(true)
 
 	resource.Test(t, resource.TestCase{
@@ -2469,7 +2466,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_OnCreate(t *testi
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Updates(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -2548,54 +2545,40 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement(t *testing.T) {
 }
 
 func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Validation(t *testing.T) {
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	databaseId := testClient().Ids.DatabaseId()
-	schemaId := testClient().Ids.SchemaId()
-
-	providerModelWithExperiment := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
 	resourceModelMissingExperiment := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_missing_experiment", role.ID().Name()).
 		WithPrivileges(string(sdk.GlobalPrivilegeCreateDatabase)).
 		WithOnAccount(true).
 		WithStrictPrivilegeManagement(true)
-	resourceModelAllPrivileges := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_all_privileges", role.ID().Name()).
+
+	resourceModelAllPrivileges := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_all_privileges", "test_role").
 		WithOnAccount(true).
 		WithAllPrivileges(true).
 		WithStrictPrivilegeManagement(true)
-	resourceModelOnSchemaAll := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_all", role.ID().Name()).
+
+	resourceModelOnSchemaAll := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_all", "test_role").
 		WithPrivileges(string(sdk.SchemaPrivilegeUsage)).
-		WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"all_schemas_in_database": tfconfig.StringVariable(databaseId.FullyQualifiedName()),
-		})).
+		WithOnAllSchemasInDatabase(sdk.NewAccountObjectIdentifier("test_database")).
 		WithStrictPrivilegeManagement(true)
-	resourceModelOnSchemaFuture := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_future", role.ID().Name()).
+
+	resourceModelOnSchemaFuture := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_future", "test_role").
 		WithPrivileges(string(sdk.SchemaPrivilegeUsage)).
-		WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"future_schemas_in_database": tfconfig.StringVariable(databaseId.FullyQualifiedName()),
-		})).
+		WithOnFutureSchemasInDatabase(sdk.NewAccountObjectIdentifier("test_database")).
 		WithStrictPrivilegeManagement(true)
-	resourceModelOnSchemaObjectAll := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_object_all", role.ID().Name()).
+
+	resourceModelOnSchemaObjectAll := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_object_all", "test_role").
 		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
-		WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"all": tfconfig.ListVariable(
-				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"object_type_plural": tfconfig.StringVariable(string(sdk.PluralObjectTypeTables)),
-					"in_schema":          tfconfig.StringVariable(schemaId.FullyQualifiedName()),
-				}),
-			),
-		})).
+		WithOnAllSchemaObjectsInSchema(sdk.PluralObjectTypeTables, sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")).
 		WithStrictPrivilegeManagement(true)
-	resourceModelOnSchemaObjectFuture := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_object_future", role.ID().Name()).
+
+	resourceModelOnSchemaObjectFuture := model.GrantPrivilegesToAccountRole("test_strict_privileges_validation_on_schema_object_future", "test_role").
 		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
-		WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"future": tfconfig.ListVariable(
-				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"object_type_plural": tfconfig.StringVariable(string(sdk.PluralObjectTypeTables)),
-					"in_schema":          tfconfig.StringVariable(schemaId.FullyQualifiedName()),
-				}),
-			),
-		})).
+		WithOnFutureSchemaObjectsInSchema(sdk.PluralObjectTypeTables, sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")).
 		WithStrictPrivilegeManagement(true)
 
 	resource.Test(t, resource.TestCase{
@@ -2606,32 +2589,35 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Validation(t *tes
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, resourceModelMissingExperiment),
-				ExpectError: regexp.MustCompile(
-					"`strict_privilege_management`.*`GRANTS_STRICT_PRIVILEGE_MANAGEMENT`"),
+				Config:      config.FromModels(t, resourceModelMissingExperiment),
+				ExpectError: regexp.MustCompile("to use `strict_privilege_management`, you need to first specify the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` feature in the `experimental_features_enabled` field at the provider level"),
 			},
 			{
-				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelAllPrivileges),
+				Config:      config.FromModels(t, providerModel, resourceModelAllPrivileges),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with all_privileges`),
 			},
 			{
-				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelOnSchemaAll),
+				Config:   config.FromModels(t, providerModel, resourceModelOnSchemaAll),
+				PlanOnly: true,
+				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with
+  | on_schema.0.all_schemas_in_database`),
+			},
+
+			// TODO: https://snowflake.slack.com/archives/C6380540P/p1720683340001559?thread_ts=1720609410.187069&cid=C6380540P
+
+			{
+				Config:      config.FromModels(t, providerModel, resourceModelOnSchemaFuture),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema\.0\.all_schemas_in_database`),
+				ExpectError: regexp.MustCompile("\"strict_privilege_management\": conflicts with\n {2}| on_schema.0.future_schemas_in_database"),
 			},
 			{
-				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelOnSchemaFuture),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema\.0\.future_schemas_in_database`),
-			},
-			{
-				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelOnSchemaObjectAll),
+				Config:      config.FromModels(t, providerModel, resourceModelOnSchemaObjectAll),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema_object\.0\.all`),
 			},
 			{
-				Config:      config.FromModels(t, providerModelWithExperiment, resourceModelOnSchemaObjectFuture),
+				Config:      config.FromModels(t, providerModel, resourceModelOnSchemaObjectFuture),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema_object\.0\.future`),
 			},
