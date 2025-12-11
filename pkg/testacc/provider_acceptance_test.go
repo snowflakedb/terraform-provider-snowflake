@@ -292,7 +292,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "token", config.Token)
 					assert.True(t, config.KeepSessionAlive)
 					assert.True(t, config.DisableTelemetry)
-					// assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
+					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
@@ -302,7 +302,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, map[string]*string{
 						"foo": sdk.Pointer("bar"),
 					}, config.Params)
-					// assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
 					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
 					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
@@ -318,8 +318,8 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, 443, config.ProxyPort)
 					assert.Equal(t, "proxy_user", config.ProxyUser)
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
-					assert.Equal(t, "proxy_protocol", config.ProxyProtocol)
-					assert.Equal(t, "no_proxy", config.NoProxy)
+					assert.Equal(t, "https", config.ProxyProtocol)
+					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
 					return nil
 				},
 			},
@@ -579,8 +579,8 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, 443, config.ProxyPort)
 					assert.Equal(t, "proxy_user", config.ProxyUser)
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
-					assert.Equal(t, "proxy_protocol", config.ProxyProtocol)
-					assert.Equal(t, "no_proxy", config.NoProxy)
+					assert.Equal(t, "https", config.ProxyProtocol)
+					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
 					return nil
 				},
 			},
@@ -718,8 +718,8 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, 443, config.ProxyPort)
 					assert.Equal(t, "proxy_user", config.ProxyUser)
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
-					assert.Equal(t, "proxy_protocol", config.ProxyProtocol)
-					assert.Equal(t, "no_proxy", config.NoProxy)
+					assert.Equal(t, "https", config.ProxyProtocol)
+					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
 					return nil
 				},
 			},

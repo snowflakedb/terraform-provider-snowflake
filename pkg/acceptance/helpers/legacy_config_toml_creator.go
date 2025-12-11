@@ -52,8 +52,8 @@ func FullLegacyTomlConfigForServiceUser(t *testing.T, profile string, userId sdk
 			WithProxyPort(443).
 			WithProxyUser("proxy_user").
 			WithProxyPassword("proxy_password").
-			WithProxyProtocol("proxy_protocol").
-			WithNoProxy("no_proxy"),
+			WithProxyProtocol("https").
+			WithNoProxy("localhost,snowflake.computing.com"),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)

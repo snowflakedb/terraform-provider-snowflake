@@ -63,8 +63,8 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithProxyPort(443).
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
-		WithProxyProtocol("proxy_protocol").
-		WithNoProxy("no_proxy"),
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com"),
 	)
 }
 
