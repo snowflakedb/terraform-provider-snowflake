@@ -120,7 +120,10 @@ func OrganizationAccountToSchema(organizationAccount *sdk.OrganizationAccount) m
 		// adjusted manually
 		organizationAccountSchema["marketplace_consumer_billing_entity_name"] = *organizationAccount.MarketplaceConsumerBillingEntityName
 	}
-	organizationAccountSchema["marketplace_provider_billing_entity_name"] = organizationAccount.MarketplaceProviderBillingEntityName
+	if organizationAccount.MarketplaceProviderBillingEntityName != nil {
+		// adjusted manually
+		organizationAccountSchema["marketplace_provider_billing_entity_name"] = *organizationAccount.MarketplaceProviderBillingEntityName
+	}
 	if organizationAccount.OldAccountUrl != nil {
 		// adjusted manually
 		organizationAccountSchema["old_account_url"] = *organizationAccount.OldAccountUrl

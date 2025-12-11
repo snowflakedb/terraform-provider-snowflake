@@ -174,8 +174,11 @@ func (o *OrganizationAccountAssert) HasMarketplaceConsumerBillingEntityName(expe
 func (o *OrganizationAccountAssert) HasMarketplaceProviderBillingEntityName(expected string) *OrganizationAccountAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
 		t.Helper()
-		if o.MarketplaceProviderBillingEntityName != expected {
-			return fmt.Errorf("expected marketplace provider billing entity name: %v; got: %v", expected, o.MarketplaceProviderBillingEntityName)
+		if o.MarketplaceProviderBillingEntityName == nil {
+			return fmt.Errorf("expected marketplace provider billing entity name to have value; got: nil")
+		}
+		if *o.MarketplaceProviderBillingEntityName != expected {
+			return fmt.Errorf("expected marketplace provider billing entity name: %v; got: %v", expected, *o.MarketplaceProviderBillingEntityName)
 		}
 		return nil
 	})
