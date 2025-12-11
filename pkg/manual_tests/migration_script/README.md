@@ -54,32 +54,3 @@ terraform plan
 cd ..
 terraform destroy
 ```
-
-## Test Assertions
-
-The `datasource.tf` includes a **precondition assertion** that fails if no grants are found. This prevents generating an empty CSV that would cause silent failures.
-
-### How it works
-
-```hcl
-resource "local_file" "grants_csv" {
-  # ...
-  lifecycle {
-    precondition {
-      condition     = length(local.grants_csv_rows_unique) > 0
-      error_message = "TEST ASSERTION FAILED: No grants found. Make sure objects_def.tf resources were created first."
-    }
-  }
-}
-```
-
-### Testing the assertion
-
-To verify the assertion works correctly, use the `test_assertion/` subdirectory:
-
-```bash
-cd test_assertion
-terraform init
-terraform apply
-# Expected error: "TEST ASSERTION FAILED: No grants found..."
-```

@@ -26,6 +26,7 @@ terraform {
   required_providers {
     snowflake = {
       source = "snowflakedb/snowflake"
+      version = "= 2.11.0"
     }
   }
 }
@@ -166,7 +167,7 @@ resource "snowflake_grant_database_role" "dbrole_to_role" {
 # ------------------------------------------------------------------------------
 resource "snowflake_grant_privileges_to_account_role" "on_account" {
   account_role_name = snowflake_account_role.priv_role.name
-  privileges        = ["CREATE DATABASE", "CREATE WAREHOUSE"]
+  privileges        = ["CREATE DATABASE"]
   on_account        = true
 }
 

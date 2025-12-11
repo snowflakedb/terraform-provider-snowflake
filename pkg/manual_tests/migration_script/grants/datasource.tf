@@ -129,18 +129,15 @@ locals {
        g.privilege != ""
   ]
 
-  # CSV column definitions - order matters for output
-  csv_columns = ["privilege", "granted_on", "grant_on", "name", "granted_to", "grant_to", "grantee_name", "grant_option", "granted_by"]
-
   # CSV header - matches the GrantCsvRow struct
-  grants_csv_header = join(",", [for col in local.csv_columns : "\"${col}\""])
+  grants_csv_header = join(",", [for col in keys(local.all_grants[0]) : "\"${col}\""])
 
   # CSV escape helper - escapes special chars for CSV format
   csv_escape = {
     for idx, grant in local.test_grants :
     idx => {
-      for col in local.csv_columns :
-      col => col == "grant_on" || col == "grant_to" ? "" : (
+      for col in keys(local.all_grants[0]) :
+      col => (
         col == "grant_option" ? tostring(grant[col]) :
         replace(replace(replace(tostring(grant[col]), "\\", "\\\\"), "\n", "\\n"), "\"", "\"\"")
       )
@@ -150,7 +147,7 @@ locals {
   # Convert each grant to CSV row
   grants_csv_rows = [
     for idx, grant in local.test_grants :
-    join(",", [for col in local.csv_columns : "\"${local.csv_escape[idx][col]}\""])
+    join(",", [for col in keys(local.all_grants[0]) : "\"${local.csv_escape[idx][col]}\""])
   ]
 
   # Remove duplicates by converting to set and back
