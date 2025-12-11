@@ -258,20 +258,6 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 }
 
 ## ID: "\"role_name\"|false|false|SELECT,INSERT|OnSchemaObject|OnFuture|TABLES|InSchema|\"database\".\"my_schema\""
-
-##################################
-### strict privilege management
-##################################
-
-resource "snowflake_grant_privileges_to_account_role" "example" {
-  privileges                  = ["SELECT", "REFERENCES"]
-  account_role_name           = snowflake_account_role.db_role.name
-  strict_privilege_management = true
-  on_schema_object {
-    object_type = "VIEW"
-    object_name = snowflake_view.my_view.fully_qualified_name # note this is a fully qualified name!
-  }
-}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
