@@ -124,6 +124,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 				AwsRole:      String("aws-role"),
 			},
 		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsSecretKey", "AwsRole"))
 	})
 
 	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsToken opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
@@ -565,6 +566,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 				AwsRole:      String("aws-role"),
 			},
 		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsSecretKey", "AwsRole"))
 	})
 
 	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsToken opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
