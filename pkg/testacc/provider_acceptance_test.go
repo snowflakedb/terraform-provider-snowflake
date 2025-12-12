@@ -1,4 +1,5 @@
-// g.o:build non_account_level_tests
+//go:build non_account_level_tests
+
 package testacc
 
 import (

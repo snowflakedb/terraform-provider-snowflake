@@ -144,7 +144,6 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"proxy_protocol":                         "proxy_protocol",
 		"no_proxy":                               "no_proxy",
 		"disable_ocsp_checks":                    "true",
-		"tls_config_name":                        "tls_config_name",
 		"cert_revocation_check_mode":             "ADVISORY",
 		"crl_allow_certificates_without_crl_url": "true",
 		"crl_in_memory_cache_disabled":           "false",

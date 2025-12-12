@@ -381,12 +381,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   true,
 	},
-	// commented out manually
-	// "token_accessor": schema.ListAttribute{
-	// 	Description: existingSchema["token_accessor"].Description,
-	// 	Optional:    true,
-	// 	Sensitive:   false,
-	// },
+	"token_accessor": schema.ListAttribute{
+		Description: existingSchema["token_accessor"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"use_legacy_toml_file": schema.BoolAttribute{
 		Description: existingSchema["use_legacy_toml_file"].Description,
 		Optional:    true,

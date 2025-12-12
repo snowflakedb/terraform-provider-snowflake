@@ -88,7 +88,6 @@ No changes in configuration are required for existing setups. You can optionally
 
 We added new provider configuration options to support certificate revocation checking and SAML URL validation:
   - `disable_ocsp_checks` - when set to `true` (default), the driver doesn't check certificate revocation status. This is a replacement for the deprecated `insecure_mode` field
-  - `tls_config_name` - the name of the TLS configuration to use for the connection
   - `cert_revocation_check_mode` - specifies the certificate revocation check mode. Valid options are: `DISABLED`, `ADVISORY`, `ENABLED`
   - `crl_allow_certificates_without_crl_url` - allows certificates (not short-lived) without CRL DP included to be treated as correct ones
   - `crl_in_memory_cache_disabled` - when set to `true`, the CRL in-memory cache is disabled (default `false`)
@@ -96,7 +95,7 @@ We added new provider configuration options to support certificate revocation ch
   - `crl_http_client_timeout` - timeout in seconds for HTTP client used to download CRL
   - `disable_saml_url_check` - indicates whether the SAML URL check should be disabled
 
-These options can be set in the provider configuration, TOML configuration file, or via environment variables (`SNOWFLAKE_DISABLE_OCSP_CHECKS`, `SNOWFLAKE_TLS_CONFIG_NAME`, `SNOWFLAKE_CERT_REVOCATION_CHECK_MODE`, `SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL`, `SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED`, `SNOWFLAKE_CRL_ON_DISK_CACHE_DISABLED`, `SNOWFLAKE_CRL_HTTP_CLIENT_TIMEOUT`, `SNOWFLAKE_DISABLE_SAML_URL_CHECK`). Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+These options can be set in the provider configuration, TOML configuration file, or via environment variables (`SNOWFLAKE_DISABLE_OCSP_CHECKS`, `SNOWFLAKE_CERT_REVOCATION_CHECK_MODE`, `SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL`, `SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED`, `SNOWFLAKE_CRL_ON_DISK_CACHE_DISABLED`, `SNOWFLAKE_CRL_HTTP_CLIENT_TIMEOUT`, `SNOWFLAKE_DISABLE_SAML_URL_CHECK`). Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
 
 No changes in configuration are required for existing setups. You can optionally update your configurations to use these new options if you need more control over certificate revocation checking or SAML authentication.
 

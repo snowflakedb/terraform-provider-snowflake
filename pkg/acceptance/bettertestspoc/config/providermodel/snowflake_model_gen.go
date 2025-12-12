@@ -66,7 +66,6 @@ type SnowflakeModel struct {
 	RequestTimeout                     tfconfig.Variable `json:"request_timeout,omitempty"`
 	Role                               tfconfig.Variable `json:"role,omitempty"`
 	SkipTomlFilePermissionVerification tfconfig.Variable `json:"skip_toml_file_permission_verification,omitempty"`
-	TlsConfigName                      tfconfig.Variable `json:"tls_config_name,omitempty"`
 	TmpDirectoryPath                   tfconfig.Variable `json:"tmp_directory_path,omitempty"`
 	Token                              tfconfig.Variable `json:"token,omitempty"`
 	TokenAccessor                      tfconfig.Variable `json:"token_accessor,omitempty"`
@@ -378,11 +377,6 @@ func (s *SnowflakeModel) WithRole(role string) *SnowflakeModel {
 
 func (s *SnowflakeModel) WithSkipTomlFilePermissionVerification(skipTomlFilePermissionVerification bool) *SnowflakeModel {
 	s.SkipTomlFilePermissionVerification = tfconfig.BoolVariable(skipTomlFilePermissionVerification)
-	return s
-}
-
-func (s *SnowflakeModel) WithTlsConfigName(tlsConfigName string) *SnowflakeModel {
-	s.TlsConfigName = tfconfig.StringVariable(tlsConfigName)
 	return s
 }
 
@@ -719,11 +713,6 @@ func (s *SnowflakeModel) WithRoleValue(value tfconfig.Variable) *SnowflakeModel 
 
 func (s *SnowflakeModel) WithSkipTomlFilePermissionVerificationValue(value tfconfig.Variable) *SnowflakeModel {
 	s.SkipTomlFilePermissionVerification = value
-	return s
-}
-
-func (s *SnowflakeModel) WithTlsConfigNameValue(value tfconfig.Variable) *SnowflakeModel {
-	s.TlsConfigName = value
 	return s
 }
 
