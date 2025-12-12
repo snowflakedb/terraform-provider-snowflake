@@ -291,6 +291,7 @@ type UserObjectProperties struct {
 	RSAPublicKey2Fp       *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2_FP"`
 	Type                  *UserType                `ddl:"parameter,no_quotes" sql:"TYPE"`
 	Comment               *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	WorkloadIdentity      *string                  `ddl:"parameter,single_quotes" sql:"WORKLOAD_IDENTITY"`
 }
 
 type UserAlterObjectProperties struct {
@@ -328,6 +329,7 @@ type UserObjectPropertiesUnset struct {
 	RSAPublicKey2         *bool `ddl:"keyword" sql:"RSA_PUBLIC_KEY_2"`
 	Type                  *bool `ddl:"keyword" sql:"TYPE"`
 	Comment               *bool `ddl:"keyword" sql:"COMMENT"`
+	WorkloadIdentity      *bool `ddl:"keyword" sql:"WORKLOAD_IDENTITY"`
 }
 
 type UserObjectParameters struct {
@@ -563,6 +565,7 @@ type UserDetails struct {
 	CustomLandingPageUrl                *StringProperty
 	CustomLandingPageUrlFlushNextUiLoad *BoolProperty
 	HasMfa                              *BoolProperty
+	WorkloadIdentity                    *StringProperty
 }
 
 func userDetailsFromRows(rows []propertyRow) *UserDetails {
@@ -573,6 +576,8 @@ func userDetailsFromRows(rows []propertyRow) *UserDetails {
 			v.Name = row.toStringProperty()
 		case "COMMENT":
 			v.Comment = row.toStringProperty()
+		case "WORKLOAD_IDENTITY":
+			v.WorkloadIdentity = row.toStringProperty()
 		case "DISPLAY_NAME":
 			v.DisplayName = row.toStringProperty()
 		case "TYPE":

@@ -1671,3 +1671,65 @@ func TestAcc_User_gh3655(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_User_WorkloadIdentity(t *testing.T) {
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
+	workloadIdentityArn := "arn:aws:iam::123456789012:role/SnowflakeWorkloadIdentityRole"
+	updatedWorkloadIdentityArn := "arn:aws:iam::123456789012:role/UpdatedSnowflakeRole"
+
+	comment := random.Comment()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.User),
+		Steps: []resource.TestStep{
+			{
+				Config: userConfigWithWorkloadIdentity(userId, workloadIdentityArn, comment),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_user.test", "name", userId.Name()),
+					resource.TestCheckResourceAttr("snowflake_user.test", "workload_identity", workloadIdentityArn),
+					resource.TestCheckResourceAttr("snowflake_user.test", "comment", comment),
+				),
+			},
+			{
+				ResourceName:      "snowflake_user.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: userConfigWithWorkloadIdentity(userId, updatedWorkloadIdentityArn, comment),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_user.test", "workload_identity", updatedWorkloadIdentityArn),
+				),
+			},
+			{
+				Config: userConfigBasic(userId, comment),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_user.test", "workload_identity", ""),
+				),
+			},
+		},
+	})
+}
+
+func userConfigWithWorkloadIdentity(userId sdk.AccountObjectIdentifier, workloadIdentity string, comment string) string {
+	return fmt.Sprintf(`
+resource "snowflake_user" "test" {
+  name             = "%s"
+  workload_identity = "%s"
+  comment          = "%s"
+}
+`, userId.Name(), workloadIdentity, comment)
+}
+
+func userConfigBasic(userId sdk.AccountObjectIdentifier, comment string) string {
+	return fmt.Sprintf(`
+resource "snowflake_user" "test" {
+  name    = "%s"
+  comment = "%s"
+}
+`, userId.Name(), comment)
+}

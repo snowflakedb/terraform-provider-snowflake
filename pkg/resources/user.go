@@ -150,6 +150,11 @@ var userSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the user.",
 	},
+	"workload_identity": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specifies the workload identity that the user will use to authenticate. Should be an AWS IAM role ARN when using AWS IAM role-based authentication. For more information, see [Workload identity federation](https://docs.snowflake.com/en/user-guide/workload-identity-federation).",
+	},
 	"disable_mfa": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -349,7 +354,7 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			stringAttributeCreate(d, "rsa_public_key", &opts.ObjectProperties.RSAPublicKey),
 			stringAttributeCreate(d, "rsa_public_key_2", &opts.ObjectProperties.RSAPublicKey2),
 			stringAttributeCreate(d, "comment", &opts.ObjectProperties.Comment),
-			// disable mfa cannot be set in create, alter is run after creation
+			stringAttributeCreate(d, "workload_identity", &opts.ObjectProperties.WorkloadIdentity),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -509,7 +514,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			setFromStringPropertyIfNotEmpty(d, "rsa_public_key", userDetails.RsaPublicKey),
 			setFromStringPropertyIfNotEmpty(d, "rsa_public_key_2", userDetails.RsaPublicKey2),
 			setFromStringPropertyIfNotEmpty(d, "comment", userDetails.Comment),
-			// can't read disable_mfa
+			setFromStringPropertyIfNotEmpty(d, "workload_identity", userDetails.WorkloadIdentity),
 			d.Set("user_type", u.Type),
 
 			func(rd *schema.ResourceData, ud *sdk.UserDetails) error {
@@ -597,7 +602,7 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			stringAttributeUpdate(d, "rsa_public_key", &setObjectProperties.RSAPublicKey, &unsetObjectProperties.RSAPublicKey),
 			stringAttributeUpdate(d, "rsa_public_key_2", &setObjectProperties.RSAPublicKey2, &unsetObjectProperties.RSAPublicKey2),
 			stringAttributeUpdate(d, "comment", &setObjectProperties.Comment, &unsetObjectProperties.Comment),
-			// disable_mfa handled separately for proper user types,
+			stringAttributeUpdate(d, "workload_identity", &setObjectProperties.WorkloadIdentity, &unsetObjectProperties.WorkloadIdentity),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
