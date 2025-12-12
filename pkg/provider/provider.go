@@ -532,12 +532,6 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Default:     true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableOCSPChecks, true),
 		},
-		"tls_config_name": {
-			Type:        schema.TypeString,
-			Description: envNameFieldDescription("Name of the TLS configuration to use for the connection.", snowflakeenvs.TLSConfigName),
-			Optional:    true,
-			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.TLSConfigName, nil),
-		},
 		"cert_revocation_check_mode": {
 			Type:             schema.TypeString,
 			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the certificate revocation check mode. Valid options are: %v.", docs.PossibleValuesListed(sdk.AllCertRevocationCheckModes)), snowflakeenvs.CertRevocationCheckMode),
@@ -964,7 +958,6 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "proxy_protocol", &config.ProxyProtocol),
 		handleStringField(s, "no_proxy", &config.NoProxy),
 		handleBoolField(s, "disable_ocsp_checks", &config.DisableOCSPChecks),
-		handleStringField(s, "tls_config_name", &config.TLSConfigName),
 		// cert_revocation_check_mode
 		func() error {
 			if v, ok := s.GetOk("cert_revocation_check_mode"); ok && v.(string) != "" {

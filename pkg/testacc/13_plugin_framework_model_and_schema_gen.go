@@ -67,7 +67,6 @@ type pluginFrameworkPocProviderModelV0 struct {
 	RequestTimeout                     types.Int64  `tfsdk:"request_timeout"`
 	Role                               types.String `tfsdk:"role"`
 	SkipTomlFilePermissionVerification types.Bool   `tfsdk:"skip_toml_file_permission_verification"`
-	TlsConfigName                      types.String `tfsdk:"tls_config_name"`
 	TmpDirectoryPath                   types.String `tfsdk:"tmp_directory_path"`
 	Token                              types.String `tfsdk:"token"`
 	TokenAccessor                      types.List   `tfsdk:"token_accessor"`
@@ -369,11 +368,6 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	},
 	"skip_toml_file_permission_verification": schema.BoolAttribute{
 		Description: existingSchema["skip_toml_file_permission_verification"].Description,
-		Optional:    true,
-		Sensitive:   false,
-	},
-	"tls_config_name": schema.StringAttribute{
-		Description: existingSchema["tls_config_name"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},

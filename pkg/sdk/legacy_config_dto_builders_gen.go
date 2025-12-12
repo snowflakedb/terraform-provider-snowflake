@@ -295,11 +295,6 @@ func (s *LegacyConfigDTO) WithDisableOCSPChecks(DisableOCSPChecks bool) *LegacyC
 	return s
 }
 
-func (s *LegacyConfigDTO) WithTLSConfigName(TLSConfigName string) *LegacyConfigDTO {
-	s.TLSConfigName = &TLSConfigName
-	return s
-}
-
 func (s *LegacyConfigDTO) WithCertRevocationCheckMode(CertRevocationCheckMode string) *LegacyConfigDTO {
 	s.CertRevocationCheckMode = &CertRevocationCheckMode
 	return s

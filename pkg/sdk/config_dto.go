@@ -71,7 +71,6 @@ type ConfigDTO struct {
 	ProxyProtocol                     *string             `toml:"proxy_protocol"`
 	NoProxy                           *string             `toml:"no_proxy"`
 	DisableOCSPChecks                 *bool               `toml:"disable_ocsp_checks"`
-	TLSConfigName                     *string             `toml:"tls_config_name"`
 	CertRevocationCheckMode           *string             `toml:"cert_revocation_check_mode"`
 	CrlAllowCertificatesWithoutCrlURL *bool               `toml:"crl_allow_certificates_without_crl_url"`
 	CrlInMemoryCacheDisabled          *bool               `toml:"crl_in_memory_cache_disabled"`

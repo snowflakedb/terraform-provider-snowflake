@@ -73,7 +73,6 @@ type LegacyConfigDTO struct {
 	ProxyProtocol                     *string             `toml:"proxyprotocol"`
 	NoProxy                           *string             `toml:"noproxy"`
 	DisableOCSPChecks                 *bool               `toml:"disableocspchecks"`
-	TLSConfigName                     *string             `toml:"tlsconfigname"`
 	CertRevocationCheckMode           *string             `toml:"certrevocationcheckmode"`
 	CrlAllowCertificatesWithoutCrlURL *bool               `toml:"crlallowcertificateswithoutcrlurl"`
 	CrlInMemoryCacheDisabled          *bool               `toml:"crlinmemorycachedisabled"`

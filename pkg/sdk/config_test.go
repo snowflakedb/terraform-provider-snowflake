@@ -172,7 +172,6 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		{name: "ProxyProtocol", fieldName: "proxy_protocol", wantType: "*string"},
 		{name: "NoProxy", fieldName: "no_proxy", wantType: "*string"},
 		{name: "DisableOCSPChecks", fieldName: "disable_ocsp_checks", wantType: "*bool"},
-		{name: "TLSConfigName", fieldName: "tls_config_name", wantType: "*string"},
 		{name: "CertRevocationCheckMode", fieldName: "cert_revocation_check_mode", wantType: "*string"},
 		{name: "CrlAllowCertificatesWithoutCrlURL", fieldName: "crl_allow_certificates_without_crl_url", wantType: "*bool"},
 		{name: "CrlInMemoryCacheDisabled", fieldName: "crl_in_memory_cache_disabled", wantType: "*bool"},
@@ -350,7 +349,6 @@ func TestProfileConfig(t *testing.T) {
 		WithProxyProtocol("https").
 		WithNoProxy("localhost,snowflake.computing.com").
 		WithDisableOCSPChecks(true).
-		WithTLSConfigName("tls_config_name").
 		WithCertRevocationCheckMode("ADVISORY").
 		WithCrlAllowCertificatesWithoutCrlURL(true).
 		WithCrlInMemoryCacheDisabled(false).
@@ -433,7 +431,6 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, "https", config.ProxyProtocol)
 		assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
 		assert.True(t, config.DisableOCSPChecks)
-		assert.Equal(t, "tls_config_name", config.TLSConfigName)
 		assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
 		assert.False(t, config.CrlInMemoryCacheDisabled)
@@ -536,7 +533,6 @@ func Test_MergeConfig(t *testing.T) {
 		ProxyProtocol:                     "proxy_protocol1",
 		NoProxy:                           "no_proxy1",
 		DisableOCSPChecks:                 true,
-		TLSConfigName:                     "tls_config_name1",
 		CertRevocationCheckMode:           gosnowflake.CertRevocationCheckAdvisory,
 		CrlAllowCertificatesWithoutCrlURL: gosnowflake.ConfigBoolTrue,
 		CrlInMemoryCacheDisabled:          false,
@@ -601,7 +597,6 @@ func Test_MergeConfig(t *testing.T) {
 		ProxyProtocol:                     "proxy_protocol2",
 		NoProxy:                           "no_proxy2",
 		DisableOCSPChecks:                 true,
-		TLSConfigName:                     "tls_config_name2",
 		CertRevocationCheckMode:           gosnowflake.CertRevocationCheckAdvisory,
 		CrlAllowCertificatesWithoutCrlURL: gosnowflake.ConfigBoolTrue,
 		CrlInMemoryCacheDisabled:          false,
@@ -966,7 +961,6 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithProxyProtocol("https").
 				WithNoProxy("localhost,snowflake.computing.com").
 				WithDisableOCSPChecks(true).
-				WithTLSConfigName("tls_config_name").
 				WithCertRevocationCheckMode("ADVISORY").
 				WithCrlAllowCertificatesWithoutCrlURL(true).
 				WithCrlInMemoryCacheDisabled(false).
@@ -1028,7 +1022,6 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "https", got.ProxyProtocol)
 				assert.Equal(t, "localhost,snowflake.computing.com", got.NoProxy)
 				assert.True(t, got.DisableOCSPChecks)
-				assert.Equal(t, "tls_config_name", got.TLSConfigName)
 				assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, got.CertRevocationCheckMode)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.CrlAllowCertificatesWithoutCrlURL)
 				assert.False(t, got.CrlInMemoryCacheDisabled)

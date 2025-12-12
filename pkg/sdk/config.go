@@ -178,7 +178,6 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.ProxyProtocol, &driverCfg.ProxyProtocol)
 	pointerAttributeSet(c.NoProxy, &driverCfg.NoProxy)
 	pointerAttributeSet(c.DisableOCSPChecks, &driverCfg.DisableOCSPChecks)
-	pointerAttributeSet(c.TLSConfigName, &driverCfg.TLSConfigName)
 	err = pointerCertRevocationCheckModeAttributeSet(c.CertRevocationCheckMode, &driverCfg.CertRevocationCheckMode)
 	if err != nil {
 		return *EmptyDriverConfig(), err
@@ -360,9 +359,6 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	}
 	if !baseConfig.DisableOCSPChecks {
 		baseConfig.DisableOCSPChecks = mergeConfig.DisableOCSPChecks
-	}
-	if baseConfig.TLSConfigName == "" {
-		baseConfig.TLSConfigName = mergeConfig.TLSConfigName
 	}
 	if baseConfig.CertRevocationCheckMode == CertRevocationCheckModeEmpty {
 		baseConfig.CertRevocationCheckMode = mergeConfig.CertRevocationCheckMode

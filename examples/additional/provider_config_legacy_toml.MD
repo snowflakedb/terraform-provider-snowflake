@@ -47,7 +47,6 @@ proxypassword = '****'
 proxyprotocol = 'https'
 noproxy = 'localhost,snowflake.computing.com'
 disableocspchecks = true
-tlsconfigname = "tls_config_name"
 certrevocationcheckmode = "ADVISORY"
 crlallowcertificateswithoutcrlurl = true
 crlinmemorycachedisabled = false

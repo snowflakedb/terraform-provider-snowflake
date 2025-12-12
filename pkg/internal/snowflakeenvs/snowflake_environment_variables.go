@@ -59,7 +59,6 @@ const (
 	NoProxy                            = "SNOWFLAKE_NO_PROXY"
 
 	DisableOCSPChecks                 = "SNOWFLAKE_DISABLE_OCSP_CHECKS"
-	TLSConfigName                     = "SNOWFLAKE_TLS_CONFIG_NAME"
 	CertRevocationCheckMode           = "SNOWFLAKE_CERT_REVOCATION_CHECK_MODE"
 	CrlAllowCertificatesWithoutCrlURL = "SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL"
 	CrlInMemoryCacheDisabled          = "SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED"

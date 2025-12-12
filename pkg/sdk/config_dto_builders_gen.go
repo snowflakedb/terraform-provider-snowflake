@@ -295,11 +295,6 @@ func (s *ConfigDTO) WithDisableOCSPChecks(DisableOCSPChecks bool) *ConfigDTO {
 	return s
 }
 
-func (s *ConfigDTO) WithTLSConfigName(TLSConfigName string) *ConfigDTO {
-	s.TLSConfigName = &TLSConfigName
-	return s
-}
-
 func (s *ConfigDTO) WithCertRevocationCheckMode(CertRevocationCheckMode string) *ConfigDTO {
 	s.CertRevocationCheckMode = &CertRevocationCheckMode
 	return s

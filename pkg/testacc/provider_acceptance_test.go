@@ -2,7 +2,6 @@
 package testacc
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -321,7 +320,6 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "https", config.ProxyProtocol)
 					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
 					assert.True(t, config.DisableOCSPChecks)
-					assert.Equal(t, "", config.TLSConfigName)
 					assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
 					assert.False(t, config.CrlInMemoryCacheDisabled)
@@ -531,6 +529,13 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.ProxyPassword, "proxy_password")
 					t.Setenv(snowflakeenvs.ProxyProtocol, "https")
 					t.Setenv(snowflakeenvs.NoProxy, "localhost,snowflake.computing.com")
+					t.Setenv(snowflakeenvs.DisableOCSPChecks, "false")
+					t.Setenv(snowflakeenvs.CertRevocationCheckMode, "ENABLED")
+					t.Setenv(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, "true")
+					t.Setenv(snowflakeenvs.CrlInMemoryCacheDisabled, "true")
+					t.Setenv(snowflakeenvs.CrlOnDiskCacheDisabled, "true")
+					t.Setenv(snowflakeenvs.CrlHTTPClientTimeout, "10")
+					t.Setenv(snowflakeenvs.DisableSamlURLCheck, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -589,6 +594,13 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
 					assert.Equal(t, "https", config.ProxyProtocol)
 					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
+					assert.True(t, config.DisableOCSPChecks)
+					assert.Equal(t, gosnowflake.CertRevocationCheckEnabled, config.CertRevocationCheckMode)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
+					assert.True(t, config.CrlInMemoryCacheDisabled)
+					assert.True(t, config.CrlOnDiskCacheDisabled)
+					assert.Equal(t, 10*time.Second, config.CrlHTTPClientTimeout)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
 					return nil
 				},
 			},
@@ -666,10 +678,17 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.LogQueryParameters, "false")
 					t.Setenv(snowflakeenvs.ProxyHost, "")
 					t.Setenv(snowflakeenvs.ProxyPort, "443")
-					t.Setenv(snowflakeenvs.ProxyUser, "proxy_user")
-					t.Setenv(snowflakeenvs.ProxyPassword, "proxy_password")
-					t.Setenv(snowflakeenvs.ProxyProtocol, "https")
-					t.Setenv(snowflakeenvs.NoProxy, "localhost,snowflake.computing.com")
+					t.Setenv(snowflakeenvs.ProxyUser, "overridden")
+					t.Setenv(snowflakeenvs.ProxyPassword, "overridden")
+					t.Setenv(snowflakeenvs.ProxyProtocol, "overridden")
+					t.Setenv(snowflakeenvs.NoProxy, "overridden")
+					t.Setenv(snowflakeenvs.DisableOCSPChecks, "false")
+					t.Setenv(snowflakeenvs.CertRevocationCheckMode, "overridden")
+					t.Setenv(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, "false")
+					t.Setenv(snowflakeenvs.CrlInMemoryCacheDisabled, "false")
+					t.Setenv(snowflakeenvs.CrlOnDiskCacheDisabled, "false")
+					t.Setenv(snowflakeenvs.CrlHTTPClientTimeout, "10")
+					t.Setenv(snowflakeenvs.DisableSamlURLCheck, "false")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -728,6 +747,13 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
 					assert.Equal(t, "https", config.ProxyProtocol)
 					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
+					assert.True(t, config.DisableOCSPChecks)
+					assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
+					assert.False(t, config.CrlInMemoryCacheDisabled)
+					assert.True(t, config.CrlOnDiskCacheDisabled)
+					assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
 					return nil
 				},
 			},
@@ -1246,56 +1272,6 @@ func TestAcc_Provider_HandlingPromotedFeatures(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(gitRepositoriesModel.DatasourceReference(), "git_repositories.#"),
 				),
-			},
-		},
-	})
-}
-
-// TestAcc_Provider_TLSConfigName tests that a pre-registered TLS configuration can be used with the provider.
-func TestAcc_Provider_TLSConfigName(t *testing.T) {
-	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
-	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
-
-	tlsConfigName := "test-tls-config"
-
-	// Register the TLS config before the test
-	err := gosnowflake.RegisterTLSConfig(tlsConfigName, &tls.Config{
-		InsecureSkipVerify: true,
-	})
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		_ = gosnowflake.DeregisterTLSConfig(tlsConfigName)
-	})
-
-	factory, p := providerFactoryWithoutCacheReturningProvider()
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: factory,
-		PreCheck: func() {
-			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
-			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
-			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
-
-			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
-		},
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t,
-					providermodel.SnowflakeProvider().
-						WithProfile(tmpServiceUserConfig.Profile).
-						WithTlsConfigName(tlsConfigName),
-					datasourceModel(),
-				),
-				Check: func(s *terraform.State) error {
-					driverConfig := p.Meta().(*internalprovider.Context).Client.GetConfig()
-
-					assert.Equal(t, tlsConfigName, driverConfig.TLSConfigName)
-					return nil
-				},
 			},
 		},
 	})

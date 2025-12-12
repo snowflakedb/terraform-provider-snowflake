@@ -163,7 +163,6 @@ provider "snowflake" {
 - `request_timeout` (Number) request retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_REQUEST_TIMEOUT` environment variable.
 - `role` (String) Specifies the role to use by default for accessing Snowflake objects in the client session. Can also be sourced from the `SNOWFLAKE_ROLE` environment variable.
 - `skip_toml_file_permission_verification` (Boolean) False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations). Can also be sourced from the `SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION` environment variable.
-- `tls_config_name` (String) Name of the TLS configuration to use for the connection. Can also be sourced from the `SNOWFLAKE_TLS_CONFIG_NAME` environment variable.
 - `tmp_directory_path` (String) Sets temporary directory used by the driver for operations like encrypting, compressing etc. Can also be sourced from the `SNOWFLAKE_TMP_DIRECTORY_PATH` environment variable.
 - `token` (String, Sensitive) Token to use for OAuth and other forms of token based auth. When this field is set here, or in the TOML file, the provider sets the `authenticator` to `OAUTH`. Optionally, set the `authenticator` field to the authenticator you want to use. Can also be sourced from the `SNOWFLAKE_TOKEN` environment variable.
 - `token_accessor` (Block List, Max: 1) If you are using the OAuth authentication flows, use the dedicated `authenticator` and `oauth...` fields instead. See our [authentication methods guide](./guides/authentication_methods) for more information. (see [below for nested schema](#nestedblock--token_accessor))
@@ -512,7 +511,6 @@ proxypassword = '****'
 proxyprotocol = 'https'
 noproxy = 'localhost,snowflake.computing.com'
 disableocspchecks = true
-tlsconfigname = "tls_config_name"
 certrevocationcheckmode = "ADVISORY"
 crlallowcertificateswithoutcrlurl = true
 crlinmemorycachedisabled = false
