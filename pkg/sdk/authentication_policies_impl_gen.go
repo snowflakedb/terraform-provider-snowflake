@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -42,7 +43,16 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
+	// adjusted manually
+	convertedRows, err := convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
+	if err != nil {
+		return nil, err
+	}
+	// remove every entry with invalid identifier
+	return slices.DeleteFunc(convertedRows, func(policy AuthenticationPolicy) bool {
+		_, err := policy.ID()
+		return err != nil
+	}), nil
 }
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {

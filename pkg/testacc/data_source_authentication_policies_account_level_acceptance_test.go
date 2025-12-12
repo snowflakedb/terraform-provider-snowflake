@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/stretchr/testify/require"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -27,13 +28,16 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 		WithPreviewFeaturesEnabled(string(previewfeatures.AuthenticationPoliciesDatasource))
 
 	policy := secondaryTestClient().AuthenticationPolicy.ShowOnCurrentAccount(t)
+	policyId, err := policy.ID()
+	require.NoError(t, err)
+
 	if policy != nil && policy.Name != "BUILT-IN" {
 		secondaryTestClient().Account.Alter(t, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)},
 		})
 		t.Cleanup(func() {
 			secondaryTestClient().Account.Alter(t, &sdk.AlterAccountOptions{
-				Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(policy.ID())},
+				Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(policyId)},
 			})
 		})
 	}

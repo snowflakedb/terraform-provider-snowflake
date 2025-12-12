@@ -88,11 +88,17 @@ func ReadAuthenticationPolicies(ctx context.Context, d *schema.ResourceData, met
 	for i, authenticationPolicy := range authenticationPolicies {
 		authenticationPolicy := authenticationPolicy
 		var authenticationPolicyDescriptions []map[string]any
-		if d.Get("with_describe").(bool) && authenticationPolicy.DatabaseName != nil && authenticationPolicy.SchemaName != nil {
-			describeResult, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
+		if d.Get("with_describe").(bool) {
+			id, err := authenticationPolicy.ID()
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
+			describeResult, err := client.AuthenticationPolicies.Describe(ctx, id)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
 			authenticationPolicyDescriptions = []map[string]any{schemas.AuthenticationPolicyDescriptionToSchema(describeResult)}
 		}
 		flattenedAuthenticationPolicies[i] = map[string]any{

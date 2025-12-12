@@ -1446,9 +1446,12 @@ func TestInt_Users(t *testing.T) {
 		authenticationPolicyTest, authenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(authenticationPolicyCleanup)
 
-		err := client.Users.Alter(ctx, user.ID(), &sdk.AlterUserOptions{
+		authenticationPolicyId, err := authenticationPolicyTest.ID()
+		require.NoError(t, err)
+
+		err = client.Users.Alter(ctx, user.ID(), &sdk.AlterUserOptions{
 			Set: &sdk.UserSet{
-				AuthenticationPolicy: sdk.Pointer(authenticationPolicyTest.ID()),
+				AuthenticationPolicy: sdk.Pointer(authenticationPolicyId),
 			},
 		})
 		require.NoError(t, err)

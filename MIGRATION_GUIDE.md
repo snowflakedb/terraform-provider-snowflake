@@ -65,9 +65,14 @@ This issue could cause resources or data sources related to authentication polic
 sql: Scan error on column index 0, name "created_on": unsupported Scan, storing driver.Value type <nil> into type *time.Time
 ```
 
-The internal implementation for authentication policy has now been updated to correctly handle this built-in entity, which lacks the aforementioned field values.
-The `snowflake_authentication_policies` data source was slightly adjusted to not query describe output for the new built-in authentication policy
-as without database name and schema name it cannot be referenced.
+The internal implementation for authentication policy has now been updated to skip built-in entity, which lacks the aforementioned field values.
+
+**Impact on `snowflake_authentication_policies` data source:**
+Due to these adjustments, the `snowflake_authentication_policies` data source will now skip the built-in authentication policy in its output.
+This means that if you query for authentication policies (with either `on.account` or `on.user` filtering options)
+and only the built-in policy exists (no user-defined policies), the data source will return empty `show_output` and `describe_output` lists.
+
+If you have user-defined authentication policies, they will continue to appear in the output as expected.
 
 ## v2.10.x ➞ v2.11.0
 

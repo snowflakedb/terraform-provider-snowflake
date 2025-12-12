@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_CurrentAccount_Parameters(t *testing.T) {
@@ -446,8 +447,14 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 	authenticationPolicy, authenticationPolicyCleanup := testClient().AuthenticationPolicy.Create(t)
 	t.Cleanup(authenticationPolicyCleanup)
 
+	authenticationPolicyId, err := authenticationPolicy.ID()
+	require.NoError(t, err)
+
 	newAuthenticationPolicy, newAuthenticationPolicyCleanup := testClient().AuthenticationPolicy.Create(t)
 	t.Cleanup(newAuthenticationPolicyCleanup)
+
+	newAuthenticationPolicyId, err := newAuthenticationPolicy.ID()
+	require.NoError(t, err)
 
 	featurePolicyId, featurePolicyCleanup := testClient().FeaturePolicy.Create(t)
 	t.Cleanup(featurePolicyCleanup)
@@ -479,7 +486,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 
 	setModel := model.CurrentAccount("test").
 		WithResourceMonitor(resourceMonitor.ID().Name()).
-		WithAuthenticationPolicy(authenticationPolicy.ID().FullyQualifiedName()).
+		WithAuthenticationPolicy(authenticationPolicyId.FullyQualifiedName()).
 		WithFeaturePolicy(featurePolicyId.FullyQualifiedName()).
 		WithPackagesPolicy(packagesPolicyId.FullyQualifiedName()).
 		WithPasswordPolicy(passwordPolicy.ID().FullyQualifiedName()).
@@ -487,7 +494,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 
 	setModelWithDifferentValues := model.CurrentAccount("test").
 		WithResourceMonitor(newResourceMonitor.ID().Name()).
-		WithAuthenticationPolicy(newAuthenticationPolicy.ID().FullyQualifiedName()).
+		WithAuthenticationPolicy(newAuthenticationPolicyId.FullyQualifiedName()).
 		WithFeaturePolicy(newFeaturePolicyId.FullyQualifiedName()).
 		WithPackagesPolicy(newPackagesPolicyId.FullyQualifiedName()).
 		WithPasswordPolicy(newPasswordPolicy.ID().FullyQualifiedName()).
@@ -533,7 +540,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.CurrentAccountResource(t, setModel.ResourceReference()).
 						HasResourceMonitorString(resourceMonitor.ID().Name()).
-						HasAuthenticationPolicyString(authenticationPolicy.ID().FullyQualifiedName()).
+						HasAuthenticationPolicyString(authenticationPolicyId.FullyQualifiedName()).
 						HasFeaturePolicyString(featurePolicyId.FullyQualifiedName()).
 						HasPackagesPolicyString(packagesPolicyId.FullyQualifiedName()).
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
@@ -548,7 +555,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").
 						HasNoResourceMonitor().
-						HasAuthenticationPolicyString(authenticationPolicy.ID().FullyQualifiedName()).
+						HasAuthenticationPolicyString(authenticationPolicyId.FullyQualifiedName()).
 						HasFeaturePolicyString(featurePolicyId.FullyQualifiedName()).
 						HasPackagesPolicyString(packagesPolicyId.FullyQualifiedName()).
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
@@ -561,7 +568,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.CurrentAccountResource(t, setModelWithDifferentValues.ResourceReference()).
 						HasResourceMonitorString(newResourceMonitor.ID().Name()).
-						HasAuthenticationPolicyString(newAuthenticationPolicy.ID().FullyQualifiedName()).
+						HasAuthenticationPolicyString(newAuthenticationPolicyId.FullyQualifiedName()).
 						HasFeaturePolicyString(newFeaturePolicyId.FullyQualifiedName()).
 						HasPackagesPolicyString(newPackagesPolicyId.FullyQualifiedName()).
 						HasPasswordPolicyString(newPasswordPolicy.ID().FullyQualifiedName()).
@@ -585,7 +592,7 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{ResourceMonitor: sdk.Pointer(resourceMonitor.ID())}})
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authenticationPolicy.ID())}})
+					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authenticationPolicyId)}})
 					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
 					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: sdk.Pointer(packagesPolicyId)}})
 					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
@@ -630,6 +637,9 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 	authenticationPolicy, authenticationPolicyCleanup := testClient().AuthenticationPolicy.Create(t)
 	t.Cleanup(authenticationPolicyCleanup)
 
+	authenticationPolicyId, err := authenticationPolicy.ID()
+	require.NoError(t, err)
+
 	featurePolicyId, featurePolicyCleanup := testClient().FeaturePolicy.Create(t)
 	t.Cleanup(featurePolicyCleanup)
 
@@ -646,7 +656,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 
 	completeConfigModel := model.CurrentAccount("test").
 		WithResourceMonitor(resourceMonitor.ID().Name()).
-		WithAuthenticationPolicy(authenticationPolicy.ID().FullyQualifiedName()).
+		WithAuthenticationPolicy(authenticationPolicyId.FullyQualifiedName()).
 		WithFeaturePolicy(featurePolicyId.FullyQualifiedName()).
 		WithPackagesPolicy(packagesPolicyId.FullyQualifiedName()).
 		WithPasswordPolicy(passwordPolicy.ID().FullyQualifiedName()).
@@ -774,7 +784,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.CurrentAccountResource(t, completeConfigModel.ResourceReference()).
 						HasResourceMonitorString(resourceMonitor.ID().Name()).
-						HasAuthenticationPolicyString(authenticationPolicy.ID().FullyQualifiedName()).
+						HasAuthenticationPolicyString(authenticationPolicyId.FullyQualifiedName()).
 						HasFeaturePolicyString(featurePolicyId.FullyQualifiedName()).
 						HasPackagesPolicyString(packagesPolicyId.FullyQualifiedName()).
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).
@@ -898,7 +908,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").
 						HasNoResourceMonitor().
-						HasAuthenticationPolicyString(authenticationPolicy.ID().FullyQualifiedName()).
+						HasAuthenticationPolicyString(authenticationPolicyId.FullyQualifiedName()).
 						HasFeaturePolicyString(featurePolicyId.FullyQualifiedName()).
 						HasPackagesPolicyString(packagesPolicyId.FullyQualifiedName()).
 						HasPasswordPolicyString(passwordPolicy.ID().FullyQualifiedName()).

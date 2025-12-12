@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/stretchr/testify/require"
 )
 
 type AuthenticationPolicyAssert struct {
@@ -27,8 +28,14 @@ func AuthenticationPolicy(t *testing.T, id sdk.SchemaObjectIdentifier) *Authenti
 
 func AuthenticationPolicyFromObject(t *testing.T, authenticationPolicy *sdk.AuthenticationPolicy) *AuthenticationPolicyAssert {
 	t.Helper()
+
+	// adjusted manually
+	id, err := authenticationPolicy.ID()
+	require.NoError(t, err)
+
 	return &AuthenticationPolicyAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAuthenticationPolicy, authenticationPolicy.ID(), authenticationPolicy),
+		// adjusted manually
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAuthenticationPolicy, id, authenticationPolicy),
 	}
 }
 

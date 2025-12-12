@@ -5,6 +5,7 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -158,17 +159,12 @@ type AuthenticationPolicy struct {
 	Options       string
 }
 
-func (v *AuthenticationPolicy) ID() SchemaObjectIdentifier {
-	// adjusted manually
-	databaseName := ""
-	schemaName := ""
-	if v.DatabaseName != nil {
-		databaseName = *v.DatabaseName
+// adjusted manually
+func (v *AuthenticationPolicy) ID() (SchemaObjectIdentifier, error) {
+	if v.DatabaseName == nil || v.SchemaName == nil {
+		return SchemaObjectIdentifier{}, fmt.Errorf("invalid AuthenticationPolicy ID: missing DatabaseName or SchemaName")
 	}
-	if v.SchemaName != nil {
-		schemaName = *v.SchemaName
-	}
-	return NewSchemaObjectIdentifier(databaseName, schemaName, v.Name)
+	return NewSchemaObjectIdentifier(*v.DatabaseName, *v.SchemaName, v.Name), nil
 }
 
 func (v *AuthenticationPolicy) ObjectType() ObjectType {

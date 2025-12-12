@@ -571,6 +571,9 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(authPolicyCleanup)
 
+		authPolicyId, err := authPolicy.ID()
+		require.NoError(t, err)
+
 		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
 		t.Cleanup(featurePolicyCleanup)
 
@@ -589,7 +592,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 			assertThatNoPolicyIsSetOnAccount(t)
 		})
 
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicyId)}})
 		require.NoError(t, err)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
@@ -605,7 +608,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		require.NoError(t, err)
 
 		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, featurePolicyId)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authPolicyId)
 		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPasswordPolicy, passwordPolicy.ID())
 		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindSessionPolicy, sessionPolicy.ID())
 		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, packagesPolicyId)
@@ -665,15 +668,18 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		authenticationPolicy, authenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(authenticationPolicyCleanup)
 
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}})
+		authenticationPolicyId, err := authenticationPolicy.ID()
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)}})
 		assert.ErrorContains(t, err, fmt.Sprintf("Any policy of kind %s is not attached to ACCOUNT", sdk.PolicyKindAuthenticationPolicy))
 
 		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
 		assert.NoError(t, err)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authenticationPolicy.ID())}})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authenticationPolicyId)}})
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authenticationPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authenticationPolicyId)
 
 		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
 		assert.NoError(t, err)
@@ -683,6 +689,9 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	t.Run("unset all", func(t *testing.T) {
 		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(authPolicyCleanup)
+
+		authPolicyId, err := authPolicy.ID()
+		require.NoError(t, err)
 
 		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
 		t.Cleanup(featurePolicyCleanup)
@@ -718,7 +727,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicy.ID())}})
+		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authPolicyId)}})
 		require.NoError(t, err)
 
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
