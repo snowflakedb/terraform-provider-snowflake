@@ -26,6 +26,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.11.x ➞ v2.12.0
 
+### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
+
+Due to changes on the Snowflake side, the `SAML_IDENTITY_PROVIDER` parameter is now deprecated and cannot be used in Snowflake (see [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters#saml-identity-provider)).
+Because of this, we have removed support for this parameter in the `snowflake_current_account` and `snowflake_current_organization_account` resources.
+Both of the resources are in preview, so we decided to introduce this change now despite being a breaking change as it makes those resources unusable without workarounds (see related issue).
+
+If you were using this parameter in your configuration, please follow instructions in the linked documentation to migrate away from it.
+If you were not using this parameter, no changes are required.
+
+Related: [#4010](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4010)
+
+### *(new feature)* snowflake_listings datasource
+Added a new preview data source for listings. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-listings).
+
+This data source focuses on base query commands (SHOW LISTINGS and DESCRIBE LISTING). Other query commands like SHOW AVAILABLE LISTINGS, DESCRIBE AVAILABLE LISTING, SHOW LISTING OFFERS, SHOW OFFERS, SHOW PRICING PLANS, and SHOW VERSIONS IN LISTING are not included and will be added depending on demand.
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listings_datasource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(improvement)* snowflake_scim_integration now accepts custom role names for run_as_role
 
 Previously, the `run_as_role` field in the [snowflake_scim_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/2.11.0/docs/resources/scim_integration) resource only accepted predefined role names: `OKTA_PROVISIONER`, `AAD_PROVISIONER`, or `GENERIC_SCIM_PROVISIONER`.
@@ -175,6 +193,14 @@ If you have any of these parameters set in your configuration,
 please remove them to avoid the Terraform warnings and potential errors from the Snowflake side.
 The parameters may be removed in the next major version of the provider.
 Other than this, no changes in the configuration are required.
+
+### *(bugfix)* Adjusted `oauth_allowed_scopes` handling in api integration resources (`snowflake_api_integration_with_client_credentials` and `snowflake_api_integration_with_oauth_authorization_code`)
+
+Both resources had incorrect handling of the `oauth_allowed_scopes` field during updates.
+The parameter can be set on the Snowflake side, but it cannot be unset (or set to an empty value).
+The resources were adjusted to correctly handle this behavior and propose to recreate the resource in case the field was set to an empty value.
+
+No changes in configuration are required.
 
 ### *(bugfix)* Improved validation of identifiers with arguments
 Previously, during parsing identifiers with argument types, when the identifier format was incorrect, the provider could panic with errors like:

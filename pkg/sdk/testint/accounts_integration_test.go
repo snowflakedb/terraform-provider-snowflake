@@ -739,7 +739,6 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		// - EnableInternalStagesPrivatelink
 		// - PythonProfilerModules
 		// - S3StageVpceDnsName
-		// - SamlIdentityProvider
 		// - SimulatedDataSharingConsumer
 		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
 			Set: &sdk.AccountSet{

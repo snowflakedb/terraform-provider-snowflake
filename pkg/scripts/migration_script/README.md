@@ -585,6 +585,17 @@ Remember that, if you chose to use the import block approach, [after importing y
 
 By following the above steps, you can migrate other existing Snowflake objects into Terraform and start managing them!
 
+### CSV Format Notes
+
+The CSV files use proper RFC 4180 escaping:
+
+- **Double quotes** are escaped by doubling: `"` → `""`
+- **Backslashes** are escaped: `\` → `\\`
+- **Newlines** are converted to literal `\n` for multi-line values (like RSA keys)
+- All fields are quoted
+
+The migration script's `csvUnescape` function handles decoding these escape sequences.
+
 ### Multiple sources
 Some Snowflake objects (like schemas) have fields returned from more than one SQL command. That's why simply using one `SHOW ...` output will not work. Fields from `DESCRIBE` or `SHOW PARAMETERS` must be also processed.
 But outputs from all of these commands must be mapped to the input CSV value of the migration script. To make this easy, we can use a data source output for a given object, which already has the logic for mapping multiple
