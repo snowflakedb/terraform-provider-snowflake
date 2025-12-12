@@ -514,7 +514,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"proxy_protocol": {
 			Type:             schema.TypeString,
-			Description:      envNameFieldDescription(fmt.Sprintf("The protocol of the proxy to use for the connection. Valid options are: %v.", docs.PossibleValuesListed(allProtocols)), snowflakeenvs.ProxyProtocol),
+			Description:      envNameFieldDescription(fmt.Sprintf("The protocol of the proxy to use for the connection. Valid options are: %v. The value is case-insensitive.", docs.PossibleValuesListed(allProtocols)), snowflakeenvs.ProxyProtocol),
 			Optional:         true,
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.ProxyProtocol, nil),
 			ValidateDiagFunc: validators.NormalizeValidation(toProtocol),
@@ -534,7 +534,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"cert_revocation_check_mode": {
 			Type:             schema.TypeString,
-			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the certificate revocation check mode. Valid options are: %v.", docs.PossibleValuesListed(sdk.AllCertRevocationCheckModes)), snowflakeenvs.CertRevocationCheckMode),
+			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the certificate revocation check mode. Valid options are: %v. The value is case-insensitive.", docs.PossibleValuesListed(sdk.AllCertRevocationCheckModes)), snowflakeenvs.CertRevocationCheckMode),
 			Optional:         true,
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.CertRevocationCheckMode, nil),
 			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToCertRevocationCheckMode),
