@@ -209,7 +209,6 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.FactDefinition) *SemanticViewM
 			semExpVar["synonym"] = tfconfig.SetVariable(syns...)
 		}
 		m["semantic_expression"] = tfconfig.ListVariable(tfconfig.ObjectVariable(semExpVar))
-		//isPrivateFact := v.isPrivateFact()
 		if v.IsPrivateFact() {
 			m["private_fact"] = tfconfig.StringVariable("PRIVATE")
 		}
