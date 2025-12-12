@@ -171,6 +171,13 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		{name: "ProxyPassword", fieldName: "proxy_password", wantType: "*string"},
 		{name: "ProxyProtocol", fieldName: "proxy_protocol", wantType: "*string"},
 		{name: "NoProxy", fieldName: "no_proxy", wantType: "*string"},
+		{name: "DisableOCSPChecks", fieldName: "disable_ocsp_checks", wantType: "*bool"},
+		{name: "TLSConfigName", fieldName: "tls_config_name", wantType: "*string"},
+		{name: "CertRevocationCheckMode", fieldName: "cert_revocation_check_mode", wantType: "*string"},
+		{name: "CrlAllowCertificatesWithoutCrlURL", fieldName: "crl_allow_certificates_without_crl_url", wantType: "*bool"},
+		{name: "CrlInMemoryCacheDisabled", fieldName: "crl_in_memory_cache_disabled", wantType: "*bool"},
+		{name: "CrlOnDiskCacheDisabled", fieldName: "crl_on_disk_cache_disabled", wantType: "*bool"},
+		{name: "DisableSamlURLCheck", fieldName: "disable_saml_url_check", wantType: "*bool"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -200,6 +207,7 @@ func TestLoadConfigFileWithInvalidFieldTypeIntFails(t *testing.T) {
 		{name: "ExternalBrowserTimeout", fieldName: "external_browser_timeout"},
 		{name: "MaxRetryCount", fieldName: "max_retry_count"},
 		{name: "ProxyPort", fieldName: "proxy_port"},
+		{name: "CrlHTTPClientTimeout", fieldName: "crl_http_client_timeout"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -340,7 +348,15 @@ func TestProfileConfig(t *testing.T) {
 		WithProxyUser("username").
 		WithProxyPassword("****").
 		WithProxyProtocol("https").
-		WithNoProxy("localhost,snowflake.computing.com"),
+		WithNoProxy("localhost,snowflake.computing.com").
+		WithDisableOCSPChecks(true).
+		WithTLSConfigName("tls_config_name").
+		WithCertRevocationCheckMode("ADVISORY").
+		WithCrlAllowCertificatesWithoutCrlURL(true).
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(true).
+		WithCrlHTTPClientTimeout(30).
+		WithDisableSamlURLCheck(true),
 		"securityadmin",
 	)
 	bytes, err := cfg.MarshalToml()
@@ -416,6 +432,14 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, "****", config.ProxyPassword)
 		assert.Equal(t, "https", config.ProxyProtocol)
 		assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
+		assert.True(t, config.DisableOCSPChecks)
+		assert.Equal(t, "tls_config_name", config.TLSConfigName)
+		assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
+		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
+		assert.False(t, config.CrlInMemoryCacheDisabled)
+		assert.True(t, config.CrlOnDiskCacheDisabled)
+		assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
+		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -466,51 +490,59 @@ func Test_MergeConfig(t *testing.T) {
 		Params: map[string]*string{
 			"foo": Pointer("1"),
 		},
-		ClientIP:                       net.ParseIP("1.1.1.1"),
-		Protocol:                       "protocol1",
-		Host:                           "host1",
-		Port:                           1,
-		Authenticator:                  gosnowflake.AuthTypeSnowflake,
-		Passcode:                       "passcode1",
-		PasscodeInPassword:             false,
-		OktaURL:                        testvars.ExampleOktaUrl,
-		LoginTimeout:                   1,
-		RequestTimeout:                 1,
-		JWTExpireTimeout:               1,
-		ClientTimeout:                  1,
-		JWTClientTimeout:               1,
-		ExternalBrowserTimeout:         1,
-		MaxRetryCount:                  1,
-		InsecureMode:                   false,
-		OCSPFailOpen:                   1,
-		Token:                          "token1",
-		KeepSessionAlive:               false,
-		PrivateKey:                     random.GenerateRSAPrivateKey(t),
-		DisableTelemetry:               false,
-		Tracing:                        "tracing1",
-		TmpDirPath:                     "tmpdirpath1",
-		ClientRequestMfaToken:          gosnowflake.ConfigBoolFalse,
-		ClientStoreTemporaryCredential: gosnowflake.ConfigBoolFalse,
-		DisableQueryContextCache:       false,
-		IncludeRetryReason:             1,
-		DisableConsoleLogin:            gosnowflake.ConfigBoolFalse,
-		OauthClientID:                  "oauth_client_id1",
-		OauthClientSecret:              "oauth_client_secret1",
-		OauthTokenRequestURL:           "oauth_token_request_url1",
-		OauthAuthorizationURL:          "oauth_authorization_url1",
-		OauthRedirectURI:               "oauth_redirect_uri1",
-		OauthScope:                     "oauth_scope1",
-		EnableSingleUseRefreshTokens:   false,
-		WorkloadIdentityProvider:       "workload_identity_provider1",
-		WorkloadIdentityEntraResource:  "workload_identity_entra_resource1",
-		LogQueryText:                   false,
-		LogQueryParameters:             false,
-		ProxyHost:                      "proxy_host1",
-		ProxyPort:                      443,
-		ProxyUser:                      "proxy_user1",
-		ProxyPassword:                  "proxy_password1",
-		ProxyProtocol:                  "proxy_protocol1",
-		NoProxy:                        "no_proxy1",
+		ClientIP:                          net.ParseIP("1.1.1.1"),
+		Protocol:                          "protocol1",
+		Host:                              "host1",
+		Port:                              1,
+		Authenticator:                     gosnowflake.AuthTypeSnowflake,
+		Passcode:                          "passcode1",
+		PasscodeInPassword:                false,
+		OktaURL:                           testvars.ExampleOktaUrl,
+		LoginTimeout:                      1,
+		RequestTimeout:                    1,
+		JWTExpireTimeout:                  1,
+		ClientTimeout:                     1,
+		JWTClientTimeout:                  1,
+		ExternalBrowserTimeout:            1,
+		MaxRetryCount:                     1,
+		InsecureMode:                      false,
+		OCSPFailOpen:                      1,
+		Token:                             "token1",
+		KeepSessionAlive:                  false,
+		PrivateKey:                        random.GenerateRSAPrivateKey(t),
+		DisableTelemetry:                  false,
+		Tracing:                           "tracing1",
+		TmpDirPath:                        "tmpdirpath1",
+		ClientRequestMfaToken:             gosnowflake.ConfigBoolFalse,
+		ClientStoreTemporaryCredential:    gosnowflake.ConfigBoolFalse,
+		DisableQueryContextCache:          false,
+		IncludeRetryReason:                1,
+		DisableConsoleLogin:               gosnowflake.ConfigBoolFalse,
+		OauthClientID:                     "oauth_client_id1",
+		OauthClientSecret:                 "oauth_client_secret1",
+		OauthTokenRequestURL:              "oauth_token_request_url1",
+		OauthAuthorizationURL:             "oauth_authorization_url1",
+		OauthRedirectURI:                  "oauth_redirect_uri1",
+		OauthScope:                        "oauth_scope1",
+		EnableSingleUseRefreshTokens:      false,
+		WorkloadIdentityProvider:          "workload_identity_provider1",
+		WorkloadIdentityEntraResource:     "workload_identity_entra_resource1",
+		LogQueryText:                      false,
+		LogQueryParameters:                false,
+		ProxyHost:                         "proxy_host1",
+		ProxyPort:                         443,
+		ProxyUser:                         "proxy_user1",
+		ProxyPassword:                     "proxy_password1",
+		ProxyProtocol:                     "proxy_protocol1",
+		NoProxy:                           "no_proxy1",
+		DisableOCSPChecks:                 true,
+		TLSConfigName:                     "tls_config_name1",
+		CertRevocationCheckMode:           gosnowflake.CertRevocationCheckAdvisory,
+		CrlAllowCertificatesWithoutCrlURL: gosnowflake.ConfigBoolTrue,
+		CrlInMemoryCacheDisabled:          false,
+		CrlOnDiskCacheDisabled:            true,
+		CrlHTTPClientTimeout:              30,
+		DisableSamlURLCheck:               gosnowflake.ConfigBoolTrue,
 	}
 
 	config2 := &gosnowflake.Config{
@@ -523,51 +555,59 @@ func Test_MergeConfig(t *testing.T) {
 		Params: map[string]*string{
 			"foo": Pointer("2"),
 		},
-		ClientIP:                       net.ParseIP("2.2.2.2"),
-		Protocol:                       "protocol2",
-		Host:                           "host2",
-		Port:                           2,
-		Authenticator:                  gosnowflake.AuthTypeOAuth,
-		Passcode:                       "passcode2",
-		PasscodeInPassword:             true,
-		OktaURL:                        testvars.ExampleOktaUrlFromEnv,
-		LoginTimeout:                   2,
-		RequestTimeout:                 2,
-		JWTExpireTimeout:               2,
-		ClientTimeout:                  2,
-		JWTClientTimeout:               2,
-		ExternalBrowserTimeout:         2,
-		MaxRetryCount:                  2,
-		InsecureMode:                   true,
-		OCSPFailOpen:                   2,
-		Token:                          "token2",
-		KeepSessionAlive:               true,
-		PrivateKey:                     random.GenerateRSAPrivateKey(t),
-		DisableTelemetry:               true,
-		Tracing:                        "tracing2",
-		TmpDirPath:                     "tmpdirpath2",
-		ClientRequestMfaToken:          gosnowflake.ConfigBoolTrue,
-		ClientStoreTemporaryCredential: gosnowflake.ConfigBoolTrue,
-		DisableQueryContextCache:       true,
-		IncludeRetryReason:             gosnowflake.ConfigBoolTrue,
-		DisableConsoleLogin:            gosnowflake.ConfigBoolTrue,
-		OauthClientID:                  "oauth_client_id2",
-		OauthClientSecret:              "oauth_client_secret2",
-		OauthTokenRequestURL:           "oauth_token_request_url2",
-		OauthAuthorizationURL:          "oauth_authorization_url2",
-		OauthRedirectURI:               "oauth_redirect_uri2",
-		OauthScope:                     "oauth_scope2",
-		EnableSingleUseRefreshTokens:   true,
-		WorkloadIdentityProvider:       "workload_identity_provider2",
-		WorkloadIdentityEntraResource:  "workload_identity_entra_resource2",
-		LogQueryText:                   true,
-		LogQueryParameters:             true,
-		ProxyHost:                      "proxy_host2",
-		ProxyPort:                      443,
-		ProxyUser:                      "proxy_user2",
-		ProxyPassword:                  "proxy_password2",
-		ProxyProtocol:                  "proxy_protocol2",
-		NoProxy:                        "no_proxy2",
+		ClientIP:                          net.ParseIP("2.2.2.2"),
+		Protocol:                          "protocol2",
+		Host:                              "host2",
+		Port:                              2,
+		Authenticator:                     gosnowflake.AuthTypeOAuth,
+		Passcode:                          "passcode2",
+		PasscodeInPassword:                true,
+		OktaURL:                           testvars.ExampleOktaUrlFromEnv,
+		LoginTimeout:                      2,
+		RequestTimeout:                    2,
+		JWTExpireTimeout:                  2,
+		ClientTimeout:                     2,
+		JWTClientTimeout:                  2,
+		ExternalBrowserTimeout:            2,
+		MaxRetryCount:                     2,
+		InsecureMode:                      true,
+		OCSPFailOpen:                      2,
+		Token:                             "token2",
+		KeepSessionAlive:                  true,
+		PrivateKey:                        random.GenerateRSAPrivateKey(t),
+		DisableTelemetry:                  true,
+		Tracing:                           "tracing2",
+		TmpDirPath:                        "tmpdirpath2",
+		ClientRequestMfaToken:             gosnowflake.ConfigBoolTrue,
+		ClientStoreTemporaryCredential:    gosnowflake.ConfigBoolTrue,
+		DisableQueryContextCache:          true,
+		IncludeRetryReason:                gosnowflake.ConfigBoolTrue,
+		DisableConsoleLogin:               gosnowflake.ConfigBoolTrue,
+		OauthClientID:                     "oauth_client_id2",
+		OauthClientSecret:                 "oauth_client_secret2",
+		OauthTokenRequestURL:              "oauth_token_request_url2",
+		OauthAuthorizationURL:             "oauth_authorization_url2",
+		OauthRedirectURI:                  "oauth_redirect_uri2",
+		OauthScope:                        "oauth_scope2",
+		EnableSingleUseRefreshTokens:      true,
+		WorkloadIdentityProvider:          "workload_identity_provider2",
+		WorkloadIdentityEntraResource:     "workload_identity_entra_resource2",
+		LogQueryText:                      true,
+		LogQueryParameters:                true,
+		ProxyHost:                         "proxy_host2",
+		ProxyPort:                         443,
+		ProxyUser:                         "proxy_user2",
+		ProxyPassword:                     "proxy_password2",
+		ProxyProtocol:                     "proxy_protocol2",
+		NoProxy:                           "no_proxy2",
+		DisableOCSPChecks:                 true,
+		TLSConfigName:                     "tls_config_name2",
+		CertRevocationCheckMode:           gosnowflake.CertRevocationCheckAdvisory,
+		CrlAllowCertificatesWithoutCrlURL: gosnowflake.ConfigBoolTrue,
+		CrlInMemoryCacheDisabled:          false,
+		CrlOnDiskCacheDisabled:            true,
+		CrlHTTPClientTimeout:              30,
+		DisableSamlURLCheck:               gosnowflake.ConfigBoolTrue,
 	}
 
 	t.Run("base config empty", func(t *testing.T) {
@@ -924,7 +964,15 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithProxyUser("username").
 				WithProxyPassword("****").
 				WithProxyProtocol("https").
-				WithNoProxy("localhost,snowflake.computing.com"),
+				WithNoProxy("localhost,snowflake.computing.com").
+				WithDisableOCSPChecks(true).
+				WithTLSConfigName("tls_config_name").
+				WithCertRevocationCheckMode("ADVISORY").
+				WithCrlAllowCertificatesWithoutCrlURL(true).
+				WithCrlInMemoryCacheDisabled(false).
+				WithCrlOnDiskCacheDisabled(true).
+				WithCrlHTTPClientTimeout(30).
+				WithDisableSamlURLCheck(true),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -979,6 +1027,14 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "****", got.ProxyPassword)
 				assert.Equal(t, "https", got.ProxyProtocol)
 				assert.Equal(t, "localhost,snowflake.computing.com", got.NoProxy)
+				assert.True(t, got.DisableOCSPChecks)
+				assert.Equal(t, "tls_config_name", got.TLSConfigName)
+				assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, got.CertRevocationCheckMode)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.CrlAllowCertificatesWithoutCrlURL)
+				assert.False(t, got.CrlInMemoryCacheDisabled)
+				assert.True(t, got.CrlOnDiskCacheDisabled)
+				assert.Equal(t, 30*time.Second, got.CrlHTTPClientTimeout)
+				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.DisableSamlURLCheck)
 
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)

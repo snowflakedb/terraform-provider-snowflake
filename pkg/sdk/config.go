@@ -177,6 +177,17 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.ProxyPassword, &driverCfg.ProxyPassword)
 	pointerAttributeSet(c.ProxyProtocol, &driverCfg.ProxyProtocol)
 	pointerAttributeSet(c.NoProxy, &driverCfg.NoProxy)
+	pointerAttributeSet(c.DisableOCSPChecks, &driverCfg.DisableOCSPChecks)
+	pointerAttributeSet(c.TLSConfigName, &driverCfg.TLSConfigName)
+	err = pointerCertRevocationCheckModeAttributeSet(c.CertRevocationCheckMode, &driverCfg.CertRevocationCheckMode)
+	if err != nil {
+		return *EmptyDriverConfig(), err
+	}
+	pointerConfigBoolAttributeSet(c.CrlAllowCertificatesWithoutCrlURL, &driverCfg.CrlAllowCertificatesWithoutCrlURL)
+	pointerAttributeSet(c.CrlInMemoryCacheDisabled, &driverCfg.CrlInMemoryCacheDisabled)
+	pointerAttributeSet(c.CrlOnDiskCacheDisabled, &driverCfg.CrlOnDiskCacheDisabled)
+	pointerTimeInSecondsAttributeSet(c.CrlHTTPClientTimeout, &driverCfg.CrlHTTPClientTimeout)
+	pointerConfigBoolAttributeSet(c.DisableSamlURLCheck, &driverCfg.DisableSamlURLCheck)
 	return *driverCfg, nil
 }
 
@@ -347,6 +358,30 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if baseConfig.NoProxy == "" {
 		baseConfig.NoProxy = mergeConfig.NoProxy
 	}
+	if !baseConfig.DisableOCSPChecks {
+		baseConfig.DisableOCSPChecks = mergeConfig.DisableOCSPChecks
+	}
+	if baseConfig.TLSConfigName == "" {
+		baseConfig.TLSConfigName = mergeConfig.TLSConfigName
+	}
+	if baseConfig.CertRevocationCheckMode == CertRevocationCheckModeEmpty {
+		baseConfig.CertRevocationCheckMode = mergeConfig.CertRevocationCheckMode
+	}
+	if !configBoolSet(baseConfig.CrlAllowCertificatesWithoutCrlURL) {
+		baseConfig.CrlAllowCertificatesWithoutCrlURL = mergeConfig.CrlAllowCertificatesWithoutCrlURL
+	}
+	if !baseConfig.CrlInMemoryCacheDisabled {
+		baseConfig.CrlInMemoryCacheDisabled = mergeConfig.CrlInMemoryCacheDisabled
+	}
+	if !baseConfig.CrlOnDiskCacheDisabled {
+		baseConfig.CrlOnDiskCacheDisabled = mergeConfig.CrlOnDiskCacheDisabled
+	}
+	if baseConfig.CrlHTTPClientTimeout == 0 {
+		baseConfig.CrlHTTPClientTimeout = mergeConfig.CrlHTTPClientTimeout
+	}
+	if !configBoolSet(baseConfig.DisableSamlURLCheck) {
+		baseConfig.DisableSamlURLCheck = mergeConfig.DisableSamlURLCheck
+	}
 	return baseConfig
 }
 
@@ -393,6 +428,17 @@ func pointerConfigBoolAttributeSet(src *bool, dst *gosnowflake.ConfigBool) {
 	if src != nil {
 		*dst = boolToConfigBool(*src)
 	}
+}
+
+func pointerCertRevocationCheckModeAttributeSet(src *string, dst *gosnowflake.CertRevocationCheckMode) error {
+	if src != nil {
+		mode, err := ToCertRevocationCheckMode(*src)
+		if err != nil {
+			return err
+		}
+		*dst = mode
+	}
+	return nil
 }
 
 func pointerIpAttributeSet(src *string, dst *net.IP) {
@@ -589,6 +635,36 @@ func ToDriverLogLevel(s string) (DriverLogLevel, error) {
 		return "", fmt.Errorf("invalid driver log level: %s", s)
 	}
 }
+
+type CertRevocationCheckMode string
+
+const (
+	CertRevocationCheckModeDisabled CertRevocationCheckMode = "DISABLED"
+	CertRevocationCheckModeAdvisory CertRevocationCheckMode = "ADVISORY"
+	CertRevocationCheckModeEnabled  CertRevocationCheckMode = "ENABLED"
+)
+
+var AllCertRevocationCheckModes = []CertRevocationCheckMode{
+	CertRevocationCheckModeDisabled,
+	CertRevocationCheckModeAdvisory,
+	CertRevocationCheckModeEnabled,
+}
+
+func ToCertRevocationCheckMode(s string) (gosnowflake.CertRevocationCheckMode, error) {
+	upperCase := strings.ToUpper(s)
+	switch upperCase {
+	case string(CertRevocationCheckModeDisabled):
+		return gosnowflake.CertRevocationCheckDisabled, nil
+	case string(CertRevocationCheckModeAdvisory):
+		return gosnowflake.CertRevocationCheckAdvisory, nil
+	case string(CertRevocationCheckModeEnabled):
+		return gosnowflake.CertRevocationCheckEnabled, nil
+	default:
+		return 0, fmt.Errorf("invalid cert revocation check mode: %s", s)
+	}
+}
+
+const CertRevocationCheckModeEmpty = gosnowflake.CertRevocationCheckDisabled
 
 // EmptyDriverConfig returns a default driver config with the Authenticator set to GosnowflakeAuthTypeEmpty.
 // This is used when no config is found in the config file.

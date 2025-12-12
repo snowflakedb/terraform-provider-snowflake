@@ -10,12 +10,19 @@ import (
 type SnowflakeModel struct {
 	AccountName                        tfconfig.Variable `json:"account_name,omitempty"`
 	Authenticator                      tfconfig.Variable `json:"authenticator,omitempty"`
+	CertRevocationCheckMode            tfconfig.Variable `json:"cert_revocation_check_mode,omitempty"`
 	ClientIp                           tfconfig.Variable `json:"client_ip,omitempty"`
 	ClientRequestMfaToken              tfconfig.Variable `json:"client_request_mfa_token,omitempty"`
 	ClientStoreTemporaryCredential     tfconfig.Variable `json:"client_store_temporary_credential,omitempty"`
 	ClientTimeout                      tfconfig.Variable `json:"client_timeout,omitempty"`
+	CrlAllowCertificatesWithoutCrlUrl  tfconfig.Variable `json:"crl_allow_certificates_without_crl_url,omitempty"`
+	CrlHttpClientTimeout               tfconfig.Variable `json:"crl_http_client_timeout,omitempty"`
+	CrlInMemoryCacheDisabled           tfconfig.Variable `json:"crl_in_memory_cache_disabled,omitempty"`
+	CrlOnDiskCacheDisabled             tfconfig.Variable `json:"crl_on_disk_cache_disabled,omitempty"`
 	DisableConsoleLogin                tfconfig.Variable `json:"disable_console_login,omitempty"`
+	DisableOcspChecks                  tfconfig.Variable `json:"disable_ocsp_checks,omitempty"`
 	DisableQueryContextCache           tfconfig.Variable `json:"disable_query_context_cache,omitempty"`
+	DisableSamlUrlCheck                tfconfig.Variable `json:"disable_saml_url_check,omitempty"`
 	DisableTelemetry                   tfconfig.Variable `json:"disable_telemetry,omitempty"`
 	DriverTracing                      tfconfig.Variable `json:"driver_tracing,omitempty"`
 	EnableSingleUseRefreshTokens       tfconfig.Variable `json:"enable_single_use_refresh_tokens,omitempty"`
@@ -59,6 +66,7 @@ type SnowflakeModel struct {
 	RequestTimeout                     tfconfig.Variable `json:"request_timeout,omitempty"`
 	Role                               tfconfig.Variable `json:"role,omitempty"`
 	SkipTomlFilePermissionVerification tfconfig.Variable `json:"skip_toml_file_permission_verification,omitempty"`
+	TlsConfigName                      tfconfig.Variable `json:"tls_config_name,omitempty"`
 	TmpDirectoryPath                   tfconfig.Variable `json:"tmp_directory_path,omitempty"`
 	Token                              tfconfig.Variable `json:"token,omitempty"`
 	TokenAccessor                      tfconfig.Variable `json:"token_accessor,omitempty"`
@@ -102,6 +110,11 @@ func (s *SnowflakeModel) WithAuthenticator(authenticator string) *SnowflakeModel
 	return s
 }
 
+func (s *SnowflakeModel) WithCertRevocationCheckMode(certRevocationCheckMode string) *SnowflakeModel {
+	s.CertRevocationCheckMode = tfconfig.StringVariable(certRevocationCheckMode)
+	return s
+}
+
 func (s *SnowflakeModel) WithClientIp(clientIp string) *SnowflakeModel {
 	s.ClientIp = tfconfig.StringVariable(clientIp)
 	return s
@@ -122,13 +135,43 @@ func (s *SnowflakeModel) WithClientTimeout(clientTimeout int) *SnowflakeModel {
 	return s
 }
 
+func (s *SnowflakeModel) WithCrlAllowCertificatesWithoutCrlUrl(crlAllowCertificatesWithoutCrlUrl string) *SnowflakeModel {
+	s.CrlAllowCertificatesWithoutCrlUrl = tfconfig.StringVariable(crlAllowCertificatesWithoutCrlUrl)
+	return s
+}
+
+func (s *SnowflakeModel) WithCrlHttpClientTimeout(crlHttpClientTimeout int) *SnowflakeModel {
+	s.CrlHttpClientTimeout = tfconfig.IntegerVariable(crlHttpClientTimeout)
+	return s
+}
+
+func (s *SnowflakeModel) WithCrlInMemoryCacheDisabled(crlInMemoryCacheDisabled bool) *SnowflakeModel {
+	s.CrlInMemoryCacheDisabled = tfconfig.BoolVariable(crlInMemoryCacheDisabled)
+	return s
+}
+
+func (s *SnowflakeModel) WithCrlOnDiskCacheDisabled(crlOnDiskCacheDisabled bool) *SnowflakeModel {
+	s.CrlOnDiskCacheDisabled = tfconfig.BoolVariable(crlOnDiskCacheDisabled)
+	return s
+}
+
 func (s *SnowflakeModel) WithDisableConsoleLogin(disableConsoleLogin string) *SnowflakeModel {
 	s.DisableConsoleLogin = tfconfig.StringVariable(disableConsoleLogin)
 	return s
 }
 
+func (s *SnowflakeModel) WithDisableOcspChecks(disableOcspChecks bool) *SnowflakeModel {
+	s.DisableOcspChecks = tfconfig.BoolVariable(disableOcspChecks)
+	return s
+}
+
 func (s *SnowflakeModel) WithDisableQueryContextCache(disableQueryContextCache bool) *SnowflakeModel {
 	s.DisableQueryContextCache = tfconfig.BoolVariable(disableQueryContextCache)
+	return s
+}
+
+func (s *SnowflakeModel) WithDisableSamlUrlCheck(disableSamlUrlCheck string) *SnowflakeModel {
+	s.DisableSamlUrlCheck = tfconfig.StringVariable(disableSamlUrlCheck)
 	return s
 }
 
@@ -338,6 +381,11 @@ func (s *SnowflakeModel) WithSkipTomlFilePermissionVerification(skipTomlFilePerm
 	return s
 }
 
+func (s *SnowflakeModel) WithTlsConfigName(tlsConfigName string) *SnowflakeModel {
+	s.TlsConfigName = tfconfig.StringVariable(tlsConfigName)
+	return s
+}
+
 func (s *SnowflakeModel) WithTmpDirectoryPath(tmpDirectoryPath string) *SnowflakeModel {
 	s.TmpDirectoryPath = tfconfig.StringVariable(tmpDirectoryPath)
 	return s
@@ -394,6 +442,11 @@ func (s *SnowflakeModel) WithAuthenticatorValue(value tfconfig.Variable) *Snowfl
 	return s
 }
 
+func (s *SnowflakeModel) WithCertRevocationCheckModeValue(value tfconfig.Variable) *SnowflakeModel {
+	s.CertRevocationCheckMode = value
+	return s
+}
+
 func (s *SnowflakeModel) WithClientIpValue(value tfconfig.Variable) *SnowflakeModel {
 	s.ClientIp = value
 	return s
@@ -414,13 +467,43 @@ func (s *SnowflakeModel) WithClientTimeoutValue(value tfconfig.Variable) *Snowfl
 	return s
 }
 
+func (s *SnowflakeModel) WithCrlAllowCertificatesWithoutCrlUrlValue(value tfconfig.Variable) *SnowflakeModel {
+	s.CrlAllowCertificatesWithoutCrlUrl = value
+	return s
+}
+
+func (s *SnowflakeModel) WithCrlHttpClientTimeoutValue(value tfconfig.Variable) *SnowflakeModel {
+	s.CrlHttpClientTimeout = value
+	return s
+}
+
+func (s *SnowflakeModel) WithCrlInMemoryCacheDisabledValue(value tfconfig.Variable) *SnowflakeModel {
+	s.CrlInMemoryCacheDisabled = value
+	return s
+}
+
+func (s *SnowflakeModel) WithCrlOnDiskCacheDisabledValue(value tfconfig.Variable) *SnowflakeModel {
+	s.CrlOnDiskCacheDisabled = value
+	return s
+}
+
 func (s *SnowflakeModel) WithDisableConsoleLoginValue(value tfconfig.Variable) *SnowflakeModel {
 	s.DisableConsoleLogin = value
 	return s
 }
 
+func (s *SnowflakeModel) WithDisableOcspChecksValue(value tfconfig.Variable) *SnowflakeModel {
+	s.DisableOcspChecks = value
+	return s
+}
+
 func (s *SnowflakeModel) WithDisableQueryContextCacheValue(value tfconfig.Variable) *SnowflakeModel {
 	s.DisableQueryContextCache = value
+	return s
+}
+
+func (s *SnowflakeModel) WithDisableSamlUrlCheckValue(value tfconfig.Variable) *SnowflakeModel {
+	s.DisableSamlUrlCheck = value
 	return s
 }
 
@@ -636,6 +719,11 @@ func (s *SnowflakeModel) WithRoleValue(value tfconfig.Variable) *SnowflakeModel 
 
 func (s *SnowflakeModel) WithSkipTomlFilePermissionVerificationValue(value tfconfig.Variable) *SnowflakeModel {
 	s.SkipTomlFilePermissionVerification = value
+	return s
+}
+
+func (s *SnowflakeModel) WithTlsConfigNameValue(value tfconfig.Variable) *SnowflakeModel {
+	s.TlsConfigName = value
 	return s
 }
 

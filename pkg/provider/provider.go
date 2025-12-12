@@ -375,8 +375,6 @@ func GetProviderSchema() map[string]*schema.Schema {
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.DisableConsoleLogin, resources.BooleanDefault),
 			ValidateDiagFunc: validators.ValidateBooleanStringWithDefault,
 		},
-		// TODO(SNOW-1761318): Add DisableSamlURLCheck.
-		// TODO(SNOW-1917271): Add DisableOCSPChecks.
 		"profile": {
 			Type: schema.TypeString,
 			// TODO(SNOW-1754364): Note that a default file path is already filled on sdk side.
@@ -526,6 +524,59 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Description: envNameFieldDescription("A comma-separated list of hostnames, domains, and IP addresses to exclude from proxying.", snowflakeenvs.NoProxy),
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.NoProxy, nil),
+		},
+		"disable_ocsp_checks": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("True by default. When set to true, the driver doesn't check certificate revocation status.", snowflakeenvs.DisableOCSPChecks),
+			Optional:    true,
+			Default:     true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableOCSPChecks, true),
+		},
+		"tls_config_name": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Name of the TLS configuration to use for the connection.", snowflakeenvs.TLSConfigName),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.TLSConfigName, nil),
+		},
+		"cert_revocation_check_mode": {
+			Type:             schema.TypeString,
+			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the certificate revocation check mode. Valid options are: %v.", docs.PossibleValuesListed(sdk.AllCertRevocationCheckModes)), snowflakeenvs.CertRevocationCheckMode),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.CertRevocationCheckMode, nil),
+			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToCertRevocationCheckMode),
+		},
+		"crl_allow_certificates_without_crl_url": {
+			Type:             schema.TypeString,
+			Description:      envNameFieldDescription("Allow certificates (not short-lived) without CRL DP included to be treated as correct ones.", snowflakeenvs.CrlAllowCertificatesWithoutCrlURL),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, provider.BooleanDefault),
+			ValidateDiagFunc: validators.ValidateBooleanStringWithDefault,
+		},
+		"crl_in_memory_cache_disabled": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("False by default. When set to true, the CRL in-memory cache is disabled.", snowflakeenvs.CrlInMemoryCacheDisabled),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.CrlInMemoryCacheDisabled, nil),
+		},
+		"crl_on_disk_cache_disabled": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("False by default. When set to true, the CRL on-disk cache is disabled.", snowflakeenvs.CrlOnDiskCacheDisabled),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.CrlOnDiskCacheDisabled, nil),
+		},
+		"crl_http_client_timeout": {
+			Type:             schema.TypeInt,
+			Description:      envNameFieldDescription("Timeout for HTTP client used to download CRL.", snowflakeenvs.CrlHTTPClientTimeout),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.CrlHTTPClientTimeout, nil),
+			ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
+		},
+		"disable_saml_url_check": {
+			Type:             schema.TypeString,
+			Description:      envNameFieldDescription("Indicates whether the SAML URL check should be disabled.", snowflakeenvs.DisableSamlURLCheck),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.DisableSamlURLCheck, provider.BooleanDefault),
+			ValidateDiagFunc: validators.ValidateBooleanStringWithDefault,
 		},
 	}
 }
@@ -895,7 +946,6 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "tmp_directory_path", &config.TmpDirPath),
 		handleBooleanStringAttribute(s, "disable_console_login", &config.DisableConsoleLogin),
 		// profile is handled in the calling function
-		// TODO(SNOW-1761318): handle DisableSamlURLCheck after upgrading the driver to at least 1.10.1
 		handleStringField(s, "oauth_client_id", &config.OauthClientID),
 		handleStringField(s, "oauth_client_secret", &config.OauthClientSecret),
 		handleStringField(s, "oauth_authorization_url", &config.OauthAuthorizationURL),
@@ -913,6 +963,24 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "proxy_password", &config.ProxyPassword),
 		handleStringField(s, "proxy_protocol", &config.ProxyProtocol),
 		handleStringField(s, "no_proxy", &config.NoProxy),
+		handleBoolField(s, "disable_ocsp_checks", &config.DisableOCSPChecks),
+		handleStringField(s, "tls_config_name", &config.TLSConfigName),
+		// cert_revocation_check_mode
+		func() error {
+			if v, ok := s.GetOk("cert_revocation_check_mode"); ok && v.(string) != "" {
+				mode, err := sdk.ToCertRevocationCheckMode(v.(string))
+				if err != nil {
+					return err
+				}
+				config.CertRevocationCheckMode = mode
+			}
+			return nil
+		}(),
+		handleBooleanStringAttribute(s, "crl_allow_certificates_without_crl_url", &config.CrlAllowCertificatesWithoutCrlURL),
+		handleBoolField(s, "crl_in_memory_cache_disabled", &config.CrlInMemoryCacheDisabled),
+		handleBoolField(s, "crl_on_disk_cache_disabled", &config.CrlOnDiskCacheDisabled),
+		handleDurationInSecondsAttribute(s, "crl_http_client_timeout", &config.CrlHTTPClientTimeout),
+		handleBooleanStringAttribute(s, "disable_saml_url_check", &config.DisableSamlURLCheck),
 	)
 	if err != nil {
 		return nil, err

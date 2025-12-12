@@ -42,6 +42,10 @@ func (m *SnowflakeModel) WithAuthenticatorType(authenticationType sdk.Authentica
 	return m.WithAuthenticator(string(authenticationType))
 }
 
+func (m *SnowflakeModel) WithCertRevocationCheckModeType(certRevocationCheckMode sdk.CertRevocationCheckMode) *SnowflakeModel {
+	return m.WithCertRevocationCheckMode(string(certRevocationCheckMode))
+}
+
 func (m *SnowflakeModel) WithPrivateKeyMultiline(privateKey string) *SnowflakeModel {
 	return m.WithPrivateKeyValue(config.MultilineWrapperVariable(privateKey))
 }
@@ -146,7 +150,15 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
 		WithProxyProtocol("https").
-		WithNoProxy("localhost,snowflake.computing.com")
+		WithNoProxy("localhost,snowflake.computing.com").
+		WithDisableOcspChecks(true).
+		WithTlsConfigName("").
+		WithCertRevocationCheckModeType(sdk.CertRevocationCheckModeAdvisory).
+		WithCrlAllowCertificatesWithoutCrlUrl("true").
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(true).
+		WithCrlHttpClientTimeout(30).
+		WithDisableSamlUrlCheck("true")
 }
 
 func PatConfig(h helpers.TmpServiceUserWithPat) *SnowflakeModel {

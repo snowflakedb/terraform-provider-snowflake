@@ -58,6 +58,15 @@ const (
 	ProxyProtocol                      = "SNOWFLAKE_PROXY_PROTOCOL"
 	NoProxy                            = "SNOWFLAKE_NO_PROXY"
 
+	DisableOCSPChecks                 = "SNOWFLAKE_DISABLE_OCSP_CHECKS"
+	TLSConfigName                     = "SNOWFLAKE_TLS_CONFIG_NAME"
+	CertRevocationCheckMode           = "SNOWFLAKE_CERT_REVOCATION_CHECK_MODE"
+	CrlAllowCertificatesWithoutCrlURL = "SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL"
+	CrlInMemoryCacheDisabled          = "SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED"
+	CrlOnDiskCacheDisabled            = "SNOWFLAKE_CRL_ON_DISK_CACHE_DISABLED"
+	CrlHTTPClientTimeout              = "SNOWFLAKE_CRL_HTTP_CLIENT_TIMEOUT"
+	DisableSamlURLCheck               = "SNOWFLAKE_DISABLE_SAML_URL_CHECK"
+
 	OauthClientId                = "SNOWFLAKE_OAUTH_CLIENT_ID"
 	OauthClientSecret            = "SNOWFLAKE_OAUTH_CLIENT_SECRET" //nolint:gosec
 	OauthAuthorizationUrl        = "SNOWFLAKE_OAUTH_AUTHORIZATION_URL"

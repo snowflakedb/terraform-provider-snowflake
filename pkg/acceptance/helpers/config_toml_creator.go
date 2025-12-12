@@ -64,7 +64,15 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
 		WithProxyProtocol("https").
-		WithNoProxy("localhost,snowflake.computing.com"),
+		WithNoProxy("localhost,snowflake.computing.com").
+		WithDisableOCSPChecks(true).
+		WithTLSConfigName("").
+		WithCertRevocationCheckMode("ADVISORY").
+		WithCrlAllowCertificatesWithoutCrlURL(true).
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(true).
+		WithCrlHTTPClientTimeout(30).
+		WithDisableSamlURLCheck(true),
 	)
 }
 
@@ -124,7 +132,15 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithProxyUser("proxy_user").
 		WithProxyPassword("proxy_password").
 		WithProxyProtocol("https").
-		WithNoProxy("localhost,snowflake.computing.com")
+		WithNoProxy("localhost,snowflake.computing.com").
+		WithDisableOCSPChecks(true).
+		WithTLSConfigName("").
+		WithCertRevocationCheckMode("ADVISORY").
+		WithCrlAllowCertificatesWithoutCrlURL(true).
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(true).
+		WithCrlHTTPClientTimeout(30).
+		WithDisableSamlURLCheck(true)
 	return configDtoToTomlString(t, profile, dto)
 }
 

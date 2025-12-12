@@ -289,3 +289,43 @@ func (s *ConfigDTO) WithNoProxy(NoProxy string) *ConfigDTO {
 	s.NoProxy = &NoProxy
 	return s
 }
+
+func (s *ConfigDTO) WithDisableOCSPChecks(DisableOCSPChecks bool) *ConfigDTO {
+	s.DisableOCSPChecks = &DisableOCSPChecks
+	return s
+}
+
+func (s *ConfigDTO) WithTLSConfigName(TLSConfigName string) *ConfigDTO {
+	s.TLSConfigName = &TLSConfigName
+	return s
+}
+
+func (s *ConfigDTO) WithCertRevocationCheckMode(CertRevocationCheckMode string) *ConfigDTO {
+	s.CertRevocationCheckMode = &CertRevocationCheckMode
+	return s
+}
+
+func (s *ConfigDTO) WithCrlAllowCertificatesWithoutCrlURL(CrlAllowCertificatesWithoutCrlURL bool) *ConfigDTO {
+	s.CrlAllowCertificatesWithoutCrlURL = &CrlAllowCertificatesWithoutCrlURL
+	return s
+}
+
+func (s *ConfigDTO) WithCrlInMemoryCacheDisabled(CrlInMemoryCacheDisabled bool) *ConfigDTO {
+	s.CrlInMemoryCacheDisabled = &CrlInMemoryCacheDisabled
+	return s
+}
+
+func (s *ConfigDTO) WithCrlOnDiskCacheDisabled(CrlOnDiskCacheDisabled bool) *ConfigDTO {
+	s.CrlOnDiskCacheDisabled = &CrlOnDiskCacheDisabled
+	return s
+}
+
+func (s *ConfigDTO) WithCrlHTTPClientTimeout(CrlHTTPClientTimeout int) *ConfigDTO {
+	s.CrlHTTPClientTimeout = &CrlHTTPClientTimeout
+	return s
+}
+
+func (s *ConfigDTO) WithDisableSamlURLCheck(DisableSamlURLCheck bool) *ConfigDTO {
+	s.DisableSamlURLCheck = &DisableSamlURLCheck
+	return s
+}
