@@ -51,6 +51,12 @@ const (
 	WorkloadIdentityEntraResource      = "SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE"
 	LogQueryText                       = "SNOWFLAKE_LOG_QUERY_TEXT"
 	LogQueryParameters                 = "SNOWFLAKE_LOG_QUERY_PARAMETERS"
+	ProxyHost                          = "SNOWFLAKE_PROXY_HOST"
+	ProxyPort                          = "SNOWFLAKE_PROXY_PORT"
+	ProxyUser                          = "SNOWFLAKE_PROXY_USER"
+	ProxyPassword                      = "SNOWFLAKE_PROXY_PASSWORD"
+	ProxyProtocol                      = "SNOWFLAKE_PROXY_PROTOCOL"
+	NoProxy                            = "SNOWFLAKE_NO_PROXY"
 
 	OauthClientId                = "SNOWFLAKE_OAUTH_CLIENT_ID"
 	OauthClientSecret            = "SNOWFLAKE_OAUTH_CLIENT_SECRET" //nolint:gosec

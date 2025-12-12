@@ -32,6 +32,7 @@ type pluginFrameworkPocProviderModelV0 struct {
 	LogQueryText                       types.Bool   `tfsdk:"log_query_text"`
 	LoginTimeout                       types.Int64  `tfsdk:"login_timeout"`
 	MaxRetryCount                      types.Int64  `tfsdk:"max_retry_count"`
+	NoProxy                            types.String `tfsdk:"no_proxy"`
 	OauthAuthorizationUrl              types.String `tfsdk:"oauth_authorization_url"`
 	OauthClientId                      types.String `tfsdk:"oauth_client_id"`
 	OauthClientSecret                  types.String `tfsdk:"oauth_client_secret"`
@@ -51,6 +52,11 @@ type pluginFrameworkPocProviderModelV0 struct {
 	PrivateKeyPassphrase               types.String `tfsdk:"private_key_passphrase"`
 	Profile                            types.String `tfsdk:"profile"`
 	Protocol                           types.String `tfsdk:"protocol"`
+	ProxyHost                          types.String `tfsdk:"proxy_host"`
+	ProxyPassword                      types.String `tfsdk:"proxy_password"`
+	ProxyPort                          types.Int64  `tfsdk:"proxy_port"`
+	ProxyProtocol                      types.String `tfsdk:"proxy_protocol"`
+	ProxyUser                          types.String `tfsdk:"proxy_user"`
 	RequestTimeout                     types.Int64  `tfsdk:"request_timeout"`
 	Role                               types.String `tfsdk:"role"`
 	SkipTomlFilePermissionVerification types.Bool   `tfsdk:"skip_toml_file_permission_verification"`
@@ -184,6 +190,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   false,
 	},
+	"no_proxy": schema.StringAttribute{
+		Description: existingSchema["no_proxy"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"oauth_authorization_url": schema.StringAttribute{
 		Description: existingSchema["oauth_authorization_url"].Description,
 		Optional:    true,
@@ -281,6 +292,31 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   false,
 	},
+	"proxy_host": schema.StringAttribute{
+		Description: existingSchema["proxy_host"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"proxy_password": schema.StringAttribute{
+		Description: existingSchema["proxy_password"].Description,
+		Optional:    true,
+		Sensitive:   true,
+	},
+	"proxy_port": schema.Int64Attribute{
+		Description: existingSchema["proxy_port"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"proxy_protocol": schema.StringAttribute{
+		Description: existingSchema["proxy_protocol"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"proxy_user": schema.StringAttribute{
+		Description: existingSchema["proxy_user"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"request_timeout": schema.Int64Attribute{
 		Description: existingSchema["request_timeout"].Description,
 		Optional:    true,
@@ -307,11 +343,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Sensitive:   true,
 	},
 	// commented out manually
-	//"token_accessor": schema.ListAttribute{
-	//	Description: existingSchema["token_accessor"].Description,
-	//	Optional:    true,
-	//	Sensitive:   false,
-	//},
+	// "token_accessor": schema.ListAttribute{
+	// 	Description: existingSchema["token_accessor"].Description,
+	// 	Optional:    true,
+	// 	Sensitive:   false,
+	// },
 	"use_legacy_toml_file": schema.BoolAttribute{
 		Description: existingSchema["use_legacy_toml_file"].Description,
 		Optional:    true,

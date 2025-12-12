@@ -70,6 +70,20 @@ No changes in configuration are required for existing tasks. You can optionally 
 ### *(improvement)* New fields in user resources and data sources output fields
 We adjusted the `show_output` by adding the missing `has_workload_identity` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
 
+### *(new feature)* New proxy configuration options in the provider
+
+We added new provider configuration options to support proxy connections. These fields allow the driver to connect through an HTTP/HTTPS proxy:
+  - `proxy_host` - the hostname of the proxy server
+  - `proxy_port` - the port of the proxy server
+  - `proxy_user` - the username for proxy authentication (if required)
+  - `proxy_password` - the password for proxy authentication (if required)
+  - `proxy_protocol` - the protocol used by the proxy (`http` or `https`)
+  - `no_proxy` - a comma-separated list of hostnames that should bypass the proxy
+
+These options can be set in the provider configuration, TOML configuration file, or via environment variables (`SNOWFLAKE_PROXY_HOST`, `SNOWFLAKE_PROXY_PORT`, `SNOWFLAKE_PROXY_USER`, `SNOWFLAKE_PROXY_PASSWORD`, `SNOWFLAKE_PROXY_PROTOCOL`, `SNOWFLAKE_NO_PROXY`). Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+
+No changes in configuration are required for existing setups. You can optionally update your configurations to use these new options if you need to connect through a proxy.
+
 ## v2.10.x ➞ v2.11.0
 
 ### *(new feature)* Notebooks preview feature

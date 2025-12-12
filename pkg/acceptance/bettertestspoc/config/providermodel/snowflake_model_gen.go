@@ -31,6 +31,7 @@ type SnowflakeModel struct {
 	LogQueryText                       tfconfig.Variable `json:"log_query_text,omitempty"`
 	LoginTimeout                       tfconfig.Variable `json:"login_timeout,omitempty"`
 	MaxRetryCount                      tfconfig.Variable `json:"max_retry_count,omitempty"`
+	NoProxy                            tfconfig.Variable `json:"no_proxy,omitempty"`
 	OauthAuthorizationUrl              tfconfig.Variable `json:"oauth_authorization_url,omitempty"`
 	OauthClientId                      tfconfig.Variable `json:"oauth_client_id,omitempty"`
 	OauthClientSecret                  tfconfig.Variable `json:"oauth_client_secret,omitempty"`
@@ -50,6 +51,11 @@ type SnowflakeModel struct {
 	PrivateKeyPassphrase               tfconfig.Variable `json:"private_key_passphrase,omitempty"`
 	Profile                            tfconfig.Variable `json:"profile,omitempty"`
 	Protocol                           tfconfig.Variable `json:"protocol,omitempty"`
+	ProxyHost                          tfconfig.Variable `json:"proxy_host,omitempty"`
+	ProxyPassword                      tfconfig.Variable `json:"proxy_password,omitempty"`
+	ProxyPort                          tfconfig.Variable `json:"proxy_port,omitempty"`
+	ProxyProtocol                      tfconfig.Variable `json:"proxy_protocol,omitempty"`
+	ProxyUser                          tfconfig.Variable `json:"proxy_user,omitempty"`
 	RequestTimeout                     tfconfig.Variable `json:"request_timeout,omitempty"`
 	Role                               tfconfig.Variable `json:"role,omitempty"`
 	SkipTomlFilePermissionVerification tfconfig.Variable `json:"skip_toml_file_permission_verification,omitempty"`
@@ -198,6 +204,11 @@ func (s *SnowflakeModel) WithMaxRetryCount(maxRetryCount int) *SnowflakeModel {
 	return s
 }
 
+func (s *SnowflakeModel) WithNoProxy(noProxy string) *SnowflakeModel {
+	s.NoProxy = tfconfig.StringVariable(noProxy)
+	return s
+}
+
 func (s *SnowflakeModel) WithOauthAuthorizationUrl(oauthAuthorizationUrl string) *SnowflakeModel {
 	s.OauthAuthorizationUrl = tfconfig.StringVariable(oauthAuthorizationUrl)
 	return s
@@ -284,6 +295,31 @@ func (s *SnowflakeModel) WithProfile(profile string) *SnowflakeModel {
 
 func (s *SnowflakeModel) WithProtocol(protocol string) *SnowflakeModel {
 	s.Protocol = tfconfig.StringVariable(protocol)
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyHost(proxyHost string) *SnowflakeModel {
+	s.ProxyHost = tfconfig.StringVariable(proxyHost)
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyPassword(proxyPassword string) *SnowflakeModel {
+	s.ProxyPassword = tfconfig.StringVariable(proxyPassword)
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyPort(proxyPort int) *SnowflakeModel {
+	s.ProxyPort = tfconfig.IntegerVariable(proxyPort)
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyProtocol(proxyProtocol string) *SnowflakeModel {
+	s.ProxyProtocol = tfconfig.StringVariable(proxyProtocol)
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyUser(proxyUser string) *SnowflakeModel {
+	s.ProxyUser = tfconfig.StringVariable(proxyUser)
 	return s
 }
 
@@ -463,6 +499,11 @@ func (s *SnowflakeModel) WithMaxRetryCountValue(value tfconfig.Variable) *Snowfl
 	return s
 }
 
+func (s *SnowflakeModel) WithNoProxyValue(value tfconfig.Variable) *SnowflakeModel {
+	s.NoProxy = value
+	return s
+}
+
 func (s *SnowflakeModel) WithOauthAuthorizationUrlValue(value tfconfig.Variable) *SnowflakeModel {
 	s.OauthAuthorizationUrl = value
 	return s
@@ -555,6 +596,31 @@ func (s *SnowflakeModel) WithProfileValue(value tfconfig.Variable) *SnowflakeMod
 
 func (s *SnowflakeModel) WithProtocolValue(value tfconfig.Variable) *SnowflakeModel {
 	s.Protocol = value
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyHostValue(value tfconfig.Variable) *SnowflakeModel {
+	s.ProxyHost = value
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyPasswordValue(value tfconfig.Variable) *SnowflakeModel {
+	s.ProxyPassword = value
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyPortValue(value tfconfig.Variable) *SnowflakeModel {
+	s.ProxyPort = value
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyProtocolValue(value tfconfig.Variable) *SnowflakeModel {
+	s.ProxyProtocol = value
+	return s
+}
+
+func (s *SnowflakeModel) WithProxyUserValue(value tfconfig.Variable) *SnowflakeModel {
+	s.ProxyUser = value
 	return s
 }
 

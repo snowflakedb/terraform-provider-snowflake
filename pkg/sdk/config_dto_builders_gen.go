@@ -259,3 +259,33 @@ func (s *ConfigDTO) WithLogQueryParameters(LogQueryParameters bool) *ConfigDTO {
 	s.LogQueryParameters = &LogQueryParameters
 	return s
 }
+
+func (s *ConfigDTO) WithProxyHost(ProxyHost string) *ConfigDTO {
+	s.ProxyHost = &ProxyHost
+	return s
+}
+
+func (s *ConfigDTO) WithProxyPort(ProxyPort int) *ConfigDTO {
+	s.ProxyPort = &ProxyPort
+	return s
+}
+
+func (s *ConfigDTO) WithProxyUser(ProxyUser string) *ConfigDTO {
+	s.ProxyUser = &ProxyUser
+	return s
+}
+
+func (s *ConfigDTO) WithProxyPassword(ProxyPassword string) *ConfigDTO {
+	s.ProxyPassword = &ProxyPassword
+	return s
+}
+
+func (s *ConfigDTO) WithProxyProtocol(ProxyProtocol string) *ConfigDTO {
+	s.ProxyProtocol = &ProxyProtocol
+	return s
+}
+
+func (s *ConfigDTO) WithNoProxy(NoProxy string) *ConfigDTO {
+	s.NoProxy = &NoProxy
+	return s
+}

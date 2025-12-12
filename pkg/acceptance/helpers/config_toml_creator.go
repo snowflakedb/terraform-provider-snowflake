@@ -58,7 +58,13 @@ func FullTomlConfigForServiceUser(t *testing.T, profile string, userId sdk.Accou
 		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 		WithEnableSingleUseRefreshTokens(true).
 		WithLogQueryText(true).
-		WithLogQueryParameters(true),
+		WithLogQueryParameters(true).
+		WithProxyHost("").
+		WithProxyPort(443).
+		WithProxyUser("proxy_user").
+		WithProxyPassword("proxy_password").
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com"),
 	)
 }
 
@@ -112,7 +118,13 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithWorkloadIdentityEntraResource("invalid").
 		WithEnableSingleUseRefreshTokens(true).
 		WithLogQueryText(true).
-		WithLogQueryParameters(true)
+		WithLogQueryParameters(true).
+		WithProxyHost("").
+		WithProxyPort(443).
+		WithProxyUser("proxy_user").
+		WithProxyPassword("proxy_password").
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com")
 	return configDtoToTomlString(t, profile, dto)
 }
 
@@ -188,7 +200,8 @@ func TomlConfigForLegacyServiceUser(t *testing.T, profile string, userId sdk.Acc
 func TomlConfigForLegacyServiceUserWithoutAuthenticator(t *testing.T, profile string, userId sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, accountIdentifier sdk.AccountIdentifier, pass string) string {
 	t.Helper()
 
-	return configDtoToTomlString(t, profile, sdk.ConfigForSnowflakeAuth(accountIdentifier, userId, pass, roleId, warehouseId).WithAuthenticatorNil())
+	return configDtoToTomlString(t, profile, sdk.ConfigForSnowflakeAuth(accountIdentifier, userId, pass, roleId, warehouseId).
+		WithAuthenticatorNil())
 }
 
 // TomlConfigForServiceUserWithModifiers is a temporary function used to test provider configuration allowing to modify the toml config
