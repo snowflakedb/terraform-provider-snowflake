@@ -270,7 +270,7 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 				granteeName = granteeName[strings.IndexRune(granteeName, '.')+1:]
 			}
 			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeName)
-		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser}, grant.GrantedTo) {
+		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser, ObjectTypeApplication}, grant.GrantedTo) {
 			id, err := ParseDatabaseObjectIdentifier(granteeNameRaw)
 			if err != nil {
 				return nil, err
