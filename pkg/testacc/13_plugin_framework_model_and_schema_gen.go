@@ -175,6 +175,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["experimental_features_enabled"].Description,
 		Optional:    true,
 		Sensitive:   false,
+		ElementType: types.StringType, // edited manually
 	},
 	"external_browser_timeout": schema.Int64Attribute{
 		Description: existingSchema["external_browser_timeout"].Description,
@@ -285,6 +286,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["params"].Description,
 		Optional:    true,
 		Sensitive:   false,
+		ElementType: types.StringType, // edited manually
 	},
 	"passcode": schema.StringAttribute{
 		Description: existingSchema["passcode"].Description,
@@ -310,6 +312,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Description: existingSchema["preview_features_enabled"].Description,
 		Optional:    true,
 		Sensitive:   false,
+		ElementType: types.StringType, // edited manually
 	},
 	"private_key": schema.StringAttribute{
 		Description: existingSchema["private_key"].Description,
@@ -376,11 +379,12 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   false,
 	},
-	"token": schema.StringAttribute{
-		Description: existingSchema["token"].Description,
-		Optional:    true,
-		Sensitive:   true,
-	},
+	// commented out manually
+	// "token": schema.StringAttribute{
+	// 	Description: existingSchema["token"].Description,
+	// 	Optional:    true,
+	// 	Sensitive:   true,
+	// },
 	"token_accessor": schema.ListAttribute{
 		Description: existingSchema["token_accessor"].Description,
 		Optional:    true,

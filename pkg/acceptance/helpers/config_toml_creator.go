@@ -138,7 +138,7 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithCrlInMemoryCacheDisabled(false).
 		WithCrlOnDiskCacheDisabled(true).
 		WithCrlHTTPClientTimeout(30).
-		WithDisableSamlURLCheck(true).WithHost("ep77514.preprod6.us-west-2.aws.snowflakecomputing.com")
+		WithDisableSamlURLCheck(true)
 	return configDtoToTomlString(t, profile, dto)
 }
 
