@@ -884,14 +884,12 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 			continue
 		}
 
-		// Future grants do not have grantedBy, only current grants do.
-		// If grantedBy is an empty string, it means terraform could not have created the grant.
-		// The same goes for the default SNOWFLAKE database, but we don't want to skip in this case
-		//
-		// The strict privilege management doesn't support future grants, thus any future privileges should be skipped.
-		// TODO: See if that's necessary
-		if ((opts.Future == nil || !*opts.Future) && grant.GrantedBy.Name() == "" && grant.Name.Name() != "SNOWFLAKE") ||
-			(strictPrivilegeManagement && (opts.Future != nil && *opts.Future)) {
+		// If grantedBy is an empty string, it means:
+		// - it's a future grant, or
+		// - it's a predefined Snowflake grant
+		// Thus, we should skip if we are getting future grants when not specified in the SHOW opts, or
+		// we are dealing with predefined object other than the "SNOWFLAKE" database (unsupported feature).
+		if (opts.Future == nil || !*opts.Future) && grant.GrantedBy.Name() == "" && grant.Name.Name() != "SNOWFLAKE" {
 			continue
 		}
 
