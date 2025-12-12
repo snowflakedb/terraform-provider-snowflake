@@ -92,7 +92,7 @@ var organizationAccountsDef = g.NewInterface(
 			Number("managed_accounts").
 			Text("consumption_billing_entity_name").
 			OptionalText("marketplace_consumer_billing_entity_name").
-			Text("marketplace_provider_billing_entity_name").
+			OptionalText("marketplace_provider_billing_entity_name").
 			OptionalText("old_account_url").
 			Bool("is_org_admin").
 			OptionalText("account_old_url_saved_on").
@@ -115,7 +115,7 @@ var organizationAccountsDef = g.NewInterface(
 			Number("ManagedAccounts").
 			Text("ConsumptionBillingEntityName").
 			OptionalText("MarketplaceConsumerBillingEntityName").
-			Text("MarketplaceProviderBillingEntityName").
+			OptionalText("MarketplaceProviderBillingEntityName").
 			OptionalText("OldAccountUrl").
 			Bool("IsOrgAdmin").
 			OptionalText("AccountOldUrlSavedOn").

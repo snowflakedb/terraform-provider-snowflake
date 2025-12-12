@@ -118,6 +118,27 @@ var ShowTaskSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"target_completion_interval": {
+		// adjusted manually
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"hours": {
+					Type:     schema.TypeInt,
+					Computed: true,
+				},
+				"minutes": {
+					Type:     schema.TypeInt,
+					Computed: true,
+				},
+				"seconds": {
+					Type:     schema.TypeInt,
+					Computed: true,
+				},
+			},
+		},
+	},
 }
 
 var _ = ShowTaskSchema
@@ -167,6 +188,16 @@ func TaskToSchema(task *sdk.Task) map[string]any {
 			"finalizer":           finalizer,
 			"finalized_root_task": finalizedRootTask,
 		},
+	}
+	// adjusted manually
+	if task.TargetCompletionInterval != nil {
+		taskSchema["target_completion_interval"] = []any{
+			map[string]any{
+				"hours":   task.TargetCompletionInterval.Hours,
+				"minutes": task.TargetCompletionInterval.Minutes,
+				"seconds": task.TargetCompletionInterval.Seconds,
+			},
+		}
 	}
 	return taskSchema
 }

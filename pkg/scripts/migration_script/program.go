@@ -24,6 +24,7 @@ const (
 	ObjectTypeWarehouses    ObjectType = "warehouses"
 	ObjectTypeAccountRoles  ObjectType = "account_roles"
 	ObjectTypeDatabaseRoles ObjectType = "database_roles"
+	ObjectTypeUsers         ObjectType = "users"
 )
 
 var AllObjectTypes = []ObjectType{
@@ -33,6 +34,7 @@ var AllObjectTypes = []ObjectType{
 	ObjectTypeWarehouses,
 	ObjectTypeAccountRoles,
 	ObjectTypeDatabaseRoles,
+	ObjectTypeUsers,
 }
 
 func ToObjectType(s string) (ObjectType, error) {
@@ -181,6 +183,16 @@ object_type represents the type of Snowflake object you want to generate terrafo
 		- "database_roles" which expects input in the form of [SHOW DATABASE ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
 			Supported resources:
 				- snowflake_database_role
+		- "users" which expects a converted CSV output from the snowflake_users data source.
+      		To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW USERS output, so the CSV header looks like "comment","created_on",...,"abort_detached_query_value","abort_detached_query_level","timezone_value","timezone_level",...
+			Different user types (PERSON, SERVICE, LEGACY_SERVICE) are mapped to their respective terraform resources:
+				- PERSON (or empty) -> snowflake_user
+				- SERVICE -> snowflake_service_user
+				- LEGACY_SERVICE -> snowflake_legacy_service_user
+			Supported resources:
+				- snowflake_user
+				- snowflake_service_user
+				- snowflake_legacy_service_user
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -245,6 +257,8 @@ func (p *Program) generateOutput(input [][]string) (string, error) {
 		return HandleAccountRoles(p.Config, input)
 	case ObjectTypeDatabaseRoles:
 		return HandleDatabaseRoles(p.Config, input)
+	case ObjectTypeUsers:
+		return HandleUsers(p.Config, input)
 	default:
 		return "", fmt.Errorf("unsupported object type: %s, run -h to get more information on allowed object types", p.Config.ObjectType)
 	}

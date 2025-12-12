@@ -2,9 +2,26 @@ package main
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
+
+// csvUnescape reverses the CSV escaping done by the Terraform HCL generator.
+// It converts:
+//   - \n -> newline
+//   - \r -> carriage return
+//   - \\ -> backslash
+func csvUnescape(s string) string {
+	const placeholder = "\x00BACKSLASH\x00"
+
+	result := s
+	result = strings.ReplaceAll(result, "\\\\", placeholder)
+	result = strings.ReplaceAll(result, "\\n", "\n")
+	result = strings.ReplaceAll(result, "\\r", "\r")
+	result = strings.ReplaceAll(result, placeholder, "\\")
+	return result
+}
 
 func handleOptionalFieldWithBuilder[T any, U any](parameter *T, builder func(T) *U) {
 	if parameter != nil {
