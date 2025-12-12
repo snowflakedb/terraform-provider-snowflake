@@ -3,7 +3,6 @@
 package testacc
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -38,11 +37,10 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		*sdk.NewTableColumnRequest(`"a2"`, sdk.DataTypeNumber),
 	})
 	t.Cleanup(table2Cleanup)
-	privateModifier := "PRIVATE"
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, []sdk.Synonym{{"orders"}, {"sales"}}, "logical table 1")
 	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "")
 	semExp1 := model.SemanticExpressionWithProps(`"lt1"."m1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil, nil)
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil, true)
 	relTableAlias := model.RelationshipTableAliasWithProps("lt1", table1.ID())
 	relTableColumns := []sdk.SemanticViewColumn{
 		{
@@ -65,7 +63,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	rel1 := model.RelationshipWithProps("r1", *relTableAlias, relTableColumns, *refTableAlias, refRelTableColumns)
 
 	factSemExp1 := model.SemanticExpressionWithProps(`"lt1"."f1"`, `"lt1"."a2"`, []sdk.Synonym{{Synonym: "fact1"}}, "fact 1")
-	fact1 := model.FactDefinitionWithProps(factSemExp1, nil)
+	fact1 := model.FactDefinitionWithProps(factSemExp1, false)
 
 	dimensionSemExp1 := model.SemanticExpressionWithProps(`"lt1"."d1"`, `"lt1"."a1"`, []sdk.Synonym{{Synonym: "dim1"}}, "dimension 1")
 	dimension1 := model.DimensionDefinitionWithProps(dimensionSemExp1)
@@ -91,13 +89,13 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	rel2 := model.RelationshipWithProps("r2", *relTableAlias2, relTableColumns2, *refTableAlias2, refRelTableColumns2)
 
 	factSemExp2 := model.SemanticExpressionWithProps(`"lt1"."f2"`, `"lt1"."a1"`, []sdk.Synonym{{Synonym: "fact2"}}, "fact 2")
-	fact2 := model.FactDefinitionWithProps(factSemExp2, &privateModifier)
+	fact2 := model.FactDefinitionWithProps(factSemExp2, true)
 
 	dimensionSemExp2 := model.SemanticExpressionWithProps(`"lt1"."d2"`, `"lt1"."a2"`, []sdk.Synonym{{Synonym: "dim2"}}, "dimension 2")
 	dimension2 := model.DimensionDefinitionWithProps(dimensionSemExp2)
 
 	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps(`"lt1"."wf1"`, `SUM("lt1"."m1")`, sdk.WindowFunctionOverClause{PartitionBy: sdk.Pointer(`"lt1"."d2"`)})
-	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1, &privateModifier)
+	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1, false)
 
 	lt1Request := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt1"})
 	lt2Request := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt2"})
@@ -125,10 +123,6 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithFacts([]sdk.FactDefinition{*fact1}).
 		WithDimensions([]sdk.DimensionDefinition{*dimension1})
 
-	fmt.Printf("modelComplete metrics: %v \n", modelComplete.Metrics)
-	fmt.Printf("modelComplete facts: %v \n", modelComplete.Facts)
-	fmt.Println("----------------------------------------")
-
 	modelCompleteWithDifferentValues := model.SemanticViewWithMetrics(
 		"test",
 		id,
@@ -139,11 +133,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithFacts([]sdk.FactDefinition{*fact2}).
 		WithDimensions([]sdk.DimensionDefinition{*dimension2})
 
-	fmt.Printf("modelCompleteWithDifferentValues metrics: %v \n", modelCompleteWithDifferentValues.Metrics)
-	fmt.Printf("modelCompleteWithDifferentValues facts: %v \n", modelCompleteWithDifferentValues.Facts)
-	fmt.Println("----------------------------------------")
-
-	t1Alias, t2Alias, dimensionName, factName, metricName, relationshipName := "lt1", "lt2", "d1", "f1", "m1", "r1"
+	t1Alias, t2Alias, dimensionName, factName, privateFactName, metricName, relationshipName := "lt1", "lt2", "d1", "f1", "f2", "m1", "r1"
 
 	// semantic view related details
 	commentDetails := objectassert.NewSemanticViewDetails(nil, nil, nil, "COMMENT", comment)
@@ -173,11 +163,18 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	factComment := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "COMMENT", "fact 1")
 	factAccessModifier := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
 
+	privateFactTable := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "TABLE", t1Alias)
+	privateFactExpression := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "EXPRESSION", `"lt1"."a1"`)
+	privateFactDataType := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+	privateFactSynonyms := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "SYNONYMS", `["fact2"]`)
+	privateFactComment := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "COMMENT", "fact 2")
+	privateFactAccessModifier := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "ACCESS_MODIFIER", "PRIVATE")
+
 	// metric related details
 	metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", t1Alias)
 	metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("lt1"."a1")`)
 	metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-	metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+	metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PRIVATE")
 
 	// logical table 2 related details
 	table2DatabaseName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2.ID().DatabaseName())
@@ -366,6 +363,13 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.SemanticViewShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasComment(changedComment),
+					objectassert.SemanticViewDetails(t, id).
+						ContainsDetail(privateFactTable).
+						ContainsDetail(privateFactExpression).
+						ContainsDetail(privateFactDataType).
+						ContainsDetail(privateFactSynonyms).
+						ContainsDetail(privateFactComment).
+						ContainsDetail(privateFactAccessModifier),
 				),
 			},
 			// change externally - no recreation yet
@@ -437,7 +441,7 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}}, []sdk.Synonym{}, "")
 	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{}, "")
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil, nil)
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil, false)
 
 	modelBasic := model.SemanticViewWithMetrics(
 		"test",

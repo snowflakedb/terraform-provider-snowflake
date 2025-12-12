@@ -62,10 +62,12 @@ func (m *MetricDefinition) GetPrivateMetric() *string {
 	return m.PrivateMetric
 }
 
-func (m *MetricDefinition) SetPrivateMetric(privateMetric *string) {
-	if privateMetric != nil {
-		m.PrivateMetric = privateMetric
-	}
+func (m *MetricDefinition) SetPrivateMetric() {
+	m.PrivateMetric = String("PRIVATE")
+}
+
+func (m *MetricDefinition) UnsetPrivateMetric() {
+	m.PrivateMetric = nil
 }
 
 func (f *FactDefinition) GetSemanticExpression() *SemanticExpression {
@@ -76,14 +78,16 @@ func (f *FactDefinition) SetSemanticExpression(semExp *SemanticExpression) {
 	f.semanticExpression = semExp
 }
 
-func (f *FactDefinition) GetPrivateFact() *string {
-	return f.PrivateFact
+func (f *FactDefinition) IsPrivateFact() bool {
+	return f.PrivateFact != nil
 }
 
-func (f *FactDefinition) SetPrivateFact(privateFact *string) {
-	if privateFact != nil {
-		f.PrivateFact = privateFact
-	}
+func (f *FactDefinition) SetPrivateFact() {
+	f.PrivateFact = String("PRIVATE")
+}
+
+func (f *FactDefinition) UnsetPrivateFact() {
+	f.PrivateFact = nil
 }
 
 func (d *DimensionDefinition) GetSemanticExpression() *SemanticExpression {

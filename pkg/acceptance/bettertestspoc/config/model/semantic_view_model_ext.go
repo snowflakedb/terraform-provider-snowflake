@@ -1,8 +1,6 @@
 package model
 
 import (
-	"fmt"
-
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -211,9 +209,9 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.FactDefinition) *SemanticViewM
 			semExpVar["synonym"] = tfconfig.SetVariable(syns...)
 		}
 		m["semantic_expression"] = tfconfig.ListVariable(tfconfig.ObjectVariable(semExpVar))
-		privateFact := v.GetPrivateFact()
-		if privateFact != nil {
-			m["private_fact"] = tfconfig.StringVariable(*privateFact)
+		//isPrivateFact := v.isPrivateFact()
+		if v.IsPrivateFact() {
+			m["private_fact"] = tfconfig.StringVariable("PRIVATE")
 		}
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
@@ -319,40 +317,27 @@ func WindowFunctionMetricDefinitionWithProps(
 	return windowFunctionMetricDefinition
 }
 
-func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition, privateMetric *string) *sdk.MetricDefinition {
+func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition, privateMetric bool) *sdk.MetricDefinition {
 	metric := &sdk.MetricDefinition{}
 	if semExp != nil {
-		fmt.Println("setting metric semantic expression")
 		metric.SetSemanticExpression(semExp)
 	} else if windowFunc != nil {
-		fmt.Println("setting metric window function")
 		metric.SetWindowFunctionMetricDefinition(windowFunc)
 	}
-	if privateMetric != nil {
-		fmt.Println("setting metric private")
-		metric.SetPrivateMetric(privateMetric)
-	} else {
-		fmt.Println("setting metric public")
+	if privateMetric {
+		metric.SetPrivateMetric()
 	}
-	fmt.Printf("private value: %v \n", metric.GetPrivateMetric())
-	fmt.Println("----------------------------------------")
 	return metric
 }
 
-func FactDefinitionWithProps(semExp *sdk.SemanticExpression, privateFact *string) *sdk.FactDefinition {
+func FactDefinitionWithProps(semExp *sdk.SemanticExpression, privateFact bool) *sdk.FactDefinition {
 	fact := &sdk.FactDefinition{}
 	if semExp != nil {
 		fact.SetSemanticExpression(semExp)
-		fmt.Println(semExp)
 	}
-	if privateFact != nil {
-		fmt.Println("setting fact private")
-		fact.SetPrivateFact(privateFact)
-	} else {
-		fmt.Println("setting fact public")
+	if privateFact {
+		fact.SetPrivateFact()
 	}
-	fmt.Printf("private value: %v \n", fact.GetPrivateFact())
-	fmt.Println("----------------------------------------")
 	return fact
 }
 

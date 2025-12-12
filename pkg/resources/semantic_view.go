@@ -675,7 +675,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 		return nil, fmt.Errorf("either semantic expression or window function is required")
 	}
 
-	if c["private_metric"] != nil {
+	if c["private_metric"] != "" {
 		metricDefinitionRequest = metricDefinitionRequest.WithPrivateMetric()
 	}
 	return metricDefinitionRequest, nil
@@ -712,7 +712,7 @@ func getFactDefinitionRequest(from any) (*sdk.FactDefinitionRequest, error) {
 	} else {
 		return nil, fmt.Errorf("semantic expression is required in fact definition")
 	}
-	if c["private_fact"] != nil {
+	if c["private_fact"] != "" {
 		factDefinitionRequest = factDefinitionRequest.WithPrivateFact()
 	}
 	return factDefinitionRequest, nil
