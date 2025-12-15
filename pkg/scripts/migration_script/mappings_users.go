@@ -53,8 +53,9 @@ func MapToUser(user UserRepresentation) (accconfig.ResourceModel, *ImportModel, 
 	handleIfNotEmpty(user.DefaultWarehouse, resourceModel.WithDefaultWarehouse)
 	handleIfNotEmpty(user.DefaultNamespace, resourceModel.WithDefaultNamespace)
 	handleIfNotEmpty(user.DefaultRole, resourceModel.WithDefaultRole)
-	handleIf(user.Disabled, resourceModel.WithDisabled)
-	handleIf(user.MustChangePassword, resourceModel.WithMustChangePassword)
+	// Use handleBoolAsString for disabled and must_change_password to avoid Terraform default "default" value
+	handleBoolAsString(user.Disabled, resourceModel.WithDisabled)
+	handleBoolAsString(user.MustChangePassword, resourceModel.WithMustChangePassword)
 
 	// Secondary roles
 	secondaryRolesOption := user.GetSecondaryRolesOption()
@@ -143,7 +144,8 @@ func MapToServiceUser(user UserRepresentation) (accconfig.ResourceModel, *Import
 	handleIfNotEmpty(user.DefaultWarehouse, resourceModel.WithDefaultWarehouse)
 	handleIfNotEmpty(user.DefaultNamespace, resourceModel.WithDefaultNamespace)
 	handleIfNotEmpty(user.DefaultRole, resourceModel.WithDefaultRole)
-	handleIf(user.Disabled, resourceModel.WithDisabled)
+	// Use handleBoolAsString for disabled to avoid Terraform default "default" value
+	handleBoolAsString(user.Disabled, resourceModel.WithDisabled)
 	handleIfNotEmpty(user.RsaPublicKey, resourceModel.WithRsaPublicKey)
 	handleIfNotEmpty(user.RsaPublicKey2, resourceModel.WithRsaPublicKey2)
 
@@ -235,8 +237,9 @@ func MapToLegacyServiceUser(user UserRepresentation) (accconfig.ResourceModel, *
 	handleIfNotEmpty(user.DefaultWarehouse, resourceModel.WithDefaultWarehouse)
 	handleIfNotEmpty(user.DefaultNamespace, resourceModel.WithDefaultNamespace)
 	handleIfNotEmpty(user.DefaultRole, resourceModel.WithDefaultRole)
-	handleIf(user.Disabled, resourceModel.WithDisabled)
-	handleIf(user.MustChangePassword, resourceModel.WithMustChangePassword)
+	// Use handleBoolAsString for disabled and must_change_password to avoid Terraform default "default" value
+	handleBoolAsString(user.Disabled, resourceModel.WithDisabled)
+	handleBoolAsString(user.MustChangePassword, resourceModel.WithMustChangePassword)
 	handleIfNotEmpty(user.RsaPublicKey, resourceModel.WithRsaPublicKey)
 	handleIfNotEmpty(user.RsaPublicKey2, resourceModel.WithRsaPublicKey2)
 

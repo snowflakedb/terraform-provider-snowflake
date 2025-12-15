@@ -34,9 +34,7 @@ type UserCsvRow struct {
 	LockedUntilTime                               string `csv:"locked_until_time"`
 	LoginName                                     string `csv:"login_name"`
 	MiddleName                                    string `csv:"middle_name"`
-	MinsToBypassMfa                               string `csv:"mins_to_bypass_mfa"`
 	MinsToBypassNetworkPolicy                     string `csv:"mins_to_bypass_network_policy"`
-	MinsToUnlock                                  string `csv:"mins_to_unlock"`
 	MustChangePassword                            string `csv:"must_change_password"`
 	Name                                          string `csv:"name"`
 	Owner                                         string `csv:"owner"`
@@ -277,7 +275,6 @@ func (row UserCsvRow) convert() (*UserRepresentation, error) {
 			FirstName:             row.FirstName,
 			LastName:              row.LastName,
 			Email:                 row.Email,
-			MinsToUnlock:          row.MinsToUnlock,
 			DaysToExpiry:          row.DaysToExpiry,
 			Comment:               csvUnescape(row.Comment),
 			Disabled:              row.Disabled == "true",
@@ -289,7 +286,6 @@ func (row UserCsvRow) convert() (*UserRepresentation, error) {
 			DefaultSecondaryRoles: row.DefaultSecondaryRoles,
 			ExtAuthnDuo:           row.ExtAuthnDuo == "true",
 			ExtAuthnUid:           row.ExtAuthnUid,
-			MinsToBypassMfa:       row.MinsToBypassMfa,
 			Owner:                 row.Owner,
 			HasPassword:           row.HasPassword == "true",
 			HasRsaPublicKey:       row.HasRsaPublicKey == "true",

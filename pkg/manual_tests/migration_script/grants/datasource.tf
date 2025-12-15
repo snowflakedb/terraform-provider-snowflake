@@ -120,13 +120,15 @@ locals {
   )
 
   # Filter grants:
-  # - Must contain MIGRATION_TEST in grantee_name or name (test objects only)
+  # - Must contain test prefix in grantee_name or name (test objects only)
   # - Must have a non-empty privilege (grants_of returns role membership rows with
   #   empty privilege - the migration script can't handle these)
+  # - Must have a non-empty granted_by (implicit grants cannot be managed by Terraform)
   test_grants = [
     for g in local.all_grants : g
-    if (can(regex("MIGRATION_TEST", g.grantee_name)) || can(regex("MIGRATION_TEST", g.name))) &&
-       g.privilege != ""
+    if (can(regex(local.prefix, g.grantee_name)) || can(regex(local.prefix, g.name))) &&
+       g.privilege != "" &&
+       g.granted_by != ""
   ]
 
   # CSV header - matches the GrantCsvRow struct
@@ -166,7 +168,7 @@ resource "local_file" "grants_csv" {
   lifecycle {
     precondition {
       condition     = length(local.grants_csv_rows_unique) > 0
-      error_message = "TEST ASSERTION FAILED: No grants found. Make sure objects_def.tf resources were created first."
+      error_message = "TEST ASSERTION FAILED: No grants found matching ${local.prefix}. Make sure objects_def.tf resources were created first."
     }
   }
 }
