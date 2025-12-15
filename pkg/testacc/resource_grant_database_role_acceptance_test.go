@@ -8,6 +8,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -391,11 +395,15 @@ resource "snowflake_grant_database_role" "test" {
 func TestAcc_GrantDatabaseRole_handleGrantsToApplication(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
+
 	parentRole, parentRoleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(parentRoleCleanup)
+
 	testClient().Grant.GrantDatabaseRoleToApplication(t, databaseRole.ID(), testClient().Ids.SnowflakeApplicationId())
 
-	resourceName := "snowflake_grant_database_role.test"
+	basic := model.GrantDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
+		WithParentRoleName(parentRole.ID().Name())
+
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -404,27 +412,19 @@ func TestAcc_GrantDatabaseRole_handleGrantsToApplication(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
-				Config:            grantDatabaseRoleToApplicationConfig(databaseRole.ID(), parentRole.ID()),
+				Config:            accconfig.FromModels(t, basic),
 				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent result after apply"),
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   grantDatabaseRoleToApplicationConfig(databaseRole.ID(), parentRole.ID()),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRole.ID().FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "parent_role_name", parentRole.ID().Name()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`%v|ROLE|%v`, databaseRole.ID().FullyQualifiedName(), parentRole.ID().FullyQualifiedName())),
+				Config:                   accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.GrantDatabaseRoleResource(t, basic.ResourceReference()).
+						HasDatabaseRoleNameString(databaseRole.ID().FullyQualifiedName()).
+						HasParentRoleNameString(parentRole.ID().Name()),
+					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "id", fmt.Sprintf(`%v|ROLE|%v`, databaseRole.ID().FullyQualifiedName(), parentRole.ID().FullyQualifiedName()))),
 				),
 			},
 		},
 	})
-}
-
-func grantDatabaseRoleToApplicationConfig(databaseRoleId sdk.DatabaseObjectIdentifier, parentRoleId sdk.AccountObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_grant_database_role" "test" {
-  database_role_name = "\"%[1]s\".\"%[2]s\""
-  parent_role_name = "%[3]s"
-}
-`, databaseRoleId.DatabaseName(), databaseRoleId.Name(), parentRoleId.Name())
 }
