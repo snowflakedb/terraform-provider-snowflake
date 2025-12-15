@@ -529,7 +529,6 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Description: envNameFieldDescription("True by default. When set to true, the driver doesn't check certificate revocation status.", snowflakeenvs.DisableOCSPChecks),
 			Optional:    true,
-			Default:     true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableOCSPChecks, true),
 		},
 		"cert_revocation_check_mode": {
