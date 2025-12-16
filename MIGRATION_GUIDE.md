@@ -87,7 +87,7 @@ No changes in configuration are required for existing setups. You can optionally
 ### *(new feature)* New certificate revocation and SAML configuration options in the provider
 
 We added new provider configuration options to support certificate revocation checking and SAML URL validation:
-  - `disable_ocsp_checks` - when set to `true` (default), the driver doesn't check certificate revocation status. This is a replacement for the deprecated `insecure_mode` field
+  - `disable_ocsp_checks` - when set to `true` (default is `false`), the driver doesn't check certificate revocation status. This is a replacement for the deprecated `insecure_mode` field
   - `cert_revocation_check_mode` - specifies the certificate revocation check mode. Valid options are: `DISABLED`, `ADVISORY`, `ENABLED`
   - `crl_allow_certificates_without_crl_url` - allows certificates (not short-lived) without CRL DP included to be treated as correct ones
   - `crl_in_memory_cache_disabled` - when set to `true`, the CRL in-memory cache is disabled (default `false`)
