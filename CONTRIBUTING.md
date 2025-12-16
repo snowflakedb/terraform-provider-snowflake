@@ -226,7 +226,7 @@ Example patterns validated by the data source:
 - Provider preview gate and migration guide
   - Add the “Added data source” H4 subsection under the same feature entry in the Migration Guide and link Snowflake’s SHOW docs where appropriate.
 
-- Follow the [Datasource config guide](/pkg/acceptance/bettertestspoc/README.md#adding-new-datasource-config-model-builders) to generate config model.
+- Follow the [Datasource config guide](pkg/acceptance/bettertestspoc/README.md#adding-new-datasource-config-model-builders) to generate config model.
 
 ## Advanced Debugging
 
