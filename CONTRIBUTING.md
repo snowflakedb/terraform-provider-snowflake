@@ -209,7 +209,7 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
 
 ### 4. Add data source
 
-Take a look at an [Data source implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4209) and its follow-up with extra tests [Extended test coverage for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4237)
+Take a look at an example [Data source implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4209) and its follow-up with extra tests [Extended test coverage for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4237)
 
 While not strictly required to “support” the object, a data source improves discoverability and enables read-only use cases. For parity with other objects, we recommend adding one.
 
