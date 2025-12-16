@@ -231,6 +231,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Description: envNameFieldDescription("If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only.", snowflakeenvs.InsecureMode),
 			Optional:    true,
+			Deprecated:  "This field is deprecated. Use `disable_ocsp_checks` instead.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.InsecureMode, nil),
 		},
 		"ocsp_fail_open": {
@@ -527,9 +528,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"disable_ocsp_checks": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("True by default. When set to true, the driver doesn't check certificate revocation status.", snowflakeenvs.DisableOCSPChecks),
+			Description: envNameFieldDescription("False by default. When set to true, the driver doesn't check certificate revocation status.", snowflakeenvs.DisableOCSPChecks),
 			Optional:    true,
-			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableOCSPChecks, true),
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableOCSPChecks, false),
 		},
 		"cert_revocation_check_mode": {
 			Type:             schema.TypeString,
@@ -559,7 +560,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"crl_http_client_timeout": {
 			Type:             schema.TypeInt,
-			Description:      envNameFieldDescription("Timeout for HTTP client used to download CRL.", snowflakeenvs.CrlHTTPClientTimeout),
+			Description:      envNameFieldDescription("Timeout in seconds for HTTP client used to download CRL.", snowflakeenvs.CrlHTTPClientTimeout),
 			Optional:         true,
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.CrlHTTPClientTimeout, nil),
 			ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
@@ -873,28 +874,10 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 			}
 			return nil
 		}(),
-		// authenticator
-		func() error {
-			authType, err := sdk.ToExtendedAuthenticatorType(s.Get("authenticator").(string))
-			if err != nil {
-				return err
-			}
-			config.Authenticator = authType
-			return nil
-		}(),
+		handleFieldWithConversionAlways(s, "authenticator", &config.Authenticator, sdk.ToExtendedAuthenticatorType),
 		handleStringField(s, "passcode", &config.Passcode),
 		handleBoolField(s, "passcode_in_password", &config.PasscodeInPassword),
-		// okta url
-		func() error {
-			if v, ok := s.GetOk("okta_url"); ok && v.(string) != "" {
-				oktaURL, err := url.Parse(v.(string))
-				if err != nil {
-					return fmt.Errorf("could not parse okta_url err = %w", err)
-				}
-				config.OktaURL = oktaURL
-			}
-			return nil
-		}(),
+		handleFieldWithConversion(s, "okta_url", &config.OktaURL, url.Parse),
 		handleDurationInSecondsAttribute(s, "login_timeout", &config.LoginTimeout),
 		handleDurationInSecondsAttribute(s, "request_timeout", &config.RequestTimeout),
 		handleDurationInSecondsAttribute(s, "jwt_expire_timeout", &config.JWTExpireTimeout),
@@ -926,17 +909,10 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleBoolField(s, "disable_query_context_cache", &config.DisableQueryContextCache),
 		handleBooleanStringAttribute(s, "include_retry_reason", &config.IncludeRetryReason),
 		handleIntAttribute(s, "max_retry_count", &config.MaxRetryCount),
-		// driver tracing
-		func() error {
-			if v, ok := s.GetOk("driver_tracing"); ok {
-				driverLogLevel, err := sdk.ToDriverLogLevel(v.(string))
-				if err != nil {
-					return err
-				}
-				config.Tracing = string(driverLogLevel)
-			}
-			return nil
-		}(),
+		handleFieldWithConversion(s, "driver_tracing", &config.Tracing, func(s string) (string, error) {
+			level, err := sdk.ToDriverLogLevel(s)
+			return string(level), err
+		}),
 		handleStringField(s, "tmp_directory_path", &config.TmpDirPath),
 		handleBooleanStringAttribute(s, "disable_console_login", &config.DisableConsoleLogin),
 		// profile is handled in the calling function
@@ -958,17 +934,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "proxy_protocol", &config.ProxyProtocol),
 		handleStringField(s, "no_proxy", &config.NoProxy),
 		handleBoolField(s, "disable_ocsp_checks", &config.DisableOCSPChecks),
-		// cert_revocation_check_mode
-		func() error {
-			if v, ok := s.GetOk("cert_revocation_check_mode"); ok && v.(string) != "" {
-				mode, err := sdk.ToCertRevocationCheckMode(v.(string))
-				if err != nil {
-					return err
-				}
-				config.CertRevocationCheckMode = mode
-			}
-			return nil
-		}(),
+		handleFieldWithConversion(s, "cert_revocation_check_mode", &config.CertRevocationCheckMode, sdk.ToCertRevocationCheckMode),
 		handleBooleanStringAttribute(s, "crl_allow_certificates_without_crl_url", &config.CrlAllowCertificatesWithoutCrlURL),
 		handleBoolField(s, "crl_in_memory_cache_disabled", &config.CrlInMemoryCacheDisabled),
 		handleBoolField(s, "crl_on_disk_cache_disabled", &config.CrlOnDiskCacheDisabled),

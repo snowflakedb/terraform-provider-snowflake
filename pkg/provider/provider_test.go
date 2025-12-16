@@ -79,7 +79,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Empty(t, config.ProxyPassword)
 	assert.Empty(t, config.ProxyProtocol)
 	assert.Empty(t, config.NoProxy)
-	assert.True(t, config.DisableOCSPChecks)
+	assert.False(t, config.DisableOCSPChecks)
 	assert.Empty(t, config.CertRevocationCheckMode)
 	assert.Empty(t, config.CrlAllowCertificatesWithoutCrlURL)
 	assert.False(t, config.CrlInMemoryCacheDisabled)
@@ -143,11 +143,11 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"proxy_password":                         "proxy_password",
 		"proxy_protocol":                         "proxy_protocol",
 		"no_proxy":                               "no_proxy",
-		"disable_ocsp_checks":                    true,
+		"disable_ocsp_checks":                    false,
 		"cert_revocation_check_mode":             "ADVISORY",
 		"crl_allow_certificates_without_crl_url": "true",
-		"crl_in_memory_cache_disabled":           "false",
-		"crl_on_disk_cache_disabled":             "true",
+		"crl_in_memory_cache_disabled":           false,
+		"crl_on_disk_cache_disabled":             true,
 		"crl_http_client_timeout":                30,
 		"disable_saml_url_check":                 "true",
 	})
@@ -209,7 +209,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "proxy_password", config.ProxyPassword)
 	assert.Equal(t, "proxy_protocol", config.ProxyProtocol)
 	assert.Equal(t, "no_proxy", config.NoProxy)
-	assert.True(t, config.DisableOCSPChecks)
+	assert.False(t, config.DisableOCSPChecks)
 	assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
 	assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
 	assert.False(t, config.CrlInMemoryCacheDisabled)

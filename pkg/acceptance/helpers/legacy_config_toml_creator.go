@@ -54,7 +54,7 @@ func FullLegacyTomlConfigForServiceUser(t *testing.T, profile string, userId sdk
 			WithProxyPassword("proxy_password").
 			WithProxyProtocol("https").
 			WithNoProxy("localhost,snowflake.computing.com").
-			WithDisableOCSPChecks(true).
+			WithDisableOCSPChecks(false).
 			WithCertRevocationCheckMode("ADVISORY").
 			WithCrlAllowCertificatesWithoutCrlURL(true).
 			WithCrlInMemoryCacheDisabled(false).

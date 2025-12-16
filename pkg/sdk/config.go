@@ -112,7 +112,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.Passcode, &driverCfg.Passcode)
 	pointerAttributeSet(c.Port, &driverCfg.Port)
 	pointerAttributeSet(c.PasscodeInPassword, &driverCfg.PasscodeInPassword)
-	err := pointerUrlAttributeSet(c.OktaUrl, &driverCfg.OktaURL)
+	err := pointerEnumSet(c.OktaUrl, &driverCfg.OktaURL, url.Parse)
 	if err != nil {
 		return *EmptyDriverConfig(), err
 	}
@@ -178,7 +178,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.ProxyProtocol, &driverCfg.ProxyProtocol)
 	pointerAttributeSet(c.NoProxy, &driverCfg.NoProxy)
 	pointerAttributeSet(c.DisableOCSPChecks, &driverCfg.DisableOCSPChecks)
-	err = pointerCertRevocationCheckModeAttributeSet(c.CertRevocationCheckMode, &driverCfg.CertRevocationCheckMode)
+	err = pointerEnumSet(c.CertRevocationCheckMode, &driverCfg.CertRevocationCheckMode, ToCertRevocationCheckMode)
 	if err != nil {
 		return *EmptyDriverConfig(), err
 	}
@@ -360,7 +360,7 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if !baseConfig.DisableOCSPChecks {
 		baseConfig.DisableOCSPChecks = mergeConfig.DisableOCSPChecks
 	}
-	if baseConfig.CertRevocationCheckMode == CertRevocationCheckModeEmpty {
+	if baseConfig.CertRevocationCheckMode == GosnowflakeCertRevocationCheckModeEmpty {
 		baseConfig.CertRevocationCheckMode = mergeConfig.CertRevocationCheckMode
 	}
 	if !configBoolSet(baseConfig.CrlAllowCertificatesWithoutCrlURL) {
@@ -426,13 +426,13 @@ func pointerConfigBoolAttributeSet(src *bool, dst *gosnowflake.ConfigBool) {
 	}
 }
 
-func pointerCertRevocationCheckModeAttributeSet(src *string, dst *gosnowflake.CertRevocationCheckMode) error {
+func pointerEnumSet[T any](src *string, dst *T, converter func(string) (T, error)) error {
 	if src != nil {
-		mode, err := ToCertRevocationCheckMode(*src)
+		value, err := converter(*src)
 		if err != nil {
 			return err
 		}
-		*dst = mode
+		*dst = value
 	}
 	return nil
 }
@@ -441,17 +441,6 @@ func pointerIpAttributeSet(src *string, dst *net.IP) {
 	if src != nil {
 		*dst = net.ParseIP(*src)
 	}
-}
-
-func pointerUrlAttributeSet(src *string, dst **url.URL) error {
-	if src != nil {
-		url, err := url.Parse(*src)
-		if err != nil {
-			return err
-		}
-		*dst = url
-	}
-	return nil
 }
 
 // LoadProfileFromFile loads a config file from the path and returns a ready configuration.
@@ -660,7 +649,7 @@ func ToCertRevocationCheckMode(s string) (gosnowflake.CertRevocationCheckMode, e
 	}
 }
 
-const CertRevocationCheckModeEmpty = gosnowflake.CertRevocationCheckDisabled
+const GosnowflakeCertRevocationCheckModeEmpty = gosnowflake.CertRevocationCheckMode(0)
 
 // EmptyDriverConfig returns a default driver config with the Authenticator set to GosnowflakeAuthTypeEmpty.
 // This is used when no config is found in the config file.

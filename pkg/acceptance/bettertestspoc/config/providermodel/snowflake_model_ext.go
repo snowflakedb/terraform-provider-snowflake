@@ -151,7 +151,7 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 		WithProxyPassword("proxy_password").
 		WithProxyProtocol("https").
 		WithNoProxy("localhost,snowflake.computing.com").
-		WithDisableOcspChecks(true).
+		WithDisableOcspChecks(false).
 		WithCertRevocationCheckModeType(sdk.CertRevocationCheckModeAdvisory).
 		WithCrlAllowCertificatesWithoutCrlUrl("true").
 		WithCrlInMemoryCacheDisabled(false).
