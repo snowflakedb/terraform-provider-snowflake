@@ -309,20 +309,32 @@ type SecondaryRole struct {
 }
 
 type WorkloadIdentity struct {
-	Type WorkloadIdentityType
-	ARN  string
+	Type               WorkloadIdentityType
+	ARN                string
+	Issuer             string
+	Subject            string
+	OidcAudienceList   []string
 }
 
 type WorkloadIdentityType string
 
 const (
-	WorkloadIdentityTypeAWS WorkloadIdentityType = "AWS"
+	WorkloadIdentityTypeAWS   WorkloadIdentityType = "AWS"
+	WorkloadIdentityTypeAzure WorkloadIdentityType = "AZURE"
+	WorkloadIdentityTypeGCP   WorkloadIdentityType = "GCP"
+	WorkloadIdentityTypeOIDC  WorkloadIdentityType = "OIDC"
 )
 
 func ToWorkloadIdentityType(s string) (WorkloadIdentityType, error) {
 	switch strings.ToUpper(s) {
 	case string(WorkloadIdentityTypeAWS):
 		return WorkloadIdentityTypeAWS, nil
+	case string(WorkloadIdentityTypeAzure):
+		return WorkloadIdentityTypeAzure, nil
+	case string(WorkloadIdentityTypeGCP):
+		return WorkloadIdentityTypeGCP, nil
+	case string(WorkloadIdentityTypeOIDC):
+		return WorkloadIdentityTypeOIDC, nil
 	default:
 		return "", fmt.Errorf("invalid workload identity type: %s", s)
 	}
@@ -335,9 +347,34 @@ func (opts *WorkloadIdentity) validate() error {
 	if opts.Type == "" {
 		return NewError("WorkloadIdentity.Type is required")
 	}
-	if opts.ARN == "" {
-		return NewError("WorkloadIdentity.ARN is required")
+
+	switch opts.Type {
+	case WorkloadIdentityTypeAWS:
+		if opts.ARN == "" {
+			return NewError("WorkloadIdentity.ARN is required for AWS type")
+		}
+	case WorkloadIdentityTypeAzure:
+		if opts.Issuer == "" {
+			return NewError("WorkloadIdentity.Issuer is required for Azure type")
+		}
+		if opts.Subject == "" {
+			return NewError("WorkloadIdentity.Subject is required for Azure type")
+		}
+	case WorkloadIdentityTypeGCP:
+		if opts.Subject == "" {
+			return NewError("WorkloadIdentity.Subject is required for GCP type")
+		}
+	case WorkloadIdentityTypeOIDC:
+		if opts.Issuer == "" {
+			return NewError("WorkloadIdentity.Issuer is required for OIDC type")
+		}
+		if opts.Subject == "" {
+			return NewError("WorkloadIdentity.Subject is required for OIDC type")
+		}
+	default:
+		return NewError("Invalid WorkloadIdentity.Type")
 	}
+
 	return nil
 }
 
@@ -345,7 +382,24 @@ func (opts *WorkloadIdentity) String() string {
 	if opts == nil {
 		return ""
 	}
-	return fmt.Sprintf("(TYPE = %s ARN = '%s')", opts.Type, opts.ARN)
+
+	switch opts.Type {
+	case WorkloadIdentityTypeAWS:
+		return fmt.Sprintf("(TYPE = %s ARN = '%s')", opts.Type, opts.ARN)
+	case WorkloadIdentityTypeAzure:
+		return fmt.Sprintf("(TYPE = %s ISSUER = '%s' SUBJECT = '%s')", opts.Type, opts.Issuer, opts.Subject)
+	case WorkloadIdentityTypeGCP:
+		return fmt.Sprintf("(TYPE = %s SUBJECT = '%s')", opts.Type, opts.Subject)
+	case WorkloadIdentityTypeOIDC:
+		if len(opts.OidcAudienceList) > 0 {
+			audienceStr := "'" + strings.Join(opts.OidcAudienceList, "', '") + "'"
+			return fmt.Sprintf("(TYPE = %s ISSUER = '%s' SUBJECT = '%s' OIDC_AUDIENCE_LIST = (%s))",
+				opts.Type, opts.Issuer, opts.Subject, audienceStr)
+		}
+		return fmt.Sprintf("(TYPE = %s ISSUER = '%s' SUBJECT = '%s')", opts.Type, opts.Issuer, opts.Subject)
+	default:
+		return ""
+	}
 }
 type UserObjectPropertiesUnset struct {
 	Password              *bool `ddl:"keyword" sql:"PASSWORD"`
