@@ -82,9 +82,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 		ConflictsWith: []string{
 			"all_privileges",
 			"on_schema.0.all_schemas_in_database",
-			"on_schema.0.future_schemas_in_database",
 			"on_schema_object.0.all",
-			"on_schema_object.0.future",
 		},
 		Description: joinWithSpace(
 			"If true, the resource will revoke all privileges that are not explicitly defined in the config making it a central source of truth for the privileges granted on an object to an account role.",
@@ -93,6 +91,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"This means, the flag update doesn't revoke immediately any externally granted privileges.",
 			"External privileges will be detected regardless of their grant option.",
 			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the `experimental_features_enabled` field.",
+			"Regular and future grants are treated separately, meaning, two resources need to be defined to control regular and future grants for a given object and role.",
 		),
 	},
 	"on_account": {

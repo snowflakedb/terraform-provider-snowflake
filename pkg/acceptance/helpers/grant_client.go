@@ -90,6 +90,84 @@ func (c *GrantClient) GrantOnSchemaToAccountRole(t *testing.T, schemaId sdk.Data
 	require.NoError(t, err)
 }
 
+func (c *GrantClient) GrantFutureSchemaPrivilegesInDatabaseToAccountRole(
+	t *testing.T,
+	databaseId sdk.AccountObjectIdentifier,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges ...sdk.SchemaPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().GrantPrivilegesToAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			Schema: &sdk.GrantOnSchema{
+				FutureSchemasInDatabase: &databaseId,
+			},
+		},
+		accountRoleId,
+		new(sdk.GrantPrivilegesToAccountRoleOptions),
+	)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) GrantFutureSchemaObjectPrivilegesInSchemaToAccountRole(
+	t *testing.T,
+	schemaId sdk.DatabaseObjectIdentifier,
+	pluralObjectType sdk.PluralObjectType,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges ...sdk.SchemaObjectPrivilege,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().GrantPrivilegesToAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				Future: &sdk.GrantOnSchemaObjectIn{
+					PluralObjectType: pluralObjectType,
+					InSchema:         &schemaId,
+				},
+			},
+		},
+		accountRoleId,
+		new(sdk.GrantPrivilegesToAccountRoleOptions),
+	)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) ShowFutureGrantsInDatabase(t *testing.T, databaseId sdk.AccountObjectIdentifier) ([]sdk.Grant, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Show(ctx, &sdk.ShowGrantOptions{
+		Future: sdk.Bool(true),
+		In: &sdk.ShowGrantsIn{
+			Database: &databaseId,
+		},
+	})
+}
+
+func (c *GrantClient) ShowFutureGrantsInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) ([]sdk.Grant, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Show(ctx, &sdk.ShowGrantOptions{
+		Future: sdk.Bool(true),
+		In: &sdk.ShowGrantsIn{
+			Schema: &schemaId,
+		},
+	})
+}
+
 func (c *GrantClient) RevokePrivilegesOnSchemaFromAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
