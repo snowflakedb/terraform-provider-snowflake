@@ -291,7 +291,7 @@ type UserObjectProperties struct {
 	RSAPublicKey2Fp       *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2_FP"`
 	Type                  *UserType                `ddl:"parameter,no_quotes" sql:"TYPE"`
 	Comment               *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	WorkloadIdentity      *string                  `ddl:"parameter,single_quotes" sql:"WORKLOAD_IDENTITY"`
+	WorkloadIdentity      *string                  `ddl:"parameter,no_quotes" sql:"WORKLOAD_IDENTITY"`
 }
 
 type UserAlterObjectProperties struct {
@@ -306,6 +306,46 @@ type SecondaryRoles struct {
 
 type SecondaryRole struct {
 	Value string `ddl:"keyword,single_quotes"`
+}
+
+type WorkloadIdentity struct {
+	Type WorkloadIdentityType
+	ARN  string
+}
+
+type WorkloadIdentityType string
+
+const (
+	WorkloadIdentityTypeAWS WorkloadIdentityType = "AWS"
+)
+
+func ToWorkloadIdentityType(s string) (WorkloadIdentityType, error) {
+	switch strings.ToUpper(s) {
+	case string(WorkloadIdentityTypeAWS):
+		return WorkloadIdentityTypeAWS, nil
+	default:
+		return "", fmt.Errorf("invalid workload identity type: %s", s)
+	}
+}
+
+func (opts *WorkloadIdentity) validate() error {
+	if opts == nil {
+		return nil
+	}
+	if opts.Type == "" {
+		return NewError("WorkloadIdentity.Type is required")
+	}
+	if opts.ARN == "" {
+		return NewError("WorkloadIdentity.ARN is required")
+	}
+	return nil
+}
+
+func (opts *WorkloadIdentity) String() string {
+	if opts == nil {
+		return ""
+	}
+	return fmt.Sprintf("(TYPE = %s ARN = '%s')", opts.Type, opts.ARN)
 }
 type UserObjectPropertiesUnset struct {
 	Password              *bool `ddl:"keyword" sql:"PASSWORD"`

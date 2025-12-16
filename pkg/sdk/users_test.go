@@ -988,3 +988,81 @@ func Test_User_ToUserType(t *testing.T) {
 		})
 	}
 }
+
+func TestWorkloadIdentity_validate(t *testing.T) {
+	t.Run("valid workload identity", func(t *testing.T) {
+		workloadIdentity := &WorkloadIdentity{
+			Type: WorkloadIdentityTypeAWS,
+			ARN:  "arn:aws:iam::123456789012:role/MyRole",
+		}
+		require.NoError(t, workloadIdentity.validate())
+	})
+
+	t.Run("missing type", func(t *testing.T) {
+		workloadIdentity := &WorkloadIdentity{
+			ARN: "arn:aws:iam::123456789012:role/MyRole",
+		}
+		require.Error(t, workloadIdentity.validate())
+	})
+
+	t.Run("missing arn", func(t *testing.T) {
+		workloadIdentity := &WorkloadIdentity{
+			Type: WorkloadIdentityTypeAWS,
+		}
+		require.Error(t, workloadIdentity.validate())
+	})
+
+	t.Run("nil workload identity", func(t *testing.T) {
+		var workloadIdentity *WorkloadIdentity
+		require.NoError(t, workloadIdentity.validate())
+	})
+}
+
+func TestToWorkloadIdentityType(t *testing.T) {
+	valid := []struct {
+		input string
+		want  WorkloadIdentityType
+	}{
+		{"AWS", WorkloadIdentityTypeAWS},
+		{"aws", WorkloadIdentityTypeAWS},
+		{"Aws", WorkloadIdentityTypeAWS},
+	}
+
+	invalid := []string{
+		"INVALID",
+		"AZURE",
+		"GCP",
+		"",
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToWorkloadIdentityType(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc, func(t *testing.T) {
+			_, err := ToWorkloadIdentityType(tc)
+			require.Error(t, err)
+		})
+	}
+}
+
+func TestUserCreate_WithWorkloadIdentity(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+
+	t.Run("with workload identity", func(t *testing.T) {
+		workloadIdentityString := "(TYPE = AWS ARN = 'arn:aws:iam::123456789012:role/MyRole')"
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &workloadIdentityString,
+				Type: Pointer(UserTypeService),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE USER %s TYPE = SERVICE WORKLOAD_IDENTITY = (TYPE = AWS ARN = 'arn:aws:iam::123456789012:role/MyRole')`, id.FullyQualifiedName())
+	})
+}

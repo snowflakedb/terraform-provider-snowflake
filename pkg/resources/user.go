@@ -151,9 +151,25 @@ var userSchema = map[string]*schema.Schema{
 		Description: "Specifies a comment for the user.",
 	},
 	"workload_identity": {
-		Type:        schema.TypeString,
+		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "Specifies the workload identity that the user will use to authenticate. Should be an AWS IAM role ARN when using AWS IAM role-based authentication. For more information, see [Workload identity federation](https://docs.snowflake.com/en/user-guide/workload-identity-federation).",
+		MaxItems:    1,
+		Description: "Specifies the workload identity that the user will use to authenticate. For more information, see [Workload identity federation](https://docs.snowflake.com/en/user-guide/workload-identity-federation).",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"type": {
+					Type:             schema.TypeString,
+					Required:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToWorkloadIdentityType),
+					Description:      "Specifies the type of workload identity. Currently only 'AWS' is supported.",
+				},
+				"arn": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Specifies the Amazon Resource Name (ARN) for the AWS IAM user or role that will be used for authentication.",
+				},
+			},
+		},
 	},
 	"disable_mfa": {
 		Type:             schema.TypeString,
@@ -354,7 +370,23 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			stringAttributeCreate(d, "rsa_public_key", &opts.ObjectProperties.RSAPublicKey),
 			stringAttributeCreate(d, "rsa_public_key_2", &opts.ObjectProperties.RSAPublicKey2),
 			stringAttributeCreate(d, "comment", &opts.ObjectProperties.Comment),
-			stringAttributeCreate(d, "workload_identity", &opts.ObjectProperties.WorkloadIdentity),
+			func() error {
+				if v, ok := d.GetOk("workload_identity"); ok && len(v.([]interface{})) > 0 {
+					workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
+					workloadIdentityType := workloadIdentityData["type"].(string)
+					arn := workloadIdentityData["arn"].(string)
+
+					// Validate the type
+					_, err := sdk.ToWorkloadIdentityType(workloadIdentityType)
+					if err != nil {
+						return err
+					}
+
+					workloadIdentityString := fmt.Sprintf("(TYPE = %s ARN = '%s')", strings.ToUpper(workloadIdentityType), arn)
+					opts.ObjectProperties.WorkloadIdentity = &workloadIdentityString
+				}
+				return nil
+			}(),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -514,7 +546,26 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			setFromStringPropertyIfNotEmpty(d, "rsa_public_key", userDetails.RsaPublicKey),
 			setFromStringPropertyIfNotEmpty(d, "rsa_public_key_2", userDetails.RsaPublicKey2),
 			setFromStringPropertyIfNotEmpty(d, "comment", userDetails.Comment),
-			setFromStringPropertyIfNotEmpty(d, "workload_identity", userDetails.WorkloadIdentity),
+			func(rd *schema.ResourceData, ud *sdk.UserDetails) error {
+				if ud.WorkloadIdentity != nil && ud.WorkloadIdentity.Value != "" {
+					// Parse the workload identity string - expected format is like 'TYPE=AWS ARN=arn:aws:...'
+					// For now, we'll treat it as a simple string and parse it
+					workloadIdentityStr := ud.WorkloadIdentity.Value
+					if strings.Contains(workloadIdentityStr, "ARN=") && strings.Contains(workloadIdentityStr, "TYPE=AWS") {
+						arnStart := strings.Index(workloadIdentityStr, "ARN=") + 4
+						arnValue := strings.TrimSpace(workloadIdentityStr[arnStart:])
+
+						workloadIdentity := []map[string]interface{}{
+							{
+								"type": "AWS",
+								"arn":  arnValue,
+							},
+						}
+						return rd.Set("workload_identity", workloadIdentity)
+					}
+				}
+				return nil
+			}(d, userDetails),
 			d.Set("user_type", u.Type),
 
 			func(rd *schema.ResourceData, ud *sdk.UserDetails) error {
@@ -602,7 +653,27 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			stringAttributeUpdate(d, "rsa_public_key", &setObjectProperties.RSAPublicKey, &unsetObjectProperties.RSAPublicKey),
 			stringAttributeUpdate(d, "rsa_public_key_2", &setObjectProperties.RSAPublicKey2, &unsetObjectProperties.RSAPublicKey2),
 			stringAttributeUpdate(d, "comment", &setObjectProperties.Comment, &unsetObjectProperties.Comment),
-			stringAttributeUpdate(d, "workload_identity", &setObjectProperties.WorkloadIdentity, &unsetObjectProperties.WorkloadIdentity),
+			func() error {
+				if d.HasChange("workload_identity") {
+					if v, ok := d.GetOk("workload_identity"); ok && len(v.([]interface{})) > 0 {
+						workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
+						workloadIdentityType := workloadIdentityData["type"].(string)
+						arn := workloadIdentityData["arn"].(string)
+
+						// Validate the type
+						_, err := sdk.ToWorkloadIdentityType(workloadIdentityType)
+						if err != nil {
+							return err
+						}
+
+						workloadIdentityString := fmt.Sprintf("(TYPE = %s ARN = '%s')", strings.ToUpper(workloadIdentityType), arn)
+						setObjectProperties.WorkloadIdentity = &workloadIdentityString
+					} else {
+						unsetObjectProperties.WorkloadIdentity = sdk.Bool(true)
+					}
+				}
+				return nil
+			}(),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
