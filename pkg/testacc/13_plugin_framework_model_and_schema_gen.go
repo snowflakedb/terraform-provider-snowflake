@@ -193,9 +193,10 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Sensitive:   false,
 	},
 	"insecure_mode": schema.BoolAttribute{
-		Description: existingSchema["insecure_mode"].Description,
-		Optional:    true,
-		Sensitive:   false,
+		Description:        existingSchema["insecure_mode"].Description,
+		DeprecationMessage: "This field is deprecated. Use `disable_ocsp_checks` instead.", // edited manually
+		Optional:           true,
+		Sensitive:          false,
 	},
 	"jwt_client_timeout": schema.Int64Attribute{
 		Description: existingSchema["jwt_client_timeout"].Description,
