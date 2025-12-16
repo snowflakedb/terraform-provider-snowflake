@@ -391,7 +391,6 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 					workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
 					workloadIdentityType := workloadIdentityData["type"].(string)
 
-					// Validate the type
 					parsedType, err := sdk.ToWorkloadIdentityType(workloadIdentityType)
 					if err != nil {
 						return err
@@ -781,7 +780,6 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 						workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
 						workloadIdentityType := workloadIdentityData["type"].(string)
 
-						// Validate the type
 						parsedType, err := sdk.ToWorkloadIdentityType(workloadIdentityType)
 						if err != nil {
 							return err
