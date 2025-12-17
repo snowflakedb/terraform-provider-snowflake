@@ -84,20 +84,20 @@ These options can be set in the provider configuration, TOML configuration file,
 
 No changes in configuration are required for existing setups. You can optionally update your configurations to use these new options if you need to connect through a proxy.
 
-### *(bugfix)* authentication policy related resources and data sources
+### *(bugfix)* authentication policies data sources
 Snowflake recently introduced a new, default authentication policy at the account level, which is applied when no user-defined policy is set.
 
 Due to the structure of this built-in authentication policy
 (specifically, the `null` values for columns like `database_name`, `schema_name`, `owner`, `owner_role_type`, and `created_on`),
 our internal output conversion was failing.
 
-This issue could cause resources or data sources related to authentication policies, such as snowflake_authentication_policies, to fail with errors similar to the following:
+This issue could cause `snowflake_authentication_policies` data source to fail with errors similar to the following:
 
 ```
 sql: Scan error on column index 0, name "created_on": unsupported Scan, storing driver.Value type <nil> into type *time.Time
 ```
 
-The internal implementation for authentication policy has now been updated to skip built-in entity, which lacks the aforementioned field values.
+The internal implementation for authentication policy has now been updated to handle and skip built-in entities, which lacks the aforementioned field values.
 
 **Impact on `snowflake_authentication_policies` data source:**
 Due to these adjustments, the `snowflake_authentication_policies` data source will now skip the built-in authentication policy in its output.

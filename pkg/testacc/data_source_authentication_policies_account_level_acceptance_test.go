@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
@@ -29,6 +29,7 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 
 	policy := secondaryTestClient().AuthenticationPolicy.ShowOnCurrentAccount(t)
 
+	// In case a predefined authentication policy is attached, unset it, and set back after the test
 	if policy != nil && policy.Name != "BUILT-IN" {
 		secondaryTestClient().Account.Alter(t, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)},
