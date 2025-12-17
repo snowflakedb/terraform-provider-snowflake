@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/stretchr/testify/require"
 )
 
 type AuthenticationPolicyAssert struct {
@@ -28,25 +27,16 @@ func AuthenticationPolicy(t *testing.T, id sdk.SchemaObjectIdentifier) *Authenti
 
 func AuthenticationPolicyFromObject(t *testing.T, authenticationPolicy *sdk.AuthenticationPolicy) *AuthenticationPolicyAssert {
 	t.Helper()
-
-	// adjusted manually
-	id, err := authenticationPolicy.ID()
-	require.NoError(t, err)
-
 	return &AuthenticationPolicyAssert{
-		// adjusted manually
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAuthenticationPolicy, id, authenticationPolicy),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAuthenticationPolicy, authenticationPolicy.ID(), authenticationPolicy),
 	}
 }
 
 func (a *AuthenticationPolicyAssert) HasCreatedOn(expected time.Time) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
-		if o.CreatedOn == nil {
-			return fmt.Errorf("expected created on to have value; got: nil")
-		}
-		if *o.CreatedOn != expected {
-			return fmt.Errorf("expected created on: %v; got: %v", expected, *o.CreatedOn)
+		if o.CreatedOn != expected {
+			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
 		}
 		return nil
 	})
@@ -78,11 +68,8 @@ func (a *AuthenticationPolicyAssert) HasComment(expected string) *Authentication
 func (a *AuthenticationPolicyAssert) HasDatabaseName(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
-		if o.DatabaseName == nil {
-			return fmt.Errorf("expected database name to have value; got: nil")
-		}
-		if *o.DatabaseName != expected {
-			return fmt.Errorf("expected database name: %v; got: %v", expected, *o.DatabaseName)
+		if o.DatabaseName != expected {
+			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
 		}
 		return nil
 	})
@@ -92,11 +79,8 @@ func (a *AuthenticationPolicyAssert) HasDatabaseName(expected string) *Authentic
 func (a *AuthenticationPolicyAssert) HasSchemaName(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
-		if o.SchemaName == nil {
-			return fmt.Errorf("expected schema name to have value; got: nil")
-		}
-		if *o.SchemaName != expected {
-			return fmt.Errorf("expected schema name: %v; got: %v", expected, *o.SchemaName)
+		if o.SchemaName != expected {
+			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
 		}
 		return nil
 	})
@@ -117,11 +101,8 @@ func (a *AuthenticationPolicyAssert) HasKind(expected string) *AuthenticationPol
 func (a *AuthenticationPolicyAssert) HasOwner(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
-		if o.Owner == nil {
-			return fmt.Errorf("expected owner to have value; got: nil")
-		}
-		if *o.Owner != expected {
-			return fmt.Errorf("expected owner: %v; got: %v", expected, *o.Owner)
+		if o.Owner != expected {
+			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
 		}
 		return nil
 	})
@@ -131,11 +112,8 @@ func (a *AuthenticationPolicyAssert) HasOwner(expected string) *AuthenticationPo
 func (a *AuthenticationPolicyAssert) HasOwnerRoleType(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
-		if o.OwnerRoleType == nil {
-			return fmt.Errorf("expected owner role type to have value; got: nil")
-		}
-		if *o.OwnerRoleType != expected {
-			return fmt.Errorf("expected owner role type: %v; got: %v", expected, *o.OwnerRoleType)
+		if o.OwnerRoleType != expected {
+			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
 		}
 		return nil
 	})

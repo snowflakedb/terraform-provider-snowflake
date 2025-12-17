@@ -5,7 +5,6 @@ package sdk
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 )
 
@@ -148,23 +147,19 @@ type showAuthenticationPolicyDBRow struct {
 }
 
 type AuthenticationPolicy struct {
-	CreatedOn     *time.Time
+	CreatedOn     time.Time
 	Name          string
 	Comment       string
-	DatabaseName  *string
-	SchemaName    *string
+	DatabaseName  string
+	SchemaName    string
 	Kind          string
-	Owner         *string
-	OwnerRoleType *string
+	Owner         string
+	OwnerRoleType string
 	Options       string
 }
 
-// adjusted manually
-func (v *AuthenticationPolicy) ID() (SchemaObjectIdentifier, error) {
-	if v.DatabaseName == nil || v.SchemaName == nil {
-		return SchemaObjectIdentifier{}, fmt.Errorf("invalid AuthenticationPolicy ID: missing DatabaseName or SchemaName")
-	}
-	return NewSchemaObjectIdentifier(*v.DatabaseName, *v.SchemaName, v.Name), nil
+func (v *AuthenticationPolicy) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
 
 func (v *AuthenticationPolicy) ObjectType() ObjectType {

@@ -43,16 +43,10 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	// adjusted manually
-	convertedRows, err := convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
-	if err != nil {
-		return nil, err
-	}
-	// remove every entry with invalid identifier
-	return slices.DeleteFunc(convertedRows, func(policy AuthenticationPolicy) bool {
-		_, err := policy.ID()
-		return err != nil
-	}), nil
+	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool {
+		return !row.DatabaseName.Valid || !row.SchemaName.Valid
+	})
+	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {
@@ -207,11 +201,21 @@ func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) 
 		Options: r.Options,
 		Comment: r.Comment,
 	}
-	mapNullTime(&policy.CreatedOn, r.CreatedOn)
-	mapNullString(&policy.DatabaseName, r.DatabaseName)
-	mapNullString(&policy.SchemaName, r.SchemaName)
-	mapNullString(&policy.Owner, r.Owner)
-	mapNullString(&policy.OwnerRoleType, r.OwnerRoleType)
+	if r.CreatedOn.Valid {
+		policy.CreatedOn = r.CreatedOn.Time
+	}
+	if r.DatabaseName.Valid {
+		policy.DatabaseName = r.DatabaseName.String
+	}
+	if r.SchemaName.Valid {
+		policy.SchemaName = r.SchemaName.String
+	}
+	if r.Owner.Valid {
+		policy.Owner = r.Owner.String
+	}
+	if r.OwnerRoleType.Valid {
+		policy.OwnerRoleType = r.OwnerRoleType.String
+	}
 	return policy, nil
 }
 

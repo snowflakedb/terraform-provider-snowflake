@@ -141,13 +141,10 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		authenticationPolicy, cleanupAuthPolicy := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(cleanupAuthPolicy)
 
-		authenticationPolicyId, err := authenticationPolicy.ID()
-		require.NoError(t, err)
-
 		samlIntegration, cleanupSamlIntegration := testClientHelper().SecurityIntegration.CreateSaml2(t)
 		t.Cleanup(cleanupSamlIntegration)
 
-		err = client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicyId).
+		err := client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicy.ID()).
 			WithSet(*sdk.NewAuthenticationPolicySetRequest().
 				WithComment(comment).
 				WithMfaEnrollment(sdk.MfaEnrollmentRequired).
@@ -194,7 +191,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		desc, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicyId)
+		desc, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", comment)
@@ -207,7 +204,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED}")
 		assertProperty(t, desc, "WORKLOAD_IDENTITY_POLICY", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")
 
-		err = client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicyId).
+		err = client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicy.ID()).
 			WithUnset(*sdk.NewAuthenticationPolicyUnsetRequest().
 				WithComment(true).
 				WithMfaEnrollment(true).
@@ -220,7 +217,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			))
 		require.NoError(t, err)
 
-		desc, err = client.AuthenticationPolicies.Describe(ctx, authenticationPolicyId)
+		desc, err = client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", "null")
@@ -239,16 +236,12 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		authenticationPolicy, cleanupAuthPolicy := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(cleanupAuthPolicy)
-
-		authenticationPolicyId, err := authenticationPolicy.ID()
-		require.NoError(t, err)
-
 		t.Cleanup(testClientHelper().AuthenticationPolicy.DropFunc(t, newId))
 
-		err = client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicyId).WithRenameTo(newId))
+		err := client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(authenticationPolicy.ID()).WithRenameTo(newId))
 		require.NoError(t, err)
 
-		_, err = client.AuthenticationPolicies.Describe(ctx, authenticationPolicyId)
+		_, err = client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 
 		_, err = client.AuthenticationPolicies.Describe(ctx, newId)
@@ -364,10 +357,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		authenticationPolicy, cleanupAuthPolicy := testClientHelper().AuthenticationPolicy.CreateWithOptions(t, id, sdk.NewCreateAuthenticationPolicyRequest(id).WithComment("some_comment"))
 		t.Cleanup(cleanupAuthPolicy)
 
-		authenticationPolicyId, err := authenticationPolicy.ID()
-		require.NoError(t, err)
-
-		desc, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicyId)
+		desc, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
 		require.NoError(t, err)
 
 		assert.GreaterOrEqual(t, len(desc), 9)

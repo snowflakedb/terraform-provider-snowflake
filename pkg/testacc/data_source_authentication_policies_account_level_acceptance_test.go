@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/stretchr/testify/require"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -28,8 +28,6 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 		WithPreviewFeaturesEnabled(string(previewfeatures.AuthenticationPoliciesDatasource))
 
 	policy := secondaryTestClient().AuthenticationPolicy.ShowOnCurrentAccount(t)
-	policyId, err := policy.ID()
-	require.NoError(t, err)
 
 	if policy != nil && policy.Name != "BUILT-IN" {
 		secondaryTestClient().Account.Alter(t, &sdk.AlterAccountOptions{
@@ -37,7 +35,7 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 		})
 		t.Cleanup(func() {
 			secondaryTestClient().Account.Alter(t, &sdk.AlterAccountOptions{
-				Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(policyId)},
+				Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(policy.ID())},
 			})
 		})
 	}
@@ -55,6 +53,10 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 			{
 				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				Config:                   accconfig.FromModels(t, providerModel, basicModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.show_output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.describe_output.#", "0")),
+				),
 			},
 		},
 	})

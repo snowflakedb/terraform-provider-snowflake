@@ -51,24 +51,14 @@ var _ = ShowAuthenticationPolicySchema
 
 func AuthenticationPolicyToSchema(authenticationPolicy *sdk.AuthenticationPolicy) map[string]any {
 	authenticationPolicySchema := make(map[string]any)
-	if authenticationPolicy.CreatedOn != nil {
-		authenticationPolicySchema["created_on"] = authenticationPolicy.CreatedOn.String()
-	}
+	authenticationPolicySchema["created_on"] = authenticationPolicy.CreatedOn.String()
 	authenticationPolicySchema["name"] = authenticationPolicy.Name
 	authenticationPolicySchema["comment"] = authenticationPolicy.Comment
-	if authenticationPolicy.DatabaseName != nil {
-		authenticationPolicySchema["database_name"] = authenticationPolicy.DatabaseName
-	}
-	if authenticationPolicy.SchemaName != nil {
-		authenticationPolicySchema["schema_name"] = authenticationPolicy.SchemaName
-	}
+	authenticationPolicySchema["database_name"] = authenticationPolicy.DatabaseName
+	authenticationPolicySchema["schema_name"] = authenticationPolicy.SchemaName
 	authenticationPolicySchema["kind"] = authenticationPolicy.Kind
-	if authenticationPolicy.Owner != nil {
-		authenticationPolicySchema["owner"] = authenticationPolicy.Owner
-	}
-	if authenticationPolicy.OwnerRoleType != nil {
-		authenticationPolicySchema["owner_role_type"] = authenticationPolicy.OwnerRoleType
-	}
+	authenticationPolicySchema["owner"] = authenticationPolicy.Owner
+	authenticationPolicySchema["owner_role_type"] = authenticationPolicy.OwnerRoleType
 	authenticationPolicySchema["options"] = authenticationPolicy.Options
 	return authenticationPolicySchema
 }
