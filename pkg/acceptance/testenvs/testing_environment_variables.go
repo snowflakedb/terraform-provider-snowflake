@@ -69,6 +69,14 @@ func SkipTestIfSet(t *testing.T, envName Env, reason string) {
 	}
 }
 
+func SkipTestIfSetTo(t *testing.T, envName Env, value string, reason string) {
+	t.Helper()
+	env := os.Getenv(fmt.Sprintf("%v", envName))
+	if env == value {
+		t.Skipf("Skipping %s, because env %v is set. Reason: \"%s\"", t.Name(), envName, reason)
+	}
+}
+
 type Env interface {
 	xxxProtected()
 }
