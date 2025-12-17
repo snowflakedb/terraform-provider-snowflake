@@ -20,7 +20,7 @@
 
 ## Setting up the development environment
 
-1. Install Golang environment (check instructions on the official page https://go.dev/doc/install depending on you OS).
+1. Install Golang environment (check instructions on the official page https://go.dev/doc/install depending on your OS).
 2. Fork this repo and clone it. Base your changes on the [dev](https://github.com/snowflakedb/terraform-provider-snowflake/tree/dev) branch as it contains the latest unreleased changes.
 3. Run `make dev-setup` in the main directory of the cloned repository.
 4. You can clean up the dev setup by running `make dev-cleanup`.
@@ -59,7 +59,7 @@ role = "<your role>"
 host="<host of your account, e.g. organisation-account_name.snowflakecomputing.com>"
 ```
 
-To be able to run all the tests you additionally the second profile `[secondary_test_account]`:
+To be able to run all the tests you additionally need the second profile `[secondary_test_account]`:
 
 ```sh
 [secondary_test_account]
@@ -103,7 +103,7 @@ Remember to consult [our roadmap](ROADMAP.md), maybe we are already working on t
 It's best to approach us through the GitHub issues: either by commenting the already existing one or by creating a new one.
 
 ### Follow the code conventions inside the repository
-We believe that code following the same conventions is easier to maintain and extend. When working on the given part of the provider try to follow the local solutions and not introduce too much new ideas.
+We believe that code following the same conventions is easier to maintain and extend. When working on the given part of the provider try to follow the local solutions and not introduce too many new ideas.
 
 ### Test the change
 Every introduced change should be tested. Depending on the type of the change it may require (any or mix of):
@@ -158,7 +158,7 @@ This guide describes the end-to-end process to add support for a new Snowflake o
 
 ### 1. Add the object to the SDK
 
-Take a look at an example [SDK implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4084)
+Take a look at an example [SDK implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4084).
 
 - Follow the [SDK Generator guide](pkg/sdk/generator/README.md) to generate the object's SDK.
 
@@ -174,7 +174,7 @@ Add integration tests under the SDK’s testint package to validate the SDK beha
 
 ### 3. Add resource
 
-Take a look at an example [Resource implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4195)
+Take a look at an example [Resource implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4195).
 
 Implement the resource schema, read/create/update/delete, acceptance tests, and docs. Use the SDK as the source of truth and mirror its SHOW/DESC coverage and validations.
 
@@ -198,6 +198,8 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
 
   - Add an example usage of the object. It should be auto-included in the generated documentation via the `.md.tmpl` file.
 
+  - The resource's documentation should also include a `Preview feature` section. It could be a good idea to copy-paste and modify one of the existing files located in `templates/resources/*.md.tmpl`.
+
   - use `make docs` to generate documentation based on the `.md.tmpl` file (which is the file you should edit instead of `.md` file).
 
 - Implement acceptance tests
@@ -205,7 +207,7 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
 
 - Follow the [Schemas guide](pkg/schemas/gen/README.md) to generate show schemas.
 
-- Follow the [Objects assertions guide](pkg/acceptance/bettertestspoc/README.md#adding-new-resource-assertions) to generate the necessary assertions.
+- Follow the [Resource assertions guide](pkg/acceptance/bettertestspoc/README.md#adding-new-resource-assertions) to generate the necessary assertions.
 
 ### 4. Add data source
 
@@ -226,7 +228,7 @@ Example patterns validated by the data source:
 - Provider preview gate and migration guide
   - Add the “Added data source” H4 subsection under the same feature entry in the Migration Guide and link Snowflake’s SHOW docs where appropriate.
 
-- Follow the [Datasource config guide](pkg/acceptance/bettertestspoc/README.md#adding-new-datasource-config-model-builders) to generate config model.
+- Follow the [Data source config guide](pkg/acceptance/bettertestspoc/README.md#adding-new-datasource-config-model-builders) to generate config model.
 
 ## Advanced Debugging
 
