@@ -112,7 +112,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.Passcode, &driverCfg.Passcode)
 	pointerAttributeSet(c.Port, &driverCfg.Port)
 	pointerAttributeSet(c.PasscodeInPassword, &driverCfg.PasscodeInPassword)
-	err := pointerEnumSet(c.OktaUrl, &driverCfg.OktaURL, url.Parse)
+	err := pointerUrlAttributeSet(c.OktaUrl, &driverCfg.OktaURL)
 	if err != nil {
 		return *EmptyDriverConfig(), err
 	}
@@ -424,6 +424,17 @@ func pointerConfigBoolAttributeSet(src *bool, dst *gosnowflake.ConfigBool) {
 	if src != nil {
 		*dst = boolToConfigBool(*src)
 	}
+}
+
+func pointerUrlAttributeSet(src *string, dst **url.URL) error {
+	if src != nil {
+		url, err := url.Parse(*src)
+		if err != nil {
+			return err
+		}
+		*dst = url
+	}
+	return nil
 }
 
 func pointerEnumSet[T any](src *string, dst *T, converter func(string) (T, error)) error {
