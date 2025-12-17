@@ -6,48 +6,6 @@ This directory contains end-to-end tests for the migration script. Each object t
 
 To test multi-line RSA public key handling, you need to generate your own keys. The `users/objects_def.tf` has placeholder comments where you can add them.
 
-### Step 1: Generate RSA key pairs
-
-```bash
-# Generate 3 key pairs (for person_rsa, service_rsa key 1 & 2, legacy_rsa)
-for i in 1 2 3; do
-  openssl genrsa -out rsa_key_$i.pem 2048
-  openssl rsa -in rsa_key_$i.pem -pubout -out rsa_key_$i.pub
-done
-```
-
-### Step 2: Extract the public key body (without headers)
-
-```bash
-# View key 1 (for person_rsa and service_rsa key 1)
-sed -n '2,$p' rsa_key_1.pub | sed '$d'
-
-# View key 2 (for service_rsa key 2)
-sed -n '2,$p' rsa_key_2.pub | sed '$d'
-
-# View key 3 (for legacy_rsa)
-sed -n '2,$p' rsa_key_3.pub | sed '$d'
-```
-
-### Step 3: Add keys to objects_def.tf
-
-Edit `users/objects_def.tf` and find the commented `rsa_public_key` sections. Uncomment them and paste the key bodies:
-
-```hcl
-# Example for person_rsa:
-rsa_public_key = <<-EOT
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
-...your key content...
-...AQAB
-EOT
-```
-
-### Step 4: Cleanup generated keys
-
-```bash
-rm -f rsa_key_*.pem rsa_key_*.pub
-```
-
 ## Quick Start
 
 ### Step 1: Navigate to object type folder
@@ -75,7 +33,7 @@ This creates objects from `objects_def.tf` and generates `objects.csv` via `data
 
 ```bash
 go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@dev \
-  -import=block grants < objects.csv > import/main.tf
+  -import=statement grants < objects.csv > import/main.tf
 ```
 
 ### Step 5: Import in the separate directory
@@ -83,6 +41,7 @@ go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migrat
 ```bash
 cd import
 terraform init
+terraform import .. [command copied from the script's output]
 ```
 
 This imports the existing Snowflake objects into a fresh state.
@@ -93,7 +52,17 @@ This imports the existing Snowflake objects into a fresh state.
 terraform plan -detailed-exitcode
 ```
 
-This should X to import, 0 to add, 0 to change, 0 to destroy.
+This should state that there are `0` fields to change. However, for some objects there are fields that will always show changes. You will need to inspect them manually and make sure that all the fields with changes were expected to have them.
+
+Known fields with expected changes:
+
+- Users
+  - `default_secondary_roles_option`
+  - `disable_mfa`
+  - `disabled`
+  - `mins_to_bypass_mfa`
+  - `mins_to_unlock`
+  - `must_change_password`
 
 ### Step 7: Cleanup
 
@@ -106,4 +75,4 @@ terraform destroy
 
 ### Grants: Implicit Grants
 
-Grants with empty `granted_by` are implicit grants (auto-created by Snowflake) and cannot be managed by Terraform. The datasource filters these out.
+Grants with empty `granted_by` are implicit grants (auto-created by Snowflake) and cannot be managed by Terraform. The data source filters these out.

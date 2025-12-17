@@ -1,10 +1,3 @@
-# =============================================================================
-# Grants Test Objects
-# =============================================================================
-# These resources create test grants on Snowflake for migration testing.
-# Run with: terraform apply
-# Cleanup:  terraform destroy
-#
 # Grant types covered:
 # 1. Grant Account Role to Role
 # 2. Grant Account Role to User
@@ -20,7 +13,6 @@
 #    - On Schema
 #    - On Schema Object (TABLE)
 # 7. Grant with grant_option = true
-# =============================================================================
 
 terraform {
   required_providers {

@@ -1,9 +1,4 @@
-# =============================================================================
 # Grants Data Source - Fetch grants from Snowflake and generate CSV
-# =============================================================================
-# Note: All data sources have depends_on to ensure they wait for grants
-# to be created before querying.
-# =============================================================================
 
 # ==============================================================================
 # GRANTS TO ACCOUNT ROLES
