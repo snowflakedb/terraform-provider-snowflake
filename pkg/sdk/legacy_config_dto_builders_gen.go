@@ -259,3 +259,33 @@ func (s *LegacyConfigDTO) WithLogQueryParameters(LogQueryParameters bool) *Legac
 	s.LogQueryParameters = &LogQueryParameters
 	return s
 }
+
+func (s *LegacyConfigDTO) WithProxyHost(ProxyHost string) *LegacyConfigDTO {
+	s.ProxyHost = &ProxyHost
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyPort(ProxyPort int) *LegacyConfigDTO {
+	s.ProxyPort = &ProxyPort
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyUser(ProxyUser string) *LegacyConfigDTO {
+	s.ProxyUser = &ProxyUser
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyPassword(ProxyPassword string) *LegacyConfigDTO {
+	s.ProxyPassword = &ProxyPassword
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyProtocol(ProxyProtocol string) *LegacyConfigDTO {
+	s.ProxyProtocol = &ProxyProtocol
+	return s
+}
+
+func (s *LegacyConfigDTO) WithNoProxy(NoProxy string) *LegacyConfigDTO {
+	s.NoProxy = &NoProxy
+	return s
+}

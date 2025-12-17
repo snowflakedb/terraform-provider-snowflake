@@ -171,7 +171,12 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.WorkloadIdentityEntraResource, &driverCfg.WorkloadIdentityEntraResource)
 	pointerAttributeSet(c.LogQueryText, &driverCfg.LogQueryText)
 	pointerAttributeSet(c.LogQueryParameters, &driverCfg.LogQueryParameters)
-
+	pointerAttributeSet(c.ProxyHost, &driverCfg.ProxyHost)
+	pointerAttributeSet(c.ProxyPort, &driverCfg.ProxyPort)
+	pointerAttributeSet(c.ProxyUser, &driverCfg.ProxyUser)
+	pointerAttributeSet(c.ProxyPassword, &driverCfg.ProxyPassword)
+	pointerAttributeSet(c.ProxyProtocol, &driverCfg.ProxyProtocol)
+	pointerAttributeSet(c.NoProxy, &driverCfg.NoProxy)
 	return *driverCfg, nil
 }
 
@@ -323,6 +328,24 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	}
 	if !baseConfig.LogQueryParameters {
 		baseConfig.LogQueryParameters = mergeConfig.LogQueryParameters
+	}
+	if baseConfig.ProxyHost == "" {
+		baseConfig.ProxyHost = mergeConfig.ProxyHost
+	}
+	if baseConfig.ProxyPort == 0 {
+		baseConfig.ProxyPort = mergeConfig.ProxyPort
+	}
+	if baseConfig.ProxyUser == "" {
+		baseConfig.ProxyUser = mergeConfig.ProxyUser
+	}
+	if baseConfig.ProxyPassword == "" {
+		baseConfig.ProxyPassword = mergeConfig.ProxyPassword
+	}
+	if baseConfig.ProxyProtocol == "" {
+		baseConfig.ProxyProtocol = mergeConfig.ProxyProtocol
+	}
+	if baseConfig.NoProxy == "" {
+		baseConfig.NoProxy = mergeConfig.NoProxy
 	}
 	return baseConfig
 }

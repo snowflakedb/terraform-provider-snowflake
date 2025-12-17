@@ -489,6 +489,44 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.LogQueryParameters, nil),
 		},
+		"proxy_host": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("The host of the proxy to use for the connection.", snowflakeenvs.ProxyHost),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.ProxyHost, nil),
+		},
+		"proxy_port": {
+			Type:        schema.TypeInt,
+			Description: envNameFieldDescription("The port of the proxy to use for the connection.", snowflakeenvs.ProxyPort),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.ProxyPort, nil),
+		},
+		"proxy_user": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("The user of the proxy to use for the connection.", snowflakeenvs.ProxyUser),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.ProxyUser, nil),
+		},
+		"proxy_password": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("The password of the proxy to use for the connection.", snowflakeenvs.ProxyPassword),
+			Optional:    true,
+			Sensitive:   true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.ProxyPassword, nil),
+		},
+		"proxy_protocol": {
+			Type:             schema.TypeString,
+			Description:      envNameFieldDescription(fmt.Sprintf("The protocol of the proxy to use for the connection. Valid options are: %v.", docs.PossibleValuesListed(allProtocols)), snowflakeenvs.ProxyProtocol),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.ProxyProtocol, nil),
+			ValidateDiagFunc: validators.NormalizeValidation(toProtocol),
+		},
+		"no_proxy": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("A comma-separated list of hostnames, domains, and IP addresses to exclude from proxying.", snowflakeenvs.NoProxy),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.NoProxy, nil),
+		},
 	}
 }
 
@@ -620,6 +658,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_git_repositories":                   datasources.GitRepositories(),
 		"snowflake_grants":                             datasources.Grants(),
 		"snowflake_image_repositories":                 datasources.ImageRepositories(),
+		"snowflake_listings":                           datasources.Listings(),
 		"snowflake_masking_policies":                   datasources.MaskingPolicies(),
 		"snowflake_materialized_views":                 datasources.MaterializedViews(),
 		"snowflake_network_policies":                   datasources.NetworkPolicies(),
@@ -869,6 +908,12 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "workload_identity_entra_resource", &config.WorkloadIdentityEntraResource),
 		handleBoolField(s, "log_query_text", &config.LogQueryText),
 		handleBoolField(s, "log_query_parameters", &config.LogQueryParameters),
+		handleStringField(s, "proxy_host", &config.ProxyHost),
+		handleIntAttribute(s, "proxy_port", &config.ProxyPort),
+		handleStringField(s, "proxy_user", &config.ProxyUser),
+		handleStringField(s, "proxy_password", &config.ProxyPassword),
+		handleStringField(s, "proxy_protocol", &config.ProxyProtocol),
+		handleStringField(s, "no_proxy", &config.NoProxy),
 	)
 	if err != nil {
 		return nil, err
