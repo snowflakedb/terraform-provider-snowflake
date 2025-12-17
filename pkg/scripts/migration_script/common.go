@@ -35,20 +35,9 @@ func handleIfNotEmpty[T any](value string, builder func(string) *T) {
 	}
 }
 
-// handleIf outputs "true" only when condition is true (for fields where false is the default)
 func handleIf[T any](condition bool, builder func(string) *T) {
 	if condition {
 		builder("true")
-	}
-}
-
-// handleBoolAsString outputs the boolean as a string ("true" or "false")
-// Use this for fields where we need to explicitly set the value to avoid Terraform defaults
-func handleBoolAsString[T any](condition bool, builder func(string) *T) {
-	if condition {
-		builder("true")
-	} else {
-		builder("false")
 	}
 }
 
