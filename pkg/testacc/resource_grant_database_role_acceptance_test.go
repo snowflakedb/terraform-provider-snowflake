@@ -4,9 +4,15 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -385,4 +391,41 @@ resource "snowflake_grant_database_role" "test" {
   parent_database_role_name = "%[1]s.${snowflake_database_role.parent_role.name}"
 }
 `, databaseRoleId.DatabaseName(), databaseRoleId.Name(), parentRoleId.Name())
+}
+
+func TestAcc_GrantDatabaseRole_handleGrantsToApplication(t *testing.T) {
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	parentRole, parentRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(parentRoleCleanup)
+
+	testClient().Grant.GrantDatabaseRoleToApplication(t, databaseRole.ID(), testClient().Ids.SnowflakeApplicationId())
+
+	basic := model.GrantDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
+		WithParentRoleName(parentRole.ID().Name())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckGrantDatabaseRoleDestroy(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
+				Config:            accconfig.FromModels(t, basic),
+				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent result after apply"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.GrantDatabaseRoleResource(t, basic.ResourceReference()).
+						HasDatabaseRoleNameString(databaseRole.ID().FullyQualifiedName()).
+						HasParentRoleNameString(parentRole.ID().Name()),
+					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "id", fmt.Sprintf(`%v|ROLE|%v`, databaseRole.ID().FullyQualifiedName(), parentRole.ID().FullyQualifiedName()))),
+				),
+			},
+		},
+	})
 }

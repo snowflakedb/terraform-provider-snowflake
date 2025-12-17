@@ -503,3 +503,12 @@ func (c *GrantClient) GrantPrivilegesOnDatabaseToUser(t *testing.T, databaseId s
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("GRANT %s ON DATABASE %s TO USER %s", collections.JoinStrings(privileges, ","), databaseId.FullyQualifiedName(), userId.FullyQualifiedName()))
 	require.NoError(t, err)
 }
+
+func (c *GrantClient) GrantDatabaseRoleToApplication(t *testing.T, databaseRoleId sdk.DatabaseObjectIdentifier, applicationId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	// TODO(SNOW-2095669): Update when the client is updated to support this
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf("GRANT DATABASE ROLE %s TO APPLICATION %s", databaseRoleId.FullyQualifiedName(), applicationId.FullyQualifiedName()))
+	require.NoError(t, err)
+}
