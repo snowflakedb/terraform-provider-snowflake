@@ -652,6 +652,13 @@ data "snowflake_schemas" "test" {
   in {
     database = "DATABASE"
   }
+
+  # If you're creating schemas in the same Terraform config, add depends_on
+  # to ensure schemas exist before querying:
+  # depends_on = [
+  #   snowflake_schema.schema1,
+  #   snowflake_schema.schema2,
+  # ]
 }
 
 locals {
@@ -706,13 +713,27 @@ locals {
 
 resource "local_file" "schemas_csv" {
   content  = local.csv_content
-  filename = "${path.module}/schemas.csv"
+  filename = "${path.module}/objects.csv"
+
+  # Optional: Fail if no schemas found (useful for testing/validation)
+  lifecycle {
+    precondition {
+      condition     = length(local.schemas_flattened) > 0
+      error_message = "No schemas found. Make sure the database exists and contains schemas."
+    }
+  }
+}
+
+# Optional: Output for debugging
+output "schemas_found" {
+  description = "Number of schemas found"
+  value       = length(local.schemas_flattened)
 }
 ```
 
-After running `terraform apply`, the CSV file will be automatically generated at `schemas.csv`. Now, we can run the migration script like:
+After running `terraform apply`, the CSV file will be automatically generated at `objects.csv`. Now, we can run the migration script like:
 ```shell
-go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@main -import=block schemas < ./schemas.csv
+go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@main -import=block schemas < ./objects.csv
 ```
 
 This will output the generated configuration and import blocks for the specified schemas.
