@@ -89,8 +89,8 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 		Description: joinWithSpace(
 			"If true, the resource will revoke all privileges that are not explicitly defined in the config making it a central source of truth for the privileges granted on an object to an account role.",
 			"If false, the resource will be only concerned with the privileges that are explicitly defined in the config.",
-			"The potential privilege removals will be planned only after second `terraform apply` run, when the flag is set in the state.",
-			"This means, the resource creation and flag update doesn't revoke immediately any externally granted privileges.",
+			"The potential privilege removals will be planned only after second `terraform apply` run, after setting the flag in resource configuration.",
+			"This means, the flag update doesn't revoke immediately any externally granted privileges.",
 			"External privileges will be detected regardless of their grant option.",
 			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the `experimental_features_enabled` field.",
 		),
