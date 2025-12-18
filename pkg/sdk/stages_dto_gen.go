@@ -32,18 +32,13 @@ type CreateInternalStageRequest struct {
 	Tag                   []TagAssociation
 }
 
-// added manually
-func (s *CreateInternalStageRequest) ID() SchemaObjectIdentifier {
-	return s.name
-}
-
 type InternalStageEncryptionRequest struct {
-	EncryptionType *InternalStageEncryptionOption // required
+	EncryptionType InternalStageEncryptionOption // required
 }
 
 type InternalDirectoryTableOptionsRequest struct {
-	Enable          *bool
-	RefreshOnCreate *bool
+	Enable      bool
+	AutoRefresh *bool
 }
 
 type StageFileFormatRequest struct {
@@ -75,8 +70,8 @@ type CreateOnS3StageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ExternalStageParams   *ExternalS3StageParamsRequest
+	name                  SchemaObjectIdentifier       // required
+	ExternalStageParams   ExternalS3StageParamsRequest // required
 	DirectoryTableOptions *ExternalS3DirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
@@ -85,10 +80,12 @@ type CreateOnS3StageRequest struct {
 }
 
 type ExternalS3StageParamsRequest struct {
-	Url                string // required
-	StorageIntegration *AccountObjectIdentifier
-	Credentials        *ExternalStageS3CredentialsRequest
-	Encryption         *ExternalStageS3EncryptionRequest
+	Url                    string // required
+	AwsAccessPointArn      *string
+	StorageIntegration     *AccountObjectIdentifier
+	Credentials            *ExternalStageS3CredentialsRequest
+	Encryption             *ExternalStageS3EncryptionRequest
+	UsePrivatelinkEndpoint *bool
 }
 
 type ExternalStageS3CredentialsRequest struct {
@@ -105,7 +102,7 @@ type ExternalStageS3EncryptionRequest struct {
 }
 
 type ExternalS3DirectoryTableOptionsRequest struct {
-	Enable          *bool
+	Enable          bool
 	RefreshOnCreate *bool
 	AutoRefresh     *bool
 }
@@ -114,8 +111,8 @@ type CreateOnGCSStageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ExternalStageParams   *ExternalGCSStageParamsRequest
+	name                  SchemaObjectIdentifier        // required
+	ExternalStageParams   ExternalGCSStageParamsRequest // required
 	DirectoryTableOptions *ExternalGCSDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
@@ -135,7 +132,7 @@ type ExternalStageGCSEncryptionRequest struct {
 }
 
 type ExternalGCSDirectoryTableOptionsRequest struct {
-	Enable                  *bool
+	Enable                  bool
 	RefreshOnCreate         *bool
 	AutoRefresh             *bool
 	NotificationIntegration *string
@@ -145,8 +142,8 @@ type CreateOnAzureStageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	ExternalStageParams   *ExternalAzureStageParamsRequest
+	name                  SchemaObjectIdentifier          // required
+	ExternalStageParams   ExternalAzureStageParamsRequest // required
 	DirectoryTableOptions *ExternalAzureDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
@@ -155,10 +152,11 @@ type CreateOnAzureStageRequest struct {
 }
 
 type ExternalAzureStageParamsRequest struct {
-	Url                string // required
-	StorageIntegration *AccountObjectIdentifier
-	Credentials        *ExternalStageAzureCredentialsRequest
-	Encryption         *ExternalStageAzureEncryptionRequest
+	Url                    string // required
+	StorageIntegration     *AccountObjectIdentifier
+	Credentials            *ExternalStageAzureCredentialsRequest
+	Encryption             *ExternalStageAzureEncryptionRequest
+	UsePrivatelinkEndpoint *bool
 }
 
 type ExternalStageAzureCredentialsRequest struct {
@@ -171,7 +169,7 @@ type ExternalStageAzureEncryptionRequest struct {
 }
 
 type ExternalAzureDirectoryTableOptionsRequest struct {
-	Enable                  *bool
+	Enable                  bool
 	RefreshOnCreate         *bool
 	AutoRefresh             *bool
 	NotificationIntegration *string
@@ -181,10 +179,8 @@ type CreateOnS3CompatibleStageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier // required
-	Url                   string                 // required
-	Endpoint              string                 // required
-	Credentials           *ExternalStageS3CompatibleCredentialsRequest
+	name                  SchemaObjectIdentifier                 // required
+	ExternalStageParams   ExternalS3CompatibleStageParamsRequest // required
 	DirectoryTableOptions *ExternalS3DirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
@@ -192,9 +188,15 @@ type CreateOnS3CompatibleStageRequest struct {
 	Tag                   []TagAssociation
 }
 
+type ExternalS3CompatibleStageParamsRequest struct {
+	Url         string // required
+	Endpoint    string // required
+	Credentials *ExternalStageS3CompatibleCredentialsRequest
+}
+
 type ExternalStageS3CompatibleCredentialsRequest struct {
-	AwsKeyId     *string // required
-	AwsSecretKey *string // required
+	AwsKeyId     string // required
+	AwsSecretKey string // required
 }
 
 type AlterStageRequest struct {
@@ -266,5 +268,5 @@ type DescribeStageRequest struct {
 
 type ShowStageRequest struct {
 	Like *Like
-	In   *In
+	In   *ExtendedIn
 }

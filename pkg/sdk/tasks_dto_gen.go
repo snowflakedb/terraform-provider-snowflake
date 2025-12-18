@@ -31,20 +31,12 @@ type CreateTaskRequest struct {
 	TaskAutoRetryAttempts                   *int
 	Tag                                     []TagAssociation
 	UserTaskMinimumTriggerIntervalInSeconds *int
+	TargetCompletionInterval                *string
+	ServerlessTaskMinStatementSize          *WarehouseSize
+	ServerlessTaskMaxStatementSize          *WarehouseSize
 	After                                   []SchemaObjectIdentifier
 	When                                    *string
 	sql                                     string // required
-}
-
-// added manually
-func (r *CreateTaskRequest) GetName() SchemaObjectIdentifier {
-	return r.name
-}
-
-// added manually
-type CreateTaskWarehouseRequest struct {
-	Warehouse                           *AccountObjectIdentifier
-	UserTaskManagedInitialWarehouseSize *WarehouseSize
 }
 
 type CreateOrAlterTaskRequest struct {
@@ -64,11 +56,6 @@ type CreateOrAlterTaskRequest struct {
 	After                       []SchemaObjectIdentifier
 	When                        *string
 	sql                         string // required
-}
-
-// added manually
-func (r *CreateOrAlterTaskRequest) GetName() SchemaObjectIdentifier {
-	return r.name
 }
 
 type CloneTaskRequest struct {
@@ -96,11 +83,6 @@ type AlterTaskRequest struct {
 	RemoveWhen    *bool
 }
 
-// added manually
-func (r *AlterTaskRequest) GetName() SchemaObjectIdentifier {
-	return r.name
-}
-
 type TaskSetRequest struct {
 	Warehouse                               *AccountObjectIdentifier
 	UserTaskManagedInitialWarehouseSize     *WarehouseSize
@@ -114,6 +96,9 @@ type TaskSetRequest struct {
 	SessionParameters                       *SessionParameters
 	TaskAutoRetryAttempts                   *int
 	UserTaskMinimumTriggerIntervalInSeconds *int
+	TargetCompletionInterval                *string
+	ServerlessTaskMinStatementSize          *WarehouseSize
+	ServerlessTaskMaxStatementSize          *WarehouseSize
 }
 
 type TaskUnsetRequest struct {
@@ -128,6 +113,9 @@ type TaskUnsetRequest struct {
 	Comment                                 *bool
 	TaskAutoRetryAttempts                   *bool
 	UserTaskMinimumTriggerIntervalInSeconds *bool
+	TargetCompletionInterval                *bool
+	ServerlessTaskMinStatementSize          *bool
+	ServerlessTaskMaxStatementSize          *bool
 	SessionParametersUnset                  *SessionParametersUnset
 }
 

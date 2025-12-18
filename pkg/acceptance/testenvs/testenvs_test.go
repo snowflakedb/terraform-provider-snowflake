@@ -78,6 +78,48 @@ func Test_SkipTestIfSet(t *testing.T) {
 	})
 }
 
+func Test_SkipTestIfSetTo(t *testing.T) {
+	// runSkipTestIfSetToInGoroutineAndWaitForCompletion is needed because underneath we test t.Skipf, that leads to t.SkipNow() that in turn call runtime.Goexit()
+	// so we need to be wrapped in a Goroutine.
+	runSkipTestIfSetToInGoroutineAndWaitForCompletion := func(t *testing.T, env testenvs.Env, value string) {
+		t.Helper()
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			testenvs.SkipTestIfSetTo(t, env, value, "some good reason")
+		}()
+		wg.Wait()
+	}
+
+	t.Run("skip test if env is set to specific value", func(t *testing.T) {
+		t.Setenv(string(testenvs.BusinessCriticalAccount), "specific_value")
+
+		tut := &testing.T{}
+		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, "specific_value")
+
+		require.True(t, tut.Skipped())
+	})
+
+	t.Run("do not skip if env is set to different value", func(t *testing.T) {
+		t.Setenv(string(testenvs.BusinessCriticalAccount), "different_value")
+
+		tut := &testing.T{}
+		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, "specific_value")
+
+		require.False(t, tut.Skipped())
+	})
+
+	t.Run("do not skip if env not set", func(t *testing.T) {
+		t.Setenv(string(testenvs.BusinessCriticalAccount), "")
+
+		tut := &testing.T{}
+		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, "specific_value")
+
+		require.False(t, tut.Skipped())
+	})
+}
+
 func Test_Assertions(t *testing.T) {
 	// runAssertionInGoroutineAndWaitForCompletion is needed because underneath we test require, that leads to t.FailNow() that in turn call runtime.Goexit()
 	// so we need to be wrapped in a Goroutine.

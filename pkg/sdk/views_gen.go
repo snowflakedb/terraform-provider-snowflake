@@ -2,11 +2,9 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"database/sql"
-	"strings"
 )
 
 type Views interface {
@@ -312,25 +310,4 @@ type ViewDetails struct {
 	Comment       *string
 	PolicyName    *string
 	PrivacyDomain *string
-}
-
-// added manually
-// TODO(SNOW-1636212): remove
-func (v *View) HasCopyGrants() bool {
-	return strings.Contains(v.Text, " COPY GRANTS ")
-}
-
-// added manually
-func (v *View) IsTemporary() bool {
-	return strings.Contains(v.Text, "TEMPORARY")
-}
-
-// added manually
-func (v *View) IsRecursive() bool {
-	return strings.Contains(v.Text, "RECURSIVE")
-}
-
-// added manually
-func (v *View) IsChangeTracking() bool {
-	return v.ChangeTracking == "ON"
 }

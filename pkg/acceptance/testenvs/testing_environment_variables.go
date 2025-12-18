@@ -40,6 +40,7 @@ const (
 	RequireTestObjectsSuffix    env = "TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX"
 	RequireGeneratedRandomValue env = "TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE"
 	GeneratedRandomValue        env = "TEST_SF_TF_GENERATED_RANDOM_VALUE"
+	SnowflakeTestingEnvironment env = "TEST_SF_TF_SNOWFLAKE_TESTING_ENVIRONMENT"
 
 	SimplifiedIntegrationTestsSetup env = "TEST_SF_TF_SIMPLIFIED_INTEGRATION_TESTS_SETUP"
 
@@ -64,6 +65,14 @@ func SkipTestIfSet(t *testing.T, envName Env, reason string) {
 	t.Helper()
 	env := os.Getenv(fmt.Sprintf("%v", envName))
 	if env != "" {
+		t.Skipf("Skipping %s, because env %v is set. Reason: \"%s\"", t.Name(), envName, reason)
+	}
+}
+
+func SkipTestIfSetTo(t *testing.T, envName Env, value string, reason string) {
+	t.Helper()
+	env := os.Getenv(fmt.Sprintf("%v", envName))
+	if env == value {
 		t.Skipf("Skipping %s, because env %v is set. Reason: \"%s\"", t.Name(), envName, reason)
 	}
 }

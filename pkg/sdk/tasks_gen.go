@@ -2,13 +2,9 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"strconv"
-	"strings"
 )
 
 type Tasks interface {
@@ -52,6 +48,9 @@ type CreateTaskOptions struct {
 	TaskAutoRetryAttempts                   *int                     `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
 	Tag                                     []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
 	UserTaskMinimumTriggerIntervalInSeconds *int                     `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	TargetCompletionInterval                *string                  `ddl:"parameter,single_quotes" sql:"TARGET_COMPLETION_INTERVAL"`
+	ServerlessTaskMinStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	ServerlessTaskMaxStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 	After                                   []SchemaObjectIdentifier `ddl:"parameter,no_equals" sql:"AFTER"`
 	When                                    *string                  `ddl:"parameter,no_quotes,no_equals" sql:"WHEN"`
 	as                                      bool                     `ddl:"static" sql:"AS"`
@@ -130,6 +129,9 @@ type TaskSet struct {
 	SessionParameters                       *SessionParameters       `ddl:"list,no_parentheses"`
 	TaskAutoRetryAttempts                   *int                     `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
 	UserTaskMinimumTriggerIntervalInSeconds *int                     `ddl:"parameter" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	TargetCompletionInterval                *string                  `ddl:"parameter,single_quotes" sql:"TARGET_COMPLETION_INTERVAL"`
+	ServerlessTaskMinStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	ServerlessTaskMaxStatementSize          *WarehouseSize           `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 }
 
 type TaskUnset struct {
@@ -144,6 +146,9 @@ type TaskUnset struct {
 	Comment                                 *bool                   `ddl:"keyword" sql:"COMMENT"`
 	TaskAutoRetryAttempts                   *bool                   `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
 	UserTaskMinimumTriggerIntervalInSeconds *bool                   `ddl:"keyword" sql:"USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"`
+	TargetCompletionInterval                *bool                   `ddl:"keyword" sql:"TARGET_COMPLETION_INTERVAL"`
+	ServerlessTaskMinStatementSize          *bool                   `ddl:"keyword" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	ServerlessTaskMaxStatementSize          *bool                   `ddl:"keyword" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 	SessionParametersUnset                  *SessionParametersUnset `ddl:"list,no_parentheses"`
 }
 
@@ -190,6 +195,7 @@ type taskDBRow struct {
 	Budget                    sql.NullString `db:"budget"`
 	TaskRelations             string         `db:"task_relations"`
 	LastSuspendedReason       sql.NullString `db:"last_suspended_reason"`
+	TargetCompletionInterval  sql.NullString `db:"target_completion_interval"`
 }
 
 type Task struct {
@@ -215,6 +221,7 @@ type Task struct {
 	Budget                    string
 	TaskRelations             TaskRelations
 	LastSuspendedReason       string
+	TargetCompletionInterval  *TaskTargetCompletionInterval
 }
 
 func (v *Task) ID() SchemaObjectIdentifier {
@@ -223,84 +230,6 @@ func (v *Task) ID() SchemaObjectIdentifier {
 
 func (v *Task) ObjectType() ObjectType {
 	return ObjectTypeTask
-}
-
-// added manually
-func (v *Task) IsStarted() bool {
-	return v.State == TaskStateStarted
-}
-
-// added manually
-type TaskSchedule struct {
-	Minutes int
-	Seconds int
-	Hours   int
-	Cron    string
-}
-
-// added manually
-func ParseTaskSchedule(schedule string) (*TaskSchedule, error) {
-	upperSchedule := strings.ToUpper(schedule)
-	switch {
-	case strings.Contains(upperSchedule, "USING CRON"):
-		// We have to do it this was because we want to get rid of the prefix and leave the casing as is (mostly because timezones like America/Los_Angeles are case-sensitive).
-		// That why the prefix trimming has to be done by slicing rather than using strings.TrimPrefix.
-		cron := schedule[len("USING CRON "):]
-		return &TaskSchedule{Cron: cron}, nil
-	case strings.HasSuffix(upperSchedule, "SECONDS") ||
-		strings.HasSuffix(upperSchedule, "SECOND"):
-		secondsParts := strings.Split(upperSchedule, " ")
-		seconds, err := strconv.Atoi(secondsParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Seconds: seconds}, nil
-	case strings.HasSuffix(upperSchedule, "MINUTES") ||
-		strings.HasSuffix(upperSchedule, "MINUTE"):
-		minuteParts := strings.Split(upperSchedule, " ")
-		minutes, err := strconv.Atoi(minuteParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Minutes: minutes}, nil
-	case strings.HasSuffix(upperSchedule, "HOURS") ||
-		strings.HasSuffix(upperSchedule, "HOUR"):
-		hoursParts := strings.Split(upperSchedule, " ")
-		hours, err := strconv.Atoi(hoursParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Hours: hours}, nil
-	case strings.HasSuffix(upperSchedule, "S"):
-		secondsParts := strings.Split(upperSchedule, " ")
-		seconds, err := strconv.Atoi(secondsParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Seconds: seconds}, nil
-	case strings.HasSuffix(upperSchedule, "M"):
-		minuteParts := strings.Split(upperSchedule, " ")
-		minutes, err := strconv.Atoi(minuteParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Minutes: minutes}, nil
-	case strings.HasSuffix(upperSchedule, "H"):
-		hoursParts := strings.Split(upperSchedule, " ")
-		hours, err := strconv.Atoi(hoursParts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		return &TaskSchedule{Hours: hours}, nil
-	default:
-		return nil, fmt.Errorf("invalid schedule format: %s", schedule)
-	}
 }
 
 // DescribeTaskOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-task.

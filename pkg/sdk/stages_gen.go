@@ -45,12 +45,12 @@ type CreateInternalStageOptions struct {
 }
 
 type InternalStageEncryption struct {
-	EncryptionType *InternalStageEncryptionOption `ddl:"parameter,single_quotes" sql:"TYPE"`
+	EncryptionType InternalStageEncryptionOption `ddl:"parameter,single_quotes" sql:"TYPE"`
 }
 
 type InternalDirectoryTableOptions struct {
-	Enable          *bool `ddl:"parameter" sql:"ENABLE"`
-	RefreshOnCreate *bool `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
+	Enable      bool  `ddl:"parameter" sql:"ENABLE"`
+	AutoRefresh *bool `ddl:"parameter" sql:"AUTO_REFRESH"`
 }
 
 type StageFileFormat struct {
@@ -79,13 +79,13 @@ type StageCopyOnErrorOptions struct {
 
 // CreateOnS3StageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3StageOptions struct {
-	create                bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                   `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier `ddl:"identifier"`
-	ExternalStageParams   *ExternalS3StageParams
+	create                bool                             `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                            `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                            `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                             `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                            `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier           `ddl:"identifier"`
+	ExternalStageParams   ExternalS3StageParams            `ddl:"keyword"`
 	DirectoryTableOptions *ExternalS3DirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                 `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	CopyOptions           *StageCopyOptions                `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
@@ -94,10 +94,12 @@ type CreateOnS3StageOptions struct {
 }
 
 type ExternalS3StageParams struct {
-	Url                string                      `ddl:"parameter,single_quotes" sql:"URL"`
-	StorageIntegration *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
-	Credentials        *ExternalStageS3Credentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
-	Encryption         *ExternalStageS3Encryption  `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	Url                    string                      `ddl:"parameter,single_quotes" sql:"URL"`
+	AwsAccessPointArn      *string                     `ddl:"parameter,single_quotes" sql:"AWS_ACCESS_POINT_ARN"`
+	StorageIntegration     *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
+	Credentials            *ExternalStageS3Credentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
+	Encryption             *ExternalStageS3Encryption  `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	UsePrivatelinkEndpoint *bool                       `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type ExternalStageS3Credentials struct {
@@ -114,20 +116,20 @@ type ExternalStageS3Encryption struct {
 }
 
 type ExternalS3DirectoryTableOptions struct {
-	Enable          *bool `ddl:"parameter" sql:"ENABLE"`
+	Enable          bool  `ddl:"parameter" sql:"ENABLE"`
 	RefreshOnCreate *bool `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
 	AutoRefresh     *bool `ddl:"parameter" sql:"AUTO_REFRESH"`
 }
 
 // CreateOnGCSStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnGCSStageOptions struct {
-	create                bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                   `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier `ddl:"identifier"`
-	ExternalStageParams   *ExternalGCSStageParams
+	create                bool                              `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                             `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                             `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                              `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                             `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier            `ddl:"identifier"`
+	ExternalStageParams   ExternalGCSStageParams            `ddl:"keyword"`
 	DirectoryTableOptions *ExternalGCSDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                  `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	CopyOptions           *StageCopyOptions                 `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
@@ -147,7 +149,7 @@ type ExternalStageGCSEncryption struct {
 }
 
 type ExternalGCSDirectoryTableOptions struct {
-	Enable                  *bool   `ddl:"parameter" sql:"ENABLE"`
+	Enable                  bool    `ddl:"parameter" sql:"ENABLE"`
 	RefreshOnCreate         *bool   `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
 	AutoRefresh             *bool   `ddl:"parameter" sql:"AUTO_REFRESH"`
 	NotificationIntegration *string `ddl:"parameter,single_quotes" sql:"NOTIFICATION_INTEGRATION"`
@@ -155,13 +157,13 @@ type ExternalGCSDirectoryTableOptions struct {
 
 // CreateOnAzureStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnAzureStageOptions struct {
-	create                bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                  `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                   `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier `ddl:"identifier"`
-	ExternalStageParams   *ExternalAzureStageParams
+	create                bool                                `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                               `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                               `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                                `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                               `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier              `ddl:"identifier"`
+	ExternalStageParams   ExternalAzureStageParams            `ddl:"keyword"`
 	DirectoryTableOptions *ExternalAzureDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                    `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
 	CopyOptions           *StageCopyOptions                   `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
@@ -170,10 +172,11 @@ type CreateOnAzureStageOptions struct {
 }
 
 type ExternalAzureStageParams struct {
-	Url                string                         `ddl:"parameter,single_quotes" sql:"URL"`
-	StorageIntegration *AccountObjectIdentifier       `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
-	Credentials        *ExternalStageAzureCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
-	Encryption         *ExternalStageAzureEncryption  `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	Url                    string                         `ddl:"parameter,single_quotes" sql:"URL"`
+	StorageIntegration     *AccountObjectIdentifier       `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
+	Credentials            *ExternalStageAzureCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
+	Encryption             *ExternalStageAzureEncryption  `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	UsePrivatelinkEndpoint *bool                          `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type ExternalStageAzureCredentials struct {
@@ -186,7 +189,7 @@ type ExternalStageAzureEncryption struct {
 }
 
 type ExternalAzureDirectoryTableOptions struct {
-	Enable                  *bool   `ddl:"parameter" sql:"ENABLE"`
+	Enable                  bool    `ddl:"parameter" sql:"ENABLE"`
 	RefreshOnCreate         *bool   `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
 	AutoRefresh             *bool   `ddl:"parameter" sql:"AUTO_REFRESH"`
 	NotificationIntegration *string `ddl:"parameter,single_quotes" sql:"NOTIFICATION_INTEGRATION"`
@@ -194,25 +197,29 @@ type ExternalAzureDirectoryTableOptions struct {
 
 // CreateOnS3CompatibleStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3CompatibleStageOptions struct {
-	create                bool                                  `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                                 `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                                 `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                                  `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                                 `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier                `ddl:"identifier"`
-	Url                   string                                `ddl:"parameter,single_quotes" sql:"URL"`
-	Endpoint              string                                `ddl:"parameter,single_quotes" sql:"ENDPOINT"`
-	Credentials           *ExternalStageS3CompatibleCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
-	DirectoryTableOptions *ExternalS3DirectoryTableOptions      `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
-	FileFormat            *StageFileFormat                      `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions           *StageCopyOptions                     `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
-	Comment               *string                               `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Tag                   []TagAssociation                      `ddl:"keyword,parentheses" sql:"TAG"`
+	create                bool                             `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                            `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                            `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                             `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                            `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier           `ddl:"identifier"`
+	ExternalStageParams   ExternalS3CompatibleStageParams  `ddl:"keyword"`
+	DirectoryTableOptions *ExternalS3DirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
+	FileFormat            *StageFileFormat                 `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
+	CopyOptions           *StageCopyOptions                `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
+	Comment               *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                   []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
+}
+
+type ExternalS3CompatibleStageParams struct {
+	Url         string                                `ddl:"parameter,single_quotes" sql:"URL"`
+	Endpoint    string                                `ddl:"parameter,single_quotes" sql:"ENDPOINT"`
+	Credentials *ExternalStageS3CompatibleCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
 }
 
 type ExternalStageS3CompatibleCredentials struct {
-	AwsKeyId     *string `ddl:"parameter,single_quotes" sql:"AWS_KEY_ID"`
-	AwsSecretKey *string `ddl:"parameter,single_quotes" sql:"AWS_SECRET_KEY"`
+	AwsKeyId     string `ddl:"parameter,single_quotes" sql:"AWS_KEY_ID"`
+	AwsSecretKey string `ddl:"parameter,single_quotes" sql:"AWS_SECRET_KEY"`
 }
 
 // AlterStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -228,15 +235,14 @@ type AlterStageOptions struct {
 
 // AlterInternalStageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
 type AlterInternalStageStageOptions struct {
-	alter    bool                   `ddl:"static" sql:"ALTER"`
-	stage    bool                   `ddl:"static" sql:"STAGE"`
-	IfExists *bool                  `ddl:"keyword" sql:"IF EXISTS"`
-	name     SchemaObjectIdentifier `ddl:"identifier"`
-	set      bool                   `ddl:"static" sql:"SET"`
-	// TODO (SNOW-1019005): Move parameters below to the AlterStageOptions as they're common across stage types (+ remove from other alter option structs)
-	FileFormat  *StageFileFormat  `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions *StageCopyOptions `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
-	Comment     *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	alter       bool                   `ddl:"static" sql:"ALTER"`
+	stage       bool                   `ddl:"static" sql:"STAGE"`
+	IfExists    *bool                  `ddl:"keyword" sql:"IF EXISTS"`
+	name        SchemaObjectIdentifier `ddl:"identifier"`
+	set         bool                   `ddl:"static" sql:"SET"`
+	FileFormat  *StageFileFormat       `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
+	CopyOptions *StageCopyOptions      `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
+	Comment     *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterExternalS3StageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -329,10 +335,10 @@ type StageProperty struct {
 
 // ShowStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-stages.
 type ShowStageOptions struct {
-	show   bool  `ddl:"static" sql:"SHOW"`
-	stages bool  `ddl:"static" sql:"STAGES"`
-	Like   *Like `ddl:"keyword" sql:"LIKE"`
-	In     *In   `ddl:"keyword" sql:"IN"`
+	show   bool        `ddl:"static" sql:"SHOW"`
+	stages bool        `ddl:"static" sql:"STAGES"`
+	Like   *Like       `ddl:"keyword" sql:"LIKE"`
+	In     *ExtendedIn `ddl:"keyword" sql:"IN"`
 }
 
 type stageShowRow struct {
@@ -379,9 +385,4 @@ func (v *Stage) ID() SchemaObjectIdentifier {
 
 func (v *Stage) ObjectType() ObjectType {
 	return ObjectTypeStage
-}
-
-// Added manually
-func (v *Stage) Location() string {
-	return NewStageLocation(v.ID(), "").ToSql()
 }

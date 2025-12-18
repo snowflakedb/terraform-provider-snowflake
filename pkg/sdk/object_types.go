@@ -95,9 +95,17 @@ const (
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
+	// ObjectTypeUserWorkloadIdentityAuthenticationMethod is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
+	// This object does not have grants and cannot be tagged.
+	ObjectTypeUserWorkloadIdentityAuthenticationMethod ObjectType = "USER WORKLOAD IDENTITY AUTHENTICATION METHOD" //nolint:gosec
 	// ObjectTypeSecurityIntegration is a pseudo-object, only used in object and invoke action assertions.
 	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
 	ObjectTypeSecurityIntegration ObjectType = "SECURITY INTEGRATION"
+	// TODO(SNOW-2683939): Remove in the following prs
+	ObjectTypeListingDetails ObjectType = "LISTING DETAILS"
+	// ObjectTypeApiIntegration is a pseudo-object, only used in object and invoke action assertions.
+	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
+	ObjectTypeApiIntegration ObjectType = "API INTEGRATION"
 )
 
 func (o ObjectType) String() string {
