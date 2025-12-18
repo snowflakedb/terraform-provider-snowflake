@@ -64,6 +64,8 @@ We added new provider configuration options to support certificate revocation ch
 
 These options can be set in the provider configuration, TOML configuration file, or via environment variables (`SNOWFLAKE_DISABLE_OCSP_CHECKS`, `SNOWFLAKE_CERT_REVOCATION_CHECK_MODE`, `SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL`, `SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED`, `SNOWFLAKE_CRL_ON_DISK_CACHE_DISABLED`, `SNOWFLAKE_CRL_HTTP_CLIENT_TIMEOUT`, `SNOWFLAKE_DISABLE_SAML_URL_CHECK`). Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
 
+No changes in configuration are required for existing setups. You can optionally update your configurations to use these new options if you need more control over certificate revocation checking or SAML authentication.
+
 ### *(new feature)* snowflake_listings datasource
 Added a new preview data source for listings. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-listings).
 
@@ -97,7 +99,6 @@ References: [#3917](https://github.com/snowflakedb/terraform-provider-snowflake/
 ### *(improvement)* New fields in user resources and data sources output fields
 We adjusted the `show_output` by adding the missing `has_workload_identity` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
 
-No changes in configuration are required for existing setups. You can optionally update your configurations to use these new options if you need more control over certificate revocation checking or SAML authentication.
 ### *(bugfix)* Fixed handling grants to APPLICATION in SHOW GRANTS
 Previously, when a database role was granted to an application, the provider did not handle the `SHOW GRANTS OF DATABASE ROLE` output correctly. This caused failures in conversion,
 and in the `grant_database_role` resource, the Read operation failed. Since the provider could not read the grants for the given resource, the resource was being marked as deleted.
