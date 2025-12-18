@@ -2,7 +2,7 @@ terraform {
   required_providers {
     snowflake = {
       source = "snowflakedb/snowflake"
-      version = ">= 2.0.0"
+      version = "= 2.11.0"
     }
     random = {
       source = "hashicorp/random"
@@ -81,13 +81,13 @@ resource "snowflake_user" "person_special_chars" {
   comment      = "Comment with special chars: <>&"
 }
 
-# 5. PERSON user with session parameters set
+# 5. PERSON user with all (possible) session parameters set
 resource "snowflake_user" "person_params" {
   name         = "${local.prefix}_PERSON_PARAMS"
   login_name   = "${local.test_id}_params_login"
   display_name = "User with Parameters"
 
-  # Session parameters
+  # Session parameters - ALL parameters supported by the migration script
   abort_detached_query                          = true
   autocommit                                    = false
   binary_input_format                           = "HEX"
@@ -102,13 +102,23 @@ resource "snowflake_user" "person_params" {
   client_timestamp_type_mapping                 = "TIMESTAMP_NTZ"
   date_input_format                             = "YYYY-MM-DD"
   date_output_format                            = "YYYY-MM-DD"
+  enable_unload_physical_type_optimization      = true
+  enable_unredacted_query_syntax_error          = true
+  error_on_nondeterministic_merge               = false
+  error_on_nondeterministic_update              = false
   geography_output_format                       = "GeoJSON"
   geometry_output_format                        = "WKT"
+  jdbc_treat_decimal_as_int                     = true
+  jdbc_treat_timestamp_ntz_as_utc               = true
+  jdbc_use_session_timezone                     = true
   json_indent                                   = 4
   lock_timeout                                  = 43200
   log_level                                     = "INFO"
   multi_statement_count                         = 0
   noorder_sequence_as_default                   = true
+  odbc_treat_decimal_as_int                     = true
+  prevent_unload_to_internal_stages             = true
+  query_tag                                     = "migration_test"
   quoted_identifiers_ignore_case                = true
   rows_per_resultset                            = 100000
   search_path                                   = "$current, $public"
@@ -133,6 +143,21 @@ resource "snowflake_user" "person_params" {
   use_cached_result                             = false
   week_of_year_policy                           = 1
   week_start                                    = 1
+
+  # Note: The following parameters require special setup and are not tested here:
+  # - network_policy: requires a network policy to exist
+  # - active_python_profiler: requires specific profiler setup
+  # - python_profiler_modules: requires specific profiler setup
+  # - python_profiler_target_stage: requires a stage to exist
+  # - s3_stage_vpce_dns_name: requires AWS VPC endpoint setup
+  # - simulated_data_sharing_consumer: requires data sharing setup
+
+  # There are also a few unsupported ones:
+  # - client_enable_log_info_statement_parameters
+  # - client_metadata_use_session_database
+  # - csv_timestamp_format
+  # - hybrid_table_lock_timeout
+  # - js_treat_integer_as_big_int
 }
 
 # 6. PERSON user with disabled = true
@@ -185,14 +210,67 @@ resource "snowflake_service_user" "service_rsa" {
   # EOT
 }
 
-# 10. SERVICE user with parameters
+# 10. SERVICE user with all (possible) session parameters set
 resource "snowflake_service_user" "service_params" {
   name       = "${local.prefix}_SERVICE_PARAMS"
   login_name = "${local.test_id}_service_params_login"
 
-  statement_timeout_in_seconds = 3600
-  trace_level                  = "ON_EVENT"
-  log_level                    = "INFO"
+  # Session parameters - ALL parameters supported for SERVICE users
+  abort_detached_query                          = true
+  autocommit                                    = false
+  binary_input_format                           = "HEX"
+  binary_output_format                          = "BASE64"
+  client_memory_limit                           = 2048
+  client_metadata_request_use_connection_ctx    = true
+  client_prefetch_threads                       = 8
+  client_result_chunk_size                      = 128
+  client_result_column_case_insensitive         = true
+  client_session_keep_alive                     = true
+  client_session_keep_alive_heartbeat_frequency = 1800
+  client_timestamp_type_mapping                 = "TIMESTAMP_NTZ"
+  date_input_format                             = "YYYY-MM-DD"
+  date_output_format                            = "YYYY-MM-DD"
+  enable_unload_physical_type_optimization      = true
+  enable_unredacted_query_syntax_error          = true
+  error_on_nondeterministic_merge               = false
+  error_on_nondeterministic_update              = false
+  geography_output_format                       = "GeoJSON"
+  geometry_output_format                        = "WKT"
+  jdbc_treat_decimal_as_int                     = true
+  jdbc_treat_timestamp_ntz_as_utc               = true
+  jdbc_use_session_timezone                     = true
+  json_indent                                   = 4
+  lock_timeout                                  = 43200
+  log_level                                     = "INFO"
+  multi_statement_count                         = 0
+  noorder_sequence_as_default                   = true
+  odbc_treat_decimal_as_int                     = true
+  prevent_unload_to_internal_stages             = true
+  query_tag                                     = "service_migration_test"
+  quoted_identifiers_ignore_case                = true
+  rows_per_resultset                            = 100000
+  search_path                                   = "$current, $public"
+  statement_queued_timeout_in_seconds           = 300
+  statement_timeout_in_seconds                  = 86400
+  strict_json_output                            = true
+  time_input_format                             = "HH24:MI:SS"
+  time_output_format                            = "HH24:MI:SS"
+  timestamp_day_is_always_24h                   = true
+  timestamp_input_format                        = "YYYY-MM-DD HH24:MI:SS"
+  timestamp_ltz_output_format                   = "YYYY-MM-DD HH24:MI:SS TZHTZM"
+  timestamp_ntz_output_format                   = "YYYY-MM-DD HH24:MI:SS"
+  timestamp_output_format                       = "YYYY-MM-DD HH24:MI:SS.FF3"
+  timestamp_tz_output_format                    = "YYYY-MM-DD HH24:MI:SS TZHTZM"
+  timestamp_type_mapping                        = "TIMESTAMP_NTZ"
+  timezone                                      = "America/New_York"
+  trace_level                                   = "ON_EVENT"
+  transaction_abort_on_error                    = true
+  transaction_default_isolation_level           = "READ COMMITTED"
+  two_digit_century_start                       = 1970
+  unsupported_ddl_action                        = "IGNORE"
+  use_cached_result                             = false
+  week_of_year_policy                           = 1
+  week_start                                    = 1
 }
 
 # ------------------------------------------------------------------------------
