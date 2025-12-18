@@ -229,8 +229,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"insecure_mode": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only.", snowflakeenvs.InsecureMode),
+			Description: envNameFieldDescription("This field is deprecated. Use `disable_ocsp_checks` instead. If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only.", snowflakeenvs.InsecureMode),
 			Optional:    true,
+			Deprecated:  "This field is deprecated. Use `disable_ocsp_checks` instead.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.InsecureMode, nil),
 		},
 		"ocsp_fail_open": {
@@ -375,8 +376,6 @@ func GetProviderSchema() map[string]*schema.Schema {
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.DisableConsoleLogin, resources.BooleanDefault),
 			ValidateDiagFunc: validators.ValidateBooleanStringWithDefault,
 		},
-		// TODO(SNOW-1761318): Add DisableSamlURLCheck.
-		// TODO(SNOW-1917271): Add DisableOCSPChecks.
 		"profile": {
 			Type: schema.TypeString,
 			// TODO(SNOW-1754364): Note that a default file path is already filled on sdk side.
@@ -516,7 +515,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"proxy_protocol": {
 			Type:             schema.TypeString,
-			Description:      envNameFieldDescription(fmt.Sprintf("The protocol of the proxy to use for the connection. Valid options are: %v.", docs.PossibleValuesListed(allProtocols)), snowflakeenvs.ProxyProtocol),
+			Description:      envNameFieldDescription(fmt.Sprintf("The protocol of the proxy to use for the connection. Valid options are: %v. The value is case-insensitive.", docs.PossibleValuesListed(allProtocols)), snowflakeenvs.ProxyProtocol),
 			Optional:         true,
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.ProxyProtocol, nil),
 			ValidateDiagFunc: validators.NormalizeValidation(toProtocol),
@@ -526,6 +525,52 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Description: envNameFieldDescription("A comma-separated list of hostnames, domains, and IP addresses to exclude from proxying.", snowflakeenvs.NoProxy),
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.NoProxy, nil),
+		},
+		"disable_ocsp_checks": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("False by default. When set to true, the driver doesn't check certificate revocation status.", snowflakeenvs.DisableOCSPChecks),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableOCSPChecks, false),
+		},
+		"cert_revocation_check_mode": {
+			Type:             schema.TypeString,
+			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the certificate revocation check mode. Valid options are: %v. The value is case-insensitive.", docs.PossibleValuesListed(sdk.AllCertRevocationCheckModes)), snowflakeenvs.CertRevocationCheckMode),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.CertRevocationCheckMode, nil),
+			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToCertRevocationCheckMode),
+		},
+		"crl_allow_certificates_without_crl_url": {
+			Type:             schema.TypeString,
+			Description:      envNameFieldDescription("Allow certificates (not short-lived) without CRL DP included to be treated as correct ones.", snowflakeenvs.CrlAllowCertificatesWithoutCrlURL),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, provider.BooleanDefault),
+			ValidateDiagFunc: validators.ValidateBooleanStringWithDefault,
+		},
+		"crl_in_memory_cache_disabled": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("False by default. When set to true, the CRL in-memory cache is disabled.", snowflakeenvs.CrlInMemoryCacheDisabled),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.CrlInMemoryCacheDisabled, nil),
+		},
+		"crl_on_disk_cache_disabled": {
+			Type:        schema.TypeBool,
+			Description: envNameFieldDescription("False by default. When set to true, the CRL on-disk cache is disabled.", snowflakeenvs.CrlOnDiskCacheDisabled),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.CrlOnDiskCacheDisabled, nil),
+		},
+		"crl_http_client_timeout": {
+			Type:             schema.TypeInt,
+			Description:      envNameFieldDescription("Timeout in seconds for HTTP client used to download CRL.", snowflakeenvs.CrlHTTPClientTimeout),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.CrlHTTPClientTimeout, nil),
+			ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
+		},
+		"disable_saml_url_check": {
+			Type:             schema.TypeString,
+			Description:      envNameFieldDescription("Indicates whether the SAML URL check should be disabled.", snowflakeenvs.DisableSamlURLCheck),
+			Optional:         true,
+			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.DisableSamlURLCheck, provider.BooleanDefault),
+			ValidateDiagFunc: validators.ValidateBooleanStringWithDefault,
 		},
 	}
 }
@@ -829,28 +874,10 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 			}
 			return nil
 		}(),
-		// authenticator
-		func() error {
-			authType, err := sdk.ToExtendedAuthenticatorType(s.Get("authenticator").(string))
-			if err != nil {
-				return err
-			}
-			config.Authenticator = authType
-			return nil
-		}(),
+		handleFieldWithMapping(s, "authenticator", &config.Authenticator, sdk.ToExtendedAuthenticatorType),
 		handleStringField(s, "passcode", &config.Passcode),
 		handleBoolField(s, "passcode_in_password", &config.PasscodeInPassword),
-		// okta url
-		func() error {
-			if v, ok := s.GetOk("okta_url"); ok && v.(string) != "" {
-				oktaURL, err := url.Parse(v.(string))
-				if err != nil {
-					return fmt.Errorf("could not parse okta_url err = %w", err)
-				}
-				config.OktaURL = oktaURL
-			}
-			return nil
-		}(),
+		handleFieldWithMappingIfSet(s, "okta_url", &config.OktaURL, url.Parse),
 		handleDurationInSecondsAttribute(s, "login_timeout", &config.LoginTimeout),
 		handleDurationInSecondsAttribute(s, "request_timeout", &config.RequestTimeout),
 		handleDurationInSecondsAttribute(s, "jwt_expire_timeout", &config.JWTExpireTimeout),
@@ -882,21 +909,13 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleBoolField(s, "disable_query_context_cache", &config.DisableQueryContextCache),
 		handleBooleanStringAttribute(s, "include_retry_reason", &config.IncludeRetryReason),
 		handleIntAttribute(s, "max_retry_count", &config.MaxRetryCount),
-		// driver tracing
-		func() error {
-			if v, ok := s.GetOk("driver_tracing"); ok {
-				driverLogLevel, err := sdk.ToDriverLogLevel(v.(string))
-				if err != nil {
-					return err
-				}
-				config.Tracing = string(driverLogLevel)
-			}
-			return nil
-		}(),
+		handleFieldWithMappingIfSet(s, "driver_tracing", &config.Tracing, func(s string) (string, error) {
+			level, err := sdk.ToDriverLogLevel(s)
+			return string(level), err
+		}),
 		handleStringField(s, "tmp_directory_path", &config.TmpDirPath),
 		handleBooleanStringAttribute(s, "disable_console_login", &config.DisableConsoleLogin),
 		// profile is handled in the calling function
-		// TODO(SNOW-1761318): handle DisableSamlURLCheck after upgrading the driver to at least 1.10.1
 		handleStringField(s, "oauth_client_id", &config.OauthClientID),
 		handleStringField(s, "oauth_client_secret", &config.OauthClientSecret),
 		handleStringField(s, "oauth_authorization_url", &config.OauthAuthorizationURL),
@@ -914,6 +933,13 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "proxy_password", &config.ProxyPassword),
 		handleStringField(s, "proxy_protocol", &config.ProxyProtocol),
 		handleStringField(s, "no_proxy", &config.NoProxy),
+		handleBoolField(s, "disable_ocsp_checks", &config.DisableOCSPChecks),
+		handleFieldWithMappingIfSet(s, "cert_revocation_check_mode", &config.CertRevocationCheckMode, sdk.ToCertRevocationCheckMode),
+		handleBooleanStringAttribute(s, "crl_allow_certificates_without_crl_url", &config.CrlAllowCertificatesWithoutCrlURL),
+		handleBoolField(s, "crl_in_memory_cache_disabled", &config.CrlInMemoryCacheDisabled),
+		handleBoolField(s, "crl_on_disk_cache_disabled", &config.CrlOnDiskCacheDisabled),
+		handleDurationInSecondsAttribute(s, "crl_http_client_timeout", &config.CrlHTTPClientTimeout),
+		handleBooleanStringAttribute(s, "disable_saml_url_check", &config.DisableSamlURLCheck),
 	)
 	if err != nil {
 		return nil, err

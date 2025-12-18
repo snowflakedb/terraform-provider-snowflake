@@ -53,7 +53,14 @@ func FullLegacyTomlConfigForServiceUser(t *testing.T, profile string, userId sdk
 			WithProxyUser("proxy_user").
 			WithProxyPassword("proxy_password").
 			WithProxyProtocol("https").
-			WithNoProxy("localhost,snowflake.computing.com"),
+			WithNoProxy("localhost,snowflake.computing.com").
+			WithDisableOCSPChecks(false).
+			WithCertRevocationCheckMode("ADVISORY").
+			WithCrlAllowCertificatesWithoutCrlURL(true).
+			WithCrlInMemoryCacheDisabled(false).
+			WithCrlOnDiskCacheDisabled(true).
+			WithCrlHTTPClientTimeout(30).
+			WithDisableSamlURLCheck(true),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)

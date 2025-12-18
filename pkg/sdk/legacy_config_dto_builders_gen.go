@@ -289,3 +289,38 @@ func (s *LegacyConfigDTO) WithNoProxy(NoProxy string) *LegacyConfigDTO {
 	s.NoProxy = &NoProxy
 	return s
 }
+
+func (s *LegacyConfigDTO) WithDisableOCSPChecks(DisableOCSPChecks bool) *LegacyConfigDTO {
+	s.DisableOCSPChecks = &DisableOCSPChecks
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCertRevocationCheckMode(CertRevocationCheckMode string) *LegacyConfigDTO {
+	s.CertRevocationCheckMode = &CertRevocationCheckMode
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlAllowCertificatesWithoutCrlURL(CrlAllowCertificatesWithoutCrlURL bool) *LegacyConfigDTO {
+	s.CrlAllowCertificatesWithoutCrlURL = &CrlAllowCertificatesWithoutCrlURL
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlInMemoryCacheDisabled(CrlInMemoryCacheDisabled bool) *LegacyConfigDTO {
+	s.CrlInMemoryCacheDisabled = &CrlInMemoryCacheDisabled
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlOnDiskCacheDisabled(CrlOnDiskCacheDisabled bool) *LegacyConfigDTO {
+	s.CrlOnDiskCacheDisabled = &CrlOnDiskCacheDisabled
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlHTTPClientTimeout(CrlHTTPClientTimeout int) *LegacyConfigDTO {
+	s.CrlHTTPClientTimeout = &CrlHTTPClientTimeout
+	return s
+}
+
+func (s *LegacyConfigDTO) WithDisableSamlURLCheck(DisableSamlURLCheck bool) *LegacyConfigDTO {
+	s.DisableSamlURLCheck = &DisableSamlURLCheck
+	return s
+}
