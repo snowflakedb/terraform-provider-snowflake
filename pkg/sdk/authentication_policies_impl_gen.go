@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -201,14 +203,23 @@ func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) 
 		Options: r.Options,
 		Comment: r.Comment,
 	}
-	if r.CreatedOn.Valid {
-		policy.CreatedOn = r.CreatedOn.Time
-	}
+	var errs []error
 	if r.DatabaseName.Valid {
 		policy.DatabaseName = r.DatabaseName.String
+	} else {
+		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
 	}
 	if r.SchemaName.Valid {
 		policy.SchemaName = r.SchemaName.String
+	} else {
+		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
+	}
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
+	}
+
+	if r.CreatedOn.Valid {
+		policy.CreatedOn = r.CreatedOn.Time
 	}
 	if r.Owner.Valid {
 		policy.Owner = r.Owner.String
@@ -216,6 +227,7 @@ func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) 
 	if r.OwnerRoleType.Valid {
 		policy.OwnerRoleType = r.OwnerRoleType.String
 	}
+
 	return policy, nil
 }
 
