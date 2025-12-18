@@ -306,6 +306,14 @@ import {
 }
 ```
 
+#### Caution
+
+The behaviour between import blocks embedded into hcl and the `terraform import [..]` command differs.
+
+- **Import Blocks** (import blocks in HCL): When using embedded import blocks, the `terraform apply` command performs a dual role: it imports the resource into the state and immediately applies any configuration changes. Consequently, this method should be avoided if your primary goal is to preview changes before they are committed. Furthermore, `terraform plan` may not provide comprehensive insights at first, as the resources have not yet been formally ingested into the state file during the planning phase.
+
+- **Import Command** (terraform import CLI): When using the standard CLI command, the import process is decoupled from the plan/apply cycle. Once the command is executed, the resource is immediately added to the state. Subsequent runs of `terraform plan` will accurately reflect the delta between your configuration and the existing infrastructure. In this workflow, `terraform apply` does not handle the ingestion; the `terraform import` command must be executed successfully beforehand.
+
 #### 3. Importing auto-generated resources to the state
 
 Now that we have the generated resources and import blocks, we can proceed to replace the deprecated resources with the new ones.
