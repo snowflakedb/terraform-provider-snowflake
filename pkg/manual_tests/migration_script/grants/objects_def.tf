@@ -1,10 +1,3 @@
-# =============================================================================
-# Grants Test Objects
-# =============================================================================
-# These resources create test grants on Snowflake for migration testing.
-# Run with: terraform apply
-# Cleanup:  terraform destroy
-#
 # Grant types covered:
 # 1. Grant Account Role to Role
 # 2. Grant Account Role to User
@@ -20,21 +13,39 @@
 #    - On Schema
 #    - On Schema Object (TABLE)
 # 7. Grant with grant_option = true
-# =============================================================================
 
 terraform {
   required_providers {
     snowflake = {
-      source = "snowflakedb/snowflake"
-      version = "= 2.11.0"
+      source  = "snowflakedb/snowflake"
+      version = ">= 2.0.0"
+    }
+    random = {
+      source = "hashicorp/random"
     }
   }
 }
 
 provider "snowflake" {
-#  config_path              = "~/.snowflake/config"
-#  profile                  = "default"
+  # Uses default configuration from ~/.snowflake/config or environment variables
   preview_features_enabled = ["snowflake_table_resource"]
+}
+
+# ------------------------------------------------------------------------------
+# UUID for unique naming
+# ------------------------------------------------------------------------------
+resource "random_uuid" "test_run" {}
+
+locals {
+  # Use first 8 chars of UUID for shorter names
+  test_id = upper(substr(random_uuid.test_run.result, 0, 8))
+  prefix  = "MIGRATION_TEST_${local.test_id}"
+}
+
+# Output the prefix for use in datasource
+output "test_prefix" {
+  description = "The unique prefix used for all test objects"
+  value       = local.prefix
 }
 
 # ==============================================================================
@@ -45,17 +56,17 @@ provider "snowflake" {
 # Account Roles
 # ------------------------------------------------------------------------------
 resource "snowflake_account_role" "parent_role" {
-  name    = "MIGRATION_TEST_GRANT_PARENT_ROLE"
+  name    = "${local.prefix}_PARENT_ROLE"
   comment = "Parent role for grant testing"
 }
 
 resource "snowflake_account_role" "child_role" {
-  name    = "MIGRATION_TEST_GRANT_CHILD_ROLE"
+  name    = "${local.prefix}_CHILD_ROLE"
   comment = "Child role for grant testing"
 }
 
 resource "snowflake_account_role" "priv_role" {
-  name    = "MIGRATION_TEST_GRANT_PRIV_ROLE"
+  name    = "${local.prefix}_PRIV_ROLE"
   comment = "Role for privilege grant testing"
 }
 
@@ -63,7 +74,7 @@ resource "snowflake_account_role" "priv_role" {
 # Database
 # ------------------------------------------------------------------------------
 resource "snowflake_database" "test_db" {
-  name    = "MIGRATION_TEST_GRANT_DB"
+  name    = "${local.prefix}_DB"
   comment = "Database for grant testing\nLine 2 of comment\nLine 3 with special chars: \"quotes\" and \\backslash"
 }
 
@@ -72,19 +83,19 @@ resource "snowflake_database" "test_db" {
 # ------------------------------------------------------------------------------
 resource "snowflake_database_role" "parent_db_role" {
   database = snowflake_database.test_db.name
-  name     = "MIGRATION_TEST_GRANT_PARENT_DBROLE"
+  name     = "${local.prefix}_PARENT_DBROLE"
   comment  = "Parent database role for grant testing"
 }
 
 resource "snowflake_database_role" "child_db_role" {
   database = snowflake_database.test_db.name
-  name     = "MIGRATION_TEST_GRANT_CHILD_DBROLE"
+  name     = "${local.prefix}_CHILD_DBROLE"
   comment  = "Child database role for grant testing"
 }
 
 resource "snowflake_database_role" "priv_db_role" {
   database = snowflake_database.test_db.name
-  name     = "MIGRATION_TEST_GRANT_PRIV_DBROLE"
+  name     = "${local.prefix}_PRIV_DBROLE"
   comment  = "Database role for privilege grant testing"
 }
 
@@ -93,7 +104,7 @@ resource "snowflake_database_role" "priv_db_role" {
 # ------------------------------------------------------------------------------
 resource "snowflake_schema" "test_schema" {
   database = snowflake_database.test_db.name
-  name     = "MIGRATION_TEST_GRANT_SCHEMA"
+  name     = "${local.prefix}_SCHEMA"
   comment  = "Schema for grant testing"
 }
 
@@ -103,7 +114,7 @@ resource "snowflake_schema" "test_schema" {
 resource "snowflake_table" "test_table" {
   database = snowflake_database.test_db.name
   schema   = snowflake_schema.test_schema.name
-  name     = "MIGRATION_TEST_GRANT_TABLE"
+  name     = "${local.prefix}_TABLE"
   comment  = "Table for grant testing"
 
   column {
@@ -121,7 +132,7 @@ resource "snowflake_table" "test_table" {
 # Warehouse (for account object grants)
 # ------------------------------------------------------------------------------
 resource "snowflake_warehouse" "test_wh" {
-  name           = "MIGRATION_TEST_GRANT_WH"
+  name           = "${local.prefix}_WH"
   warehouse_size = "XSMALL"
   comment        = "Warehouse for grant testing"
 }
