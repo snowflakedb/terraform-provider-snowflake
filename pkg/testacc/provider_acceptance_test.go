@@ -5,10 +5,13 @@ package testacc
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net"
+	"net/http"
 	"os"
 	"regexp"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -1273,6 +1276,51 @@ func TestAcc_Provider_HandlingPromotedFeatures(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(gitRepositoriesModel.DatasourceReference(), "git_repositories.#"),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_Proxy(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+
+	var proxyUsed atomic.Bool
+
+	server := &http.Server{
+		Addr: "127.0.0.1:8070",
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			proxyUsed.Store(true)
+			destConn, err := net.Dial("tcp", r.Host)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadGateway)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			clientConn, _, _ := w.(http.Hijacker).Hijack()
+			go io.Copy(destConn, clientConn)
+			io.Copy(clientConn, destConn)
+		}),
+	}
+	go server.ListenAndServe()
+	defer server.Close()
+	time.Sleep(100 * time.Millisecond)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithProxyHost("127.0.0.1").WithProxyPort(8070).WithProxyProtocol("http").WithNoProxy(""), datasourceModel()),
+				Check: func(state *terraform.State) error {
+					assert.True(t, proxyUsed.Load(), "expected requests to go through proxy")
+					return nil
+				},
 			},
 		},
 	})
