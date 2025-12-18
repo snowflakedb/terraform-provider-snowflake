@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -25,6 +26,8 @@ import (
 )
 
 func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
+	testenvs.SkipTestIfSetTo(t, testenvs.SnowflakeTestingEnvironment, string(testenvs.SnowflakeNonProdEnvironment), "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
+
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 

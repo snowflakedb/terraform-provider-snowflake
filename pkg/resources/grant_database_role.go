@@ -185,7 +185,7 @@ func ReadGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta int
 		},
 	})
 	if err != nil {
-		log.Printf("[DEBUG] database role (%s) not found", databaseRoleIdentifier.FullyQualifiedName())
+		log.Printf("[DEBUG] database role (%s) not found: %v", databaseRoleIdentifier.FullyQualifiedName(), err)
 		d.SetId("")
 		return nil
 	}

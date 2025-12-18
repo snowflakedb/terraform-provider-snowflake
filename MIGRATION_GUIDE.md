@@ -84,6 +84,25 @@ These options can be set in the provider configuration, TOML configuration file,
 
 No changes in configuration are required for existing setups. You can optionally update your configurations to use these new options if you need to connect through a proxy.
 
+### *(bugfix)* Fixed handling grants to APPLICATION in SHOW GRANTS
+Previously, when a database role was granted to an application, the provider did not handle the `SHOW GRANTS OF DATABASE ROLE` output correctly. This caused failures in conversion,
+and in the `grant_database_role` resource, the Read operation failed. Since the provider could not read the grants for the given resource, the resource was being marked as deleted.
+The Terraform plan and apply operations returned errors like
+```
+│ Error: Provider produced inconsistent result after apply
+│
+│ When applying changes to snowflake_grant_database_role.database_roles, provider "provider[\"registry.terraform.io/snowflakedb/snowflake\"]" produced an unexpected new value: Root object was present, but now absent.
+│
+│ This is a bug in the provider, which should be reported in the provider's own issue tracker.
+```
+
+In this release, this bug has been fixed. The `SHOW GRANTS...` output is converted correctly, and the resource is not marked as removed, which does not result in such error anymore.
+This fix also applies to other grants resources.
+
+No changes in configuration are required.
+
+References: [#4284](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4284).
+
 ### *(bugfix)* authentication policies data sources
 Snowflake recently introduced a new, default authentication policy at the account level, which is applied when no user-defined policy is set.
 
