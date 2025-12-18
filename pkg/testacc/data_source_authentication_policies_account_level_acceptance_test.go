@@ -10,9 +10,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -23,14 +20,9 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 
 	basicModel := datasourcemodel.AuthenticationPolicies("test").
 		WithOnAccount()
-	providerModel := providermodel.SnowflakeProvider().
-		WithProfile(testprofiles.Secondary).
-		WithPreviewFeaturesEnabled(string(previewfeatures.AuthenticationPoliciesDatasource))
 
 	policy := secondaryTestClient().AuthenticationPolicy.ShowOnCurrentAccount(t)
-
-	// In case a predefined authentication policy is attached, unset it, and set back after the test
-	if policy != nil && policy.Name != "BUILT-IN" {
+	if policy != nil {
 		secondaryTestClient().Account.Alter(t, &sdk.AlterAccountOptions{
 			Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)},
 		})
@@ -48,12 +40,12 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
-				Config:            accconfig.FromModels(t, providerModel, basicModel),
+				Config:            accconfig.FromModels(t, basicModel),
 				ExpectError:       regexp.MustCompile("Error: sql: Scan error on column index 0, name \"created_on\""),
 			},
 			{
 				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
-				Config:                   accconfig.FromModels(t, providerModel, basicModel),
+				Config:                   accconfig.FromModels(t, basicModel),
 				Check: assertThat(t,
 					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.show_output.#", "0")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.describe_output.#", "0")),

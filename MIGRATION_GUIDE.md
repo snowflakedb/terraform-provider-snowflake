@@ -106,24 +106,23 @@ References: [#4284](https://github.com/snowflakedb/terraform-provider-snowflake/
 ### *(bugfix)* authentication policies data sources
 Snowflake recently introduced a new, default authentication policy at the account level, which is applied when no user-defined policy is set.
 
-Due to the structure of this built-in authentication policy
-(specifically, the `null` values for columns like `database_name`, `schema_name`, `owner`, `owner_role_type`, and `created_on`),
-our internal output conversion was failing.
-
 This issue could cause `snowflake_authentication_policies` data source to fail with errors similar to the following:
 
 ```
 sql: Scan error on column index 0, name "created_on": unsupported Scan, storing driver.Value type <nil> into type *time.Time
 ```
 
-The internal implementation for authentication policy has now been updated to handle and skip built-in entities, which lacks the aforementioned field values.
+The internal implementation for authentication policy has now been updated to handle and skip built-in entities.
 
-**Impact on `snowflake_authentication_policies` data source:**
-Due to these adjustments, the `snowflake_authentication_policies` data source will now skip the built-in authentication policy in its output.
-This means that if you query for authentication policies (with either `on.account` or `on.user` filtering options)
-and only the built-in policy exists (no user-defined policies), the data source will return empty `show_output` and `describe_output` lists.
+**Impact on the provider:**
+The built-in policy does not reside in a database and schema. As it can't be directly interacted with, we decided to treat this default transparently:
+- It won't be visible in the outputs for the `snowflake_authentication_policies` data source; if you query for authentication policies (with either `on.account` or `on.user` filtering options)
+  and only the built-in policy exists (no user-defined policies), the data source will return empty `show_output` and `describe_output` lists. 
+  If you have user-defined authentication policies, they will continue to appear in the output as expected.
+- It can't be imported into the `snowflake_authentication_policy` resource.
 
-If you have user-defined authentication policies, they will continue to appear in the output as expected.
+If you rely on the outputs from the `snowflake_authentication_policies` data source and use either `on.account` or `on.user` filtering options,
+make sure your configuration now accounts for missing outputs whenever no user-defined authentication policy is set.
 
 ## v2.10.x ➞ v2.11.0
 
