@@ -39,6 +39,29 @@ However, if you're using an older version, you can still utilize the script as l
 For instance, with grants, you can use the script to transition from [old to new grants](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#mapping-from-old-grant-resources-to-the-new-ones)
 since they haven't significantly changed from the current provider version, but there may be minor differences like quotes handling in identifiers.
 
+
+### Different import behaviors
+
+> **Important:** Read before going further!
+
+The script by default outputs the [import blocks](https://developer.hashicorp.com/terraform/language/block/import). Before deciding which output to use familiarize with the limitations.
+
+The behaviour between [import blocks](https://developer.hashicorp.com/terraform/language/block/import) embedded into hcl and the [`terraform import`](https://developer.hashicorp.com/terraform/cli/commands/import) command differs.
+
+- **Import Blocks** (`-import=block`): When using embedded import blocks, the `terraform apply` command performs two actions: it imports the resource into the state and immediately applies any configuration changes.
+
+  Consequently, this method should be avoided if your primary goal is to preview changes before they are committed.
+
+  Furthermore, `terraform plan` may not provide comprehensive insights at first, as the resources have not yet been formally ingested into the state file during the planning phase.
+
+- **Import Command** (`-import=statement`): When using the `terraform import` command, the import process is decoupled from the plan/apply cycle.
+
+  Once the command is executed, the resource is immediately added to the state.
+
+  Subsequent runs of `terraform plan` will accurately reflect the delta between your configuration and the existing infrastructure.
+
+  In this workflow, `terraform apply` does not handle the ingestion; the `terraform import` command must be executed successfully beforehand.
+
 ## Syntax
 
 Use the following syntax to run the migration script from your terminal:
