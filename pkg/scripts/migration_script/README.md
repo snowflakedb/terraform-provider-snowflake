@@ -39,6 +39,15 @@ However, if you're using an older version, you can still utilize the script as l
 For instance, with grants, you can use the script to transition from [old to new grants](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#mapping-from-old-grant-resources-to-the-new-ones)
 since they haven't significantly changed from the current provider version, but there may be minor differences like quotes handling in identifiers.
 
+### Different behavior for import options
+
+> **Important:** Read before going further!
+
+The script is designed to work with the latest version of the provider.
+However, if you're using an older version, you can still utilize the script as long as the object types you need are supported and haven't undergone major changes.
+For instance, with grants, you can use the script to transition from [old to new grants](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#mapping-from-old-grant-resources-to-the-new-ones)
+since they haven't significantly changed from the current provider version, but there may be minor differences like quotes handling in identifiers.
+
 ## Syntax
 
 Use the following syntax to run the migration script from your terminal:

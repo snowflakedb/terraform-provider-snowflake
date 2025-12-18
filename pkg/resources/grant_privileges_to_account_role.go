@@ -370,6 +370,9 @@ func ImportGrantPrivilegesToAccountRole() func(ctx context.Context, d *schema.Re
 		if err := d.Set("on_account", false); err != nil {
 			return nil, err
 		}
+		if err := d.Set("strict_privilege_management", false); err != nil {
+			return nil, err
+		}
 
 		switch id.Kind {
 		case OnAccountAccountRoleGrantKind:
