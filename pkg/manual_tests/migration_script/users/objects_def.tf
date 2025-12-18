@@ -2,6 +2,7 @@ terraform {
   required_providers {
     snowflake = {
       source = "snowflakedb/snowflake"
+      version = ">= 2.0.0"
     }
     random = {
       source = "hashicorp/random"
@@ -10,8 +11,7 @@ terraform {
 }
 
 provider "snowflake" {
-  # Configure via environment variables:
-  # SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, etc.
+  # Uses default configuration from ~/.snowflake/config or environment variables
 }
 
 # ------------------------------------------------------------------------------
@@ -250,8 +250,8 @@ resource "snowflake_user" "long_comment" {
 resource "snowflake_user" "unicode" {
   name         = "${local.prefix}_UNICODE"
   login_name   = "${local.test_id}_unicode_login"
-  display_name = "Test User with Unicode"
-  first_name   = "Jose"
-  last_name    = "Garcia"
-  comment      = "Unicode comment test"
+  display_name = "Tëst Üsér wïth Ünïcödé"
+  first_name   = "José"
+  last_name    = "García"
+  comment      = "Unicode comment test: émojis 🎉, accents àéîõü, symbols €£¥, Chinese 中文, Japanese 日本語"
 }

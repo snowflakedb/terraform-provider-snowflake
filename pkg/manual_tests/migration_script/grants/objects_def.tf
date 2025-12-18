@@ -27,6 +27,7 @@ terraform {
 }
 
 provider "snowflake" {
+  # Uses default configuration from ~/.snowflake/config or environment variables
   preview_features_enabled = ["snowflake_table_resource"]
 }
 
