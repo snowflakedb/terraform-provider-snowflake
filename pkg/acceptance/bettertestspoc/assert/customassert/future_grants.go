@@ -73,20 +73,6 @@ func (a *FutureGrantsAssert) HasPrivilegesOnObjectTypeEqualTo(objectType sdk.Obj
 	return a
 }
 
-// func (a *FutureGrantsAssert) HasPrivilegesContainAtLeast(expectedPrivileges ...string) *FutureGrantsAssert {
-//	a.assertions = append(a.assertions, func(t *testing.T, grants []sdk.Grant) error {
-//		t.Helper()
-//
-//		actual := extractFuturePrivilegesForRole(grants, a.roleId)
-//		if slices.ContainsFunc(expectedPrivileges, func(privilege string) bool { return !slices.Contains(actual, privilege) }) {
-//			return fmt.Errorf("not every privilege from the list: %v was found in future granted privileges: %v", expectedPrivileges, actual)
-//		}
-//
-//		return nil
-//	})
-//	return a
-//}
-
 func (a *FutureGrantsAssert) ToTerraformTestCheckFunc(t *testing.T, testClient *helpers.TestClient) resource.TestCheckFunc {
 	t.Helper()
 	return func(_ *terraform.State) error {

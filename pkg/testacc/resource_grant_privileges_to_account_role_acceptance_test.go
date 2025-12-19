@@ -2426,7 +2426,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_BasicOnCreat
 	t.Cleanup(databaseCleanup)
 
 	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
-	resourceModelWithStrictRoleManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+	resourceModelWithStrictPrivilegeManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
 		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
 		WithStrictPrivilegeManagement(true)
@@ -2440,9 +2440,9 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_BasicOnCreat
 		Steps: []resource.TestStep{
 			// Expect empty plan after applying (asserted implicitly) as external privileges match the ones defined within the configuration
 			{
-				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
+				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictPrivilegeManagement),
 				Check: assertThat(t,
-					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictRoleManagement.ResourceReference()).
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictPrivilegeManagement.ResourceReference()).
 						HasStrictPrivilegeManagementString("true").
 						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
 					assert.Check(queriedAccountRolePrivilegesEqualTo(t, role.ID(), string(sdk.AccountObjectPrivilegeMonitor))),
@@ -2452,7 +2452,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_BasicOnCreat
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate_WithAdditionalExistingPrivilegesOnSnowflakeSide(t *testing.T) {
+func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_BasicOnCreate_WithAdditionalExistingPrivilegesOnSnowflakeSide(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -2462,7 +2462,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate_Wit
 	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage, sdk.AccountObjectPrivilegeModify}, false)
 
 	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
-	resourceModelWithStrictRoleManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+	resourceModelWithStrictPrivilegeManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
 		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
 		WithStrictPrivilegeManagement(true)
@@ -2477,17 +2477,17 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate_Wit
 			// Create the resource and expect non-empty plan as StrictPrivilegeManagement is set,
 			// and we detect additional externally granted privileges on the Snowflake side.
 			{
-				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
+				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictPrivilegeManagement),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						planchecks.ExpectChange(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
+						planchecks.ExpectChange(resourceModelWithStrictPrivilegeManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
 							sdk.String(fmt.Sprintf("[%s %s %s]", sdk.AccountObjectPrivilegeModify, sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
 							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
 						),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictRoleManagement.ResourceReference()).
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictPrivilegeManagement.ResourceReference()).
 						HasStrictPrivilegeManagementString("true").
 						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
 					assert.Check(queriedAccountRolePrivilegesEqualTo(t, role.ID(),
@@ -2502,16 +2502,16 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate_Wit
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceModelWithStrictRoleManagement.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
+						plancheck.ExpectResourceAction(resourceModelWithStrictPrivilegeManagement.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceModelWithStrictPrivilegeManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
 							sdk.String(fmt.Sprintf("[%s %s %s]", sdk.AccountObjectPrivilegeModify, sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
 							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
 						),
 					},
 				},
-				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
+				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictPrivilegeManagement),
 				Check: assertThat(t,
-					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictRoleManagement.ResourceReference()).
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictPrivilegeManagement.ResourceReference()).
 						HasStrictPrivilegeManagementString("true").
 						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
 					assert.Check(queriedAccountRolePrivilegesEqualTo(t, role.ID(), string(sdk.AccountObjectPrivilegeMonitor))),
@@ -2538,7 +2538,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_Updates(t *t
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
 		WithStrictPrivilegeManagement(true)
 
-	resourceModelWithStrictRoleManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+	resourceModelWithStrictPrivilegeManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
 		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
 		WithStrictPrivilegeManagement(true)
@@ -2589,21 +2589,21 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_Updates(t *t
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChange(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
+						planchecks.ExpectChange(resourceModelWithStrictPrivilegeManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
 							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
 							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
 						),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						planchecks.ExpectChange(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
+						planchecks.ExpectChange(resourceModelWithStrictPrivilegeManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
 							sdk.String(fmt.Sprintf("[%s %s]", sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
 							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
 						),
 					},
 				},
-				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
+				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictPrivilegeManagement),
 				Check: assertThat(t,
-					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictRoleManagement.ResourceReference()).
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictPrivilegeManagement.ResourceReference()).
 						HasAccountRoleNameString(role.ID().Name()).
 						HasStrictPrivilegeManagementString("true").
 						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
@@ -2618,16 +2618,16 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_Updates(t *t
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceModelWithStrictRoleManagement.ResourceReference(), plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
+						plancheck.ExpectResourceAction(resourceModelWithStrictPrivilegeManagement.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(resourceModelWithStrictPrivilegeManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
 							sdk.String(fmt.Sprintf("[%s %s]", sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
 							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
 						),
 					},
 				},
-				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
+				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictPrivilegeManagement),
 				Check: assertThat(t,
-					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictRoleManagement.ResourceReference()).
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictPrivilegeManagement.ResourceReference()).
 						HasAccountRoleNameString(role.ID().Name()).
 						HasStrictPrivilegeManagementString("true").
 						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
