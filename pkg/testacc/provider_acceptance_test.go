@@ -9,8 +9,11 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -1287,24 +1290,21 @@ func TestAcc_Provider_Proxy(t *testing.T) {
 
 	var proxyUsed atomic.Bool
 
-	server := &http.Server{
-		Addr: "127.0.0.1:8070",
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			proxyUsed.Store(true)
-			destConn, err := net.Dial("tcp", r.Host)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadGateway)
-				return
-			}
-			w.WriteHeader(http.StatusOK)
-			clientConn, _, _ := w.(http.Hijacker).Hijack()
-			go io.Copy(destConn, clientConn)
-			io.Copy(clientConn, destConn)
-		}),
-	}
-	go server.ListenAndServe()
-	defer server.Close()
-	time.Sleep(100 * time.Millisecond)
+	proxyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxyUsed.Store(true)
+		destConn, _ := net.Dial("tcp", r.Host)
+		w.WriteHeader(http.StatusOK)
+		clientConn, _, _ := w.(http.Hijacker).Hijack()
+		go io.Copy(destConn, clientConn)
+		io.Copy(clientConn, destConn)
+	}))
+	t.Cleanup(proxyServer.Close)
+
+	proxyURL, err := url.Parse(proxyServer.URL)
+	require.NoError(t, err)
+	proxyHost := proxyURL.Hostname()
+	proxyPort, err := strconv.Atoi(proxyURL.Port())
+	require.NoError(t, err)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
@@ -1316,11 +1316,14 @@ func TestAcc_Provider_Proxy(t *testing.T) {
 				PreConfig: func() {
 					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
 				},
-				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithProxyHost("127.0.0.1").WithProxyPort(8070).WithProxyProtocol("http").WithNoProxy(""), datasourceModel()),
-				Check: func(state *terraform.State) error {
-					assert.True(t, proxyUsed.Load(), "expected requests to go through proxy")
-					return nil
-				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithProxyHost(proxyHost).WithProxyPort(proxyPort).WithProxyProtocol("http").WithNoProxy(""), datasourceModel()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(datasourceModel().DatasourceReference(), "name"),
+					func(state *terraform.State) error {
+						assert.True(t, proxyUsed.Load(), "expected requests to go through proxy")
+						return nil
+					},
+				),
 			},
 		},
 	})
