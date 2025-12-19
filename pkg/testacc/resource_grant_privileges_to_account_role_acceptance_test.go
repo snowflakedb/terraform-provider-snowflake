@@ -2820,7 +2820,49 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_OnFutureSche
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: strictPrivilegeManagementGrantProviderFactory,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			// Create without any external (future) privilege - expected no plan after resource creation
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasStrictPrivilegeManagementString("true").
+						HasPrivileges(string(sdk.SchemaPrivilegeCreateTable)),
+					customassert.FutureGrantsInDatabaseToRole(t, database.ID(), role.ID()).
+						HasPrivilegesContainAtLeast(string(sdk.SchemaPrivilegeCreateTable)),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_OnFutureSchemasInDatabase_WithAdditionalExistingPrivilegesOnSnowflakeSide(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+
+	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.SchemaPrivilegeCreateTable)).
+		WithOnFutureSchemasInDatabase(database.ID()).
+		WithStrictPrivilegeManagement(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: strictPrivilegeManagementGrantProviderFactory,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			// Create with an external (future) privilege - strict management should not revoke it immediately
@@ -2881,7 +2923,52 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_OnFutureSche
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: strictPrivilegeManagementGrantProviderFactory,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			// Create without any external (future) privilege - expected no plan after resource creation
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasStrictPrivilegeManagementString("true").
+						HasPrivileges(string(sdk.SchemaObjectPrivilegeSelect)),
+					customassert.FutureGrantsInSchemaToRole(t, schema.ID(), role.ID()).
+						HasPrivilegesContainAtLeast(string(sdk.SchemaObjectPrivilegeSelect)),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_OnFutureSchemaObjectsInSchema_WithAdditionalExistingPrivilegesOnSnowflakeSide(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+
+	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
+		WithOnFutureSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schema.ID()).
+		WithStrictPrivilegeManagement(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: strictPrivilegeManagementGrantProviderFactory,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			// Create with an external (future) privilege - strict management should not revoke it immediately
@@ -2932,7 +3019,6 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_ExternalFutu
 	providerModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
 
-	// Regular (non-future) grant managed strictly.
 	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
 		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
@@ -2942,7 +3028,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_ExternalFutu
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: strictPrivilegeManagementGrantProviderFactory,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
@@ -2958,10 +3044,13 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_ExternalFutu
 						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
 				),
 			},
-			// Add external future grants; regular strict grants should not detect/revoke them.
+			// Add external future grants; expect no changes
 			{
 				PreConfig: func() {
+					// This doesn't conflict as, although it's granted on database, is about schema grants
 					testClient().Grant.GrantFutureSchemaPrivilegesInDatabaseToAccountRole(t, database.ID(), role.ID(), sdk.SchemaPrivilegeCreateTable)
+
+					// This doesn't conflict as, although it's granted on database, is about table grants
 					testClient().Grant.GrantFutureSchemaObjectPrivilegesInSchemaToAccountRole(t, schema.ID(), sdk.PluralObjectTypeTables, role.ID(), sdk.SchemaObjectPrivilegeSelect)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -2981,6 +3070,85 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_ExternalFutu
 						HasPrivilegesContainAtLeast(string(sdk.SchemaPrivilegeCreateTable)),
 					customassert.FutureGrantsInSchemaToRole(t, schema.ID(), role.ID()).
 						HasPrivilegesContainAtLeast(string(sdk.SchemaObjectPrivilegeSelect)),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_ExternalRegularGrantsDoNotAffectFutureGrants(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
+	t.Cleanup(schemaCleanup)
+
+	table, tableCleanup := testClient().Table.CreateInSchema(t, schema.ID())
+	t.Cleanup(tableCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
+
+	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
+		WithOnFutureSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schema.ID()).
+		WithStrictPrivilegeManagement(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: strictPrivilegeManagementGrantProviderFactory,
+		Steps: []resource.TestStep{
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasStrictPrivilegeManagementString("true").
+						HasPrivileges(string(sdk.SchemaObjectPrivilegeSelect)),
+				),
+			},
+			// Add external regular grants to all hierarchy levels to show future privileges are not clashing; expect no changes
+			{
+				PreConfig: func() {
+					// Grant on database
+					testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateSchema}, false)
+
+					// Grant on schema
+					testClient().Grant.GrantPrivilegesOnSchemaToAccountRole(t, role.ID(), schema.ID(), []sdk.SchemaPrivilege{sdk.SchemaPrivilegeCreateAlert}, false)
+
+					// Grant on table
+					testClient().Grant.GrantPrivilegesOnSchemaObjectToAccountRole(t, role.ID(), sdk.ObjectTypeTable, table.ID(), []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert}, false)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasStrictPrivilegeManagementString("true").
+						HasPrivileges(string(sdk.SchemaObjectPrivilegeSelect)),
+					assert.Check(
+						queriedAccountRolePrivilegesEqualTo(t, role.ID(),
+							string(sdk.AccountObjectPrivilegeCreateSchema), // database level
+							string(sdk.SchemaPrivilegeCreateAlert),         // schema level
+							string(sdk.SchemaObjectPrivilegeInsert),        // table level
+						),
+					),
+					customassert.FutureGrantsInSchemaToRole(t, schema.ID(), role.ID()).HasPrivilegesContainAtLeast(string(sdk.SchemaObjectPrivilegeSelect)),
 				),
 			},
 		},

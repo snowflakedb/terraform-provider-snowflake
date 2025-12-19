@@ -325,6 +325,34 @@ func (c *GrantClient) GrantPrivilegesOnDatabaseToAccountRole(
 	)
 }
 
+func (c *GrantClient) GrantPrivilegesOnSchemaToAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	schemaId sdk.DatabaseObjectIdentifier,
+	privileges []sdk.SchemaPrivilege,
+	withGrantOption bool,
+) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().GrantPrivilegesToAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaPrivileges: privileges,
+		},
+		&sdk.AccountRoleGrantOn{
+			Schema: &sdk.GrantOnSchema{
+				Schema: &schemaId,
+			},
+		},
+		accountRoleId,
+		&sdk.GrantPrivilegesToAccountRoleOptions{
+			WithGrantOption: sdk.Bool(withGrantOption),
+		},
+	)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) GrantPrivilegesOnWarehouseToAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
