@@ -95,6 +95,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"External privileges will be detected regardless of their grant option.",
 			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) field.",
 		),
+		// TODO: Link to the guide in the comment
 	},
 	"on_account": {
 		Type:        schema.TypeBool,
