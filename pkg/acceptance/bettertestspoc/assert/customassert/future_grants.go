@@ -48,11 +48,15 @@ func FutureGrantsInSchemaToRole(t *testing.T, schemaId sdk.DatabaseObjectIdentif
 	}
 }
 
-func (a *FutureGrantsAssert) HasPrivilegesEqualTo(expectedPrivileges ...string) *FutureGrantsAssert {
+func (a *FutureGrantsAssert) HasPrivilegesOnObjectTypeEqualTo(objectType sdk.ObjectType, expectedPrivileges ...string) *FutureGrantsAssert {
 	a.assertions = append(a.assertions, func(t *testing.T, grants []sdk.Grant) error {
 		t.Helper()
 
-		actual := extractFuturePrivilegesForRole(grants, a.roleId)
+		filteredGrants := slices.DeleteFunc(grants, func(grant sdk.Grant) bool {
+			return grant.GrantOn != objectType
+		})
+
+		actual := extractFuturePrivilegesForRole(filteredGrants, a.roleId)
 		slices.Sort(actual)
 		actual = slices.Compact(actual)
 
@@ -69,19 +73,19 @@ func (a *FutureGrantsAssert) HasPrivilegesEqualTo(expectedPrivileges ...string) 
 	return a
 }
 
-func (a *FutureGrantsAssert) HasPrivilegesContainAtLeast(expectedPrivileges ...string) *FutureGrantsAssert {
-	a.assertions = append(a.assertions, func(t *testing.T, grants []sdk.Grant) error {
-		t.Helper()
-
-		actual := extractFuturePrivilegesForRole(grants, a.roleId)
-		if slices.ContainsFunc(expectedPrivileges, func(privilege string) bool { return !slices.Contains(actual, privilege) }) {
-			return fmt.Errorf("not every privilege from the list: %v was found in future granted privileges: %v", expectedPrivileges, actual)
-		}
-
-		return nil
-	})
-	return a
-}
+// func (a *FutureGrantsAssert) HasPrivilegesContainAtLeast(expectedPrivileges ...string) *FutureGrantsAssert {
+//	a.assertions = append(a.assertions, func(t *testing.T, grants []sdk.Grant) error {
+//		t.Helper()
+//
+//		actual := extractFuturePrivilegesForRole(grants, a.roleId)
+//		if slices.ContainsFunc(expectedPrivileges, func(privilege string) bool { return !slices.Contains(actual, privilege) }) {
+//			return fmt.Errorf("not every privilege from the list: %v was found in future granted privileges: %v", expectedPrivileges, actual)
+//		}
+//
+//		return nil
+//	})
+//	return a
+//}
 
 func (a *FutureGrantsAssert) ToTerraformTestCheckFunc(t *testing.T, testClient *helpers.TestClient) resource.TestCheckFunc {
 	t.Helper()
