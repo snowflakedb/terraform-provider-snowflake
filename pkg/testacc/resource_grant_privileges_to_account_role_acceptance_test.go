@@ -2626,7 +2626,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Updates(t *testin
 			{
 				Config: accconfig.FromModels(t, providerModel, resourceModelWithUpdatedPrivileges),
 				Check: assertThat(t,
-					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictRoleManagement.ResourceReference()).
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithUpdatedPrivileges.ResourceReference()).
 						HasAccountRoleNameString(role.ID().Name()).
 						HasStrictPrivilegeManagementString("true").
 						HasPrivileges(string(sdk.AccountObjectPrivilegeOperate)),
