@@ -1292,9 +1292,17 @@ func TestAcc_Provider_Proxy(t *testing.T) {
 
 	proxyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		proxyUsed.Store(true)
-		destConn, _ := net.Dial("tcp", r.Host)
+		destConn, err := net.Dial("tcp", r.Host)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
-		clientConn, _, _ := w.(http.Hijacker).Hijack()
+		clientConn, _, err := w.(http.Hijacker).Hijack()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		go io.Copy(destConn, clientConn)
 		io.Copy(clientConn, destConn)
 	}))
