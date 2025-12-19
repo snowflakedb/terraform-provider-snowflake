@@ -1292,17 +1292,30 @@ func TestAcc_Provider_Proxy(t *testing.T) {
 
 	proxyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		proxyUsed.Store(true)
+
+		// 1. Establish TCP connection to the target server
 		destConn, err := net.Dial("tcp", r.Host)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
+		defer destConn.Close()
+
+		// 2. Hijack the client connection to get raw TCP access
 		clientConn, _, err := w.(http.Hijacker).Hijack()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		defer clientConn.Close()
+
+		// 3. Send "200 Connection Established" directly to the hijacked connection
+		_, err = clientConn.Write([]byte("HTTP/1.1 200 Connection Established\r\n\r\n"))
+		if err != nil {
+			return
+		}
+
+		// 4. Bidirectional copy: tunnel bytes between client and destination
 		go io.Copy(destConn, clientConn)
 		io.Copy(clientConn, destConn)
 	}))
