@@ -93,6 +93,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"This means, the flag update doesn't revoke immediately any externally granted privileges.",
 			"External privileges will be detected regardless of their grant option.",
 			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the `experimental_features_enabled` field.",
+			"See our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more information.",
 		),
 	},
 	"on_account": {
