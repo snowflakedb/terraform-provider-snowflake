@@ -28,6 +28,10 @@ func setFromStringPropertyIfNotEmpty(d *schema.ResourceData, key string, propert
 		if err := d.Set(key, property.Value); err != nil {
 			return err
 		}
+	} else {
+		if err := d.Set(key, nil); err != nil {
+			return err
+		}
 	}
 	return nil
 }
