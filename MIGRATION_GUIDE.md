@@ -34,9 +34,7 @@ and it makes the resource able to detect external changes for privileges other t
 which can make the `snowflake_grant_privileges_to_account_role` resource a cental point of knowledge privilege management
 for a given object and role.
 
-More details was extracted to a separate guide you can take a look in:
-
-[//]: # (TODO: Link guide)
+Read more in our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
 
 ### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
 
