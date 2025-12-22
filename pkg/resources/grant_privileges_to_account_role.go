@@ -94,8 +94,8 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"This is a Terraform limitation, and two steps are needed to properly show the potential privilege changes (e.g., revoking privileges not specified in the configuration) in the plan.",
 			"External privileges will be detected regardless of their grant option.",
 			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) field.",
+			"See our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more information.",
 		),
-		// TODO: Link to the guide in the comment
 	},
 	"on_account": {
 		Type:        schema.TypeBool,
