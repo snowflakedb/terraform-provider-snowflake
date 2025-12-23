@@ -135,7 +135,7 @@ provider "snowflake" {
 - `log_query_text` (Boolean) When set to true, the full query text will be logged. Be aware that it may include sensitive information. Default value is false. Can also be sourced from the `SNOWFLAKE_LOG_QUERY_TEXT` environment variable.
 - `login_timeout` (Number) Login retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_LOGIN_TIMEOUT` environment variable.
 - `max_retry_count` (Number) Specifies how many times non-periodic HTTP request can be retried by the driver. Can also be sourced from the `SNOWFLAKE_MAX_RETRY_COUNT` environment variable.
-- `no_proxy` (String) A comma-separated list of hostnames, domains, and IP addresses to exclude from proxying. Can also be sourced from the `SNOWFLAKE_NO_PROXY` environment variable.
+- `no_proxy` (String) A comma-separated list of hostnames, domains, and IP addresses to exclude from proxying. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_NO_PROXY` environment variable.
 - `oauth_authorization_url` (String, Sensitive) Authorization URL of OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_AUTHORIZATION_URL` environment variable.
 - `oauth_client_id` (String, Sensitive) Client id for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_ID` environment variable.
 - `oauth_client_secret` (String, Sensitive) Client secret for OAuth2 external IdP. See [Snowflake OAuth documentation](https://docs.snowflake.com/en/user-guide/oauth). Can also be sourced from the `SNOWFLAKE_OAUTH_CLIENT_SECRET` environment variable.
@@ -155,11 +155,11 @@ provider "snowflake" {
 - `private_key_passphrase` (String, Sensitive) Supports the encryption ciphers aes-128-cbc, aes-128-gcm, aes-192-cbc, aes-192-gcm, aes-256-cbc, aes-256-gcm, and des-ede3-cbc. Can also be sourced from the `SNOWFLAKE_PRIVATE_KEY_PASSPHRASE` environment variable.
 - `profile` (String) Sets the profile to read from ~/.snowflake/config file. Can also be sourced from the `SNOWFLAKE_PROFILE` environment variable.
 - `protocol` (String) A protocol used in the connection. Valid options are: `http` | `https`. Can also be sourced from the `SNOWFLAKE_PROTOCOL` environment variable.
-- `proxy_host` (String) The host of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_HOST` environment variable.
-- `proxy_password` (String, Sensitive) The password of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_PASSWORD` environment variable.
-- `proxy_port` (Number) The port of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_PORT` environment variable.
-- `proxy_protocol` (String) The protocol of the proxy to use for the connection. Valid options are: `http` | `https`. The value is case-insensitive. Can also be sourced from the `SNOWFLAKE_PROXY_PROTOCOL` environment variable.
-- `proxy_user` (String) The user of the proxy to use for the connection. Can also be sourced from the `SNOWFLAKE_PROXY_USER` environment variable.
+- `proxy_host` (String) The host of the proxy to use for the connection. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_HOST` environment variable.
+- `proxy_password` (String, Sensitive) The password of the proxy to use for the connection. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_PASSWORD` environment variable.
+- `proxy_port` (Number) The port of the proxy to use for the connection. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_PORT` environment variable.
+- `proxy_protocol` (String) The protocol of the proxy to use for the connection. Valid options are: `http` | `https`. The value is case-insensitive. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_PROTOCOL` environment variable.
+- `proxy_user` (String) The user of the proxy to use for the connection. See more in [the proxy section below](#proxy). Can also be sourced from the `SNOWFLAKE_PROXY_USER` environment variable.
 - `request_timeout` (Number) request retry timeout in seconds EXCLUDING network roundtrip and read out http response. Can also be sourced from the `SNOWFLAKE_REQUEST_TIMEOUT` environment variable.
 - `role` (String) Specifies the role to use by default for accessing Snowflake objects in the client session. Can also be sourced from the `SNOWFLAKE_ROLE` environment variable.
 - `skip_toml_file_permission_verification` (Boolean) False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations). Can also be sourced from the `SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION` environment variable.
@@ -625,6 +625,25 @@ variable "oauth_redirect_uri" {
 <!-- Section of deprecated resources -->
 
 <!-- Section of deprecated data sources -->
+
+## Proxy
+
+Terraform is plugin-based. It means that every plugin (provider) is responsible for making its own network requests.
+Not all providers follow the same standardized ways, so familiarize yourself with proxy setting for each of the providers used within your module.
+
+A few important pointers for setting the proxy connection:
+- As far as we are aware, there are no official Terraform docs regarding proxy, but there are some discussions on the official HashiCorp discussion forum (e.g. [this one](https://discuss.hashicorp.com/t/use-terraform-in-an-internal-network/59464)).
+- Terraform relies on Go default proxy setting (so it supports `HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`).
+- The official Go driver for Snowflake, which is used in this provider, also supports the default Go environment variables (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`). Documented [here](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#hdr-Proxy).
+- The provider offers a separate config (through the provider block, dedicated environment variables, and the TOML file).
+- The order of precedence is as follows:
+  1. Provider configuration (following its own [precedence](#order-precedence).
+  2. Standard environment variables (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`).
+
+References:
+- [Hashicorp discussion group example](https://discuss.hashicorp.com/t/use-terraform-in-an-internal-network/59464)
+- [Go driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#hdr-Proxy)
+- [Go documentation](https://go.dev/src/vendor/golang.org/x/net/http/httpproxy/proxy.go)
 
 ## Sensitive values limitations
 
