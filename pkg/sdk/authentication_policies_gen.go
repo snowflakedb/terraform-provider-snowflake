@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -134,15 +135,15 @@ type ShowAuthenticationPolicyOptions struct {
 }
 
 type showAuthenticationPolicyDBRow struct {
-	CreatedOn     time.Time `db:"created_on"`
-	Name          string    `db:"name"`
-	Comment       string    `db:"comment"`
-	DatabaseName  string    `db:"database_name"`
-	SchemaName    string    `db:"schema_name"`
-	Kind          string    `db:"kind"`
-	Owner         string    `db:"owner"`
-	OwnerRoleType string    `db:"owner_role_type"`
-	Options       string    `db:"options"`
+	CreatedOn     sql.NullTime   `db:"created_on"`
+	Name          string         `db:"name"`
+	Comment       string         `db:"comment"`
+	DatabaseName  sql.NullString `db:"database_name"`
+	SchemaName    sql.NullString `db:"schema_name"`
+	Kind          string         `db:"kind"`
+	Owner         sql.NullString `db:"owner"`
+	OwnerRoleType sql.NullString `db:"owner_role_type"`
+	Options       string         `db:"options"`
 }
 
 type AuthenticationPolicy struct {

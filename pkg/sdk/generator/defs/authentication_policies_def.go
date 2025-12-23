@@ -124,14 +124,14 @@ var authenticationPoliciesDef = g.NewInterface(
 	ShowOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-authentication-policies",
 		g.DbStruct("showAuthenticationPolicyDBRow").
-			Time("created_on").
+			OptionalTime("created_on").
 			Text("name").
 			Text("comment").
-			Text("database_name").
-			Text("schema_name").
+			OptionalText("database_name").
+			OptionalText("schema_name").
 			Text("kind").
-			Text("owner").
-			Text("owner_role_type").
+			OptionalText("owner").
+			OptionalText("owner_role_type").
 			Text("options"),
 		g.PlainStruct("AuthenticationPolicy").
 			Time("CreatedOn").
