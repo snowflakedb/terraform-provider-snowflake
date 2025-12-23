@@ -637,7 +637,7 @@ A few important pointers for setting the proxy connection:
 - The official Go driver for Snowflake, which is used in this provider, also supports the default Go environment variables (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`). Documented [here](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#hdr-Proxy).
 - The provider offers a separate config (through the provider block, dedicated environment variables, and the TOML file).
 - The order of precedence is as follows:
-  1. Provider configuration (following its own [precedence](#order-precedence).
+  1. Provider configuration (following its own [precedence](#order-precedence)).
   2. Standard environment variables (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`).
 
 References:
