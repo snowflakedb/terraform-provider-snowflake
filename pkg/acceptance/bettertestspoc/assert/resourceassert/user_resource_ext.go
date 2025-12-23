@@ -39,22 +39,22 @@ func (u *UserResourceAssert) HasAllDefaults(userId sdk.AccountObjectIdentifier, 
 		HasNoPassword().
 		HasNoLoginName().
 		HasNoDisplayName().
-		HasNoFirstName().
-		HasNoMiddleName().
-		HasNoLastName().
-		HasNoEmail().
+		HasFirstNameEmpty().
+		HasMiddleNameEmpty().
+		HasLastNameEmpty().
+		HasEmailEmpty().
 		HasMustChangePasswordString(r.BooleanDefault).
 		HasDisabledString(r.BooleanDefault).
 		HasNoDaysToExpiry().
 		HasMinsToUnlockString(r.IntDefaultString).
-		HasNoDefaultWarehouse().
+		HasDefaultWarehouseEmpty().
 		HasNoDefaultNamespace().
-		HasNoDefaultRole().
+		HasDefaultRoleEmpty().
 		HasDefaultSecondaryRolesOption(expectedDefaultSecondaryRoles).
 		HasMinsToBypassMfaString(r.IntDefaultString).
-		HasNoRsaPublicKey().
-		HasNoRsaPublicKey2().
-		HasNoComment().
+		HasRsaPublicKeyEmpty().
+		HasRsaPublicKey2Empty().
+		HasCommentEmpty().
 		HasDisableMfaString(r.BooleanDefault).
 		HasFullyQualifiedNameString(userId.FullyQualifiedName())
 }

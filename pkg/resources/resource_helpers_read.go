@@ -19,11 +19,15 @@ func setFromStringProperty(d *schema.ResourceData, key string, property *sdk.Str
 		if err := d.Set(key, property.Value); err != nil {
 			return err
 		}
+	} else {
+		if err := d.Set(key, ""); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func setFromStringPropertyIfNotEmpty(d *schema.ResourceData, key string, property *sdk.StringProperty) error {
+func setFromStringPropertyIfNotNullOrEmpty(d *schema.ResourceData, key string, property *sdk.StringProperty) error {
 	if property != nil && property.Value != "" {
 		if err := d.Set(key, property.Value); err != nil {
 			return err
