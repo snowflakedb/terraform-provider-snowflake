@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.12.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.12.0...v2.12.1) (2025-12-23)
+
+
+### 🔧 **Misc**
+
+* Add holiday note to README ([#4321](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4321)) ([b91c1b2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b91c1b29cd2a777e8ac988b9faab313bca045b99))
+
 ## [2.12.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.11.0...v2.12.0) (2025-12-18)
 
 
