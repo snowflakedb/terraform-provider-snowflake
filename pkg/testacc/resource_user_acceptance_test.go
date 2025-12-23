@@ -110,22 +110,22 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 						HasNoPassword().
 						HasNoLoginName().
 						HasNoDisplayName().
-						HasNoFirstName().
-						HasNoMiddleName().
-						HasNoLastName().
-						HasNoEmail().
+						HasFirstNameEmpty().
+						HasMiddleNameEmpty().
+						HasLastNameEmpty().
+						HasEmailEmpty().
 						HasMustChangePasswordString(r.BooleanDefault).
 						HasDisabledString(r.BooleanDefault).
 						HasNoDaysToExpiry().
 						HasMinsToUnlockString(r.IntDefaultString).
-						HasNoDefaultWarehouse().
+						HasDefaultWarehouseEmpty().
 						HasNoDefaultNamespace().
-						HasNoDefaultRole().
+						HasDefaultRoleEmpty().
 						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
 						HasMinsToBypassMfaString(r.IntDefaultString).
-						HasNoRsaPublicKey().
-						HasNoRsaPublicKey2().
-						HasNoComment().
+						HasRsaPublicKeyEmpty().
+						HasRsaPublicKey2Empty().
+						HasCommentEmpty().
 						HasDisableMfaString(r.BooleanDefault).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.UserShowOutput(t, userModelNoAttributes.ResourceReference()).
@@ -148,10 +148,22 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:            userModelNoAttributesRenamed.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password", "disable_mfa", "days_to_expiry", "mins_to_unlock", "mins_to_bypass_mfa", "login_name", "display_name", "disabled", "must_change_password", "default_secondary_roles_option"},
+				ResourceName:      userModelNoAttributesRenamed.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"password",
+					"disable_mfa",
+					"days_to_expiry",
+					"mins_to_unlock",
+					"mins_to_bypass_mfa",
+					"login_name",
+					"display_name",
+					"disabled",
+					"must_change_password",
+					"default_secondary_roles_option",
+					"default_namespace",
+				},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedUserResource(t, id2.Name()).
 						HasLoginNameString(strings.ToUpper(id.Name())).
@@ -226,10 +238,19 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:            userModelAllAttributesChanged(newLoginName).ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password", "disable_mfa", "days_to_expiry", "mins_to_unlock", "mins_to_bypass_mfa", "default_namespace", "login_name", "show_output.0.days_to_expiry"},
+				ResourceName:      userModelAllAttributesChanged(newLoginName).ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"password",
+					"disable_mfa",
+					"days_to_expiry",
+					"mins_to_unlock",
+					"mins_to_bypass_mfa",
+					"default_namespace",
+					"login_name",
+					"show_output.0.days_to_expiry",
+				},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedUserResource(t, id.Name()).
 						HasDefaultNamespaceString("ONE_PART_NAMESPACE").
@@ -1432,7 +1453,28 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 				Config:            config.FromModels(t, userModel),
 				Check: assertThat(t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
-						HasAllDefaults(userId, sdk.SecondaryRolesOptionDefault),
+						HasNameString(userId.Name()).
+						HasNoPassword().
+						HasNoLoginName().
+						HasNoDisplayName().
+						HasNoFirstName().
+						HasNoMiddleName().
+						HasNoLastName().
+						HasNoEmail().
+						HasMustChangePasswordString(r.BooleanDefault).
+						HasDisabledString(r.BooleanDefault).
+						HasNoDaysToExpiry().
+						HasMinsToUnlockString(r.IntDefaultString).
+						HasNoDefaultWarehouse().
+						HasNoDefaultNamespace().
+						HasNoDefaultRole().
+						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
+						HasMinsToBypassMfaString(r.IntDefaultString).
+						HasNoRsaPublicKey().
+						HasNoRsaPublicKey2().
+						HasNoComment().
+						HasDisableMfaString(r.BooleanDefault).
+						HasFullyQualifiedNameString(userId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -1603,7 +1645,7 @@ func TestAcc_User_gh3522_fix(t *testing.T) {
 			{
 				Config: gh3522ConfigFirstStep(userId),
 				Check: assertThat(t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
-					HasNoComment(),
+					HasCommentEmpty(),
 				),
 			},
 			{
