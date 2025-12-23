@@ -162,7 +162,6 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 					"disabled",
 					"must_change_password",
 					"default_secondary_roles_option",
-					"default_namespace",
 				},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedUserResource(t, id2.Name()).

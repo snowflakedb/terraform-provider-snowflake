@@ -282,9 +282,9 @@ func GetImportUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 
 		err = errors.Join(
 			d.Set("name", id.Name()),
-			setFromStringProperty(d, "login_name", userDetails.LoginName),
-			setFromStringProperty(d, "display_name", userDetails.DisplayName),
-			setFromStringProperty(d, "default_namespace", userDetails.DefaultNamespace),
+			setFromStringPropertyIfNotNullOrEmpty(d, "login_name", userDetails.LoginName),
+			setFromStringPropertyIfNotNullOrEmpty(d, "display_name", userDetails.DisplayName),
+			setFromStringPropertyIfNotNullOrEmpty(d, "default_namespace", userDetails.DefaultNamespace),
 			setBooleanStringFromBoolProperty(d, "disabled", userDetails.Disabled),
 			d.Set("default_secondary_roles_option", u.GetSecondaryRolesOption()),
 			// all others are set in read
