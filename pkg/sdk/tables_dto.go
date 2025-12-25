@@ -294,7 +294,7 @@ type FileFormatTypeOptionsRequest struct {
 	JSONTimestampFormat          *string
 	JSONBinaryFormat             *BinaryFormat
 	JSONTrimSpace                *bool
-	JSONNullIf                   []NullString
+	JSONNullIf                   *[]NullString
 	JSONFileExtension            *string
 	JSONEnableOctal              *bool
 	JSONAllowDuplicate           *bool
