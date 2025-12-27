@@ -25,20 +25,26 @@ resource "snowflake_semantic_view" "complete" {
   comment  = "comment"
 
   dimensions {
-    comment                   = "dimension comment"
-    qualified_expression_name = "\"lt1\".\"d2\""
-    sql_expression            = "\"lt1\".\"a2\""
-    synonym                   = ["dim2"]
+    semantic_expression {
+      comment                   = "dimension comment"
+      qualified_expression_name = "\"lt1\".\"d2\""
+      sql_expression            = "\"lt1\".\"a2\""
+      synonym                   = ["dim2"]
+    }
   }
 
   facts {
-    comment                   = "fact comment"
-    qualified_expression_name = "\"lt1\".\"f2\""
-    sql_expression            = "\"lt1\".\"a1\""
-    synonym                   = ["fact2"]
+    private_fact = "PRIVATE"
+    semantic_expression {
+      comment                   = "fact comment"
+      qualified_expression_name = "\"lt1\".\"f2\""
+      sql_expression            = "\"lt1\".\"a1\""
+      synonym                   = ["fact2"]
+    }
   }
 
   metrics {
+    private_metric = "PRIVATE"
     semantic_expression {
       comment                   = "semantic expression comment"
       qualified_expression_name = "\"lt1\".\"m1\""
