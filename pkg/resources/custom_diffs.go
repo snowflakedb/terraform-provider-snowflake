@@ -102,6 +102,14 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 // If the field is not found in the given schema, it continues without error. Only top level schema fields should be used.
 func ComputedIfAnyAttributeChanged(resourceSchema map[string]*schema.Schema, key string, changedAttributeKeys ...string) schema.CustomizeDiffFunc {
 	return customdiff.ComputedIf(key, func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) bool {
+		// Skip marking computed during destroy operations to avoid "Saved plan is stale" errors.
+		// During destroy, new values may not be known, but we shouldn't mark computed attributes
+		// as "known after apply" since the resource is being destroyed anyway.
+		if isResourceBeingDestroyed(diff) {
+			log.Printf("[DEBUG] ComputedIfAnyAttributeChanged: skipping during destroy")
+			return false
+		}
+
 		var result bool
 		for _, changedKey := range changedAttributeKeys {
 			if diff.HasChange(changedKey) || !diff.NewValueKnown(changedKey) {
@@ -130,6 +138,41 @@ func ComputedIfAnyAttributeChanged(resourceSchema map[string]*schema.Schema, key
 		}
 		return result
 	})
+}
+
+// isResourceBeingDestroyed detects if the resource is being destroyed by checking
+// if the raw config is null or if all config values are null.
+// During destroy, the raw config will be null for all attributes while the state still has values.
+func isResourceBeingDestroyed(diff *schema.ResourceDiff) bool {
+	// If the resource doesn't have an ID yet, it's being created, not destroyed
+	if diff.Id() == "" {
+		return false
+	}
+
+	// Check if the raw config is null/empty - this indicates a destroy operation
+	rawConfig := diff.GetRawConfig()
+	if rawConfig.IsNull() {
+		log.Printf("[DEBUG] isResourceBeingDestroyed: rawConfig is null, detected destroy")
+		return true
+	}
+
+	// During a destroy operation triggered by the test framework with Destroy: true,
+	// the config might still be present but all values would be null.
+	// Check if all config values are null - this indicates a destroy operation.
+	rawConfigMap := rawConfig.AsValueMap()
+	allNull := true
+	for _, v := range rawConfigMap {
+		if !v.IsNull() {
+			allNull = false
+			break
+		}
+	}
+	if allNull && len(rawConfigMap) > 0 {
+		log.Printf("[DEBUG] isResourceBeingDestroyed: all config values are null, detecting destroy")
+		return true
+	}
+
+	return false
 }
 
 type parameter[T ~string] struct {
