@@ -70,7 +70,9 @@ One of those defaults would be to make grant resources only care about privilege
 The motivation behind this was consistency with other resources. Other resources work in a way that they only care about themselves and manage the objects they are configured for.
 Additionally, having such a destructive default could lead to some unexpected grants being revoked if someone forgets to set the flag.
 Right now, there’s no alternative to the behavior **enable_multiple_grants** set to false, but we’re considering a flag for that case ([see future topics section](#future-topics)).
-[//]: # (TODO: Link new guide)
+
+**Update(v2.13.0)**: We've added a new flag that mimics the old **enable_multiple_grants** set to `false` behavior (removing external privileges).
+Read our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more details.
 
 ### Workaround for on_all and all_privileges (the always_apply parameter)
 As with the **on_future** field, granting **all_privileges** or granting **on_all** also raised a few questions about tracking granted objects.
@@ -264,7 +266,8 @@ For now, we’re relying on you to report such cases that we later analyze, prio
 As for the list of things yet to be discussed, we have:
 - Right now, there's no way to "have **enable_multiple_grants** turned off" in the new grant resources, but we are considering adding an **authoritative** flag (the name is not chosen yet) that would work oppositely to the **enable_multiple_grants**.
   By enabling the **authoritative** flag, any other privileges granted to the target object will be revoked, making the granting resource the only source of privileges on this object.
-  [//]: # (  TODO: Link new guide)
+  **Update(v2.13.0)**: We've added a new flag that mimics the old **enable_multiple_grants** set to `false` behavior (removing external privileges).
+  Read our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more details.
 - Discussion on granting **all_privileges** and **on_all** where we’ll decide how and if we would like to track changes of:
   - Added or removed privileges by Snowflake in the case of all_privileges
   - Added or removed objects by the user in Snowflake in the case of on_all

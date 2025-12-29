@@ -31,10 +31,10 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.
 It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources,
 and it makes the resource able to detect external changes for privileges other than those present in the configuration,
-which can make the `snowflake_grant_privileges_to_account_role` resource a cental point of knowledge privilege management
+which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management
 for a given object and role.
 
-Read more in our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
+Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
 
 ### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
 
