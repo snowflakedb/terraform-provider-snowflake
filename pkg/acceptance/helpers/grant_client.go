@@ -123,25 +123,16 @@ func (c *GrantClient) GrantFutureSchemaObjectPrivilegesInDatabaseToAccountRole(
 	privileges ...sdk.SchemaObjectPrivilege,
 ) {
 	t.Helper()
-	ctx := context.Background()
 
-	err := c.client().GrantPrivilegesToAccountRole(
-		ctx,
-		&sdk.AccountRoleGrantPrivileges{
-			SchemaObjectPrivileges: privileges,
-		},
-		&sdk.AccountRoleGrantOn{
-			SchemaObject: &sdk.GrantOnSchemaObject{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: pluralObjectType,
-					InDatabase:       &databaseId,
-				},
-			},
-		},
+	c.grantFutureSchemaObjectPrivilegesToAccountRole(
+		t,
 		accountRoleId,
-		new(sdk.GrantPrivilegesToAccountRoleOptions),
+		sdk.GrantOnSchemaObjectIn{
+			PluralObjectType: pluralObjectType,
+			InDatabase:       &databaseId,
+		},
+		privileges...,
 	)
-	require.NoError(t, err)
 }
 
 func (c *GrantClient) GrantFutureSchemaObjectPrivilegesInSchemaToAccountRole(
@@ -149,6 +140,25 @@ func (c *GrantClient) GrantFutureSchemaObjectPrivilegesInSchemaToAccountRole(
 	schemaId sdk.DatabaseObjectIdentifier,
 	pluralObjectType sdk.PluralObjectType,
 	accountRoleId sdk.AccountObjectIdentifier,
+	privileges ...sdk.SchemaObjectPrivilege,
+) {
+	t.Helper()
+
+	c.grantFutureSchemaObjectPrivilegesToAccountRole(
+		t,
+		accountRoleId,
+		sdk.GrantOnSchemaObjectIn{
+			PluralObjectType: pluralObjectType,
+			InSchema:         &schemaId,
+		},
+		privileges...,
+	)
+}
+
+func (c *GrantClient) grantFutureSchemaObjectPrivilegesToAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	in sdk.GrantOnSchemaObjectIn,
 	privileges ...sdk.SchemaObjectPrivilege,
 ) {
 	t.Helper()
@@ -161,10 +171,7 @@ func (c *GrantClient) GrantFutureSchemaObjectPrivilegesInSchemaToAccountRole(
 		},
 		&sdk.AccountRoleGrantOn{
 			SchemaObject: &sdk.GrantOnSchemaObject{
-				Future: &sdk.GrantOnSchemaObjectIn{
-					PluralObjectType: pluralObjectType,
-					InSchema:         &schemaId,
-				},
+				Future: &in,
 			},
 		},
 		accountRoleId,

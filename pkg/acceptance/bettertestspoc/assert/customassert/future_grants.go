@@ -73,6 +73,7 @@ func (a *FutureGrantsAssert) HasPrivilegesOnObjectTypeEqualTo(objectType sdk.Obj
 	return a
 }
 
+// ToTerraformTestCheckFunc TODO(SNOW-1501905): If possible, unify with runSnowflakeObjectsAssertions (SnowflakeObjectAssert)
 func (a *FutureGrantsAssert) ToTerraformTestCheckFunc(t *testing.T, testClient *helpers.TestClient) resource.TestCheckFunc {
 	t.Helper()
 	return func(_ *terraform.State) error {
