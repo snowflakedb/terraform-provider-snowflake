@@ -2201,6 +2201,22 @@ func TestInt_ShowGrants(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, table.ID().FullyQualifiedName(), grants[0].Name.FullyQualifiedName())
 	})
+
+	t.Run("grants to APPLICATION are handled correctly", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+		t.Cleanup(roleCleanup)
+
+		testClientHelper().Grant.GrantDatabaseRoleToApplication(t, role.ID(), testClientHelper().Ids.SnowflakeApplicationId())
+
+		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Of: &sdk.ShowGrantsOf{
+				DatabaseRole: role.ID(),
+			},
+		})
+		require.NoError(t, err)
+		assert.Equal(t, sdk.ObjectTypeApplication, grants[0].GrantedTo)
+		assert.Equal(t, testClientHelper().Ids.SnowflakeApplicationId().Name(), grants[0].GranteeName.Name())
+	})
 }
 
 func grantsToPrivileges(grants []sdk.Grant) []string {

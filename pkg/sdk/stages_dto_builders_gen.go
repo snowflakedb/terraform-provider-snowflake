@@ -56,7 +56,7 @@ func (s *CreateInternalStageRequest) WithTag(tag []TagAssociation) *CreateIntern
 }
 
 func NewInternalStageEncryptionRequest(
-	encryptionType *InternalStageEncryptionOption,
+	encryptionType InternalStageEncryptionOption,
 ) *InternalStageEncryptionRequest {
 	s := InternalStageEncryptionRequest{}
 	s.EncryptionType = encryptionType
@@ -69,12 +69,12 @@ func NewInternalDirectoryTableOptionsRequest() *InternalDirectoryTableOptionsReq
 }
 
 func (s *InternalDirectoryTableOptionsRequest) WithEnable(enable bool) *InternalDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
-func (s *InternalDirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *InternalDirectoryTableOptionsRequest {
-	s.RefreshOnCreate = &refreshOnCreate
+func (s *InternalDirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *InternalDirectoryTableOptionsRequest {
+	s.AutoRefresh = &autoRefresh
 	return s
 }
 
@@ -163,9 +163,11 @@ func (s *StageCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool)
 
 func NewCreateOnS3StageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalS3StageParamsRequest,
 ) *CreateOnS3StageRequest {
 	s := CreateOnS3StageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -181,11 +183,6 @@ func (s *CreateOnS3StageRequest) WithTemporary(temporary bool) *CreateOnS3StageR
 
 func (s *CreateOnS3StageRequest) WithIfNotExists(ifNotExists bool) *CreateOnS3StageRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOnS3StageRequest) WithExternalStageParams(externalStageParams ExternalS3StageParamsRequest) *CreateOnS3StageRequest {
-	s.ExternalStageParams = &externalStageParams
 	return s
 }
 
@@ -222,6 +219,11 @@ func NewExternalS3StageParamsRequest(
 	return &s
 }
 
+func (s *ExternalS3StageParamsRequest) WithAwsAccessPointArn(awsAccessPointArn string) *ExternalS3StageParamsRequest {
+	s.AwsAccessPointArn = &awsAccessPointArn
+	return s
+}
+
 func (s *ExternalS3StageParamsRequest) WithStorageIntegration(storageIntegration AccountObjectIdentifier) *ExternalS3StageParamsRequest {
 	s.StorageIntegration = &storageIntegration
 	return s
@@ -234,6 +236,11 @@ func (s *ExternalS3StageParamsRequest) WithCredentials(credentials ExternalStage
 
 func (s *ExternalS3StageParamsRequest) WithEncryption(encryption ExternalStageS3EncryptionRequest) *ExternalS3StageParamsRequest {
 	s.Encryption = &encryption
+	return s
+}
+
+func (s *ExternalS3StageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ExternalS3StageParamsRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
 }
 
@@ -286,7 +293,7 @@ func NewExternalS3DirectoryTableOptionsRequest() *ExternalS3DirectoryTableOption
 }
 
 func (s *ExternalS3DirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalS3DirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -302,9 +309,11 @@ func (s *ExternalS3DirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh boo
 
 func NewCreateOnGCSStageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalGCSStageParamsRequest,
 ) *CreateOnGCSStageRequest {
 	s := CreateOnGCSStageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -320,11 +329,6 @@ func (s *CreateOnGCSStageRequest) WithTemporary(temporary bool) *CreateOnGCSStag
 
 func (s *CreateOnGCSStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnGCSStageRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOnGCSStageRequest) WithExternalStageParams(externalStageParams ExternalGCSStageParamsRequest) *CreateOnGCSStageRequest {
-	s.ExternalStageParams = &externalStageParams
 	return s
 }
 
@@ -390,7 +394,7 @@ func NewExternalGCSDirectoryTableOptionsRequest() *ExternalGCSDirectoryTableOpti
 }
 
 func (s *ExternalGCSDirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalGCSDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -411,9 +415,11 @@ func (s *ExternalGCSDirectoryTableOptionsRequest) WithNotificationIntegration(no
 
 func NewCreateOnAzureStageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalAzureStageParamsRequest,
 ) *CreateOnAzureStageRequest {
 	s := CreateOnAzureStageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -429,11 +435,6 @@ func (s *CreateOnAzureStageRequest) WithTemporary(temporary bool) *CreateOnAzure
 
 func (s *CreateOnAzureStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnAzureStageRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOnAzureStageRequest) WithExternalStageParams(externalStageParams ExternalAzureStageParamsRequest) *CreateOnAzureStageRequest {
-	s.ExternalStageParams = &externalStageParams
 	return s
 }
 
@@ -485,6 +486,11 @@ func (s *ExternalAzureStageParamsRequest) WithEncryption(encryption ExternalStag
 	return s
 }
 
+func (s *ExternalAzureStageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ExternalAzureStageParamsRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
+	return s
+}
+
 func NewExternalStageAzureCredentialsRequest(
 	azureSasToken string,
 ) *ExternalStageAzureCredentialsRequest {
@@ -512,7 +518,7 @@ func NewExternalAzureDirectoryTableOptionsRequest() *ExternalAzureDirectoryTable
 }
 
 func (s *ExternalAzureDirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalAzureDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -533,13 +539,11 @@ func (s *ExternalAzureDirectoryTableOptionsRequest) WithNotificationIntegration(
 
 func NewCreateOnS3CompatibleStageRequest(
 	name SchemaObjectIdentifier,
-	url string,
-	endpoint string,
+	externalStageParams ExternalS3CompatibleStageParamsRequest,
 ) *CreateOnS3CompatibleStageRequest {
 	s := CreateOnS3CompatibleStageRequest{}
 	s.name = name
-	s.Url = url
-	s.Endpoint = endpoint
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -555,11 +559,6 @@ func (s *CreateOnS3CompatibleStageRequest) WithTemporary(temporary bool) *Create
 
 func (s *CreateOnS3CompatibleStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnS3CompatibleStageRequest {
 	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CreateOnS3CompatibleStageRequest) WithCredentials(credentials ExternalStageS3CompatibleCredentialsRequest) *CreateOnS3CompatibleStageRequest {
-	s.Credentials = &credentials
 	return s
 }
 
@@ -588,9 +587,24 @@ func (s *CreateOnS3CompatibleStageRequest) WithTag(tag []TagAssociation) *Create
 	return s
 }
 
+func NewExternalS3CompatibleStageParamsRequest(
+	url string,
+	endpoint string,
+) *ExternalS3CompatibleStageParamsRequest {
+	s := ExternalS3CompatibleStageParamsRequest{}
+	s.Url = url
+	s.Endpoint = endpoint
+	return &s
+}
+
+func (s *ExternalS3CompatibleStageParamsRequest) WithCredentials(credentials ExternalStageS3CompatibleCredentialsRequest) *ExternalS3CompatibleStageParamsRequest {
+	s.Credentials = &credentials
+	return s
+}
+
 func NewExternalStageS3CompatibleCredentialsRequest(
-	awsKeyId *string,
-	awsSecretKey *string,
+	awsKeyId string,
+	awsSecretKey string,
 ) *ExternalStageS3CompatibleCredentialsRequest {
 	s := ExternalStageS3CompatibleCredentialsRequest{}
 	s.AwsKeyId = awsKeyId
@@ -825,7 +839,7 @@ func (s *ShowStageRequest) WithLike(like Like) *ShowStageRequest {
 	return s
 }
 
-func (s *ShowStageRequest) WithIn(in In) *ShowStageRequest {
+func (s *ShowStageRequest) WithIn(in ExtendedIn) *ShowStageRequest {
 	s.In = &in
 	return s
 }

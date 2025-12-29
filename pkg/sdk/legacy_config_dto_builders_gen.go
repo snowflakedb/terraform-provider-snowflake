@@ -259,3 +259,68 @@ func (s *LegacyConfigDTO) WithLogQueryParameters(LogQueryParameters bool) *Legac
 	s.LogQueryParameters = &LogQueryParameters
 	return s
 }
+
+func (s *LegacyConfigDTO) WithProxyHost(ProxyHost string) *LegacyConfigDTO {
+	s.ProxyHost = &ProxyHost
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyPort(ProxyPort int) *LegacyConfigDTO {
+	s.ProxyPort = &ProxyPort
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyUser(ProxyUser string) *LegacyConfigDTO {
+	s.ProxyUser = &ProxyUser
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyPassword(ProxyPassword string) *LegacyConfigDTO {
+	s.ProxyPassword = &ProxyPassword
+	return s
+}
+
+func (s *LegacyConfigDTO) WithProxyProtocol(ProxyProtocol string) *LegacyConfigDTO {
+	s.ProxyProtocol = &ProxyProtocol
+	return s
+}
+
+func (s *LegacyConfigDTO) WithNoProxy(NoProxy string) *LegacyConfigDTO {
+	s.NoProxy = &NoProxy
+	return s
+}
+
+func (s *LegacyConfigDTO) WithDisableOCSPChecks(DisableOCSPChecks bool) *LegacyConfigDTO {
+	s.DisableOCSPChecks = &DisableOCSPChecks
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCertRevocationCheckMode(CertRevocationCheckMode string) *LegacyConfigDTO {
+	s.CertRevocationCheckMode = &CertRevocationCheckMode
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlAllowCertificatesWithoutCrlURL(CrlAllowCertificatesWithoutCrlURL bool) *LegacyConfigDTO {
+	s.CrlAllowCertificatesWithoutCrlURL = &CrlAllowCertificatesWithoutCrlURL
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlInMemoryCacheDisabled(CrlInMemoryCacheDisabled bool) *LegacyConfigDTO {
+	s.CrlInMemoryCacheDisabled = &CrlInMemoryCacheDisabled
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlOnDiskCacheDisabled(CrlOnDiskCacheDisabled bool) *LegacyConfigDTO {
+	s.CrlOnDiskCacheDisabled = &CrlOnDiskCacheDisabled
+	return s
+}
+
+func (s *LegacyConfigDTO) WithCrlHTTPClientTimeout(CrlHTTPClientTimeout int) *LegacyConfigDTO {
+	s.CrlHTTPClientTimeout = &CrlHTTPClientTimeout
+	return s
+}
+
+func (s *LegacyConfigDTO) WithDisableSamlURLCheck(DisableSamlURLCheck bool) *LegacyConfigDTO {
+	s.DisableSamlURLCheck = &DisableSamlURLCheck
+	return s
+}

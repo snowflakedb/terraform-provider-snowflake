@@ -5,14 +5,71 @@ We usually create new entries in quarterly cycles, so expect an entry in the fir
 We may add more entries when we have some bigger announcements.
 These should be treated as projections and not strict commitments. Keep in mind that the plan can be subject to change.
 
+## (2025-12-18) Roadmap update
+
+Recent efforts concentrated on:
+
+* Stabilizing the chosen preview features.
+* Promoting the chosen preview features to stable.
+* Helping with 0.x.x to v2.x.x migration.
+* Increasing the security and stability of the provider.
+
+In the upcoming months, our focus will be on the following topics:
+
+* [Further migration help](#migration)
+* [Feature gap](#feature-gap)
+* [Security-related improvements](#workload-identity-federation-support)
+* [Stability-related improvements](#stability-improvements)
+* [Strategy for the next years](#strategy-for-the-next-years)
+
+If you have any questions, please reach out via GitHub or contact your respective account managers.
+
+### Migration
+
+As announced in the [previous entry](#migration-1) and [#4039](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4039), the migration efforts are ongoing. We provided a [simple grant migration script](MIGRATION_GUIDE.md#tool-added-a-grant-migration-script), which we are currently extending to support additional objects; [contributions](pkg/scripts/migration_script/CONTRIBUTING.md) are still welcome.
+
+If you have not started the migration yet, please prioritize it. If you have any questions about the migration process, please contact us through GitHub or your respective account managers.
+
+### Feature gap
+
+The feature gap we want to target next is strictly connected to the migration to GA+ provider versions. We are aware that the gap is still significant. The following list is not exhaustive; it just presents the next 2-3 months of efforts. If the given feature is important but not prioritized, please contact your account manager to help bring it to a higher priority.
+
+The gaps we plan to tackle next are:
+
+* grants strict behavior ([#3973](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3973));
+* gov support ([#4011](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4011));
+* stages ([#4080](https://github.com/snowflakedb/terraform-provider-snowflake/discussions/4080), [filter](https://github.com/snowflakedb/terraform-provider-snowflake/issues?q=is%3Aissue%20state%3Aopen%20label%3Aresource%3Astage), and [filter](https://github.com/snowflakedb/terraform-provider-snowflake/issues?q=is%3Aissue%20state%3Aopen%20label%3Adata_source%3Astages));
+* storage integrations stabilization ([#3082](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3082) and [filter](https://github.com/snowflakedb/terraform-provider-snowflake/issues?q=is%3Aissue%20state%3Aopen%20label%3Aresource%3Astorage_integration));
+* session policies ([#2870](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2870) and [#3293](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3293));
+* network rules (promote to stable);
+* external volumes (promote to stable).
+
+We have also recently released preview support for [notebooks](MIGRATION_GUIDE.md#new-feature-notebooks-preview-feature) and [semantic views](MIGRATION_GUIDE.md#new-feature-semantic-views-preview-feature). We plan to gather feedback and further improve them before marking them stable.
+
+### Workload Identity Federation support
+
+This is continuation work related to Snowflake’s goal of having all users strongly authenticated. It’s already possible to authenticate using Workload Identity Federation ([details](MIGRATION_GUIDE.md#new-feature-new-workload-identity-federation-authentication-option)), but we are still adjusting the user resources to allow setting the attributes necessary to enable this authentication for provisioned users.
+
+### Stability improvements
+
+Following the driver adjustments around certificate verification handling ([article](https://community.snowflake.com/s/article/How-to-turn-off-OCSP-checking-in-Snowflake-client-drivers)), we are adjusting the provider to utilize all the new driver fields.
+
+Additionally, as a follow-up to previous improvements, we aim to enhance the handling of removed object dependencies across the provider. We have already improved it for most of the objects ([details](MIGRATION_GUIDE.md#new-behavior-for-read-and-delete-operations-when-removing-high-hierarchy-objects)). We want to tackle grants next (examples: [#4136](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4136) and [#3869](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3869)).
+
+### Strategy for the next years
+
+We are actively discussing the future of the provider. Your input is incredibly valuable. As mentioned in other entries, we understand that the lack of 100% parity with Snowflake and delayed support for new Snowflake features are the most noticeable pains. We took efforts like [Early detection of changes introduced in Snowflake](ROADMAP.md#early-detection-of-changes-introduced-in-snowflake), [Plugin Framework research](ROADMAP.md#plugin-framework), and [Snowflake Rest APIs research](ROADMAP.md#snowflake-rest-apis) to explore options towards a more generative approach. While we are still finalizing the precise roadmap for our strategy, we remain committed to continuing our efforts to make the provider an integral part of Snowflake.
+
+We will share more in our February update, so stay tuned!
+
 ## (2025-08-14) Roadmap update
 
 Recent efforts concentrated on delivering SPCS-related resources, listings, organization accounts compatibility, and PAT support. We also researched the potential transition to [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework) and [Snowflake REST API](https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/snowflake-rest-api) (we won’t do the transition within the next few months, but it will be an important topic soon).
 
 In the upcoming months, our focus will be on the following topics:
 
-* [Further migration help](#migration)
-* [Feature gap](#feature-gap)
+* [Further migration help](#migration-1)
+* [Feature gap](#feature-gap-1)
 * [Security-related improvements](#oauth2-authorization-code-and-client-credential-flows)
 * [Early detection of changes introduced in Snowflake](#early-detection-of-changes-introduced-in-snowflake)
 

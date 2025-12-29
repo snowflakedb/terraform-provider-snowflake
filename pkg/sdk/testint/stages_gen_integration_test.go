@@ -5,6 +5,7 @@ package testint
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
@@ -46,29 +47,30 @@ func TestInt_Stages(t *testing.T) {
 			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
 				WithAwsKeyId(awsKeyId).
 				WithAwsSecretKey(awsSecretKey))
-		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(stageId).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*s3Req))
+		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(stageId, *s3Req).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
 
 	createBasicGcsStage := func(t *testing.T, stageId sdk.SchemaObjectIdentifier) {
 		t.Helper()
-		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(stageId).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)))
+		externalGcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
+
+		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(stageId, *externalGcsReq).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
 
 	createBasicAzureStage := func(t *testing.T, stageId sdk.SchemaObjectIdentifier) {
 		t.Helper()
-		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(stageId).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))))
+		externalAzureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
+
+		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(stageId, *externalAzureReq).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
@@ -124,12 +126,13 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+			WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
+			WithUsePrivatelinkEndpoint(true).
 			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
 				WithAwsKeyId(awsKeyId).
 				WithAwsSecretKey(awsSecretKey))
-		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id).
+		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id, *s3Req).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*s3Req).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -137,6 +140,31 @@ func TestInt_Stages(t *testing.T) {
 		stage, err := client.Stages.ShowByID(ctx, id)
 		require.NoError(t, err)
 		assertStage(t, stage, id, "EXTERNAL", "some comment", "AWS", awsBucketUrl, "")
+
+		stageProperties, err := client.Stages.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, stageProperties)
+		assert.Contains(t, stageProperties, sdk.StageProperty{
+			Parent:  "STAGE_LOCATION",
+			Name:    "URL",
+			Type:    "String",
+			Value:   fmt.Sprintf("[\"%s\"]", awsBucketUrl),
+			Default: "",
+		})
+		assert.Contains(t, stageProperties, sdk.StageProperty{
+			Parent:  "STAGE_LOCATION",
+			Name:    "AWS_ACCESS_POINT_ARN",
+			Type:    "String",
+			Value:   "arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap",
+			Default: "",
+		})
+		assert.Contains(t, stageProperties, sdk.StageProperty{
+			Parent:  "PRIVATELINK",
+			Name:    "USE_PRIVATELINK_ENDPOINT",
+			Type:    "Boolean",
+			Value:   "true",
+			Default: "false",
+		})
 	})
 
 	t.Run("CreateOnS3 - temporary - Storage Integration", func(t *testing.T) {
@@ -144,10 +172,9 @@ func TestInt_Stages(t *testing.T) {
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
-		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id).
+		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id, *s3Req).
 			WithTemporary(true).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*s3Req).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -160,10 +187,11 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateOnGCS", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(id).
+		externalGcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
+
+		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(id, *externalGcsReq).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -176,10 +204,11 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateOnAzure - Storage Integration", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id).
+		externalAzureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+			WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)
+
+		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id, *externalAzureReq).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -189,13 +218,15 @@ func TestInt_Stages(t *testing.T) {
 		assertStage(t, stage, id, "EXTERNAL", "some comment", "AZURE", azureBucketUrl, azureStorageIntegration.Name)
 	})
 
+	// TODO(SNOW-2356128): Test use_privatelink_endpoint
 	t.Run("CreateOnAzure - Shared Access Signature", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id).
+		externalAzureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
+			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
+
+		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id, *externalAzureReq).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -206,7 +237,22 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("CreateOnS3Compatible", func(t *testing.T) {
-		// TODO: (SNOW-1012064) create s3 compat service for tests
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		compatibleBucketUrl := strings.Replace(awsBucketUrl, "s3://", "s3compat://", 1)
+		endpoint := "s3.us-west-2.amazonaws.com"
+
+		s3Req := sdk.NewExternalS3CompatibleStageParamsRequest(compatibleBucketUrl, endpoint).WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
+		err := client.Stages.CreateOnS3Compatible(ctx, sdk.NewCreateOnS3CompatibleStageRequest(id, *s3Req).
+			WithTemporary(true).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithDirectoryTableOptions(*sdk.NewExternalS3DirectoryTableOptionsRequest().WithEnable(true)).
+			WithComment("some comment"))
+		require.NoError(t, err)
+		cleanupStage(t, id)
+
+		stage, err := client.Stages.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assertStage(t, stage, id, "EXTERNAL TEMPORARY", "some comment", "AWS", compatibleBucketUrl, "")
 	})
 
 	t.Run("Alter - rename", func(t *testing.T) {

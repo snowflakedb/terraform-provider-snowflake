@@ -29,13 +29,7 @@ func TestStages_CreateInternal(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
-		}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TEMPORARY STAGE %s FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -43,11 +37,11 @@ func TestStages_CreateInternal(t *testing.T) {
 		opts.Temporary = Bool(true)
 		opts.IfNotExists = Bool(true)
 		opts.Encryption = &InternalStageEncryption{
-			EncryptionType: &InternalStageEncryptionFull,
+			EncryptionType: InternalStageEncryptionFull,
 		}
 		opts.DirectoryTableOptions = &InternalDirectoryTableOptions{
-			Enable:          Bool(true),
-			RefreshOnCreate: Bool(true),
+			Enable:      true,
+			AutoRefresh: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
 			FormatName: String("format name"),
@@ -71,7 +65,7 @@ func TestStages_CreateInternal(t *testing.T) {
 				Value: "tag-value",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true) FILE_FORMAT = (FORMAT_NAME = 'format name') COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = 'format name') COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName())
 	})
 }
 
@@ -81,6 +75,9 @@ func TestStages_CreateOnS3(t *testing.T) {
 	defaultOpts := func() *CreateOnS3StageOptions {
 		return &CreateOnS3StageOptions{
 			name: id,
+			ExternalStageParams: ExternalS3StageParams{
+				Url: "s3://example.com",
+			},
 		}
 	}
 
@@ -99,7 +96,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.Credentials]", func(t *testing.T) {
 		opts := defaultOpts()
 		integrationId := NewAccountObjectIdentifier("integration")
-		opts.ExternalStageParams = &ExternalS3StageParams{
+		opts.ExternalStageParams = ExternalS3StageParams{
 			StorageIntegration: &integrationId,
 			Credentials: &ExternalStageS3Credentials{
 				AwsRole: String("aws-role"),
@@ -110,13 +107,40 @@ func TestStages_CreateOnS3(t *testing.T) {
 
 	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsKeyId opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.ExternalStageParams = &ExternalS3StageParams{
+		opts.ExternalStageParams = ExternalS3StageParams{
 			Credentials: &ExternalStageS3Credentials{
 				AwsKeyId: String("aws-key-id"),
 				AwsRole:  String("aws-role"),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsSecretKey opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = ExternalS3StageParams{
+			Credentials: &ExternalStageS3Credentials{
+				AwsSecretKey: String("aws-secret-key"),
+				AwsRole:      String("aws-role"),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsSecretKey", "AwsRole"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsToken opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = ExternalS3StageParams{
+			Credentials: &ExternalStageS3Credentials{
+				AwsToken: String("aws-token"),
+				AwsRole:  String("aws-role"),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s URL = 's3://example.com'", id.FullyQualifiedName())
 	})
 
 	// variants added manually
@@ -125,39 +149,47 @@ func TestStages_CreateOnS3(t *testing.T) {
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
-		opts.ExternalStageParams = &ExternalS3StageParams{
+		opts.ExternalStageParams = ExternalS3StageParams{
 			Url:                "some url",
+			AwsAccessPointArn:  String("aws-access-point-arn"),
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageS3Encryption{
 				EncryptionType: &ExternalStageS3EncryptionCSE,
 				MasterKey:      String("master-key"),
 			},
+			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - directory table and credentials", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Temporary = Bool(true)
 		opts.IfNotExists = Bool(true)
-		opts.ExternalStageParams = &ExternalS3StageParams{
-			Url: "some url",
+		opts.ExternalStageParams = ExternalS3StageParams{
+			Url:               "some url",
+			AwsAccessPointArn: String("aws-access-point-arn"),
 			Credentials: &ExternalStageS3Credentials{
 				AwsKeyId:     String("aws-key-id"),
 				AwsSecretKey: String("aws-secret-key"),
 				AwsToken:     String("aws-token"),
 			},
+			Encryption: &ExternalStageS3Encryption{
+				EncryptionType: &ExternalStageS3EncryptionSSEKMS,
+				KmsKeyId:       String("kms-key-id"),
+			},
+			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.DirectoryTableOptions = &ExternalS3DirectoryTableOptions{
-			Enable:          Bool(true),
+			Enable:          true,
 			RefreshOnCreate: Bool(true),
 			AutoRefresh:     Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true)`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true)`, id.FullyQualifiedName())
 	})
 }
 
@@ -167,6 +199,9 @@ func TestStages_CreateOnGCS(t *testing.T) {
 	defaultOpts := func() *CreateOnGCSStageOptions {
 		return &CreateOnGCSStageOptions{
 			name: id,
+			ExternalStageParams: ExternalGCSStageParams{
+				Url: "gcs://example.com",
+			},
 		}
 	}
 
@@ -182,14 +217,18 @@ func TestStages_CreateOnGCS(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnGCSStageOptions", "OrReplace", "IfNotExists"))
 	})
 
-	// basic removed manually
+	// adjusted manually
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s URL = 'gcs://example.com'", id.FullyQualifiedName())
+	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
-		opts.ExternalStageParams = &ExternalGCSStageParams{
+		opts.ExternalStageParams = ExternalGCSStageParams{
 			Url:                "some url",
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageGCSEncryption{
@@ -198,7 +237,7 @@ func TestStages_CreateOnGCS(t *testing.T) {
 			},
 		}
 		opts.DirectoryTableOptions = &ExternalGCSDirectoryTableOptions{
-			Enable:                  Bool(true),
+			Enable:                  true,
 			RefreshOnCreate:         Bool(true),
 			AutoRefresh:             Bool(true),
 			NotificationIntegration: String("notification-integration"),
@@ -217,6 +256,9 @@ func TestStages_CreateOnAzure(t *testing.T) {
 	defaultOpts := func() *CreateOnAzureStageOptions {
 		return &CreateOnAzureStageOptions{
 			name: id,
+			ExternalStageParams: ExternalAzureStageParams{
+				Url: "azure://example.com",
+			},
 		}
 	}
 
@@ -235,7 +277,7 @@ func TestStages_CreateOnAzure(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.Credentials]", func(t *testing.T) {
 		opts := defaultOpts()
 		integrationId := NewAccountObjectIdentifier("integration")
-		opts.ExternalStageParams = &ExternalAzureStageParams{
+		opts.ExternalStageParams = ExternalAzureStageParams{
 			StorageIntegration: &integrationId,
 			Credentials: &ExternalStageAzureCredentials{
 				AzureSasToken: "azure-sas-token",
@@ -244,37 +286,43 @@ func TestStages_CreateOnAzure(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 	})
 
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s URL = 'azure://example.com'", id.FullyQualifiedName())
+	})
+
 	// variants added manually
 	t.Run("all options - storage integration", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
-		opts.ExternalStageParams = &ExternalAzureStageParams{
+		opts.ExternalStageParams = ExternalAzureStageParams{
 			Url:                "some url",
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageAzureEncryption{
 				EncryptionType: &ExternalStageAzureEncryptionCSE,
 				MasterKey:      String("master-key"),
 			},
+			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - directory table and credentials", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.DirectoryTableOptions = &ExternalAzureDirectoryTableOptions{
-			Enable:                  Bool(true),
+			Enable:                  true,
 			RefreshOnCreate:         Bool(true),
 			AutoRefresh:             Bool(true),
 			NotificationIntegration: String("notification-integration"),
 		}
-		opts.ExternalStageParams = &ExternalAzureStageParams{
+		opts.ExternalStageParams = ExternalAzureStageParams{
 			Url: "some url",
 			Credentials: &ExternalStageAzureCredentials{
 				AzureSasToken: "azure-sas-token",
@@ -283,8 +331,9 @@ func TestStages_CreateOnAzure(t *testing.T) {
 				EncryptionType: &ExternalStageAzureEncryptionCSE,
 				MasterKey:      String("master-key"),
 			},
+			UsePrivatelinkEndpoint: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE IF NOT EXISTS %s URL = 'some url' CREDENTIALS = (AZURE_SAS_TOKEN = 'azure-sas-token') ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration')`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE IF NOT EXISTS %s URL = 'some url' CREDENTIALS = (AZURE_SAS_TOKEN = 'azure-sas-token') ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration')`, id.FullyQualifiedName())
 	})
 }
 
@@ -294,6 +343,10 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 	defaultOpts := func() *CreateOnS3CompatibleStageOptions {
 		return &CreateOnS3CompatibleStageOptions{
 			name: id,
+			ExternalStageParams: ExternalS3CompatibleStageParams{
+				Url:      "s3://example.com",
+				Endpoint: "some endpoint",
+			},
 		}
 	}
 
@@ -309,17 +362,23 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3CompatibleStageOptions", "OrReplace", "IfNotExists"))
 	})
 
-	// basic removed manually
+	// adjusted manually
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s URL = 's3://example.com' ENDPOINT = 'some endpoint'", id.FullyQualifiedName())
+	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Temporary = Bool(true)
 		opts.IfNotExists = Bool(true)
-		opts.Url = "some url"
-		opts.Endpoint = "some endpoint"
-		opts.Credentials = &ExternalStageS3CompatibleCredentials{
-			AwsKeyId:     String("aws-key-id"),
-			AwsSecretKey: String("aws-secret-key"),
+		opts.ExternalStageParams = ExternalS3CompatibleStageParams{
+			Url:      "some url",
+			Endpoint: "some endpoint",
+			Credentials: &ExternalStageS3CompatibleCredentials{
+				AwsKeyId:     "aws-key-id",
+				AwsSecretKey: "aws-secret-key",
+			},
 		}
 		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
@@ -499,18 +558,56 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsSecretKey opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Credentials: &ExternalStageS3Credentials{
+				AwsSecretKey: String("aws-secret-key"),
+				AwsRole:      String("aws-role"),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsSecretKey", "AwsRole"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsToken opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Credentials: &ExternalStageS3Credentials{
+				AwsToken: String("aws-token"),
+				AwsRole:  String("aws-role"),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
+	})
+
 	// basic removed manually
+
+	// added manually
+	t.Run("credentials", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url: "s3://example.com",
+			Credentials: &ExternalStageS3Credentials{
+				AwsKeyId:     String("aws-key-id"),
+				AwsSecretKey: String("aws-secret-key"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET URL = 's3://example.com' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key')", id.FullyQualifiedName())
+	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
 		opts.ExternalStageParams = &ExternalS3StageParams{
+			// is URL required?
 			Url:                "some url",
+			AwsAccessPointArn:  String("aws-access-point-arn"),
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageS3Encryption{
 				EncryptionType: &ExternalStageS3EncryptionNone,
 			},
+			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeJSON,
@@ -528,7 +625,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 			Force:             Bool(true),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -617,6 +714,18 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 
 	// basic removed manually
 
+	// added manually
+	t.Run("credentials", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalAzureStageParams{
+			Url: "azure://example.com",
+			Credentials: &ExternalStageAzureCredentials{
+				AzureSasToken: "azure-sas-token",
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET URL = 'azure://example.com' CREDENTIALS = (AZURE_SAS_TOKEN = 'azure-sas-token')", id.FullyQualifiedName())
+	})
+
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
@@ -685,7 +794,14 @@ func TestStages_AlterDirectoryTable(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET DIRECTORY = (ENABLE = true)`, id.FullyQualifiedName())
 	})
 
-	t.Run("refresh", func(t *testing.T) {
+	t.Run("refresh - basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.Refresh = &DirectoryTableRefresh{}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s REFRESH`, id.FullyQualifiedName())
+	})
+
+	t.Run("refresh - all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.Refresh = &DirectoryTableRefresh{
@@ -779,8 +895,10 @@ func TestStages_Show(t *testing.T) {
 		opts.Like = &Like{
 			Pattern: String("some pattern"),
 		}
-		opts.In = &In{
-			Schema: schemaId,
+		opts.In = &ExtendedIn{
+			In: In{
+				Schema: schemaId,
+			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES LIKE 'some pattern' IN SCHEMA %s`, schemaId.FullyQualifiedName())
 	})

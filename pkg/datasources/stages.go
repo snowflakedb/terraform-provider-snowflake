@@ -73,8 +73,10 @@ func ReadStages(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	schemaName := d.Get("schema").(string)
 
 	stages, err := client.Stages.Show(ctx, sdk.NewShowStageRequest().WithIn(
-		sdk.In{
-			Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName),
+		sdk.ExtendedIn{
+			In: sdk.In{
+				Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName),
+			},
 		},
 	))
 	if err != nil {
