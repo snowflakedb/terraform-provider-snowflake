@@ -171,7 +171,22 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.WorkloadIdentityEntraResource, &driverCfg.WorkloadIdentityEntraResource)
 	pointerAttributeSet(c.LogQueryText, &driverCfg.LogQueryText)
 	pointerAttributeSet(c.LogQueryParameters, &driverCfg.LogQueryParameters)
-
+	pointerAttributeSet(c.ProxyHost, &driverCfg.ProxyHost)
+	pointerAttributeSet(c.ProxyPort, &driverCfg.ProxyPort)
+	pointerAttributeSet(c.ProxyUser, &driverCfg.ProxyUser)
+	pointerAttributeSet(c.ProxyPassword, &driverCfg.ProxyPassword)
+	pointerAttributeSet(c.ProxyProtocol, &driverCfg.ProxyProtocol)
+	pointerAttributeSet(c.NoProxy, &driverCfg.NoProxy)
+	pointerAttributeSet(c.DisableOCSPChecks, &driverCfg.DisableOCSPChecks)
+	err = pointerEnumSet(c.CertRevocationCheckMode, &driverCfg.CertRevocationCheckMode, ToCertRevocationCheckMode)
+	if err != nil {
+		return *EmptyDriverConfig(), err
+	}
+	pointerConfigBoolAttributeSet(c.CrlAllowCertificatesWithoutCrlURL, &driverCfg.CrlAllowCertificatesWithoutCrlURL)
+	pointerAttributeSet(c.CrlInMemoryCacheDisabled, &driverCfg.CrlInMemoryCacheDisabled)
+	pointerAttributeSet(c.CrlOnDiskCacheDisabled, &driverCfg.CrlOnDiskCacheDisabled)
+	pointerTimeInSecondsAttributeSet(c.CrlHTTPClientTimeout, &driverCfg.CrlHTTPClientTimeout)
+	pointerConfigBoolAttributeSet(c.DisableSamlURLCheck, &driverCfg.DisableSamlURLCheck)
 	return *driverCfg, nil
 }
 
@@ -324,6 +339,45 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if !baseConfig.LogQueryParameters {
 		baseConfig.LogQueryParameters = mergeConfig.LogQueryParameters
 	}
+	if baseConfig.ProxyHost == "" {
+		baseConfig.ProxyHost = mergeConfig.ProxyHost
+	}
+	if baseConfig.ProxyPort == 0 {
+		baseConfig.ProxyPort = mergeConfig.ProxyPort
+	}
+	if baseConfig.ProxyUser == "" {
+		baseConfig.ProxyUser = mergeConfig.ProxyUser
+	}
+	if baseConfig.ProxyPassword == "" {
+		baseConfig.ProxyPassword = mergeConfig.ProxyPassword
+	}
+	if baseConfig.ProxyProtocol == "" {
+		baseConfig.ProxyProtocol = mergeConfig.ProxyProtocol
+	}
+	if baseConfig.NoProxy == "" {
+		baseConfig.NoProxy = mergeConfig.NoProxy
+	}
+	if !baseConfig.DisableOCSPChecks {
+		baseConfig.DisableOCSPChecks = mergeConfig.DisableOCSPChecks
+	}
+	if baseConfig.CertRevocationCheckMode == GosnowflakeCertRevocationCheckModeEmpty {
+		baseConfig.CertRevocationCheckMode = mergeConfig.CertRevocationCheckMode
+	}
+	if !configBoolSet(baseConfig.CrlAllowCertificatesWithoutCrlURL) {
+		baseConfig.CrlAllowCertificatesWithoutCrlURL = mergeConfig.CrlAllowCertificatesWithoutCrlURL
+	}
+	if !baseConfig.CrlInMemoryCacheDisabled {
+		baseConfig.CrlInMemoryCacheDisabled = mergeConfig.CrlInMemoryCacheDisabled
+	}
+	if !baseConfig.CrlOnDiskCacheDisabled {
+		baseConfig.CrlOnDiskCacheDisabled = mergeConfig.CrlOnDiskCacheDisabled
+	}
+	if baseConfig.CrlHTTPClientTimeout == 0 {
+		baseConfig.CrlHTTPClientTimeout = mergeConfig.CrlHTTPClientTimeout
+	}
+	if !configBoolSet(baseConfig.DisableSamlURLCheck) {
+		baseConfig.DisableSamlURLCheck = mergeConfig.DisableSamlURLCheck
+	}
 	return baseConfig
 }
 
@@ -372,12 +426,6 @@ func pointerConfigBoolAttributeSet(src *bool, dst *gosnowflake.ConfigBool) {
 	}
 }
 
-func pointerIpAttributeSet(src *string, dst *net.IP) {
-	if src != nil {
-		*dst = net.ParseIP(*src)
-	}
-}
-
 func pointerUrlAttributeSet(src *string, dst **url.URL) error {
 	if src != nil {
 		url, err := url.Parse(*src)
@@ -387,6 +435,23 @@ func pointerUrlAttributeSet(src *string, dst **url.URL) error {
 		*dst = url
 	}
 	return nil
+}
+
+func pointerEnumSet[T any](src *string, dst *T, converter func(string) (T, error)) error {
+	if src != nil {
+		value, err := converter(*src)
+		if err != nil {
+			return err
+		}
+		*dst = value
+	}
+	return nil
+}
+
+func pointerIpAttributeSet(src *string, dst *net.IP) {
+	if src != nil {
+		*dst = net.ParseIP(*src)
+	}
 }
 
 // LoadProfileFromFile loads a config file from the path and returns a ready configuration.
@@ -566,6 +631,36 @@ func ToDriverLogLevel(s string) (DriverLogLevel, error) {
 		return "", fmt.Errorf("invalid driver log level: %s", s)
 	}
 }
+
+type CertRevocationCheckMode string
+
+const (
+	CertRevocationCheckModeDisabled CertRevocationCheckMode = "DISABLED"
+	CertRevocationCheckModeAdvisory CertRevocationCheckMode = "ADVISORY"
+	CertRevocationCheckModeEnabled  CertRevocationCheckMode = "ENABLED"
+)
+
+var AllCertRevocationCheckModes = []CertRevocationCheckMode{
+	CertRevocationCheckModeDisabled,
+	CertRevocationCheckModeAdvisory,
+	CertRevocationCheckModeEnabled,
+}
+
+func ToCertRevocationCheckMode(s string) (gosnowflake.CertRevocationCheckMode, error) {
+	upperCase := strings.ToUpper(s)
+	switch upperCase {
+	case string(CertRevocationCheckModeDisabled):
+		return gosnowflake.CertRevocationCheckDisabled, nil
+	case string(CertRevocationCheckModeAdvisory):
+		return gosnowflake.CertRevocationCheckAdvisory, nil
+	case string(CertRevocationCheckModeEnabled):
+		return gosnowflake.CertRevocationCheckEnabled, nil
+	default:
+		return 0, fmt.Errorf("invalid cert revocation check mode: %s", s)
+	}
+}
+
+const GosnowflakeCertRevocationCheckModeEmpty = gosnowflake.CertRevocationCheckMode(0)
 
 // EmptyDriverConfig returns a default driver config with the Authenticator set to GosnowflakeAuthTypeEmpty.
 // This is used when no config is found in the config file.

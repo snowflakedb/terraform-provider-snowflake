@@ -40,6 +40,19 @@ workload_identity_entra_resource = 'workload_identity_entra_resource'
 enable_single_use_refresh_tokens = true
 log_query_text = false
 log_query_parameters = false
+proxy_host = 'proxy.example.com'
+proxy_port = 443
+proxy_user = 'username'
+proxy_password = 'proxy_password'
+proxy_protocol = 'https'
+no_proxy = 'localhost,snowflake.computing.com'
+disable_ocsp_checks = true
+cert_revocation_check_mode = 'ADVISORY'
+crl_allow_certificates_without_crl_url = true
+crl_in_memory_cache_disabled = false
+crl_on_disk_cache_disabled = true
+crl_http_client_timeout = 30
+disable_saml_url_check = true
 
 [example.params]
 param_key = 'param_value'

@@ -283,6 +283,25 @@ An example terraform configuration file equivalent:
 
 {{ index (split (codefile "" "examples/additional/deprecated_data_sources.MD") "```") 1 | trimspace }}
 
+## Proxy
+
+Terraform is plugin-based. It means that every plugin (provider) is responsible for making its own network requests.
+Not all providers follow the same standardized ways, so familiarize yourself with proxy setting for each of the providers used within your module.
+
+A few important pointers for setting the proxy connection:
+- As far as we are aware, there are no official Terraform docs regarding proxy, but there are some discussions on the official HashiCorp discussion forum (e.g. [this one](https://discuss.hashicorp.com/t/use-terraform-in-an-internal-network/59464)).
+- Terraform relies on Go default proxy setting (so it supports `HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`).
+- The official Go driver for Snowflake, which is used in this provider, also supports the default Go environment variables (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`). Documented [here](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#hdr-Proxy).
+- The provider offers a separate config (through the provider block, dedicated environment variables, and the TOML file).
+- The order of precedence is as follows:
+  1. Provider configuration (following its own [precedence](#order-precedence)).
+  2. Standard environment variables (`HTTPS_PROXY`, `HTTP_PROXY`, `NO_PROXY`).
+
+References:
+- [Hashicorp discussion group example](https://discuss.hashicorp.com/t/use-terraform-in-an-internal-network/59464)
+- [Go driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake#hdr-Proxy)
+- [Go documentation](https://go.dev/src/vendor/golang.org/x/net/http/httpproxy/proxy.go)
+
 ## Sensitive values limitations
 
 The provider marks fields containing access credentials and other such information as sensitive. This means that the values of these fields will not be logged.

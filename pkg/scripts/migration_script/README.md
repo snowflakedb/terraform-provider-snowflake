@@ -39,6 +39,29 @@ However, if you're using an older version, you can still utilize the script as l
 For instance, with grants, you can use the script to transition from [old to new grants](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/grants_redesign_design_decisions#mapping-from-old-grant-resources-to-the-new-ones)
 since they haven't significantly changed from the current provider version, but there may be minor differences like quotes handling in identifiers.
 
+
+### Different import behaviors
+
+> **Important:** Read before going further!
+
+The script by default outputs the [import blocks](https://developer.hashicorp.com/terraform/language/block/import). Before deciding which output to use familiarize with the limitations.
+
+The behaviour between [import blocks](https://developer.hashicorp.com/terraform/language/block/import) embedded into hcl and the [`terraform import`](https://developer.hashicorp.com/terraform/cli/commands/import) command differs.
+
+- **Import Blocks** (`-import=block`): When using embedded import blocks, the `terraform apply` command performs two actions: it imports the resource into the state and immediately applies any configuration changes.
+
+  Consequently, this method should be avoided if your primary goal is to preview changes before they are committed.
+
+  Furthermore, `terraform plan` may not provide comprehensive insights at first, as the resources have not yet been formally ingested into the state file during the planning phase.
+
+- **Import Command** (`-import=statement`): When using the `terraform import` command, the import process is decoupled from the plan/apply cycle.
+
+  Once the command is executed, the resource is immediately added to the state.
+
+  Subsequent runs of `terraform plan` will accurately reflect the delta between your configuration and the existing infrastructure.
+
+  In this workflow, `terraform apply` does not handle the ingestion; the `terraform import` command must be executed successfully beforehand.
+
 ## Syntax
 
 Use the following syntax to run the migration script from your terminal:
@@ -585,6 +608,17 @@ Remember that, if you chose to use the import block approach, [after importing y
 
 By following the above steps, you can migrate other existing Snowflake objects into Terraform and start managing them!
 
+### CSV Format Notes
+
+The CSV files use proper RFC 4180 escaping:
+
+- **Double quotes** are escaped by doubling: `"` → `""`
+- **Backslashes** are escaped: `\` → `\\`
+- **Newlines** are converted to literal `\n` for multi-line values (like RSA keys)
+- All fields are quoted
+
+The migration script's `csvUnescape` function handles decoding these escape sequences.
+
 ### Multiple sources
 Some Snowflake objects (like schemas) have fields returned from more than one SQL command. That's why simply using one `SHOW ...` output will not work. Fields from `DESCRIBE` or `SHOW PARAMETERS` must be also processed.
 But outputs from all of these commands must be mapped to the input CSV value of the migration script. To make this easy, we can use a data source output for a given object, which already has the logic for mapping multiple
@@ -618,6 +652,13 @@ data "snowflake_schemas" "test" {
   in {
     database = "DATABASE"
   }
+
+  # If you're creating schemas in the same Terraform config, add depends_on
+  # to ensure schemas exist before querying:
+  # depends_on = [
+  #   snowflake_schema.schema1,
+  #   snowflake_schema.schema2,
+  # ]
 }
 
 locals {
@@ -672,13 +713,27 @@ locals {
 
 resource "local_file" "schemas_csv" {
   content  = local.csv_content
-  filename = "${path.module}/schemas.csv"
+  filename = "${path.module}/objects.csv"
+
+  # Optional: Fail if no schemas found (useful for testing/validation)
+  lifecycle {
+    precondition {
+      condition     = length(local.schemas_flattened) > 0
+      error_message = "No schemas found. Make sure the database exists and contains schemas."
+    }
+  }
+}
+
+# Optional: Output for debugging
+output "schemas_found" {
+  description = "Number of schemas found"
+  value       = length(local.schemas_flattened)
 }
 ```
 
-After running `terraform apply`, the CSV file will be automatically generated at `schemas.csv`. Now, we can run the migration script like:
+After running `terraform apply`, the CSV file will be automatically generated at `objects.csv`. Now, we can run the migration script like:
 ```shell
-go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@main -import=block schemas < ./schemas.csv
+go run github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/scripts/migration_script@main -import=block schemas < ./objects.csv
 ```
 
 This will output the generated configuration and import blocks for the specified schemas.

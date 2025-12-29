@@ -37,12 +37,51 @@ If you were not using this parameter, no changes are required.
 
 Related: [#4010](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4010)
 
+### *(new feature)* New proxy configuration options in the provider
+
+We added new provider configuration options to support proxy connections. These fields allow the driver to connect through an HTTP/HTTPS proxy:
+- `proxy_host` - the hostname of the proxy server
+- `proxy_port` - the port of the proxy server
+- `proxy_user` - the username for proxy authentication (if required)
+- `proxy_password` - the password for proxy authentication (if required)
+- `proxy_protocol` - the protocol used by the proxy (`http` or `https`)
+- `no_proxy` - a comma-separated list of hostnames that should bypass the proxy
+
+These options can be set in the provider configuration, TOML configuration file, or via environment variables (`SNOWFLAKE_PROXY_HOST`, `SNOWFLAKE_PROXY_PORT`, `SNOWFLAKE_PROXY_USER`, `SNOWFLAKE_PROXY_PASSWORD`, `SNOWFLAKE_PROXY_PROTOCOL`, `SNOWFLAKE_NO_PROXY`). Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+
+No changes in configuration are required for existing setups. You can optionally update your configurations to use these new options if you need to connect through a proxy.
+
+### *(new feature)* New certificate revocation and SAML configuration options in the provider
+
+We added new provider configuration options to support certificate revocation checking and SAML URL validation:
+- `disable_ocsp_checks` - when set to `true` (default is `false`), the driver doesn't check certificate revocation status. This is a replacement for the deprecated `insecure_mode` field
+- `cert_revocation_check_mode` - specifies the certificate revocation check mode. Valid options are: `DISABLED`, `ADVISORY`, `ENABLED`
+- `crl_allow_certificates_without_crl_url` - allows certificates (not short-lived) without CRL DP included to be treated as correct ones
+- `crl_in_memory_cache_disabled` - when set to `true`, the CRL in-memory cache is disabled (default `false`)
+- `crl_on_disk_cache_disabled` - when set to `true`, the CRL on-disk cache is disabled (default `false`)
+- `crl_http_client_timeout` - timeout in seconds for HTTP client used to download CRL
+- `disable_saml_url_check` - indicates whether the SAML URL check should be disabled
+
+These options can be set in the provider configuration, TOML configuration file, or via environment variables (`SNOWFLAKE_DISABLE_OCSP_CHECKS`, `SNOWFLAKE_CERT_REVOCATION_CHECK_MODE`, `SNOWFLAKE_CRL_ALLOW_CERTIFICATES_WITHOUT_CRL_URL`, `SNOWFLAKE_CRL_IN_MEMORY_CACHE_DISABLED`, `SNOWFLAKE_CRL_ON_DISK_CACHE_DISABLED`, `SNOWFLAKE_CRL_HTTP_CLIENT_TIMEOUT`, `SNOWFLAKE_DISABLE_SAML_URL_CHECK`). Read [the documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema) for more details.
+
+No changes in configuration are required for existing setups. You can optionally update your configurations to use these new options if you need more control over certificate revocation checking or SAML authentication.
+
 ### *(new feature)* snowflake_listings datasource
 Added a new preview data source for listings. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-listings).
 
 This data source focuses on base query commands (SHOW LISTINGS and DESCRIBE LISTING). Other query commands like SHOW AVAILABLE LISTINGS, DESCRIBE AVAILABLE LISTING, SHOW LISTING OFFERS, SHOW OFFERS, SHOW PRICING PLANS, and SHOW VERSIONS IN LISTING are not included and will be added depending on demand.
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listings_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Added serverless task parameters
+Added support for new serverless task fields:
+- `target_completion_interval` - Specifies the target completion interval for serverless tasks; also added as a computed value to `show_output`.
+- `serverless_task_min_statement_size` (parameter) - Minimum statement size for serverless tasks; also added as a computed value to `parameters`.
+- `serverless_task_max_statement_size` (parameter) - Maximum statement size for serverless tasks; also added as a computed value to `parameters`.
+
+These fields are available in the `snowflake_task` resource for serverless task configurations.
+
+No changes in configuration are required for existing tasks. You can optionally update your configurations to use these new parameters.
 
 ### *(improvement)* snowflake_scim_integration now accepts custom role names for run_as_role
 
@@ -57,18 +96,27 @@ Existing configurations using predefined roles will continue to work without mod
 
 References: [#3917](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3917).
 
-### *(new feature)* Added serverless task parameters
-Added support for new serverless task fields:
-- `target_completion_interval` - Specifies the target completion interval for serverless tasks; also added as a computed value to `show_output`.
-- `serverless_task_min_statement_size` (parameter) - Minimum statement size for serverless tasks; also added as a computed value to `parameters`.
-- `serverless_task_max_statement_size` (parameter) - Maximum statement size for serverless tasks; also added as a computed value to `parameters`.
-
-These fields are available in the `snowflake_task` resource for serverless task configurations.
-
-No changes in configuration are required for existing tasks. You can optionally update your configurations to use these new parameters.
-
 ### *(improvement)* New fields in user resources and data sources output fields
 We adjusted the `show_output` by adding the missing `has_workload_identity` field. This concerns `user`, `service_user`, and `legacy_service_user` resources and `users` data source.
+
+### *(bugfix)* Fixed handling grants to APPLICATION in SHOW GRANTS
+Previously, when a database role was granted to an application, the provider did not handle the `SHOW GRANTS OF DATABASE ROLE` output correctly. This caused failures in conversion,
+and in the `grant_database_role` resource, the Read operation failed. Since the provider could not read the grants for the given resource, the resource was being marked as deleted.
+The Terraform plan and apply operations returned errors like
+```
+│ Error: Provider produced inconsistent result after apply
+│
+│ When applying changes to snowflake_grant_database_role.database_roles, provider "provider[\"registry.terraform.io/snowflakedb/snowflake\"]" produced an unexpected new value: Root object was present, but now absent.
+│
+│ This is a bug in the provider, which should be reported in the provider's own issue tracker.
+```
+
+In this release, this bug has been fixed. The `SHOW GRANTS...` output is converted correctly, and the resource is not marked as removed, which does not result in such error anymore.
+This fix also applies to other grants resources.
+
+No changes in configuration are required.
+
+References: [#4284](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4284).
 
 ## v2.10.x ➞ v2.11.0
 
