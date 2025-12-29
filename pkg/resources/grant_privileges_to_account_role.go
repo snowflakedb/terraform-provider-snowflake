@@ -91,8 +91,9 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"If false, the resource will be only concerned with the privileges that are explicitly defined in the config.",
 			"The potential privilege removals will be planned only after second `terraform apply` run, after setting the flag in resource configuration.",
 			"This means, the flag update doesn't revoke immediately any externally granted privileges.",
+			"This is a Terraform limitation, and two steps are needed to properly show the potential privilege changes (e.g., revoking privileges not specified in the configuration) in the plan.",
 			"External privileges will be detected regardless of their grant option.",
-			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the `experimental_features_enabled` field.",
+			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) field.",
 		),
 	},
 	"on_account": {
@@ -878,11 +879,13 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 			continue
 		}
 
-		// Only consider privileges specified by the configuration, so we don't delete privileges managed by other resources.
+		// Depending on the strict privilege management flag:
+		//
+		// If not set, consider privileges specified only by the configuration, so we don't delete privileges managed by other resources.
 		// The privilege should also match grant option with the one stored in the configuration.
 		//
-		// The strict privilege management skips this check, because we want to take into account all privileges
-		// (not only those specified in the config) and we want to get privileges regardless of grant option setting.
+		// If set, skip this check, because we want to take into account all privileges
+		// (not only those specified in the config), regardless of grant option setting.
 		if !strictPrivilegeManagement && (!slices.Contains(expectedPrivileges, grant.Privilege) || grant.GrantOption != id.WithGrantOption) {
 			continue
 		}

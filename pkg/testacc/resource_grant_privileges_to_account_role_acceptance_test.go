@@ -2437,7 +2437,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate(t *
 		ProtoV6ProviderFactories: strictPrivilegeManagementGrantProviderFactory,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
-			// Expect empty plan as external privileges match the ones defined within the configuration
+			// Expect empty plan after applying (asserted implicitly) as external privileges match the ones defined within the configuration
 			{
 				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictRoleManagement),
 				Check: assertThat(t,
@@ -2458,7 +2458,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate_Wit
 	database, databaseCleanup := testClient().Database.CreateDatabase(t)
 	t.Cleanup(databaseCleanup)
 
-	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
+	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage, sdk.AccountObjectPrivilegeModify}, false)
 
 	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement)
 	resourceModelWithStrictRoleManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
@@ -2480,7 +2480,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate_Wit
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						planchecks.ExpectChange(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
-							sdk.String(fmt.Sprintf("[%s %s]", sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
+							sdk.String(fmt.Sprintf("[%s %s %s]", sdk.AccountObjectPrivilegeModify, sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
 							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
 						),
 					},
@@ -2489,7 +2489,11 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate_Wit
 					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictRoleManagement.ResourceReference()).
 						HasStrictPrivilegeManagementString("true").
 						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
-					assert.Check(queriedAccountRolePrivilegesEqualTo(t, role.ID(), string(sdk.AccountObjectPrivilegeMonitor), string(sdk.AccountObjectPrivilegeUsage))),
+					assert.Check(queriedAccountRolePrivilegesEqualTo(t, role.ID(),
+						string(sdk.AccountObjectPrivilegeModify),
+						string(sdk.AccountObjectPrivilegeMonitor),
+						string(sdk.AccountObjectPrivilegeUsage),
+					)),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -2499,7 +2503,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_BasicOnCreate_Wit
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceModelWithStrictRoleManagement.ResourceReference(), plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(resourceModelWithStrictRoleManagement.ResourceReference(), "privileges", tfjson.ActionUpdate,
-							sdk.String(fmt.Sprintf("[%s %s]", sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
+							sdk.String(fmt.Sprintf("[%s %s %s]", sdk.AccountObjectPrivilegeModify, sdk.AccountObjectPrivilegeMonitor, sdk.AccountObjectPrivilegeUsage)),
 							sdk.String(fmt.Sprintf("[%s]", sdk.AccountObjectPrivilegeMonitor)),
 						),
 					},
@@ -2650,7 +2654,7 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Validation_Missin
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: strictPrivilegeManagementGrantProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
