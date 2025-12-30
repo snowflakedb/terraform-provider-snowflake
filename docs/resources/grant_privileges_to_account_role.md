@@ -16,6 +16,8 @@ description: |-
 
 ~> **Note** Please, follow the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-considerations) for best practices on access control. The provider does not enforce any specific methodology, so it is essential for users to choose the appropriate strategy for seamless privilege management. Additionally, refer to [this link](https://docs.snowflake.com/en/user-guide/security-access-control-privileges) for a list of all available privileges in Snowflake.
 
+!> **Warning** The new `strict_privilege_management` flag was added. It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration, which can make the resource a central point of knowledge privilege management for a given object and role. See our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more information.
+
 # snowflake_grant_privileges_to_account_role (Resource)
 
 
@@ -258,6 +260,34 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 }
 
 ## ID: "\"role_name\"|false|false|SELECT,INSERT|OnSchemaObject|OnFuture|TABLES|InSchema|\"database\".\"my_schema\""
+
+##################################
+### strict privilege management
+##################################
+
+# on schema object
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges                  = ["SELECT", "REFERENCES"]
+  account_role_name           = snowflake_account_role.db_role.name
+  strict_privilege_management = true
+  on_schema_object {
+    object_type = "VIEW"
+    object_name = snowflake_view.my_view.fully_qualified_name # note this is a fully qualified name!
+  }
+}
+
+# on future tables in database
+resource "snowflake_grant_privileges_to_account_role" "in_database" {
+  privileges                  = ["SELECT", "INSERT"]
+  account_role_name           = snowflake_account_role.db_role.name
+  strict_privilege_management = true
+  on_schema_object {
+    future {
+      object_type_plural = "TABLES"
+      in_database        = snowflake_database.test.name
+    }
+  }
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
@@ -281,7 +311,7 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 - `on_schema` (Block List, Max: 1) Specifies the schema on which privileges will be granted. (see [below for nested schema](#nestedblock--on_schema))
 - `on_schema_object` (Block List, Max: 1) Specifies the schema object on which privileges will be granted. (see [below for nested schema](#nestedblock--on_schema_object))
 - `privileges` (Set of String) The privileges to grant on the account role. This field is case-sensitive; use only upper-case privileges.
-- `strict_privilege_management` (Boolean) (Default: `false`) If true, the resource will revoke all privileges that are not explicitly defined in the config making it a central source of truth for the privileges granted on an object to an account role. If false, the resource will be only concerned with the privileges that are explicitly defined in the config. The potential privilege removals will be planned only after second `terraform apply` run, after setting the flag in resource configuration. This means, the flag update doesn't revoke immediately any externally granted privileges. This is a Terraform limitation, and two steps are needed to properly show the potential privilege changes (e.g., revoking privileges not specified in the configuration) in the plan. External privileges will be detected regardless of their grant option. The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) field.
+- `strict_privilege_management` (Boolean) (Default: `false`) If true, the resource will revoke all privileges that are not explicitly defined in the config making it a central source of truth for the privileges granted on an object to an account role. If false, the resource will be only concerned with the privileges that are explicitly defined in the config. The potential privilege removals will be planned only after second `terraform apply` run, after setting the flag in resource configuration. This means, the flag update doesn't revoke immediately any externally granted privileges. This is a Terraform limitation, and two steps are needed to properly show the potential privilege changes (e.g., revoking privileges not specified in the configuration) in the plan. External privileges will be detected regardless of their grant option. The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) field. See our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more information.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `with_grant_option` (Boolean) (Default: `false`) Specifies whether the grantee can grant the privileges to other users.
 
