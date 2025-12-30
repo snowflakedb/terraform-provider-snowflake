@@ -77,6 +77,11 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivilegesString(expecte
 	return g
 }
 
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.AddAssertion(assert.ValueSet("strict_privilege_management", expected))
+	return g
+}
+
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOptionString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
 	g.AddAssertion(assert.ValueSet("with_grant_option", expected))
 	return g
@@ -108,6 +113,11 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoAlwaysApplyTrigger() *
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoOnAccount() *GrantPrivilegesToAccountRoleResourceAssert {
 	g.AddAssertion(assert.ValueNotSet("on_account"))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoStrictPrivilegeManagement() *GrantPrivilegesToAccountRoleResourceAssert {
+	g.AddAssertion(assert.ValueNotSet("strict_privilege_management"))
 	return g
 }
 
@@ -160,6 +170,11 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivilegesEmpty() *Grant
 	return g
 }
 
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
+	g.AddAssertion(assert.ValueSet("strict_privilege_management", ""))
+	return g
+}
+
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOptionEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
 	g.AddAssertion(assert.ValueSet("with_grant_option", ""))
 	return g
@@ -191,6 +206,11 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyTriggerNotEmp
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
 	g.AddAssertion(assert.ValuePresent("on_account"))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
+	g.AddAssertion(assert.ValuePresent("strict_privilege_management"))
 	return g
 }
 
