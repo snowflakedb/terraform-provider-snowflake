@@ -2532,12 +2532,13 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Updates(t *testin
 		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID())
 
-	resourceModelWithUpdatedPrivileges := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
-		WithPrivileges(string(sdk.AccountObjectPrivilegeOperate)).
-		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID())
-
 	resourceModelWithStrictRoleManagement := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
 		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
+		WithStrictPrivilegeManagement(true)
+
+	resourceModelWithStrictRoleManagementAndUpdatedPrivileges := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeModify)).
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
 		WithStrictPrivilegeManagement(true)
 
@@ -2628,13 +2629,13 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Updates(t *testin
 			},
 			// Confirm that StrictPrivilegeManagement shouldn't influence regular update operations
 			{
-				Config: accconfig.FromModels(t, providerModel, resourceModelWithUpdatedPrivileges),
+				Config: accconfig.FromModels(t, providerModel, resourceModelWithStrictRoleManagementAndUpdatedPrivileges),
 				Check: assertThat(t,
-					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithUpdatedPrivileges.ResourceReference()).
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModelWithStrictRoleManagementAndUpdatedPrivileges.ResourceReference()).
 						HasAccountRoleNameString(role.ID().Name()).
 						HasStrictPrivilegeManagementString("true").
-						HasPrivileges(string(sdk.AccountObjectPrivilegeOperate)),
-					assert.Check(queriedAccountRolePrivilegesEqualTo(t, role.ID(), string(sdk.AccountObjectPrivilegeOperate))),
+						HasPrivileges(string(sdk.AccountObjectPrivilegeModify)),
+					assert.Check(queriedAccountRolePrivilegesEqualTo(t, role.ID(), string(sdk.AccountObjectPrivilegeModify))),
 				),
 			},
 		},
