@@ -233,3 +233,31 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 }
 
 ## ID: "\"role_name\"|false|false|SELECT,INSERT|OnSchemaObject|OnFuture|TABLES|InSchema|\"database\".\"my_schema\""
+
+##################################
+### strict privilege management
+##################################
+
+# on schema object
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges                  = ["SELECT", "REFERENCES"]
+  account_role_name           = snowflake_account_role.db_role.name
+  strict_privilege_management = true
+  on_schema_object {
+    object_type = "VIEW"
+    object_name = snowflake_view.my_view.fully_qualified_name # note this is a fully qualified name!
+  }
+}
+
+# on future tables in database
+resource "snowflake_grant_privileges_to_account_role" "in_database" {
+  privileges                  = ["SELECT", "INSERT"]
+  account_role_name           = snowflake_account_role.db_role.name
+  strict_privilege_management = true
+  on_schema_object {
+    future {
+      object_type_plural = "TABLES"
+      in_database        = snowflake_database.test.name
+    }
+  }
+}

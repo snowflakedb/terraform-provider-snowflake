@@ -93,6 +93,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"External privileges will be detected regardless of their grant option.",
 			"The parameter can be only used when `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` option is specified in provider block in the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) field.",
 			"Regular and future grants are treated separately, meaning, more resources need to be defined to control regular and future grants for a given object and role (and for a given database or schema they're defined in for future grants).",
+			"See our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more information.",
 		),
 	},
 	"on_account": {

@@ -20,6 +20,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -104,9 +105,9 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccount_BasicUseCase(t *testing.T) {
 				),
 			},
 			// Update - external change
+			// The external changes to privileges, that not defined in the resource configuration, are not detected unless strict_privilege_management flag is used
 			{
 				PreConfig: func() {
-					// We are not granting anything as new privileges won't be detected (authoritative grants would be used for this)
 					testClient().Grant.RevokeGlobalPrivilegesFromAccountRole(t, role.ID(), []sdk.GlobalPrivilege{sdk.GlobalPrivilegeCreateDatabase})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -457,9 +458,9 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_BasicUseCase(t *testin
 				),
 			},
 			// Update - external changes
+			// The external changes to privileges, that not defined in the resource configuration, are not detected unless strict_privilege_management flag is used
 			{
 				PreConfig: func() {
-					// We are not granting anything as new privileges won't be detected (authoritative grants would be used for this)
 					testClient().Grant.RevokePrivilegesOnDatabaseFromAccountRole(t, role.ID(), testClient().Ids.DatabaseId(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateDatabaseRole})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -638,9 +639,9 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema_BasicUseCase(t *testing.T) {
 				),
 			},
 			// Update - external changes
+			// The external changes to privileges, that not defined in the resource configuration, are not detected unless strict_privilege_management flag is used
 			{
 				PreConfig: func() {
-					// We are not granting anything as new privileges won't be detected (authoritative grants would be used for this)
 					testClient().Grant.RevokePrivilegesOnSchemaFromAccountRole(t, role.ID(), testClient().Ids.SchemaId(), []sdk.SchemaPrivilege{sdk.SchemaPrivilegeCreateTable})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{

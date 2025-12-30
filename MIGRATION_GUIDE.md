@@ -26,6 +26,23 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.11.x ➞ v2.12.0
 
+### *(new feature)* The new `strict_privilege_management` flag in the `snowflake_grant_privileges_to_account_role` resource
+
+The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.
+It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources,
+and it makes the resource able to detect external changes for privileges other than those present in the configuration,
+which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management
+for a given object and role.
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
+It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.10.0/docs#preview_features_enabled-1),
+but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
+
+**It's still considered a preview feature, even when applied to the stable resources.**
+
+Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
+
 ### *(breaking change)* The removal of `SAML_IDENTITY_PROVIDER` from `snowflake_current_account` and `snowflake_current_organization_account` resources
 
 Due to changes on the Snowflake side, the `SAML_IDENTITY_PROVIDER` parameter is now deprecated and cannot be used in Snowflake (see [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters#saml-identity-provider)).
