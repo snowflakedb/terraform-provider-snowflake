@@ -59,7 +59,7 @@ This means the resource can now detect when privileges are granted externally (o
 ## Limitations
 
 The new flag has several limitations originating from the current resource design.
-They can't be resolved without introducing the breaking changes.
+Some of them can't be resolved without introducing the breaking changes.
 We will consider design changes for future major releases.
 
 ### Conflicting fields
@@ -78,8 +78,7 @@ External grants are detected regardless of their grant option setting.
 When two resources configured with `strict_privilege_management` attempt to manage different privileges on the same object for the same role.
 The outcome is non-deterministic, because these resources are not dependent on each other, but more or less they would
 grant the privilege defined in its configuration while simultaneously revoking the privilege granted by the other resource.
-
-> Note: One resource with the flag enabled would also conflict, but in a different way, because the flag is trying to get rid of privileges not defined by a given resource where it's enabled.
+A similar conflict (but in a different form) would appear when only one of those resources would have the `strict_privilege_management` flag enabled.
 
 Below example shows such conflict:
 
@@ -180,10 +179,10 @@ resource "snowflake_grant_privileges_to_account_role" "non_conflicting_2" {
 ## Future grants
 
 Future grants are allowed to be specified with the newly added `strict_privilege_management`.
-We were facing the limitation of not being able to show the difference between regular and future grants.
+However, we were facing the limitation of not being able to show the difference between regular and future grants.
 Due to the difference on the Snowflake side for both grants, we decided to keep to current grants discovery logic.
 This means, that the privilege-granting resources with `strict_privilege_management` flag enabled will detect external changes
-only for privilege type ("regular" or future) used within the resource. This is also motivated by the difference within the SQL statements,
+only for privilege type ("regular" or future) used within the resource. This is motivated by the difference within the SQL statements,
 but also, how logically the grants are stored:
 - The regular grants are stored `on` objects (e.g. `table`)
 - The future grants stored are `in` objects (either `database` or `schema`) and they describe grants on lower level (e.g. `in database` describe grants on `schema`, or even lower `table` level)
@@ -223,7 +222,7 @@ resource "snowflake_grant_privileges_to_account_role" "in_database" {
 
 ### Delayed application
 
-This is a Terraform limitation, as are limited with what we can show in the plan.
+This is a Terraform limitation, as we are limited with what we can show in the plan.
 Because of this, we decided to delay the revoking action in certain scenarios, so no revokes will be called without showing proper plan beforehand.
 Otherwise, the revokes could happen "under the hood", making you unable to make conscious decision whether a given set of privileges should be revoked or not.
 The delay will occur whenever you update already existing [grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource
