@@ -92,7 +92,7 @@ test-main-terraform-use-cases: ## run test for main terraform use cases
 
 test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests within docker environment
 	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
-	docker compose -f ./packaging/docker-compose.yml run --rm test-main-terraform-use-cases
+	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm test-main-terraform-use-cases
 
 process-test-output-docker-compose: ## run test output processor within docker environment
 	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm process-test-output

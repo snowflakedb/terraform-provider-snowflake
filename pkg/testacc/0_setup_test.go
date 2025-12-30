@@ -113,21 +113,21 @@ func (atc *acceptanceTestContext) initialize() error {
 	)
 
 	ctx := context.Background()
-	db, dbCleanup, err := testClient().CreateTestDatabase(ctx, false)
+	db, dbCleanup, err := testClient().CreateTestDatabase(ctx, true)
 	atc.databaseCleanup = dbCleanup
 	if err != nil {
 		return err
 	}
 	atc.database = db
 
-	sc, scCleanup, err := testClient().CreateTestSchema(ctx, false)
+	sc, scCleanup, err := testClient().CreateTestSchema(ctx, true)
 	atc.schemaCleanup = scCleanup
 	if err != nil {
 		return err
 	}
 	atc.schema = sc
 
-	wh, whCleanup, err := testClient().CreateTestWarehouse(ctx, false)
+	wh, whCleanup, err := testClient().CreateTestWarehouse(ctx, true)
 	atc.warehouseCleanup = whCleanup
 	if err != nil {
 		return err
