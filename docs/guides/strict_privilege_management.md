@@ -217,6 +217,7 @@ resource "snowflake_grant_privileges_to_account_role" "in_database" {
       in_database        = "TEST_DATABASE"
     }
   }
+  strict_privilege_management = true
 }
 ```
 
