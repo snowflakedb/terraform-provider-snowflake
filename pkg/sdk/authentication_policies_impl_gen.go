@@ -4,6 +4,9 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -42,6 +45,9 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
+	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool {
+		return !row.DatabaseName.Valid || !row.SchemaName.Valid
+	})
 	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
@@ -191,17 +197,38 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 
 func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
 	// adjusted manually
-	return &AuthenticationPolicy{
-		CreatedOn:     r.CreatedOn,
-		Name:          r.Name,
-		DatabaseName:  r.DatabaseName,
-		SchemaName:    r.SchemaName,
-		Kind:          r.Kind,
-		Owner:         r.Owner,
-		OwnerRoleType: r.OwnerRoleType,
-		Options:       r.Options,
-		Comment:       r.Comment,
-	}, nil
+	policy := &AuthenticationPolicy{
+		Name:    r.Name,
+		Kind:    r.Kind,
+		Options: r.Options,
+		Comment: r.Comment,
+	}
+	var errs []error
+	if r.DatabaseName.Valid {
+		policy.DatabaseName = r.DatabaseName.String
+	} else {
+		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
+	}
+	if r.SchemaName.Valid {
+		policy.SchemaName = r.SchemaName.String
+	} else {
+		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
+	}
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
+	}
+
+	if r.CreatedOn.Valid {
+		policy.CreatedOn = r.CreatedOn.Time
+	}
+	if r.Owner.Valid {
+		policy.Owner = r.Owner.String
+	}
+	if r.OwnerRoleType.Valid {
+		policy.OwnerRoleType = r.OwnerRoleType.String
+	}
+
+	return policy, nil
 }
 
 func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPolicyOptions {
