@@ -26,6 +26,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.11.x ➞ v2.12.0
 
+## *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
+Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.
+
+In this release, this bug has been fixed. Now, all SQL operations during the update use the `d.Partial` method. After failing Terraform operations, the state should be preserved correctly.
+
+If you previously ended up in a corrupted state, you can remove the resource from the state and reimport it using `terraform import`.
+
+No changes in configuration are required.
+
 ### *(new feature)* The new `strict_privilege_management` flag in the `snowflake_grant_privileges_to_account_role` resource
 
 The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.
@@ -149,7 +158,7 @@ The internal implementation for authentication policy has now been updated to ha
 **Impact on the provider:**
 The built-in policy does not reside in a database and schema. As it can't be directly interacted with, we decided to treat this default transparently:
 - It won't be visible in the outputs for the `snowflake_authentication_policies` data source; if you query for authentication policies (with either `on.account` or `on.user` filtering options)
-  and only the built-in policy exists (no user-defined policies), the data source will return empty `show_output` and `describe_output` lists. 
+  and only the built-in policy exists (no user-defined policies), the data source will return empty `show_output` and `describe_output` lists.
   If you have user-defined authentication policies, they will continue to appear in the output as expected.
 - It can't be imported into the `snowflake_authentication_policy` resource.
 
