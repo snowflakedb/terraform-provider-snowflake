@@ -88,6 +88,18 @@ resource "snowflake_service_user" "u" {
   week_start                                    = 1
 }
 
+# service user with workload identity for AWS
+resource "snowflake_service_user" "service_user_with_aws_workload_identity" {
+  name     = "AWS Service User"
+  comment  = "Service user with AWS workload identity for automated workflows"
+  disabled = "false"
+  workload_identity {
+    type = "AWS"
+    arn  = "arn:aws:iam::123456789012:role/SnowflakeServiceRole"
+  }
+  default_role = "SYSADMIN"
+}
+
 variable "email" {
   type      = string
   sensitive = true
