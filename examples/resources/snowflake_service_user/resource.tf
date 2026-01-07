@@ -24,6 +24,20 @@ resource "snowflake_service_user" "service_user" {
   rsa_public_key_2 = "..."
 }
 
+# service user with workload identity for AWS
+resource "snowflake_service_user" "aws_service_user" {
+  name     = "AWS Service User"
+  comment  = "Service user with AWS workload identity"
+  disabled = "false"
+
+  workload_identity {
+    type = "AWS"
+    arn  = "arn:aws:iam::123456789012:role/MySnowflakeRole"
+  }
+
+  default_role = snowflake_role.service_role.fully_qualified_name
+}
+
 # all parameters set on the resource level
 resource "snowflake_service_user" "u" {
   name = "Snowflake Service User with all parameters"

@@ -32,6 +32,65 @@ resource "snowflake_user" "user" {
   disable_mfa          = "false"
 }
 
+# user with workload identity for AWS
+resource "snowflake_user" "user_with_aws_workload_identity" {
+  name     = "AWS Service User"
+  comment  = "Service user with AWS workload identity"
+  disabled = "false"
+
+  workload_identity {
+    type = "AWS"
+    arn  = "arn:aws:iam::123456789012:role/MySnowflakeRole"
+  }
+
+  default_role = snowflake_role.service_role.fully_qualified_name
+}
+
+# user with workload identity for Azure
+resource "snowflake_user" "user_with_azure_workload_identity" {
+  name     = "Azure Service User"
+  comment  = "Service user with Azure workload identity"
+  disabled = "false"
+
+  workload_identity {
+    type    = "AZURE"
+    issuer  = "https://login.microsoftonline.com/tenant-id/v2.0"
+    subject = "principal-id"
+  }
+
+  default_role = snowflake_role.service_role.fully_qualified_name
+}
+
+# user with workload identity for GCP
+resource "snowflake_user" "user_with_gcp_workload_identity" {
+  name     = "GCP Service User"
+  comment  = "Service user with GCP workload identity"
+  disabled = "false"
+
+  workload_identity {
+    type    = "GCP"
+    subject = "principalSet://iam.googleapis.com/projects/123456789/locations/global/workloadIdentityPools/pool-id/attribute.repository_owner/my-org"
+  }
+
+  default_role = snowflake_role.service_role.fully_qualified_name
+}
+
+# user with workload identity for OIDC
+resource "snowflake_user" "user_with_oidc_workload_identity" {
+  name     = "OIDC Service User"
+  comment  = "Service user with OIDC workload identity"
+  disabled = "false"
+
+  workload_identity {
+    type               = "OIDC"
+    issuer             = "https://token.actions.githubusercontent.com"
+    subject            = "repo:my-org/my-repo:ref:refs/heads/main"
+    oidc_audience_list = ["api://AzureADTokenExchange"]
+  }
+
+  default_role = snowflake_role.service_role.fully_qualified_name
+}
+
 # all parameters set on the resource level
 resource "snowflake_user" "u" {
   name = "Snowflake User with all parameters"
