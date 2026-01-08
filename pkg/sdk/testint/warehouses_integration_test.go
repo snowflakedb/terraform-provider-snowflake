@@ -328,7 +328,6 @@ func TestInt_Warehouses(t *testing.T) {
 
 		alterOptions = &sdk.AlterWarehouseOptions{
 			// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
-			// AutoSuspend, and AutoResume omitted on purpose - UNSET do not work correctly
 			// WaitForCompletion omitted on purpose - no unset
 			Unset: &sdk.WarehouseUnset{
 				MaxClusterCount:                 sdk.Bool(true),
@@ -340,6 +339,7 @@ func TestInt_Warehouses(t *testing.T) {
 				WarehouseType:                   sdk.Bool(true),
 				ScalingPolicy:                   sdk.Bool(true),
 				AutoSuspend:                     sdk.Bool(true),
+				AutoResume:                      sdk.Bool(true),
 			},
 		}
 		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
@@ -359,6 +359,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
 		assert.Equal(t, sdk.ScalingPolicyStandard, warehouseAfterUnset.ScalingPolicy)
 		assert.Equal(t, 0, warehouseAfterUnset.AutoSuspend)
+		assert.Equal(t, true, warehouseAfterUnset.AutoResume)
 	})
 
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
