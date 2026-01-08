@@ -44,6 +44,7 @@ var userExternalChangesAttributes = []string{
 	"rsa_public_key_2",
 	"comment",
 	"disable_mfa",
+	"workload_identity",
 }
 
 var (

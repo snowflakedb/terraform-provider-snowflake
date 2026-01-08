@@ -150,6 +150,43 @@ var userSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the user.",
 	},
+	"workload_identity": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Specifies the workload identity that the user will use to authenticate. For more information, see [Workload identity federation](https://docs.snowflake.com/en/user-guide/workload-identity-federation).",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"type": {
+					Type:             schema.TypeString,
+					Required:         true,
+					ValidateDiagFunc: sdkValidation(sdk.ToWIFTypeType),
+					Description:      "Specifies the type of workload identity. Supported types: 'AWS', 'AZURE', 'GCP', 'OIDC'.",
+				},
+				"arn": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Specifies the Amazon Resource Name (ARN) for the AWS IAM user or role that will be used for authentication. Required when type is 'AWS'.",
+				},
+				"issuer": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Specifies the issuer URL. Required when type is 'AZURE' or 'OIDC'.",
+				},
+				"subject": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Specifies the subject. Required when type is 'AZURE', 'GCP', or 'OIDC'.",
+				},
+				"oidc_audience_list": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+					Description: "Specifies the custom audience list for OIDC workload identity. Optional when type is 'OIDC'.",
+				},
+			},
+		},
+	},
 	"disable_mfa": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -349,6 +386,66 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			stringAttributeCreate(d, "rsa_public_key", &opts.ObjectProperties.RSAPublicKey),
 			stringAttributeCreate(d, "rsa_public_key_2", &opts.ObjectProperties.RSAPublicKey2),
 			stringAttributeCreate(d, "comment", &opts.ObjectProperties.Comment),
+			func() error {
+				if v, ok := d.GetOk("workload_identity"); ok && len(v.([]interface{})) > 0 {
+					workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
+					workloadIdentityType := workloadIdentityData["type"].(string)
+
+					parsedType, err := sdk.ToWIFTypeType(workloadIdentityType)
+					if err != nil {
+						return err
+					}
+
+					workloadIdentityProps := &sdk.UserObjectWorkloadIdentityProperties{}
+					switch parsedType {
+					case sdk.WIFTypeAWS:
+						arn := workloadIdentityData["arn"].(string)
+						if arn == "" {
+							return fmt.Errorf("ARN is required for AWS workload identity")
+						}
+						workloadIdentityProps.AwsType = &sdk.UserObjectWorkloadIdentityAws{Arn: &arn}
+					case sdk.WIFTypeAzure:
+						issuer := workloadIdentityData["issuer"].(string)
+						subject := workloadIdentityData["subject"].(string)
+						if issuer == "" || subject == "" {
+							return fmt.Errorf("Issuer and Subject are required for Azure workload identity")
+						}
+						workloadIdentityProps.AzureType = &sdk.UserObjectWorkloadIdentityAzure{Issuer: &issuer, Subject: &subject}
+					case sdk.WIFTypeGCP:
+						subject := workloadIdentityData["subject"].(string)
+						if subject == "" {
+							return fmt.Errorf("Subject is required for GCP workload identity")
+						}
+						workloadIdentityProps.GcpType = &sdk.UserObjectWorkloadIdentityGcp{Subject: &subject}
+					case sdk.WIFTypeOIDC:
+						issuer := workloadIdentityData["issuer"].(string)
+						subject := workloadIdentityData["subject"].(string)
+						if issuer == "" || subject == "" {
+							return fmt.Errorf("Issuer and Subject are required for OIDC workload identity")
+						}
+
+						oidcType := &sdk.UserObjectWorkloadIdentityOidc{
+							Issuer:  &issuer,
+							Subject: &subject,
+						}
+
+						if audienceListRaw, exists := workloadIdentityData["oidc_audience_list"]; exists && audienceListRaw != nil {
+							audienceList := audienceListRaw.([]interface{})
+							if len(audienceList) > 0 {
+								audiences := make([]sdk.StringListItemWrapper, len(audienceList))
+								for i, aud := range audienceList {
+									audiences[i] = sdk.StringListItemWrapper{Value: aud.(string)}
+								}
+								oidcType.OidcAudienceList = audiences
+							}
+						}
+						workloadIdentityProps.OidcType = oidcType
+					}
+
+					opts.ObjectProperties.WorkloadIdentity = workloadIdentityProps
+				}
+				return nil
+			}(),
 			// disable mfa cannot be set in create, alter is run after creation
 		)
 		if errs != nil {
@@ -509,6 +606,59 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			setFromStringPropertyIfNotEmpty(d, "rsa_public_key", userDetails.RsaPublicKey),
 			setFromStringPropertyIfNotEmpty(d, "rsa_public_key_2", userDetails.RsaPublicKey2),
 			setFromStringPropertyIfNotEmpty(d, "comment", userDetails.Comment),
+			func() error {
+				if userDetails.HasWorkloadIdentity != nil && userDetails.HasWorkloadIdentity.Value {
+					workloadMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+					if err != nil {
+						return err
+					}
+
+					if len(workloadMethods) > 0 {
+						method := workloadMethods[0]
+						workloadIdentity := []map[string]interface{}{}
+
+						switch method.Type {
+						case sdk.WIFTypeAWS:
+							if method.AwsAdditionalInfo != nil {
+								workloadIdentity = append(workloadIdentity, map[string]interface{}{
+									"type": string(method.Type),
+									"arn":  method.AwsAdditionalInfo.IamRole,
+								})
+							}
+						case sdk.WIFTypeAzure:
+							if method.AzureAdditionalInfo != nil {
+								workloadIdentity = append(workloadIdentity, map[string]interface{}{
+									"type":    string(method.Type),
+									"issuer":  method.AzureAdditionalInfo.Issuer,
+									"subject": method.AzureAdditionalInfo.Subject,
+								})
+							}
+						case sdk.WIFTypeGCP:
+							if method.GcpAdditionalInfo != nil {
+								workloadIdentity = append(workloadIdentity, map[string]interface{}{
+									"type":    string(method.Type),
+									"subject": method.GcpAdditionalInfo.Subject,
+								})
+							}
+						case sdk.WIFTypeOIDC:
+							if method.OidcAdditionalInfo != nil {
+								config := map[string]interface{}{
+									"type":    string(method.Type),
+									"issuer":  method.OidcAdditionalInfo.Issuer,
+									"subject": method.OidcAdditionalInfo.Subject,
+								}
+								if len(method.OidcAdditionalInfo.AudienceList) > 0 {
+									config["oidc_audience_list"] = method.OidcAdditionalInfo.AudienceList
+								}
+								workloadIdentity = append(workloadIdentity, config)
+							}
+						}
+
+						return d.Set("workload_identity", workloadIdentity)
+					}
+				}
+				return d.Set("workload_identity", nil)
+			}(),
 			// can't read disable_mfa
 			d.Set("user_type", u.Type),
 
@@ -597,6 +747,70 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			stringAttributeUpdate(d, "rsa_public_key", &setObjectProperties.RSAPublicKey, &unsetObjectProperties.RSAPublicKey),
 			stringAttributeUpdate(d, "rsa_public_key_2", &setObjectProperties.RSAPublicKey2, &unsetObjectProperties.RSAPublicKey2),
 			stringAttributeUpdate(d, "comment", &setObjectProperties.Comment, &unsetObjectProperties.Comment),
+			func() error {
+				if d.HasChange("workload_identity") {
+					if v, ok := d.GetOk("workload_identity"); ok && len(v.([]interface{})) > 0 {
+						workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
+						workloadIdentityType := workloadIdentityData["type"].(string)
+
+						parsedType, err := sdk.ToWIFTypeType(workloadIdentityType)
+						if err != nil {
+							return err
+						}
+
+						workloadIdentityProps := &sdk.UserObjectWorkloadIdentityProperties{}
+						switch parsedType {
+						case sdk.WIFTypeAWS:
+							arn := workloadIdentityData["arn"].(string)
+							if arn == "" {
+								return fmt.Errorf("ARN is required for AWS workload identity")
+							}
+							workloadIdentityProps.AwsType = &sdk.UserObjectWorkloadIdentityAws{Arn: &arn}
+						case sdk.WIFTypeAzure:
+							issuer := workloadIdentityData["issuer"].(string)
+							subject := workloadIdentityData["subject"].(string)
+							if issuer == "" || subject == "" {
+								return fmt.Errorf("Issuer and Subject are required for Azure workload identity")
+							}
+							workloadIdentityProps.AzureType = &sdk.UserObjectWorkloadIdentityAzure{Issuer: &issuer, Subject: &subject}
+						case sdk.WIFTypeGCP:
+							subject := workloadIdentityData["subject"].(string)
+							if subject == "" {
+								return fmt.Errorf("Subject is required for GCP workload identity")
+							}
+							workloadIdentityProps.GcpType = &sdk.UserObjectWorkloadIdentityGcp{Subject: &subject}
+						case sdk.WIFTypeOIDC:
+							issuer := workloadIdentityData["issuer"].(string)
+							subject := workloadIdentityData["subject"].(string)
+							if issuer == "" || subject == "" {
+								return fmt.Errorf("Issuer and Subject are required for OIDC workload identity")
+							}
+
+							oidcType := &sdk.UserObjectWorkloadIdentityOidc{
+								Issuer:  &issuer,
+								Subject: &subject,
+							}
+
+							if audienceListRaw, exists := workloadIdentityData["oidc_audience_list"]; exists && audienceListRaw != nil {
+								audienceList := audienceListRaw.([]interface{})
+								if len(audienceList) > 0 {
+									audiences := make([]sdk.StringListItemWrapper, len(audienceList))
+									for i, aud := range audienceList {
+										audiences[i] = sdk.StringListItemWrapper{Value: aud.(string)}
+									}
+									oidcType.OidcAudienceList = audiences
+								}
+							}
+							workloadIdentityProps.OidcType = oidcType
+						}
+
+						setObjectProperties.WorkloadIdentity = workloadIdentityProps
+					} else {
+						unsetObjectProperties.WorkloadIdentity = sdk.Bool(true)
+					}
+				}
+				return nil
+			}(),
 			// disable_mfa handled separately for proper user types,
 		)
 		if errs != nil {
