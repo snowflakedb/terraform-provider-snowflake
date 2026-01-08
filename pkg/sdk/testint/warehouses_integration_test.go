@@ -328,7 +328,7 @@ func TestInt_Warehouses(t *testing.T) {
 
 		alterOptions = &sdk.AlterWarehouseOptions{
 			// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
-			// WarehouseType, ScalingPolicy, AutoSuspend, and AutoResume omitted on purpose - UNSET do not work correctly
+			// AutoSuspend, and AutoResume omitted on purpose - UNSET do not work correctly
 			// WaitForCompletion omitted on purpose - no unset
 			Unset: &sdk.WarehouseUnset{
 				MaxClusterCount:                 sdk.Bool(true),
@@ -337,6 +337,8 @@ func TestInt_Warehouses(t *testing.T) {
 				Comment:                         sdk.Bool(true),
 				EnableQueryAcceleration:         sdk.Bool(true),
 				QueryAccelerationMaxScaleFactor: sdk.Bool(true),
+				WarehouseType:                   sdk.Bool(true),
+				ScalingPolicy:                   sdk.Bool(true),
 			},
 		}
 		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
@@ -353,6 +355,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouseAfterUnset.ResourceConstraint)
 		assert.NotNil(t, warehouseAfterUnset.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterUnset.Generation)
+		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
+		assert.Equal(t, sdk.ScalingPolicyStandard, warehouseAfterUnset.ScalingPolicy)
 	})
 
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
@@ -681,20 +685,6 @@ func TestInt_Warehouses(t *testing.T) {
 		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default 600)
 		// assert.Equal(t, "600", returnedWarehouse.AutoSuspend)
 		assert.Equal(t, 0, returnedWarehouse.AutoSuspend)
-	})
-
-	t.Run("alter: prove problems with unset scaling policy", func(t *testing.T) {
-		// new warehouse created on purpose
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
-		t.Cleanup(warehouseCleanup)
-
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{ScalingPolicy: sdk.Bool(true)},
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default scaling policy STANDARD)
-		require.Error(t, err)
-		require.ErrorContains(t, err, "invalid type of property 'null' for 'SCALING_POLICY'")
 	})
 
 	t.Run("alter: prove problems with unset auto resume", func(t *testing.T) {
