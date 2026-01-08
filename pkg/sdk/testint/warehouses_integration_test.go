@@ -424,17 +424,15 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
 		assert.Contains(t, []any{sdk.WarehouseStateStarted, sdk.WarehouseStateResuming}, returnedWarehouse.State)
 
-		// TODO [SNOW-1473453]: uncomment and test when UNSET starts working correctly (expecting to unset to default type STANDARD)
-		// alterOptions = &sdk.AlterWarehouseOptions{
-		//	Unset: &sdk.WarehouseUnset{WarehouseType: sdk.Bool(true)},
-		// }
-		// err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		// require.NoError(t, err)
-		//
-		// returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
-		// require.NoError(t, err)
-		// assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
-		// assert.Equal(t, sdk.WarehouseStateStarted, returnedWarehouse.State)
+		alterOptions = &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{WarehouseType: sdk.Bool(true)},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
 	})
 
 	t.Run("alter: set and unset warehouse type with suspended warehouse", func(t *testing.T) {
@@ -462,17 +460,15 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
 		assert.Equal(t, sdk.WarehouseStateSuspended, returnedWarehouse.State)
 
-		// TODO [SNOW-1473453]: uncomment and test when UNSET starts working correctly (expecting to unset to default type STANDARD)
-		// alterOptions = &sdk.AlterWarehouseOptions{
-		//	Unset: &sdk.WarehouseUnset{WarehouseType: sdk.Bool(true)},
-		// }
-		// err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		// require.NoError(t, err)
-		//
-		// returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
-		// require.NoError(t, err)
-		// assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
-		// assert.Equal(t, sdk.WarehouseStateStarted, returnedWarehouse.State)
+		alterOptions = &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{WarehouseType: sdk.Bool(true)},
+		}
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
 	})
 
 	t.Run("alter: set and unset resource constraint", func(t *testing.T) {
@@ -685,20 +681,6 @@ func TestInt_Warehouses(t *testing.T) {
 		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default 600)
 		// assert.Equal(t, "600", returnedWarehouse.AutoSuspend)
 		assert.Equal(t, 0, returnedWarehouse.AutoSuspend)
-	})
-
-	t.Run("alter: prove problems with unset warehouse type", func(t *testing.T) {
-		// new warehouse created on purpose
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
-		t.Cleanup(warehouseCleanup)
-
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{WarehouseType: sdk.Bool(true)},
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default type STANDARD)
-		require.Error(t, err)
-		require.ErrorContains(t, err, "invalid type of property 'null' for 'WAREHOUSE_TYPE'")
 	})
 
 	t.Run("alter: prove problems with unset scaling policy", func(t *testing.T) {
