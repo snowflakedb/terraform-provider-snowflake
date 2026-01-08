@@ -339,6 +339,7 @@ func TestInt_Warehouses(t *testing.T) {
 				QueryAccelerationMaxScaleFactor: sdk.Bool(true),
 				WarehouseType:                   sdk.Bool(true),
 				ScalingPolicy:                   sdk.Bool(true),
+				AutoSuspend:                     sdk.Bool(true),
 			},
 		}
 		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
@@ -357,6 +358,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterUnset.Generation)
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
 		assert.Equal(t, sdk.ScalingPolicyStandard, warehouseAfterUnset.ScalingPolicy)
+		assert.Equal(t, 0, warehouseAfterUnset.AutoSuspend)
 	})
 
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
@@ -667,42 +669,6 @@ func TestInt_Warehouses(t *testing.T) {
 		}
 		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
 		require.ErrorContains(t, err, "invalid property combination 'RESOURCE_CONSTRAINT'='STANDARD_GEN_1' and 'GENERATION'='2'")
-	})
-
-	t.Run("alter: prove problems with unset auto suspend", func(t *testing.T) {
-		// new warehouse created on purpose
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
-		t.Cleanup(warehouseCleanup)
-
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{AutoSuspend: sdk.Bool(true)},
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.NoError(t, err)
-
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default 600)
-		// assert.Equal(t, "600", returnedWarehouse.AutoSuspend)
-		assert.Equal(t, 0, returnedWarehouse.AutoSuspend)
-	})
-
-	t.Run("alter: prove problems with unset auto resume", func(t *testing.T) {
-		// new warehouse created on purpose
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
-		t.Cleanup(warehouseCleanup)
-
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{AutoResume: sdk.Bool(true)},
-		}
-		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.NoError(t, err)
-
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default auto resume TRUE)
-		// assert.Equal(t, true, returnedWarehouse.AutoResume)
-		assert.Equal(t, false, returnedWarehouse.AutoResume)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
