@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.11.x ➞ v2.12.0
+## v2.12.x ➞ v2.13.0
 
 ## *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
 Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.
@@ -34,6 +34,8 @@ In this release, this bug has been fixed. Now, all SQL operations during the upd
 If you previously ended up in a corrupted state, you can remove the resource from the state and reimport it using `terraform import`.
 
 No changes in configuration are required.
+
+## v2.11.x ➞ v2.12.0
 
 ### *(new feature)* The new `strict_privilege_management` flag in the `snowflake_grant_privileges_to_account_role` resource
 
