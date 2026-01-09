@@ -80,14 +80,20 @@ var filterByStateFuncProvider = func(state experimentalFeatureState) func(Experi
 	}
 }
 
-var ActiveExperiments = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStateActive))
-var DiscontinuedExperiments = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStateDiscontinued))
+var (
+	ActiveExperiments       = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStateActive))
+	DiscontinuedExperiments = collections.Filter(allExperiments, filterByStateFuncProvider(ExperimentalFeatureStateDiscontinued))
+)
 
-var allExperimentalFeatureNames = collections.Map(allExperiments, mapToName)
-var activeExperimentalFeatureNames = collections.Map(ActiveExperiments, mapToName)
+var (
+	allExperimentalFeatureNames    = collections.Map(allExperiments, mapToName)
+	activeExperimentalFeatureNames = collections.Map(ActiveExperiments, mapToName)
+)
 
-var AllExperimentalFeatureNames = sdk.AsStringList(allExperimentalFeatureNames)
-var ActiveExperimentalFeatureNames = sdk.AsStringList(activeExperimentalFeatureNames)
+var (
+	AllExperimentalFeatureNames    = sdk.AsStringList(allExperimentalFeatureNames)
+	ActiveExperimentalFeatureNames = sdk.AsStringList(activeExperimentalFeatureNames)
+)
 
 func IsExperimentEnabled(experiment ExperimentalFeature, enabledExperiments []string) bool {
 	return slices.ContainsFunc(enabledExperiments, func(s string) bool {

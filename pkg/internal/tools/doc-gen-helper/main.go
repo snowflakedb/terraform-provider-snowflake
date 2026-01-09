@@ -75,8 +75,8 @@ func main() {
 		}
 	}
 
-	var activeExperiments = collections.Map(experimentalfeatures.ActiveExperiments, toExperimentModel)
-	var discontinuedExperiments = collections.Map(experimentalfeatures.DiscontinuedExperiments, toExperimentModel)
+	activeExperiments := collections.Map(experimentalfeatures.ActiveExperiments, toExperimentModel)
+	discontinuedExperiments := collections.Map(experimentalfeatures.DiscontinuedExperiments, toExperimentModel)
 
 	if errs := errors.Join(
 		printTo(DeprecatedResourcesTemplate, DeprecatedResourcesContext{deprecatedResources}, filepath.Join(additionalExamplesPath, deprecatedResourcesFilename)),
