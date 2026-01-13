@@ -1,0 +1,14 @@
+- The COPY OPTIONS are missing from the object documentation, but it looks like they are not officially deprecated. They can be set and read in DESC. What's the state of these fields? Are they going to be deprecated?
+Or, specifying these options during the actual COPY INTO is preferred? Would you recommend the support as stage resource fields? Or should we move the users entirely to copy-into settings? WONTDO
+- The directoryTableParams for S3-compatible storage are not included in the documentation. Is this struct the same as in S3? YES
+- ALTER [ IF EXISTS ] with UNSET TAGS is also missing. Is it supported? YES
+1 SQL compilation error: options USE_PRIVATELINK_ENDPOINT and STORAGE_INTEGRATION are incompatible. - I get this error when I set both these fields. However, the docs suggest that USE_PRIVATELINK_ENDPOINT should be set to false. EXCLUSIVE
+2 Is master_key actually needed in TYPE = 'AWS_CSE'? I can create a stage with this type and without the master_key field.
+3 Is storage_integration for gcs required? It's optional in docs, but without it, SF fails with SQL compilation error: Creation of stages with direct credentials, including accessing public stages, has been forbidden for GCS stages. See your account administrator for details. YES
+4 Notification_integration for aws is missing from docs, but it seems it can be set? I couldn't find an example though. WONTDO
+5 The following are missing from the docs (but can be set, and are returned from DESC). Please verify if there are issues with implementation, or these things are simply missing from the docs:
+  - VALIDATE_UTF8 for csv file format WONTDO
+  - NULL_IF for parquet file format DO
+  - DISABLE_SNOWFLAKE_DATA for xml file format WONTDO
+  - alter stage internal set directory = (enable = true auto_refresh = true); - I can set auto_refresh  but it's missing from the docs.
+  - Setting refresh_on_create during creating internal stages. WONTDO
