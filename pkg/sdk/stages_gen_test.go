@@ -37,7 +37,7 @@ func TestStages_CreateInternal(t *testing.T) {
 		opts.Temporary = Bool(true)
 		opts.IfNotExists = Bool(true)
 		opts.Encryption = &InternalStageEncryption{
-			EncryptionType: InternalStageEncryptionFull,
+			SnowflakeFull: &InternalStageEncryptionSnowflakeFull{},
 		}
 		opts.DirectoryTableOptions = &InternalDirectoryTableOptions{
 			Enable:      true,
@@ -154,8 +154,9 @@ func TestStages_CreateOnS3(t *testing.T) {
 			AwsAccessPointArn:  String("aws-access-point-arn"),
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageS3Encryption{
-				EncryptionType: &ExternalStageS3EncryptionCSE,
-				MasterKey:      String("master-key"),
+				AwsCse: &ExternalStageS3EncryptionAwsCse{
+					MasterKey: "master-key",
+				},
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
@@ -178,12 +179,13 @@ func TestStages_CreateOnS3(t *testing.T) {
 				AwsToken:     String("aws-token"),
 			},
 			Encryption: &ExternalStageS3Encryption{
-				EncryptionType: &ExternalStageS3EncryptionSSEKMS,
-				KmsKeyId:       String("kms-key-id"),
+				AwsSseKms: &ExternalStageS3EncryptionAwsSseKms{
+					KmsKeyId: String("kms-key-id"),
+				},
 			},
 			UsePrivatelinkEndpoint: Bool(true),
 		}
-		opts.DirectoryTableOptions = &ExternalS3DirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
 			Enable:          true,
 			RefreshOnCreate: Bool(true),
 			AutoRefresh:     Bool(true),
@@ -231,8 +233,9 @@ func TestStages_CreateOnGCS(t *testing.T) {
 			Url:                "some url",
 			StorageIntegration: integrationId,
 			Encryption: &ExternalStageGCSEncryption{
-				EncryptionType: &ExternalStageGCSEncryptionSSEKMS,
-				KmsKeyId:       String("kms-key-id"),
+				GcsSseKms: &ExternalStageGCSEncryptionGcsSseKms{
+					KmsKeyId: String("kms-key-id"),
+				},
 			},
 		}
 		opts.DirectoryTableOptions = &ExternalGCSDirectoryTableOptions{
@@ -300,8 +303,9 @@ func TestStages_CreateOnAzure(t *testing.T) {
 			Url:                "some url",
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageAzureEncryption{
-				EncryptionType: &ExternalStageAzureEncryptionCSE,
-				MasterKey:      String("master-key"),
+				AzureCse: &ExternalStageAzureEncryptionAzureCse{
+					MasterKey: "master-key",
+				},
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
@@ -326,8 +330,9 @@ func TestStages_CreateOnAzure(t *testing.T) {
 				AzureSasToken: "azure-sas-token",
 			},
 			Encryption: &ExternalStageAzureEncryption{
-				EncryptionType: &ExternalStageAzureEncryptionCSE,
-				MasterKey:      String("master-key"),
+				AzureCse: &ExternalStageAzureEncryptionAzureCse{
+					MasterKey: "master-key",
+				},
 			},
 			UsePrivatelinkEndpoint: Bool(true),
 		}
@@ -382,7 +387,12 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
+			Enable:          true,
+			RefreshOnCreate: Bool(true),
+			AutoRefresh:     Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true) FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -594,7 +604,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 			AwsAccessPointArn:  String("aws-access-point-arn"),
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageS3Encryption{
-				EncryptionType: &ExternalStageS3EncryptionNone,
+				None: &ExternalStageS3EncryptionNone{},
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
@@ -647,7 +657,7 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 			Url:                "some url",
 			StorageIntegration: integrationId,
 			Encryption: &ExternalStageGCSEncryption{
-				EncryptionType: &ExternalStageGCSEncryptionNone,
+				None: &ExternalStageGCSEncryptionNone{},
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
@@ -722,7 +732,7 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 			Url:                "some url",
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageAzureEncryption{
-				EncryptionType: &ExternalStageAzureEncryptionNone,
+				None: &ExternalStageAzureEncryptionNone{},
 			},
 		}
 		opts.FileFormat = &StageFileFormat{

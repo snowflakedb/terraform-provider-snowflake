@@ -94,14 +94,33 @@ var externalS3StageParamsDef = func() *g.QueryStruct {
 			g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
 		).
 		OptionalQueryStructField("Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
-			OptionalAssignmentWithFieldName(
-				"TYPE",
-				g.KindOfT[sdkcommons.ExternalStageS3EncryptionOption](),
-				g.ParameterOptions().SingleQuotes().Required(),
-				"EncryptionType",
+			OptionalQueryStructField(
+				"AwsCse",
+				g.NewQueryStruct("ExternalStageS3EncryptionAwsCse").
+					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_CSE'")).
+					TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
+				g.KeywordOptions(),
 			).
-			OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()).
-			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+			OptionalQueryStructField(
+				"AwsSseS3",
+				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseS3").
+					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_SSE_S3'")),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"AwsSseKms",
+				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseKms").
+					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_SSE_KMS'")).
+					OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"None",
+				g.NewQueryStruct("ExternalStageS3EncryptionNone").
+					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+				g.KeywordOptions(),
+			).
+			WithValidation(g.ExactlyOneValueSet, "AwsCse", "AwsSseS3", "AwsSseKms", "None"),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
 		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
@@ -116,13 +135,20 @@ var externalGCSStageParamsDef = func() *g.QueryStruct {
 		OptionalQueryStructField(
 			"Encryption",
 			g.NewQueryStruct("ExternalStageGCSEncryption").
-				OptionalAssignmentWithFieldName(
-					"TYPE",
-					g.KindOfT[sdkcommons.ExternalStageGCSEncryptionOption](),
-					g.ParameterOptions().SingleQuotes().Required(),
-					"EncryptionType",
+				OptionalQueryStructField(
+					"GcsSseKms",
+					g.NewQueryStruct("ExternalStageGCSEncryptionGcsSseKms").
+						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'GCS_SSE_KMS'")).
+						OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+					g.KeywordOptions(),
 				).
-				OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+				OptionalQueryStructField(
+					"None",
+					g.NewQueryStruct("ExternalStageGCSEncryptionNone").
+						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+					g.KeywordOptions(),
+				).
+				WithValidation(g.ExactlyOneValueSet, "GcsSseKms", "None"),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		)
 }
@@ -140,13 +166,20 @@ var externalAzureStageParamsDef = func() *g.QueryStruct {
 		OptionalQueryStructField(
 			"Encryption",
 			g.NewQueryStruct("ExternalStageAzureEncryption").
-				OptionalAssignmentWithFieldName(
-					"TYPE",
-					g.KindOfT[sdkcommons.ExternalStageAzureEncryptionOption](),
-					g.ParameterOptions().SingleQuotes().Required(),
-					"EncryptionType",
+				OptionalQueryStructField(
+					"AzureCse",
+					g.NewQueryStruct("ExternalStageAzureEncryptionAzureCse").
+						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AZURE_CSE'")).
+						TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
+					g.KeywordOptions(),
 				).
-				OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()),
+				OptionalQueryStructField(
+					"None",
+					g.NewQueryStruct("ExternalStageAzureEncryptionNone").
+						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+					g.KeywordOptions(),
+				).
+				WithValidation(g.ExactlyOneValueSet, "AzureCse", "None"),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
 		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
@@ -180,12 +213,19 @@ var stagesDef = g.NewInterface(
 				OptionalQueryStructField(
 					"Encryption",
 					g.NewQueryStruct("InternalStageEncryption").
-						AssignmentWithFieldName(
-							"TYPE",
-							g.KindOfT[sdkcommons.InternalStageEncryptionOption](),
-							g.ParameterOptions().SingleQuotes().Required(),
-							"EncryptionType",
-						),
+						OptionalQueryStructField(
+							"SnowflakeFull",
+							g.NewQueryStruct("InternalStageEncryptionSnowflakeFull").
+								PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'SNOWFLAKE_FULL'")),
+							g.KeywordOptions(),
+						).
+						OptionalQueryStructField(
+							"SnowflakeSse",
+							g.NewQueryStruct("InternalStageEncryptionSnowflakeSse").
+								PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'SNOWFLAKE_SSE'")),
+							g.KeywordOptions(),
+						).
+						WithValidation(g.ExactlyOneValueSet, "SnowflakeFull", "SnowflakeSse"),
 					g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 				).
 				OptionalQueryStructField(
