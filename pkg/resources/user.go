@@ -559,17 +559,18 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 				return m.Name == "DEFAULT"
 			})
 
-			if err == nil && defaultWIF != nil {
+			switch {
+			case err == nil && defaultWIF != nil:
 				// WIF exists - flatten to state
 				if err := d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)); err != nil {
 					return diag.FromErr(err)
 				}
-			} else if errors.Is(err, collections.ErrObjectNotFound) {
+			case errors.Is(err, collections.ErrObjectNotFound):
 				// No WIF configured - set to nil
 				if err := d.Set("default_workload_identity", nil); err != nil {
 					return diag.FromErr(err)
 				}
-			} else if err != nil {
+			case err != nil:
 				return diag.FromErr(err)
 			}
 		}
