@@ -6,6 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+// TODO(SNOW-1019005): remove copy options
+// TODO(SNOW-1019005): use a custom file format struct with a nice nesting
+// TODO(SNOW-1019005): generate assertions
+// TODO(SNOW-1019005): add parsers for DESC output and return a nice struct; use them in integration tests assertions
+// TODO(SNOW-1019005): improve integration tests
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -42,6 +47,13 @@ var stageFileFormatDef = g.NewQueryStruct("StageFileFormat").
 	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignmentWithFieldName("TYPE", g.KindOfTPointer[sdkcommons.FileFormatType](), g.ParameterOptions(), "FileFormatType").
 	PredefinedQueryStructField("Options", g.KindOfTPointer[sdkcommons.FileFormatTypeOptions](), g.ListOptions().NoComma())
+
+var stageS3CommonDirectoryTableOptionsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("StageS3CommonDirectoryTableOptions").
+		BooleanAssignment("ENABLE", nil).
+		OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
+		OptionalBooleanAssignment("AUTO_REFRESH", nil)
+}
 
 var stageCopyOptionsDef = func() *g.QueryStruct {
 	return g.NewQueryStruct("StageCopyOptions").
@@ -193,10 +205,7 @@ var stagesDef = g.NewInterface(
 				QueryStructField("ExternalStageParams", externalS3StageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
-					g.NewQueryStruct("ExternalS3DirectoryTableOptions").
-						BooleanAssignment("ENABLE", nil).
-						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
-						OptionalBooleanAssignment("AUTO_REFRESH", nil),
+					stageS3CommonDirectoryTableOptionsDef(),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),
@@ -241,13 +250,9 @@ var stagesDef = g.NewInterface(
 		createStageOperation("CreateExternalS3CompatibleStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
 				QueryStructField("ExternalStageParams", externalS3CompatibleStageParamsDef(), g.KeywordOptions().Required()).
-				// TODO(SNOW-1019005): next PRs - Can we just use s3 directory table options?
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
-					g.NewQueryStruct("ExternalS3DirectoryTableOptions").
-						BooleanAssignment("ENABLE", nil).
-						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
-						OptionalBooleanAssignment("AUTO_REFRESH", nil),
+					stageS3CommonDirectoryTableOptionsDef(),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),
