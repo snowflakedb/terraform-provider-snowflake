@@ -9,11 +9,12 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type UserWorkloadIdentityAuthenticationMethodsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.UserWorkloadIdentityAuthenticationMethod, sdk.AccountObjectIdentifier]
+	*assert.SnowflakeObjectAssert[sdk.UserWorkloadIdentityAuthenticationMethod, helpers.UserWorkloadIdentityAuthenticationMethodsObjectIdentifier]
 }
 
 // function UserWorkloadIdentityAuthenticationMethods is not supported because UserWorkloadIdentityAuthenticationMethod requires a user ID for being listed in Snowflake.
@@ -22,8 +23,9 @@ type UserWorkloadIdentityAuthenticationMethodsAssert struct {
 // adjusted manually
 func UserWorkloadIdentityAuthenticationMethodsFromObject(t *testing.T, userWorkloadIdentityAuthenticationMethods *sdk.UserWorkloadIdentityAuthenticationMethod) *UserWorkloadIdentityAuthenticationMethodsAssert {
 	t.Helper()
+	wifId := helpers.NewUserWorkloadIdentityAuthenticationMethodsObjectIdentifier(sdk.NewAccountObjectIdentifier(""), userWorkloadIdentityAuthenticationMethods.Name)
 	return &UserWorkloadIdentityAuthenticationMethodsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeUserWorkloadIdentityAuthenticationMethod, userWorkloadIdentityAuthenticationMethods.ID(), userWorkloadIdentityAuthenticationMethods),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeUserWorkloadIdentityAuthenticationMethod, wifId, userWorkloadIdentityAuthenticationMethods),
 	}
 }
 
@@ -130,8 +132,9 @@ func (u *UserWorkloadIdentityAuthenticationMethodsAssert) HasOidcAdditionalInfo(
 		if o.OidcAdditionalInfo == nil {
 			return fmt.Errorf("expected oidc additional info to have value; got: nil")
 		}
+		x := *o.OidcAdditionalInfo
 		// adjusted manually
-		if !reflect.DeepEqual(*o.OidcAdditionalInfo, expected) {
+		if !reflect.DeepEqual(x, expected) {
 			return fmt.Errorf("expected oidc additional info: %v; got: %v", expected, *o.OidcAdditionalInfo)
 		}
 		return nil

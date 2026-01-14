@@ -111,21 +111,22 @@ func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityAzure(issuer, subjec
 }
 
 // WithDefaultWorkloadIdentityOidc sets the default workload identity to use generic OIDC federation.
-func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityOidc(issuer, subject string, audienceList []string) *LegacyServiceUserModel {
-	audiences := make([]tfconfig.Variable, len(audienceList))
-	for i, a := range audienceList {
-		audiences[i] = tfconfig.StringVariable(a)
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityOidc(issuer, subject string, audienceList ...string) *LegacyServiceUserModel {
+	m := map[string]tfconfig.Variable{
+		"issuer":  tfconfig.StringVariable(issuer),
+		"subject": tfconfig.StringVariable(subject),
+	}
+	if len(audienceList) > 0 {
+		audiences := make([]tfconfig.Variable, len(audienceList))
+		for i, a := range audienceList {
+			audiences[i] = tfconfig.StringVariable(a)
+		}
+		m["oidc_audience_list"] = tfconfig.ListVariable(audiences...)
 	}
 
 	u.DefaultWorkloadIdentity = tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
-			"oidc": tfconfig.ListVariable(tfconfig.ObjectVariable(
-				map[string]tfconfig.Variable{
-					"issuer":             tfconfig.StringVariable(issuer),
-					"subject":            tfconfig.StringVariable(subject),
-					"oidc_audience_list": tfconfig.ListVariable(audiences...),
-				},
-			)),
+			"oidc": tfconfig.ListVariable(tfconfig.ObjectVariable(m)),
 		},
 	)
 	return u

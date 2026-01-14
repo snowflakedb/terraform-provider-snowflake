@@ -803,10 +803,13 @@ func parseWorkloadIdentityConfig(config map[string]interface{}) *sdk.UserObjectW
 
 	if oidcConfig, ok := config["oidc"].([]interface{}); ok && len(oidcConfig) > 0 {
 		oidc := oidcConfig[0].(map[string]interface{})
-		audienceList := oidc["oidc_audience_list"].([]interface{})
-		audiences := make([]sdk.StringListItemWrapper, len(audienceList))
-		for i, v := range audienceList {
-			audiences[i] = sdk.StringListItemWrapper{Value: v.(string)}
+		var audiences []sdk.StringListItemWrapper
+		if oidc["oidc_audience_list"] != nil {
+			audienceList := oidc["oidc_audience_list"].([]interface{})
+			audiences = make([]sdk.StringListItemWrapper, len(audienceList))
+			for i, v := range audienceList {
+				audiences[i] = sdk.StringListItemWrapper{Value: v.(string)}
+			}
 		}
 		wif.OidcType = &sdk.UserObjectWorkloadIdentityOidc{
 			Issuer:           sdk.String(oidc["issuer"].(string)),

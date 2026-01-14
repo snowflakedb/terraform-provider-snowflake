@@ -104,7 +104,7 @@ var defaultWorkloadIdentitySchema = map[string]*schema.Schema{
 							},
 							"oidc_audience_list": {
 								Type:        schema.TypeList,
-								Required:    true,
+								Optional:    true,
 								MinItems:    1,
 								Description: "List of allowed OIDC audiences.",
 								Elem: &schema.Schema{
