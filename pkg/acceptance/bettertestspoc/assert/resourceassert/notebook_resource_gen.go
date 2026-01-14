@@ -52,6 +52,8 @@ func (n *NotebookResourceAssert) HasCommentString(expected string) *NotebookReso
 	return n
 }
 
+// Adjusted manually.
+
 func (n *NotebookResourceAssert) HasFullyQualifiedNameString(expected string) *NotebookResourceAssert {
 	n.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return n

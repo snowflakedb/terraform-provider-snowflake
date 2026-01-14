@@ -158,6 +158,7 @@ variable "login_name" {
 - `default_role` (String) Specifies the role that is active by default for the user’s session upon login. Note that specifying a default role for a user does **not** grant the role to the user. The role must be granted explicitly to the user using the [GRANT ROLE](https://docs.snowflake.com/en/sql-reference/sql/grant-role) command. In addition, the CREATE USER operation does not verify that the role exists. For more information about this resource, see [docs](./account_role).
 - `default_secondary_roles_option` (String) (Default: `DEFAULT`) Specifies the secondary roles that are active for the user’s session upon login. Valid values are (case-insensitive): `DEFAULT` | `NONE` | `ALL`. More information can be found in [doc](https://docs.snowflake.com/en/sql-reference/sql/create-user#optional-object-properties-objectproperties).
 - `default_warehouse` (String) Specifies the virtual warehouse that is active by default for the user’s session upon login. Note that the CREATE USER operation does not verify that the warehouse exists. For more information about this resource, see [docs](./warehouse).
+- `default_workload_identity` (Block List, Max: 1) Configures the default workload identity for the user. This is used for workload identity federation to allow third-party services to authenticate as this user. Only applicable for service users and legacy service users. (see [below for nested schema](#nestedblock--default_workload_identity))
 - `disabled` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the user is disabled, which prevents logging in and aborts all the currently-running queries for the user. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `display_name` (String) Name displayed for the user in the Snowflake web interface.
 - `email` (String, Sensitive) Email address for the user.
@@ -217,6 +218,52 @@ variable "login_name" {
 - `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN USER` for the given user. (see [below for nested schema](#nestedatt--parameters))
 - `show_output` (List of Object) Outputs the result of `SHOW USER` for the given user. (see [below for nested schema](#nestedatt--show_output))
 - `user_type` (String) Specifies a type for the user.
+
+<a id="nestedblock--default_workload_identity"></a>
+### Nested Schema for `default_workload_identity`
+
+Optional:
+
+- `aws` (Block List, Max: 1) AWS workload identity configuration. (see [below for nested schema](#nestedblock--default_workload_identity--aws))
+- `azure` (Block List, Max: 1) Azure workload identity configuration. (see [below for nested schema](#nestedblock--default_workload_identity--azure))
+- `gcp` (Block List, Max: 1) GCP workload identity configuration. (see [below for nested schema](#nestedblock--default_workload_identity--gcp))
+- `oidc` (Block List, Max: 1) Generic OIDC workload identity configuration. (see [below for nested schema](#nestedblock--default_workload_identity--oidc))
+
+<a id="nestedblock--default_workload_identity--aws"></a>
+### Nested Schema for `default_workload_identity.aws`
+
+Required:
+
+- `arn` (String) The ARN of the AWS IAM role to use for workload identity federation.
+
+
+<a id="nestedblock--default_workload_identity--azure"></a>
+### Nested Schema for `default_workload_identity.azure`
+
+Required:
+
+- `issuer` (String) The Azure issuer URL.
+- `subject` (String) The Azure subject identifier.
+
+
+<a id="nestedblock--default_workload_identity--gcp"></a>
+### Nested Schema for `default_workload_identity.gcp`
+
+Required:
+
+- `subject` (String) The GCP service account subject identifier.
+
+
+<a id="nestedblock--default_workload_identity--oidc"></a>
+### Nested Schema for `default_workload_identity.oidc`
+
+Required:
+
+- `issuer` (String) The OIDC issuer URL.
+- `oidc_audience_list` (List of String) List of allowed OIDC audiences.
+- `subject` (String) The OIDC subject identifier.
+
+
 
 <a id="nestedatt--parameters"></a>
 ### Nested Schema for `parameters`

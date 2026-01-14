@@ -137,6 +137,11 @@ func (l *LegacyServiceUserResourceAssert) HasDefaultWarehouseString(expected str
 	return l
 }
 
+func (l *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityString(expected string) *LegacyServiceUserResourceAssert {
+	l.AddAssertion(assert.ValueSet("default_workload_identity", expected))
+	return l
+}
+
 func (l *LegacyServiceUserResourceAssert) HasDisabledString(expected string) *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("disabled", expected))
 	return l
@@ -897,6 +902,11 @@ func (l *LegacyServiceUserResourceAssert) HasDefaultSecondaryRolesOptionEmpty() 
 
 func (l *LegacyServiceUserResourceAssert) HasDefaultWarehouseEmpty() *LegacyServiceUserResourceAssert {
 	l.AddAssertion(assert.ValueSet("default_warehouse", ""))
+	return l
+}
+
+func (l *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityEmpty() *LegacyServiceUserResourceAssert {
+	l.AddAssertion(assert.ValueSet("default_workload_identity.#", "0"))
 	return l
 }
 

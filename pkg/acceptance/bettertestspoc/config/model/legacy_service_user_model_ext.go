@@ -64,3 +64,75 @@ func (u *LegacyServiceUserModel) WithNetworkPolicyId(networkPolicy sdk.AccountOb
 func (u *LegacyServiceUserModel) WithDefaultSecondaryRolesOptionEnum(option sdk.SecondaryRolesOption) *LegacyServiceUserModel {
 	return u.WithDefaultSecondaryRolesOption(string(option))
 }
+
+// WIF (Workload Identity Federation) helper methods
+
+// WithDefaultWorkloadIdentityAws sets the default workload identity to use AWS federation.
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityAws(arn string) *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"aws": tfconfig.ListVariable(tfconfig.ObjectVariable(
+				map[string]tfconfig.Variable{
+					"arn": tfconfig.StringVariable(arn),
+				},
+			)),
+		},
+	)
+	return u
+}
+
+// WithDefaultWorkloadIdentityGcp sets the default workload identity to use GCP federation.
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityGcp(subject string) *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"gcp": tfconfig.ListVariable(tfconfig.ObjectVariable(
+				map[string]tfconfig.Variable{
+					"subject": tfconfig.StringVariable(subject),
+				},
+			)),
+		},
+	)
+	return u
+}
+
+// WithDefaultWorkloadIdentityAzure sets the default workload identity to use Azure federation.
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityAzure(issuer, subject string) *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"azure": tfconfig.ListVariable(tfconfig.ObjectVariable(
+				map[string]tfconfig.Variable{
+					"issuer":  tfconfig.StringVariable(issuer),
+					"subject": tfconfig.StringVariable(subject),
+				},
+			)),
+		},
+	)
+	return u
+}
+
+// WithDefaultWorkloadIdentityOidc sets the default workload identity to use generic OIDC federation.
+func (u *LegacyServiceUserModel) WithDefaultWorkloadIdentityOidc(issuer, subject string, audienceList []string) *LegacyServiceUserModel {
+	audiences := make([]tfconfig.Variable, len(audienceList))
+	for i, a := range audienceList {
+		audiences[i] = tfconfig.StringVariable(a)
+	}
+
+	u.DefaultWorkloadIdentity = tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"oidc": tfconfig.ListVariable(tfconfig.ObjectVariable(
+				map[string]tfconfig.Variable{
+					"issuer":             tfconfig.StringVariable(issuer),
+					"subject":            tfconfig.StringVariable(subject),
+					"oidc_audience_list": tfconfig.ListVariable(audiences...),
+				},
+			)),
+		},
+	)
+	return u
+}
+
+// WithoutDefaultWorkloadIdentity removes any default workload identity configuration.
+func (u *LegacyServiceUserModel) WithoutDefaultWorkloadIdentity() *LegacyServiceUserModel {
+	u.DefaultWorkloadIdentity = nil
+	return u
+}

@@ -372,8 +372,22 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 				booleanStringAttributeCreate(d, "must_change_password", &opts.ObjectProperties.MustChangePassword),
 			)
 			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeLegacyService)
+			// Handle WIF for legacy service user
+			if v, ok := d.GetOk("default_workload_identity"); ok {
+				wifConfig := v.([]interface{})
+				if len(wifConfig) > 0 {
+					opts.ObjectProperties.WorkloadIdentity = parseWorkloadIdentityConfig(wifConfig[0].(map[string]interface{}))
+				}
+			}
 		case sdk.UserTypeService:
 			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeService)
+			// Handle WIF for service user
+			if v, ok := d.GetOk("default_workload_identity"); ok {
+				wifConfig := v.([]interface{})
+				if len(wifConfig) > 0 {
+					opts.ObjectProperties.WorkloadIdentity = parseWorkloadIdentityConfig(wifConfig[0].(map[string]interface{}))
+				}
+			}
 		}
 		if userTypeSpecificFieldsErrs != nil {
 			return diag.FromErr(userTypeSpecificFieldsErrs)
@@ -533,6 +547,33 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			return diag.FromErr(err)
 		}
 
+		// Handle WIF for service user and legacy service user types
+		if userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService {
+			wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			// Find the DEFAULT WIF method using collections.FindFirst
+			defaultWIF, err := collections.FindFirst(wifMethods, func(m sdk.UserWorkloadIdentityAuthenticationMethod) bool {
+				return m.Name == "DEFAULT"
+			})
+
+			if err == nil && defaultWIF != nil {
+				// WIF exists - flatten to state
+				if err := d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)); err != nil {
+					return diag.FromErr(err)
+				}
+			} else if errors.Is(err, collections.ErrObjectNotFound) {
+				// No WIF configured - set to nil
+				if err := d.Set("default_workload_identity", nil); err != nil {
+					return diag.FromErr(err)
+				}
+			} else if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
 		return nil
 	}
 }
@@ -621,6 +662,22 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		}
 		if userTypeSpecificFieldsErrs != nil {
 			return diag.FromErr(userTypeSpecificFieldsErrs)
+		}
+
+		// Handle WIF updates for service user and legacy service user types
+		if (userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService) && d.HasChange("default_workload_identity") {
+			oldVal, newVal := d.GetChange("default_workload_identity")
+			oldConfig := oldVal.([]interface{})
+			newConfig := newVal.([]interface{})
+
+			if len(newConfig) > 0 {
+				// Set new WIF
+				wifProps := parseWorkloadIdentityConfig(newConfig[0].(map[string]interface{}))
+				setObjectProperties.WorkloadIdentity = wifProps
+			} else if len(oldConfig) > 0 {
+				// Unset WIF (was configured, now removed)
+				unsetObjectProperties.WorkloadIdentity = sdk.Bool(true)
+			}
 		}
 
 		if (setObjectProperties != sdk.UserAlterObjectProperties{}) {
@@ -717,3 +774,101 @@ var DeleteUser = ResourceDeleteContextFunc(
 	sdk.ParseAccountObjectIdentifier,
 	func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] { return client.Users.DropSafely },
 )
+
+// parseWorkloadIdentityConfig parses the default_workload_identity block from ResourceData
+// and returns the SDK representation for use in Create/Update operations.
+func parseWorkloadIdentityConfig(config map[string]interface{}) *sdk.UserObjectWorkloadIdentityProperties {
+	wif := &sdk.UserObjectWorkloadIdentityProperties{}
+
+	if awsConfig, ok := config["aws"].([]interface{}); ok && len(awsConfig) > 0 {
+		aws := awsConfig[0].(map[string]interface{})
+		wif.AwsType = &sdk.UserObjectWorkloadIdentityAws{
+			Arn: sdk.String(aws["arn"].(string)),
+		}
+	}
+
+	if gcpConfig, ok := config["gcp"].([]interface{}); ok && len(gcpConfig) > 0 {
+		gcp := gcpConfig[0].(map[string]interface{})
+		wif.GcpType = &sdk.UserObjectWorkloadIdentityGcp{
+			Subject: sdk.String(gcp["subject"].(string)),
+		}
+	}
+
+	if azureConfig, ok := config["azure"].([]interface{}); ok && len(azureConfig) > 0 {
+		azure := azureConfig[0].(map[string]interface{})
+		wif.AzureType = &sdk.UserObjectWorkloadIdentityAzure{
+			Issuer:  sdk.String(azure["issuer"].(string)),
+			Subject: sdk.String(azure["subject"].(string)),
+		}
+	}
+
+	if oidcConfig, ok := config["oidc"].([]interface{}); ok && len(oidcConfig) > 0 {
+		oidc := oidcConfig[0].(map[string]interface{})
+		audienceList := oidc["oidc_audience_list"].([]interface{})
+		audiences := make([]sdk.StringListItemWrapper, len(audienceList))
+		for i, v := range audienceList {
+			audiences[i] = sdk.StringListItemWrapper{Value: v.(string)}
+		}
+		wif.OidcType = &sdk.UserObjectWorkloadIdentityOidc{
+			Issuer:           sdk.String(oidc["issuer"].(string)),
+			Subject:          sdk.String(oidc["subject"].(string)),
+			OidcAudienceList: audiences,
+		}
+	}
+
+	return wif
+}
+
+// flattenWorkloadIdentityMethod converts an SDK UserWorkloadIdentityAuthenticationMethod
+// to a map suitable for setting in Terraform state.
+func flattenWorkloadIdentityMethod(wif *sdk.UserWorkloadIdentityAuthenticationMethod) []interface{} {
+	if wif == nil {
+		return nil
+	}
+
+	result := make(map[string]interface{})
+
+	switch wif.Type {
+	case sdk.WIFTypeAWS:
+		if wif.AwsAdditionalInfo != nil {
+			result["aws"] = []interface{}{
+				map[string]interface{}{
+					"arn": wif.AwsAdditionalInfo.IamRole,
+				},
+			}
+		}
+	case sdk.WIFTypeGCP:
+		if wif.GcpAdditionalInfo != nil {
+			result["gcp"] = []interface{}{
+				map[string]interface{}{
+					"subject": wif.GcpAdditionalInfo.Subject,
+				},
+			}
+		}
+	case sdk.WIFTypeAzure:
+		if wif.AzureAdditionalInfo != nil {
+			result["azure"] = []interface{}{
+				map[string]interface{}{
+					"issuer":  wif.AzureAdditionalInfo.Issuer,
+					"subject": wif.AzureAdditionalInfo.Subject,
+				},
+			}
+		}
+	case sdk.WIFTypeOIDC:
+		if wif.OidcAdditionalInfo != nil {
+			result["oidc"] = []interface{}{
+				map[string]interface{}{
+					"issuer":             wif.OidcAdditionalInfo.Issuer,
+					"subject":            wif.OidcAdditionalInfo.Subject,
+					"oidc_audience_list": wif.OidcAdditionalInfo.AudienceList,
+				},
+			}
+		}
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+
+	return []interface{}{result}
+}
