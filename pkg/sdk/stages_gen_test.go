@@ -105,6 +105,16 @@ func TestStages_CreateOnS3(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.UsePrivatelinkEndpoint]", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = ExternalS3StageParams{
+			StorageIntegration:     &integrationId,
+			UsePrivatelinkEndpoint: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+	})
+
 	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsKeyId opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ExternalStageParams = ExternalS3StageParams{
@@ -286,6 +296,16 @@ func TestStages_CreateOnAzure(t *testing.T) {
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.UsePrivatelinkEndpoint]", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = ExternalAzureStageParams{
+			StorageIntegration:     &integrationId,
+			UsePrivatelinkEndpoint: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -579,6 +599,16 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.UsePrivatelinkEndpoint]", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			StorageIntegration:     &integrationId,
+			UsePrivatelinkEndpoint: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+	})
+
 	// basic removed manually
 
 	// added manually
@@ -708,6 +738,16 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 			Credentials:        &ExternalStageAzureCredentials{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.UsePrivatelinkEndpoint]", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = &ExternalAzureStageParams{
+			StorageIntegration:     &integrationId,
+			UsePrivatelinkEndpoint: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
 	})
 
 	// basic removed manually
