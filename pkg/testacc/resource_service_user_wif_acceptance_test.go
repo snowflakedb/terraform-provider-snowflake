@@ -3,12 +3,15 @@
 package testacc
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -18,11 +21,11 @@ import (
 
 func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-
+	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
 	userModelWithOIDC := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
 			"https://accounts.google.com",
-			"system:serviceaccount:namespace:sa-name",
+			subject,
 			[]string{"https://accounts.google.com/o/oauth2/auth"},
 		)
 
@@ -74,9 +77,10 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 
 func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", random.NumericN(12))
 
 	userModelWithAWS := model.ServiceUser("w", id.Name()).
-		WithDefaultWorkloadIdentityAws("arn:aws:iam::123456789012:role/test-role")
+		WithDefaultWorkloadIdentityAws(arn)
 
 	userModelWithoutWIF := model.ServiceUser("w", id.Name())
 
@@ -102,7 +106,7 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 				ResourceName:            userModelWithAWS.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_unlock", "login_name", "display_name", "disabled", "default_secondary_roles_option"},
+				ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_unlock", "login_name", "display_name", "disabled", "default_secondary_roles_option", "default_workload_identity"},
 			},
 			// UPDATE - REMOVE WIF
 			{
@@ -119,8 +123,10 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	userModelWithGCP := model.ServiceUser("w", id.Name()).
-		WithDefaultWorkloadIdentityGcp("projects/my-project/locations/global/workloadIdentityPools/my-pool/subject/my-subject")
+	subject := random.NumericN(10)
+
+	userModelWithGCP := model.LegacyServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityGcp(subject)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -142,7 +148,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 				ResourceName:            userModelWithGCP.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_unlock", "login_name", "display_name", "disabled", "default_secondary_roles_option"},
+				ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_unlock", "login_name", "display_name", "disabled", "default_secondary_roles_option", "must_change_password"},
 			},
 		},
 	})
@@ -150,11 +156,12 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 
 func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	subject := random.AlphaN(10)
 
 	userModelWithAzure := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityAzure(
-			"https://login.microsoftonline.com/tenant-id/v2.0",
-			"subject-identifier",
+			testvars.MicrosoftIssuer,
+			subject,
 		)
 
 	resource.Test(t, resource.TestCase{
@@ -185,16 +192,18 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 
 func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
+	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", random.NumericN(12))
 
 	userModelWithOIDC := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
 			"https://accounts.google.com",
-			"system:serviceaccount:namespace:sa-name",
+			subject,
 			[]string{"https://accounts.google.com/o/oauth2/auth"},
 		)
 
 	userModelWithAWS := model.ServiceUser("w", id.Name()).
-		WithDefaultWorkloadIdentityAws("arn:aws:iam::123456789012:role/test-role")
+		WithDefaultWorkloadIdentityAws(arn)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

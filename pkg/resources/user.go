@@ -560,13 +560,11 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			})
 
 			switch {
-			case err == nil && defaultWIF != nil:
-				// WIF exists - flatten to state
+			case err == nil && defaultWIF != nil && defaultWIF.Type != sdk.WIFTypeAWS:
 				if err := d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)); err != nil {
 					return diag.FromErr(err)
 				}
 			case errors.Is(err, collections.ErrObjectNotFound):
-				// No WIF configured - set to nil
 				if err := d.Set("default_workload_identity", nil); err != nil {
 					return diag.FromErr(err)
 				}

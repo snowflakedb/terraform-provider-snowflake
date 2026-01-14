@@ -43,8 +43,6 @@ If you previously ended up in a corrupted state, you can remove the resource fro
 
 No changes in configuration are required.
 
-## v2.11.x ➞ v2.12.0
-
 ### *(new feature)* The new `strict_privilege_management` flag in the `snowflake_grant_privileges_to_account_role` resource
 
 The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.
