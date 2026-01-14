@@ -27,6 +27,13 @@ func TestStages_CreateInternal(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateInternalStageOptions", "OrReplace", "IfNotExists"))
 	})
 
+	// added manually
+	t.Run("validation: exactly one field from [opts.Encryption.SnowflakeFull opts.Encryption.SnowflakeSse] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Encryption = &InternalStageEncryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s", id.FullyQualifiedName())
@@ -66,6 +73,15 @@ func TestStages_CreateInternal(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = 'format name') COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: SnowflakeSse", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Encryption = &InternalStageEncryption{
+			SnowflakeSse: &InternalStageEncryptionSnowflakeSse{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE')`, id.FullyQualifiedName())
 	})
 }
 
@@ -148,6 +164,13 @@ func TestStages_CreateOnS3(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
 	})
 
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnS3StageOptions.ExternalStageParams.Encryption", "AwsCse", "AwsSseS3", "AwsSseKms", "None"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s URL = 's3://example.com'", id.FullyQualifiedName())
@@ -202,6 +225,33 @@ func TestStages_CreateOnS3(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true)`, id.FullyQualifiedName())
 	})
+
+	// added manually
+	t.Run("encryption: AwsSseS3", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
+			AwsSseS3: &ExternalStageS3EncryptionAwsSseS3{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENCRYPTION = (TYPE = 'AWS_SSE_S3')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: None", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
+			None: &ExternalStageS3EncryptionNone{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("credentials: AwsRole", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Credentials = &ExternalStageS3Credentials{
+			AwsRole: String("arn:aws:iam::123456789012:role/MyRole"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' CREDENTIALS = (AWS_ROLE = 'arn:aws:iam::123456789012:role/MyRole')`, id.FullyQualifiedName())
+	})
 }
 
 func TestStages_CreateOnGCS(t *testing.T) {
@@ -226,6 +276,13 @@ func TestStages_CreateOnGCS(t *testing.T) {
 		opts.OrReplace = Bool(true)
 		opts.IfNotExists = Bool(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnGCSStageOptions", "OrReplace", "IfNotExists"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnGCSStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
 	})
 
 	// adjusted manually
@@ -259,6 +316,15 @@ func TestStages_CreateOnGCS(t *testing.T) {
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: None", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{
+			None: &ExternalStageGCSEncryptionNone{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
 	})
 }
 
@@ -306,6 +372,13 @@ func TestStages_CreateOnAzure(t *testing.T) {
 			UsePrivatelinkEndpoint: Bool(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnAzureStageOptions.ExternalStageParams.Encryption", "AzureCse", "None"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -357,6 +430,15 @@ func TestStages_CreateOnAzure(t *testing.T) {
 			UsePrivatelinkEndpoint: Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE IF NOT EXISTS %s URL = 'some url' CREDENTIALS = (AZURE_SAS_TOKEN = 'azure-sas-token') ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: None", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{
+			None: &ExternalStageAzureEncryptionNone{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
 	})
 }
 
@@ -609,6 +691,16 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
 	})
 
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url:        "s3://example.com",
+			Encryption: &ExternalStageS3Encryption{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Encryption", "AwsCse", "AwsSseS3", "AwsSseKms", "None"))
+	})
+
 	// basic removed manually
 
 	// added manually
@@ -655,6 +747,44 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
+
+	// added manually
+	t.Run("encryption: AwsSseS3", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url: "s3://example.com",
+			Encryption: &ExternalStageS3Encryption{
+				AwsSseS3: &ExternalStageS3EncryptionAwsSseS3{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 's3://example.com' ENCRYPTION = (TYPE = 'AWS_SSE_S3')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: AwsSseKms", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url: "s3://example.com",
+			Encryption: &ExternalStageS3Encryption{
+				AwsSseKms: &ExternalStageS3EncryptionAwsSseKms{
+					KmsKeyId: String("kms-key-id"),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 's3://example.com' ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("credentials: AwsRole", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url: "s3://example.com",
+			Credentials: &ExternalStageS3Credentials{
+				AwsRole: String("arn:aws:iam::123456789012:role/MyRole"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 's3://example.com' CREDENTIALS = (AWS_ROLE = 'arn:aws:iam::123456789012:role/MyRole')`, id.FullyQualifiedName())
+	})
 }
 
 func TestStages_AlterExternalGCSStage(t *testing.T) {
@@ -675,6 +805,18 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = &ExternalGCSStageParams{
+			Url:                "gcs://example.com",
+			StorageIntegration: integrationId,
+			Encryption:         &ExternalStageGCSEncryption{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalGCSStageStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
 	})
 
 	// basic removed manually
@@ -707,6 +849,22 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: GcsSseKms", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = &ExternalGCSStageParams{
+			Url:                "gcs://example.com",
+			StorageIntegration: integrationId,
+			Encryption: &ExternalStageGCSEncryption{
+				GcsSseKms: &ExternalStageGCSEncryptionGcsSseKms{
+					KmsKeyId: String("kms-key-id"),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 'gcs://example.com' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id')`, id.FullyQualifiedName())
 	})
 }
 
@@ -748,6 +906,16 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 			UsePrivatelinkEndpoint: Bool(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalAzureStageParams{
+			Url:        "azure://example.com",
+			Encryption: &ExternalStageAzureEncryption{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams.Encryption", "AzureCse", "None"))
 	})
 
 	// basic removed manually
@@ -792,6 +960,20 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: AzureCse", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalAzureStageParams{
+			Url: "azure://example.com",
+			Encryption: &ExternalStageAzureEncryption{
+				AzureCse: &ExternalStageAzureEncryptionAzureCse{
+					MasterKey: "master-key",
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 'azure://example.com' ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key')`, id.FullyQualifiedName())
 	})
 }
 
@@ -939,5 +1121,25 @@ func TestStages_Show(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES LIKE 'some pattern' IN SCHEMA %s`, schemaId.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("with Like only", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Like = &Like{
+			Pattern: String("stage_pattern"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES LIKE 'stage_pattern'`)
+	})
+
+	// added manually
+	t.Run("with In only", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.In = &ExtendedIn{
+			In: In{
+				Schema: schemaId,
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES IN SCHEMA %s`, schemaId.FullyQualifiedName())
 	})
 }
