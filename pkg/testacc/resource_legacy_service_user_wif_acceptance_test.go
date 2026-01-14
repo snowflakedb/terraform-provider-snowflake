@@ -194,9 +194,16 @@ func TestAcc_LegacyServiceUser_WIF_AWS(t *testing.T) {
 				Config: config.FromModels(t, userModelWithAWS),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithAWS.ResourceReference()).
-						HasNameString(id.Name()),
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityAws(arn),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithAWS.ResourceReference()).
 						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeAWS).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty(),
 				),
 			},
 			// IMPORT
@@ -224,9 +231,12 @@ func TestAcc_LegacyServiceUser_WIF_AWS(t *testing.T) {
 func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	subject := random.NumericN(10)
+	changedSubject := random.NumericN(10)
 
 	userModelWithGCP := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityGcp(subject)
+
+	userModelWithoutWIF := model.LegacyServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -240,9 +250,98 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 				Config: config.FromModels(t, userModelWithGCP),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithGCP.ResourceReference()).
-						HasNameString(id.Name()),
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityGcp(subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithGCP.ResourceReference()).
 						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeGCP).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+							Subject: subject,
+						}),
+				),
+			},
+			// UPDATE - REMOVE WIF
+			{
+				Config: config.FromModels(t, userModelWithoutWIF),
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityEmpty(),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithoutWIF.ResourceReference()).
+						HasHasWorkloadIdentity(false),
+					assert.Check(func(_ *terraform.State) error {
+						wifId := helpers.NewUserWorkloadIdentityAuthenticationMethodsObjectIdentifier(id, "DEFAULT")
+						_, err := testClient().User.ShowUserWorkloadIdentityAuthenticationMethodOptions(t, wifId)
+						if !errors.Is(err, collections.ErrObjectNotFound) {
+							return err
+						}
+						return nil
+					}),
+				),
+			},
+			// UPDATE - ADD WIF BACK
+			{
+				Config: config.FromModels(t, userModelWithGCP),
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithGCP.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityGcp(subject),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithGCP.ResourceReference()).
+						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeGCP).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+							Subject: subject,
+						}),
+				),
+			},
+			// External change - change subject externally
+			{
+				PreConfig: func() {
+					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
+						Set: &sdk.UserSet{
+							ObjectProperties: &sdk.UserAlterObjectProperties{
+								UserObjectProperties: sdk.UserObjectProperties{
+									WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+										GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+											Subject: sdk.String(changedSubject),
+										},
+									},
+								},
+							},
+						},
+					})
+				},
+				Config: config.FromModels(t, userModelWithGCP),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithGCP.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityGcp(subject),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithGCP.ResourceReference()).
+						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeGCP).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+							Subject: subject,
+						}),
 				),
 			},
 			// IMPORT
@@ -259,11 +358,15 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 func TestAcc_LegacyServiceUser_WIF_Azure(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	subject := random.AlphaN(10)
+	changedSubject := random.AlphaN(10)
+
 	userModelWithAzure := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityAzure(
 			testvars.MicrosoftIssuer,
 			subject,
 		)
+
+	userModelWithoutWIF := model.LegacyServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -277,9 +380,102 @@ func TestAcc_LegacyServiceUser_WIF_Azure(t *testing.T) {
 				Config: config.FromModels(t, userModelWithAzure),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithAzure.ResourceReference()).
-						HasNameString(id.Name()),
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithAzure.ResourceReference()).
 						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeAzure).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+							Issuer:  testvars.MicrosoftIssuer,
+							Subject: subject,
+						}),
+				),
+			},
+			// UPDATE - REMOVE WIF
+			{
+				Config: config.FromModels(t, userModelWithoutWIF),
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityEmpty(),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithoutWIF.ResourceReference()).
+						HasHasWorkloadIdentity(false),
+					assert.Check(func(_ *terraform.State) error {
+						wifId := helpers.NewUserWorkloadIdentityAuthenticationMethodsObjectIdentifier(id, "DEFAULT")
+						_, err := testClient().User.ShowUserWorkloadIdentityAuthenticationMethodOptions(t, wifId)
+						if !errors.Is(err, collections.ErrObjectNotFound) {
+							return err
+						}
+						return nil
+					}),
+				),
+			},
+			// UPDATE - ADD WIF BACK
+			{
+				Config: config.FromModels(t, userModelWithAzure),
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithAzure.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithAzure.ResourceReference()).
+						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeAzure).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+							Issuer:  testvars.MicrosoftIssuer,
+							Subject: subject,
+						}),
+				),
+			},
+			// External change - change subject externally
+			{
+				PreConfig: func() {
+					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
+						Set: &sdk.UserSet{
+							ObjectProperties: &sdk.UserAlterObjectProperties{
+								UserObjectProperties: sdk.UserObjectProperties{
+									WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+										AzureType: &sdk.UserObjectWorkloadIdentityAzure{
+											Issuer:  sdk.String(testvars.MicrosoftIssuer),
+											Subject: sdk.String(changedSubject),
+										},
+									},
+								},
+							},
+						},
+					})
+				},
+				Config: config.FromModels(t, userModelWithAzure),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithAzure.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithAzure.ResourceReference()).
+						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeAzure).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+							Issuer:  testvars.MicrosoftIssuer,
+							Subject: subject,
+						}),
 				),
 			},
 			// IMPORT
@@ -319,9 +515,21 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 				Config: config.FromModels(t, userModelWithOIDC),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithOIDC.ResourceReference()).
-						HasNameString(id.Name()),
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
 						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeOIDC).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+							Issuer:       testvars.OidcIssuer,
+							Subject:      subject,
+							AudienceList: []string{testvars.OidcIssuer + "/o/oauth2/auth"},
+						}),
 				),
 			},
 			// Switch to AWS
@@ -329,9 +537,16 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 				Config: config.FromModels(t, userModelWithAWS),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithAWS.ResourceReference()).
-						HasNameString(id.Name()),
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityAws(arn),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithAWS.ResourceReference()).
 						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeAWS).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty(),
 				),
 			},
 		},
@@ -341,6 +556,7 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
+	gcpSubject := random.NumericN(10)
 
 	userModelWithOIDC := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
@@ -360,9 +576,21 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 				Config: config.FromModels(t, userModelWithOIDC),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithOIDC.ResourceReference()).
-						HasNameString(id.Name()),
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
 						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeOIDC).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+							Issuer:       testvars.OidcIssuer,
+							Subject:      subject,
+							AudienceList: []string{testvars.OidcIssuer + "/o/oauth2/auth"},
+						}),
 				),
 			},
 			// External change - unset WIF outside of Terraform
@@ -385,9 +613,64 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 				// Terraform should detect the drift and re-apply
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithOIDC.ResourceReference()).
-						HasNameString(id.Name()),
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
 						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeOIDC).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+							Issuer:       testvars.OidcIssuer,
+							Subject:      subject,
+							AudienceList: []string{testvars.OidcIssuer + "/o/oauth2/auth"},
+						}),
+				),
+			},
+			// External change - WIF changed to GCP type externally
+			{
+				PreConfig: func() {
+					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
+						Set: &sdk.UserSet{
+							ObjectProperties: &sdk.UserAlterObjectProperties{
+								UserObjectProperties: sdk.UserObjectProperties{
+									WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+										GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+											Subject: sdk.String(gcpSubject),
+										},
+									},
+								},
+							},
+						},
+					})
+				},
+				Config: config.FromModels(t, userModelWithOIDC),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+					},
+				},
+				// Terraform should detect the type change and re-apply OIDC config
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithOIDC.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
+						HasHasWorkloadIdentity(true),
+					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeOIDC).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty().
+						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+							Issuer:       testvars.OidcIssuer,
+							Subject:      subject,
+							AudienceList: []string{testvars.OidcIssuer + "/o/oauth2/auth"},
+						}),
 				),
 			},
 		},
