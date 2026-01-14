@@ -24,7 +24,31 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.12.0 ➞ v2.12.1
+## v2.12.x ➞ v2.13.0
+
+### *(new feature)* Workload Identity Federation support for service users
+
+Added `default_workload_identity` configuration block to `snowflake_service_user` and `snowflake_legacy_service_user` resources. This enables passwordless authentication using cloud provider workload identities (AWS, Azure, GCP, or generic OIDC).
+
+Example configuration using OIDC:
+
+```hcl
+resource "snowflake_service_user" "example" {
+  name = "SERVICE_USER"
+
+  default_workload_identity {
+    oidc {
+      issuer             = "https://accounts.google.com"
+      subject            = "system:serviceaccount:namespace:sa-name"
+      oidc_audience_list = ["https://accounts.google.com/o/oauth2/auth"]
+    }
+  }
+}
+```
+
+See the [service_user](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [legacy_service_user](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) documentation for all provider types (AWS, Azure, GCP, OIDC) and configuration details.
+
+No changes in configuration are required for existing service users. You can optionally add the `default_workload_identity` block to enable workload identity federation.
 
 ### *(improvement)* Using UNSET for certain fields in warehouses
 Previously, Snowflake didn't support `UNSET` for `scaling_policy`, `auto_resume`, and `warehouse_type` in warehouses. As a workaround, the provider used `SET` with default values.
@@ -42,6 +66,8 @@ In this release, this bug has been fixed. After failing Terraform operations, th
 If you previously ended up in a corrupted state, you can remove the resource from the state and reimport it using `terraform import`.
 
 No changes in configuration are required.
+
+## v2.11.x ➞ v2.12.0
 
 ### *(new feature)* The new `strict_privilege_management` flag in the `snowflake_grant_privileges_to_account_role` resource
 

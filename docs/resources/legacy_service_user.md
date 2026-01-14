@@ -17,6 +17,8 @@ description: |-
 
 -> **Note** External changes to `days_to_expiry` and `mins_to_unlock` are not currently handled by the provider (because the value changes continuously on Snowflake side after setting it).
 
+-> **Note** External changes to `default_workload_identity.aws` are not currently handled by the provider because of lack of certain data in Snowflake API.
+
 # snowflake_legacy_service_user (Resource)
 
 Resource used to manage legacy service user objects. For more information, check [user documentation](https://docs.snowflake.com/en/sql-reference/commands-user-role#user-management).
@@ -130,6 +132,53 @@ variable "login_name" {
 variable "password" {
   type      = string
   sensitive = true
+}
+
+# with AWS workload identity
+resource "snowflake_legacy_service_user" "with_aws_wif" {
+  name = "legacy_service_user_aws"
+
+  default_workload_identity {
+    aws {
+      arn = "arn:aws:iam::123456789012:role/snowflake-service-role"
+    }
+  }
+}
+
+# with GCP workload identity
+resource "snowflake_legacy_service_user" "with_gcp_wif" {
+  name = "legacy_service_user_gcp"
+
+  default_workload_identity {
+    gcp {
+      subject = "1122334455"
+    }
+  }
+}
+
+# with Azure workload identity
+resource "snowflake_legacy_service_user" "with_azure_wif" {
+  name = "legacy_service_user_azure"
+
+  default_workload_identity {
+    azure {
+      issuer  = "https://login.microsoftonline.com/tenant-id/v2.0"
+      subject = "application-id"
+    }
+  }
+}
+
+# with OIDC workload identity
+resource "snowflake_legacy_service_user" "with_oidc_wif" {
+  name = "legacy_service_user_oidc"
+
+  default_workload_identity {
+    oidc {
+      issuer             = "https://oidc.example.com"
+      subject            = "service-principal"
+      oidc_audience_list = ["snowflake"]
+    }
+  }
 }
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).

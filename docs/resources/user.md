@@ -17,6 +17,8 @@ description: |-
 
 -> **Note** External changes to `days_to_expiry`, `mins_to_unlock`, and `mins_to_bypass_mfa` are not currently handled by the provider (because the value changes continuously on Snowflake side after setting it).
 
+-> **Note** External changes to `default_workload_identity.aws` are not currently handled by the provider because of lack of certain data in Snowflake API.
+
 # snowflake_user (Resource)
 
 Resource used to manage user objects. For more information, check [user documentation](https://docs.snowflake.com/en/sql-reference/commands-user-role#user-management).

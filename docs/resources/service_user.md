@@ -123,6 +123,53 @@ variable "login_name" {
   type      = string
   sensitive = true
 }
+
+# with AWS workload identity
+resource "snowflake_service_user" "with_aws_wif" {
+  name = "service_user_aws"
+
+  default_workload_identity {
+    aws {
+      arn = "arn:aws:iam::123456789012:role/snowflake-service-role"
+    }
+  }
+}
+
+# with GCP workload identity
+resource "snowflake_service_user" "with_gcp_wif" {
+  name = "service_user_gcp"
+
+  default_workload_identity {
+    gcp {
+      subject = "1122334455"
+    }
+  }
+}
+
+# with Azure workload identity
+resource "snowflake_service_user" "with_azure_wif" {
+  name = "service_user_azure"
+
+  default_workload_identity {
+    azure {
+      issuer  = "https://login.microsoftonline.com/tenant-id/v2.0"
+      subject = "application-id"
+    }
+  }
+}
+
+# with OIDC workload identity
+resource "snowflake_service_user" "with_oidc_wif" {
+  name = "service_user_oidc"
+
+  default_workload_identity {
+    oidc {
+      issuer             = "https://oidc.example.com"
+      subject            = "service-principal"
+      oidc_audience_list = ["snowflake"] # optional field
+    }
+  }
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
