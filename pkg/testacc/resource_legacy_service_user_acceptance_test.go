@@ -686,3 +686,82 @@ func TestAcc_LegacyServiceUser_migrateFromV2_11_0(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_LegacyServiceUser_DefaultWorkloadIdentity(t *testing.T) {
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
+		Steps: []resource.TestStep{
+			// CREATE WITH AWS WORKLOAD IDENTITY
+			{
+				Config: legacyServiceUserConfigWithAWSWorkloadIdentity(userId.Name()),
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, "test").
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, "test").
+						HasHasWorkloadIdentity(true),
+				),
+			},
+			// UPDATE TO AZURE WORKLOAD IDENTITY
+			{
+				Config: legacyServiceUserConfigWithAzureWorkloadIdentity(userId.Name()),
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, "test").
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, "test").
+						HasHasWorkloadIdentity(true),
+				),
+			},
+			// REMOVE WORKLOAD IDENTITY
+			{
+				Config: legacyServiceUserConfigBasic(userId.Name()),
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, "test").
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, "test").
+						HasHasWorkloadIdentity(false),
+				),
+			},
+		},
+	})
+}
+
+func legacyServiceUserConfigBasic(name string) string {
+	return fmt.Sprintf(`
+resource "snowflake_legacy_service_user" "test" {
+  name = "%s"
+}
+`, name)
+}
+
+func legacyServiceUserConfigWithAWSWorkloadIdentity(name string) string {
+	return fmt.Sprintf(`
+resource "snowflake_legacy_service_user" "test" {
+  name = "%s"
+  default_workload_identity {
+    aws {
+      arn = "arn:aws:iam::123456789012:role/test-role"
+    }
+  }
+}
+`, name)
+}
+
+func legacyServiceUserConfigWithAzureWorkloadIdentity(name string) string {
+	return fmt.Sprintf(`
+resource "snowflake_legacy_service_user" "test" {
+  name = "%s"
+  default_workload_identity {
+    azure {
+      issuer  = "https://login.microsoftonline.com/12345678-1234-1234-1234-123456789012/v2.0"
+      subject = "user@example.com"
+    }
+  }
+}
+`, name)
+}

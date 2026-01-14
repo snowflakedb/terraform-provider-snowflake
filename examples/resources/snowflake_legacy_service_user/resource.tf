@@ -91,6 +91,29 @@ resource "snowflake_legacy_service_user" "u" {
   week_start                                    = 1
 }
 
+# with AWS workload identity
+resource "snowflake_legacy_service_user" "aws_wif" {
+  name = "Legacy Service User with AWS WIF"
+
+  default_workload_identity {
+    aws {
+      arn = "arn:aws:iam::123456789012:role/snowflake-role"
+    }
+  }
+}
+
+# with Azure workload identity
+resource "snowflake_legacy_service_user" "azure_wif" {
+  name = "Legacy Service User with Azure WIF"
+
+  default_workload_identity {
+    azure {
+      issuer  = "https://login.microsoftonline.com/12345678-1234-1234-1234-123456789012/v2.0"
+      subject = "user@example.com"
+    }
+  }
+}
+
 variable "email" {
   type      = string
   sensitive = true

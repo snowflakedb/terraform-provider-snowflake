@@ -150,43 +150,6 @@ var userSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the user.",
 	},
-	"workload_identity": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		MaxItems:    1,
-		Description: "Specifies the workload identity that the user will use to authenticate. For more information, see [Workload identity federation](https://docs.snowflake.com/en/user-guide/workload-identity-federation).",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"type": {
-					Type:             schema.TypeString,
-					Required:         true,
-					ValidateDiagFunc: sdkValidation(sdk.ToWIFTypeType),
-					Description:      "Specifies the type of workload identity. Supported types: 'AWS', 'AZURE', 'GCP', 'OIDC'.",
-				},
-				"arn": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Specifies the Amazon Resource Name (ARN) for the AWS IAM user or role that will be used for authentication. Required when type is 'AWS'.",
-				},
-				"issuer": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Specifies the issuer URL. Required when type is 'AZURE' or 'OIDC'.",
-				},
-				"subject": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "Specifies the subject. Required when type is 'AZURE', 'GCP', or 'OIDC'.",
-				},
-				"oidc_audience_list": {
-					Type:        schema.TypeList,
-					Optional:    true,
-					Elem:        &schema.Schema{Type: schema.TypeString},
-					Description: "Specifies the custom audience list for OIDC workload identity. Optional when type is 'OIDC'.",
-				},
-			},
-		},
-	},
 	"disable_mfa": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -299,6 +262,57 @@ func LegacyServiceUser() *schema.Resource {
 	}
 }
 
+func processDefaultWorkloadIdentityForUserTypes(d *schema.ResourceData, userType sdk.UserType) (*sdk.UserObjectWorkloadIdentityProperties, error) {
+	// Only process workload identity for service and legacy service users
+	if userType != sdk.UserTypeService && userType != sdk.UserTypeLegacyService {
+		return nil, nil
+	}
+
+	if v, ok := d.GetOk("default_workload_identity"); ok && len(v.([]interface{})) > 0 {
+		workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
+		workloadIdentityProps := &sdk.UserObjectWorkloadIdentityProperties{}
+
+		if awsData, ok := workloadIdentityData["aws"]; ok && len(awsData.([]interface{})) > 0 {
+			awsConfig := awsData.([]interface{})[0].(map[string]interface{})
+			arn := awsConfig["arn"].(string)
+			workloadIdentityProps.AwsType = &sdk.UserObjectWorkloadIdentityAws{Arn: &arn}
+		} else if azureData, ok := workloadIdentityData["azure"]; ok && len(azureData.([]interface{})) > 0 {
+			azureConfig := azureData.([]interface{})[0].(map[string]interface{})
+			issuer := azureConfig["issuer"].(string)
+			subject := azureConfig["subject"].(string)
+			workloadIdentityProps.AzureType = &sdk.UserObjectWorkloadIdentityAzure{Issuer: &issuer, Subject: &subject}
+		} else if gcpData, ok := workloadIdentityData["gcp"]; ok && len(gcpData.([]interface{})) > 0 {
+			gcpConfig := gcpData.([]interface{})[0].(map[string]interface{})
+			subject := gcpConfig["subject"].(string)
+			workloadIdentityProps.GcpType = &sdk.UserObjectWorkloadIdentityGcp{Subject: &subject}
+		} else if oidcData, ok := workloadIdentityData["oidc"]; ok && len(oidcData.([]interface{})) > 0 {
+			oidcConfig := oidcData.([]interface{})[0].(map[string]interface{})
+			issuer := oidcConfig["issuer"].(string)
+			subject := oidcConfig["subject"].(string)
+
+			oidcType := &sdk.UserObjectWorkloadIdentityOidc{
+				Issuer:  &issuer,
+				Subject: &subject,
+			}
+
+			if audienceListRaw, exists := oidcConfig["oidc_audience_list"]; exists && audienceListRaw != nil {
+				audienceList := audienceListRaw.([]interface{})
+				if len(audienceList) > 0 {
+					audiences := make([]sdk.StringListItemWrapper, len(audienceList))
+					for i, aud := range audienceList {
+						audiences[i] = sdk.StringListItemWrapper{Value: aud.(string)}
+					}
+					oidcType.OidcAudienceList = audiences
+				}
+			}
+			workloadIdentityProps.OidcType = oidcType
+		}
+
+		return workloadIdentityProps, nil
+	}
+	return nil, nil
+}
+
 func GetImportUserFunc(userType sdk.UserType) func(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 		client := meta.(*provider.Context).Client
@@ -387,61 +401,11 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			stringAttributeCreate(d, "rsa_public_key_2", &opts.ObjectProperties.RSAPublicKey2),
 			stringAttributeCreate(d, "comment", &opts.ObjectProperties.Comment),
 			func() error {
-				if v, ok := d.GetOk("workload_identity"); ok && len(v.([]interface{})) > 0 {
-					workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
-					workloadIdentityType := workloadIdentityData["type"].(string)
-
-					parsedType, err := sdk.ToWIFTypeType(workloadIdentityType)
-					if err != nil {
-						return err
-					}
-
-					workloadIdentityProps := &sdk.UserObjectWorkloadIdentityProperties{}
-					switch parsedType {
-					case sdk.WIFTypeAWS:
-						arn := workloadIdentityData["arn"].(string)
-						if arn == "" {
-							return fmt.Errorf("ARN is required for AWS workload identity")
-						}
-						workloadIdentityProps.AwsType = &sdk.UserObjectWorkloadIdentityAws{Arn: &arn}
-					case sdk.WIFTypeAzure:
-						issuer := workloadIdentityData["issuer"].(string)
-						subject := workloadIdentityData["subject"].(string)
-						if issuer == "" || subject == "" {
-							return fmt.Errorf("Issuer and Subject are required for Azure workload identity")
-						}
-						workloadIdentityProps.AzureType = &sdk.UserObjectWorkloadIdentityAzure{Issuer: &issuer, Subject: &subject}
-					case sdk.WIFTypeGCP:
-						subject := workloadIdentityData["subject"].(string)
-						if subject == "" {
-							return fmt.Errorf("Subject is required for GCP workload identity")
-						}
-						workloadIdentityProps.GcpType = &sdk.UserObjectWorkloadIdentityGcp{Subject: &subject}
-					case sdk.WIFTypeOIDC:
-						issuer := workloadIdentityData["issuer"].(string)
-						subject := workloadIdentityData["subject"].(string)
-						if issuer == "" || subject == "" {
-							return fmt.Errorf("Issuer and Subject are required for OIDC workload identity")
-						}
-
-						oidcType := &sdk.UserObjectWorkloadIdentityOidc{
-							Issuer:  &issuer,
-							Subject: &subject,
-						}
-
-						if audienceListRaw, exists := workloadIdentityData["oidc_audience_list"]; exists && audienceListRaw != nil {
-							audienceList := audienceListRaw.([]interface{})
-							if len(audienceList) > 0 {
-								audiences := make([]sdk.StringListItemWrapper, len(audienceList))
-								for i, aud := range audienceList {
-									audiences[i] = sdk.StringListItemWrapper{Value: aud.(string)}
-								}
-								oidcType.OidcAudienceList = audiences
-							}
-						}
-						workloadIdentityProps.OidcType = oidcType
-					}
-
+				workloadIdentityProps, err := processDefaultWorkloadIdentityForUserTypes(d, userType)
+				if err != nil {
+					return err
+				}
+				if workloadIdentityProps != nil {
 					opts.ObjectProperties.WorkloadIdentity = workloadIdentityProps
 				}
 				return nil
@@ -607,57 +571,70 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			setFromStringPropertyIfNotEmpty(d, "rsa_public_key_2", userDetails.RsaPublicKey2),
 			setFromStringPropertyIfNotEmpty(d, "comment", userDetails.Comment),
 			func() error {
+				// Only process workload identity for service and legacy service users
+				if userType != sdk.UserTypeService && userType != sdk.UserTypeLegacyService {
+					return nil
+				}
+
 				if userDetails.HasWorkloadIdentity != nil && userDetails.HasWorkloadIdentity.Value {
 					workloadMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 					if err != nil {
 						return err
 					}
 
-					if len(workloadMethods) > 0 {
-						method := workloadMethods[0]
-						workloadIdentity := []map[string]interface{}{}
+					// Find the DEFAULT workload identity method
+					defaultMethod, err := collections.FindFirst(workloadMethods, func(method sdk.UserWorkloadIdentityAuthenticationMethod) bool {
+						return method.Name == "DEFAULT"
+					})
 
-						switch method.Type {
+					if err == nil {
+						workloadIdentity := []map[string]interface{}{{}}
+						workloadConfig := workloadIdentity[0]
+
+						switch defaultMethod.Type {
 						case sdk.WIFTypeAWS:
-							if method.AwsAdditionalInfo != nil {
-								workloadIdentity = append(workloadIdentity, map[string]interface{}{
-									"type": string(method.Type),
-									"arn":  method.AwsAdditionalInfo.IamRole,
-								})
+							if defaultMethod.AwsAdditionalInfo != nil {
+								workloadConfig["aws"] = []map[string]interface{}{
+									{"arn": defaultMethod.AwsAdditionalInfo.IamRole},
+								}
 							}
 						case sdk.WIFTypeAzure:
-							if method.AzureAdditionalInfo != nil {
-								workloadIdentity = append(workloadIdentity, map[string]interface{}{
-									"type":    string(method.Type),
-									"issuer":  method.AzureAdditionalInfo.Issuer,
-									"subject": method.AzureAdditionalInfo.Subject,
-								})
+							if defaultMethod.AzureAdditionalInfo != nil {
+								workloadConfig["azure"] = []map[string]interface{}{
+									{
+										"issuer":  defaultMethod.AzureAdditionalInfo.Issuer,
+										"subject": defaultMethod.AzureAdditionalInfo.Subject,
+									},
+								}
 							}
 						case sdk.WIFTypeGCP:
-							if method.GcpAdditionalInfo != nil {
-								workloadIdentity = append(workloadIdentity, map[string]interface{}{
-									"type":    string(method.Type),
-									"subject": method.GcpAdditionalInfo.Subject,
-								})
+							if defaultMethod.GcpAdditionalInfo != nil {
+								workloadConfig["gcp"] = []map[string]interface{}{
+									{"subject": defaultMethod.GcpAdditionalInfo.Subject},
+								}
 							}
 						case sdk.WIFTypeOIDC:
-							if method.OidcAdditionalInfo != nil {
-								config := map[string]interface{}{
-									"type":    string(method.Type),
-									"issuer":  method.OidcAdditionalInfo.Issuer,
-									"subject": method.OidcAdditionalInfo.Subject,
+							if defaultMethod.OidcAdditionalInfo != nil {
+								oidcConfig := map[string]interface{}{
+									"issuer":  defaultMethod.OidcAdditionalInfo.Issuer,
+									"subject": defaultMethod.OidcAdditionalInfo.Subject,
 								}
-								if len(method.OidcAdditionalInfo.AudienceList) > 0 {
-									config["oidc_audience_list"] = method.OidcAdditionalInfo.AudienceList
+								if len(defaultMethod.OidcAdditionalInfo.AudienceList) > 0 {
+									oidcConfig["oidc_audience_list"] = defaultMethod.OidcAdditionalInfo.AudienceList
 								}
-								workloadIdentity = append(workloadIdentity, config)
+								workloadConfig["oidc"] = []map[string]interface{}{oidcConfig}
 							}
 						}
 
-						return d.Set("workload_identity", workloadIdentity)
+						return d.Set("default_workload_identity", workloadIdentity)
+					}
+				} else {
+					// Handle case when workload identity is empty in Snowflake but set in config
+					if _, ok := d.GetOk("default_workload_identity"); ok {
+						return d.Set("default_workload_identity", nil)
 					}
 				}
-				return d.Set("workload_identity", nil)
+				return d.Set("default_workload_identity", nil)
 			}(),
 			// can't read disable_mfa
 			d.Set("user_type", u.Type),
@@ -748,62 +725,12 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			stringAttributeUpdate(d, "rsa_public_key_2", &setObjectProperties.RSAPublicKey2, &unsetObjectProperties.RSAPublicKey2),
 			stringAttributeUpdate(d, "comment", &setObjectProperties.Comment, &unsetObjectProperties.Comment),
 			func() error {
-				if d.HasChange("workload_identity") {
-					if v, ok := d.GetOk("workload_identity"); ok && len(v.([]interface{})) > 0 {
-						workloadIdentityData := v.([]interface{})[0].(map[string]interface{})
-						workloadIdentityType := workloadIdentityData["type"].(string)
-
-						parsedType, err := sdk.ToWIFTypeType(workloadIdentityType)
-						if err != nil {
-							return err
-						}
-
-						workloadIdentityProps := &sdk.UserObjectWorkloadIdentityProperties{}
-						switch parsedType {
-						case sdk.WIFTypeAWS:
-							arn := workloadIdentityData["arn"].(string)
-							if arn == "" {
-								return fmt.Errorf("ARN is required for AWS workload identity")
-							}
-							workloadIdentityProps.AwsType = &sdk.UserObjectWorkloadIdentityAws{Arn: &arn}
-						case sdk.WIFTypeAzure:
-							issuer := workloadIdentityData["issuer"].(string)
-							subject := workloadIdentityData["subject"].(string)
-							if issuer == "" || subject == "" {
-								return fmt.Errorf("Issuer and Subject are required for Azure workload identity")
-							}
-							workloadIdentityProps.AzureType = &sdk.UserObjectWorkloadIdentityAzure{Issuer: &issuer, Subject: &subject}
-						case sdk.WIFTypeGCP:
-							subject := workloadIdentityData["subject"].(string)
-							if subject == "" {
-								return fmt.Errorf("Subject is required for GCP workload identity")
-							}
-							workloadIdentityProps.GcpType = &sdk.UserObjectWorkloadIdentityGcp{Subject: &subject}
-						case sdk.WIFTypeOIDC:
-							issuer := workloadIdentityData["issuer"].(string)
-							subject := workloadIdentityData["subject"].(string)
-							if issuer == "" || subject == "" {
-								return fmt.Errorf("Issuer and Subject are required for OIDC workload identity")
-							}
-
-							oidcType := &sdk.UserObjectWorkloadIdentityOidc{
-								Issuer:  &issuer,
-								Subject: &subject,
-							}
-
-							if audienceListRaw, exists := workloadIdentityData["oidc_audience_list"]; exists && audienceListRaw != nil {
-								audienceList := audienceListRaw.([]interface{})
-								if len(audienceList) > 0 {
-									audiences := make([]sdk.StringListItemWrapper, len(audienceList))
-									for i, aud := range audienceList {
-										audiences[i] = sdk.StringListItemWrapper{Value: aud.(string)}
-									}
-									oidcType.OidcAudienceList = audiences
-								}
-							}
-							workloadIdentityProps.OidcType = oidcType
-						}
-
+				if d.HasChange("default_workload_identity") {
+					workloadIdentityProps, err := processDefaultWorkloadIdentityForUserTypes(d, userType)
+					if err != nil {
+						return err
+					}
+					if workloadIdentityProps != nil {
 						setObjectProperties.WorkloadIdentity = workloadIdentityProps
 					} else {
 						unsetObjectProperties.WorkloadIdentity = sdk.Bool(true)

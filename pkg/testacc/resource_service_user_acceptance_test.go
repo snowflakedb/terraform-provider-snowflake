@@ -679,3 +679,130 @@ func TestAcc_ServiceUser_migrateFromV2_11_0(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_ServiceUser_DefaultWorkloadIdentity(t *testing.T) {
+	userId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
+		Steps: []resource.TestStep{
+			// CREATE WITH AWS WORKLOAD IDENTITY
+			{
+				Config: serviceUserConfigWithAWSWorkloadIdentity(userId.Name()),
+				Check: assertThat(t,
+					resourceassert.ServiceUserResource(t, "test").
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, "test").
+						HasHasWorkloadIdentity(true),
+				),
+			},
+			// UPDATE TO AZURE WORKLOAD IDENTITY
+			{
+				Config: serviceUserConfigWithAzureWorkloadIdentity(userId.Name()),
+				Check: assertThat(t,
+					resourceassert.ServiceUserResource(t, "test").
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, "test").
+						HasHasWorkloadIdentity(true),
+				),
+			},
+			// UPDATE TO GCP WORKLOAD IDENTITY
+			{
+				Config: serviceUserConfigWithGCPWorkloadIdentity(userId.Name()),
+				Check: assertThat(t,
+					resourceassert.ServiceUserResource(t, "test").
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, "test").
+						HasHasWorkloadIdentity(true),
+				),
+			},
+			// UPDATE TO OIDC WORKLOAD IDENTITY
+			{
+				Config: serviceUserConfigWithOIDCWorkloadIdentity(userId.Name()),
+				Check: assertThat(t,
+					resourceassert.ServiceUserResource(t, "test").
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, "test").
+						HasHasWorkloadIdentity(true),
+				),
+			},
+			// REMOVE WORKLOAD IDENTITY
+			{
+				Config: serviceUserConfigBasic(userId.Name()),
+				Check: assertThat(t,
+					resourceassert.ServiceUserResource(t, "test").
+						HasNameString(userId.Name()),
+					resourceshowoutputassert.UserShowOutput(t, "test").
+						HasHasWorkloadIdentity(false),
+				),
+			},
+		},
+	})
+}
+
+func serviceUserConfigBasic(name string) string {
+	return fmt.Sprintf(`
+resource "snowflake_service_user" "test" {
+  name = "%s"
+}
+`, name)
+}
+
+func serviceUserConfigWithAWSWorkloadIdentity(name string) string {
+	return fmt.Sprintf(`
+resource "snowflake_service_user" "test" {
+  name = "%s"
+  default_workload_identity {
+    aws {
+      arn = "arn:aws:iam::123456789012:role/test-role"
+    }
+  }
+}
+`, name)
+}
+
+func serviceUserConfigWithAzureWorkloadIdentity(name string) string {
+	return fmt.Sprintf(`
+resource "snowflake_service_user" "test" {
+  name = "%s"
+  default_workload_identity {
+    azure {
+      issuer  = "https://login.microsoftonline.com/12345678-1234-1234-1234-123456789012/v2.0"
+      subject = "user@example.com"
+    }
+  }
+}
+`, name)
+}
+
+func serviceUserConfigWithGCPWorkloadIdentity(name string) string {
+	return fmt.Sprintf(`
+resource "snowflake_service_user" "test" {
+  name = "%s"
+  default_workload_identity {
+    gcp {
+      subject = "serviceaccount@project.iam.gserviceaccount.com"
+    }
+  }
+}
+`, name)
+}
+
+func serviceUserConfigWithOIDCWorkloadIdentity(name string) string {
+	return fmt.Sprintf(`
+resource "snowflake_service_user" "test" {
+  name = "%s"
+  default_workload_identity {
+    oidc {
+      issuer  = "https://token.actions.githubusercontent.com"
+      subject = "repo:example/repo:ref:refs/heads/main"
+      oidc_audience_list = ["audience1", "audience2"]
+    }
+  }
+}
+`, name)
+}

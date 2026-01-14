@@ -88,6 +88,53 @@ resource "snowflake_service_user" "u" {
   week_start                                    = 1
 }
 
+# with AWS workload identity
+resource "snowflake_service_user" "aws_wif" {
+  name = "Service User with AWS WIF"
+
+  default_workload_identity {
+    aws {
+      arn = "arn:aws:iam::123456789012:role/snowflake-role"
+    }
+  }
+}
+
+# with Azure workload identity
+resource "snowflake_service_user" "azure_wif" {
+  name = "Service User with Azure WIF"
+
+  default_workload_identity {
+    azure {
+      issuer  = "https://login.microsoftonline.com/12345678-1234-1234-1234-123456789012/v2.0"
+      subject = "user@example.com"
+    }
+  }
+}
+
+# with GCP workload identity
+resource "snowflake_service_user" "gcp_wif" {
+  name = "Service User with GCP WIF"
+
+  default_workload_identity {
+    gcp {
+      subject = "serviceaccount@project.iam.gserviceaccount.com"
+    }
+  }
+}
+
+# with OIDC workload identity
+resource "snowflake_service_user" "oidc_wif" {
+  name = "Service User with OIDC WIF"
+
+  default_workload_identity {
+    oidc {
+      issuer             = "https://token.actions.githubusercontent.com"
+      subject            = "repo:example/repo:ref:refs/heads/main"
+      oidc_audience_list = ["https://github.com/example", "audience2"]
+    }
+  }
+}
+
 variable "email" {
   type      = string
   sensitive = true
