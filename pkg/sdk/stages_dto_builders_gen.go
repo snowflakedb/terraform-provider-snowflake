@@ -359,15 +359,12 @@ func (s *CreateOnGCSStageRequest) WithTag(tag []TagAssociation) *CreateOnGCSStag
 
 func NewExternalGCSStageParamsRequest(
 	url string,
+	storageIntegration AccountObjectIdentifier,
 ) *ExternalGCSStageParamsRequest {
 	s := ExternalGCSStageParamsRequest{}
 	s.Url = url
+	s.StorageIntegration = storageIntegration
 	return &s
-}
-
-func (s *ExternalGCSStageParamsRequest) WithStorageIntegration(storageIntegration AccountObjectIdentifier) *ExternalGCSStageParamsRequest {
-	s.StorageIntegration = &storageIntegration
-	return s
 }
 
 func (s *ExternalGCSStageParamsRequest) WithEncryption(encryption ExternalStageGCSEncryptionRequest) *ExternalGCSStageParamsRequest {

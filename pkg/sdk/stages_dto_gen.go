@@ -121,8 +121,8 @@ type CreateOnGCSStageRequest struct {
 }
 
 type ExternalGCSStageParamsRequest struct {
-	Url                string // required
-	StorageIntegration *AccountObjectIdentifier
+	Url                string                    // required
+	StorageIntegration AccountObjectIdentifier   // required
 	Encryption         *ExternalStageGCSEncryptionRequest
 }
 

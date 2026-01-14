@@ -139,7 +139,7 @@ type CreateOnGCSStageOptions struct {
 
 type ExternalGCSStageParams struct {
 	Url                string                      `ddl:"parameter,single_quotes" sql:"URL"`
-	StorageIntegration *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
+	StorageIntegration AccountObjectIdentifier     `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
 	Encryption         *ExternalStageGCSEncryption `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
 }
 

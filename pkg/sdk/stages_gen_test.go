@@ -157,13 +157,12 @@ func TestStages_CreateOnS3(t *testing.T) {
 				EncryptionType: &ExternalStageS3EncryptionCSE,
 				MasterKey:      String("master-key"),
 			},
-			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - directory table and credentials", func(t *testing.T) {
@@ -230,7 +229,7 @@ func TestStages_CreateOnGCS(t *testing.T) {
 		integrationId := NewAccountObjectIdentifier("integration")
 		opts.ExternalStageParams = ExternalGCSStageParams{
 			Url:                "some url",
-			StorageIntegration: &integrationId,
+			StorageIntegration: integrationId,
 			Encryption: &ExternalStageGCSEncryption{
 				EncryptionType: &ExternalStageGCSEncryptionSSEKMS,
 				KmsKeyId:       String("kms-key-id"),
@@ -304,13 +303,12 @@ func TestStages_CreateOnAzure(t *testing.T) {
 				EncryptionType: &ExternalStageAzureEncryptionCSE,
 				MasterKey:      String("master-key"),
 			},
-			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - directory table and credentials", func(t *testing.T) {
@@ -418,15 +416,6 @@ func TestStages_Alter(t *testing.T) {
 		opts.RenameTo = new(SchemaObjectIdentifier)
 		opts.SetTags = []TagAssociation{}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStageOptions", "RenameTo", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfExists opts.UnsetTags]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("id"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterStageOptions", "IfExists", "UnsetTags"))
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
@@ -607,7 +596,6 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 			Encryption: &ExternalStageS3Encryption{
 				EncryptionType: &ExternalStageS3EncryptionNone,
 			},
-			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeJSON,
@@ -625,7 +613,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 			Force:             Bool(true),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -657,7 +645,7 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 		integrationId := NewAccountObjectIdentifier("integration")
 		opts.ExternalStageParams = &ExternalGCSStageParams{
 			Url:                "some url",
-			StorageIntegration: &integrationId,
+			StorageIntegration: integrationId,
 			Encryption: &ExternalStageGCSEncryption{
 				EncryptionType: &ExternalStageGCSEncryptionNone,
 			},

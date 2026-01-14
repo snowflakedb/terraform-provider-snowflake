@@ -42,6 +42,9 @@ func (opts *CreateOnS3StageOptions) validate() error {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
 			errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 		}
+		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.UsePrivatelinkEndpoint) {
+			errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+		}
 		if valueSet(opts.ExternalStageParams.Credentials) {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsKeyId, opts.ExternalStageParams.Credentials.AwsRole) {
 				errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
@@ -80,6 +83,9 @@ func (opts *CreateOnAzureStageOptions) validate() error {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
 			errs = append(errs, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 		}
+		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.UsePrivatelinkEndpoint) {
+			errs = append(errs, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -105,9 +111,6 @@ func (opts *AlterStageOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterStageOptions", "RenameTo", "SetTags", "UnsetTags"))
-	}
-	if everyValueSet(opts.IfExists, opts.UnsetTags) {
-		errs = append(errs, errOneOf("AlterStageOptions", "IfExists", "UnsetTags"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
@@ -137,6 +140,9 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 	if valueSet(opts.ExternalStageParams) {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
 			errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
+		}
+		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.UsePrivatelinkEndpoint) {
+			errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
 		}
 		if valueSet(opts.ExternalStageParams.Credentials) {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsKeyId, opts.ExternalStageParams.Credentials.AwsRole) {
@@ -175,6 +181,9 @@ func (opts *AlterExternalAzureStageStageOptions) validate() error {
 	if valueSet(opts.ExternalStageParams) {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
 			errs = append(errs, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
+		}
+		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.UsePrivatelinkEndpoint) {
+			errs = append(errs, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
 		}
 	}
 	return JoinErrors(errs...)

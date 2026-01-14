@@ -6,13 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO(SNOW-1019005): part 2 - use a custom file format struct with a nice nesting
-// TODO(SNOW-1019005): part 2 - generate assertions
-// TODO(SNOW-1019005): part 2 - add parsers for DESC output and return a nice struct; use them in integration tests assertions
-// TODO(SNOW-1019005): part 2 - improve integration tests
-// TODO(SNOW-1019005): part 3 - needs clarification - what about differences between behavior and documentation?
-// TODO(SNOW-1019005): part 3 - needs clarification - what about copy options?
-// TODO(SNOW-1019005): part 3 - after we resolve copy options first - Move common fields like FileFormat, CopyOptions, Comment to the AlterStageOptions and CreateStageOptions
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -100,13 +93,14 @@ var externalS3StageParamsDef = func() *g.QueryStruct {
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
 		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
-		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
+		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials").
+		WithValidation(g.ConflictingFields, "StorageIntegration", "UsePrivatelinkEndpoint")
 }
 
 var externalGCSStageParamsDef = func() *g.QueryStruct {
 	return g.NewQueryStruct("ExternalGCSStageParams").
 		TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-		OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
+		Identifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
 		OptionalQueryStructField(
 			"Encryption",
 			g.NewQueryStruct("ExternalStageGCSEncryption").
@@ -144,7 +138,8 @@ var externalAzureStageParamsDef = func() *g.QueryStruct {
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
 		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
-		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
+		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials").
+		WithValidation(g.ConflictingFields, "StorageIntegration", "UsePrivatelinkEndpoint")
 }
 
 var externalS3CompatibleStageParamsDef = func() *g.QueryStruct {
@@ -269,7 +264,6 @@ var stagesDef = g.NewInterface(
 			OptionalUnsetTags().
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SetTags", "UnsetTags").
-			WithValidation(g.ConflictingFields, "IfExists", "UnsetTags").
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	CustomOperation(
