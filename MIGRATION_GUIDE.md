@@ -30,6 +30,8 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 Previously, Snowflake didn't support `UNSET` for `scaling_policy`, `auto_resume`, and `warehouse_type` in warehouses. As a workaround, the provider used `SET` with default values.
 Now, `UNSET` is available in Snowflake, and the provider uses this operation for these fields.
 
+Note: `auto_suspend` still uses `SET` with the default value (600) as a workaround, because `UNSET` returns 0 instead of the default.
+
 No changes in the configuration is required.
 
 ## v2.11.x ➞ v2.12.0

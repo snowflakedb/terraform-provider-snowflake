@@ -328,6 +328,7 @@ func TestInt_Warehouses(t *testing.T) {
 
 		alterOptions = &sdk.AlterWarehouseOptions{
 			// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
+			// AutoSuspend omitted on purpose - UNSET works incorrectly (returns 0 instead of default 600)
 			// WaitForCompletion omitted on purpose - no unset
 			Unset: &sdk.WarehouseUnset{
 				MaxClusterCount:                 sdk.Bool(true),
@@ -338,7 +339,6 @@ func TestInt_Warehouses(t *testing.T) {
 				QueryAccelerationMaxScaleFactor: sdk.Bool(true),
 				WarehouseType:                   sdk.Bool(true),
 				ScalingPolicy:                   sdk.Bool(true),
-				AutoSuspend:                     sdk.Bool(true),
 				AutoResume:                      sdk.Bool(true),
 			},
 		}
@@ -358,7 +358,6 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterUnset.Generation)
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
 		assert.Equal(t, sdk.ScalingPolicyStandard, warehouseAfterUnset.ScalingPolicy)
-		assert.Equal(t, 0, warehouseAfterUnset.AutoSuspend)
 		assert.Equal(t, true, warehouseAfterUnset.AutoResume)
 	})
 
@@ -670,6 +669,21 @@ func TestInt_Warehouses(t *testing.T) {
 		}
 		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
 		require.ErrorContains(t, err, "invalid property combination 'RESOURCE_CONSTRAINT'='STANDARD_GEN_1' and 'GENERATION'='2'")
+	})
+	t.Run("alter: prove problems with unset auto suspend", func(t *testing.T) {
+		// new warehouse created on purpose
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(warehouseCleanup)
+		alterOptions := &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{AutoSuspend: sdk.Bool(true)},
+		}
+		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		require.NoError(t, err)
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default 600)
+		// assert.Equal(t, "600", returnedWarehouse.AutoSuspend)
+		assert.Equal(t, 0, returnedWarehouse.AutoSuspend)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
