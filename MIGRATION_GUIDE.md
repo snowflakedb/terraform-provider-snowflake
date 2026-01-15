@@ -29,7 +29,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ## *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
 Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.
 
-In this release, this bug has been fixed. Now, all SQL operations during the update use the `d.Partial` method. After failing Terraform operations, the state should be preserved correctly.
+In this release, this bug has been fixed. After failing Terraform operations, the state should be preserved correctly.
 
 If you previously ended up in a corrupted state, you can remove the resource from the state and reimport it using `terraform import`.
 
