@@ -370,30 +370,26 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			userTypeSpecificFieldsErrs = errors.Join(
 				stringAttributeCreate(d, "password", &opts.ObjectProperties.Password),
 				booleanStringAttributeCreate(d, "must_change_password", &opts.ObjectProperties.MustChangePassword),
+				attributeMappedValueCreate(d, "default_workload_identity", &opts.ObjectProperties.WorkloadIdentity, func(v any) (*sdk.UserObjectWorkloadIdentityProperties, error) {
+					wif, err := parseWorkloadIdentityConfig(v)
+					if err != nil {
+						return nil, err
+					}
+					return &wif, nil
+				}),
 			)
 			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeLegacyService)
-			if v, ok := d.GetOk("default_workload_identity"); ok {
-				wifConfig := v.([]any)
-				if len(wifConfig) > 0 {
-					wifProps, err := parseWorkloadIdentityConfig(wifConfig[0].(map[string]any))
-					if err != nil {
-						return diag.FromErr(err)
-					}
-					opts.ObjectProperties.WorkloadIdentity = wifProps
-				}
-			}
 		case sdk.UserTypeService:
-			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeService)
-			if v, ok := d.GetOk("default_workload_identity"); ok {
-				wifConfig := v.([]any)
-				if len(wifConfig) > 0 {
-					wifProps, err := parseWorkloadIdentityConfig(wifConfig[0].(map[string]any))
+			userTypeSpecificFieldsErrs = errors.Join(
+				attributeMappedValueCreate(d, "default_workload_identity", &opts.ObjectProperties.WorkloadIdentity, func(v any) (*sdk.UserObjectWorkloadIdentityProperties, error) {
+					wif, err := parseWorkloadIdentityConfig(v)
 					if err != nil {
-						return diag.FromErr(err)
+						return nil, err
 					}
-					opts.ObjectProperties.WorkloadIdentity = wifProps
-				}
-			}
+					return &wif, nil
+				}),
+			)
+			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeService)
 		}
 		if userTypeSpecificFieldsErrs != nil {
 			return diag.FromErr(userTypeSpecificFieldsErrs)
@@ -542,6 +538,25 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 						setFromStringPropertyIfNotEmpty(rd, "last_name", ud.LastName),
 					)
 				}
+				if userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService {
+					wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+					if err != nil {
+						return err
+					}
+
+					defaultWIF, err := collections.FindFirst(wifMethods, func(m sdk.UserWorkloadIdentityAuthenticationMethod) bool {
+						return m.Name == "DEFAULT"
+					})
+					if errors.Is(err, collections.ErrObjectNotFound) {
+						d.Set("default_workload_identity", nil)
+						// TODO(SNOW-3003261): Handle AWS type externally
+					} else if err == nil && defaultWIF.Type != sdk.WIFTypeAWS {
+						d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF))
+					} else {
+						return err
+					}
+				}
+
 				return errs
 			}(d, userDetails),
 
@@ -552,30 +567,6 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 		)
 		if errs != nil {
 			return diag.FromErr(err)
-		}
-
-		if userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService {
-			wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			defaultWIF, err := collections.FindFirst(wifMethods, func(m sdk.UserWorkloadIdentityAuthenticationMethod) bool {
-				return m.Name == "DEFAULT"
-			})
-
-			switch {
-			case err == nil && defaultWIF != nil && defaultWIF.Type != sdk.WIFTypeAWS:
-				if err := d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)); err != nil {
-					return diag.FromErr(err)
-				}
-			case errors.Is(err, collections.ErrObjectNotFound):
-				if err := d.Set("default_workload_identity", nil); err != nil {
-					return diag.FromErr(err)
-				}
-			case err != nil:
-				return diag.FromErr(err)
-			}
 		}
 
 		return nil
@@ -662,26 +653,15 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		case sdk.UserTypeLegacyService:
 			userTypeSpecificFieldsErrs = errors.Join(
 				booleanStringAttributeUpdate(d, "must_change_password", &setObjectProperties.MustChangePassword, &unsetObjectProperties.MustChangePassword),
+				attributeMappedValueUpdate(d, "default_workload_identity", &setObjectProperties.WorkloadIdentity, &unsetObjectProperties.WorkloadIdentity, parseWorkloadIdentityConfig),
+			)
+		case sdk.UserTypeService:
+			userTypeSpecificFieldsErrs = errors.Join(
+				attributeMappedValueUpdate(d, "default_workload_identity", &setObjectProperties.WorkloadIdentity, &unsetObjectProperties.WorkloadIdentity, parseWorkloadIdentityConfig),
 			)
 		}
 		if userTypeSpecificFieldsErrs != nil {
 			return diag.FromErr(userTypeSpecificFieldsErrs)
-		}
-
-		if (userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService) && d.HasChange("default_workload_identity") {
-			oldVal, newVal := d.GetChange("default_workload_identity")
-			oldConfig := oldVal.([]any)
-			newConfig := newVal.([]any)
-
-			if len(newConfig) > 0 {
-				wifProps, err := parseWorkloadIdentityConfig(newConfig[0].(map[string]any))
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				setObjectProperties.WorkloadIdentity = wifProps
-			} else if len(oldConfig) > 0 {
-				unsetObjectProperties.WorkloadIdentity = sdk.Bool(true)
-			}
 		}
 
 		if (setObjectProperties != sdk.UserAlterObjectProperties{}) {
@@ -781,8 +761,13 @@ var DeleteUser = ResourceDeleteContextFunc(
 
 // parseWorkloadIdentityConfig parses the default_workload_identity block from ResourceData
 // and returns the SDK representation for use in Create/Update operations.
-func parseWorkloadIdentityConfig(config map[string]any) (*sdk.UserObjectWorkloadIdentityProperties, error) {
-	wif := &sdk.UserObjectWorkloadIdentityProperties{}
+func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityProperties, error) {
+	wifConfig := v.([]any)
+	if len(wifConfig) == 0 {
+		return sdk.UserObjectWorkloadIdentityProperties{}, nil
+	}
+	config := wifConfig[0].(map[string]any)
+	wif := sdk.UserObjectWorkloadIdentityProperties{}
 
 	if awsConfig, ok := config["aws"].([]any); ok && len(awsConfig) > 0 {
 		aws := awsConfig[0].(map[string]any)
@@ -839,9 +824,8 @@ func flattenWorkloadIdentityMethod(wif *sdk.UserWorkloadIdentityAuthenticationMe
 	case sdk.WIFTypeAWS:
 		if wif.AwsAdditionalInfo != nil {
 			result["aws"] = []any{
-				map[string]any{
-					"arn": wif.AwsAdditionalInfo.IamRole,
-				},
+				// TODO(SNOW-3003261): Read or construct the ARN from the additional info
+				map[string]any{},
 			}
 		}
 	case sdk.WIFTypeGCP:
