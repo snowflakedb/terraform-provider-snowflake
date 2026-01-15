@@ -153,6 +153,9 @@ jobs:
           TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN }}
           TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID }}
           TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE }}
+
 
       - name: Sweepers cleanup
         if: ${{ always() && steps.setup_go.conclusion == 'success' }}
