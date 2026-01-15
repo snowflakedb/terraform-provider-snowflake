@@ -375,7 +375,11 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			if v, ok := d.GetOk("default_workload_identity"); ok {
 				wifConfig := v.([]any)
 				if len(wifConfig) > 0 {
-					opts.ObjectProperties.WorkloadIdentity = parseWorkloadIdentityConfig(wifConfig[0].(map[string]any))
+					wifProps, err := parseWorkloadIdentityConfig(wifConfig[0].(map[string]any))
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					opts.ObjectProperties.WorkloadIdentity = wifProps
 				}
 			}
 		case sdk.UserTypeService:
@@ -383,7 +387,11 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			if v, ok := d.GetOk("default_workload_identity"); ok {
 				wifConfig := v.([]any)
 				if len(wifConfig) > 0 {
-					opts.ObjectProperties.WorkloadIdentity = parseWorkloadIdentityConfig(wifConfig[0].(map[string]any))
+					wifProps, err := parseWorkloadIdentityConfig(wifConfig[0].(map[string]any))
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					opts.ObjectProperties.WorkloadIdentity = wifProps
 				}
 			}
 		}
@@ -523,6 +531,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			setFromStringPropertyIfNotEmpty(d, "comment", userDetails.Comment),
 			// can't read disable_mfa
 			d.Set("user_type", u.Type),
+			// default_workload_identity handled separately for proper user types,
 
 			func(rd *schema.ResourceData, ud *sdk.UserDetails) error {
 				var errs error
@@ -545,14 +554,12 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			return diag.FromErr(err)
 		}
 
-		// Handle WIF for service user and legacy service user types
 		if userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService {
 			wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
-			// Find the DEFAULT WIF method using collections.FindFirst
 			defaultWIF, err := collections.FindFirst(wifMethods, func(m sdk.UserWorkloadIdentityAuthenticationMethod) bool {
 				return m.Name == "DEFAULT"
 			})
@@ -667,7 +674,10 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			newConfig := newVal.([]any)
 
 			if len(newConfig) > 0 {
-				wifProps := parseWorkloadIdentityConfig(newConfig[0].(map[string]any))
+				wifProps, err := parseWorkloadIdentityConfig(newConfig[0].(map[string]any))
+				if err != nil {
+					return diag.FromErr(err)
+				}
 				setObjectProperties.WorkloadIdentity = wifProps
 			} else if len(oldConfig) > 0 {
 				unsetObjectProperties.WorkloadIdentity = sdk.Bool(true)
@@ -771,7 +781,7 @@ var DeleteUser = ResourceDeleteContextFunc(
 
 // parseWorkloadIdentityConfig parses the default_workload_identity block from ResourceData
 // and returns the SDK representation for use in Create/Update operations.
-func parseWorkloadIdentityConfig(config map[string]any) *sdk.UserObjectWorkloadIdentityProperties {
+func parseWorkloadIdentityConfig(config map[string]any) (*sdk.UserObjectWorkloadIdentityProperties, error) {
 	wif := &sdk.UserObjectWorkloadIdentityProperties{}
 
 	if awsConfig, ok := config["aws"].([]any); ok && len(awsConfig) > 0 {
@@ -813,7 +823,7 @@ func parseWorkloadIdentityConfig(config map[string]any) *sdk.UserObjectWorkloadI
 		}
 	}
 
-	return wif
+	return wif, nil
 }
 
 // flattenWorkloadIdentityMethod converts an SDK UserWorkloadIdentityAuthenticationMethod

@@ -1,7 +1,6 @@
 package resourceassert
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -18,39 +17,29 @@ func (u *ServiceUserResourceAssert) HasDefaultSecondaryRolesOption(expected sdk.
 }
 
 func (u *ServiceUserResourceAssert) HasDefaultWorkloadIdentityOidc(issuer, subject string, audienceList ...string) *ServiceUserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.aws.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.azure.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.gcp.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.oidc.0.issuer", issuer))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.oidc.0.subject", subject))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.oidc.0.oidc_audience_list.#", strconv.Itoa(len(audienceList))))
-	for i, audience := range audienceList {
-		u.AddAssertion(assert.ValueSet(fmt.Sprintf("default_workload_identity.0.oidc.0.oidc_audience_list.%d", i), audience))
+	for _, assertion := range UserHasDefaultWorkloadIdentityOidcAssertions(issuer, subject, audienceList...) {
+		u.AddAssertion(assertion)
 	}
 	return u
 }
 
 func (u *ServiceUserResourceAssert) HasDefaultWorkloadIdentityAws(arn string) *ServiceUserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.azure.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.gcp.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.oidc.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.aws.0.arn", arn))
+	for _, assertion := range UserHasDefaultWorkloadIdentityAwsAssertions(arn) {
+		u.AddAssertion(assertion)
+	}
 	return u
 }
 
 func (u *ServiceUserResourceAssert) HasDefaultWorkloadIdentityAzure(issuer, subject string) *ServiceUserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.aws.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.gcp.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.oidc.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.azure.0.issuer", issuer))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.azure.0.subject", subject))
+	for _, assertion := range UserHasDefaultWorkloadIdentityAzureAssertions(issuer, subject) {
+		u.AddAssertion(assertion)
+	}
 	return u
 }
 
 func (u *ServiceUserResourceAssert) HasDefaultWorkloadIdentityGcp(subject string) *ServiceUserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.aws.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.azure.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.oidc.#", "0"))
-	u.AddAssertion(assert.ValueSet("default_workload_identity.0.gcp.0.subject", subject))
+	for _, assertion := range UserHasDefaultWorkloadIdentityGcpAssertions(subject) {
+		u.AddAssertion(assertion)
+	}
 	return u
 }
