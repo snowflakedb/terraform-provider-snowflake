@@ -179,6 +179,23 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 
 	accountRoleModelWithComment := model.AccountRole("role", id.Name()).
 		WithComment(comment)
+	provider := `
+provider "snowflake" {
+  authenticator = "JWT"
+  private_key = var.v097_compatible_private_key
+  private_key_passphrase = var.v097_compatible_private_key_passphrase
+}
+
+variable "v097_compatible_private_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "v097_compatible_private_key_passphrase" {
+  type      = string
+  sensitive = true
+}
+	`
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -189,7 +206,7 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 			{
 				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, accountRoleModelWithComment),
+				Config:            provider + accconfig.FromModels(t, accountRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "id", id.Name()),
 				),
