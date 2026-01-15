@@ -547,12 +547,13 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 					defaultWIF, err := collections.FindFirst(wifMethods, func(m sdk.UserWorkloadIdentityAuthenticationMethod) bool {
 						return m.Name == "DEFAULT"
 					})
-					if errors.Is(err, collections.ErrObjectNotFound) {
-						d.Set("default_workload_identity", nil)
+					switch {
+					case errors.Is(err, collections.ErrObjectNotFound):
+						errs = errors.Join(errs, d.Set("default_workload_identity", nil))
 						// TODO(SNOW-3003261): Handle AWS type externally
-					} else if err == nil && defaultWIF.Type != sdk.WIFTypeAWS {
-						d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF))
-					} else {
+					case err == nil && defaultWIF.Type != sdk.WIFTypeAWS:
+						errs = errors.Join(errs, d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)))
+					default:
 						return err
 					}
 				}
