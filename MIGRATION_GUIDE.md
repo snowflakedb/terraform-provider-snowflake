@@ -66,6 +66,7 @@ In this release, this bug has been fixed. After failing Terraform operations, th
 If you previously ended up in a corrupted state, you can remove the resource from the state and reimport it using `terraform import`.
 
 No changes in configuration are required.
+References: [#3942](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3942).
 
 ## v2.11.x ➞ v2.12.0
 
