@@ -107,7 +107,8 @@ jobs:
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
-          chmod 0600 ./config ./config_legacy ./config_v097_compatible
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE_WITH_SERVICE_USER }}" > ./config_v097_compatible_with_service_user
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible ./config_v097_compatible_with_service_user
 
       - name: Run unit tests
         run: echo ok
@@ -140,7 +141,7 @@ jobs:
         if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
 
       - name: Run acceptance tests
-        run: go test -test.fullpath=true -timeout 600s -run ^TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId$ github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testacc -v --tags=account_level_tests,non_account_level_tests
+        run: TF_ACC=1 go test -test.fullpath=true -timeout 600s -run ^TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId$ github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/testacc -v --tags=account_level_tests,non_account_level_tests
         if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
         env:
           SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT: ${{ secrets.SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT }}

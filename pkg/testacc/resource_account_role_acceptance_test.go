@@ -204,7 +204,7 @@ variable "v097_compatible_private_key_passphrase" {
 		CheckDestroy: CheckDestroy(t, resources.AccountRole),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				Config:            provider + accconfig.FromModels(t, accountRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
