@@ -179,19 +179,20 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 
 	accountRoleModelWithComment := model.AccountRole("role", id.Name()).
 		WithComment(comment)
+		// The variable names are all uppercase because GitHub forces all env variables to be uppercase.
 	provider := `
 provider "snowflake" {
   authenticator = "JWT"
-  private_key = var.v097_compatible_private_key
-  private_key_passphrase = var.v097_compatible_private_key_passphrase
+  private_key = var.V097_COMPATIBLE_PRIVATE_KEY
+  private_key_passphrase = var.V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE
 }
 
-variable "v097_compatible_private_key" {
+variable "V097_COMPATIBLE_PRIVATE_KEY" {
   type      = string
   sensitive = true
 }
 
-variable "v097_compatible_private_key_passphrase" {
+variable "V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE" {
   type      = string
   sensitive = true
 }
