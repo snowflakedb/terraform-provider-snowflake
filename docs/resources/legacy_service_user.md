@@ -319,8 +319,11 @@ Required:
 Required:
 
 - `issuer` (String) The OIDC issuer URL.
-- `oidc_audience_list` (List of String) List of allowed OIDC audiences.
 - `subject` (String) The OIDC subject identifier.
+
+Optional:
+
+- `oidc_audience_list` (List of String) List of allowed OIDC audiences.
 
 
 

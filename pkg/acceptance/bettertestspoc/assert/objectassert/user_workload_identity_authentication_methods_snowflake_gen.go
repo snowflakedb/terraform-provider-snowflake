@@ -132,6 +132,7 @@ func (u *UserWorkloadIdentityAuthenticationMethodsAssert) HasOidcAdditionalInfo(
 		if o.OidcAdditionalInfo == nil {
 			return fmt.Errorf("expected oidc additional info to have value; got: nil")
 		}
+		// adjusted manually
 		if !reflect.DeepEqual(*o.OidcAdditionalInfo, expected) {
 			return fmt.Errorf("expected oidc additional info: %v; got: %v", expected, *o.OidcAdditionalInfo)
 		}

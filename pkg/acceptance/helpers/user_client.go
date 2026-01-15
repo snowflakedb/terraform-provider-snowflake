@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -243,26 +242,6 @@ func (c *UserClient) ShowProgrammaticAccessToken(t *testing.T, userId sdk.Accoun
 	require.NoError(t, err)
 	require.NotNil(t, token)
 	return token
-}
-
-type UserWorkloadIdentityAuthenticationMethodsObjectIdentifier struct {
-	userId sdk.AccountObjectIdentifier
-	name   string
-}
-
-func NewUserWorkloadIdentityAuthenticationMethodsObjectIdentifier(userId sdk.AccountObjectIdentifier, name string) UserWorkloadIdentityAuthenticationMethodsObjectIdentifier {
-	return UserWorkloadIdentityAuthenticationMethodsObjectIdentifier{
-		userId: userId,
-		name:   name,
-	}
-}
-
-func (i UserWorkloadIdentityAuthenticationMethodsObjectIdentifier) FullyQualifiedName() string {
-	return fmt.Sprintf("%s.%s", i.userId.FullyQualifiedName(), i.name)
-}
-
-func (i UserWorkloadIdentityAuthenticationMethodsObjectIdentifier) Name() string {
-	return i.name
 }
 
 func (c *UserClient) ShowUserWorkloadIdentityAuthenticationMethodOptions(t *testing.T, id UserWorkloadIdentityAuthenticationMethodsObjectIdentifier) (*sdk.UserWorkloadIdentityAuthenticationMethod, error) {
