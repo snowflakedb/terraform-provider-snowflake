@@ -20,6 +20,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -1131,6 +1132,93 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
 				),
 				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+// TestAcc_Schema_FailedUpdateStoresCorrectState tests that when an update operation fails
+// (e.g., due to insufficient privileges), the Terraform state correctly stores the actual
+// state of the resource rather than the desired state. This ensures that subsequent plans
+// will correctly show the drift between the stored state and the desired configuration.
+func TestAcc_Schema_FailedUpdateStoresCorrectState(t *testing.T) {
+	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+
+	// Create a secondary role with limited privileges
+	limitedRole, roleCleanup := testClient().Role.CreateRoleGrantedToCurrentUser(t)
+	t.Cleanup(roleCleanup)
+
+	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(
+		t,
+		limitedRole.ID(),
+		id.DatabaseId(),
+		[]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage},
+		false,
+	)
+
+	schemaWithManagedAccessFalse := model.Schema("test", id.DatabaseName(), id.Name()).WithWithManagedAccess(r.BooleanFalse)
+	schemaWithManagedAccessTrue := model.Schema("test", id.DatabaseName(), id.Name()).WithWithManagedAccess(r.BooleanTrue)
+	grantModel := model.GrantPrivilegesToAccountRole("test", limitedRole.Name).
+		WithOnSchemaName(id).
+		WithPrivileges(string(sdk.SchemaPrivilegeMonitor), string(sdk.SchemaPrivilegeUsage)).
+		WithDependsOn("snowflake_schema.test")
+
+	// Config for creating the schema with the admin role
+	basicConfig := accconfig.FromModels(t, grantModel, schemaWithManagedAccessFalse)
+	configWithLimitedRoleAndEnabledManagedAccess := accconfig.FromModels(t, grantModel, providermodel.SnowflakeProvider().WithRole(limitedRole.Name), schemaWithManagedAccessTrue)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Schema),
+		Steps: []resource.TestStep{
+			{
+				Config: basicConfig,
+				Check: assertThat(t,
+					objectassert.Schema(t, id).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasOptions(""),
+					resourceassert.SchemaResource(t, schemaWithManagedAccessFalse.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasWithManagedAccessString(r.BooleanFalse),
+				),
+			},
+			// Run the operation causing the broken state.
+			{
+				Config:      configWithLimitedRoleAndEnabledManagedAccess,
+				ExpectError: regexp.MustCompile("Insufficient privileges to operate on schema"),
+			},
+			// We want to assert that the managed access in state is false after the update fails. Because of the framework limitations,
+			// we need to do this in a separate step.
+			{
+				RefreshState: true,
+				Check: assertThat(t,
+					resourceassert.SchemaResource(t, "snowflake_schema.test").
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasWithManagedAccessString(r.BooleanFalse),
+				),
+				// The plan is non-empty because the managed access is enabled in the config, but the update failed.
+				ExpectNonEmptyPlan: true,
+			},
+			// We need to use the default role to destroy the resources in the last step.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(schemaWithManagedAccessFalse.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: basicConfig,
+				Check: assertThat(t,
+					resourceassert.SchemaResource(t, "snowflake_schema.test").
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasWithManagedAccessString(r.BooleanFalse),
+				),
 			},
 		},
 	})
