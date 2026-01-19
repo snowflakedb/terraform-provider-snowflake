@@ -159,7 +159,7 @@ jobs:
 
       - name: Sweepers cleanup
         if: ${{ always() && steps.setup_go.conclusion == 'success' }}
-        run: echo y | echo ok
+        run: echo y | make sweep
 
       - name: Create or update comment
         if: ${{ always() }}

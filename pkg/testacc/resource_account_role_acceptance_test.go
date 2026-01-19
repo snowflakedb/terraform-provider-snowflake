@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -179,24 +180,6 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 
 	accountRoleModelWithComment := model.AccountRole("role", id.Name()).
 		WithComment(comment)
-		// The variable names are all uppercase because GitHub forces all env variables to be uppercase.
-	provider := `
-provider "snowflake" {
-  authenticator = "JWT"
-  private_key = var.V097_COMPATIBLE_PRIVATE_KEY
-  private_key_passphrase = var.V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE
-}
-
-variable "V097_COMPATIBLE_PRIVATE_KEY" {
-  type      = string
-  sensitive = true
-}
-
-variable "V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE" {
-  type      = string
-  sensitive = true
-}
-	`
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -207,7 +190,7 @@ variable "V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE" {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            provider + accconfig.FromModels(t, accountRoleModelWithComment),
+				Config:            testvars.V097CompatibleProvider() + accconfig.FromModels(t, accountRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "id", id.Name()),
 				),
