@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.12.0 ➞ v2.12.1
 
+### *(improvement)* Using UNSET for certain fields in warehouses
+Previously, Snowflake didn't support `UNSET` for `scaling_policy`, `auto_resume`, and `warehouse_type` in warehouses. As a workaround, the provider used `SET` with default values.
+Now, `UNSET` is available in Snowflake, and the provider uses this operation for these fields.
+
+Note: `auto_suspend` still uses `SET` with the default value (600) as a workaround, because `UNSET` returns 0 instead of the default.
+
+No changes in the configuration is required.
+
 ## *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
 Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.
 
