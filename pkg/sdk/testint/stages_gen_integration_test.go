@@ -287,7 +287,6 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateInternal(ctx, sdk.NewCreateInternalStageRequest(id).
-			WithCopyOptions(*sdk.NewStageCopyOptionsRequest().WithSizeLimit(100)).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
 			WithComment("some comment"))
 		require.NoError(t, err)
@@ -303,13 +302,6 @@ func TestInt_Stages(t *testing.T) {
 		stageProperties, err := client.Stages.Describe(ctx, id)
 		require.NoError(t, err)
 		require.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_COPY_OPTIONS",
-			Name:    "SIZE_LIMIT",
-			Type:    "Long",
-			Value:   "100",
-			Default: "",
-		})
-		require.Contains(t, stageProperties, sdk.StageProperty{
 			Parent:  "STAGE_FILE_FORMAT",
 			Name:    "TYPE",
 			Type:    "String",
@@ -319,7 +311,6 @@ func TestInt_Stages(t *testing.T) {
 
 		err = client.Stages.AlterInternalStage(ctx, sdk.NewAlterInternalStageStageRequest(id).
 			WithIfExists(true).
-			WithCopyOptions(*sdk.NewStageCopyOptionsRequest().WithSizeLimit(200)).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeCSV)).
 			WithComment("altered comment"))
 		require.NoError(t, err)
@@ -330,13 +321,6 @@ func TestInt_Stages(t *testing.T) {
 
 		stageProperties, err = client.Stages.Describe(ctx, id)
 		require.NoError(t, err)
-		require.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_COPY_OPTIONS",
-			Name:    "SIZE_LIMIT",
-			Type:    "Long",
-			Value:   "200",
-			Default: "",
-		})
 		require.Contains(t, stageProperties, sdk.StageProperty{
 			Parent:  "STAGE_FILE_FORMAT",
 			Name:    "TYPE",

@@ -30,6 +30,25 @@ type Tables interface {
 	DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error)
 }
 
+// StageCopyOptions are the options for STAGE_COPY_OPTIONS in CREATE/ALTER TABLE.
+// Based on https://docs.snowflake.com/en/sql-reference/sql/create-stage#copy-options-copyoptions
+type StageCopyOptions struct {
+	OnError           *StageCopyOnErrorOptions  `ddl:"parameter" sql:"ON_ERROR"`
+	SizeLimit         *int                      `ddl:"parameter" sql:"SIZE_LIMIT"`
+	Purge             *bool                     `ddl:"parameter" sql:"PURGE"`
+	ReturnFailedOnly  *bool                     `ddl:"parameter" sql:"RETURN_FAILED_ONLY"`
+	MatchByColumnName *StageCopyColumnMapOption `ddl:"parameter" sql:"MATCH_BY_COLUMN_NAME"`
+	EnforceLength     *bool                     `ddl:"parameter" sql:"ENFORCE_LENGTH"`
+	Truncatecolumns   *bool                     `ddl:"parameter" sql:"TRUNCATECOLUMNS"`
+	Force             *bool                     `ddl:"parameter" sql:"FORCE"`
+}
+
+type StageCopyOnErrorOptions struct {
+	Continue_      *bool   `ddl:"keyword" sql:"CONTINUE"`
+	SkipFile       *string `ddl:"keyword" sql:"SKIP_FILE"`
+	AbortStatement *bool   `ddl:"keyword" sql:"ABORT_STATEMENT"`
+}
+
 // TODO: check if [...] in the docs (like in https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template) mean that we can reuse all parameters from "normal" createTableOptions
 type createTableAsSelectOptions struct {
 	create          bool                   `ddl:"static" sql:"CREATE"`

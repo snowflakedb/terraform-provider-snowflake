@@ -4,6 +4,23 @@ import "time"
 
 //go:generate go run ./dto-builder-generator/main.go
 
+type StageCopyOptionsRequest struct {
+	OnError           *StageCopyOnErrorOptionsRequest
+	SizeLimit         *int
+	Purge             *bool
+	ReturnFailedOnly  *bool
+	MatchByColumnName *StageCopyColumnMapOption
+	EnforceLength     *bool
+	Truncatecolumns   *bool
+	Force             *bool
+}
+
+type StageCopyOnErrorOptionsRequest struct {
+	Continue_      *bool
+	SkipFile       *string
+	AbortStatement *bool
+}
+
 type CreateTableAsSelectRequest struct {
 	orReplace *bool
 	name      SchemaObjectIdentifier       // required
