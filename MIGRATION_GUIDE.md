@@ -34,6 +34,15 @@ Note: `auto_suspend` still uses `SET` with the default value (600) as a workarou
 
 No changes in the configuration is required.
 
+## *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
+Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.
+
+In this release, this bug has been fixed. After failing Terraform operations, the state should be preserved correctly.
+
+If you previously ended up in a corrupted state, you can remove the resource from the state and reimport it using `terraform import`.
+
+No changes in configuration are required.
+
 ## v2.11.x ➞ v2.12.0
 
 ### *(new feature)* The new `strict_privilege_management` flag in the `snowflake_grant_privileges_to_account_role` resource

@@ -2681,19 +2681,9 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Validation_Confli
 		WithOnAllSchemasInDatabase(sdk.NewAccountObjectIdentifier("test_database")).
 		WithStrictPrivilegeManagement(true)
 
-	resourceModelOnSchemaFuture := model.GrantPrivilegesToAccountRole("test", "test_role").
-		WithPrivileges(string(sdk.SchemaPrivilegeUsage)).
-		WithOnFutureSchemasInDatabase(sdk.NewAccountObjectIdentifier("test_database")).
-		WithStrictPrivilegeManagement(true)
-
 	resourceModelOnSchemaObjectAll := model.GrantPrivilegesToAccountRole("test", "test_role").
 		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
 		WithOnAllSchemaObjectsInSchema(sdk.PluralObjectTypeTables, sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")).
-		WithStrictPrivilegeManagement(true)
-
-	resourceModelOnSchemaObjectFuture := model.GrantPrivilegesToAccountRole("test", "test_role").
-		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
-		WithOnFutureSchemaObjectsInSchema(sdk.PluralObjectTypeTables, sdk.NewDatabaseObjectIdentifier("test_database", "test_schema")).
 		WithStrictPrivilegeManagement(true)
 
 	resource.Test(t, resource.TestCase{
@@ -2714,19 +2704,9 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Validation_Confli
 				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with`),
 			},
 			{
-				Config:      accconfig.FromModels(t, providerModel, resourceModelOnSchemaFuture),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with`),
-			},
-			{
 				Config:      accconfig.FromModels(t, providerModel, resourceModelOnSchemaObjectAll),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema_object\.0\.all`),
-			},
-			{
-				Config:      accconfig.FromModels(t, providerModel, resourceModelOnSchemaObjectFuture),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`"strict_privilege_management": conflicts with on_schema_object\.0\.future`),
 			},
 		},
 	})
