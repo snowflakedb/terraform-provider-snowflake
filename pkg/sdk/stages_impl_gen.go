@@ -141,25 +141,11 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 		}
 	}
 	if r.FileFormat != nil {
-		// adjusted manually
-		opts.FileFormat = r.FileFormat.toOpts()
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+		opts.FileFormat = &StageFileFormat{
+			FormatName:     r.FileFormat.FormatName,
+			FileFormatType: r.FileFormat.FileFormatType,
+			// adjusted manually
+			Options: r.FileFormat.Options.toOpts(),
 		}
 	}
 	return opts
@@ -222,24 +208,6 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 			Options: r.FileFormat.Options.toOpts(),
 		}
 	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
-		}
-	}
 	return opts
 }
 
@@ -281,24 +249,6 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
 			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
 		}
 	}
 	return opts
@@ -350,24 +300,6 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 			Options: r.FileFormat.Options.toOpts(),
 		}
 	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
-		}
-	}
 	return opts
 }
 
@@ -405,24 +337,6 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 			Options: r.FileFormat.Options.toOpts(),
 		}
 	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
-		}
-	}
 	return opts
 }
 
@@ -449,24 +363,6 @@ func (r *AlterInternalStageStageRequest) toOpts() *AlterInternalStageStageOption
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
 			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
 		}
 	}
 	return opts
@@ -521,24 +417,6 @@ func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOp
 			Options: r.FileFormat.Options.toOpts(),
 		}
 	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
-		}
-	}
 	return opts
 }
 
@@ -571,24 +449,6 @@ func (r *AlterExternalGCSStageStageRequest) toOpts() *AlterExternalGCSStageStage
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
 			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
 		}
 	}
 	return opts
@@ -629,24 +489,6 @@ func (r *AlterExternalAzureStageStageRequest) toOpts() *AlterExternalAzureStageS
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
 			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
 		}
 	}
 	return opts

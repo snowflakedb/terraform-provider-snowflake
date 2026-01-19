@@ -39,7 +39,6 @@ type CreateInternalStageOptions struct {
 	Encryption            *InternalStageEncryption       `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
 	DirectoryTableOptions *InternalDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat               `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions           *StageCopyOptions              `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
 	Comment               *string                        `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                   []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
 }
@@ -68,24 +67,6 @@ type StageFileFormat struct {
 	Options        *FileFormatTypeOptions `ddl:"list,no_comma"`
 }
 
-type StageCopyOptions struct {
-	OnError           *StageCopyOnErrorOptions  `ddl:"parameter" sql:"ON_ERROR"`
-	SizeLimit         *int                      `ddl:"parameter" sql:"SIZE_LIMIT"`
-	Purge             *bool                     `ddl:"parameter" sql:"PURGE"`
-	ReturnFailedOnly  *bool                     `ddl:"parameter" sql:"RETURN_FAILED_ONLY"`
-	MatchByColumnName *StageCopyColumnMapOption `ddl:"parameter" sql:"MATCH_BY_COLUMN_NAME"`
-	EnforceLength     *bool                     `ddl:"parameter" sql:"ENFORCE_LENGTH"`
-	Truncatecolumns   *bool                     `ddl:"parameter" sql:"TRUNCATECOLUMNS"`
-	Force             *bool                     `ddl:"parameter" sql:"FORCE"`
-}
-
-type StageCopyOnErrorOptions struct {
-	Continue_ *bool `ddl:"keyword" sql:"CONTINUE"`
-	// adjusted manually
-	SkipFile       *string `ddl:"keyword" sql:"SKIP_FILE"`
-	AbortStatement *bool   `ddl:"keyword" sql:"ABORT_STATEMENT"`
-}
-
 // CreateOnS3StageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3StageOptions struct {
 	create                bool                                `ddl:"static" sql:"CREATE"`
@@ -97,7 +78,6 @@ type CreateOnS3StageOptions struct {
 	ExternalStageParams   ExternalS3StageParams               `ddl:"keyword"`
 	DirectoryTableOptions *StageS3CommonDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                    `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions           *StageCopyOptions                   `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
 	Comment               *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                   []TagAssociation                    `ddl:"keyword,parentheses" sql:"TAG"`
 }
@@ -160,7 +140,6 @@ type CreateOnGCSStageOptions struct {
 	ExternalStageParams   ExternalGCSStageParams            `ddl:"keyword"`
 	DirectoryTableOptions *ExternalGCSDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                  `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions           *StageCopyOptions                 `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
 	Comment               *string                           `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                   []TagAssociation                  `ddl:"keyword,parentheses" sql:"TAG"`
 }
@@ -203,7 +182,6 @@ type CreateOnAzureStageOptions struct {
 	ExternalStageParams   ExternalAzureStageParams            `ddl:"keyword"`
 	DirectoryTableOptions *ExternalAzureDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                    `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions           *StageCopyOptions                   `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
 	Comment               *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                   []TagAssociation                    `ddl:"keyword,parentheses" sql:"TAG"`
 }
@@ -252,7 +230,6 @@ type CreateOnS3CompatibleStageOptions struct {
 	ExternalStageParams   ExternalS3CompatibleStageParams     `ddl:"keyword"`
 	DirectoryTableOptions *StageS3CommonDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
 	FileFormat            *StageFileFormat                    `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions           *StageCopyOptions                   `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
 	Comment               *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                   []TagAssociation                    `ddl:"keyword,parentheses" sql:"TAG"`
 }
@@ -281,14 +258,13 @@ type AlterStageOptions struct {
 
 // AlterInternalStageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
 type AlterInternalStageStageOptions struct {
-	alter       bool                   `ddl:"static" sql:"ALTER"`
-	stage       bool                   `ddl:"static" sql:"STAGE"`
-	IfExists    *bool                  `ddl:"keyword" sql:"IF EXISTS"`
-	name        SchemaObjectIdentifier `ddl:"identifier"`
-	set         bool                   `ddl:"static" sql:"SET"`
-	FileFormat  *StageFileFormat       `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions *StageCopyOptions      `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
-	Comment     *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	alter      bool                   `ddl:"static" sql:"ALTER"`
+	stage      bool                   `ddl:"static" sql:"STAGE"`
+	IfExists   *bool                  `ddl:"keyword" sql:"IF EXISTS"`
+	name       SchemaObjectIdentifier `ddl:"identifier"`
+	set        bool                   `ddl:"static" sql:"SET"`
+	FileFormat *StageFileFormat       `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
+	Comment    *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterExternalS3StageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -299,9 +275,8 @@ type AlterExternalS3StageStageOptions struct {
 	name                SchemaObjectIdentifier `ddl:"identifier"`
 	set                 bool                   `ddl:"static" sql:"SET"`
 	ExternalStageParams *ExternalS3StageParams
-	FileFormat          *StageFileFormat  `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions         *StageCopyOptions `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
-	Comment             *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	FileFormat          *StageFileFormat `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
+	Comment             *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterExternalGCSStageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -312,9 +287,8 @@ type AlterExternalGCSStageStageOptions struct {
 	name                SchemaObjectIdentifier `ddl:"identifier"`
 	set                 bool                   `ddl:"static" sql:"SET"`
 	ExternalStageParams *ExternalGCSStageParams
-	FileFormat          *StageFileFormat  `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions         *StageCopyOptions `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
-	Comment             *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	FileFormat          *StageFileFormat `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
+	Comment             *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterExternalAzureStageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -325,9 +299,8 @@ type AlterExternalAzureStageStageOptions struct {
 	name                SchemaObjectIdentifier `ddl:"identifier"`
 	set                 bool                   `ddl:"static" sql:"SET"`
 	ExternalStageParams *ExternalAzureStageParams
-	FileFormat          *StageFileFormat  `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions         *StageCopyOptions `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
-	Comment             *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	FileFormat          *StageFileFormat `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
+	Comment             *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterDirectoryTableStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
