@@ -6,13 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO(SNOW-1019005): part 2 - use a custom file format struct with a nice nesting
-// TODO(SNOW-1019005): part 2 - generate assertions
-// TODO(SNOW-1019005): part 2 - add parsers for DESC output and return a nice struct; use them in integration tests assertions
-// TODO(SNOW-1019005): part 2 - improve integration tests
-// TODO(SNOW-1019005): part 3 - needs clarification - what about differences between behavior and documentation?
-// TODO(SNOW-1019005): part 3 - needs clarification - what about copy options?
-// TODO(SNOW-1019005): part 3 - after we resolve copy options first - Move common fields like FileFormat, CopyOptions, Comment to the AlterStageOptions and CreateStageOptions
+// TODO(SNOW-1019005): remove copy options
+// TODO(SNOW-1019005): use a custom file format struct with a nice nesting
+// TODO(SNOW-1019005): generate assertions
+// TODO(SNOW-1019005): add parsers for DESC output and return a nice struct; use them in integration tests assertions
+// TODO(SNOW-1019005): improve integration tests
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -49,6 +47,13 @@ var stageFileFormatDef = g.NewQueryStruct("StageFileFormat").
 	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignmentWithFieldName("TYPE", g.KindOfTPointer[sdkcommons.FileFormatType](), g.ParameterOptions(), "FileFormatType").
 	PredefinedQueryStructField("Options", g.KindOfTPointer[sdkcommons.FileFormatTypeOptions](), g.ListOptions().NoComma())
+
+var stageS3CommonDirectoryTableOptionsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("StageS3CommonDirectoryTableOptions").
+		BooleanAssignment("ENABLE", nil).
+		OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
+		OptionalBooleanAssignment("AUTO_REFRESH", nil)
+}
 
 var stageCopyOptionsDef = func() *g.QueryStruct {
 	return g.NewQueryStruct("StageCopyOptions").
@@ -89,34 +94,61 @@ var externalS3StageParamsDef = func() *g.QueryStruct {
 			g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
 		).
 		OptionalQueryStructField("Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
-			OptionalAssignmentWithFieldName(
-				"TYPE",
-				g.KindOfT[sdkcommons.ExternalStageS3EncryptionOption](),
-				g.ParameterOptions().SingleQuotes().Required(),
-				"EncryptionType",
+			OptionalQueryStructField(
+				"AwsCse",
+				g.NewQueryStruct("ExternalStageS3EncryptionAwsCse").
+					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_CSE'")).
+					TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
+				g.KeywordOptions(),
 			).
-			OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()).
-			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+			OptionalQueryStructField(
+				"AwsSseS3",
+				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseS3").
+					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_SSE_S3'")),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"AwsSseKms",
+				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseKms").
+					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AWS_SSE_KMS'")).
+					OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+				g.KeywordOptions(),
+			).
+			OptionalQueryStructField(
+				"None",
+				g.NewQueryStruct("ExternalStageS3EncryptionNone").
+					PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+				g.KeywordOptions(),
+			).
+			WithValidation(g.ExactlyOneValueSet, "AwsCse", "AwsSseS3", "AwsSseKms", "None"),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
 		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
-		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
+		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials").
+		WithValidation(g.ConflictingFields, "StorageIntegration", "UsePrivatelinkEndpoint")
 }
 
 var externalGCSStageParamsDef = func() *g.QueryStruct {
 	return g.NewQueryStruct("ExternalGCSStageParams").
 		TextAssignment("URL", g.ParameterOptions().SingleQuotes()).
-		OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
+		Identifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
 		OptionalQueryStructField(
 			"Encryption",
 			g.NewQueryStruct("ExternalStageGCSEncryption").
-				OptionalAssignmentWithFieldName(
-					"TYPE",
-					g.KindOfT[sdkcommons.ExternalStageGCSEncryptionOption](),
-					g.ParameterOptions().SingleQuotes().Required(),
-					"EncryptionType",
+				OptionalQueryStructField(
+					"GcsSseKms",
+					g.NewQueryStruct("ExternalStageGCSEncryptionGcsSseKms").
+						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'GCS_SSE_KMS'")).
+						OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+					g.KeywordOptions(),
 				).
-				OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+				OptionalQueryStructField(
+					"None",
+					g.NewQueryStruct("ExternalStageGCSEncryptionNone").
+						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+					g.KeywordOptions(),
+				).
+				WithValidation(g.ExactlyOneValueSet, "GcsSseKms", "None"),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		)
 }
@@ -134,17 +166,25 @@ var externalAzureStageParamsDef = func() *g.QueryStruct {
 		OptionalQueryStructField(
 			"Encryption",
 			g.NewQueryStruct("ExternalStageAzureEncryption").
-				OptionalAssignmentWithFieldName(
-					"TYPE",
-					g.KindOfT[sdkcommons.ExternalStageAzureEncryptionOption](),
-					g.ParameterOptions().SingleQuotes().Required(),
-					"EncryptionType",
+				OptionalQueryStructField(
+					"AzureCse",
+					g.NewQueryStruct("ExternalStageAzureEncryptionAzureCse").
+						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'AZURE_CSE'")).
+						TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
+					g.KeywordOptions(),
 				).
-				OptionalTextAssignment("MASTER_KEY", g.ParameterOptions().SingleQuotes()),
+				OptionalQueryStructField(
+					"None",
+					g.NewQueryStruct("ExternalStageAzureEncryptionNone").
+						PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'NONE'")),
+					g.KeywordOptions(),
+				).
+				WithValidation(g.ExactlyOneValueSet, "AzureCse", "None"),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
 		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
-		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials")
+		WithValidation(g.ConflictingFields, "StorageIntegration", "Credentials").
+		WithValidation(g.ConflictingFields, "StorageIntegration", "UsePrivatelinkEndpoint")
 }
 
 var externalS3CompatibleStageParamsDef = func() *g.QueryStruct {
@@ -173,12 +213,19 @@ var stagesDef = g.NewInterface(
 				OptionalQueryStructField(
 					"Encryption",
 					g.NewQueryStruct("InternalStageEncryption").
-						AssignmentWithFieldName(
-							"TYPE",
-							g.KindOfT[sdkcommons.InternalStageEncryptionOption](),
-							g.ParameterOptions().SingleQuotes().Required(),
-							"EncryptionType",
-						),
+						OptionalQueryStructField(
+							"SnowflakeFull",
+							g.NewQueryStruct("InternalStageEncryptionSnowflakeFull").
+								PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'SNOWFLAKE_FULL'")),
+							g.KeywordOptions(),
+						).
+						OptionalQueryStructField(
+							"SnowflakeSse",
+							g.NewQueryStruct("InternalStageEncryptionSnowflakeSse").
+								PredefinedQueryStructField("encryptionType", "string", g.StaticOptions().SQL("TYPE = 'SNOWFLAKE_SSE'")),
+							g.KeywordOptions(),
+						).
+						WithValidation(g.ExactlyOneValueSet, "SnowflakeFull", "SnowflakeSse"),
 					g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 				).
 				OptionalQueryStructField(
@@ -198,10 +245,7 @@ var stagesDef = g.NewInterface(
 				QueryStructField("ExternalStageParams", externalS3StageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
-					g.NewQueryStruct("ExternalS3DirectoryTableOptions").
-						BooleanAssignment("ENABLE", nil).
-						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
-						OptionalBooleanAssignment("AUTO_REFRESH", nil),
+					stageS3CommonDirectoryTableOptionsDef(),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),
@@ -246,13 +290,9 @@ var stagesDef = g.NewInterface(
 		createStageOperation("CreateExternalS3CompatibleStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.
 				QueryStructField("ExternalStageParams", externalS3CompatibleStageParamsDef(), g.KeywordOptions().Required()).
-				// TODO(SNOW-1019005): next PRs - Can we just use s3 directory table options?
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
-					g.NewQueryStruct("ExternalS3DirectoryTableOptions").
-						BooleanAssignment("ENABLE", nil).
-						OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
-						OptionalBooleanAssignment("AUTO_REFRESH", nil),
+					stageS3CommonDirectoryTableOptionsDef(),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),
@@ -269,7 +309,6 @@ var stagesDef = g.NewInterface(
 			OptionalUnsetTags().
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SetTags", "UnsetTags").
-			WithValidation(g.ConflictingFields, "IfExists", "UnsetTags").
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	CustomOperation(

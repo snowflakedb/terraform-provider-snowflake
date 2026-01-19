@@ -55,11 +55,28 @@ func (s *CreateInternalStageRequest) WithTag(tag []TagAssociation) *CreateIntern
 	return s
 }
 
-func NewInternalStageEncryptionRequest(
-	encryptionType InternalStageEncryptionOption,
-) *InternalStageEncryptionRequest {
+func NewInternalStageEncryptionRequest() *InternalStageEncryptionRequest {
 	s := InternalStageEncryptionRequest{}
-	s.EncryptionType = encryptionType
+	return &s
+}
+
+func (s *InternalStageEncryptionRequest) WithSnowflakeFull(snowflakeFull InternalStageEncryptionSnowflakeFullRequest) *InternalStageEncryptionRequest {
+	s.SnowflakeFull = &snowflakeFull
+	return s
+}
+
+func (s *InternalStageEncryptionRequest) WithSnowflakeSse(snowflakeSse InternalStageEncryptionSnowflakeSseRequest) *InternalStageEncryptionRequest {
+	s.SnowflakeSse = &snowflakeSse
+	return s
+}
+
+func NewInternalStageEncryptionSnowflakeFullRequest() *InternalStageEncryptionSnowflakeFullRequest {
+	s := InternalStageEncryptionSnowflakeFullRequest{}
+	return &s
+}
+
+func NewInternalStageEncryptionSnowflakeSseRequest() *InternalStageEncryptionSnowflakeSseRequest {
+	s := InternalStageEncryptionSnowflakeSseRequest{}
 	return &s
 }
 
@@ -186,7 +203,7 @@ func (s *CreateOnS3StageRequest) WithIfNotExists(ifNotExists bool) *CreateOnS3St
 	return s
 }
 
-func (s *CreateOnS3StageRequest) WithDirectoryTableOptions(directoryTableOptions ExternalS3DirectoryTableOptionsRequest) *CreateOnS3StageRequest {
+func (s *CreateOnS3StageRequest) WithDirectoryTableOptions(directoryTableOptions StageS3CommonDirectoryTableOptionsRequest) *CreateOnS3StageRequest {
 	s.DirectoryTableOptions = &directoryTableOptions
 	return s
 }
@@ -269,40 +286,75 @@ func (s *ExternalStageS3CredentialsRequest) WithAwsRole(awsRole string) *Externa
 	return s
 }
 
-func NewExternalStageS3EncryptionRequest(
-	encryptionType *ExternalStageS3EncryptionOption,
-) *ExternalStageS3EncryptionRequest {
+func NewExternalStageS3EncryptionRequest() *ExternalStageS3EncryptionRequest {
 	s := ExternalStageS3EncryptionRequest{}
-	s.EncryptionType = encryptionType
 	return &s
 }
 
-func (s *ExternalStageS3EncryptionRequest) WithMasterKey(masterKey string) *ExternalStageS3EncryptionRequest {
-	s.MasterKey = &masterKey
+func (s *ExternalStageS3EncryptionRequest) WithAwsCse(awsCse ExternalStageS3EncryptionAwsCseRequest) *ExternalStageS3EncryptionRequest {
+	s.AwsCse = &awsCse
 	return s
 }
 
-func (s *ExternalStageS3EncryptionRequest) WithKmsKeyId(kmsKeyId string) *ExternalStageS3EncryptionRequest {
+func (s *ExternalStageS3EncryptionRequest) WithAwsSseS3(awsSseS3 ExternalStageS3EncryptionAwsSseS3Request) *ExternalStageS3EncryptionRequest {
+	s.AwsSseS3 = &awsSseS3
+	return s
+}
+
+func (s *ExternalStageS3EncryptionRequest) WithAwsSseKms(awsSseKms ExternalStageS3EncryptionAwsSseKmsRequest) *ExternalStageS3EncryptionRequest {
+	s.AwsSseKms = &awsSseKms
+	return s
+}
+
+func (s *ExternalStageS3EncryptionRequest) WithNone(none ExternalStageS3EncryptionNoneRequest) *ExternalStageS3EncryptionRequest {
+	s.None = &none
+	return s
+}
+
+func NewExternalStageS3EncryptionAwsCseRequest(
+	masterKey string,
+) *ExternalStageS3EncryptionAwsCseRequest {
+	s := ExternalStageS3EncryptionAwsCseRequest{}
+	s.MasterKey = masterKey
+	return &s
+}
+
+func NewExternalStageS3EncryptionAwsSseS3Request() *ExternalStageS3EncryptionAwsSseS3Request {
+	s := ExternalStageS3EncryptionAwsSseS3Request{}
+	return &s
+}
+
+func NewExternalStageS3EncryptionAwsSseKmsRequest() *ExternalStageS3EncryptionAwsSseKmsRequest {
+	s := ExternalStageS3EncryptionAwsSseKmsRequest{}
+	return &s
+}
+
+func (s *ExternalStageS3EncryptionAwsSseKmsRequest) WithKmsKeyId(kmsKeyId string) *ExternalStageS3EncryptionAwsSseKmsRequest {
 	s.KmsKeyId = &kmsKeyId
 	return s
 }
 
-func NewExternalS3DirectoryTableOptionsRequest() *ExternalS3DirectoryTableOptionsRequest {
-	s := ExternalS3DirectoryTableOptionsRequest{}
+func NewExternalStageS3EncryptionNoneRequest() *ExternalStageS3EncryptionNoneRequest {
+	s := ExternalStageS3EncryptionNoneRequest{}
 	return &s
 }
 
-func (s *ExternalS3DirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalS3DirectoryTableOptionsRequest {
+func NewStageS3CommonDirectoryTableOptionsRequest() *StageS3CommonDirectoryTableOptionsRequest {
+	s := StageS3CommonDirectoryTableOptionsRequest{}
+	return &s
+}
+
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithEnable(enable bool) *StageS3CommonDirectoryTableOptionsRequest {
 	s.Enable = enable
 	return s
 }
 
-func (s *ExternalS3DirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *ExternalS3DirectoryTableOptionsRequest {
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *StageS3CommonDirectoryTableOptionsRequest {
 	s.RefreshOnCreate = &refreshOnCreate
 	return s
 }
 
-func (s *ExternalS3DirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *ExternalS3DirectoryTableOptionsRequest {
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *StageS3CommonDirectoryTableOptionsRequest {
 	s.AutoRefresh = &autoRefresh
 	return s
 }
@@ -366,7 +418,7 @@ func NewExternalGCSStageParamsRequest(
 }
 
 func (s *ExternalGCSStageParamsRequest) WithStorageIntegration(storageIntegration AccountObjectIdentifier) *ExternalGCSStageParamsRequest {
-	s.StorageIntegration = &storageIntegration
+	s.StorageIntegration = storageIntegration
 	return s
 }
 
@@ -375,17 +427,34 @@ func (s *ExternalGCSStageParamsRequest) WithEncryption(encryption ExternalStageG
 	return s
 }
 
-func NewExternalStageGCSEncryptionRequest(
-	encryptionType *ExternalStageGCSEncryptionOption,
-) *ExternalStageGCSEncryptionRequest {
+func NewExternalStageGCSEncryptionRequest() *ExternalStageGCSEncryptionRequest {
 	s := ExternalStageGCSEncryptionRequest{}
-	s.EncryptionType = encryptionType
 	return &s
 }
 
-func (s *ExternalStageGCSEncryptionRequest) WithKmsKeyId(kmsKeyId string) *ExternalStageGCSEncryptionRequest {
+func (s *ExternalStageGCSEncryptionRequest) WithGcsSseKms(gcsSseKms ExternalStageGCSEncryptionGcsSseKmsRequest) *ExternalStageGCSEncryptionRequest {
+	s.GcsSseKms = &gcsSseKms
+	return s
+}
+
+func (s *ExternalStageGCSEncryptionRequest) WithNone(none ExternalStageGCSEncryptionNoneRequest) *ExternalStageGCSEncryptionRequest {
+	s.None = &none
+	return s
+}
+
+func NewExternalStageGCSEncryptionGcsSseKmsRequest() *ExternalStageGCSEncryptionGcsSseKmsRequest {
+	s := ExternalStageGCSEncryptionGcsSseKmsRequest{}
+	return &s
+}
+
+func (s *ExternalStageGCSEncryptionGcsSseKmsRequest) WithKmsKeyId(kmsKeyId string) *ExternalStageGCSEncryptionGcsSseKmsRequest {
 	s.KmsKeyId = &kmsKeyId
 	return s
+}
+
+func NewExternalStageGCSEncryptionNoneRequest() *ExternalStageGCSEncryptionNoneRequest {
+	s := ExternalStageGCSEncryptionNoneRequest{}
+	return &s
 }
 
 func NewExternalGCSDirectoryTableOptionsRequest() *ExternalGCSDirectoryTableOptionsRequest {
@@ -499,17 +568,32 @@ func NewExternalStageAzureCredentialsRequest(
 	return &s
 }
 
-func NewExternalStageAzureEncryptionRequest(
-	encryptionType *ExternalStageAzureEncryptionOption,
-) *ExternalStageAzureEncryptionRequest {
+func NewExternalStageAzureEncryptionRequest() *ExternalStageAzureEncryptionRequest {
 	s := ExternalStageAzureEncryptionRequest{}
-	s.EncryptionType = encryptionType
 	return &s
 }
 
-func (s *ExternalStageAzureEncryptionRequest) WithMasterKey(masterKey string) *ExternalStageAzureEncryptionRequest {
-	s.MasterKey = &masterKey
+func (s *ExternalStageAzureEncryptionRequest) WithAzureCse(azureCse ExternalStageAzureEncryptionAzureCseRequest) *ExternalStageAzureEncryptionRequest {
+	s.AzureCse = &azureCse
 	return s
+}
+
+func (s *ExternalStageAzureEncryptionRequest) WithNone(none ExternalStageAzureEncryptionNoneRequest) *ExternalStageAzureEncryptionRequest {
+	s.None = &none
+	return s
+}
+
+func NewExternalStageAzureEncryptionAzureCseRequest(
+	masterKey string,
+) *ExternalStageAzureEncryptionAzureCseRequest {
+	s := ExternalStageAzureEncryptionAzureCseRequest{}
+	s.MasterKey = masterKey
+	return &s
+}
+
+func NewExternalStageAzureEncryptionNoneRequest() *ExternalStageAzureEncryptionNoneRequest {
+	s := ExternalStageAzureEncryptionNoneRequest{}
+	return &s
 }
 
 func NewExternalAzureDirectoryTableOptionsRequest() *ExternalAzureDirectoryTableOptionsRequest {
@@ -562,7 +646,7 @@ func (s *CreateOnS3CompatibleStageRequest) WithIfNotExists(ifNotExists bool) *Cr
 	return s
 }
 
-func (s *CreateOnS3CompatibleStageRequest) WithDirectoryTableOptions(directoryTableOptions ExternalS3DirectoryTableOptionsRequest) *CreateOnS3CompatibleStageRequest {
+func (s *CreateOnS3CompatibleStageRequest) WithDirectoryTableOptions(directoryTableOptions StageS3CommonDirectoryTableOptionsRequest) *CreateOnS3CompatibleStageRequest {
 	s.DirectoryTableOptions = &directoryTableOptions
 	return s
 }

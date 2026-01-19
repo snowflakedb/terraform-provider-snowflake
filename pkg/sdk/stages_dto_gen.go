@@ -33,8 +33,13 @@ type CreateInternalStageRequest struct {
 }
 
 type InternalStageEncryptionRequest struct {
-	EncryptionType InternalStageEncryptionOption // required
+	SnowflakeFull *InternalStageEncryptionSnowflakeFullRequest
+	SnowflakeSse  *InternalStageEncryptionSnowflakeSseRequest
 }
+
+type InternalStageEncryptionSnowflakeFullRequest struct{}
+
+type InternalStageEncryptionSnowflakeSseRequest struct{}
 
 type InternalDirectoryTableOptionsRequest struct {
 	Enable      bool
@@ -72,7 +77,7 @@ type CreateOnS3StageRequest struct {
 	IfNotExists           *bool
 	name                  SchemaObjectIdentifier       // required
 	ExternalStageParams   ExternalS3StageParamsRequest // required
-	DirectoryTableOptions *ExternalS3DirectoryTableOptionsRequest
+	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
 	Comment               *string
@@ -96,12 +101,25 @@ type ExternalStageS3CredentialsRequest struct {
 }
 
 type ExternalStageS3EncryptionRequest struct {
-	EncryptionType *ExternalStageS3EncryptionOption // required
-	MasterKey      *string
-	KmsKeyId       *string
+	AwsCse    *ExternalStageS3EncryptionAwsCseRequest
+	AwsSseS3  *ExternalStageS3EncryptionAwsSseS3Request
+	AwsSseKms *ExternalStageS3EncryptionAwsSseKmsRequest
+	None      *ExternalStageS3EncryptionNoneRequest
 }
 
-type ExternalS3DirectoryTableOptionsRequest struct {
+type ExternalStageS3EncryptionAwsCseRequest struct {
+	MasterKey string // required
+}
+
+type ExternalStageS3EncryptionAwsSseS3Request struct{}
+
+type ExternalStageS3EncryptionAwsSseKmsRequest struct {
+	KmsKeyId *string
+}
+
+type ExternalStageS3EncryptionNoneRequest struct{}
+
+type StageS3CommonDirectoryTableOptionsRequest struct {
 	Enable          bool
 	RefreshOnCreate *bool
 	AutoRefresh     *bool
@@ -122,14 +140,20 @@ type CreateOnGCSStageRequest struct {
 
 type ExternalGCSStageParamsRequest struct {
 	Url                string // required
-	StorageIntegration *AccountObjectIdentifier
+	StorageIntegration AccountObjectIdentifier
 	Encryption         *ExternalStageGCSEncryptionRequest
 }
 
 type ExternalStageGCSEncryptionRequest struct {
-	EncryptionType *ExternalStageGCSEncryptionOption // required
-	KmsKeyId       *string
+	GcsSseKms *ExternalStageGCSEncryptionGcsSseKmsRequest
+	None      *ExternalStageGCSEncryptionNoneRequest
 }
+
+type ExternalStageGCSEncryptionGcsSseKmsRequest struct {
+	KmsKeyId *string
+}
+
+type ExternalStageGCSEncryptionNoneRequest struct{}
 
 type ExternalGCSDirectoryTableOptionsRequest struct {
 	Enable                  bool
@@ -164,9 +188,15 @@ type ExternalStageAzureCredentialsRequest struct {
 }
 
 type ExternalStageAzureEncryptionRequest struct {
-	EncryptionType *ExternalStageAzureEncryptionOption // required
-	MasterKey      *string
+	AzureCse *ExternalStageAzureEncryptionAzureCseRequest
+	None     *ExternalStageAzureEncryptionNoneRequest
 }
+
+type ExternalStageAzureEncryptionAzureCseRequest struct {
+	MasterKey string // required
+}
+
+type ExternalStageAzureEncryptionNoneRequest struct{}
 
 type ExternalAzureDirectoryTableOptionsRequest struct {
 	Enable                  bool
@@ -181,7 +211,7 @@ type CreateOnS3CompatibleStageRequest struct {
 	IfNotExists           *bool
 	name                  SchemaObjectIdentifier                 // required
 	ExternalStageParams   ExternalS3CompatibleStageParamsRequest // required
-	DirectoryTableOptions *ExternalS3DirectoryTableOptionsRequest
+	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	CopyOptions           *StageCopyOptionsRequest
 	Comment               *string
