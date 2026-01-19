@@ -126,8 +126,12 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 		Tag:         r.Tag,
 	}
 	if r.Encryption != nil {
-		opts.Encryption = &InternalStageEncryption{
-			EncryptionType: r.Encryption.EncryptionType,
+		opts.Encryption = &InternalStageEncryption{}
+		if r.Encryption.SnowflakeFull != nil {
+			opts.Encryption.SnowflakeFull = &InternalStageEncryptionSnowflakeFull{}
+		}
+		if r.Encryption.SnowflakeSse != nil {
+			opts.Encryption.SnowflakeSse = &InternalStageEncryptionSnowflakeSse{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -185,14 +189,26 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 		}
 	}
 	if r.ExternalStageParams.Encryption != nil {
-		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
-			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-			MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
-			KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{}
+		if r.ExternalStageParams.Encryption.AwsCse != nil {
+			opts.ExternalStageParams.Encryption.AwsCse = &ExternalStageS3EncryptionAwsCse{
+				MasterKey: r.ExternalStageParams.Encryption.AwsCse.MasterKey,
+			}
+		}
+		if r.ExternalStageParams.Encryption.AwsSseS3 != nil {
+			opts.ExternalStageParams.Encryption.AwsSseS3 = &ExternalStageS3EncryptionAwsSseS3{}
+		}
+		if r.ExternalStageParams.Encryption.AwsSseKms != nil {
+			opts.ExternalStageParams.Encryption.AwsSseKms = &ExternalStageS3EncryptionAwsSseKms{
+				KmsKeyId: r.ExternalStageParams.Encryption.AwsSseKms.KmsKeyId,
+			}
+		}
+		if r.ExternalStageParams.Encryption.None != nil {
+			opts.ExternalStageParams.Encryption.None = &ExternalStageS3EncryptionNone{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
-		opts.DirectoryTableOptions = &ExternalS3DirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
 			Enable:          r.DirectoryTableOptions.Enable,
 			RefreshOnCreate: r.DirectoryTableOptions.RefreshOnCreate,
 			AutoRefresh:     r.DirectoryTableOptions.AutoRefresh,
@@ -241,9 +257,14 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 		StorageIntegration: r.ExternalStageParams.StorageIntegration,
 	}
 	if r.ExternalStageParams.Encryption != nil {
-		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{
-			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-			KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
+		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{}
+		if r.ExternalStageParams.Encryption.GcsSseKms != nil {
+			opts.ExternalStageParams.Encryption.GcsSseKms = &ExternalStageGCSEncryptionGcsSseKms{
+				KmsKeyId: r.ExternalStageParams.Encryption.GcsSseKms.KmsKeyId,
+			}
+		}
+		if r.ExternalStageParams.Encryption.None != nil {
+			opts.ExternalStageParams.Encryption.None = &ExternalStageGCSEncryptionNone{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -303,9 +324,14 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 		}
 	}
 	if r.ExternalStageParams.Encryption != nil {
-		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{
-			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-			MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
+		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{}
+		if r.ExternalStageParams.Encryption.AzureCse != nil {
+			opts.ExternalStageParams.Encryption.AzureCse = &ExternalStageAzureEncryptionAzureCse{
+				MasterKey: r.ExternalStageParams.Encryption.AzureCse.MasterKey,
+			}
+		}
+		if r.ExternalStageParams.Encryption.None != nil {
+			opts.ExternalStageParams.Encryption.None = &ExternalStageAzureEncryptionNone{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -365,7 +391,7 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 		}
 	}
 	if r.DirectoryTableOptions != nil {
-		opts.DirectoryTableOptions = &ExternalS3DirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
 			Enable:          r.DirectoryTableOptions.Enable,
 			RefreshOnCreate: r.DirectoryTableOptions.RefreshOnCreate,
 			AutoRefresh:     r.DirectoryTableOptions.AutoRefresh,
@@ -468,10 +494,22 @@ func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOp
 			}
 		}
 		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
-				KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
+			opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{}
+			if r.ExternalStageParams.Encryption.AwsCse != nil {
+				opts.ExternalStageParams.Encryption.AwsCse = &ExternalStageS3EncryptionAwsCse{
+					MasterKey: r.ExternalStageParams.Encryption.AwsCse.MasterKey,
+				}
+			}
+			if r.ExternalStageParams.Encryption.AwsSseS3 != nil {
+				opts.ExternalStageParams.Encryption.AwsSseS3 = &ExternalStageS3EncryptionAwsSseS3{}
+			}
+			if r.ExternalStageParams.Encryption.AwsSseKms != nil {
+				opts.ExternalStageParams.Encryption.AwsSseKms = &ExternalStageS3EncryptionAwsSseKms{
+					KmsKeyId: r.ExternalStageParams.Encryption.AwsSseKms.KmsKeyId,
+				}
+			}
+			if r.ExternalStageParams.Encryption.None != nil {
+				opts.ExternalStageParams.Encryption.None = &ExternalStageS3EncryptionNone{}
 			}
 		}
 	}
@@ -516,9 +554,14 @@ func (r *AlterExternalGCSStageStageRequest) toOpts() *AlterExternalGCSStageStage
 			StorageIntegration: r.ExternalStageParams.StorageIntegration,
 		}
 		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
+			opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{}
+			if r.ExternalStageParams.Encryption.GcsSseKms != nil {
+				opts.ExternalStageParams.Encryption.GcsSseKms = &ExternalStageGCSEncryptionGcsSseKms{
+					KmsKeyId: r.ExternalStageParams.Encryption.GcsSseKms.KmsKeyId,
+				}
+			}
+			if r.ExternalStageParams.Encryption.None != nil {
+				opts.ExternalStageParams.Encryption.None = &ExternalStageGCSEncryptionNone{}
 			}
 		}
 	}
@@ -569,9 +612,14 @@ func (r *AlterExternalAzureStageStageRequest) toOpts() *AlterExternalAzureStageS
 			}
 		}
 		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
+			opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{}
+			if r.ExternalStageParams.Encryption.AzureCse != nil {
+				opts.ExternalStageParams.Encryption.AzureCse = &ExternalStageAzureEncryptionAzureCse{
+					MasterKey: r.ExternalStageParams.Encryption.AzureCse.MasterKey,
+				}
+			}
+			if r.ExternalStageParams.Encryption.None != nil {
+				opts.ExternalStageParams.Encryption.None = &ExternalStageAzureEncryptionNone{}
 			}
 		}
 	}

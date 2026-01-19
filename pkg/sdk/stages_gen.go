@@ -45,7 +45,16 @@ type CreateInternalStageOptions struct {
 }
 
 type InternalStageEncryption struct {
-	EncryptionType InternalStageEncryptionOption `ddl:"parameter,single_quotes" sql:"TYPE"`
+	SnowflakeFull *InternalStageEncryptionSnowflakeFull `ddl:"keyword"`
+	SnowflakeSse  *InternalStageEncryptionSnowflakeSse  `ddl:"keyword"`
+}
+
+type InternalStageEncryptionSnowflakeFull struct {
+	encryptionType string `ddl:"static" sql:"TYPE = 'SNOWFLAKE_FULL'"`
+}
+
+type InternalStageEncryptionSnowflakeSse struct {
+	encryptionType string `ddl:"static" sql:"TYPE = 'SNOWFLAKE_SSE'"`
 }
 
 type InternalDirectoryTableOptions struct {
@@ -79,18 +88,18 @@ type StageCopyOnErrorOptions struct {
 
 // CreateOnS3StageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3StageOptions struct {
-	create                bool                             `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                            `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                            `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                             `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                            `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier           `ddl:"identifier"`
-	ExternalStageParams   ExternalS3StageParams            `ddl:"keyword"`
-	DirectoryTableOptions *ExternalS3DirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
-	FileFormat            *StageFileFormat                 `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions           *StageCopyOptions                `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
-	Comment               *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Tag                   []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
+	create                bool                                `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                               `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                               `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                                `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                               `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier              `ddl:"identifier"`
+	ExternalStageParams   ExternalS3StageParams               `ddl:"keyword"`
+	DirectoryTableOptions *StageS3CommonDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
+	FileFormat            *StageFileFormat                    `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
+	CopyOptions           *StageCopyOptions                   `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
+	Comment               *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                   []TagAssociation                    `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 type ExternalS3StageParams struct {
@@ -110,12 +119,31 @@ type ExternalStageS3Credentials struct {
 }
 
 type ExternalStageS3Encryption struct {
-	EncryptionType *ExternalStageS3EncryptionOption `ddl:"parameter,single_quotes" sql:"TYPE"`
-	MasterKey      *string                          `ddl:"parameter,single_quotes" sql:"MASTER_KEY"`
-	KmsKeyId       *string                          `ddl:"parameter,single_quotes" sql:"KMS_KEY_ID"`
+	AwsCse    *ExternalStageS3EncryptionAwsCse    `ddl:"keyword"`
+	AwsSseS3  *ExternalStageS3EncryptionAwsSseS3  `ddl:"keyword"`
+	AwsSseKms *ExternalStageS3EncryptionAwsSseKms `ddl:"keyword"`
+	None      *ExternalStageS3EncryptionNone      `ddl:"keyword"`
 }
 
-type ExternalS3DirectoryTableOptions struct {
+type ExternalStageS3EncryptionAwsCse struct {
+	encryptionType string `ddl:"static" sql:"TYPE = 'AWS_CSE'"`
+	MasterKey      string `ddl:"parameter,single_quotes" sql:"MASTER_KEY"`
+}
+
+type ExternalStageS3EncryptionAwsSseS3 struct {
+	encryptionType string `ddl:"static" sql:"TYPE = 'AWS_SSE_S3'"`
+}
+
+type ExternalStageS3EncryptionAwsSseKms struct {
+	encryptionType string  `ddl:"static" sql:"TYPE = 'AWS_SSE_KMS'"`
+	KmsKeyId       *string `ddl:"parameter,single_quotes" sql:"KMS_KEY_ID"`
+}
+
+type ExternalStageS3EncryptionNone struct {
+	encryptionType string `ddl:"static" sql:"TYPE = 'NONE'"`
+}
+
+type StageS3CommonDirectoryTableOptions struct {
 	Enable          bool  `ddl:"parameter" sql:"ENABLE"`
 	RefreshOnCreate *bool `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
 	AutoRefresh     *bool `ddl:"parameter" sql:"AUTO_REFRESH"`
@@ -139,13 +167,22 @@ type CreateOnGCSStageOptions struct {
 
 type ExternalGCSStageParams struct {
 	Url                string                      `ddl:"parameter,single_quotes" sql:"URL"`
-	StorageIntegration *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
+	StorageIntegration AccountObjectIdentifier     `ddl:"identifier,equals" sql:"STORAGE_INTEGRATION"`
 	Encryption         *ExternalStageGCSEncryption `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
 }
 
 type ExternalStageGCSEncryption struct {
-	EncryptionType *ExternalStageGCSEncryptionOption `ddl:"parameter,single_quotes" sql:"TYPE"`
-	KmsKeyId       *string                           `ddl:"parameter,single_quotes" sql:"KMS_KEY_ID"`
+	GcsSseKms *ExternalStageGCSEncryptionGcsSseKms `ddl:"keyword"`
+	None      *ExternalStageGCSEncryptionNone      `ddl:"keyword"`
+}
+
+type ExternalStageGCSEncryptionGcsSseKms struct {
+	encryptionType string  `ddl:"static" sql:"TYPE = 'GCS_SSE_KMS'"`
+	KmsKeyId       *string `ddl:"parameter,single_quotes" sql:"KMS_KEY_ID"`
+}
+
+type ExternalStageGCSEncryptionNone struct {
+	encryptionType string `ddl:"static" sql:"TYPE = 'NONE'"`
 }
 
 type ExternalGCSDirectoryTableOptions struct {
@@ -184,8 +221,17 @@ type ExternalStageAzureCredentials struct {
 }
 
 type ExternalStageAzureEncryption struct {
-	EncryptionType *ExternalStageAzureEncryptionOption `ddl:"parameter,single_quotes" sql:"TYPE"`
-	MasterKey      *string                             `ddl:"parameter,single_quotes" sql:"MASTER_KEY"`
+	AzureCse *ExternalStageAzureEncryptionAzureCse `ddl:"keyword"`
+	None     *ExternalStageAzureEncryptionNone     `ddl:"keyword"`
+}
+
+type ExternalStageAzureEncryptionAzureCse struct {
+	encryptionType string `ddl:"static" sql:"TYPE = 'AZURE_CSE'"`
+	MasterKey      string `ddl:"parameter,single_quotes" sql:"MASTER_KEY"`
+}
+
+type ExternalStageAzureEncryptionNone struct {
+	encryptionType string `ddl:"static" sql:"TYPE = 'NONE'"`
 }
 
 type ExternalAzureDirectoryTableOptions struct {
@@ -197,18 +243,18 @@ type ExternalAzureDirectoryTableOptions struct {
 
 // CreateOnS3CompatibleStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3CompatibleStageOptions struct {
-	create                bool                             `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                            `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                            `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                             `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                            `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier           `ddl:"identifier"`
-	ExternalStageParams   ExternalS3CompatibleStageParams  `ddl:"keyword"`
-	DirectoryTableOptions *ExternalS3DirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
-	FileFormat            *StageFileFormat                 `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
-	CopyOptions           *StageCopyOptions                `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
-	Comment               *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Tag                   []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
+	create                bool                                `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                               `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                               `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                                `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                               `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier              `ddl:"identifier"`
+	ExternalStageParams   ExternalS3CompatibleStageParams     `ddl:"keyword"`
+	DirectoryTableOptions *StageS3CommonDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
+	FileFormat            *StageFileFormat                    `ddl:"list,parentheses" sql:"FILE_FORMAT ="`
+	CopyOptions           *StageCopyOptions                   `ddl:"list,parentheses,no_comma" sql:"COPY_OPTIONS ="`
+	Comment               *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                   []TagAssociation                    `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 type ExternalS3CompatibleStageParams struct {

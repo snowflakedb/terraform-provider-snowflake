@@ -245,7 +245,7 @@ func TestInt_Stages(t *testing.T) {
 		err := client.Stages.CreateOnS3Compatible(ctx, sdk.NewCreateOnS3CompatibleStageRequest(id, *s3Req).
 			WithTemporary(true).
 			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithDirectoryTableOptions(*sdk.NewExternalS3DirectoryTableOptionsRequest().WithEnable(true)).
+			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().WithEnable(true)).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
