@@ -202,7 +202,7 @@ func (s *CreateTableRequest) WithEnableSchemaEvolution(enableSchemaEvolution *bo
 	return s
 }
 
-func (s *CreateTableRequest) WithStageFileFormat(stageFileFormat StageFileFormatRequest) *CreateTableRequest {
+func (s *CreateTableRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRequest) *CreateTableRequest {
 	s.stageFileFormat = &stageFileFormat
 	return s
 }
@@ -1525,7 +1525,7 @@ func (s *TableSetRequest) WithEnableSchemaEvolution(enableSchemaEvolution *bool)
 	return s
 }
 
-func (s *TableSetRequest) WithStageFileFormat(stageFileFormat StageFileFormatRequest) *TableSetRequest {
+func (s *TableSetRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRequest) *TableSetRequest {
 	s.StageFileFormat = &stageFileFormat
 	return s
 }

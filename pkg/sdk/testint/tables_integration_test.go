@@ -128,7 +128,7 @@ func TestInt_Table(t *testing.T) {
 				WithMatch(sdk.Pointer(sdk.FullMatchType)).
 				WithOn(sdk.NewForeignKeyOnAction().
 					WithOnDelete(sdk.Pointer(sdk.ForeignKeySetNullAction)).WithOnUpdate(sdk.Pointer(sdk.ForeignKeyRestrictAction))))
-		stageFileFormat := sdk.NewStageFileFormatRequest().
+		stageFileFormat := sdk.NewLegacyFileFormatRequest().
 			WithFileFormatType(sdk.FileFormatTypeCSV).
 			WithOptions(*sdk.NewFileFormatTypeOptionsRequest().WithCSVCompression(sdk.Pointer(sdk.CSVCompressionAuto)))
 		stageCopyOptions := sdk.NewStageCopyOptionsRequest().WithOnError(*sdk.NewStageCopyOnErrorOptionsRequest().WithSkipFile())
@@ -814,7 +814,7 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupTableProvider(id))
 
-		stageFileFormats := sdk.StageFileFormatRequest{
+		stageFileFormats := sdk.LegacyFileFormatRequest{
 			FileFormatType: sdk.Pointer(sdk.FileFormatTypeCSV),
 		}
 		stageCopyOptions := sdk.StageCopyOptionsRequest{
