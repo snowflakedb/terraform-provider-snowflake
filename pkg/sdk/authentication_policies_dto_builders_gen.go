@@ -25,11 +25,6 @@ func (s *CreateAuthenticationPolicyRequest) WithAuthenticationMethods(authentica
 	return s
 }
 
-func (s *CreateAuthenticationPolicyRequest) WithMfaAuthenticationMethods(mfaAuthenticationMethods []MfaAuthenticationMethods) *CreateAuthenticationPolicyRequest {
-	s.MfaAuthenticationMethods = mfaAuthenticationMethods
-	return s
-}
-
 func (s *CreateAuthenticationPolicyRequest) WithMfaEnrollment(mfaEnrollment MfaEnrollmentOption) *CreateAuthenticationPolicyRequest {
 	s.MfaEnrollment = &mfaEnrollment
 	return s
@@ -178,11 +173,6 @@ func (s *AuthenticationPolicySetRequest) WithAuthenticationMethods(authenticatio
 	return s
 }
 
-func (s *AuthenticationPolicySetRequest) WithMfaAuthenticationMethods(mfaAuthenticationMethods []MfaAuthenticationMethods) *AuthenticationPolicySetRequest {
-	s.MfaAuthenticationMethods = mfaAuthenticationMethods
-	return s
-}
-
 func (s *AuthenticationPolicySetRequest) WithMfaEnrollment(mfaEnrollment MfaEnrollmentOption) *AuthenticationPolicySetRequest {
 	s.MfaEnrollment = &mfaEnrollment
 	return s
@@ -235,11 +225,6 @@ func (s *AuthenticationPolicyUnsetRequest) WithAuthenticationMethods(authenticat
 
 func (s *AuthenticationPolicyUnsetRequest) WithSecurityIntegrations(securityIntegrations bool) *AuthenticationPolicyUnsetRequest {
 	s.SecurityIntegrations = &securityIntegrations
-	return s
-}
-
-func (s *AuthenticationPolicyUnsetRequest) WithMfaAuthenticationMethods(mfaAuthenticationMethods bool) *AuthenticationPolicyUnsetRequest {
-	s.MfaAuthenticationMethods = &mfaAuthenticationMethods
 	return s
 }
 
