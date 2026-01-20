@@ -48,6 +48,12 @@ type (
 	ScimSecurityIntegrationScimClientOption                             string
 	SecretType                                                          string
 	StageCopyColumnMapOption                                            string
+	StageFileFormatAvroCompression                                      string
+	StageFileFormatBinaryFormat                                         string
+	StageFileFormatCsvCompression                                       string
+	StageFileFormatJsonCompression                                      string
+	StageFileFormatParquetCompression                                   string
+	StageFileFormatXmlCompression                                       string
 	StorageProvider                                                     string
 	TaskState                                                           string
 	TraceLevel                                                          string

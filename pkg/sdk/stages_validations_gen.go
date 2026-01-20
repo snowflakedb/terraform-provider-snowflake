@@ -32,6 +32,80 @@ func (opts *CreateInternalStageOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
 		}
 	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -67,6 +141,80 @@ func (opts *CreateOnS3StageOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -82,6 +230,80 @@ func (opts *CreateOnGCSStageOptions) validate() error {
 		if valueSet(opts.ExternalStageParams.Encryption) {
 			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.GcsSseKms, opts.ExternalStageParams.Encryption.None) {
 				errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
 			}
 		}
 	}
@@ -109,6 +331,80 @@ func (opts *CreateOnAzureStageOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -119,6 +415,80 @@ func (opts *CreateOnS3CompatibleStageOptions) validate() error {
 	var errs []error
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOnS3CompatibleStageOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -147,6 +517,80 @@ func (opts *AlterInternalStageStageOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -183,6 +627,80 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -198,6 +716,80 @@ func (opts *AlterExternalGCSStageStageOptions) validate() error {
 		if valueSet(opts.ExternalStageParams.Encryption) {
 			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.GcsSseKms, opts.ExternalStageParams.Encryption.None) {
 				errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
 			}
 		}
 	}
@@ -222,6 +814,80 @@ func (opts *AlterExternalAzureStageStageOptions) validate() error {
 		if valueSet(opts.ExternalStageParams.Encryption) {
 			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.AzureCse, opts.ExternalStageParams.Encryption.None) {
 				errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams.Encryption", "AzureCse", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+		}
+		if valueSet(opts.FileFormat.CsvOptions) {
+			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FileExtension.Value, opts.FileFormat.CsvOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.Escape) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+				}
+			}
+			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
+				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+				}
+			}
+		}
+		if valueSet(opts.FileFormat.JsonOptions) {
+			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+				}
+			}
+			if valueSet(opts.FileFormat.JsonOptions.FileExtension) {
+				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.FileExtension.Value, opts.FileFormat.JsonOptions.FileExtension.None) {
+					errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
+				}
 			}
 		}
 	}

@@ -30,6 +30,7 @@ var (
 	ExternalStageAzureEncryptionNoneValue ExternalStageAzureEncryptionOption = "NONE"
 )
 
+// TODO: move to tables
 type StageCopyColumnMapOption string
 
 var (
@@ -37,3 +38,10 @@ var (
 	StageCopyColumnMapCaseInsensitive StageCopyColumnMapOption = "CASE_INSENSITIVE"
 	StageCopyColumnMapCaseNone        StageCopyColumnMapOption = "NONE"
 )
+
+type StageFileFormatAvroCompression string
+type StageFileFormatJsonCompression string
+type StageFileFormatCsvCompression string
+type StageFileFormatParquetCompression string
+type StageFileFormatXmlCompression string
+type StageFileFormatBinaryFormat string

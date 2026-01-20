@@ -48,7 +48,101 @@ type InternalDirectoryTableOptionsRequest struct {
 }
 
 type StageFileFormatRequest struct {
-	FormatName *string
+	FormatName     *string
+	CsvOptions     *StageFileFormatCsvOptionsRequest
+	JsonOptions    *StageFileFormatJsonOptionsRequest
+	AvroOptions    *StageFileFormatAvroOptionsRequest
+	OrcOptions     *StageFileFormatOrcOptionsRequest
+	ParquetOptions *StageFileFormatParquetOptionsRequest
+	XmlOptions     *StageFileFormatXmlOptionsRequest
+}
+
+type StageFileFormatCsvOptionsRequest struct {
+	Compression                *StageFileFormatCsvCompression
+	RecordDelimiter            *StageFileFormatStringOrNoneRequest
+	FieldDelimiter             *StageFileFormatStringOrNoneRequest
+	MultiLine                  *bool
+	FileExtension              *StageFileFormatStringOrNoneRequest
+	ParseHeader                *bool
+	SkipHeader                 *int
+	SkipBlankLines             *bool
+	DateFormat                 *StageFileFormatStringOrAutoRequest
+	TimeFormat                 *StageFileFormatStringOrAutoRequest
+	TimestampFormat            *StageFileFormatStringOrAutoRequest
+	BinaryFormat               *StageFileFormatBinaryFormat
+	Escape                     *StageFileFormatStringOrNoneRequest
+	EscapeUnenclosedField      *StageFileFormatStringOrNoneRequest
+	TrimSpace                  *bool
+	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNoneRequest
+	NullIf                     []NullString
+	ErrorOnColumnCountMismatch *bool
+	ReplaceInvalidCharacters   *bool
+	EmptyFieldAsNull           *bool
+	SkipByteOrderMark          *bool
+	Encoding                   *string
+}
+
+type StageFileFormatStringOrNoneRequest struct {
+	Value *string
+	None  *bool
+}
+
+type StageFileFormatStringOrAutoRequest struct {
+	Value *string
+	Auto  *bool
+}
+
+type StageFileFormatJsonOptionsRequest struct {
+	Compression              *StageFileFormatJsonCompression
+	DateFormat               *StageFileFormatStringOrAutoRequest
+	TimeFormat               *StageFileFormatStringOrAutoRequest
+	TimestampFormat          *StageFileFormatStringOrAutoRequest
+	BinaryFormat             *StageFileFormatBinaryFormat
+	TrimSpace                *bool
+	MultiLine                *bool
+	NullIf                   []NullString
+	FileExtension            *StageFileFormatStringOrNoneRequest
+	EnableOctal              *bool
+	AllowDuplicate           *bool
+	StripOuterArray          *bool
+	StripNullValues          *bool
+	ReplaceInvalidCharacters *bool
+	IgnoreUtf8Errors         *bool
+	SkipByteOrderMark        *bool
+}
+
+type StageFileFormatAvroOptionsRequest struct {
+	Compression              *StageFileFormatAvroCompression
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+type StageFileFormatOrcOptionsRequest struct {
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+type StageFileFormatParquetOptionsRequest struct {
+	Compression              *StageFileFormatParquetCompression
+	SnappyCompression        *bool
+	BinaryAsText             *bool
+	UseLogicalType           *bool
+	TrimSpace                *bool
+	UseVectorizedScanner     *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+type StageFileFormatXmlOptionsRequest struct {
+	Compression              *StageFileFormatXmlCompression
+	IgnoreUtf8Errors         *bool
+	PreserveSpace            *bool
+	StripOuterElement        *bool
+	DisableAutoConvert       *bool
+	ReplaceInvalidCharacters *bool
+	SkipByteOrderMark        *bool
 }
 
 type CreateOnS3StageRequest struct {

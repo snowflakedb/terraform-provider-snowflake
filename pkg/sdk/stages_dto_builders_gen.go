@@ -100,6 +100,396 @@ func (s *StageFileFormatRequest) WithFormatName(formatName string) *StageFileFor
 	return s
 }
 
+func (s *StageFileFormatRequest) WithCsvOptions(csvOptions StageFileFormatCsvOptionsRequest) *StageFileFormatRequest {
+	s.CsvOptions = &csvOptions
+	return s
+}
+
+func (s *StageFileFormatRequest) WithJsonOptions(jsonOptions StageFileFormatJsonOptionsRequest) *StageFileFormatRequest {
+	s.JsonOptions = &jsonOptions
+	return s
+}
+
+func (s *StageFileFormatRequest) WithAvroOptions(avroOptions StageFileFormatAvroOptionsRequest) *StageFileFormatRequest {
+	s.AvroOptions = &avroOptions
+	return s
+}
+
+func (s *StageFileFormatRequest) WithOrcOptions(orcOptions StageFileFormatOrcOptionsRequest) *StageFileFormatRequest {
+	s.OrcOptions = &orcOptions
+	return s
+}
+
+func (s *StageFileFormatRequest) WithParquetOptions(parquetOptions StageFileFormatParquetOptionsRequest) *StageFileFormatRequest {
+	s.ParquetOptions = &parquetOptions
+	return s
+}
+
+func (s *StageFileFormatRequest) WithXmlOptions(xmlOptions StageFileFormatXmlOptionsRequest) *StageFileFormatRequest {
+	s.XmlOptions = &xmlOptions
+	return s
+}
+
+func NewStageFileFormatCsvOptionsRequest() *StageFileFormatCsvOptionsRequest {
+	s := StageFileFormatCsvOptionsRequest{}
+	return &s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithCompression(compression StageFileFormatCsvCompression) *StageFileFormatCsvOptionsRequest {
+	s.Compression = &compression
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithRecordDelimiter(recordDelimiter StageFileFormatStringOrNoneRequest) *StageFileFormatCsvOptionsRequest {
+	s.RecordDelimiter = &recordDelimiter
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithFieldDelimiter(fieldDelimiter StageFileFormatStringOrNoneRequest) *StageFileFormatCsvOptionsRequest {
+	s.FieldDelimiter = &fieldDelimiter
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithMultiLine(multiLine bool) *StageFileFormatCsvOptionsRequest {
+	s.MultiLine = &multiLine
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithFileExtension(fileExtension StageFileFormatStringOrNoneRequest) *StageFileFormatCsvOptionsRequest {
+	s.FileExtension = &fileExtension
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithParseHeader(parseHeader bool) *StageFileFormatCsvOptionsRequest {
+	s.ParseHeader = &parseHeader
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithSkipHeader(skipHeader int) *StageFileFormatCsvOptionsRequest {
+	s.SkipHeader = &skipHeader
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithSkipBlankLines(skipBlankLines bool) *StageFileFormatCsvOptionsRequest {
+	s.SkipBlankLines = &skipBlankLines
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithDateFormat(dateFormat StageFileFormatStringOrAutoRequest) *StageFileFormatCsvOptionsRequest {
+	s.DateFormat = &dateFormat
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithTimeFormat(timeFormat StageFileFormatStringOrAutoRequest) *StageFileFormatCsvOptionsRequest {
+	s.TimeFormat = &timeFormat
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithTimestampFormat(timestampFormat StageFileFormatStringOrAutoRequest) *StageFileFormatCsvOptionsRequest {
+	s.TimestampFormat = &timestampFormat
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithBinaryFormat(binaryFormat StageFileFormatBinaryFormat) *StageFileFormatCsvOptionsRequest {
+	s.BinaryFormat = &binaryFormat
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithEscape(escape StageFileFormatStringOrNoneRequest) *StageFileFormatCsvOptionsRequest {
+	s.Escape = &escape
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithEscapeUnenclosedField(escapeUnenclosedField StageFileFormatStringOrNoneRequest) *StageFileFormatCsvOptionsRequest {
+	s.EscapeUnenclosedField = &escapeUnenclosedField
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithTrimSpace(trimSpace bool) *StageFileFormatCsvOptionsRequest {
+	s.TrimSpace = &trimSpace
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithFieldOptionallyEnclosedBy(fieldOptionallyEnclosedBy StageFileFormatStringOrNoneRequest) *StageFileFormatCsvOptionsRequest {
+	s.FieldOptionallyEnclosedBy = &fieldOptionallyEnclosedBy
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithNullIf(nullIf []NullString) *StageFileFormatCsvOptionsRequest {
+	s.NullIf = nullIf
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithErrorOnColumnCountMismatch(errorOnColumnCountMismatch bool) *StageFileFormatCsvOptionsRequest {
+	s.ErrorOnColumnCountMismatch = &errorOnColumnCountMismatch
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *StageFileFormatCsvOptionsRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithEmptyFieldAsNull(emptyFieldAsNull bool) *StageFileFormatCsvOptionsRequest {
+	s.EmptyFieldAsNull = &emptyFieldAsNull
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithSkipByteOrderMark(skipByteOrderMark bool) *StageFileFormatCsvOptionsRequest {
+	s.SkipByteOrderMark = &skipByteOrderMark
+	return s
+}
+
+func (s *StageFileFormatCsvOptionsRequest) WithEncoding(encoding string) *StageFileFormatCsvOptionsRequest {
+	s.Encoding = &encoding
+	return s
+}
+
+func NewStageFileFormatStringOrNoneRequest() *StageFileFormatStringOrNoneRequest {
+	s := StageFileFormatStringOrNoneRequest{}
+	return &s
+}
+
+func (s *StageFileFormatStringOrNoneRequest) WithValue(value string) *StageFileFormatStringOrNoneRequest {
+	s.Value = &value
+	return s
+}
+
+func (s *StageFileFormatStringOrNoneRequest) WithNone(none bool) *StageFileFormatStringOrNoneRequest {
+	s.None = &none
+	return s
+}
+
+func NewStageFileFormatStringOrAutoRequest() *StageFileFormatStringOrAutoRequest {
+	s := StageFileFormatStringOrAutoRequest{}
+	return &s
+}
+
+func (s *StageFileFormatStringOrAutoRequest) WithValue(value string) *StageFileFormatStringOrAutoRequest {
+	s.Value = &value
+	return s
+}
+
+func (s *StageFileFormatStringOrAutoRequest) WithAuto(auto bool) *StageFileFormatStringOrAutoRequest {
+	s.Auto = &auto
+	return s
+}
+
+func NewStageFileFormatJsonOptionsRequest() *StageFileFormatJsonOptionsRequest {
+	s := StageFileFormatJsonOptionsRequest{}
+	return &s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithCompression(compression StageFileFormatJsonCompression) *StageFileFormatJsonOptionsRequest {
+	s.Compression = &compression
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithDateFormat(dateFormat StageFileFormatStringOrAutoRequest) *StageFileFormatJsonOptionsRequest {
+	s.DateFormat = &dateFormat
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithTimeFormat(timeFormat StageFileFormatStringOrAutoRequest) *StageFileFormatJsonOptionsRequest {
+	s.TimeFormat = &timeFormat
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithTimestampFormat(timestampFormat StageFileFormatStringOrAutoRequest) *StageFileFormatJsonOptionsRequest {
+	s.TimestampFormat = &timestampFormat
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithBinaryFormat(binaryFormat StageFileFormatBinaryFormat) *StageFileFormatJsonOptionsRequest {
+	s.BinaryFormat = &binaryFormat
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithTrimSpace(trimSpace bool) *StageFileFormatJsonOptionsRequest {
+	s.TrimSpace = &trimSpace
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithMultiLine(multiLine bool) *StageFileFormatJsonOptionsRequest {
+	s.MultiLine = &multiLine
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithNullIf(nullIf []NullString) *StageFileFormatJsonOptionsRequest {
+	s.NullIf = nullIf
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithFileExtension(fileExtension StageFileFormatStringOrNoneRequest) *StageFileFormatJsonOptionsRequest {
+	s.FileExtension = &fileExtension
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithEnableOctal(enableOctal bool) *StageFileFormatJsonOptionsRequest {
+	s.EnableOctal = &enableOctal
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithAllowDuplicate(allowDuplicate bool) *StageFileFormatJsonOptionsRequest {
+	s.AllowDuplicate = &allowDuplicate
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithStripOuterArray(stripOuterArray bool) *StageFileFormatJsonOptionsRequest {
+	s.StripOuterArray = &stripOuterArray
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithStripNullValues(stripNullValues bool) *StageFileFormatJsonOptionsRequest {
+	s.StripNullValues = &stripNullValues
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *StageFileFormatJsonOptionsRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithIgnoreUtf8Errors(ignoreUtf8Errors bool) *StageFileFormatJsonOptionsRequest {
+	s.IgnoreUtf8Errors = &ignoreUtf8Errors
+	return s
+}
+
+func (s *StageFileFormatJsonOptionsRequest) WithSkipByteOrderMark(skipByteOrderMark bool) *StageFileFormatJsonOptionsRequest {
+	s.SkipByteOrderMark = &skipByteOrderMark
+	return s
+}
+
+func NewStageFileFormatAvroOptionsRequest() *StageFileFormatAvroOptionsRequest {
+	s := StageFileFormatAvroOptionsRequest{}
+	return &s
+}
+
+func (s *StageFileFormatAvroOptionsRequest) WithCompression(compression StageFileFormatAvroCompression) *StageFileFormatAvroOptionsRequest {
+	s.Compression = &compression
+	return s
+}
+
+func (s *StageFileFormatAvroOptionsRequest) WithTrimSpace(trimSpace bool) *StageFileFormatAvroOptionsRequest {
+	s.TrimSpace = &trimSpace
+	return s
+}
+
+func (s *StageFileFormatAvroOptionsRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *StageFileFormatAvroOptionsRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *StageFileFormatAvroOptionsRequest) WithNullIf(nullIf []NullString) *StageFileFormatAvroOptionsRequest {
+	s.NullIf = nullIf
+	return s
+}
+
+func NewStageFileFormatOrcOptionsRequest() *StageFileFormatOrcOptionsRequest {
+	s := StageFileFormatOrcOptionsRequest{}
+	return &s
+}
+
+func (s *StageFileFormatOrcOptionsRequest) WithTrimSpace(trimSpace bool) *StageFileFormatOrcOptionsRequest {
+	s.TrimSpace = &trimSpace
+	return s
+}
+
+func (s *StageFileFormatOrcOptionsRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *StageFileFormatOrcOptionsRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *StageFileFormatOrcOptionsRequest) WithNullIf(nullIf []NullString) *StageFileFormatOrcOptionsRequest {
+	s.NullIf = nullIf
+	return s
+}
+
+func NewStageFileFormatParquetOptionsRequest() *StageFileFormatParquetOptionsRequest {
+	s := StageFileFormatParquetOptionsRequest{}
+	return &s
+}
+
+func (s *StageFileFormatParquetOptionsRequest) WithCompression(compression StageFileFormatParquetCompression) *StageFileFormatParquetOptionsRequest {
+	s.Compression = &compression
+	return s
+}
+
+func (s *StageFileFormatParquetOptionsRequest) WithSnappyCompression(snappyCompression bool) *StageFileFormatParquetOptionsRequest {
+	s.SnappyCompression = &snappyCompression
+	return s
+}
+
+func (s *StageFileFormatParquetOptionsRequest) WithBinaryAsText(binaryAsText bool) *StageFileFormatParquetOptionsRequest {
+	s.BinaryAsText = &binaryAsText
+	return s
+}
+
+func (s *StageFileFormatParquetOptionsRequest) WithUseLogicalType(useLogicalType bool) *StageFileFormatParquetOptionsRequest {
+	s.UseLogicalType = &useLogicalType
+	return s
+}
+
+func (s *StageFileFormatParquetOptionsRequest) WithTrimSpace(trimSpace bool) *StageFileFormatParquetOptionsRequest {
+	s.TrimSpace = &trimSpace
+	return s
+}
+
+func (s *StageFileFormatParquetOptionsRequest) WithUseVectorizedScanner(useVectorizedScanner bool) *StageFileFormatParquetOptionsRequest {
+	s.UseVectorizedScanner = &useVectorizedScanner
+	return s
+}
+
+func (s *StageFileFormatParquetOptionsRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *StageFileFormatParquetOptionsRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *StageFileFormatParquetOptionsRequest) WithNullIf(nullIf []NullString) *StageFileFormatParquetOptionsRequest {
+	s.NullIf = nullIf
+	return s
+}
+
+func NewStageFileFormatXmlOptionsRequest() *StageFileFormatXmlOptionsRequest {
+	s := StageFileFormatXmlOptionsRequest{}
+	return &s
+}
+
+func (s *StageFileFormatXmlOptionsRequest) WithCompression(compression StageFileFormatXmlCompression) *StageFileFormatXmlOptionsRequest {
+	s.Compression = &compression
+	return s
+}
+
+func (s *StageFileFormatXmlOptionsRequest) WithIgnoreUtf8Errors(ignoreUtf8Errors bool) *StageFileFormatXmlOptionsRequest {
+	s.IgnoreUtf8Errors = &ignoreUtf8Errors
+	return s
+}
+
+func (s *StageFileFormatXmlOptionsRequest) WithPreserveSpace(preserveSpace bool) *StageFileFormatXmlOptionsRequest {
+	s.PreserveSpace = &preserveSpace
+	return s
+}
+
+func (s *StageFileFormatXmlOptionsRequest) WithStripOuterElement(stripOuterElement bool) *StageFileFormatXmlOptionsRequest {
+	s.StripOuterElement = &stripOuterElement
+	return s
+}
+
+func (s *StageFileFormatXmlOptionsRequest) WithDisableAutoConvert(disableAutoConvert bool) *StageFileFormatXmlOptionsRequest {
+	s.DisableAutoConvert = &disableAutoConvert
+	return s
+}
+
+func (s *StageFileFormatXmlOptionsRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *StageFileFormatXmlOptionsRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *StageFileFormatXmlOptionsRequest) WithSkipByteOrderMark(skipByteOrderMark bool) *StageFileFormatXmlOptionsRequest {
+	s.SkipByteOrderMark = &skipByteOrderMark
+	return s
+}
+
 func NewCreateOnS3StageRequest(
 	name SchemaObjectIdentifier,
 	externalStageParams ExternalS3StageParamsRequest,

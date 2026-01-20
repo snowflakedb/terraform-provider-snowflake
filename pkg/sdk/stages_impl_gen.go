@@ -144,6 +144,155 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
 		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
+		}
 	}
 	return opts
 }
@@ -201,6 +350,155 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
 		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
+		}
 	}
 	return opts
 }
@@ -240,6 +538,155 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
+		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
 		}
 	}
 	return opts
@@ -287,6 +734,155 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
 		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
+		}
 	}
 	return opts
 }
@@ -321,6 +917,155 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
 		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
+		}
 	}
 	return opts
 }
@@ -345,6 +1090,155 @@ func (r *AlterInternalStageStageRequest) toOpts() *AlterInternalStageStageOption
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
+		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
 		}
 	}
 	return opts
@@ -395,6 +1289,155 @@ func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOp
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
 		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
+		}
 	}
 	return opts
 }
@@ -425,6 +1468,155 @@ func (r *AlterExternalGCSStageStageRequest) toOpts() *AlterExternalGCSStageStage
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
+		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
 		}
 	}
 	return opts
@@ -462,6 +1654,155 @@ func (r *AlterExternalAzureStageStageRequest) toOpts() *AlterExternalAzureStageS
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: r.FileFormat.FormatName,
+		}
+		if r.FileFormat.CsvOptions != nil {
+			opts.FileFormat.CsvOptions = &StageFileFormatCsvOptions{
+				Compression:                r.FileFormat.CsvOptions.Compression,
+				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
+				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
+				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
+				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
+				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
+				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
+				NullIf:                     r.FileFormat.CsvOptions.NullIf,
+				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
+				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
+				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
+				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
+				Encoding:                   r.FileFormat.CsvOptions.Encoding,
+			}
+			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
+				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
+				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
+					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FileExtension != nil {
+				opts.FileFormat.CsvOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FileExtension.Value,
+					None:  r.FileFormat.CsvOptions.FileExtension.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.DateFormat != nil {
+				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.DateFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimeFormat != nil {
+				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.TimestampFormat != nil {
+				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.CsvOptions.Escape != nil {
+				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.Escape.Value,
+					None:  r.FileFormat.CsvOptions.Escape.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
+				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
+					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
+				}
+			}
+			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
+				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
+					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
+				}
+			}
+		}
+		if r.FileFormat.JsonOptions != nil {
+			opts.FileFormat.JsonOptions = &StageFileFormatJsonOptions{
+				Compression:              r.FileFormat.JsonOptions.Compression,
+				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
+				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
+				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
+				NullIf:                   r.FileFormat.JsonOptions.NullIf,
+				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
+				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
+				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
+				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
+				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
+				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
+				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
+			}
+			if r.FileFormat.JsonOptions.DateFormat != nil {
+				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.DateFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimeFormat != nil {
+				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.TimestampFormat != nil {
+				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
+					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
+					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
+				}
+			}
+			if r.FileFormat.JsonOptions.FileExtension != nil {
+				opts.FileFormat.JsonOptions.FileExtension = &StageFileFormatStringOrNone{
+					Value: r.FileFormat.JsonOptions.FileExtension.Value,
+					None:  r.FileFormat.JsonOptions.FileExtension.None,
+				}
+			}
+		}
+		if r.FileFormat.AvroOptions != nil {
+			opts.FileFormat.AvroOptions = &StageFileFormatAvroOptions{
+				Compression:              r.FileFormat.AvroOptions.Compression,
+				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.AvroOptions.NullIf,
+			}
+		}
+		if r.FileFormat.OrcOptions != nil {
+			opts.FileFormat.OrcOptions = &StageFileFormatOrcOptions{
+				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
+				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.OrcOptions.NullIf,
+			}
+		}
+		if r.FileFormat.ParquetOptions != nil {
+			opts.FileFormat.ParquetOptions = &StageFileFormatParquetOptions{
+				Compression:              r.FileFormat.ParquetOptions.Compression,
+				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
+				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
+				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
+				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
+				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
+				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
+				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
+			}
+		}
+		if r.FileFormat.XmlOptions != nil {
+			opts.FileFormat.XmlOptions = &StageFileFormatXmlOptions{
+				Compression:              r.FileFormat.XmlOptions.Compression,
+				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
+				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
+				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
+				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
+				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
+				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
+			}
 		}
 	}
 	return opts

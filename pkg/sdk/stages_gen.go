@@ -62,7 +62,107 @@ type InternalDirectoryTableOptions struct {
 }
 
 type StageFileFormat struct {
-	FormatName *string `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
+	FormatName     *string                        `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
+	CsvOptions     *StageFileFormatCsvOptions     `ddl:"keyword"`
+	JsonOptions    *StageFileFormatJsonOptions    `ddl:"keyword"`
+	AvroOptions    *StageFileFormatAvroOptions    `ddl:"keyword"`
+	OrcOptions     *StageFileFormatOrcOptions     `ddl:"keyword"`
+	ParquetOptions *StageFileFormatParquetOptions `ddl:"keyword"`
+	XmlOptions     *StageFileFormatXmlOptions     `ddl:"keyword"`
+}
+
+type StageFileFormatCsvOptions struct {
+	formatType                 string                         `ddl:"static" sql:"TYPE = CSV"`
+	Compression                *StageFileFormatCsvCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	RecordDelimiter            *StageFileFormatStringOrNone   `ddl:"list,no_parentheses" sql:"RECORD_DELIMITER ="`
+	FieldDelimiter             *StageFileFormatStringOrNone   `ddl:"list,no_parentheses" sql:"FIELD_DELIMITER ="`
+	MultiLine                  *bool                          `ddl:"parameter" sql:"MULTI_LINE"`
+	FileExtension              *StageFileFormatStringOrNone   `ddl:"list,no_parentheses" sql:"FILE_EXTENSION ="`
+	ParseHeader                *bool                          `ddl:"parameter" sql:"PARSE_HEADER"`
+	SkipHeader                 *int                           `ddl:"parameter" sql:"SKIP_HEADER"`
+	SkipBlankLines             *bool                          `ddl:"parameter" sql:"SKIP_BLANK_LINES"`
+	DateFormat                 *StageFileFormatStringOrAuto   `ddl:"list,no_parentheses" sql:"DATE_FORMAT ="`
+	TimeFormat                 *StageFileFormatStringOrAuto   `ddl:"list,no_parentheses" sql:"TIME_FORMAT ="`
+	TimestampFormat            *StageFileFormatStringOrAuto   `ddl:"list,no_parentheses" sql:"TIMESTAMP_FORMAT ="`
+	BinaryFormat               *StageFileFormatBinaryFormat   `ddl:"parameter,no_quotes" sql:"BINARY_FORMAT"`
+	Escape                     *StageFileFormatStringOrNone   `ddl:"list,no_parentheses" sql:"ESCAPE ="`
+	EscapeUnenclosedField      *StageFileFormatStringOrNone   `ddl:"list,no_parentheses" sql:"ESCAPE_UNENCLOSED_FIELD ="`
+	TrimSpace                  *bool                          `ddl:"parameter" sql:"TRIM_SPACE"`
+	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNone   `ddl:"list,no_parentheses" sql:"FIELD_OPTIONALLY_ENCLOSED_BY ="`
+	NullIf                     []NullString                   `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	ErrorOnColumnCountMismatch *bool                          `ddl:"parameter" sql:"ERROR_ON_COLUMN_COUNT_MISMATCH"`
+	ReplaceInvalidCharacters   *bool                          `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	EmptyFieldAsNull           *bool                          `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
+	SkipByteOrderMark          *bool                          `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
+	Encoding                   *string                        `ddl:"parameter,single_quotes" sql:"ENCODING"`
+}
+
+type StageFileFormatStringOrNone struct {
+	Value *string `ddl:"parameter,single_quotes" sql:"Value"`
+	None  *bool   `ddl:"keyword" sql:"NONE"`
+}
+
+type StageFileFormatStringOrAuto struct {
+	Value *string `ddl:"parameter,single_quotes" sql:"Value"`
+	Auto  *bool   `ddl:"keyword" sql:"AUTO"`
+}
+
+type StageFileFormatJsonOptions struct {
+	formatType               string                          `ddl:"static" sql:"TYPE = JSON"`
+	Compression              *StageFileFormatJsonCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	DateFormat               *StageFileFormatStringOrAuto    `ddl:"list,no_parentheses" sql:"DATE_FORMAT ="`
+	TimeFormat               *StageFileFormatStringOrAuto    `ddl:"list,no_parentheses" sql:"TIME_FORMAT ="`
+	TimestampFormat          *StageFileFormatStringOrAuto    `ddl:"list,no_parentheses" sql:"TIMESTAMP_FORMAT ="`
+	BinaryFormat             *StageFileFormatBinaryFormat    `ddl:"parameter,no_quotes" sql:"BINARY_FORMAT"`
+	TrimSpace                *bool                           `ddl:"parameter" sql:"TRIM_SPACE"`
+	MultiLine                *bool                           `ddl:"parameter" sql:"MULTI_LINE"`
+	NullIf                   []NullString                    `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	FileExtension            *StageFileFormatStringOrNone    `ddl:"list,no_parentheses" sql:"FILE_EXTENSION ="`
+	EnableOctal              *bool                           `ddl:"parameter" sql:"ENABLE_OCTAL"`
+	AllowDuplicate           *bool                           `ddl:"parameter" sql:"ALLOW_DUPLICATE"`
+	StripOuterArray          *bool                           `ddl:"parameter" sql:"STRIP_OUTER_ARRAY"`
+	StripNullValues          *bool                           `ddl:"parameter" sql:"STRIP_NULL_VALUES"`
+	ReplaceInvalidCharacters *bool                           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	IgnoreUtf8Errors         *bool                           `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
+	SkipByteOrderMark        *bool                           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
+}
+
+type StageFileFormatAvroOptions struct {
+	formatType               string                          `ddl:"static" sql:"TYPE = AVRO"`
+	Compression              *StageFileFormatAvroCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	TrimSpace                *bool                           `ddl:"parameter" sql:"TRIM_SPACE"`
+	ReplaceInvalidCharacters *bool                           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	NullIf                   []NullString                    `ddl:"parameter,parentheses" sql:"NULL_IF"`
+}
+
+type StageFileFormatOrcOptions struct {
+	formatType               string       `ddl:"static" sql:"TYPE = ORC"`
+	TrimSpace                *bool        `ddl:"parameter" sql:"TRIM_SPACE"`
+	ReplaceInvalidCharacters *bool        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	NullIf                   []NullString `ddl:"parameter,parentheses" sql:"NULL_IF"`
+}
+
+type StageFileFormatParquetOptions struct {
+	formatType               string                             `ddl:"static" sql:"TYPE = PARQUET"`
+	Compression              *StageFileFormatParquetCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	SnappyCompression        *bool                              `ddl:"parameter" sql:"SNAPPY_COMPRESSION"`
+	BinaryAsText             *bool                              `ddl:"parameter" sql:"BINARY_AS_TEXT"`
+	UseLogicalType           *bool                              `ddl:"parameter" sql:"USE_LOGICAL_TYPE"`
+	TrimSpace                *bool                              `ddl:"parameter" sql:"TRIM_SPACE"`
+	UseVectorizedScanner     *bool                              `ddl:"parameter" sql:"USE_VECTORIZED_SCANNER"`
+	ReplaceInvalidCharacters *bool                              `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	NullIf                   []NullString                       `ddl:"parameter,parentheses" sql:"NULL_IF"`
+}
+
+type StageFileFormatXmlOptions struct {
+	formatType               string                         `ddl:"static" sql:"TYPE = XML"`
+	Compression              *StageFileFormatXmlCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	IgnoreUtf8Errors         *bool                          `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
+	PreserveSpace            *bool                          `ddl:"parameter" sql:"PRESERVE_SPACE"`
+	StripOuterElement        *bool                          `ddl:"parameter" sql:"STRIP_OUTER_ELEMENT"`
+	DisableAutoConvert       *bool                          `ddl:"parameter" sql:"DISABLE_AUTO_CONVERT"`
+	ReplaceInvalidCharacters *bool                          `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	SkipByteOrderMark        *bool                          `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 }
 
 // CreateOnS3StageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.

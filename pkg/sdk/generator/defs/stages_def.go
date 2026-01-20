@@ -19,7 +19,7 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 		Name()
 	qs = apply(qs)
 	return qs.
-		OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		OptionalQueryStructField("FileFormat", fileFormatDef(), g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
@@ -34,13 +34,128 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		SQL("SET")
 	qs = apply(qs)
 	return qs.
-		OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		OptionalQueryStructField("FileFormat", fileFormatDef(), g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name")
 }
 
-var fileFormatDef = g.NewQueryStruct("StageFileFormat").
-	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes())
+// Dual-value field helpers: String OR Keyword
+// Wrapped in functions to avoid generator's nested field parent conflict
+func stageFileFormatStringOrAuto() *g.QueryStruct {
+	return g.NewQueryStruct("StageFileFormatStringOrAuto").
+		OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes()).
+		OptionalSQL("AUTO").
+		WithValidation(g.ExactlyOneValueSet, "Value", "Auto")
+}
+
+func stageFileFormatStringOrNone() *g.QueryStruct {
+	return g.NewQueryStruct("StageFileFormatStringOrNone").
+		OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes()).
+		OptionalSQL("NONE").
+		WithValidation(g.ExactlyOneValueSet, "Value", "None")
+}
+
+func fileFormatDef() *g.QueryStruct {
+	return g.NewQueryStruct("StageFileFormat").
+	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes()).
+	OptionalQueryStructField(
+		"CsvOptions",
+		g.NewQueryStruct("StageFileFormatCsvOptions").
+			PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = CSV")).
+			OptionalAssignment("COMPRESSION", g.KindOfTPointer[sdkcommons.StageFileFormatCsvCompression](), g.ParameterOptions().NoQuotes()).
+			OptionalQueryStructField("RecordDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("RECORD_DELIMITER =")).
+			OptionalQueryStructField("FieldDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_DELIMITER =")).
+			OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
+			OptionalQueryStructField("FileExtension", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FILE_EXTENSION =")).
+			OptionalBooleanAssignment("PARSE_HEADER", g.ParameterOptions()).
+			OptionalNumberAssignment("SKIP_HEADER", g.ParameterOptions()).
+			OptionalBooleanAssignment("SKIP_BLANK_LINES", g.ParameterOptions()).
+			OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
+			OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
+			OptionalQueryStructField("TimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
+			OptionalAssignment("BINARY_FORMAT", g.KindOfTPointer[sdkcommons.StageFileFormatBinaryFormat](), g.ParameterOptions().NoQuotes()).
+			OptionalQueryStructField("Escape", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE =")).
+			OptionalQueryStructField("EscapeUnenclosedField", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE_UNENCLOSED_FIELD =")).
+			OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+			OptionalQueryStructField("FieldOptionallyEnclosedBy", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_OPTIONALLY_ENCLOSED_BY =")).
+			ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+			OptionalBooleanAssignment("ERROR_ON_COLUMN_COUNT_MISMATCH", g.ParameterOptions()).
+			OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+			OptionalBooleanAssignment("EMPTY_FIELD_AS_NULL", g.ParameterOptions()).
+			OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
+			OptionalTextAssignment("ENCODING", g.ParameterOptions().SingleQuotes()),
+		g.KeywordOptions(),
+	).
+	OptionalQueryStructField(
+		"JsonOptions",
+		g.NewQueryStruct("StageFileFormatJsonOptions").
+			PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = JSON")).
+			OptionalAssignment("COMPRESSION", g.KindOfTPointer[sdkcommons.StageFileFormatJsonCompression](), g.ParameterOptions().NoQuotes()).
+			OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
+			OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
+			OptionalQueryStructField("TimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
+			OptionalAssignment("BINARY_FORMAT", g.KindOfTPointer[sdkcommons.StageFileFormatBinaryFormat](), g.ParameterOptions().NoQuotes()).
+			OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+			OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
+			ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+			OptionalQueryStructField("FileExtension", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FILE_EXTENSION =")).
+			OptionalBooleanAssignment("ENABLE_OCTAL", g.ParameterOptions()).
+			OptionalBooleanAssignment("ALLOW_DUPLICATE", g.ParameterOptions()).
+			OptionalBooleanAssignment("STRIP_OUTER_ARRAY", g.ParameterOptions()).
+			OptionalBooleanAssignment("STRIP_NULL_VALUES", g.ParameterOptions()).
+			OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+			OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
+			OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()),
+		g.KeywordOptions(),
+	).
+	OptionalQueryStructField(
+		"AvroOptions",
+		g.NewQueryStruct("StageFileFormatAvroOptions").
+			PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = AVRO")).
+			OptionalAssignment("COMPRESSION", g.KindOfTPointer[sdkcommons.StageFileFormatAvroCompression](), g.ParameterOptions().NoQuotes()).
+			OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+			OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+			ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
+		g.KeywordOptions(),
+	).
+	OptionalQueryStructField(
+		"OrcOptions",
+		g.NewQueryStruct("StageFileFormatOrcOptions").
+			PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = ORC")).
+			OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+			OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+			ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
+		g.KeywordOptions(),
+	).
+	OptionalQueryStructField(
+		"ParquetOptions",
+		g.NewQueryStruct("StageFileFormatParquetOptions").
+			PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = PARQUET")).
+			OptionalAssignment("COMPRESSION", g.KindOfTPointer[sdkcommons.StageFileFormatParquetCompression](), g.ParameterOptions().NoQuotes()).
+			OptionalBooleanAssignment("SNAPPY_COMPRESSION", g.ParameterOptions()).
+			OptionalBooleanAssignment("BINARY_AS_TEXT", g.ParameterOptions()).
+			OptionalBooleanAssignment("USE_LOGICAL_TYPE", g.ParameterOptions()).
+			OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+			OptionalBooleanAssignment("USE_VECTORIZED_SCANNER", g.ParameterOptions()).
+			OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+			ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
+		g.KeywordOptions(),
+	).
+	OptionalQueryStructField(
+		"XmlOptions",
+		g.NewQueryStruct("StageFileFormatXmlOptions").
+			PredefinedQueryStructField("formatType", "string", g.StaticOptions().SQL("TYPE = XML")).
+			OptionalAssignment("COMPRESSION", g.KindOfTPointer[sdkcommons.StageFileFormatXmlCompression](), g.ParameterOptions().NoQuotes()).
+			OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
+			OptionalBooleanAssignment("PRESERVE_SPACE", g.ParameterOptions()).
+			OptionalBooleanAssignment("STRIP_OUTER_ELEMENT", g.ParameterOptions()).
+			OptionalBooleanAssignment("DISABLE_AUTO_CONVERT", g.ParameterOptions()).
+			OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+			OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()),
+		g.KeywordOptions(),
+	).
+	WithValidation(g.ExactlyOneValueSet, "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions")
+}
 
 var stageS3CommonDirectoryTableOptionsDef = func() *g.QueryStruct {
 	return g.NewQueryStruct("StageS3CommonDirectoryTableOptions").
