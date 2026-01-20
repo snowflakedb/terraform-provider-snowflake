@@ -181,7 +181,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			CsvOptions: &StageFileFormatCsvOptions{},
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
@@ -300,7 +300,7 @@ func TestStages_CreateOnGCS(t *testing.T) {
 			NotificationIntegration: String("notification-integration"),
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			CsvOptions: &StageFileFormatCsvOptions{},
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
@@ -390,7 +390,7 @@ func TestStages_CreateOnAzure(t *testing.T) {
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			CsvOptions: &StageFileFormatCsvOptions{},
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
@@ -474,7 +474,7 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			CsvOptions: &StageFileFormatCsvOptions{},
 		}
 		opts.Comment = String("some comment")
 		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
@@ -585,7 +585,7 @@ func TestStages_AlterInternalStage(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			CsvOptions: &StageFileFormatCsvOptions{},
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'", id.FullyQualifiedName())
@@ -706,7 +706,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+			JsonOptions: &StageFileFormatJsonOptions{},
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COMMENT = 'some comment'`, id.FullyQualifiedName())
@@ -797,7 +797,7 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+			JsonOptions: &StageFileFormatJsonOptions{},
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COMMENT = 'some comment'`, id.FullyQualifiedName())
@@ -896,7 +896,7 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+			JsonOptions: &StageFileFormatJsonOptions{},
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COMMENT = 'some comment'`, id.FullyQualifiedName())
