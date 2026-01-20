@@ -39,7 +39,7 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		WithValidation(g.ValidIdentifier, "name")
 }
 
-var fileFormatDef = g.NewQueryStruct("FileFormat").
+var fileFormatDef = g.NewQueryStruct("StageFileFormat").
 	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes())
 
 var stageS3CommonDirectoryTableOptionsDef = func() *g.QueryStruct {

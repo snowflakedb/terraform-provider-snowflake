@@ -50,7 +50,7 @@ func TestStages_CreateInternal(t *testing.T) {
 			Enable:      true,
 			AutoRefresh: Bool(true),
 		}
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FormatName: String("format name"),
 		}
 		opts.Comment = String("some comment")
@@ -180,7 +180,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 				},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
@@ -299,7 +299,7 @@ func TestStages_CreateOnGCS(t *testing.T) {
 			AutoRefresh:             Bool(true),
 			NotificationIntegration: String("notification-integration"),
 		}
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
@@ -389,7 +389,7 @@ func TestStages_CreateOnAzure(t *testing.T) {
 				},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
@@ -473,7 +473,7 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 				AwsSecretKey: "aws-secret-key",
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
@@ -584,7 +584,7 @@ func TestStages_AlterInternalStage(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeCSV,
 		}
 		opts.Comment = String("some comment")
@@ -705,7 +705,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 				None: &ExternalStageS3EncryptionNone{},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeJSON,
 		}
 		opts.Comment = String("some comment")
@@ -796,7 +796,7 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 				None: &ExternalStageGCSEncryptionNone{},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeJSON,
 		}
 		opts.Comment = String("some comment")
@@ -895,7 +895,7 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 				None: &ExternalStageAzureEncryptionNone{},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
+		opts.FileFormat = &StageFileFormat{
 			FileFormatType: &FileFormatTypeJSON,
 		}
 		opts.Comment = String("some comment")
