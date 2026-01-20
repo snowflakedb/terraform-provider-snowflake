@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestStages_CreateInternal(t *testing.T) {
@@ -70,6 +72,397 @@ func TestStages_CreateInternal(t *testing.T) {
 			SnowflakeSse: &InternalStageEncryptionSnowflakeSse{},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE')`, id.FullyQualifiedName())
+	})
+
+	// added manually - file format tests
+	t.Run("file format: CSV basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = CSV)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: CSV complete", func(t *testing.T) {
+		opts := defaultOpts()
+		compression := StageFileFormatCsvCompressionGzip
+		binaryFormat := StageFileFormatBinaryFormatHex
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				Compression:                &compression,
+				RecordDelimiter:            &StageFileFormatStringOrNone{Value: String("\n")},
+				FieldDelimiter:             &StageFileFormatStringOrNone{Value: String(",")},
+				MultiLine:                  Bool(true),
+				FileExtension:              &StageFileFormatStringOrNone{Value: String(".csv")},
+				ParseHeader:                Bool(true),
+				SkipHeader:                 Int(1),
+				SkipBlankLines:             Bool(true),
+				DateFormat:                 &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")},
+				TimeFormat:                 &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")},
+				TimestampFormat:            &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS")},
+				BinaryFormat:               &binaryFormat,
+				Escape:                     &StageFileFormatStringOrNone{Value: String("\\")},
+				EscapeUnenclosedField:      &StageFileFormatStringOrNone{Value: String("\\")},
+				TrimSpace:                  Bool(true),
+				FieldOptionallyEnclosedBy:  &StageFileFormatStringOrNone{Value: String("\"")},
+				NullIf:                     []NullString{{S: "NULL"}, {S: ""}},
+				ErrorOnColumnCountMismatch: Bool(true),
+				ReplaceInvalidCharacters:   Bool(true),
+				EmptyFieldAsNull:           Bool(true),
+				SkipByteOrderMark:          Bool(true),
+				Encoding:                   String("UTF8"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP RECORD_DELIMITER = Value = '\n' FIELD_DELIMITER = Value = ',' MULTI_LINE = true FILE_EXTENSION = Value = '.csv' PARSE_HEADER = true SKIP_HEADER = 1 SKIP_BLANK_LINES = true DATE_FORMAT = Value = 'YYYY-MM-DD' TIME_FORMAT = Value = 'HH24:MI:SS' TIMESTAMP_FORMAT = Value = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = Value = '\\' ESCAPE_UNENCLOSED_FIELD = Value = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = Value = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = 'UTF8')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: CSV with NONE values", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				RecordDelimiter:       &StageFileFormatStringOrNone{None: Bool(true)},
+				FieldDelimiter:        &StageFileFormatStringOrNone{None: Bool(true)},
+				FileExtension:         &StageFileFormatStringOrNone{None: Bool(true)},
+				Escape:                &StageFileFormatStringOrNone{None: Bool(true)},
+				EscapeUnenclosedField: &StageFileFormatStringOrNone{None: Bool(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = CSV RECORD_DELIMITER = NONE FIELD_DELIMITER = NONE FILE_EXTENSION = NONE ESCAPE = NONE ESCAPE_UNENCLOSED_FIELD = NONE)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: CSV with AUTO values", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				DateFormat:      &StageFileFormatStringOrAuto{Auto: Bool(true)},
+				TimeFormat:      &StageFileFormatStringOrAuto{Auto: Bool(true)},
+				TimestampFormat: &StageFileFormatStringOrAuto{Auto: Bool(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = CSV DATE_FORMAT = AUTO TIME_FORMAT = AUTO TIMESTAMP_FORMAT = AUTO)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON complete", func(t *testing.T) {
+		opts := defaultOpts()
+		compression := StageFileFormatJsonCompressionBrotli
+		binaryFormat := StageFileFormatBinaryFormatBase64
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{
+				Compression:              &compression,
+				DateFormat:               &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")},
+				TimeFormat:               &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")},
+				TimestampFormat:          &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS")},
+				BinaryFormat:             &binaryFormat,
+				TrimSpace:                Bool(true),
+				MultiLine:                Bool(true),
+				NullIf:                   []NullString{{S: "NULL"}},
+				FileExtension:            &StageFileFormatStringOrNone{Value: String(".json")},
+				EnableOctal:              Bool(true),
+				AllowDuplicate:           Bool(true),
+				StripOuterArray:          Bool(true),
+				StripNullValues:          Bool(true),
+				ReplaceInvalidCharacters: Bool(true),
+				IgnoreUtf8Errors:         Bool(true),
+				SkipByteOrderMark:        Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = JSON COMPRESSION = BROTLI DATE_FORMAT = Value = 'YYYY-MM-DD' TIME_FORMAT = Value = 'HH24:MI:SS' TIMESTAMP_FORMAT = Value = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = Value = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true REPLACE_INVALID_CHARACTERS = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: AVRO basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			AvroOptions: &StageFileFormatAvroOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = AVRO)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: AVRO complete", func(t *testing.T) {
+		opts := defaultOpts()
+		compression := StageFileFormatAvroCompressionDeflate
+		opts.FileFormat = &StageFileFormat{
+			AvroOptions: &StageFileFormatAvroOptions{
+				Compression:              &compression,
+				TrimSpace:                Bool(true),
+				ReplaceInvalidCharacters: Bool(true),
+				NullIf:                   []NullString{{S: "NULL"}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = AVRO COMPRESSION = DEFLATE TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL'))`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: ORC basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			OrcOptions: &StageFileFormatOrcOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = ORC)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: ORC complete", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			OrcOptions: &StageFileFormatOrcOptions{
+				TrimSpace:                Bool(true),
+				ReplaceInvalidCharacters: Bool(true),
+				NullIf:                   []NullString{{S: "NULL"}, {S: ""}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', ''))`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: Parquet basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			ParquetOptions: &StageFileFormatParquetOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = PARQUET)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: Parquet complete", func(t *testing.T) {
+		opts := defaultOpts()
+		compression := StageFileFormatParquetCompressionLzo
+		opts.FileFormat = &StageFileFormat{
+			ParquetOptions: &StageFileFormatParquetOptions{
+				Compression:              &compression,
+				SnappyCompression:        Bool(true),
+				BinaryAsText:             Bool(true),
+				UseLogicalType:           Bool(true),
+				TrimSpace:                Bool(true),
+				UseVectorizedScanner:     Bool(true),
+				ReplaceInvalidCharacters: Bool(true),
+				NullIf:                   []NullString{{S: "NULL"}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = PARQUET COMPRESSION = LZO SNAPPY_COMPRESSION = true BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL'))`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: XML basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			XmlOptions: &StageFileFormatXmlOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = XML)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: XML complete", func(t *testing.T) {
+		opts := defaultOpts()
+		compression := StageFileFormatXmlCompressionZstd
+		opts.FileFormat = &StageFileFormat{
+			XmlOptions: &StageFileFormatXmlOptions{
+				Compression:              &compression,
+				IgnoreUtf8Errors:         Bool(true),
+				PreserveSpace:            Bool(true),
+				StripOuterElement:        Bool(true),
+				DisableAutoConvert:       Bool(true),
+				ReplaceInvalidCharacters: Bool(true),
+				SkipByteOrderMark:        Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = XML COMPRESSION = ZSTD IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_AUTO_CONVERT = true REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = true)`, id.FullyQualifiedName())
+	})
+
+	// added manually - file format validation tests
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: CSV RecordDelimiter exactly one of Value/None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				RecordDelimiter: &StageFileFormatStringOrNone{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+	})
+
+	// added manually
+	t.Run("validation: CSV RecordDelimiter exactly one of Value/None - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				RecordDelimiter: &StageFileFormatStringOrNone{Value: String("\n"), None: Bool(true)},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+	})
+
+	// added manually
+	t.Run("validation: CSV FieldDelimiter exactly one of Value/None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				FieldDelimiter: &StageFileFormatStringOrNone{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+	})
+
+	// added manually
+	t.Run("validation: CSV FileExtension exactly one of Value/None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				FileExtension: &StageFileFormatStringOrNone{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.FileExtension", "Value", "None"))
+	})
+
+	// added manually
+	t.Run("validation: CSV DateFormat exactly one of Value/Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				DateFormat: &StageFileFormatStringOrAuto{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+	})
+
+	// added manually
+	t.Run("validation: CSV DateFormat exactly one of Value/Auto - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				DateFormat: &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD"), Auto: Bool(true)},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+	})
+
+	// added manually
+	t.Run("validation: CSV TimeFormat exactly one of Value/Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				TimeFormat: &StageFileFormatStringOrAuto{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+	})
+
+	// added manually
+	t.Run("validation: CSV TimestampFormat exactly one of Value/Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				TimestampFormat: &StageFileFormatStringOrAuto{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+	})
+
+	// added manually
+	t.Run("validation: CSV Escape exactly one of Value/None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				Escape: &StageFileFormatStringOrNone{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
+	})
+
+	// added manually
+	t.Run("validation: CSV EscapeUnenclosedField exactly one of Value/None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				EscapeUnenclosedField: &StageFileFormatStringOrNone{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+	})
+
+	// added manually
+	t.Run("validation: CSV FieldOptionallyEnclosedBy exactly one of Value/None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{
+				FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+	})
+
+	// added manually
+	t.Run("validation: JSON DateFormat exactly one of Value/Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{
+				DateFormat: &StageFileFormatStringOrAuto{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+	})
+
+	// added manually
+	t.Run("validation: JSON TimeFormat exactly one of Value/Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{
+				TimeFormat: &StageFileFormatStringOrAuto{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+	})
+
+	// added manually
+	t.Run("validation: JSON TimestampFormat exactly one of Value/Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{
+				TimestampFormat: &StageFileFormatStringOrAuto{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+	})
+
+	// added manually
+	t.Run("validation: JSON FileExtension exactly one of Value/None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{
+				FileExtension: &StageFileFormatStringOrNone{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat.JsonOptions.FileExtension", "Value", "None"))
 	})
 }
 
@@ -240,6 +633,77 @@ func TestStages_CreateOnS3(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' CREDENTIALS = (AWS_ROLE = 'arn:aws:iam::123456789012:role/MyRole')`, id.FullyQualifiedName())
 	})
+
+	// added manually - file format tests
+	t.Run("file format: CSV basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' FILE_FORMAT = (TYPE = CSV)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: AVRO basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			AvroOptions: &StageFileFormatAvroOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' FILE_FORMAT = (TYPE = AVRO)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: ORC basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			OrcOptions: &StageFileFormatOrcOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' FILE_FORMAT = (TYPE = ORC)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: Parquet basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			ParquetOptions: &StageFileFormatParquetOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' FILE_FORMAT = (TYPE = PARQUET)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: XML basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			XmlOptions: &StageFileFormatXmlOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' FILE_FORMAT = (TYPE = XML)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnS3StageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnS3StageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
 }
 
 func TestStages_CreateOnGCS(t *testing.T) {
@@ -313,6 +777,77 @@ func TestStages_CreateOnGCS(t *testing.T) {
 			None: &ExternalStageGCSEncryptionNone{},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
+	})
+
+	// added manually - file format tests
+	t.Run("file format: CSV basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' FILE_FORMAT = (TYPE = CSV)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: AVRO basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			AvroOptions: &StageFileFormatAvroOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' FILE_FORMAT = (TYPE = AVRO)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: ORC basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			OrcOptions: &StageFileFormatOrcOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' FILE_FORMAT = (TYPE = ORC)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: Parquet basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			ParquetOptions: &StageFileFormatParquetOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' FILE_FORMAT = (TYPE = PARQUET)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: XML basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			XmlOptions: &StageFileFormatXmlOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' FILE_FORMAT = (TYPE = XML)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
 	})
 }
 
@@ -428,6 +963,77 @@ func TestStages_CreateOnAzure(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
 	})
+
+	// added manually - file format tests
+	t.Run("file format: CSV basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' FILE_FORMAT = (TYPE = CSV)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: AVRO basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			AvroOptions: &StageFileFormatAvroOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' FILE_FORMAT = (TYPE = AVRO)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: ORC basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			OrcOptions: &StageFileFormatOrcOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' FILE_FORMAT = (TYPE = ORC)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: Parquet basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			ParquetOptions: &StageFileFormatParquetOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' FILE_FORMAT = (TYPE = PARQUET)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: XML basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			XmlOptions: &StageFileFormatXmlOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' FILE_FORMAT = (TYPE = XML)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
 }
 
 func TestStages_CreateOnS3Compatible(t *testing.T) {
@@ -483,6 +1089,77 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 			AutoRefresh:     Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true) FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	// added manually - file format tests
+	t.Run("file format: CSV basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENDPOINT = 'some endpoint' FILE_FORMAT = (TYPE = CSV)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENDPOINT = 'some endpoint' FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: AVRO basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			AvroOptions: &StageFileFormatAvroOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENDPOINT = 'some endpoint' FILE_FORMAT = (TYPE = AVRO)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: ORC basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			OrcOptions: &StageFileFormatOrcOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENDPOINT = 'some endpoint' FILE_FORMAT = (TYPE = ORC)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: Parquet basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			ParquetOptions: &StageFileFormatParquetOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENDPOINT = 'some endpoint' FILE_FORMAT = (TYPE = PARQUET)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: XML basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			XmlOptions: &StageFileFormatXmlOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENDPOINT = 'some endpoint' FILE_FORMAT = (TYPE = XML)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
 	})
 }
 
@@ -589,6 +1266,32 @@ func TestStages_AlterInternalStage(t *testing.T) {
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'", id.FullyQualifiedName())
+	})
+
+	// added manually - file format tests
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET FILE_FORMAT = (TYPE = JSON)", id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
 	})
 }
 
@@ -749,6 +1452,41 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 's3://example.com' CREDENTIALS = (AWS_ROLE = 'arn:aws:iam::123456789012:role/MyRole')`, id.FullyQualifiedName())
 	})
+
+	// added manually - file format tests
+	t.Run("file format: CSV basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET FILE_FORMAT = (TYPE = CSV)", id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET FILE_FORMAT = (TYPE = JSON)", id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
 }
 
 func TestStages_AlterExternalGCSStage(t *testing.T) {
@@ -817,6 +1555,41 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 'gcs://example.com' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id')`, id.FullyQualifiedName())
+	})
+
+	// added manually - file format tests
+	t.Run("file format: CSV basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET FILE_FORMAT = (TYPE = CSV)", id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET FILE_FORMAT = (TYPE = JSON)", id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
 	})
 }
 
@@ -914,6 +1687,41 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 'azure://example.com' ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key')`, id.FullyQualifiedName())
+	})
+
+	// added manually - file format tests
+	t.Run("file format: CSV basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions: &StageFileFormatCsvOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET FILE_FORMAT = (TYPE = CSV)", id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("file format: JSON basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE %s SET FILE_FORMAT = (TYPE = JSON)", id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.FileFormat.*] should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			CsvOptions:  &StageFileFormatCsvOptions{},
+			JsonOptions: &StageFileFormatJsonOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat", "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
 	})
 }
 
@@ -1082,4 +1890,232 @@ func TestStages_Show(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES IN SCHEMA %s`, schemaId.FullyQualifiedName())
 	})
+}
+
+// added manually
+func TestToStageFileFormatCsvCompression(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected StageFileFormatCsvCompression
+		Error    string
+	}{
+		{Input: string(StageFileFormatCsvCompressionAuto), Expected: StageFileFormatCsvCompressionAuto},
+		{Input: string(StageFileFormatCsvCompressionGzip), Expected: StageFileFormatCsvCompressionGzip},
+		{Input: string(StageFileFormatCsvCompressionBz2), Expected: StageFileFormatCsvCompressionBz2},
+		{Input: string(StageFileFormatCsvCompressionBrotli), Expected: StageFileFormatCsvCompressionBrotli},
+		{Input: string(StageFileFormatCsvCompressionZstd), Expected: StageFileFormatCsvCompressionZstd},
+		{Input: string(StageFileFormatCsvCompressionDeflate), Expected: StageFileFormatCsvCompressionDeflate},
+		{Input: string(StageFileFormatCsvCompressionRawDeflate), Expected: StageFileFormatCsvCompressionRawDeflate},
+		{Input: string(StageFileFormatCsvCompressionNone), Expected: StageFileFormatCsvCompressionNone},
+		{Name: "lowercase: gzip", Input: "gzip", Expected: StageFileFormatCsvCompressionGzip},
+		{Name: "mixed case: Gzip", Input: "Gzip", Expected: StageFileFormatCsvCompressionGzip},
+		{Name: "invalid: incorrect", Input: "incorrect", Error: "invalid stage file format CSV compression"},
+		{Name: "invalid: empty", Input: "", Error: "invalid stage file format CSV compression"},
+	}
+	for _, tc := range testCases {
+		name := tc.Name
+		if name == "" {
+			name = tc.Input
+		}
+		t.Run(name, func(t *testing.T) {
+			result, err := ToStageFileFormatCsvCompression(tc.Input)
+			if tc.Error != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.Error)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.Expected, result)
+			}
+		})
+	}
+}
+
+// added manually
+func TestToStageFileFormatJsonCompression(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected StageFileFormatJsonCompression
+		Error    string
+	}{
+		{Input: string(StageFileFormatJsonCompressionAuto), Expected: StageFileFormatJsonCompressionAuto},
+		{Input: string(StageFileFormatJsonCompressionGzip), Expected: StageFileFormatJsonCompressionGzip},
+		{Input: string(StageFileFormatJsonCompressionBz2), Expected: StageFileFormatJsonCompressionBz2},
+		{Input: string(StageFileFormatJsonCompressionBrotli), Expected: StageFileFormatJsonCompressionBrotli},
+		{Input: string(StageFileFormatJsonCompressionZstd), Expected: StageFileFormatJsonCompressionZstd},
+		{Input: string(StageFileFormatJsonCompressionDeflate), Expected: StageFileFormatJsonCompressionDeflate},
+		{Input: string(StageFileFormatJsonCompressionRawDeflate), Expected: StageFileFormatJsonCompressionRawDeflate},
+		{Input: string(StageFileFormatJsonCompressionNone), Expected: StageFileFormatJsonCompressionNone},
+		{Name: "lowercase: brotli", Input: "brotli", Expected: StageFileFormatJsonCompressionBrotli},
+		{Name: "mixed case: Brotli", Input: "Brotli", Expected: StageFileFormatJsonCompressionBrotli},
+		{Name: "invalid: incorrect", Input: "incorrect", Error: "invalid stage file format JSON compression"},
+		{Name: "invalid: empty", Input: "", Error: "invalid stage file format JSON compression"},
+	}
+	for _, tc := range testCases {
+		name := tc.Name
+		if name == "" {
+			name = tc.Input
+		}
+		t.Run(name, func(t *testing.T) {
+			result, err := ToStageFileFormatJsonCompression(tc.Input)
+			if tc.Error != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.Error)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.Expected, result)
+			}
+		})
+	}
+}
+
+// added manually
+func TestToStageFileFormatAvroCompression(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected StageFileFormatAvroCompression
+		Error    string
+	}{
+		{Input: string(StageFileFormatAvroCompressionAuto), Expected: StageFileFormatAvroCompressionAuto},
+		{Input: string(StageFileFormatAvroCompressionGzip), Expected: StageFileFormatAvroCompressionGzip},
+		{Input: string(StageFileFormatAvroCompressionBrotli), Expected: StageFileFormatAvroCompressionBrotli},
+		{Input: string(StageFileFormatAvroCompressionZstd), Expected: StageFileFormatAvroCompressionZstd},
+		{Input: string(StageFileFormatAvroCompressionDeflate), Expected: StageFileFormatAvroCompressionDeflate},
+		{Input: string(StageFileFormatAvroCompressionRawDeflate), Expected: StageFileFormatAvroCompressionRawDeflate},
+		{Input: string(StageFileFormatAvroCompressionNone), Expected: StageFileFormatAvroCompressionNone},
+		{Name: "lowercase: zstd", Input: "zstd", Expected: StageFileFormatAvroCompressionZstd},
+		{Name: "mixed case: Zstd", Input: "Zstd", Expected: StageFileFormatAvroCompressionZstd},
+		{Name: "invalid: bz2 (not supported for AVRO)", Input: "BZ2", Error: "invalid stage file format AVRO compression"},
+		{Name: "invalid: incorrect", Input: "incorrect", Error: "invalid stage file format AVRO compression"},
+		{Name: "invalid: empty", Input: "", Error: "invalid stage file format AVRO compression"},
+	}
+	for _, tc := range testCases {
+		name := tc.Name
+		if name == "" {
+			name = tc.Input
+		}
+		t.Run(name, func(t *testing.T) {
+			result, err := ToStageFileFormatAvroCompression(tc.Input)
+			if tc.Error != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.Error)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.Expected, result)
+			}
+		})
+	}
+}
+
+// added manually
+func TestToStageFileFormatParquetCompression(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected StageFileFormatParquetCompression
+		Error    string
+	}{
+		{Input: string(StageFileFormatParquetCompressionAuto), Expected: StageFileFormatParquetCompressionAuto},
+		{Input: string(StageFileFormatParquetCompressionLzo), Expected: StageFileFormatParquetCompressionLzo},
+		{Input: string(StageFileFormatParquetCompressionSnappy), Expected: StageFileFormatParquetCompressionSnappy},
+		{Input: string(StageFileFormatParquetCompressionNone), Expected: StageFileFormatParquetCompressionNone},
+		{Name: "lowercase: snappy", Input: "snappy", Expected: StageFileFormatParquetCompressionSnappy},
+		{Name: "mixed case: Snappy", Input: "Snappy", Expected: StageFileFormatParquetCompressionSnappy},
+		{Name: "invalid: gzip (not supported for Parquet)", Input: "GZIP", Error: "invalid stage file format Parquet compression"},
+		{Name: "invalid: incorrect", Input: "incorrect", Error: "invalid stage file format Parquet compression"},
+		{Name: "invalid: empty", Input: "", Error: "invalid stage file format Parquet compression"},
+	}
+	for _, tc := range testCases {
+		name := tc.Name
+		if name == "" {
+			name = tc.Input
+		}
+		t.Run(name, func(t *testing.T) {
+			result, err := ToStageFileFormatParquetCompression(tc.Input)
+			if tc.Error != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.Error)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.Expected, result)
+			}
+		})
+	}
+}
+
+// added manually
+func TestToStageFileFormatXmlCompression(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected StageFileFormatXmlCompression
+		Error    string
+	}{
+		{Input: string(StageFileFormatXmlCompressionAuto), Expected: StageFileFormatXmlCompressionAuto},
+		{Input: string(StageFileFormatXmlCompressionGzip), Expected: StageFileFormatXmlCompressionGzip},
+		{Input: string(StageFileFormatXmlCompressionBz2), Expected: StageFileFormatXmlCompressionBz2},
+		{Input: string(StageFileFormatXmlCompressionBrotli), Expected: StageFileFormatXmlCompressionBrotli},
+		{Input: string(StageFileFormatXmlCompressionZstd), Expected: StageFileFormatXmlCompressionZstd},
+		{Input: string(StageFileFormatXmlCompressionDeflate), Expected: StageFileFormatXmlCompressionDeflate},
+		{Input: string(StageFileFormatXmlCompressionRawDeflate), Expected: StageFileFormatXmlCompressionRawDeflate},
+		{Input: string(StageFileFormatXmlCompressionNone), Expected: StageFileFormatXmlCompressionNone},
+		{Name: "lowercase: deflate", Input: "deflate", Expected: StageFileFormatXmlCompressionDeflate},
+		{Name: "mixed case: Deflate", Input: "Deflate", Expected: StageFileFormatXmlCompressionDeflate},
+		{Name: "invalid: incorrect", Input: "incorrect", Error: "invalid stage file format XML compression"},
+		{Name: "invalid: empty", Input: "", Error: "invalid stage file format XML compression"},
+	}
+	for _, tc := range testCases {
+		name := tc.Name
+		if name == "" {
+			name = tc.Input
+		}
+		t.Run(name, func(t *testing.T) {
+			result, err := ToStageFileFormatXmlCompression(tc.Input)
+			if tc.Error != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.Error)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.Expected, result)
+			}
+		})
+	}
+}
+
+// added manually
+func TestToStageFileFormatBinaryFormat(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected StageFileFormatBinaryFormat
+		Error    string
+	}{
+		{Input: string(StageFileFormatBinaryFormatHex), Expected: StageFileFormatBinaryFormatHex},
+		{Input: string(StageFileFormatBinaryFormatBase64), Expected: StageFileFormatBinaryFormatBase64},
+		{Input: string(StageFileFormatBinaryFormatUtf8), Expected: StageFileFormatBinaryFormatUtf8},
+		{Name: "lowercase: hex", Input: "hex", Expected: StageFileFormatBinaryFormatHex},
+		{Name: "lowercase: base64", Input: "base64", Expected: StageFileFormatBinaryFormatBase64},
+		{Name: "lowercase: utf8", Input: "utf8", Expected: StageFileFormatBinaryFormatUtf8},
+		{Name: "mixed case: Hex", Input: "Hex", Expected: StageFileFormatBinaryFormatHex},
+		{Name: "invalid: incorrect", Input: "incorrect", Error: "invalid stage file format binary format"},
+		{Name: "invalid: empty", Input: "", Error: "invalid stage file format binary format"},
+	}
+	for _, tc := range testCases {
+		name := tc.Name
+		if name == "" {
+			name = tc.Input
+		}
+		t.Run(name, func(t *testing.T) {
+			result, err := ToStageFileFormatBinaryFormat(tc.Input)
+			if tc.Error != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.Error)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.Expected, result)
+			}
+		})
+	}
 }
