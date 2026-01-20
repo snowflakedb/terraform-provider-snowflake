@@ -281,7 +281,7 @@ type TagAssociationRequest struct {
 	Value string           // required
 }
 
-type FileFormatTypeOptionsRequest struct {
+type LegacyFileFormatTypeOptionsRequest struct {
 	CSVCompression                *CSVCompression
 	CSVRecordDelimiter            *string
 	CSVFieldDelimiter             *string
@@ -561,4 +561,11 @@ type DescribeTableColumnsRequest struct {
 
 type DescribeTableStageRequest struct {
 	id SchemaObjectIdentifier // required
+}
+
+type LegacyFileFormatRequest struct {
+	FormatName     *string
+	FileFormatType *FileFormatType
+	// adjusted manually
+	Options *LegacyFileFormatTypeOptionsRequest
 }

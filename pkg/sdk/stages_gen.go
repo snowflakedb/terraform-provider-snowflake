@@ -61,11 +61,6 @@ type InternalDirectoryTableOptions struct {
 	AutoRefresh *bool `ddl:"parameter" sql:"AUTO_REFRESH"`
 }
 
-type LegacyFileFormat struct {
-	FormatName     *string                `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
-	FileFormatType *FileFormatType        `ddl:"parameter" sql:"TYPE"`
-	Options        *FileFormatTypeOptions `ddl:"list,no_comma"`
-}
 
 // CreateOnS3StageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3StageOptions struct {

@@ -676,7 +676,7 @@ func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRe
 	return fileFormats
 }
 
-func (v *FileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptions {
+func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptions {
 	if v == nil {
 		return nil
 	}
