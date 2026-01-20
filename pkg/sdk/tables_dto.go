@@ -81,7 +81,7 @@ type CreateTableRequest struct {
 	OutOfLineConstraints       []OutOfLineConstraintRequest
 	clusterBy                  []string
 	enableSchemaEvolution      *bool
-	stageFileFormat            *StageFileFormatRequest
+	stageFileFormat            *LegacyFileFormatRequest
 	stageCopyOptions           *StageCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
@@ -508,7 +508,7 @@ type TableSearchOptimizationActionRequest struct {
 
 type TableSetRequest struct {
 	EnableSchemaEvolution      *bool
-	StageFileFormat            *StageFileFormatRequest
+	StageFileFormat            *LegacyFileFormatRequest
 	StageCopyOptions           *StageCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int

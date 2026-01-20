@@ -26,7 +26,7 @@ type CreateInternalStageRequest struct {
 	name                  SchemaObjectIdentifier // required
 	Encryption            *InternalStageEncryptionRequest
 	DirectoryTableOptions *InternalDirectoryTableOptionsRequest
-	FileFormat            *StageFileFormatRequest
+	FileFormat            *LegacyFileFormatRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -47,7 +47,7 @@ type InternalDirectoryTableOptionsRequest struct {
 	AutoRefresh *bool
 }
 
-type StageFileFormatRequest struct {
+type LegacyFileFormatRequest struct {
 	FormatName     *string
 	FileFormatType *FileFormatType
 	// adjusted manually
@@ -61,7 +61,7 @@ type CreateOnS3StageRequest struct {
 	name                  SchemaObjectIdentifier       // required
 	ExternalStageParams   ExternalS3StageParamsRequest // required
 	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
-	FileFormat            *StageFileFormatRequest
+	FileFormat            *LegacyFileFormatRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -116,7 +116,7 @@ type CreateOnGCSStageRequest struct {
 	name                  SchemaObjectIdentifier        // required
 	ExternalStageParams   ExternalGCSStageParamsRequest // required
 	DirectoryTableOptions *ExternalGCSDirectoryTableOptionsRequest
-	FileFormat            *StageFileFormatRequest
+	FileFormat            *LegacyFileFormatRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -153,7 +153,7 @@ type CreateOnAzureStageRequest struct {
 	name                  SchemaObjectIdentifier          // required
 	ExternalStageParams   ExternalAzureStageParamsRequest // required
 	DirectoryTableOptions *ExternalAzureDirectoryTableOptionsRequest
-	FileFormat            *StageFileFormatRequest
+	FileFormat            *LegacyFileFormatRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -196,7 +196,7 @@ type CreateOnS3CompatibleStageRequest struct {
 	name                  SchemaObjectIdentifier                 // required
 	ExternalStageParams   ExternalS3CompatibleStageParamsRequest // required
 	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
-	FileFormat            *StageFileFormatRequest
+	FileFormat            *LegacyFileFormatRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -223,7 +223,7 @@ type AlterStageRequest struct {
 type AlterInternalStageStageRequest struct {
 	IfExists   *bool
 	name       SchemaObjectIdentifier // required
-	FileFormat *StageFileFormatRequest
+	FileFormat *LegacyFileFormatRequest
 	Comment    *string
 }
 
@@ -231,7 +231,7 @@ type AlterExternalS3StageStageRequest struct {
 	IfExists            *bool
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalS3StageParamsRequest
-	FileFormat          *StageFileFormatRequest
+	FileFormat          *LegacyFileFormatRequest
 	Comment             *string
 }
 
@@ -239,7 +239,7 @@ type AlterExternalGCSStageStageRequest struct {
 	IfExists            *bool
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalGCSStageParamsRequest
-	FileFormat          *StageFileFormatRequest
+	FileFormat          *LegacyFileFormatRequest
 	Comment             *string
 }
 
@@ -247,7 +247,7 @@ type AlterExternalAzureStageStageRequest struct {
 	IfExists            *bool
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalAzureStageParamsRequest
-	FileFormat          *StageFileFormatRequest
+	FileFormat          *LegacyFileFormatRequest
 	Comment             *string
 }
 

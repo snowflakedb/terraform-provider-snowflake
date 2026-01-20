@@ -127,7 +127,7 @@ type createTableOptions struct {
 	ColumnsAndConstraints      CreateTableColumnsAndConstraints `ddl:"list,parentheses"`
 	ClusterBy                  []string                         `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	EnableSchemaEvolution      *bool                            `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	StageFileFormat            *StageFileFormat                 `ddl:"list,parentheses,no_comma" sql:"STAGE_FILE_FORMAT ="`
+	StageFileFormat            *LegacyFileFormat                 `ddl:"list,parentheses,no_comma" sql:"STAGE_FILE_FORMAT ="`
 	StageCopyOptions           *StageCopyOptions                `ddl:"list,parentheses,no_comma" sql:"STAGE_COPY_OPTIONS ="`
 	DataRetentionTimeInDays    *int                             `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int                             `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
@@ -469,7 +469,7 @@ type DropSearchOptimization struct {
 type TableSet struct {
 	// Optional
 	EnableSchemaEvolution      *bool             `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	StageFileFormat            *StageFileFormat  `ddl:"list,parentheses" sql:"STAGE_FILE_FORMAT ="`
+	StageFileFormat            *LegacyFileFormat  `ddl:"list,parentheses" sql:"STAGE_FILE_FORMAT ="`
 	StageCopyOptions           *StageCopyOptions `ddl:"list,parentheses" sql:"STAGE_COPY_OPTIONS ="`
 	DataRetentionTimeInDays    *int              `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int              `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`

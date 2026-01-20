@@ -141,7 +141,7 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 		}
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
@@ -201,7 +201,7 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 		}
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
@@ -244,7 +244,7 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 		}
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
@@ -293,7 +293,7 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 		}
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
@@ -330,7 +330,7 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 		}
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
@@ -358,7 +358,7 @@ func (r *AlterInternalStageStageRequest) toOpts() *AlterInternalStageStageOption
 		Comment:  r.Comment,
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
@@ -410,7 +410,7 @@ func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOp
 		}
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
@@ -444,7 +444,7 @@ func (r *AlterExternalGCSStageStageRequest) toOpts() *AlterExternalGCSStageStage
 		}
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually
@@ -484,7 +484,7 @@ func (r *AlterExternalAzureStageStageRequest) toOpts() *AlterExternalAzureStageS
 		}
 	}
 	if r.FileFormat != nil {
-		opts.FileFormat = &StageFileFormat{
+		opts.FileFormat = &LegacyFileFormat{
 			FormatName:     r.FileFormat.FormatName,
 			FileFormatType: r.FileFormat.FileFormatType,
 			// adjusted manually

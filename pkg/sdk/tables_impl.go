@@ -630,8 +630,8 @@ func (s *CreateTableCloneRequest) toOpts() *createTableCloneOptions {
 	}
 }
 
-func (v *StageFileFormatRequest) toOpts() *StageFileFormat {
-	return &StageFileFormat{
+func (v *LegacyFileFormatRequest) toOpts() *LegacyFileFormat {
+	return &LegacyFileFormat{
 		FormatName:     v.FormatName,
 		FileFormatType: v.FileFormatType,
 		Options:        v.Options.toOpts(),
@@ -659,14 +659,14 @@ func (s *StageCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
 	}
 }
 
-func convertStageFileFormatOptions(stageFileFormatRequests []StageFileFormatRequest) []StageFileFormat {
-	fileFormats := make([]StageFileFormat, 0, len(stageFileFormatRequests))
+func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRequest) []LegacyFileFormat {
+	fileFormats := make([]LegacyFileFormat, 0, len(stageFileFormatRequests))
 	for _, request := range stageFileFormatRequests {
 		var options *FileFormatTypeOptions
 		if request.Options != nil {
 			options = request.Options.toOpts()
 		}
-		format := StageFileFormat{
+		format := LegacyFileFormat{
 			FormatName:     request.FormatName,
 			FileFormatType: request.FileFormatType,
 			Options:        options,
