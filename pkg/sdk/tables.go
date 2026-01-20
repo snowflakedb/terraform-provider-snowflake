@@ -795,3 +795,9 @@ func (r tableStageDetailsRow) convert() (*TableStageDetails, error) {
 		PropertyDefault: r.PropertyDefault,
 	}, nil
 }
+
+type LegacyFileFormat struct {
+	FormatName     *string                `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
+	FileFormatType *FileFormatType        `ddl:"parameter" sql:"TYPE"`
+	Options        *FileFormatTypeOptions `ddl:"list,no_comma"`
+}

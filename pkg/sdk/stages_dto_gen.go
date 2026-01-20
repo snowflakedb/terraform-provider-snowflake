@@ -47,13 +47,6 @@ type InternalDirectoryTableOptionsRequest struct {
 	AutoRefresh *bool
 }
 
-type LegacyFileFormatRequest struct {
-	FormatName     *string
-	FileFormatType *FileFormatType
-	// adjusted manually
-	Options *FileFormatTypeOptionsRequest
-}
-
 type CreateOnS3StageRequest struct {
 	OrReplace             *bool
 	Temporary             *bool

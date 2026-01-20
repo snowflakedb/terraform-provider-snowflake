@@ -6,7 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO(SNOW-1019005): use a custom file format struct with a nice nesting
 // TODO(SNOW-1019005): generate assertions
 // TODO(SNOW-1019005): add parsers for DESC output and return a nice struct; use them in integration tests assertions
 // TODO(SNOW-1019005): improve integration tests
@@ -20,7 +19,7 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 		Name()
 	qs = apply(qs)
 	return qs.
-		OptionalQueryStructField("FileFormat", legacyFileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
@@ -35,15 +34,13 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		SQL("SET")
 	qs = apply(qs)
 	return qs.
-		OptionalQueryStructField("FileFormat", legacyFileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name")
 }
 
-var legacyFileFormatDef = g.NewQueryStruct("LegacyFileFormat").
-	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes()).
-	OptionalAssignmentWithFieldName("TYPE", g.KindOfTPointer[sdkcommons.FileFormatType](), g.ParameterOptions(), "FileFormatType").
-	PredefinedQueryStructField("Options", g.KindOfTPointer[sdkcommons.FileFormatTypeOptions](), g.ListOptions().NoComma())
+var fileFormatDef = g.NewQueryStruct("FileFormat").
+	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes())
 
 var stageS3CommonDirectoryTableOptionsDef = func() *g.QueryStruct {
 	return g.NewQueryStruct("StageS3CommonDirectoryTableOptions").

@@ -106,7 +106,7 @@ func (s *LegacyFileFormatRequest) WithFileFormatType(fileFormatType FileFormatTy
 }
 
 // adjusted manually
-func (s *LegacyFileFormatRequest) WithOptions(options FileFormatTypeOptionsRequest) *LegacyFileFormatRequest {
+func (s *LegacyFileFormatRequest) WithOptions(options LegacyFileFormatTypeOptionsRequest) *LegacyFileFormatRequest {
 	s.Options = &options
 	return s
 }
