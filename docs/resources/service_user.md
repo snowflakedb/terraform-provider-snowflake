@@ -17,7 +17,7 @@ description: |-
 
 -> **Note** External changes to `days_to_expiry` and `mins_to_unlock` are not currently handled by the provider (because the value changes continuously on Snowflake side after setting it).
 
-<!-- TODO(SNOW-3003261): Remove this note.
+<!-- TODO(SNOW-3003261): Remove this note.-->
 -> **Note** External changes to `default_workload_identity.aws`, including setting AWS type externally, are not currently handled by the provider because of lack of certain data in Snowflake API.
 
 # snowflake_service_user (Resource)
