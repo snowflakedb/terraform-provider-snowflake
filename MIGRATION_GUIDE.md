@@ -49,6 +49,7 @@ resource "snowflake_service_user" "example" {
 See the [service_user](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [legacy_service_user](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) documentation for all provider types (AWS, Azure, GCP, OIDC) and configuration details.
 
 No changes in configuration are required for existing service users. You can optionally add the `default_workload_identity` block to enable workload identity federation.
+References: [#3942](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3942).
 
 ### *(improvement)* Using UNSET for certain fields in warehouses
 Previously, Snowflake didn't support `UNSET` for `scaling_policy`, `auto_resume`, and `warehouse_type` in warehouses. As a workaround, the provider used `SET` with default values.
@@ -66,7 +67,6 @@ In this release, this bug has been fixed. After failing Terraform operations, th
 If you previously ended up in a corrupted state, you can remove the resource from the state and reimport it using `terraform import`.
 
 No changes in configuration are required.
-References: [#3942](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3942).
 
 ## v2.11.x ➞ v2.12.0
 
