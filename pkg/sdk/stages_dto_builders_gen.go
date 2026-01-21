@@ -90,27 +90,6 @@ func (s *InternalDirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool)
 	return s
 }
 
-func NewLegacyFileFormatRequest() *LegacyFileFormatRequest {
-	s := LegacyFileFormatRequest{}
-	return &s
-}
-
-func (s *LegacyFileFormatRequest) WithFormatName(formatName string) *LegacyFileFormatRequest {
-	s.FormatName = &formatName
-	return s
-}
-
-func (s *LegacyFileFormatRequest) WithFileFormatType(fileFormatType FileFormatType) *LegacyFileFormatRequest {
-	s.FileFormatType = &fileFormatType
-	return s
-}
-
-// adjusted manually
-func (s *LegacyFileFormatRequest) WithOptions(options LegacyFileFormatTypeOptionsRequest) *LegacyFileFormatRequest {
-	s.Options = &options
-	return s
-}
-
 func NewCreateOnS3StageRequest(
 	name SchemaObjectIdentifier,
 	externalStageParams ExternalS3StageParamsRequest,

@@ -1531,8 +1531,8 @@ func (s *TableSetRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRe
 	return s
 }
 
-func (s *TableSetRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *TableSetRequest {
-	s.StageCopyOptions = &stageCopyOptions
+func (s *TableSetRequest) WithLegacyTableCopyOptions(LegacyTableCopyOptions LegacyTableCopyOptionsRequest) *TableSetRequest {
+	s.LegacyTableCopyOptions = &LegacyTableCopyOptions
 	return s
 }
 
@@ -1754,5 +1754,26 @@ func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFileX(x int) *LegacyTable
 // WithSkipFileXPercent sets SkipFile to "'SKIP_FILE_n%'" where n is the provided integer
 func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFileXPercent(x int) *LegacyTableCopyOnErrorOptionsRequest {
 	s.SkipFile = String(fmt.Sprintf("'SKIP_FILE_%d%%'", x))
+	return s
+}
+
+func NewLegacyFileFormatRequest() *LegacyFileFormatRequest {
+	s := LegacyFileFormatRequest{}
+	return &s
+}
+
+func (s *LegacyFileFormatRequest) WithFormatName(formatName string) *LegacyFileFormatRequest {
+	s.FormatName = &formatName
+	return s
+}
+
+func (s *LegacyFileFormatRequest) WithFileFormatType(fileFormatType FileFormatType) *LegacyFileFormatRequest {
+	s.FileFormatType = &fileFormatType
+	return s
+}
+
+// adjusted manually
+func (s *LegacyFileFormatRequest) WithOptions(options LegacyFileFormatTypeOptionsRequest) *LegacyFileFormatRequest {
+	s.Options = &options
 	return s
 }

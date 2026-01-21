@@ -442,8 +442,8 @@ func TestTableCreate(t *testing.T) {
 				CSVCompression: Pointer(CSVCompressionAuto),
 			},
 		}
-		stageCopyOptions := StageCopyOptions{
-			OnError: &StageCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
+		LegacyTableCopyOptions := LegacyTableCopyOptions{
+			OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
 		}
 		rowAccessPolicy := TableRowAccessPolicy{
 			Name: randomSchemaObjectIdentifier(),
@@ -472,7 +472,7 @@ func TestTableCreate(t *testing.T) {
 			ClusterBy:                  []string{"COLUMN_1", "COLUMN_2"},
 			EnableSchemaEvolution:      Bool(true),
 			StageFileFormat:            &stageFileFormat,
-			StageCopyOptions:           &stageCopyOptions,
+			StageCopyOptions:           &LegacyTableCopyOptions,
 			DataRetentionTimeInDays:    Int(10),
 			MaxDataExtensionTimeInDays: Int(100),
 			ChangeTracking:             Bool(true),
@@ -1339,8 +1339,8 @@ func TestTableAlter(t *testing.T) {
 				StageFileFormat: &LegacyFileFormat{
 					FileFormatType: Pointer(FileFormatTypeCSV),
 				},
-				StageCopyOptions: &StageCopyOptions{
-					OnError: &StageCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
+				StageCopyOptions: &LegacyTableCopyOptions{
+					OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
 				},
 				DataRetentionTimeInDays:    Int(30),
 				MaxDataExtensionTimeInDays: Int(90),

@@ -230,8 +230,8 @@ func (s *TableSetRequest) toOpts() *TableSet {
 		Comment:                    s.Comment,
 	}
 
-	if s.StageCopyOptions != nil {
-		set.StageCopyOptions = s.StageCopyOptions.toOpts()
+	if s.LegacyTableCopyOptions != nil {
+		set.StageCopyOptions = s.LegacyTableCopyOptions.toOpts()
 	}
 	if s.StageFileFormat != nil {
 		set.StageFileFormat = s.StageFileFormat.toOpts()
@@ -638,8 +638,8 @@ func (v *LegacyFileFormatRequest) toOpts() *LegacyFileFormat {
 	}
 }
 
-func (v *LegacyTableCopyOptionsRequest) toOpts() *StageCopyOptions {
-	return &StageCopyOptions{
+func (v *LegacyTableCopyOptionsRequest) toOpts() *LegacyTableCopyOptions {
+	return &LegacyTableCopyOptions{
 		OnError:           v.OnError.toOpts(),
 		SizeLimit:         v.SizeLimit,
 		Purge:             v.Purge,
@@ -651,8 +651,8 @@ func (v *LegacyTableCopyOptionsRequest) toOpts() *StageCopyOptions {
 	}
 }
 
-func (s *LegacyTableCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
-	return &StageCopyOnErrorOptions{
+func (s *LegacyTableCopyOnErrorOptionsRequest) toOpts() *LegacyTableCopyOnErrorOptions {
+	return &LegacyTableCopyOnErrorOptions{
 		Continue_:      s.Continue_,
 		SkipFile:       s.SkipFile,
 		AbortStatement: s.AbortStatement,

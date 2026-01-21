@@ -4,23 +4,6 @@ import "time"
 
 //go:generate go run ./dto-builder-generator/main.go
 
-type LegacyTableCopyOptionsRequest struct {
-	OnError           *LegacyTableCopyOnErrorOptionsRequest
-	SizeLimit         *int
-	Purge             *bool
-	ReturnFailedOnly  *bool
-	MatchByColumnName *StageCopyColumnMapOption
-	EnforceLength     *bool
-	Truncatecolumns   *bool
-	Force             *bool
-}
-
-type LegacyTableCopyOnErrorOptionsRequest struct {
-	Continue_      *bool
-	SkipFile       *string
-	AbortStatement *bool
-}
-
 type CreateTableAsSelectRequest struct {
 	orReplace *bool
 	name      SchemaObjectIdentifier       // required
@@ -509,7 +492,7 @@ type TableSearchOptimizationActionRequest struct {
 type TableSetRequest struct {
 	EnableSchemaEvolution      *bool
 	StageFileFormat            *LegacyFileFormatRequest
-	StageCopyOptions           *LegacyTableCopyOptionsRequest
+	LegacyTableCopyOptions     *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
@@ -561,6 +544,23 @@ type DescribeTableColumnsRequest struct {
 
 type DescribeTableStageRequest struct {
 	id SchemaObjectIdentifier // required
+}
+
+type LegacyTableCopyOptionsRequest struct {
+	OnError           *LegacyTableCopyOnErrorOptionsRequest
+	SizeLimit         *int
+	Purge             *bool
+	ReturnFailedOnly  *bool
+	MatchByColumnName *StageCopyColumnMapOption
+	EnforceLength     *bool
+	Truncatecolumns   *bool
+	Force             *bool
+}
+
+type LegacyTableCopyOnErrorOptionsRequest struct {
+	Continue_      *bool
+	SkipFile       *string
+	AbortStatement *bool
 }
 
 type LegacyFileFormatRequest struct {
