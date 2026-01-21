@@ -6,7 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO(SNOW-1019005): use a custom file format struct with a nice nesting
 // TODO(SNOW-1019005): generate assertions
 // TODO(SNOW-1019005): add parsers for DESC output and return a nice struct; use them in integration tests assertions
 // TODO(SNOW-1019005): improve integration tests
@@ -21,7 +20,7 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 	qs = apply(qs)
 	return qs.
 		// OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-		PredefinedQueryStructField("FileFormat", "*LegacyFileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		PredefinedQueryStructField("FileFormat", "*FileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
@@ -37,7 +36,7 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 	qs = apply(qs)
 	return qs.
 		// OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-		PredefinedQueryStructField("FileFormat", "*LegacyFileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		PredefinedQueryStructField("FileFormat", "*FileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name")
 }

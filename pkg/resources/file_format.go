@@ -359,7 +359,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	opts := sdk.CreateFileFormatOptions{
 		Type:                  sdk.FileFormatType(d.Get("format_type").(string)),
-		FileFormatTypeOptions: sdk.FileFormatTypeOptions{},
+		LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{},
 	}
 
 	switch opts.Type {
@@ -820,7 +820,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	runSet := false
-	opts := sdk.AlterFileFormatOptions{Set: &sdk.FileFormatTypeOptions{}}
+	opts := sdk.AlterFileFormatOptions{Set: &sdk.LegacyFileFormatTypeOptions{}}
 
 	switch sdk.FileFormatType(d.Get("format_type").(string)) {
 	case sdk.FileFormatTypeCSV:

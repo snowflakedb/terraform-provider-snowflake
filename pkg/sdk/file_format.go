@@ -22,7 +22,7 @@ var (
 	_ convertibleRow[FileFormat] = new(FileFormatRow)
 )
 
-type FileFormats interface {
+type LegacyFileFormats interface {
 	Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptions) error
 	Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptions) error
 	Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptions) error
@@ -33,7 +33,7 @@ type FileFormats interface {
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error)
 }
 
-var _ FileFormats = (*fileFormats)(nil)
+var _ LegacyFileFormats = (*fileFormats)(nil)
 
 type fileFormats struct {
 	client *Client
@@ -46,7 +46,7 @@ type FileFormat struct {
 	Owner         string
 	Comment       string
 	OwnerRoleType string
-	Options       FileFormatTypeOptions
+	Options       LegacyFileFormatTypeOptions
 }
 
 func (v *FileFormat) ID() SchemaObjectIdentifier {
@@ -126,7 +126,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		Owner:         row.Owner,
 		Comment:       row.Comment,
 		OwnerRoleType: row.OwnerRoleType,
-		Options:       FileFormatTypeOptions{},
+		Options:       LegacyFileFormatTypeOptions{},
 	}
 
 	newNullIf := make([]NullString, len(inputOptions.NullIf))
@@ -332,12 +332,12 @@ type CreateFileFormatOptions struct {
 	IfNotExists *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name        SchemaObjectIdentifier `ddl:"identifier"`
 	Type        FileFormatType         `ddl:"parameter" sql:"TYPE"`
-	FileFormatTypeOptions
+	LegacyFileFormatTypeOptions
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 func (opts *CreateFileFormatOptions) validate() error {
-	fields := opts.FileFormatTypeOptions.fieldsByType()
+	fields := opts.LegacyFileFormatTypeOptions.fieldsByType()
 
 	for formatType := range fields {
 		if opts.Type == formatType {
@@ -348,7 +348,7 @@ func (opts *CreateFileFormatOptions) validate() error {
 		}
 	}
 
-	err := opts.FileFormatTypeOptions.validate()
+	err := opts.LegacyFileFormatTypeOptions.validate()
 	if err != nil {
 		return err
 	}
@@ -380,7 +380,7 @@ type AlterFileFormatOptions struct {
 	name       SchemaObjectIdentifier `ddl:"identifier"`
 
 	Rename *AlterFileFormatRenameOptions
-	Set    *FileFormatTypeOptions `ddl:"list,no_comma" sql:"SET"`
+	Set    *LegacyFileFormatTypeOptions `ddl:"list,no_comma" sql:"SET"`
 }
 
 func (opts *AlterFileFormatOptions) validate() error {
@@ -400,7 +400,7 @@ type AlterFileFormatRenameOptions struct {
 	NewName SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 }
 
-type FileFormatTypeOptions struct {
+type LegacyFileFormatTypeOptions struct {
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 
 	// CSV type options
@@ -473,7 +473,7 @@ type FileFormatTypeOptions struct {
 	XMLSkipByteOrderMark        *bool           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 }
 
-func (opts *FileFormatTypeOptions) fieldsByType() map[FileFormatType][]any {
+func (opts *LegacyFileFormatTypeOptions) fieldsByType() map[FileFormatType][]any {
 	return map[FileFormatType][]any{
 		FileFormatTypeCSV: {
 			opts.CSVCompression,
@@ -547,7 +547,7 @@ func (opts *FileFormatTypeOptions) fieldsByType() map[FileFormatType][]any {
 	}
 }
 
-func (opts *FileFormatTypeOptions) validate() error {
+func (opts *LegacyFileFormatTypeOptions) validate() error {
 	fields := opts.fieldsByType()
 	count := 0
 
@@ -675,7 +675,7 @@ func (v *fileFormats) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentif
 
 type FileFormatDetails struct {
 	Type    FileFormatType
-	Options FileFormatTypeOptions
+	Options LegacyFileFormatTypeOptions
 }
 
 type FileFormatDetailsRow struct {

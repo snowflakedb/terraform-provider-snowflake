@@ -55,7 +55,7 @@ func Test_ExtractStructDetails(t *testing.T) {
 		unexportedIdentifierSlice []sdk.SchemaObjectIdentifier
 
 		unexportedInterface sdk.ObjectIdentifier
-		unexportedStruct    sdk.FileFormatTypeOptions
+		unexportedStruct    sdk.LegacyFileFormatTypeOptions
 
 		ExportedString     string
 		ExportedInt        int

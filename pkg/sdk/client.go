@@ -43,7 +43,7 @@ type Client struct {
 	ExternalTables               ExternalTables
 	EventTables                  EventTables
 	FailoverGroups               FailoverGroups
-	FileFormats                  FileFormats
+	FileFormats                  LegacyFileFormats
 	Functions                    Functions
 	GitRepositories              GitRepositories
 	Grants                       Grants

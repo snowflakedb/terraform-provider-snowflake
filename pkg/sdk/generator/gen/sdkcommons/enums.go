@@ -6,8 +6,11 @@ type (
 	ApiIntegrationAwsApiProviderType                                    string
 	AuthenticationMethodsOption                                         string
 	AutoEventLogging                                                    string
+	AvroCompression                                                     string
+	BinaryFormat                                                        string
 	ClientTypesOption                                                   string
 	ComputePoolInstanceFamily                                           string
+	CsvCompression                                                      string
 	DataMetricFunctionRefEntityDomainOption                             string
 	DataType                                                            string
 	EnforceMfaOnExternalAuthenticationOption                            string
@@ -21,6 +24,7 @@ type (
 	FileFormatTypeOptions                                               string
 	GCSEncryptionType                                                   string
 	InternalStageEncryptionOption                                       string
+	JsonCompression                                                     string
 	ListingState                                                        string
 	ListingRevision                                                     string
 	Location                                                            string
@@ -37,6 +41,7 @@ type (
 	OauthSecurityIntegrationClientTypeOption                            string
 	OauthSecurityIntegrationUseSecondaryRolesOption                     string
 	OrganizationAccountEdition                                          string
+	ParquetCompression                                                  string
 	ReturnNullValues                                                    string
 	ReturnResultsBehavior                                               string
 	S3EncryptionType                                                    string
@@ -52,6 +57,7 @@ type (
 	TaskState                                                           string
 	TraceLevel                                                          string
 	ViewDataMetricScheduleStatusOperationOption                         string
+	XmlCompression                                                      string
 )
 
 // copied from SDK for now
