@@ -51,12 +51,12 @@ type FileFormatCsvOptions struct {
 }
 
 type StageFileFormatStringOrNone struct {
-	Value *string `ddl:"parameter,single_quotes" sql:"Value"`
+	Value *string `ddl:"keyword,single_quotes"`
 	None  *bool   `ddl:"keyword" sql:"NONE"`
 }
 
 type StageFileFormatStringOrAuto struct {
-	Value *string `ddl:"parameter,single_quotes" sql:"Value"`
+	Value *string `ddl:"keyword,single_quotes"`
 	Auto  *bool   `ddl:"keyword" sql:"AUTO"`
 }
 

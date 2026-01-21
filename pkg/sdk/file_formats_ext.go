@@ -6,8 +6,8 @@ func (opts FileFormatOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("FileFormat", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
 	}
 	if valueSet(opts.CsvOptions) {
-		if !exactlyOneValueSet(opts.CsvOptions.SkipHeader, opts.CsvOptions.ParseHeader) {
-			errs = append(errs, errExactlyOneOf("FileFormat.CsvOptions", "SkipHeader", "ParseHeader"))
+		if everyValueSet(opts.CsvOptions.SkipHeader, opts.CsvOptions.ParseHeader) {
+			errs = append(errs, errOneOf("FileFormat.CsvOptions", "SkipHeader", "ParseHeader"))
 		}
 		if valueSet(opts.CsvOptions.RecordDelimiter) {
 			if !exactlyOneValueSet(opts.CsvOptions.RecordDelimiter.Value, opts.CsvOptions.RecordDelimiter.None) {
@@ -51,8 +51,8 @@ func (opts FileFormatOptions) validate() error {
 		}
 	}
 	if valueSet(opts.JsonOptions) {
-		if !exactlyOneValueSet(opts.JsonOptions.IgnoreUtf8Errors, opts.JsonOptions.ReplaceInvalidCharacters) {
-			errs = append(errs, errExactlyOneOf("FileFormat.JsonOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+		if everyValueSet(opts.JsonOptions.IgnoreUtf8Errors, opts.JsonOptions.ReplaceInvalidCharacters) {
+			errs = append(errs, errOneOf("FileFormat.JsonOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
 		}
 		if valueSet(opts.JsonOptions.DateFormat) {
 			if !exactlyOneValueSet(opts.JsonOptions.DateFormat.Value, opts.JsonOptions.DateFormat.Auto) {
@@ -71,13 +71,13 @@ func (opts FileFormatOptions) validate() error {
 		}
 	}
 	if valueSet(opts.ParquetOptions) {
-		if !exactlyOneValueSet(opts.ParquetOptions.Compression, opts.ParquetOptions.SnappyCompression) {
-			errs = append(errs, errExactlyOneOf("FileFormat.ParquetOptions", "Compression", "SnappyCompression"))
+		if everyValueSet(opts.ParquetOptions.Compression, opts.ParquetOptions.SnappyCompression) {
+			errs = append(errs, errOneOf("FileFormat.ParquetOptions", "Compression", "SnappyCompression"))
 		}
 	}
 	if valueSet(opts.XmlOptions) {
-		if !exactlyOneValueSet(opts.XmlOptions.IgnoreUtf8Errors, opts.XmlOptions.ReplaceInvalidCharacters) {
-			errs = append(errs, errExactlyOneOf("FileFormat.XmlOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+		if everyValueSet(opts.XmlOptions.IgnoreUtf8Errors, opts.XmlOptions.ReplaceInvalidCharacters) {
+			errs = append(errs, errOneOf("FileFormat.XmlOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
 		}
 	}
 	return JoinErrors(errs...)

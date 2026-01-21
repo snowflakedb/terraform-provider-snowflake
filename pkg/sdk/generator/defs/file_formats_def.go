@@ -9,14 +9,16 @@ import (
 // Wrapped in functions to avoid generator's nested field parent conflict
 func stageFileFormatStringOrAuto() *g.QueryStruct {
 	return g.NewQueryStruct("StageFileFormatStringOrAuto").
-		OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes().NoEquals().SQL("")).
+		// OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes().NoEquals().SQL("")).
+		OptionalText("Value", g.KeywordOptions().SingleQuotes()).
 		OptionalSQL("AUTO").
 		WithValidation(g.ExactlyOneValueSet, "Value", "Auto")
 }
 
 func stageFileFormatStringOrNone() *g.QueryStruct {
 	return g.NewQueryStruct("StageFileFormatStringOrNone").
-		OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes().NoEquals().SQL("")).
+		OptionalText("Value", g.KeywordOptions().SingleQuotes()).
+		// Text("Key", g.KeywordOptions().Required().DoubleQuotes()).
 		OptionalSQL("NONE").
 		WithValidation(g.ExactlyOneValueSet, "Value", "None")
 }
@@ -49,7 +51,7 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("EMPTY_FIELD_AS_NULL", g.ParameterOptions()).
 				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
 				OptionalAssignment("ENCODING", g.KindOfTPointer[sdkcommons.CsvEncoding](), g.ParameterOptions().NoQuotes()).
-				WithValidation(g.ExactlyOneValueSet, "SkipHeader", "ParseHeader"),
+				WithValidation(g.ConflictingFields, "SkipHeader", "ParseHeader"),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
@@ -72,7 +74,7 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
 				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
-				WithValidation(g.ExactlyOneValueSet, "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
+				WithValidation(g.ConflictingFields, "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
@@ -106,7 +108,7 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("USE_VECTORIZED_SCANNER", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
-				WithValidation(g.ExactlyOneValueSet, "Compression", "SnappyCompression"),
+				WithValidation(g.ConflictingFields, "Compression", "SnappyCompression"),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
@@ -120,10 +122,10 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("DISABLE_AUTO_CONVERT", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
-				WithValidation(g.ExactlyOneValueSet, "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
+				WithValidation(g.ConflictingFields, "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
 			g.KeywordOptions(),
 		).
-		WithValidation(g.ExactlyOneValueSet, "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions")
+		WithValidation(g.ConflictingFields, "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions")
 }
 
 var fileFormatsDef = g.NewInterface(
