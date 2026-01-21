@@ -20,7 +20,8 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 		Name()
 	qs = apply(qs)
 	return qs.
-		OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		// OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		PredefinedQueryStructField("FileFormat", "*LegacyFileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
@@ -35,13 +36,11 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		SQL("SET")
 	qs = apply(qs)
 	return qs.
-		OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		// OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		PredefinedQueryStructField("FileFormat", "*LegacyFileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name")
 }
-
-var fileFormatDef = g.NewQueryStruct("FileFormat").
-	OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes())
 
 var stageS3CommonDirectoryTableOptionsDef = func() *g.QueryStruct {
 	return g.NewQueryStruct("StageS3CommonDirectoryTableOptions").

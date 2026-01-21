@@ -35,7 +35,7 @@ func (s *CreateInternalStageRequest) WithDirectoryTableOptions(directoryTableOpt
 	return s
 }
 
-func (s *CreateInternalStageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *CreateInternalStageRequest {
+func (s *CreateInternalStageRequest) WithFileFormat(fileFormat LegacyFileFormat) *CreateInternalStageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
@@ -120,7 +120,7 @@ func (s *CreateOnS3StageRequest) WithDirectoryTableOptions(directoryTableOptions
 	return s
 }
 
-func (s *CreateOnS3StageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *CreateOnS3StageRequest {
+func (s *CreateOnS3StageRequest) WithFileFormat(fileFormat LegacyFileFormat) *CreateOnS3StageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
@@ -296,7 +296,7 @@ func (s *CreateOnGCSStageRequest) WithDirectoryTableOptions(directoryTableOption
 	return s
 }
 
-func (s *CreateOnGCSStageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *CreateOnGCSStageRequest {
+func (s *CreateOnGCSStageRequest) WithFileFormat(fileFormat LegacyFileFormat) *CreateOnGCSStageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
@@ -414,7 +414,7 @@ func (s *CreateOnAzureStageRequest) WithDirectoryTableOptions(directoryTableOpti
 	return s
 }
 
-func (s *CreateOnAzureStageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *CreateOnAzureStageRequest {
+func (s *CreateOnAzureStageRequest) WithFileFormat(fileFormat LegacyFileFormat) *CreateOnAzureStageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
@@ -548,7 +548,7 @@ func (s *CreateOnS3CompatibleStageRequest) WithDirectoryTableOptions(directoryTa
 	return s
 }
 
-func (s *CreateOnS3CompatibleStageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *CreateOnS3CompatibleStageRequest {
+func (s *CreateOnS3CompatibleStageRequest) WithFileFormat(fileFormat LegacyFileFormat) *CreateOnS3CompatibleStageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
@@ -629,7 +629,7 @@ func (s *AlterInternalStageStageRequest) WithIfExists(ifExists bool) *AlterInter
 	return s
 }
 
-func (s *AlterInternalStageStageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *AlterInternalStageStageRequest {
+func (s *AlterInternalStageStageRequest) WithFileFormat(fileFormat LegacyFileFormat) *AlterInternalStageStageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
@@ -657,7 +657,7 @@ func (s *AlterExternalS3StageStageRequest) WithExternalStageParams(externalStage
 	return s
 }
 
-func (s *AlterExternalS3StageStageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *AlterExternalS3StageStageRequest {
+func (s *AlterExternalS3StageStageRequest) WithFileFormat(fileFormat LegacyFileFormat) *AlterExternalS3StageStageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
@@ -685,7 +685,7 @@ func (s *AlterExternalGCSStageStageRequest) WithExternalStageParams(externalStag
 	return s
 }
 
-func (s *AlterExternalGCSStageStageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *AlterExternalGCSStageStageRequest {
+func (s *AlterExternalGCSStageStageRequest) WithFileFormat(fileFormat LegacyFileFormat) *AlterExternalGCSStageStageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
@@ -713,7 +713,7 @@ func (s *AlterExternalAzureStageStageRequest) WithExternalStageParams(externalSt
 	return s
 }
 
-func (s *AlterExternalAzureStageStageRequest) WithFileFormat(fileFormat LegacyFileFormatRequest) *AlterExternalAzureStageStageRequest {
+func (s *AlterExternalAzureStageStageRequest) WithFileFormat(fileFormat LegacyFileFormat) *AlterExternalAzureStageStageRequest {
 	s.FileFormat = &fileFormat
 	return s
 }
