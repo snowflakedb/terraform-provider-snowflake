@@ -9,14 +9,14 @@ import (
 // Wrapped in functions to avoid generator's nested field parent conflict
 func stageFileFormatStringOrAuto() *g.QueryStruct {
 	return g.NewQueryStruct("StageFileFormatStringOrAuto").
-		OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes().NoEquals().SQL("")).
 		OptionalSQL("AUTO").
 		WithValidation(g.ExactlyOneValueSet, "Value", "Auto")
 }
 
 func stageFileFormatStringOrNone() *g.QueryStruct {
 	return g.NewQueryStruct("StageFileFormatStringOrNone").
-		OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes().NoEquals().SQL("")).
 		OptionalSQL("NONE").
 		WithValidation(g.ExactlyOneValueSet, "Value", "None")
 }

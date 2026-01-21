@@ -32,9 +32,10 @@ func (opts *CreateInternalStageOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
 		}
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -71,9 +72,10 @@ func (opts *CreateOnS3StageOptions) validate() error {
 			}
 		}
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -93,9 +95,10 @@ func (opts *CreateOnGCSStageOptions) validate() error {
 			}
 		}
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -121,9 +124,10 @@ func (opts *CreateOnAzureStageOptions) validate() error {
 			}
 		}
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -136,9 +140,10 @@ func (opts *CreateOnS3CompatibleStageOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOnS3CompatibleStageOptions", "OrReplace", "IfNotExists"))
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -168,9 +173,10 @@ func (opts *AlterInternalStageStageOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -207,9 +213,10 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 			}
 		}
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -229,9 +236,10 @@ func (opts *AlterExternalGCSStageStageOptions) validate() error {
 			}
 		}
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -257,9 +265,10 @@ func (opts *AlterExternalAzureStageStageOptions) validate() error {
 			}
 		}
 	}
-	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		errs = append(errs, opts.FileFormat.validate())
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
 	}
 	return JoinErrors(errs...)
 }
