@@ -32,6 +32,10 @@ func (opts *CreateInternalStageOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
 		}
 	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
+	}
 	return JoinErrors(errs...)
 }
 
@@ -67,6 +71,10 @@ func (opts *CreateOnS3StageOptions) validate() error {
 			}
 		}
 	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
+	}
 	return JoinErrors(errs...)
 }
 
@@ -84,6 +92,10 @@ func (opts *CreateOnGCSStageOptions) validate() error {
 				errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
 			}
 		}
+	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
 	}
 	return JoinErrors(errs...)
 }
@@ -109,6 +121,10 @@ func (opts *CreateOnAzureStageOptions) validate() error {
 			}
 		}
 	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
+	}
 	return JoinErrors(errs...)
 }
 
@@ -119,6 +135,10 @@ func (opts *CreateOnS3CompatibleStageOptions) validate() error {
 	var errs []error
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOnS3CompatibleStageOptions", "OrReplace", "IfNotExists"))
+	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
 	}
 	return JoinErrors(errs...)
 }
@@ -147,6 +167,10 @@ func (opts *AlterInternalStageStageOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
 	}
 	return JoinErrors(errs...)
 }
@@ -183,6 +207,10 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 			}
 		}
 	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
+	}
 	return JoinErrors(errs...)
 }
 
@@ -200,6 +228,10 @@ func (opts *AlterExternalGCSStageStageOptions) validate() error {
 				errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
 			}
 		}
+	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
 	}
 	return JoinErrors(errs...)
 }
@@ -224,6 +256,10 @@ func (opts *AlterExternalAzureStageStageOptions) validate() error {
 				errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams.Encryption", "AzureCse", "None"))
 			}
 		}
+	}
+	// adjusted manually
+	if valueSet(opts.FileFormat) {
+		errs = append(errs, opts.FileFormat.validate())
 	}
 	return JoinErrors(errs...)
 }

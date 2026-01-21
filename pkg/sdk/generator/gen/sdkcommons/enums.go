@@ -11,6 +11,7 @@ type (
 	ClientTypesOption                                                   string
 	ComputePoolInstanceFamily                                           string
 	CsvCompression                                                      string
+	CsvEncoding                                                         string
 	DataMetricFunctionRefEntityDomainOption                             string
 	DataType                                                            string
 	EnforceMfaOnExternalAuthenticationOption                            string

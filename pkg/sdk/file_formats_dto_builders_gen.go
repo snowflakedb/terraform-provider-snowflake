@@ -157,7 +157,7 @@ func (s *FileFormatCsvOptionsRequest) WithSkipByteOrderMark(skipByteOrderMark bo
 	return s
 }
 
-func (s *FileFormatCsvOptionsRequest) WithEncoding(encoding string) *FileFormatCsvOptionsRequest {
+func (s *FileFormatCsvOptionsRequest) WithEncoding(encoding CsvEncoding) *FileFormatCsvOptionsRequest {
 	s.Encoding = &encoding
 	return s
 }

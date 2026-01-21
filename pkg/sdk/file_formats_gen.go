@@ -47,7 +47,7 @@ type FileFormatCsvOptions struct {
 	ReplaceInvalidCharacters   *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	EmptyFieldAsNull           *bool                        `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
 	SkipByteOrderMark          *bool                        `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
-	Encoding                   *string                      `ddl:"parameter,single_quotes" sql:"ENCODING"`
+	Encoding                   *CsvEncoding                 `ddl:"parameter,no_quotes" sql:"ENCODING"`
 }
 
 type StageFileFormatStringOrNone struct {

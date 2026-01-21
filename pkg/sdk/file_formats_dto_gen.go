@@ -41,7 +41,7 @@ type FileFormatCsvOptionsRequest struct {
 	ReplaceInvalidCharacters   *bool
 	EmptyFieldAsNull           *bool
 	SkipByteOrderMark          *bool
-	Encoding                   *string
+	Encoding                   *CsvEncoding
 }
 
 type StageFileFormatStringOrNoneRequest struct {

@@ -2,78 +2,16 @@
 
 package sdk
 
-var (
-	_ validatable = new(DummyOperationFileFormatOptions)
-)
+var _ validatable = new(DummyOperationFileFormatOptions)
 
 func (opts *DummyOperationFileFormatOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
 	var errs []error
+	// adjusted manually
 	if valueSet(opts.FileFormat) {
-		if !exactlyOneValueSet(opts.FileFormat.CsvOptions, opts.FileFormat.JsonOptions, opts.FileFormat.AvroOptions, opts.FileFormat.OrcOptions, opts.FileFormat.ParquetOptions, opts.FileFormat.XmlOptions) {
-			errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
-		}
-		if valueSet(opts.FileFormat.CsvOptions) {
-			if valueSet(opts.FileFormat.CsvOptions.RecordDelimiter) {
-				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.RecordDelimiter.Value, opts.FileFormat.CsvOptions.RecordDelimiter.None) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
-				}
-			}
-			if valueSet(opts.FileFormat.CsvOptions.FieldDelimiter) {
-				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldDelimiter.Value, opts.FileFormat.CsvOptions.FieldDelimiter.None) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
-				}
-			}
-			if valueSet(opts.FileFormat.CsvOptions.DateFormat) {
-				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.DateFormat.Value, opts.FileFormat.CsvOptions.DateFormat.Auto) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
-				}
-			}
-			if valueSet(opts.FileFormat.CsvOptions.TimeFormat) {
-				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimeFormat.Value, opts.FileFormat.CsvOptions.TimeFormat.Auto) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
-				}
-			}
-			if valueSet(opts.FileFormat.CsvOptions.TimestampFormat) {
-				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.TimestampFormat.Value, opts.FileFormat.CsvOptions.TimestampFormat.Auto) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
-				}
-			}
-			if valueSet(opts.FileFormat.CsvOptions.Escape) {
-				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.Escape.Value, opts.FileFormat.CsvOptions.Escape.None) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.CsvOptions.Escape", "Value", "None"))
-				}
-			}
-			if valueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField) {
-				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.EscapeUnenclosedField.Value, opts.FileFormat.CsvOptions.EscapeUnenclosedField.None) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
-				}
-			}
-			if valueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy) {
-				if !exactlyOneValueSet(opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value, opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
-				}
-			}
-		}
-		if valueSet(opts.FileFormat.JsonOptions) {
-			if valueSet(opts.FileFormat.JsonOptions.DateFormat) {
-				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.DateFormat.Value, opts.FileFormat.JsonOptions.DateFormat.Auto) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
-				}
-			}
-			if valueSet(opts.FileFormat.JsonOptions.TimeFormat) {
-				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimeFormat.Value, opts.FileFormat.JsonOptions.TimeFormat.Auto) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
-				}
-			}
-			if valueSet(opts.FileFormat.JsonOptions.TimestampFormat) {
-				if !exactlyOneValueSet(opts.FileFormat.JsonOptions.TimestampFormat.Value, opts.FileFormat.JsonOptions.TimestampFormat.Auto) {
-					errs = append(errs, errExactlyOneOf("DummyOperationFileFormatOptions.FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
-				}
-			}
-		}
+		errs = append(errs, opts.FileFormat.validate())
 	}
 	return JoinErrors(errs...)
 }

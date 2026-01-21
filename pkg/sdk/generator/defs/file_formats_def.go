@@ -48,8 +48,8 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				OptionalBooleanAssignment("EMPTY_FIELD_AS_NULL", g.ParameterOptions()).
 				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
-				OptionalTextAssignment("ENCODING", g.ParameterOptions().SingleQuotes()),
-			// TODO: SKIP_HEADER and PARSE_HEADER are not compatible to be used together
+				OptionalAssignment("ENCODING", g.KindOfTPointer[sdkcommons.CsvEncoding](), g.ParameterOptions().NoQuotes()).
+				WithValidation(g.ExactlyOneValueSet, "SkipHeader", "ParseHeader"),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
@@ -71,8 +71,8 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("STRIP_NULL_VALUES", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 				OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
-				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()),
-			// IGNORE_UTF8_ERRORS and REPLACE_INVALID_CHARACTERS are not compatible to be used together
+				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
+				WithValidation(g.ExactlyOneValueSet, "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
@@ -105,8 +105,8 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 				OptionalBooleanAssignment("USE_VECTORIZED_SCANNER", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
-			// COMPRESSION and SNAPPY_COMPRESSION options for parquet format is not allowed
+				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+				WithValidation(g.ExactlyOneValueSet, "Compression", "SnappyCompression"),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
@@ -119,9 +119,8 @@ func fileFormatDef() *g.QueryStruct {
 				OptionalBooleanAssignment("STRIP_OUTER_ELEMENT", g.ParameterOptions()).
 				OptionalBooleanAssignment("DISABLE_AUTO_CONVERT", g.ParameterOptions()).
 				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()),
-			// IGNORE_UTF8_ERRORS and REPLACE_INVALID_CHARACTERS are not compatible to be used together.
-
+				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
+				WithValidation(g.ExactlyOneValueSet, "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
 			g.KeywordOptions(),
 		).
 		WithValidation(g.ExactlyOneValueSet, "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions")
@@ -137,7 +136,4 @@ var fileFormatsDef = g.NewInterface(
 		"not available",
 		g.NewQueryStruct("FileFormatsDummyOperation").
 			OptionalQueryStructField("FileFormat", fileFormatDef(), g.ListOptions().Parentheses().SQL("FILE_FORMAT =")),
-		// PredefinedQueryStructField("Options", "*FileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")),
-		// fileFormatDef(),
-		// fileFormatDef(),
 	)
