@@ -14,6 +14,7 @@ import (
 )
 
 type UserWorkloadIdentityAuthenticationMethodsAssert struct {
+	// adjusted manually
 	*assert.SnowflakeObjectAssert[sdk.UserWorkloadIdentityAuthenticationMethod, helpers.UserWorkloadIdentityAuthenticationMethodsObjectIdentifier]
 }
 

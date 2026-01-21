@@ -5,6 +5,7 @@ package testacc
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -66,7 +67,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeOIDC).
 						HasNoComment().
@@ -105,7 +106,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 					resourceassert.ServiceUserResource(t, userModelWithOIDCAndAudienceList.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeOIDC).
 						HasNoComment().
@@ -121,29 +122,11 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			// ALTER - CHANGE AUDIENCE LIST EXTERNALLY
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
-						Set: &sdk.UserSet{
-							ObjectProperties: &sdk.UserAlterObjectProperties{
-								UserObjectProperties: sdk.UserObjectProperties{
-									WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-										OidcType: &sdk.UserObjectWorkloadIdentityOidc{
-											Issuer:  sdk.String(testvars.OidcIssuer),
-											Subject: sdk.String(subject),
-											OidcAudienceList: []sdk.StringListItemWrapper{
-												{
-													Value: testvars.OidcIssuer + "/o/oauth2/changed",
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					})
+					testClient().User.SetOidcWorkloadIdentity(t, id, testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/changed")
 				},
 				Config: config.FromModels(t, userModelWithOIDCAndAudienceList),
 				Check: assertThat(t,
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 							Issuer:       testvars.OidcIssuer,
 							Subject:      subject,
@@ -155,7 +138,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			{
 				Config: config.FromModels(t, userModelWithOIDCAndAudienceListTwoItems),
 				Check: assertThat(t,
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 							Issuer:       testvars.OidcIssuer,
 							Subject:      subject,
@@ -198,7 +181,7 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 						HasDefaultWorkloadIdentityAws(arn),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithAWS.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeAWS).
 						HasNoComment().
@@ -254,7 +237,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 						HasDefaultWorkloadIdentityGcp(subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithGCP.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeGCP).
 						HasNoComment().
@@ -293,7 +276,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 						HasDefaultWorkloadIdentityGcp(subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithGCP.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeGCP).
 						HasNoComment().
@@ -307,19 +290,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 			// External change - change subject externally
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
-						Set: &sdk.UserSet{
-							ObjectProperties: &sdk.UserAlterObjectProperties{
-								UserObjectProperties: sdk.UserObjectProperties{
-									WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-										GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-											Subject: sdk.String(changedSubject),
-										},
-									},
-								},
-							},
-						},
-					})
+					testClient().User.SetGcpWorkloadIdentity(t, id, changedSubject)
 				},
 				Config: config.FromModels(t, userModelWithGCP),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -333,7 +304,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 						HasDefaultWorkloadIdentityGcp(subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithGCP.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeGCP).
 						HasNoComment().
@@ -384,7 +355,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithAzure.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeAzure).
 						HasNoComment().
@@ -424,7 +395,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithAzure.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeAzure).
 						HasNoComment().
@@ -439,20 +410,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 			// External change - change subject externally
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
-						Set: &sdk.UserSet{
-							ObjectProperties: &sdk.UserAlterObjectProperties{
-								UserObjectProperties: sdk.UserObjectProperties{
-									WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-										AzureType: &sdk.UserObjectWorkloadIdentityAzure{
-											Issuer:  sdk.String(testvars.MicrosoftIssuer),
-											Subject: sdk.String(changedSubject),
-										},
-									},
-								},
-							},
-						},
-					})
+					testClient().User.SetAzureWorkloadIdentity(t, id, testvars.MicrosoftIssuer, changedSubject)
 				},
 				Config: config.FromModels(t, userModelWithAzure),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -466,7 +424,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 						HasDefaultWorkloadIdentityAzure(testvars.MicrosoftIssuer, subject),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithAzure.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeAzure).
 						HasNoComment().
@@ -519,7 +477,7 @@ func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeOIDC).
 						HasNoComment().
@@ -541,7 +499,7 @@ func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 						HasDefaultWorkloadIdentityAws(arn),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithAWS.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeAWS).
 						HasNoComment().
@@ -580,7 +538,7 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeOIDC).
 						HasNoComment().
@@ -617,7 +575,7 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeOIDC).
 						HasNoComment().
@@ -633,19 +591,7 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 			// External change - WIF changed to GCP type externally
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
-						Set: &sdk.UserSet{
-							ObjectProperties: &sdk.UserAlterObjectProperties{
-								UserObjectProperties: sdk.UserObjectProperties{
-									WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-										GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-											Subject: sdk.String(gcpSubject),
-										},
-									},
-								},
-							},
-						},
-					})
+					testClient().User.SetGcpWorkloadIdentity(t, id, gcpSubject)
 				},
 				Config: config.FromModels(t, userModelWithOIDC),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -660,7 +606,7 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
 					resourceshowoutputassert.UserShowOutput(t, userModelWithOIDC.ResourceReference()).
 						HasHasWorkloadIdentity(true),
-					objectassert.UserWorkloadIdentityAuthenticationMethods(t, id, "DEFAULT").
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
 						HasType(sdk.WIFTypeOIDC).
 						HasNoComment().
@@ -672,6 +618,62 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 							AudienceList: []string{testvars.OidcIssuer + "/o/oauth2/auth"},
 						}),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_ServiceUser_WIF_Validations(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	userModelWithAwsEmpty := model.ServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityAwsEmpty()
+	userModelWithGcpEmpty := model.ServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityGcpEmpty()
+	userModelWithAzureEmpty := model.ServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityAzureEmpty()
+	userModelWithOidcEmpty := model.ServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityOidcEmpty()
+	userModelWithMultipleProviders := model.ServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityMultipleProviders()
+	userModelWithEmptyBlock := model.ServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityEmpty()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, userModelWithAwsEmpty),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`The argument "arn" is required, but no definition was found.`),
+			},
+			{
+				Config:      config.FromModels(t, userModelWithGcpEmpty),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`The argument "subject" is required, but no definition was found.`),
+			},
+			{
+				Config:      config.FromModels(t, userModelWithAzureEmpty),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
+			},
+			{
+				Config:      config.FromModels(t, userModelWithOidcEmpty),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
+			},
+			{
+				Config:      config.FromModels(t, userModelWithMultipleProviders),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`default_workload_identity.0.aws,default_workload_identity.0.gcp` were\nspecified"),
+			},
+			{
+				Config:      config.FromModels(t, userModelWithEmptyBlock),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("one of\n`default_workload_identity.0.aws,default_workload_identity.0.azure,default_workload_identity.0.gcp,default_workload_identity.0.oidc`\nmust be specified"),
 			},
 		},
 	})

@@ -87,8 +87,32 @@ func (u *ServiceUserModel) WithDefaultWorkloadIdentityOidc(issuer, subject strin
 	return u
 }
 
-// WithoutDefaultWorkloadIdentity removes any default workload identity configuration.
-func (u *ServiceUserModel) WithoutDefaultWorkloadIdentity() *ServiceUserModel {
-	u.DefaultWorkloadIdentity = nil
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityAwsEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAwsEmpty()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityGcpEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityGcpEmpty()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityAzureEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAzureEmpty()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityOidcEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityOidcEmpty()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityMultipleProviders() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityMultipleProvidersVariable()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityEmpty()
 	return u
 }

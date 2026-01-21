@@ -550,11 +550,10 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 					switch {
 					case errors.Is(err, collections.ErrObjectNotFound):
 						errs = errors.Join(errs, d.Set("default_workload_identity", nil))
-						// TODO(SNOW-3003261): Handle AWS type externally
-					case err == nil && defaultWIF.Type != sdk.WIFTypeAWS:
+					case err == nil:
 						errs = errors.Join(errs, d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)))
 					default:
-						return err
+						errs = errors.Join(errs, err)
 					}
 				}
 
@@ -762,6 +761,8 @@ var DeleteUser = ResourceDeleteContextFunc(
 
 // parseWorkloadIdentityConfig parses the default_workload_identity block from ResourceData
 // and returns the SDK representation for use in Create/Update operations.
+// Note: The error return is required to match the signature expected by attributeMappedValueCreate/Update,
+// but this function never returns an error because schema validation ensures the correct structure.
 func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityProperties, error) {
 	wifConfig := v.([]any)
 	if len(wifConfig) == 0 {

@@ -1,6 +1,9 @@
 package model
 
-import tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+)
 
 func UserDefaultWorkloadIdentityAwsVariable(arn string) tfconfig.Variable {
 	return tfconfig.ObjectVariable(
@@ -57,4 +60,67 @@ func UserDefaultWorkloadIdentityOidcVariable(issuer, subject string, audienceLis
 			"oidc": tfconfig.ListVariable(tfconfig.ObjectVariable(m)),
 		},
 	)
+}
+
+func UserDefaultWorkloadIdentityAwsEmpty() tfconfig.Variable {
+	return tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"aws": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+			})),
+		},
+	)
+}
+
+func UserDefaultWorkloadIdentityGcpEmpty() tfconfig.Variable {
+	return tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"gcp": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+			})),
+		},
+	)
+}
+
+func UserDefaultWorkloadIdentityAzureEmpty() tfconfig.Variable {
+	return tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"azure": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+			})),
+		},
+	)
+}
+
+func UserDefaultWorkloadIdentityOidcEmpty() tfconfig.Variable {
+	return tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"oidc": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+			})),
+		},
+	)
+}
+
+func UserDefaultWorkloadIdentityMultipleProvidersVariable() tfconfig.Variable {
+	return tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"aws": tfconfig.ListVariable(tfconfig.ObjectVariable(
+				map[string]tfconfig.Variable{
+					"arn": tfconfig.StringVariable("foo"),
+				},
+			)),
+			"gcp": tfconfig.ListVariable(tfconfig.ObjectVariable(
+				map[string]tfconfig.Variable{
+					"subject": tfconfig.StringVariable("bar"),
+				},
+			)),
+		},
+	)
+}
+
+func UserDefaultWorkloadIdentityEmpty() tfconfig.Variable {
+	return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+	})
 }

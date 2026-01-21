@@ -20,6 +20,11 @@ func UserWorkloadIdentityAuthenticationMethods(t *testing.T, userId sdk.AccountO
 	}
 }
 
+func UserDefaultWorkloadIdentityAuthenticationMethods(t *testing.T, userId sdk.AccountObjectIdentifier) *UserWorkloadIdentityAuthenticationMethodsAssert {
+	t.Helper()
+	return UserWorkloadIdentityAuthenticationMethods(t, userId, "DEFAULT")
+}
+
 func (u *UserWorkloadIdentityAuthenticationMethodsAssert) HasLastUsedNotEmpty() *UserWorkloadIdentityAuthenticationMethodsAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
 		t.Helper()
