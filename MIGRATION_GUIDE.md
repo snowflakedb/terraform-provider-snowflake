@@ -24,6 +24,45 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.12.x ➞ v2.13.0
+
+### Enhanced region mappings in `current_account` datasource
+
+Previously, this resource was missing a number of regions for mapping in the `url` field, which may have resulted in empty field.
+
+In this change, we expanded the supported Snowflake region mappings to include additional cloud regions:
+
+#### AWS
+| Region Key | Description |
+|------------|-------------|
+| `aws_us_gov_west_2` | US Gov West 2 |
+| `aws_us_gov_west_1_fhplus` | US Gov West 1 FedRAMP High+ |
+| `aws_us_gov_west_1_dod` | US Gov West 1 DoD |
+| `aws_us_gov_east_1` | US Gov East 1 |
+| `aws_us_gov_east_1_fhplus` | US Gov East 1 FedRAMP High+ |
+| `aws_af_south_1` | Africa South 1 |
+| `aws_eu_central_2` | EU Central 2 |
+| `aws_ap_southeast_3` | AP Southeast 3 |
+| `aws_cn_northwest_1` | China Northwest 1 (also returns snowflakecomputing.cn domain) |
+
+#### GCP
+| Region Key | Description |
+|------------|-------------|
+| `gcp_europe_west3` | Europe West 3 |
+| `gcp_me_central2` | Middle East Central 2 |
+
+#### Azure
+| Region Key | Description |
+|------------|-------------|
+| `azure_usgovvirginia_fhplus` | US Gov Virginia FedRAMP High+ |
+| `azure_mexicocentral` | Mexico Central |
+| `azure_swedencentral` | Sweden Central |
+| `azure_koreacentral` | Korea Central |
+
+Read more in the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#non-vps-account-locator-formats-by-cloud-platform-and-region).
+
+Note that this resource is still in preview.
+
 ## v2.12.0 ➞ v2.12.1
 
 ### Handling deprecated `mfa_authentication_methods` field in authentication policies
