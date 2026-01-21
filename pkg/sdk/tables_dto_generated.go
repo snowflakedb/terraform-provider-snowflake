@@ -208,7 +208,7 @@ func (s *CreateTableRequest) WithStageFileFormat(stageFileFormat LegacyFileForma
 	return s
 }
 
-func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions StageCopyOptionsRequest) *CreateTableRequest {
+func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions LegacyCopyOptionsRequest) *CreateTableRequest {
 	s.stageCopyOptions = &stageCopyOptions
 	return s
 }
@@ -1531,7 +1531,7 @@ func (s *TableSetRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRe
 	return s
 }
 
-func (s *TableSetRequest) WithStageCopyOptions(stageCopyOptions StageCopyOptionsRequest) *TableSetRequest {
+func (s *TableSetRequest) WithStageCopyOptions(stageCopyOptions LegacyCopyOptionsRequest) *TableSetRequest {
 	s.StageCopyOptions = &stageCopyOptions
 	return s
 }
@@ -1679,46 +1679,46 @@ func NewDescribeTableStageRequest(
 	return &s
 }
 
-func NewStageCopyOptionsRequest() *StageCopyOptionsRequest {
-	return &StageCopyOptionsRequest{}
+func NewLegacyCopyOptionsRequest() *LegacyCopyOptionsRequest {
+	return &LegacyCopyOptionsRequest{}
 }
 
-func (s *StageCopyOptionsRequest) WithOnError(onError StageCopyOnErrorOptionsRequest) *StageCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithOnError(onError StageCopyOnErrorOptionsRequest) *LegacyCopyOptionsRequest {
 	s.OnError = &onError
 	return s
 }
 
-func (s *StageCopyOptionsRequest) WithSizeLimit(sizeLimit int) *StageCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithSizeLimit(sizeLimit int) *LegacyCopyOptionsRequest {
 	s.SizeLimit = &sizeLimit
 	return s
 }
 
-func (s *StageCopyOptionsRequest) WithPurge(purge bool) *StageCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithPurge(purge bool) *LegacyCopyOptionsRequest {
 	s.Purge = &purge
 	return s
 }
 
-func (s *StageCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *StageCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *LegacyCopyOptionsRequest {
 	s.ReturnFailedOnly = &returnFailedOnly
 	return s
 }
 
-func (s *StageCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *StageCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *LegacyCopyOptionsRequest {
 	s.MatchByColumnName = &matchByColumnName
 	return s
 }
 
-func (s *StageCopyOptionsRequest) WithEnforceLength(enforceLength bool) *StageCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithEnforceLength(enforceLength bool) *LegacyCopyOptionsRequest {
 	s.EnforceLength = &enforceLength
 	return s
 }
 
-func (s *StageCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *StageCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *LegacyCopyOptionsRequest {
 	s.Truncatecolumns = &truncatecolumns
 	return s
 }
 
-func (s *StageCopyOptionsRequest) WithForce(force bool) *StageCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithForce(force bool) *LegacyCopyOptionsRequest {
 	s.Force = &force
 	return s
 }

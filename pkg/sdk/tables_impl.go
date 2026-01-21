@@ -638,7 +638,7 @@ func (v *LegacyFileFormatRequest) toOpts() *LegacyFileFormat {
 	}
 }
 
-func (v *StageCopyOptionsRequest) toOpts() *StageCopyOptions {
+func (v *LegacyCopyOptionsRequest) toOpts() *StageCopyOptions {
 	return &StageCopyOptions{
 		OnError:           v.OnError.toOpts(),
 		SizeLimit:         v.SizeLimit,

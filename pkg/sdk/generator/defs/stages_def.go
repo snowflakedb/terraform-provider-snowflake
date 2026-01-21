@@ -6,6 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+// TODO(SNOW-1019005): use a custom file format struct with a nice nesting
 // TODO(SNOW-1019005): generate assertions
 // TODO(SNOW-1019005): add parsers for DESC output and return a nice struct; use them in integration tests assertions
 // TODO(SNOW-1019005): improve integration tests
