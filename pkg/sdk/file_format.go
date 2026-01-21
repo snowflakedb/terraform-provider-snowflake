@@ -33,9 +33,9 @@ type LegacyFileFormats interface {
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error)
 }
 
-var _ LegacyFileFormats = (*fileFormats)(nil)
+var _ LegacyFileFormats = (*legacyFileFormats)(nil)
 
-type fileFormats struct {
+type legacyFileFormats struct {
 	client *Client
 }
 
@@ -356,7 +356,7 @@ func (opts *CreateFileFormatOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptions) error {
+func (v *legacyFileFormats) Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptions) error {
 	if opts == nil {
 		opts = &CreateFileFormatOptions{}
 	}
@@ -583,7 +583,7 @@ func (opts *LegacyFileFormatTypeOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptions) error {
+func (v *legacyFileFormats) Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptions) error {
 	if opts == nil {
 		opts = &AlterFileFormatOptions{}
 	}
@@ -611,7 +611,7 @@ func (opts *DropFileFormatOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptions) error {
+func (v *legacyFileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptions) error {
 	if opts == nil {
 		opts = &DropFileFormatOptions{}
 	}
@@ -627,7 +627,7 @@ func (v *fileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier, opts 
 	return err
 }
 
-func (v *fileFormats) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
+func (v *legacyFileFormats) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFileFormatOptions{IfExists: Bool(true)}) }, ctx, id)
 }
 
@@ -643,7 +643,7 @@ func (opts *ShowFileFormatsOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([]FileFormat, error) {
+func (v *legacyFileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([]FileFormat, error) {
 	opts = createIfNil(opts)
 	dbRows, err := validateAndQuery[FileFormatRow](v.client, ctx, opts)
 	if err != nil {
@@ -652,7 +652,7 @@ func (v *fileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([
 	return convertRows[FileFormatRow, FileFormat](dbRows)
 }
 
-func (v *fileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
+func (v *legacyFileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
 	fileFormats, err := v.client.FileFormats.Show(ctx, &ShowFileFormatsOptions{
 		Like: &Like{
 			Pattern: String(id.Name()),
@@ -669,7 +669,7 @@ func (v *fileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (
 	})
 }
 
-func (v *fileFormats) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
+func (v *legacyFileFormats) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
@@ -696,7 +696,7 @@ func (opts *describeFileFormatOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error) {
+func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error) {
 	opts := &describeFileFormatOptions{
 		name: id,
 	}

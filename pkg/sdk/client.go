@@ -175,7 +175,7 @@ func (c *Client) initialize() {
 	c.ExternalTables = &externalTables{client: c}
 	c.EventTables = &eventTables{client: c}
 	c.FailoverGroups = &failoverGroups{client: c}
-	c.FileFormats = &fileFormats{client: c}
+	c.FileFormats = &legacyFileFormats{client: c}
 	c.Functions = &functions{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}

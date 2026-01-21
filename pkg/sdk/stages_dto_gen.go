@@ -26,7 +26,7 @@ type CreateInternalStageRequest struct {
 	name                  SchemaObjectIdentifier // required
 	Encryption            *InternalStageEncryptionRequest
 	DirectoryTableOptions *InternalDirectoryTableOptionsRequest
-	FileFormat            *LegacyFileFormat
+	FileFormat            *FileFormatOptions
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -54,7 +54,7 @@ type CreateOnS3StageRequest struct {
 	name                  SchemaObjectIdentifier       // required
 	ExternalStageParams   ExternalS3StageParamsRequest // required
 	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
-	FileFormat            *LegacyFileFormat
+	FileFormat            *FileFormatOptions
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -109,7 +109,7 @@ type CreateOnGCSStageRequest struct {
 	name                  SchemaObjectIdentifier        // required
 	ExternalStageParams   ExternalGCSStageParamsRequest // required
 	DirectoryTableOptions *ExternalGCSDirectoryTableOptionsRequest
-	FileFormat            *LegacyFileFormat
+	FileFormat            *FileFormatOptions
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -146,7 +146,7 @@ type CreateOnAzureStageRequest struct {
 	name                  SchemaObjectIdentifier          // required
 	ExternalStageParams   ExternalAzureStageParamsRequest // required
 	DirectoryTableOptions *ExternalAzureDirectoryTableOptionsRequest
-	FileFormat            *LegacyFileFormat
+	FileFormat            *FileFormatOptions
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -189,7 +189,7 @@ type CreateOnS3CompatibleStageRequest struct {
 	name                  SchemaObjectIdentifier                 // required
 	ExternalStageParams   ExternalS3CompatibleStageParamsRequest // required
 	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
-	FileFormat            *LegacyFileFormat
+	FileFormat            *FileFormatOptions
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -216,7 +216,7 @@ type AlterStageRequest struct {
 type AlterInternalStageStageRequest struct {
 	IfExists   *bool
 	name       SchemaObjectIdentifier // required
-	FileFormat *LegacyFileFormat
+	FileFormat *FileFormatOptions
 	Comment    *string
 }
 
@@ -224,7 +224,7 @@ type AlterExternalS3StageStageRequest struct {
 	IfExists            *bool
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalS3StageParamsRequest
-	FileFormat          *LegacyFileFormat
+	FileFormat          *FileFormatOptions
 	Comment             *string
 }
 
@@ -232,7 +232,7 @@ type AlterExternalGCSStageStageRequest struct {
 	IfExists            *bool
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalGCSStageParamsRequest
-	FileFormat          *LegacyFileFormat
+	FileFormat          *FileFormatOptions
 	Comment             *string
 }
 
@@ -240,7 +240,7 @@ type AlterExternalAzureStageStageRequest struct {
 	IfExists            *bool
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalAzureStageParamsRequest
-	FileFormat          *LegacyFileFormat
+	FileFormat          *FileFormatOptions
 	Comment             *string
 }
 

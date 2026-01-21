@@ -19,8 +19,7 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 		Name()
 	qs = apply(qs)
 	return qs.
-		// OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-		PredefinedQueryStructField("FileFormat", "*FileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		PredefinedQueryStructField("FileFormat", "*FileFormatOptions", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
@@ -35,8 +34,8 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		SQL("SET")
 	qs = apply(qs)
 	return qs.
-		// OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-		PredefinedQueryStructField("FileFormat", "*FileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		PredefinedQueryStructField("FileFormat", "*FileFormatOptions", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		// PredefinedQueryStructField("FileFormat", "*FileFormatOptions", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name")
 }

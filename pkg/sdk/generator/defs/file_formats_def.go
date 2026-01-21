@@ -23,7 +23,6 @@ func stageFileFormatStringOrNone() *g.QueryStruct {
 
 func fileFormatDef() *g.QueryStruct {
 	return g.NewQueryStruct("FileFormatOptions").
-		OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes()).
 		OptionalQueryStructField(
 			"CsvOptions",
 			g.NewQueryStruct("FileFormatCsvOptions").
@@ -125,7 +124,7 @@ func fileFormatDef() *g.QueryStruct {
 
 			g.KeywordOptions(),
 		).
-		WithValidation(g.ExactlyOneValueSet, "FormatName", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions")
+		WithValidation(g.ExactlyOneValueSet, "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions")
 }
 
 var fileFormatsDef = g.NewInterface(
@@ -136,6 +135,9 @@ var fileFormatsDef = g.NewInterface(
 	CustomOperation(
 		"DummyOperation",
 		"not available",
-		g.NewQueryStruct("FileFormatsDummyOperation"),
-		fileFormatDef(),
+		g.NewQueryStruct("FileFormatsDummyOperation").
+			OptionalQueryStructField("FileFormat", fileFormatDef(), g.ListOptions().Parentheses().SQL("FILE_FORMAT =")),
+		// PredefinedQueryStructField("Options", "*FileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")),
+		// fileFormatDef(),
+		// fileFormatDef(),
 	)
