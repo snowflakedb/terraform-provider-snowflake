@@ -136,7 +136,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 
 	switch ff.Type {
 	case FileFormatTypeCSV:
-		ff.Options.CSVCompression = (*CSVCompression)(&inputOptions.Compression)
+		ff.Options.CSVCompression = (*CsvCompression)(&inputOptions.Compression)
 		ff.Options.CSVRecordDelimiter = &inputOptions.RecordDelimiter
 		ff.Options.CSVFieldDelimiter = &inputOptions.FieldDelimiter
 		ff.Options.CSVFileExtension = &inputOptions.FileExtension
@@ -156,9 +156,9 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		ff.Options.CSVReplaceInvalidCharacters = &inputOptions.ReplaceInvalidCharacters
 		ff.Options.CSVEmptyFieldAsNull = &inputOptions.EmptyFieldAsNull
 		ff.Options.CSVSkipByteOrderMark = &inputOptions.SkipByteOrderMark
-		ff.Options.CSVEncoding = (*CSVEncoding)(&inputOptions.Encoding)
+		ff.Options.CSVEncoding = (*CsvEncoding)(&inputOptions.Encoding)
 	case FileFormatTypeJSON:
-		ff.Options.JSONCompression = (*JSONCompression)(&inputOptions.Compression)
+		ff.Options.JSONCompression = (*JsonCompression)(&inputOptions.Compression)
 		ff.Options.JSONDateFormat = &inputOptions.DateFormat
 		ff.Options.JSONTimeFormat = &inputOptions.TimeFormat
 		ff.Options.JSONTimestampFormat = &inputOptions.TimestampFormat
@@ -189,7 +189,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		ff.Options.ParquetBinaryAsText = &inputOptions.BinaryAsText
 		ff.Options.ParquetReplaceInvalidCharacters = &inputOptions.ReplaceInvalidCharacters
 	case FileFormatTypeXML:
-		ff.Options.XMLCompression = (*XMLCompression)(&inputOptions.Compression)
+		ff.Options.XMLCompression = (*XmlCompression)(&inputOptions.Compression)
 		ff.Options.XMLIgnoreUTF8Errors = &inputOptions.IgnoreUTF8Errors
 		ff.Options.XMLPreserveSpace = &inputOptions.PreserveSpace
 		ff.Options.XMLStripOuterElement = &inputOptions.StripOuterElement
@@ -221,68 +221,68 @@ var (
 	BinaryFormatUTF8   BinaryFormat = "UTF8"
 )
 
-type CSVCompression string
+type CsvCompression string
 
 var (
-	CSVCompressionAuto       CSVCompression = "AUTO"
-	CSVCompressionGzip       CSVCompression = "GZIP"
-	CSVCompressionBz2        CSVCompression = "BZ2"
-	CSVCompressionBrotli     CSVCompression = "BROTLI"
-	CSVCompressionZstd       CSVCompression = "ZSTD"
-	CSVCompressionDeflate    CSVCompression = "DEFLATE"
-	CSVCompressionRawDeflate CSVCompression = "RAW_DEFLATE"
-	CSVCompressionNone       CSVCompression = "NONE"
+	CSVCompressionAuto       CsvCompression = "AUTO"
+	CSVCompressionGzip       CsvCompression = "GZIP"
+	CSVCompressionBz2        CsvCompression = "BZ2"
+	CSVCompressionBrotli     CsvCompression = "BROTLI"
+	CSVCompressionZstd       CsvCompression = "ZSTD"
+	CSVCompressionDeflate    CsvCompression = "DEFLATE"
+	CSVCompressionRawDeflate CsvCompression = "RAW_DEFLATE"
+	CSVCompressionNone       CsvCompression = "NONE"
 )
 
-type CSVEncoding string
+type CsvEncoding string
 
 var (
-	CSVEncodingBIG5        CSVEncoding = "BIG5"
-	CSVEncodingEUCJP       CSVEncoding = "EUCJP"
-	CSVEncodingEUCKR       CSVEncoding = "EUCKR"
-	CSVEncodingGB18030     CSVEncoding = "GB18030"
-	CSVEncodingIBM420      CSVEncoding = "IBM420"
-	CSVEncodingIBM424      CSVEncoding = "IBM424"
-	CSVEncodingISO2022CN   CSVEncoding = "ISO2022CN"
-	CSVEncodingISO2022JP   CSVEncoding = "ISO2022JP"
-	CSVEncodingISO2022KR   CSVEncoding = "ISO2022KR"
-	CSVEncodingISO88591    CSVEncoding = "ISO88591"
-	CSVEncodingISO88592    CSVEncoding = "ISO88592"
-	CSVEncodingISO88595    CSVEncoding = "ISO88595"
-	CSVEncodingISO88596    CSVEncoding = "ISO88596"
-	CSVEncodingISO88597    CSVEncoding = "ISO88597"
-	CSVEncodingISO88598    CSVEncoding = "ISO88598"
-	CSVEncodingISO88599    CSVEncoding = "ISO88599"
-	CSVEncodingISO885915   CSVEncoding = "ISO885915"
-	CSVEncodingKOI8R       CSVEncoding = "KOI8R"
-	CSVEncodingSHIFTJIS    CSVEncoding = "SHIFTJIS"
-	CSVEncodingUTF8        CSVEncoding = "UTF8"
-	CSVEncodingUTF16       CSVEncoding = "UTF16"
-	CSVEncodingUTF16BE     CSVEncoding = "UTF16BE"
-	CSVEncodingUTF16LE     CSVEncoding = "UTF16LE"
-	CSVEncodingUTF32       CSVEncoding = "UTF32"
-	CSVEncodingUTF32BE     CSVEncoding = "UTF32BE"
-	CSVEncodingUTF32LE     CSVEncoding = "UTF32LE"
-	CSVEncodingWINDOWS1250 CSVEncoding = "WINDOWS1250"
-	CSVEncodingWINDOWS1251 CSVEncoding = "WINDOWS1251"
-	CSVEncodingWINDOWS1252 CSVEncoding = "WINDOWS1252"
-	CSVEncodingWINDOWS1253 CSVEncoding = "WINDOWS1253"
-	CSVEncodingWINDOWS1254 CSVEncoding = "WINDOWS1254"
-	CSVEncodingWINDOWS1255 CSVEncoding = "WINDOWS1255"
-	CSVEncodingWINDOWS1256 CSVEncoding = "WINDOWS1256"
+	CSVEncodingBIG5        CsvEncoding = "BIG5"
+	CSVEncodingEUCJP       CsvEncoding = "EUCJP"
+	CSVEncodingEUCKR       CsvEncoding = "EUCKR"
+	CSVEncodingGB18030     CsvEncoding = "GB18030"
+	CSVEncodingIBM420      CsvEncoding = "IBM420"
+	CSVEncodingIBM424      CsvEncoding = "IBM424"
+	CSVEncodingISO2022CN   CsvEncoding = "ISO2022CN"
+	CSVEncodingISO2022JP   CsvEncoding = "ISO2022JP"
+	CSVEncodingISO2022KR   CsvEncoding = "ISO2022KR"
+	CSVEncodingISO88591    CsvEncoding = "ISO88591"
+	CSVEncodingISO88592    CsvEncoding = "ISO88592"
+	CSVEncodingISO88595    CsvEncoding = "ISO88595"
+	CSVEncodingISO88596    CsvEncoding = "ISO88596"
+	CSVEncodingISO88597    CsvEncoding = "ISO88597"
+	CSVEncodingISO88598    CsvEncoding = "ISO88598"
+	CSVEncodingISO88599    CsvEncoding = "ISO88599"
+	CSVEncodingISO885915   CsvEncoding = "ISO885915"
+	CSVEncodingKOI8R       CsvEncoding = "KOI8R"
+	CSVEncodingSHIFTJIS    CsvEncoding = "SHIFTJIS"
+	CSVEncodingUTF8        CsvEncoding = "UTF8"
+	CSVEncodingUTF16       CsvEncoding = "UTF16"
+	CSVEncodingUTF16BE     CsvEncoding = "UTF16BE"
+	CSVEncodingUTF16LE     CsvEncoding = "UTF16LE"
+	CSVEncodingUTF32       CsvEncoding = "UTF32"
+	CSVEncodingUTF32BE     CsvEncoding = "UTF32BE"
+	CSVEncodingUTF32LE     CsvEncoding = "UTF32LE"
+	CSVEncodingWINDOWS1250 CsvEncoding = "WINDOWS1250"
+	CSVEncodingWINDOWS1251 CsvEncoding = "WINDOWS1251"
+	CSVEncodingWINDOWS1252 CsvEncoding = "WINDOWS1252"
+	CSVEncodingWINDOWS1253 CsvEncoding = "WINDOWS1253"
+	CSVEncodingWINDOWS1254 CsvEncoding = "WINDOWS1254"
+	CSVEncodingWINDOWS1255 CsvEncoding = "WINDOWS1255"
+	CSVEncodingWINDOWS1256 CsvEncoding = "WINDOWS1256"
 )
 
-type JSONCompression string
+type JsonCompression string
 
 var (
-	JSONCompressionAuto       JSONCompression = "AUTO"
-	JSONCompressionGzip       JSONCompression = "GZIP"
-	JSONCompressionBz2        JSONCompression = "BZ2"
-	JSONCompressionBrotli     JSONCompression = "BROTLI"
-	JSONCompressionZstd       JSONCompression = "ZSTD"
-	JSONCompressionDeflate    JSONCompression = "DEFLATE"
-	JSONCompressionRawDeflate JSONCompression = "RAW_DEFLATE"
-	JSONCompressionNone       JSONCompression = "NONE"
+	JSONCompressionAuto       JsonCompression = "AUTO"
+	JSONCompressionGzip       JsonCompression = "GZIP"
+	JSONCompressionBz2        JsonCompression = "BZ2"
+	JSONCompressionBrotli     JsonCompression = "BROTLI"
+	JSONCompressionZstd       JsonCompression = "ZSTD"
+	JSONCompressionDeflate    JsonCompression = "DEFLATE"
+	JSONCompressionRawDeflate JsonCompression = "RAW_DEFLATE"
+	JSONCompressionNone       JsonCompression = "NONE"
 )
 
 type AvroCompression string
@@ -306,17 +306,17 @@ var (
 	ParquetCompressionNone   ParquetCompression = "NONE"
 )
 
-type XMLCompression string
+type XmlCompression string
 
 var (
-	XMLCompressionAuto       XMLCompression = "AUTO"
-	XMLCompressionGzip       XMLCompression = "GZIP"
-	XMLCompressionBz2        XMLCompression = "BZ2"
-	XMLCompressionBrotli     XMLCompression = "BROTLI"
-	XMLCompressionZstd       XMLCompression = "ZSTD"
-	XMLCompressionDeflate    XMLCompression = "DEFLATE"
-	XMLCompressionRawDeflate XMLCompression = "RAW_DEFLATE"
-	XMLCompressionNone       XMLCompression = "NONE"
+	XMLCompressionAuto       XmlCompression = "AUTO"
+	XMLCompressionGzip       XmlCompression = "GZIP"
+	XMLCompressionBz2        XmlCompression = "BZ2"
+	XMLCompressionBrotli     XmlCompression = "BROTLI"
+	XMLCompressionZstd       XmlCompression = "ZSTD"
+	XMLCompressionDeflate    XmlCompression = "DEFLATE"
+	XMLCompressionRawDeflate XmlCompression = "RAW_DEFLATE"
+	XMLCompressionNone       XmlCompression = "NONE"
 )
 
 type NullString struct {
@@ -404,7 +404,7 @@ type LegacyFileFormatTypeOptions struct {
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 
 	// CSV type options
-	CSVCompression                *CSVCompression `ddl:"parameter" sql:"COMPRESSION"`
+	CSVCompression                *CsvCompression `ddl:"parameter" sql:"COMPRESSION"`
 	CSVRecordDelimiter            *string         `ddl:"parameter,single_quotes" sql:"RECORD_DELIMITER"`
 	CSVFieldDelimiter             *string         `ddl:"parameter,single_quotes" sql:"FIELD_DELIMITER"`
 	CSVFileExtension              *string         `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
@@ -424,10 +424,10 @@ type LegacyFileFormatTypeOptions struct {
 	CSVReplaceInvalidCharacters   *bool           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	CSVEmptyFieldAsNull           *bool           `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
 	CSVSkipByteOrderMark          *bool           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
-	CSVEncoding                   *CSVEncoding    `ddl:"parameter,single_quotes" sql:"ENCODING"`
+	CSVEncoding                   *CsvEncoding    `ddl:"parameter,single_quotes" sql:"ENCODING"`
 
 	// JSON type options
-	JSONCompression              *JSONCompression `ddl:"parameter" sql:"COMPRESSION"`
+	JSONCompression              *JsonCompression `ddl:"parameter" sql:"COMPRESSION"`
 	JSONDateFormat               *string          `ddl:"parameter,single_quotes" sql:"DATE_FORMAT"`
 	JSONTimeFormat               *string          `ddl:"parameter,single_quotes" sql:"TIME_FORMAT"`
 	JSONTimestampFormat          *string          `ddl:"parameter,single_quotes" sql:"TIMESTAMP_FORMAT"`
@@ -463,7 +463,7 @@ type LegacyFileFormatTypeOptions struct {
 	ParquetNullIf                   *[]NullString       `ddl:"parameter,parentheses" sql:"NULL_IF"`
 
 	// XML type options
-	XMLCompression              *XMLCompression `ddl:"parameter" sql:"COMPRESSION"`
+	XMLCompression              *XmlCompression `ddl:"parameter" sql:"COMPRESSION"`
 	XMLIgnoreUTF8Errors         *bool           `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
 	XMLPreserveSpace            *bool           `ddl:"parameter" sql:"PRESERVE_SPACE"`
 	XMLStripOuterElement        *bool           `ddl:"parameter" sql:"STRIP_OUTER_ELEMENT"`
@@ -775,7 +775,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				}
 				details.Options.CSVNullIf = &newNullIf
 			case "COMPRESSION":
-				comp := CSVCompression(v)
+				comp := CsvCompression(v)
 				details.Options.CSVCompression = &comp
 			case "ERROR_ON_COLUMN_COUNT_MISMATCH":
 				b, err := strconv.ParseBool(v)
@@ -810,7 +810,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				}
 				details.Options.CSVSkipByteOrderMark = &b
 			case "ENCODING":
-				enc := CSVEncoding(v)
+				enc := CsvEncoding(v)
 				details.Options.CSVEncoding = &enc
 			}
 		}
@@ -845,7 +845,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				}
 				details.Options.JSONNullIf = newNullIf
 			case "COMPRESSION":
-				comp := JSONCompression(v)
+				comp := JsonCompression(v)
 				details.Options.JSONCompression = &comp
 			case "ENABLE_OCTAL":
 				b, err := strconv.ParseBool(v)
@@ -992,7 +992,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 			v := row.Property_Value
 			switch row.Property {
 			case "COMPRESSION":
-				comp := XMLCompression(v)
+				comp := XmlCompression(v)
 				details.Options.XMLCompression = &comp
 			case "IGNORE_UTF8_ERRORS":
 				b, err := strconv.ParseBool(v)

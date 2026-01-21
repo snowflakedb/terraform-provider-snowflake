@@ -762,7 +762,7 @@ func NewFileFormatTypeOptionsRequest() *LegacyFileFormatTypeOptionsRequest {
 	return &LegacyFileFormatTypeOptionsRequest{}
 }
 
-func (s *LegacyFileFormatTypeOptionsRequest) WithCSVCompression(csvCompression *CSVCompression) *LegacyFileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVCompression(csvCompression *CsvCompression) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVCompression = csvCompression
 	return s
 }
@@ -862,12 +862,12 @@ func (s *LegacyFileFormatTypeOptionsRequest) WithCSVSkipByteOrderMark(csvSkipByt
 	return s
 }
 
-func (s *LegacyFileFormatTypeOptionsRequest) WithCSVEncoding(csvEncoding *CSVEncoding) *LegacyFileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithCSVEncoding(csvEncoding *CsvEncoding) *LegacyFileFormatTypeOptionsRequest {
 	s.CSVEncoding = csvEncoding
 	return s
 }
 
-func (s *LegacyFileFormatTypeOptionsRequest) WithJSONCompression(jsonCompression *JSONCompression) *LegacyFileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithJSONCompression(jsonCompression *JsonCompression) *LegacyFileFormatTypeOptionsRequest {
 	s.JSONCompression = jsonCompression
 	return s
 }
@@ -1007,7 +1007,7 @@ func (s *LegacyFileFormatTypeOptionsRequest) WithParquetNullIf(parquetNullIf *[]
 	return s
 }
 
-func (s *LegacyFileFormatTypeOptionsRequest) WithXMLCompression(xmlCompression *XMLCompression) *LegacyFileFormatTypeOptionsRequest {
+func (s *LegacyFileFormatTypeOptionsRequest) WithXMLCompression(xmlCompression *XmlCompression) *LegacyFileFormatTypeOptionsRequest {
 	s.XMLCompression = xmlCompression
 	return s
 }
