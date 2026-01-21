@@ -51,6 +51,13 @@ See the [service_user](https://registry.terraform.io/providers/snowflakedb/snowf
 No changes in configuration are required for existing service users. You can optionally add the `default_workload_identity` block to enable workload identity federation.
 References: [#3942](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3942).
 
+### Handling deprecated `mfa_authentication_methods` field in authentication policies
+The 2025_06 bundle is now generally enabled. As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods have been deprecated in that bundle.
+
+Now, the `mfa_authentication_methods` field in the authentication_policy resource has no effect, and the plan on this field will always be empty. It will be removed in v3. Please use `mfa_policy.enforce_mfa_on_external_authentication` instead.
+
+You may remove the `mfa_authentication_methods` field from the authentication_policy resource.
+
 ### *(improvement)* Using UNSET for certain fields in warehouses
 Previously, Snowflake didn't support `UNSET` for `scaling_policy`, `auto_resume`, and `warehouse_type` in warehouses. As a workaround, the provider used `SET` with default values.
 Now, `UNSET` is available in Snowflake, and the provider uses this operation for these fields.
