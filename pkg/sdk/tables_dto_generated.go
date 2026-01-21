@@ -1683,7 +1683,7 @@ func NewLegacyCopyOptionsRequest() *LegacyCopyOptionsRequest {
 	return &LegacyCopyOptionsRequest{}
 }
 
-func (s *LegacyCopyOptionsRequest) WithOnError(onError StageCopyOnErrorOptionsRequest) *LegacyCopyOptionsRequest {
+func (s *LegacyCopyOptionsRequest) WithOnError(onError LegacyCopyOnErrorOptionsRequest) *LegacyCopyOptionsRequest {
 	s.OnError = &onError
 	return s
 }
@@ -1723,36 +1723,36 @@ func (s *LegacyCopyOptionsRequest) WithForce(force bool) *LegacyCopyOptionsReque
 	return s
 }
 
-// Builder functions for StageCopyOnErrorOptionsRequest
+// Builder functions for LegacyCopyOnErrorOptionsRequest
 
-func NewStageCopyOnErrorOptionsRequest() *StageCopyOnErrorOptionsRequest {
-	return &StageCopyOnErrorOptionsRequest{}
+func NewLegacyCopyOnErrorOptionsRequest() *LegacyCopyOnErrorOptionsRequest {
+	return &LegacyCopyOnErrorOptionsRequest{}
 }
 
-func (s *StageCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *StageCopyOnErrorOptionsRequest {
+func (s *LegacyCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *LegacyCopyOnErrorOptionsRequest {
 	s.Continue_ = &continue_
 	return s
 }
 
-func (s *StageCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *StageCopyOnErrorOptionsRequest {
+func (s *LegacyCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *LegacyCopyOnErrorOptionsRequest {
 	s.AbortStatement = &abortStatement
 	return s
 }
 
 // WithSkipFile sets SkipFile to "SKIP_FILE"
-func (s *StageCopyOnErrorOptionsRequest) WithSkipFile() *StageCopyOnErrorOptionsRequest {
+func (s *LegacyCopyOnErrorOptionsRequest) WithSkipFile() *LegacyCopyOnErrorOptionsRequest {
 	s.SkipFile = String("SKIP_FILE")
 	return s
 }
 
 // WithSkipFileX sets SkipFile to "SKIP_FILE_n" where n is the provided integer
-func (s *StageCopyOnErrorOptionsRequest) WithSkipFileX(x int) *StageCopyOnErrorOptionsRequest {
+func (s *LegacyCopyOnErrorOptionsRequest) WithSkipFileX(x int) *LegacyCopyOnErrorOptionsRequest {
 	s.SkipFile = String(fmt.Sprintf("SKIP_FILE_%d", x))
 	return s
 }
 
 // WithSkipFileXPercent sets SkipFile to "'SKIP_FILE_n%'" where n is the provided integer
-func (s *StageCopyOnErrorOptionsRequest) WithSkipFileXPercent(x int) *StageCopyOnErrorOptionsRequest {
+func (s *LegacyCopyOnErrorOptionsRequest) WithSkipFileXPercent(x int) *LegacyCopyOnErrorOptionsRequest {
 	s.SkipFile = String(fmt.Sprintf("'SKIP_FILE_%d%%'", x))
 	return s
 }

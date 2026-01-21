@@ -5,7 +5,7 @@ import "time"
 //go:generate go run ./dto-builder-generator/main.go
 
 type LegacyCopyOptionsRequest struct {
-	OnError           *StageCopyOnErrorOptionsRequest
+	OnError           *LegacyCopyOnErrorOptionsRequest
 	SizeLimit         *int
 	Purge             *bool
 	ReturnFailedOnly  *bool
@@ -15,7 +15,7 @@ type LegacyCopyOptionsRequest struct {
 	Force             *bool
 }
 
-type StageCopyOnErrorOptionsRequest struct {
+type LegacyCopyOnErrorOptionsRequest struct {
 	Continue_      *bool
 	SkipFile       *string
 	AbortStatement *bool

@@ -131,7 +131,7 @@ func TestInt_Table(t *testing.T) {
 		stageFileFormat := sdk.NewLegacyFileFormatRequest().
 			WithFileFormatType(sdk.FileFormatTypeCSV).
 			WithOptions(*sdk.NewFileFormatTypeOptionsRequest().WithCSVCompression(sdk.Pointer(sdk.CSVCompressionAuto)))
-		stageCopyOptions := sdk.NewLegacyCopyOptionsRequest().WithOnError(*sdk.NewStageCopyOnErrorOptionsRequest().WithSkipFile())
+		stageCopyOptions := sdk.NewLegacyCopyOptionsRequest().WithOnError(*sdk.NewLegacyCopyOnErrorOptionsRequest().WithSkipFile())
 		request := sdk.NewCreateTableRequest(id, columns).
 			WithOutOfLineConstraint(*outOfLineConstraint).
 			WithStageFileFormat(*stageFileFormat).
@@ -818,7 +818,7 @@ func TestInt_Table(t *testing.T) {
 			FileFormatType: sdk.Pointer(sdk.FileFormatTypeCSV),
 		}
 		stageCopyOptions := sdk.LegacyCopyOptionsRequest{
-			OnError: sdk.NewStageCopyOnErrorOptionsRequest().WithSkipFile(),
+			OnError: sdk.NewLegacyCopyOnErrorOptionsRequest().WithSkipFile(),
 		}
 		alterRequest := sdk.NewAlterTableRequest(id).
 			WithSet(sdk.NewTableSetRequest().

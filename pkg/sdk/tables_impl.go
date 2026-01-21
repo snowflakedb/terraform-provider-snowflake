@@ -651,7 +651,7 @@ func (v *LegacyCopyOptionsRequest) toOpts() *StageCopyOptions {
 	}
 }
 
-func (s *StageCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
+func (s *LegacyCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
 	return &StageCopyOnErrorOptions{
 		Continue_:      s.Continue_,
 		SkipFile:       s.SkipFile,
