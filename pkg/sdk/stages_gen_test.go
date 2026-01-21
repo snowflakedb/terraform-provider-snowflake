@@ -40,6 +40,7 @@ func TestStages_CreateInternal(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.Temporary = Bool(true)
 		opts.IfNotExists = Bool(true)
@@ -50,8 +51,8 @@ func TestStages_CreateInternal(t *testing.T) {
 			Enable:      true,
 			AutoRefresh: Bool(true),
 		}
-		opts.FileFormat = &LegacyFileFormat{
-			FormatName: String("format name"),
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
 		opts.Tag = []TagAssociation{
@@ -60,7 +61,7 @@ func TestStages_CreateInternal(t *testing.T) {
 				Value: "tag-value",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = 'format name') COMMENT = 'some comment' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	// added manually
@@ -166,6 +167,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 
 	// variants added manually
 	t.Run("all options - storage integration", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
@@ -180,11 +182,11 @@ func TestStages_CreateOnS3(t *testing.T) {
 				},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	t.Run("all options - directory table and credentials", func(t *testing.T) {
@@ -280,6 +282,7 @@ func TestStages_CreateOnGCS(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
@@ -299,11 +302,11 @@ func TestStages_CreateOnGCS(t *testing.T) {
 			AutoRefresh:             Bool(true),
 			NotificationIntegration: String("notification-integration"),
 		}
-		opts.FileFormat = &LegacyFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	// added manually
@@ -376,6 +379,7 @@ func TestStages_CreateOnAzure(t *testing.T) {
 
 	// variants added manually
 	t.Run("all options - storage integration", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
@@ -389,11 +393,11 @@ func TestStages_CreateOnAzure(t *testing.T) {
 				},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	t.Run("all options - directory table and credentials", func(t *testing.T) {
@@ -462,6 +466,7 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.Temporary = Bool(true)
 		opts.IfNotExists = Bool(true)
@@ -473,8 +478,8 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 				AwsSecretKey: "aws-secret-key",
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
 		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
@@ -482,7 +487,75 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 			RefreshOnCreate: Bool(true),
 			AutoRefresh:     Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true) FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+}
+
+func TestStages_CreateInternal_FileFormat(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid CreateInternalStageOptions
+	defaultOpts := func() *CreateInternalStageOptions {
+		return &CreateInternalStageOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateInternalStageOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = Bool(true)
+		opts.IfNotExists = Bool(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateInternalStageOptions", "OrReplace", "IfNotExists"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.Encryption.SnowflakeFull opts.Encryption.SnowflakeSse] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Encryption = &InternalStageEncryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s", id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.Temporary = Bool(true)
+		opts.IfNotExists = Bool(true)
+		opts.Encryption = &InternalStageEncryption{
+			SnowflakeFull: &InternalStageEncryptionSnowflakeFull{},
+		}
+		opts.DirectoryTableOptions = &InternalDirectoryTableOptions{
+			Enable:      true,
+			AutoRefresh: Bool(true),
+		}
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
+		}
+		opts.Comment = String("some comment")
+		opts.Tag = []TagAssociation{
+			{
+				Name:  NewAccountObjectIdentifier("tag-name"),
+				Value: "tag-value",
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: SnowflakeSse", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Encryption = &InternalStageEncryption{
+			SnowflakeSse: &InternalStageEncryptionSnowflakeSse{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE')`, id.FullyQualifiedName())
 	})
 }
 
@@ -582,13 +655,14 @@ func TestStages_AlterInternalStage(t *testing.T) {
 	// basic removed manually
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
-		opts.FileFormat = &LegacyFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'", id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 }
 
@@ -693,6 +767,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
@@ -705,11 +780,11 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 				None: &ExternalStageS3EncryptionNone{},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	// added manually
@@ -786,6 +861,7 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 	// basic removed manually
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
@@ -796,11 +872,11 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 				None: &ExternalStageGCSEncryptionNone{},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	// added manually
@@ -885,6 +961,7 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
@@ -895,11 +972,11 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 				None: &ExternalStageAzureEncryptionNone{},
 			},
 		}
-		opts.FileFormat = &LegacyFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	// added manually

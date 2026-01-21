@@ -22,7 +22,7 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 		OptionalQueryStructField(
 			"FileFormat",
 			g.NewQueryStruct("StageFileFormat").
-				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FILE_NAME =")).
+				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
 				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
 				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
@@ -45,7 +45,7 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		OptionalQueryStructField(
 			"FileFormat",
 			g.NewQueryStruct("StageFileFormat").
-				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FILE_NAME =")).
+				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
 				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
 				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),

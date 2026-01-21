@@ -62,7 +62,7 @@ type InternalDirectoryTableOptions struct {
 }
 
 type StageFileFormat struct {
-	FormatName        *SchemaObjectIdentifier `ddl:"identifier" sql:"FILE_NAME ="`
+	FormatName        *SchemaObjectIdentifier `ddl:"identifier" sql:"FORMAT_NAME ="`
 	FileFormatOptions *FileFormatOptions      `ddl:"list"`
 }
 
