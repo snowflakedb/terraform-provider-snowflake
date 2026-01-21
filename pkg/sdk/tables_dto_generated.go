@@ -208,7 +208,7 @@ func (s *CreateTableRequest) WithStageFileFormat(stageFileFormat LegacyFileForma
 	return s
 }
 
-func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions LegacyCopyOptionsRequest) *CreateTableRequest {
+func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *CreateTableRequest {
 	s.stageCopyOptions = &stageCopyOptions
 	return s
 }
@@ -1531,7 +1531,7 @@ func (s *TableSetRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRe
 	return s
 }
 
-func (s *TableSetRequest) WithStageCopyOptions(stageCopyOptions LegacyCopyOptionsRequest) *TableSetRequest {
+func (s *TableSetRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *TableSetRequest {
 	s.StageCopyOptions = &stageCopyOptions
 	return s
 }
@@ -1679,80 +1679,80 @@ func NewDescribeTableStageRequest(
 	return &s
 }
 
-func NewLegacyCopyOptionsRequest() *LegacyCopyOptionsRequest {
-	return &LegacyCopyOptionsRequest{}
+func NewLegacyTableCopyOptionsRequest() *LegacyTableCopyOptionsRequest {
+	return &LegacyTableCopyOptionsRequest{}
 }
 
-func (s *LegacyCopyOptionsRequest) WithOnError(onError LegacyCopyOnErrorOptionsRequest) *LegacyCopyOptionsRequest {
+func (s *LegacyTableCopyOptionsRequest) WithOnError(onError LegacyTableCopyOnErrorOptionsRequest) *LegacyTableCopyOptionsRequest {
 	s.OnError = &onError
 	return s
 }
 
-func (s *LegacyCopyOptionsRequest) WithSizeLimit(sizeLimit int) *LegacyCopyOptionsRequest {
+func (s *LegacyTableCopyOptionsRequest) WithSizeLimit(sizeLimit int) *LegacyTableCopyOptionsRequest {
 	s.SizeLimit = &sizeLimit
 	return s
 }
 
-func (s *LegacyCopyOptionsRequest) WithPurge(purge bool) *LegacyCopyOptionsRequest {
+func (s *LegacyTableCopyOptionsRequest) WithPurge(purge bool) *LegacyTableCopyOptionsRequest {
 	s.Purge = &purge
 	return s
 }
 
-func (s *LegacyCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *LegacyCopyOptionsRequest {
+func (s *LegacyTableCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *LegacyTableCopyOptionsRequest {
 	s.ReturnFailedOnly = &returnFailedOnly
 	return s
 }
 
-func (s *LegacyCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *LegacyCopyOptionsRequest {
+func (s *LegacyTableCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *LegacyTableCopyOptionsRequest {
 	s.MatchByColumnName = &matchByColumnName
 	return s
 }
 
-func (s *LegacyCopyOptionsRequest) WithEnforceLength(enforceLength bool) *LegacyCopyOptionsRequest {
+func (s *LegacyTableCopyOptionsRequest) WithEnforceLength(enforceLength bool) *LegacyTableCopyOptionsRequest {
 	s.EnforceLength = &enforceLength
 	return s
 }
 
-func (s *LegacyCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *LegacyCopyOptionsRequest {
+func (s *LegacyTableCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *LegacyTableCopyOptionsRequest {
 	s.Truncatecolumns = &truncatecolumns
 	return s
 }
 
-func (s *LegacyCopyOptionsRequest) WithForce(force bool) *LegacyCopyOptionsRequest {
+func (s *LegacyTableCopyOptionsRequest) WithForce(force bool) *LegacyTableCopyOptionsRequest {
 	s.Force = &force
 	return s
 }
 
-// Builder functions for LegacyCopyOnErrorOptionsRequest
+// Builder functions for LegacyTableCopyOnErrorOptionsRequest
 
-func NewLegacyCopyOnErrorOptionsRequest() *LegacyCopyOnErrorOptionsRequest {
-	return &LegacyCopyOnErrorOptionsRequest{}
+func NewLegacyTableCopyOnErrorOptionsRequest() *LegacyTableCopyOnErrorOptionsRequest {
+	return &LegacyTableCopyOnErrorOptionsRequest{}
 }
 
-func (s *LegacyCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *LegacyCopyOnErrorOptionsRequest {
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *LegacyTableCopyOnErrorOptionsRequest {
 	s.Continue_ = &continue_
 	return s
 }
 
-func (s *LegacyCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *LegacyCopyOnErrorOptionsRequest {
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *LegacyTableCopyOnErrorOptionsRequest {
 	s.AbortStatement = &abortStatement
 	return s
 }
 
 // WithSkipFile sets SkipFile to "SKIP_FILE"
-func (s *LegacyCopyOnErrorOptionsRequest) WithSkipFile() *LegacyCopyOnErrorOptionsRequest {
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFile() *LegacyTableCopyOnErrorOptionsRequest {
 	s.SkipFile = String("SKIP_FILE")
 	return s
 }
 
 // WithSkipFileX sets SkipFile to "SKIP_FILE_n" where n is the provided integer
-func (s *LegacyCopyOnErrorOptionsRequest) WithSkipFileX(x int) *LegacyCopyOnErrorOptionsRequest {
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFileX(x int) *LegacyTableCopyOnErrorOptionsRequest {
 	s.SkipFile = String(fmt.Sprintf("SKIP_FILE_%d", x))
 	return s
 }
 
 // WithSkipFileXPercent sets SkipFile to "'SKIP_FILE_n%'" where n is the provided integer
-func (s *LegacyCopyOnErrorOptionsRequest) WithSkipFileXPercent(x int) *LegacyCopyOnErrorOptionsRequest {
+func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFileXPercent(x int) *LegacyTableCopyOnErrorOptionsRequest {
 	s.SkipFile = String(fmt.Sprintf("'SKIP_FILE_%d%%'", x))
 	return s
 }

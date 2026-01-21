@@ -638,7 +638,7 @@ func (v *LegacyFileFormatRequest) toOpts() *LegacyFileFormat {
 	}
 }
 
-func (v *LegacyCopyOptionsRequest) toOpts() *StageCopyOptions {
+func (v *LegacyTableCopyOptionsRequest) toOpts() *StageCopyOptions {
 	return &StageCopyOptions{
 		OnError:           v.OnError.toOpts(),
 		SizeLimit:         v.SizeLimit,
@@ -651,7 +651,7 @@ func (v *LegacyCopyOptionsRequest) toOpts() *StageCopyOptions {
 	}
 }
 
-func (s *LegacyCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
+func (s *LegacyTableCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
 	return &StageCopyOnErrorOptions{
 		Continue_:      s.Continue_,
 		SkipFile:       s.SkipFile,

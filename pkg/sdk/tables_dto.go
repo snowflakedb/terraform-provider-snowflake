@@ -4,8 +4,8 @@ import "time"
 
 //go:generate go run ./dto-builder-generator/main.go
 
-type LegacyCopyOptionsRequest struct {
-	OnError           *LegacyCopyOnErrorOptionsRequest
+type LegacyTableCopyOptionsRequest struct {
+	OnError           *LegacyTableCopyOnErrorOptionsRequest
 	SizeLimit         *int
 	Purge             *bool
 	ReturnFailedOnly  *bool
@@ -15,7 +15,7 @@ type LegacyCopyOptionsRequest struct {
 	Force             *bool
 }
 
-type LegacyCopyOnErrorOptionsRequest struct {
+type LegacyTableCopyOnErrorOptionsRequest struct {
 	Continue_      *bool
 	SkipFile       *string
 	AbortStatement *bool
@@ -82,7 +82,7 @@ type CreateTableRequest struct {
 	clusterBy                  []string
 	enableSchemaEvolution      *bool
 	stageFileFormat            *LegacyFileFormatRequest
-	stageCopyOptions           *LegacyCopyOptionsRequest
+	stageCopyOptions           *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
@@ -509,7 +509,7 @@ type TableSearchOptimizationActionRequest struct {
 type TableSetRequest struct {
 	EnableSchemaEvolution      *bool
 	StageFileFormat            *LegacyFileFormatRequest
-	StageCopyOptions           *LegacyCopyOptionsRequest
+	StageCopyOptions           *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
