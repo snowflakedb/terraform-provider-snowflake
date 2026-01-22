@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -305,7 +306,11 @@ func GetImportUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 
 func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
+		if _, ok := d.GetOk("default_workload_identity"); ok && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) {
+			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
+		}
 
 		opts := &sdk.CreateUserOptions{
 			ObjectProperties:  &sdk.UserObjectProperties{},
@@ -538,7 +543,9 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 						setFromStringPropertyIfNotEmpty(rd, "last_name", ud.LastName),
 					)
 				}
-				if userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService {
+				providerCtx := meta.(*provider.Context)
+				if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) &&
+					(userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService) {
 					wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
 					if err != nil {
 						return err
@@ -550,7 +557,8 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 					switch {
 					case errors.Is(err, collections.ErrObjectNotFound):
 						errs = errors.Join(errs, d.Set("default_workload_identity", nil))
-					case err == nil:
+					// TODO(SNOW-3003261): Handle AWS type externally
+					case err == nil && defaultWIF.Type != sdk.WIFTypeAWS:
 						errs = errors.Join(errs, d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)))
 					default:
 						errs = errors.Join(errs, err)
@@ -575,7 +583,11 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 
 func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
+		if ok := d.HasChange("default_workload_identity"); ok && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) {
+			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
+		}
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)

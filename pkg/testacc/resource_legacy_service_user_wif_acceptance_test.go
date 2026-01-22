@@ -638,6 +638,11 @@ func TestAcc_LegacyServiceUser_WIF_Validations(t *testing.T) {
 		WithDefaultWorkloadIdentityMultipleProviders()
 	userModelWithEmptyBlock := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityEmpty()
+	userModelWithoutEnabledFlag := model.LegacyServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityAzure(
+			testvars.MicrosoftIssuer,
+			"subject",
+		)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -674,6 +679,11 @@ func TestAcc_LegacyServiceUser_WIF_Validations(t *testing.T) {
 				Config:      config.FromModels(t, userModelWithEmptyBlock),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("one of\n`default_workload_identity.0.aws,default_workload_identity.0.azure,default_workload_identity.0.gcp,default_workload_identity.0.oidc`\nmust be specified"),
+			},
+			{
+				Config: config.FromModels(t, userModelWithoutEnabledFlag),
+				// PlanOnly is not set because the validation happens during resource operations.
+				ExpectError: regexp.MustCompile("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level"),
 			},
 		},
 	})

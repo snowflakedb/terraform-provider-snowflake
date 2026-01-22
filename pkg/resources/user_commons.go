@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -11,10 +12,14 @@ import (
 // which is applicable to service_user and legacy_service_user resources.
 var defaultWorkloadIdentitySchema = map[string]*schema.Schema{
 	"default_workload_identity": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		MaxItems:    1,
-		Description: "Configures the default workload identity for the user. This is used for workload identity federation to allow third-party services to authenticate as this user. Only applicable for service users and legacy service users.",
+		Type:     schema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Description: joinWithSpace(
+			"Configures the default workload identity for the user. This is used for workload identity federation to allow third-party services to authenticate as this user. Only applicable for service users and legacy service users.",
+			experimentalFeatureDescription(experimentalfeatures.UserEnableDefaultWorkloadIdentity),
+			"If this feature is not enabled, attempting to set this field will result in an error. The provider will not get WIF information from Snowflake.",
+		),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"aws": {

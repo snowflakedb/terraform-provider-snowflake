@@ -185,3 +185,18 @@ func attributeMappedValueUpdate[T, R any](d *schema.ResourceData, key string, se
 	}
 	return nil
 }
+
+func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, setField **R, unsetField **bool, mapper func(T) (R, error)) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			mappedValue, err := mapper(v.(T))
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(mappedValue)
+		} else {
+			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
