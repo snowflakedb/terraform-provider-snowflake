@@ -14,10 +14,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -684,6 +686,87 @@ func TestAcc_LegacyServiceUser_WIF_Validations(t *testing.T) {
 				Config: config.FromModels(t, userModelWithoutEnabledFlag),
 				// PlanOnly is not set because the validation happens during resource operations.
 				ExpectError: regexp.MustCompile("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level"),
+			},
+		},
+	})
+}
+
+func TestAcc_LegacyServiceUser_WIF_MigrateFrom_v2_12_0(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
+
+	userModelWithoutWIF := model.LegacyServiceUser("w", id.Name())
+	userModelWithOIDC := model.LegacyServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityOidc(
+			testvars.OidcIssuer,
+			subject,
+		)
+	providerModelWithWIF := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
+		Steps: []resource.TestStep{
+			// Create with v2.12.0 provider (WIF not supported in resource)
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
+				Config:            config.FromModels(t, userModelWithoutWIF),
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
+						HasNameString(id.Name()),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithoutWIF.ResourceReference()).
+						HasHasWorkloadIdentity(false),
+				),
+			},
+			// Externally add WIF, upgrade to current provider (without experimental flag) - expect empty plan
+			{
+				PreConfig: func() {
+					testClient().User.SetOidcWorkloadIdentity(t, id, testvars.OidcIssuer, subject)
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithoutWIF),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.LegacyServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
+						HasNameString(id.Name()),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithoutWIF.ResourceReference()).
+						HasHasWorkloadIdentity(true),
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeOIDC).
+						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+							Issuer:       testvars.OidcIssuer,
+							Subject:      subject,
+							AudienceList: []string{},
+						}),
+				),
+			},
+			// Current provider WITH experimental flag AND config with WIF - expect empty plan
+			{
+				ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_LegacyServiceUser_WIF_MigrateFrom_v2_12_0"),
+				Config:                   config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+			// Current provider WITH experimental flag, plan only - expect non-empty plan
+			{
+				ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_LegacyServiceUser_WIF_MigrateFrom_v2_12_0"),
+				Config:                   config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+					},
+				},
 			},
 		},
 	})

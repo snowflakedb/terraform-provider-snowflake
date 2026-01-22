@@ -48,7 +48,13 @@ resource "snowflake_service_user" "example" {
 
 See the [service_user](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [legacy_service_user](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) documentation for all provider types (AWS, Azure, GCP, OIDC) and configuration details.
 
-No changes in configuration are required for existing service users. You can optionally add the `default_workload_identity` block to enable workload identity federation.
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.12.0/docs#experimental_features_enabled-1) provider field.
+It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.12.2.12.00/docs#preview_features_enabled-1),
+but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
+
+If you don't use WIF for your users, no changes in configuration are required for existing service users. If you had WIF set up externally, please enable the new feature and add the `default_workload_identity` block to manage WIFs with Terraform. If the feature is enabled, and the configuration is not adjusted, the provider will unset the WIF on a given user.
+
 References: [#3942](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3942).
 
 ### Handling deprecated `mfa_authentication_methods` field in authentication policies
