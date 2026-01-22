@@ -173,15 +173,18 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 			}
 			m["window_function"] = tfconfig.ListVariable(tfconfig.ObjectVariable(windFuncVar))
 		}
+		m["is_private"] = tfconfig.BoolVariable(*v.GetIsPrivate())
+
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
 	s.Metrics = tfconfig.ListVariable(maps...)
 	return s
 }
 
-func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticViewModel {
+func (s *SemanticViewModel) WithFacts(facts []sdk.FactDefinition) *SemanticViewModel {
 	maps := make([]tfconfig.Variable, len(facts))
-	for i, semExp := range facts {
+	for i, v := range facts {
+		semExp := v.GetSemanticExpression()
 		m := map[string]tfconfig.Variable{}
 		if semExp.Comment != nil {
 			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
@@ -202,15 +205,18 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticV
 			}
 			m["synonym"] = tfconfig.SetVariable(syns...)
 		}
+		m["is_private"] = tfconfig.BoolVariable(*v.GetIsPrivate())
+
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
 	s.Facts = tfconfig.ListVariable(maps...)
 	return s
 }
 
-func (s *SemanticViewModel) WithDimensions(dimensions []sdk.SemanticExpression) *SemanticViewModel {
+func (s *SemanticViewModel) WithDimensions(dimensions []sdk.DimensionDefinition) *SemanticViewModel {
 	maps := make([]tfconfig.Variable, len(dimensions))
-	for i, semExp := range dimensions {
+	for i, v := range dimensions {
+		semExp := v.GetSemanticExpression()
 		m := map[string]tfconfig.Variable{}
 		if semExp.Comment != nil {
 			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
@@ -303,15 +309,35 @@ func WindowFunctionMetricDefinitionWithProps(
 	return windowFunctionMetricDefinition
 }
 
-func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition) *sdk.MetricDefinition {
+func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition, isPrivate bool) *sdk.MetricDefinition {
 	metric := &sdk.MetricDefinition{}
 	if semExp != nil {
 		metric.SetSemanticExpression(semExp)
 	} else if windowFunc != nil {
 		metric.SetWindowFunctionMetricDefinition(windowFunc)
 	}
+	metric.SetIsPrivate(&isPrivate)
 
 	return metric
+}
+
+func FactDefinitionWithProps(semExp *sdk.SemanticExpression, isPrivate bool) *sdk.FactDefinition {
+	fact := &sdk.FactDefinition{}
+	if semExp != nil {
+		fact.SetSemanticExpression(semExp)
+	}
+	fact.SetIsPrivate(&isPrivate)
+
+	return fact
+}
+
+func DimensionDefinitionWithProps(semExp *sdk.SemanticExpression) *sdk.DimensionDefinition {
+	dimension := &sdk.DimensionDefinition{}
+	if semExp != nil {
+		dimension.SetSemanticExpression(semExp)
+	}
+
+	return dimension
 }
 
 func RelationshipTableAliasWithProps(
