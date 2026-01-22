@@ -147,6 +147,61 @@ func TestInt_SemanticView(t *testing.T) {
 		)
 	})
 
+	t.Run("create: with private facts and metrics", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		// create a private metric
+		privateMetric := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*metricSemanticExpression).WithIsPrivate(true)
+
+		// create a private fact
+		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."fact1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"first_c"`})
+		fact := sdk.NewFactDefinitionRequest().WithSemanticExpression(*factSemanticExpression).WithIsPrivate(true)
+
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*privateMetric}).
+			WithSemanticViewFacts([]sdk.FactDefinitionRequest{*fact})
+
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		// check that the semantic view was created
+		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// check that the semantic view's properties match our settings
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasName(id.Name()).
+			HasCreatedOnNotEmpty().
+			HasOwner("ACCOUNTADMIN").
+			HasOwnerRoleType("ROLE"),
+		)
+
+		t1Alias, factName, metricName := "table1", "fact1", "metric1"
+		// fact related details
+		factTable := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "TABLE", t1Alias)
+		factExpression := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "EXPRESSION", `"first_c"`)
+		factDataType := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
+		factAccessModifier := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "ACCESS_MODIFIER", "PRIVATE")
+
+		// metric related details
+		metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", t1Alias)
+		metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("table1"."first_a")`)
+		metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
+		metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PRIVATE")
+
+		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
+			ContainsDetail(factTable).
+			ContainsDetail(factExpression).
+			ContainsDetail(factDataType).
+			ContainsDetail(factAccessModifier).
+			ContainsDetail(metricTable).
+			ContainsDetail(metricExpression).
+			ContainsDetail(metricDataType).
+			ContainsDetail(metricAccessModifier),
+		)
+	})
+
 	t.Run("create: all fields", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
@@ -171,6 +226,7 @@ func TestInt_SemanticView(t *testing.T) {
 		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."fact1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"first_c"`}).
 			WithSynonyms(*factSynonymRequest).
 			WithComment("fact comment")
+		fact := sdk.NewFactDefinitionRequest().WithSemanticExpression(*factSemanticExpression)
 
 		// dimensions
 		dimensionExpressionNameRaw := `"table1"."d1"`
@@ -179,6 +235,7 @@ func TestInt_SemanticView(t *testing.T) {
 		dimensionSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: dimensionExpressionNameRaw}, &sdk.SemanticSqlExpressionRequest{SqlExpression: dimensionExpressionRaw}).
 			WithSynonyms(*dimensionSynonymRequest).
 			WithComment("dimension comment")
+		dimension := sdk.NewDimensionDefinitionRequest().WithSemanticExpression(*dimensionSemanticExpression)
 
 		windowFunctionExpression := sdk.NewWindowFunctionMetricDefinitionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."metric2"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("table1"."metric1")`}).WithOverClause(*sdk.NewWindowFunctionOverClauseRequest().WithPartitionBy(`"table1"."d1"`))
 		windowFunctionMetric := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*windowFunctionExpression)
@@ -187,8 +244,8 @@ func TestInt_SemanticView(t *testing.T) {
 			WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*metric, *windowFunctionMetric}).
 			WithComment("comment").
 			WithSemanticViewRelationships([]sdk.SemanticViewRelationshipRequest{*relationships}).
-			WithSemanticViewFacts([]sdk.SemanticExpressionRequest{*factSemanticExpression}).
-			WithSemanticViewDimensions([]sdk.SemanticExpressionRequest{*dimensionSemanticExpression})
+			WithSemanticViewFacts([]sdk.FactDefinitionRequest{*fact}).
+			WithSemanticViewDimensions([]sdk.DimensionDefinitionRequest{*dimension})
 
 		// create the semantic view with logical tables and a metric
 		err := client.SemanticViews.Create(ctx, request)

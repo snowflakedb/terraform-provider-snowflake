@@ -42,6 +42,14 @@ func (l *LogicalTable) SetSynonyms(synonyms []Synonym) {
 	}
 }
 
+func (m *MetricDefinition) GetIsPrivate() *bool {
+	return m.isPrivate
+}
+
+func (m *MetricDefinition) SetIsPrivate(isPrivate *bool) {
+	m.isPrivate = isPrivate
+}
+
 func (m *MetricDefinition) GetSemanticExpression() *SemanticExpression {
 	return m.semanticExpression
 }
@@ -56,6 +64,30 @@ func (m *MetricDefinition) GetWindowFunctionMetricDefinition() *WindowFunctionMe
 
 func (m *MetricDefinition) SetWindowFunctionMetricDefinition(windowFunc *WindowFunctionMetricDefinition) {
 	m.windowFunctionMetricDefinition = windowFunc
+}
+
+func (f *FactDefinition) GetIsPrivate() *bool {
+	return f.isPrivate
+}
+
+func (f *FactDefinition) SetIsPrivate(isPrivate *bool) {
+	f.isPrivate = isPrivate
+}
+
+func (f *FactDefinition) GetSemanticExpression() *SemanticExpression {
+	return f.semanticExpression
+}
+
+func (f *FactDefinition) SetSemanticExpression(semExp *SemanticExpression) {
+	f.semanticExpression = semExp
+}
+
+func (d *DimensionDefinition) GetSemanticExpression() *SemanticExpression {
+	return d.semanticExpression
+}
+
+func (d *DimensionDefinition) SetSemanticExpression(semExp *SemanticExpression) {
+	d.semanticExpression = semExp
 }
 
 func (s *SemanticExpression) GetQualifiedExpressionName() *QualifiedExpressionName {
