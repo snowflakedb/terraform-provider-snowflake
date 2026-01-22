@@ -32,6 +32,9 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
 
+	providerModelWithWIF := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
+
 	userModelWithOIDC := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
 			testvars.OidcIssuer,
@@ -54,7 +57,7 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 	userModelWithoutWIF := model.LegacyServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -62,7 +65,7 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create optional
 			{
-				Config: config.FromModels(t, userModelWithOIDC),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithOIDC.ResourceReference()).
 						HasNameString(id.Name()).
@@ -84,7 +87,7 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 			},
 			// UPDATE - REMOVE WIF
 			{
-				Config: config.FromModels(t, userModelWithoutWIF),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()).
@@ -103,7 +106,7 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 			},
 			// UPDATE - ADD WIF BACK
 			{
-				Config: config.FromModels(t, userModelWithOIDCAndAudienceList),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceList),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithOIDCAndAudienceList.ResourceReference()).
 						HasNameString(id.Name()).
@@ -126,7 +129,7 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.SetOidcWorkloadIdentity(t, id, testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/changed")
 				},
-				Config: config.FromModels(t, userModelWithOIDCAndAudienceList),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceList),
 				Check: assertThat(t,
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
@@ -138,7 +141,7 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 			},
 			// ALTER - CHANGE AUDIENCE LIST
 			{
-				Config: config.FromModels(t, userModelWithOIDCAndAudienceListTwoItems),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceListTwoItems),
 				Check: assertThat(t,
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
@@ -162,13 +165,17 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 func TestAcc_LegacyServiceUser_WIF_AWS(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", random.NumericN(12))
+
+	providerModelWithWIF := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
+
 	userModelWithAWS := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityAws(arn)
 
 	userModelWithoutWIF := model.LegacyServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -176,7 +183,7 @@ func TestAcc_LegacyServiceUser_WIF_AWS(t *testing.T) {
 		Steps: []resource.TestStep{
 			// CREATE WITH AWS WIF
 			{
-				Config: config.FromModels(t, userModelWithAWS),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithAWS),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithAWS.ResourceReference()).
 						HasNameString(id.Name()).
@@ -200,7 +207,7 @@ func TestAcc_LegacyServiceUser_WIF_AWS(t *testing.T) {
 			},
 			// UPDATE - REMOVE WIF
 			{
-				Config: config.FromModels(t, userModelWithoutWIF),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()).
@@ -218,13 +225,16 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 	subject := random.NumericN(10)
 	changedSubject := random.NumericN(10)
 
+	providerModelWithWIF := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
+
 	userModelWithGCP := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityGcp(subject)
 
 	userModelWithoutWIF := model.LegacyServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -232,7 +242,7 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 		Steps: []resource.TestStep{
 			// CREATE WITH GCP WIF
 			{
-				Config: config.FromModels(t, userModelWithGCP),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithGCP),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithGCP.ResourceReference()).
 						HasNameString(id.Name()).
@@ -252,7 +262,7 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 			},
 			// UPDATE - REMOVE WIF
 			{
-				Config: config.FromModels(t, userModelWithoutWIF),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()).
@@ -271,7 +281,7 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 			},
 			// UPDATE - ADD WIF BACK
 			{
-				Config: config.FromModels(t, userModelWithGCP),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithGCP),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithGCP.ResourceReference()).
 						HasNameString(id.Name()).
@@ -294,7 +304,7 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.SetGcpWorkloadIdentity(t, id, changedSubject)
 				},
-				Config: config.FromModels(t, userModelWithGCP),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithGCP),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -333,6 +343,9 @@ func TestAcc_LegacyServiceUser_WIF_Azure(t *testing.T) {
 	subject := random.AlphaN(10)
 	changedSubject := random.AlphaN(10)
 
+	providerModelWithWIF := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
+
 	userModelWithAzure := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityAzure(
 			testvars.MicrosoftIssuer,
@@ -342,7 +355,7 @@ func TestAcc_LegacyServiceUser_WIF_Azure(t *testing.T) {
 	userModelWithoutWIF := model.LegacyServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -350,7 +363,7 @@ func TestAcc_LegacyServiceUser_WIF_Azure(t *testing.T) {
 		Steps: []resource.TestStep{
 			// CREATE WITH Azure WIF
 			{
-				Config: config.FromModels(t, userModelWithAzure),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithAzure),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithAzure.ResourceReference()).
 						HasNameString(id.Name()).
@@ -371,7 +384,7 @@ func TestAcc_LegacyServiceUser_WIF_Azure(t *testing.T) {
 			},
 			// UPDATE - REMOVE WIF
 			{
-				Config: config.FromModels(t, userModelWithoutWIF),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
 						HasNameString(id.Name()).
@@ -390,7 +403,7 @@ func TestAcc_LegacyServiceUser_WIF_Azure(t *testing.T) {
 			},
 			// UPDATE - ADD WIF BACK
 			{
-				Config: config.FromModels(t, userModelWithAzure),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithAzure),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithAzure.ResourceReference()).
 						HasNameString(id.Name()).
@@ -414,7 +427,7 @@ func TestAcc_LegacyServiceUser_WIF_Azure(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.SetAzureWorkloadIdentity(t, id, testvars.MicrosoftIssuer, changedSubject)
 				},
-				Config: config.FromModels(t, userModelWithAzure),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithAzure),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -453,6 +466,10 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
 	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", random.NumericN(12))
+
+	providerModelWithWIF := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
+
 	userModelWithOIDC := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
 			testvars.OidcIssuer,
@@ -464,7 +481,7 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 		WithDefaultWorkloadIdentityAws(arn)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -472,7 +489,7 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Start with OIDC
 			{
-				Config: config.FromModels(t, userModelWithOIDC),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithOIDC.ResourceReference()).
 						HasNameString(id.Name()).
@@ -494,7 +511,7 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 			},
 			// Switch to AWS
 			{
-				Config: config.FromModels(t, userModelWithAWS),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithAWS),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithAWS.ResourceReference()).
 						HasNameString(id.Name()).
@@ -518,6 +535,9 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
 	gcpSubject := random.NumericN(10)
 
+	providerModelWithWIF := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
+
 	userModelWithOIDC := model.LegacyServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
 			testvars.OidcIssuer,
@@ -526,14 +546,14 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 		)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.LegacyServiceUser),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, userModelWithOIDC),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
 				Check: assertThat(t,
 					resourceassert.LegacyServiceUserResource(t, userModelWithOIDC.ResourceReference()).
 						HasNameString(id.Name()).
@@ -564,7 +584,7 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 						},
 					})
 				},
-				Config: config.FromModels(t, userModelWithOIDC),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -595,7 +615,7 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.SetGcpWorkloadIdentity(t, id, gcpSubject)
 				},
-				Config: config.FromModels(t, userModelWithOIDC),
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
