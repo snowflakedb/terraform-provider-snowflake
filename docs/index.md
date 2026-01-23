@@ -917,4 +917,6 @@ Currently, not setting the parameter value on the object level can unnecessarily
 When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.
 
 #### USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY
-TODO
+The new `default_workload_identity_federation` field was added to the `snowflake_legacy_service_user` and `snowflake_service_user` resources. This field allows for managing WIFs. Due to feature complexity, it requires enabling this experiment.
+
+Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).
