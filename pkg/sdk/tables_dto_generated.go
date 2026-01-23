@@ -1531,8 +1531,8 @@ func (s *TableSetRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRe
 	return s
 }
 
-func (s *TableSetRequest) WithLegacyTableCopyOptions(LegacyTableCopyOptions LegacyTableCopyOptionsRequest) *TableSetRequest {
-	s.LegacyTableCopyOptions = &LegacyTableCopyOptions
+func (s *TableSetRequest) WithLegacyTableCopyOptions(legacyTableCopyOptions LegacyTableCopyOptionsRequest) *TableSetRequest {
+	s.LegacyTableCopyOptions = &legacyTableCopyOptions
 	return s
 }
 
