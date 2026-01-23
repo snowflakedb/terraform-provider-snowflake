@@ -915,3 +915,6 @@ Read more in our [strict privilege management](https://registry.terraform.io/pro
 Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).
 
 When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.
+
+#### USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY
+TODO
