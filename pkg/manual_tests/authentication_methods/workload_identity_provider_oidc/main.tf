@@ -16,8 +16,8 @@ resource "snowflake_service_user" "auth_test" {
   name = "AUTH_TEST"
   default_workload_identity {
     oidc {
-      issuer             = var.workload_identity_oidc.oidc_issuer_url
-      subject            = "system:serviceaccount:${var.workload_identity_oidc.namespace}:${var.workload_identity_oidc.service_account}"
+      issuer             = var.workload_identity_oidc.issuer
+      subject            = var.workload_identity_oidc.subject
       oidc_audience_list = [var.workload_identity_oidc.oidc_audience]
     }
   }

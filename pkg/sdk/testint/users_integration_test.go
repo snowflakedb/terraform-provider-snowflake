@@ -562,17 +562,17 @@ func TestInt_Users(t *testing.T) {
 		)
 	})
 
-	type awsWifDataCreate struct {
+	type awsWifData struct {
 		accountNumber string
 		arn           string
 	}
 
-	type azureWifDataCreate struct {
+	type azureWifData struct {
 		issuer  string
 		subject string
 	}
 
-	type gcpWifDataCreate struct {
+	type gcpWifData struct {
 		subject string
 	}
 
@@ -589,13 +589,13 @@ func TestInt_Users(t *testing.T) {
 			userType: sdk.UserTypeService,
 			setup: func() any {
 				accountNumber := random.NumericN(12)
-				return awsWifDataCreate{
+				return awsWifData{
 					accountNumber: accountNumber,
 					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(awsWifDataCreate)
+				d := data.(awsWifData)
 				return &sdk.UserObjectWorkloadIdentityProperties{
 					AwsType: &sdk.UserObjectWorkloadIdentityAws{
 						Arn: sdk.String(d.arn),
@@ -604,7 +604,7 @@ func TestInt_Users(t *testing.T) {
 			},
 			expectedWifType: sdk.WIFTypeAWS,
 			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(awsWifDataCreate)
+				d := data.(awsWifData)
 				assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
 					IamRole:      "test-role",
 					Type:         "IAM_ROLE",
@@ -617,13 +617,13 @@ func TestInt_Users(t *testing.T) {
 			provider: "Azure",
 			userType: sdk.UserTypeService,
 			setup: func() any {
-				return azureWifDataCreate{
+				return azureWifData{
 					issuer:  testvars.MicrosoftIssuer,
 					subject: random.AlphaN(10),
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(azureWifDataCreate)
+				d := data.(azureWifData)
 				return &sdk.UserObjectWorkloadIdentityProperties{
 					AzureType: &sdk.UserObjectWorkloadIdentityAzure{
 						Issuer:  sdk.String(d.issuer),
@@ -633,7 +633,7 @@ func TestInt_Users(t *testing.T) {
 			},
 			expectedWifType: sdk.WIFTypeAzure,
 			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(azureWifDataCreate)
+				d := data.(azureWifData)
 				assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
 					Issuer:  d.issuer,
 					Subject: d.subject,
@@ -644,12 +644,12 @@ func TestInt_Users(t *testing.T) {
 			provider: "GCP",
 			userType: sdk.UserTypeService,
 			setup: func() any {
-				return gcpWifDataCreate{
+				return gcpWifData{
 					subject: random.NumericN(10),
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(gcpWifDataCreate)
+				d := data.(gcpWifData)
 				return &sdk.UserObjectWorkloadIdentityProperties{
 					GcpType: &sdk.UserObjectWorkloadIdentityGcp{
 						Subject: sdk.String(d.subject),
@@ -658,7 +658,7 @@ func TestInt_Users(t *testing.T) {
 			},
 			expectedWifType: sdk.WIFTypeGCP,
 			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(gcpWifDataCreate)
+				d := data.(gcpWifData)
 				assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
 					Subject: d.subject,
 				})
@@ -669,13 +669,13 @@ func TestInt_Users(t *testing.T) {
 			userType: sdk.UserTypeLegacyService,
 			setup: func() any {
 				accountNumber := random.NumericN(12)
-				return awsWifDataCreate{
+				return awsWifData{
 					accountNumber: accountNumber,
 					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(awsWifDataCreate)
+				d := data.(awsWifData)
 				return &sdk.UserObjectWorkloadIdentityProperties{
 					AwsType: &sdk.UserObjectWorkloadIdentityAws{
 						Arn: sdk.String(d.arn),
@@ -684,7 +684,7 @@ func TestInt_Users(t *testing.T) {
 			},
 			expectedWifType: sdk.WIFTypeAWS,
 			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(awsWifDataCreate)
+				d := data.(awsWifData)
 				assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
 					IamRole:      "test-role",
 					Type:         "IAM_ROLE",
@@ -697,13 +697,13 @@ func TestInt_Users(t *testing.T) {
 			provider: "Azure",
 			userType: sdk.UserTypeLegacyService,
 			setup: func() any {
-				return azureWifDataCreate{
+				return azureWifData{
 					issuer:  testvars.MicrosoftIssuer,
 					subject: random.AlphaN(10),
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(azureWifDataCreate)
+				d := data.(azureWifData)
 				return &sdk.UserObjectWorkloadIdentityProperties{
 					AzureType: &sdk.UserObjectWorkloadIdentityAzure{
 						Issuer:  sdk.String(d.issuer),
@@ -713,7 +713,7 @@ func TestInt_Users(t *testing.T) {
 			},
 			expectedWifType: sdk.WIFTypeAzure,
 			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(azureWifDataCreate)
+				d := data.(azureWifData)
 				assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
 					Issuer:  d.issuer,
 					Subject: d.subject,
@@ -724,12 +724,12 @@ func TestInt_Users(t *testing.T) {
 			provider: "GCP",
 			userType: sdk.UserTypeLegacyService,
 			setup: func() any {
-				return gcpWifDataCreate{
+				return gcpWifData{
 					subject: random.NumericN(10),
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(gcpWifDataCreate)
+				d := data.(gcpWifData)
 				return &sdk.UserObjectWorkloadIdentityProperties{
 					GcpType: &sdk.UserObjectWorkloadIdentityGcp{
 						Subject: sdk.String(d.subject),
@@ -738,7 +738,7 @@ func TestInt_Users(t *testing.T) {
 			},
 			expectedWifType: sdk.WIFTypeGCP,
 			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(gcpWifDataCreate)
+				d := data.(gcpWifData)
 				assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
 					Subject: d.subject,
 				})
@@ -1523,20 +1523,6 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 0, len(methods))
 	})
-
-	type awsWifData struct {
-		accountNumber string
-		arn           string
-	}
-
-	type azureWifData struct {
-		issuer  string
-		subject string
-	}
-
-	type gcpWifData struct {
-		subject string
-	}
 
 	wifAlterTestCases := []struct {
 		provider           string
