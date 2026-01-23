@@ -338,6 +338,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create: all object properties - type service", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		currentRole := testClientHelper().Context.CurrentRole(t)
+		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 
 		// omitting FirstName, MiddleName, LastName, Password, MustChangePassword, and MinsToBypassMFA
 		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
@@ -356,7 +357,7 @@ func TestInt_Users(t *testing.T) {
 			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
 					Issuer:  sdk.String("https://accounts.google.com"),
-					Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+					Subject: sdk.String(subject),
 					OidcAudienceList: []sdk.StringListItemWrapper{
 						{
 							Value: "https://accounts.google.com/o/oauth2/auth",
@@ -441,7 +442,7 @@ func TestInt_Users(t *testing.T) {
 			HasCreatedOnNotEmpty().
 			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
-				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				Subject:      subject,
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
 			}),
 		)
@@ -450,7 +451,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create: all object properties - type legacy service", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		currentRole := testClientHelper().Context.CurrentRole(t)
-
+		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, and MinsToBypassMFA
 		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
 			Password:              sdk.String(password),
@@ -470,7 +471,7 @@ func TestInt_Users(t *testing.T) {
 			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
 					Issuer:  sdk.String("https://accounts.google.com"),
-					Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+					Subject: sdk.String(subject),
 					OidcAudienceList: []sdk.StringListItemWrapper{
 						{
 							Value: "https://accounts.google.com/o/oauth2/auth",
@@ -555,7 +556,7 @@ func TestInt_Users(t *testing.T) {
 			HasCreatedOnNotEmpty().
 			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
-				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				Subject:      subject,
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
 			}),
 		)
@@ -1050,6 +1051,7 @@ func TestInt_Users(t *testing.T) {
 			HasOwner(currentRole.Name()),
 		)
 
+		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, Password, MustChangePassword, MinsToBypassMFA, and DisableMfa
 		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
 			ObjectProperties: &sdk.UserAlterObjectProperties{
@@ -1069,7 +1071,7 @@ func TestInt_Users(t *testing.T) {
 					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
 							Issuer:  sdk.String("https://accounts.google.com"),
-							Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+							Subject: sdk.String(subject),
 							OidcAudienceList: []sdk.StringListItemWrapper{
 								{
 									Value: "https://accounts.google.com/o/oauth2/auth",
@@ -1127,7 +1129,7 @@ func TestInt_Users(t *testing.T) {
 			HasCreatedOnNotEmpty().
 			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
-				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				Subject:      subject,
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
 			}),
 		)
@@ -1177,6 +1179,7 @@ func TestInt_Users(t *testing.T) {
 			HasOwner(currentRole.Name()),
 		)
 
+		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, MinsToBypassMFA, and DisableMfa
 		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
 			ObjectProperties: &sdk.UserAlterObjectProperties{
@@ -1198,7 +1201,7 @@ func TestInt_Users(t *testing.T) {
 					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
 						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
 							Issuer:  sdk.String("https://accounts.google.com"),
-							Subject: sdk.String("system:serviceaccount:service_account_namespace:service_account_name"),
+							Subject: sdk.String(subject),
 							OidcAudienceList: []sdk.StringListItemWrapper{
 								{
 									Value: "https://accounts.google.com/o/oauth2/auth",
@@ -1256,7 +1259,7 @@ func TestInt_Users(t *testing.T) {
 			HasCreatedOnNotEmpty().
 			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 				Issuer:       "https://accounts.google.com",
-				Subject:      "system:serviceaccount:service_account_namespace:service_account_name",
+				Subject:      subject,
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
 			}),
 		)

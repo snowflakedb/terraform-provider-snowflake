@@ -137,6 +137,11 @@ func (s *ServiceUserResourceAssert) HasDefaultWarehouseString(expected string) *
 	return s
 }
 
+func (s *ServiceUserResourceAssert) HasDefaultWorkloadIdentityString(expected string) *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("default_workload_identity", expected))
+	return s
+}
+
 func (s *ServiceUserResourceAssert) HasDisabledString(expected string) *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueSet("disabled", expected))
 	return s
@@ -877,6 +882,11 @@ func (s *ServiceUserResourceAssert) HasDefaultSecondaryRolesOptionEmpty() *Servi
 
 func (s *ServiceUserResourceAssert) HasDefaultWarehouseEmpty() *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueSet("default_warehouse", ""))
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultWorkloadIdentityEmpty() *ServiceUserResourceAssert {
+	s.AddAssertion(assert.ValueSet("default_workload_identity.#", "0"))
 	return s
 }
 

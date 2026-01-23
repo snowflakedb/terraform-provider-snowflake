@@ -79,14 +79,13 @@ func (v *authenticationPolicies) Describe(ctx context.Context, id SchemaObjectId
 
 func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicyOptions {
 	opts := &CreateAuthenticationPolicyOptions{
-		OrReplace:                r.OrReplace,
-		IfNotExists:              r.IfNotExists,
-		name:                     r.name,
-		AuthenticationMethods:    r.AuthenticationMethods,
-		MfaAuthenticationMethods: r.MfaAuthenticationMethods,
-		MfaEnrollment:            r.MfaEnrollment,
-		ClientTypes:              r.ClientTypes,
-		Comment:                  r.Comment,
+		OrReplace:             r.OrReplace,
+		IfNotExists:           r.IfNotExists,
+		name:                  r.name,
+		AuthenticationMethods: r.AuthenticationMethods,
+		MfaEnrollment:         r.MfaEnrollment,
+		ClientTypes:           r.ClientTypes,
+		Comment:               r.Comment,
 	}
 	if r.MfaPolicy != nil {
 		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
@@ -126,11 +125,10 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 	}
 	if r.Set != nil {
 		opts.Set = &AuthenticationPolicySet{
-			AuthenticationMethods:    r.Set.AuthenticationMethods,
-			MfaAuthenticationMethods: r.Set.MfaAuthenticationMethods,
-			MfaEnrollment:            r.Set.MfaEnrollment,
-			ClientTypes:              r.Set.ClientTypes,
-			Comment:                  r.Set.Comment,
+			AuthenticationMethods: r.Set.AuthenticationMethods,
+			MfaEnrollment:         r.Set.MfaEnrollment,
+			ClientTypes:           r.Set.ClientTypes,
+			Comment:               r.Set.Comment,
 		}
 		if r.Set.MfaPolicy != nil {
 			opts.Set.MfaPolicy = &AuthenticationPolicyMfaPolicy{
@@ -162,15 +160,14 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 	}
 	if r.Unset != nil {
 		opts.Unset = &AuthenticationPolicyUnset{
-			ClientTypes:              r.Unset.ClientTypes,
-			AuthenticationMethods:    r.Unset.AuthenticationMethods,
-			SecurityIntegrations:     r.Unset.SecurityIntegrations,
-			MfaAuthenticationMethods: r.Unset.MfaAuthenticationMethods,
-			MfaEnrollment:            r.Unset.MfaEnrollment,
-			MfaPolicy:                r.Unset.MfaPolicy,
-			PatPolicy:                r.Unset.PatPolicy,
-			WorkloadIdentityPolicy:   r.Unset.WorkloadIdentityPolicy,
-			Comment:                  r.Unset.Comment,
+			ClientTypes:            r.Unset.ClientTypes,
+			AuthenticationMethods:  r.Unset.AuthenticationMethods,
+			SecurityIntegrations:   r.Unset.SecurityIntegrations,
+			MfaEnrollment:          r.Unset.MfaEnrollment,
+			MfaPolicy:              r.Unset.MfaPolicy,
+			PatPolicy:              r.Unset.PatPolicy,
+			WorkloadIdentityPolicy: r.Unset.WorkloadIdentityPolicy,
+			Comment:                r.Unset.Comment,
 		}
 	}
 	return opts

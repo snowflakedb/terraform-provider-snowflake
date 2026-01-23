@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -241,4 +242,128 @@ func (c *UserClient) ShowProgrammaticAccessToken(t *testing.T, userId sdk.Accoun
 	require.NoError(t, err)
 	require.NotNil(t, token)
 	return token
+}
+
+func (c *UserClient) ShowUserWorkloadIdentityAuthenticationMethodOptions(t *testing.T, id UserWorkloadIdentityAuthenticationMethodsObjectIdentifier) (*sdk.UserWorkloadIdentityAuthenticationMethod, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	methods, err := c.context.client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id.userId)
+	if err != nil {
+		return nil, err
+	}
+	wif, err := collections.FindFirst(methods, func(method sdk.UserWorkloadIdentityAuthenticationMethod) bool {
+		return method.Name == id.name
+	})
+	if err != nil {
+		return nil, err
+	}
+	return wif, nil
+}
+
+// SetOidcWorkloadIdentity sets the OIDC workload identity configuration for a user.
+func (c *UserClient) SetOidcWorkloadIdentity(t *testing.T, userId sdk.AccountObjectIdentifier, issuer, subject string, audienceList ...string) {
+	t.Helper()
+	ctx := context.Background()
+
+	audiences := make([]sdk.StringListItemWrapper, len(audienceList))
+	for i, v := range audienceList {
+		audiences[i] = sdk.StringListItemWrapper{Value: v}
+	}
+
+	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
+		Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+							Issuer:           sdk.String(issuer),
+							Subject:          sdk.String(subject),
+							OidcAudienceList: audiences,
+						},
+					},
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+}
+
+// SetGcpWorkloadIdentity sets the GCP workload identity configuration for a user.
+func (c *UserClient) SetGcpWorkloadIdentity(t *testing.T, userId sdk.AccountObjectIdentifier, subject string) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
+		Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+							Subject: sdk.String(subject),
+						},
+					},
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+}
+
+// SetAzureWorkloadIdentity sets the Azure workload identity configuration for a user.
+func (c *UserClient) SetAzureWorkloadIdentity(t *testing.T, userId sdk.AccountObjectIdentifier, issuer, subject string) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
+		Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						AzureType: &sdk.UserObjectWorkloadIdentityAzure{
+							Issuer:  sdk.String(issuer),
+							Subject: sdk.String(subject),
+						},
+					},
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+}
+
+// SetAwsWorkloadIdentity sets the AWS workload identity configuration for a user.
+func (c *UserClient) SetAwsWorkloadIdentity(t *testing.T, userId sdk.AccountObjectIdentifier, arn string) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
+		Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						AwsType: &sdk.UserObjectWorkloadIdentityAws{
+							Arn: sdk.String(arn),
+						},
+					},
+				},
+			},
+		},
+	})
+	require.NoError(t, err)
+}
+
+// UnsetWorkloadIdentity removes the workload identity configuration for a user.
+func (c *UserClient) UnsetWorkloadIdentity(t *testing.T, userId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
+		Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				WorkloadIdentity: sdk.Bool(true),
+			},
+		},
+	})
+	require.NoError(t, err)
 }

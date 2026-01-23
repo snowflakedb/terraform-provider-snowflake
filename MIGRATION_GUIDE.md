@@ -24,7 +24,45 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.12.0 ➞ v2.12.1
+## v2.12.x ➞ v2.13.0
+
+### *(new feature)* Workload Identity Federation support for service users
+
+Added `default_workload_identity` configuration block to `snowflake_service_user` and `snowflake_legacy_service_user` resources. This enables passwordless authentication using cloud provider workload identities (AWS, Azure, GCP, or generic OIDC).
+
+Example configuration using OIDC:
+
+```hcl
+resource "snowflake_service_user" "example" {
+  name = "SERVICE_USER"
+
+  default_workload_identity {
+    oidc {
+      issuer             = "https://accounts.google.com"
+      subject            = "system:serviceaccount:namespace:sa-name"
+      oidc_audience_list = ["https://accounts.google.com/o/oauth2/auth"]
+    }
+  }
+}
+```
+
+See the [service_user](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [legacy_service_user](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) documentation for all provider types (AWS, Azure, GCP, OIDC) and configuration details.
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.12.0/docs#experimental_features_enabled-1) provider field.
+It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.12.0/docs#preview_features_enabled-1),
+but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
+
+If you don't use WIF for your users, no changes in configuration are required for existing service users. If you had WIF set up externally, please enable the new feature and add the `default_workload_identity` block to manage WIFs with Terraform. If the feature is enabled, and the configuration is not adjusted, the provider will unset the WIF on a given user.
+
+References: [#3942](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3942).
+
+### Handling deprecated `mfa_authentication_methods` field in authentication policies
+The 2025_06 bundle is now generally enabled. As we previously explained in the [BCR Migration Guide](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies), the MFA authentication methods have been deprecated in that bundle.
+
+Now, the `mfa_authentication_methods` field in the authentication_policy resource has no effect, and the plan on this field will always be empty. It will be removed in v3. Please use `mfa_policy.enforce_mfa_on_external_authentication` instead.
+
+You may remove the `mfa_authentication_methods` field from the authentication_policy resource.
 
 ### *(improvement)* Using UNSET for certain fields in warehouses
 Previously, Snowflake didn't support `UNSET` for `scaling_policy`, `auto_resume`, and `warehouse_type` in warehouses. As a workaround, the provider used `SET` with default values.
