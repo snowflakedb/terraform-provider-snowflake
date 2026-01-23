@@ -11,18 +11,17 @@ var (
 )
 
 type CreateAuthenticationPolicyRequest struct {
-	OrReplace                *bool
-	IfNotExists              *bool
-	name                     SchemaObjectIdentifier // required
-	AuthenticationMethods    []AuthenticationMethods
-	MfaAuthenticationMethods []MfaAuthenticationMethods
-	MfaEnrollment            *MfaEnrollmentOption
-	MfaPolicy                *AuthenticationPolicyMfaPolicyRequest
-	ClientTypes              []ClientTypes
-	SecurityIntegrations     *SecurityIntegrationsOptionRequest
-	PatPolicy                *AuthenticationPolicyPatPolicyRequest
-	WorkloadIdentityPolicy   *AuthenticationPolicyWorkloadIdentityPolicyRequest
-	Comment                  *string
+	OrReplace              *bool
+	IfNotExists            *bool
+	name                   SchemaObjectIdentifier // required
+	AuthenticationMethods  []AuthenticationMethods
+	MfaEnrollment          *MfaEnrollmentOption
+	MfaPolicy              *AuthenticationPolicyMfaPolicyRequest
+	ClientTypes            []ClientTypes
+	SecurityIntegrations   *SecurityIntegrationsOptionRequest
+	PatPolicy              *AuthenticationPolicyPatPolicyRequest
+	WorkloadIdentityPolicy *AuthenticationPolicyWorkloadIdentityPolicyRequest
+	Comment                *string
 }
 
 type AuthenticationPolicyMfaPolicyRequest struct {
@@ -57,27 +56,25 @@ type AlterAuthenticationPolicyRequest struct {
 }
 
 type AuthenticationPolicySetRequest struct {
-	AuthenticationMethods    []AuthenticationMethods
-	MfaAuthenticationMethods []MfaAuthenticationMethods
-	MfaEnrollment            *MfaEnrollmentOption
-	MfaPolicy                *AuthenticationPolicyMfaPolicyRequest
-	ClientTypes              []ClientTypes
-	SecurityIntegrations     *SecurityIntegrationsOptionRequest
-	PatPolicy                *AuthenticationPolicyPatPolicyRequest
-	WorkloadIdentityPolicy   *AuthenticationPolicyWorkloadIdentityPolicyRequest
-	Comment                  *string
+	AuthenticationMethods  []AuthenticationMethods
+	MfaEnrollment          *MfaEnrollmentOption
+	MfaPolicy              *AuthenticationPolicyMfaPolicyRequest
+	ClientTypes            []ClientTypes
+	SecurityIntegrations   *SecurityIntegrationsOptionRequest
+	PatPolicy              *AuthenticationPolicyPatPolicyRequest
+	WorkloadIdentityPolicy *AuthenticationPolicyWorkloadIdentityPolicyRequest
+	Comment                *string
 }
 
 type AuthenticationPolicyUnsetRequest struct {
-	ClientTypes              *bool
-	AuthenticationMethods    *bool
-	SecurityIntegrations     *bool
-	MfaAuthenticationMethods *bool
-	MfaEnrollment            *bool
-	MfaPolicy                *bool
-	PatPolicy                *bool
-	WorkloadIdentityPolicy   *bool
-	Comment                  *bool
+	ClientTypes            *bool
+	AuthenticationMethods  *bool
+	SecurityIntegrations   *bool
+	MfaEnrollment          *bool
+	MfaPolicy              *bool
+	PatPolicy              *bool
+	WorkloadIdentityPolicy *bool
+	Comment                *bool
 }
 
 type DropAuthenticationPolicyRequest struct {

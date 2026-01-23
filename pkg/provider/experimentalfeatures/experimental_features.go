@@ -14,6 +14,7 @@ const (
 	ParametersIgnoreValueChangesIfNotOnObjectLevel ExperimentalFeature = "PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL"
 	WarehouseShowImprovedPerformance               ExperimentalFeature = "WAREHOUSE_SHOW_IMPROVED_PERFORMANCE"
 	GrantsStrictPrivilegeManagement                ExperimentalFeature = "GRANTS_STRICT_PRIVILEGE_MANAGEMENT"
+	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
 )
 
 type experimentalFeatureState string
@@ -62,6 +63,13 @@ var allExperiments = []Experiment{
 		joinWithDoubleNewline(
 			"Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).",
 			"When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.",
+		),
+	},
+	{
+		UserEnableDefaultWorkloadIdentity,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"TODO",
 		),
 	},
 }
