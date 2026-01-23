@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -557,6 +558,278 @@ func TestInt_Users(t *testing.T) {
 				Issuer:       "https://accounts.google.com",
 				Subject:      subject,
 				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
+		)
+	})
+
+	t.Run("create: type service with AWS workload identity", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		accountNumber := random.NumericN(12)
+		arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber)
+
+		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				AwsType: &sdk.UserObjectWorkloadIdentityAws{
+					Arn: sdk.String(arn),
+				},
+			},
+			Type: sdk.Pointer(sdk.UserTypeService),
+		}}
+
+		err := client.Users.Create(ctx, id, createOpts)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
+
+		user, err := client.Users.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasName(user.Name).
+			HasType(string(sdk.UserTypeService)).
+			HasHasWorkloadIdentity(true).
+			HasOwner(currentRole.Name()),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeAWS).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
+				IamRole:      "test-role",
+				Type:         "IAM_ROLE",
+				AwsAccount:   accountNumber,
+				AwsPartition: "aws",
+			}),
+		)
+	})
+
+	t.Run("create: type service with Azure workload identity", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		issuer := testvars.MicrosoftIssuer
+		subject := random.AlphaN(10)
+
+		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				AzureType: &sdk.UserObjectWorkloadIdentityAzure{
+					Issuer:  sdk.String(issuer),
+					Subject: sdk.String(subject),
+				},
+			},
+			Type: sdk.Pointer(sdk.UserTypeService),
+		}}
+
+		err := client.Users.Create(ctx, id, createOpts)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
+
+		user, err := client.Users.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasName(user.Name).
+			HasType(string(sdk.UserTypeService)).
+			HasHasWorkloadIdentity(true).
+			HasOwner(currentRole.Name()),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeAzure).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+				Issuer:  issuer,
+				Subject: subject,
+			}),
+		)
+	})
+
+	t.Run("create: type service with GCP workload identity", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		subject := random.NumericN(10)
+
+		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+					Subject: sdk.String(subject),
+				},
+			},
+			Type: sdk.Pointer(sdk.UserTypeService),
+		}}
+
+		err := client.Users.Create(ctx, id, createOpts)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
+
+		user, err := client.Users.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasName(user.Name).
+			HasType(string(sdk.UserTypeService)).
+			HasHasWorkloadIdentity(true).
+			HasOwner(currentRole.Name()),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeGCP).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+				Subject: subject,
+			}),
+		)
+	})
+
+	t.Run("create: type legacy service with AWS workload identity", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		accountNumber := random.NumericN(12)
+		arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber)
+
+		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				AwsType: &sdk.UserObjectWorkloadIdentityAws{
+					Arn: sdk.String(arn),
+				},
+			},
+			Type: sdk.Pointer(sdk.UserTypeLegacyService),
+		}}
+
+		err := client.Users.Create(ctx, id, createOpts)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
+
+		user, err := client.Users.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasName(user.Name).
+			HasType(string(sdk.UserTypeLegacyService)).
+			HasHasWorkloadIdentity(true).
+			HasOwner(currentRole.Name()),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeAWS).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
+				IamRole:      "test-role",
+				Type:         "IAM_ROLE",
+				AwsAccount:   accountNumber,
+				AwsPartition: "aws",
+			}),
+		)
+	})
+
+	t.Run("create: type legacy service with Azure workload identity", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		issuer := "https://sts.windows.net/72f988bf-86f1-41af-91ab-2d7cd011db47/"
+		subject := random.AlphaN(10)
+
+		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				AzureType: &sdk.UserObjectWorkloadIdentityAzure{
+					Issuer:  sdk.String(issuer),
+					Subject: sdk.String(subject),
+				},
+			},
+			Type: sdk.Pointer(sdk.UserTypeLegacyService),
+		}}
+
+		err := client.Users.Create(ctx, id, createOpts)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
+
+		user, err := client.Users.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasName(user.Name).
+			HasType(string(sdk.UserTypeLegacyService)).
+			HasHasWorkloadIdentity(true).
+			HasOwner(currentRole.Name()),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeAzure).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+				Issuer:  issuer,
+				Subject: subject,
+			}),
+		)
+	})
+
+	t.Run("create: type legacy service with GCP workload identity", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		subject := random.NumericN(10)
+
+		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+					Subject: sdk.String(subject),
+				},
+			},
+			Type: sdk.Pointer(sdk.UserTypeLegacyService),
+		}}
+
+		err := client.Users.Create(ctx, id, createOpts)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
+
+		user, err := client.Users.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasName(user.Name).
+			HasType(string(sdk.UserTypeLegacyService)).
+			HasHasWorkloadIdentity(true).
+			HasOwner(currentRole.Name()),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeGCP).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+				Subject: subject,
 			}),
 		)
 	})
@@ -1291,6 +1564,404 @@ func TestInt_Users(t *testing.T) {
 			HasDefaults(user.Name).
 			HasDisplayName("").
 			HasOwner(currentRole.Name()),
+		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
+	})
+
+	t.Run("alter: set and unset AWS workload identity - type service", func(t *testing.T) {
+		user, userCleanup := testClientHelper().User.CreateServiceUser(t)
+		t.Cleanup(userCleanup)
+
+		accountNumber := random.NumericN(12)
+		arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber)
+
+		// Verify initial state - no WIF
+		assertThatObject(t, objectassert.UserFromObject(t, user).
+			HasHasWorkloadIdentity(false),
+		)
+
+		// Set AWS WIF
+		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						AwsType: &sdk.UserObjectWorkloadIdentityAws{
+							Arn: sdk.String(arn),
+						},
+					},
+				},
+			},
+		}}
+
+		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeAWS).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
+				IamRole:      "test-role",
+				Type:         "IAM_ROLE",
+				AwsAccount:   accountNumber,
+				AwsPartition: "aws",
+			}),
+		)
+
+		// Unset WIF
+		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				WorkloadIdentity: sdk.Bool(true),
+			},
+		}}
+
+		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(false),
+		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
+	})
+
+	t.Run("alter: set and unset Azure workload identity - type service", func(t *testing.T) {
+		user, userCleanup := testClientHelper().User.CreateServiceUser(t)
+		t.Cleanup(userCleanup)
+
+		issuer := testvars.MicrosoftIssuer
+		subject := random.AlphaN(10)
+
+		// Verify initial state - no WIF
+		assertThatObject(t, objectassert.UserFromObject(t, user).
+			HasHasWorkloadIdentity(false),
+		)
+
+		// Set Azure WIF
+		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						AzureType: &sdk.UserObjectWorkloadIdentityAzure{
+							Issuer:  sdk.String(issuer),
+							Subject: sdk.String(subject),
+						},
+					},
+				},
+			},
+		}}
+
+		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeAzure).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+				Issuer:  issuer,
+				Subject: subject,
+			}),
+		)
+
+		// Unset WIF
+		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				WorkloadIdentity: sdk.Bool(true),
+			},
+		}}
+
+		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(false),
+		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
+	})
+
+	t.Run("alter: set and unset GCP workload identity - type service", func(t *testing.T) {
+		user, userCleanup := testClientHelper().User.CreateServiceUser(t)
+		t.Cleanup(userCleanup)
+
+		subject := random.NumericN(10)
+
+		// Verify initial state - no WIF
+		assertThatObject(t, objectassert.UserFromObject(t, user).
+			HasHasWorkloadIdentity(false),
+		)
+
+		// Set GCP WIF
+		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+							Subject: sdk.String(subject),
+						},
+					},
+				},
+			},
+		}}
+
+		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeGCP).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+				Subject: subject,
+			}),
+		)
+
+		// Unset WIF
+		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				WorkloadIdentity: sdk.Bool(true),
+			},
+		}}
+
+		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(false),
+		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
+	})
+
+	t.Run("alter: set and unset AWS workload identity - type legacy service", func(t *testing.T) {
+		user, userCleanup := testClientHelper().User.CreateLegacyServiceUser(t)
+		t.Cleanup(userCleanup)
+
+		accountNumber := random.NumericN(12)
+		arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber)
+
+		// Verify initial state - no WIF
+		assertThatObject(t, objectassert.UserFromObject(t, user).
+			HasHasWorkloadIdentity(false),
+		)
+
+		// Set AWS WIF
+		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						AwsType: &sdk.UserObjectWorkloadIdentityAws{
+							Arn: sdk.String(arn),
+						},
+					},
+				},
+			},
+		}}
+
+		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeAWS).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
+				IamRole:      "test-role",
+				Type:         "IAM_ROLE",
+				AwsAccount:   accountNumber,
+				AwsPartition: "aws",
+			}),
+		)
+
+		// Unset WIF
+		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				WorkloadIdentity: sdk.Bool(true),
+			},
+		}}
+
+		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(false),
+		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
+	})
+
+	t.Run("alter: set and unset Azure workload identity - type legacy service", func(t *testing.T) {
+		user, userCleanup := testClientHelper().User.CreateLegacyServiceUser(t)
+		t.Cleanup(userCleanup)
+
+		issuer := testvars.MicrosoftIssuer
+		subject := random.AlphaN(10)
+
+		// Verify initial state - no WIF
+		assertThatObject(t, objectassert.UserFromObject(t, user).
+			HasHasWorkloadIdentity(false),
+		)
+
+		// Set Azure WIF
+		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						AzureType: &sdk.UserObjectWorkloadIdentityAzure{
+							Issuer:  sdk.String(issuer),
+							Subject: sdk.String(subject),
+						},
+					},
+				},
+			},
+		}}
+
+		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeAzure).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+				Issuer:  issuer,
+				Subject: subject,
+			}),
+		)
+
+		// Unset WIF
+		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				WorkloadIdentity: sdk.Bool(true),
+			},
+		}}
+
+		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(false),
+		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
+	})
+
+	t.Run("alter: set and unset GCP workload identity - type legacy service", func(t *testing.T) {
+		user, userCleanup := testClientHelper().User.CreateLegacyServiceUser(t)
+		t.Cleanup(userCleanup)
+
+		subject := random.NumericN(10)
+
+		// Verify initial state - no WIF
+		assertThatObject(t, objectassert.UserFromObject(t, user).
+			HasHasWorkloadIdentity(false),
+		)
+
+		// Set GCP WIF
+		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
+			ObjectProperties: &sdk.UserAlterObjectProperties{
+				UserObjectProperties: sdk.UserObjectProperties{
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+							Subject: sdk.String(subject),
+						},
+					},
+				},
+			},
+		}}
+
+		err := client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeGCP).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+				Subject: subject,
+			}),
+		)
+
+		// Unset WIF
+		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+			ObjectProperties: &sdk.UserObjectPropertiesUnset{
+				WorkloadIdentity: sdk.Bool(true),
+			},
+		}}
+
+		err = client.Users.Alter(ctx, user.ID(), alterOpts)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.User(t, user.ID()).
+			HasHasWorkloadIdentity(false),
 		)
 
 		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
