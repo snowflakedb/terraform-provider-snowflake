@@ -135,7 +135,7 @@ func TestInt_Table(t *testing.T) {
 		request := sdk.NewCreateTableRequest(id, columns).
 			WithOutOfLineConstraint(*outOfLineConstraint).
 			WithStageFileFormat(*stageFileFormat).
-			WithLegacyTableCopyOptions(*legacyTableCopyOptions).
+			WithStageCopyOptions(*legacyTableCopyOptions).
 			WithComment(&comment).
 			WithDataRetentionTimeInDays(sdk.Int(30)).
 			WithMaxDataExtensionTimeInDays(sdk.Int(30))
