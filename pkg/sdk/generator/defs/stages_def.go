@@ -27,7 +27,6 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
-		// PredefinedQueryStructField("FileFormat", "*FileFormatOptions", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
@@ -50,7 +49,6 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
-		// PredefinedQueryStructField("FileFormat", "*FileFormatOptions", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name")
 }
