@@ -113,16 +113,16 @@ type SemanticSqlExpressionRequest struct {
 }
 
 type FactDefinitionRequest struct {
-	isPrivate 		    *bool
-	semanticExpression  *SemanticExpressionRequest
+	isPrivate          *bool
+	semanticExpression *SemanticExpressionRequest
 }
 
 type DimensionDefinitionRequest struct {
-	semanticExpression  *SemanticExpressionRequest
+	semanticExpression *SemanticExpressionRequest
 }
 
 type MetricDefinitionRequest struct {
-	isPrivate 				   	   *bool
+	isPrivate                      *bool
 	semanticExpression             *SemanticExpressionRequest
 	windowFunctionMetricDefinition *WindowFunctionMetricDefinitionRequest
 }
