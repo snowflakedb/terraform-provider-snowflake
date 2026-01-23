@@ -576,16 +576,59 @@ func TestInt_Users(t *testing.T) {
 		subject string
 	}
 
+	awsWifConfig := func(arn string) *sdk.UserObjectWorkloadIdentityProperties {
+		return &sdk.UserObjectWorkloadIdentityProperties{
+			AwsType: &sdk.UserObjectWorkloadIdentityAws{
+				Arn: sdk.String(arn),
+			},
+		}
+	}
+	awsWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, account string) {
+		assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
+			IamRole:      "test-role",
+			Type:         "IAM_ROLE",
+			AwsAccount:   account,
+			AwsPartition: "aws",
+		})
+	}
+
+	azureWifConfig := func(issuer string, subject string) *sdk.UserObjectWorkloadIdentityProperties {
+		return &sdk.UserObjectWorkloadIdentityProperties{
+			AzureType: &sdk.UserObjectWorkloadIdentityAzure{
+				Issuer:  sdk.String(issuer),
+				Subject: sdk.String(subject),
+			},
+		}
+	}
+	azureWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, issuer string, subject string) {
+		assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+			Issuer:  issuer,
+			Subject: subject,
+		})
+	}
+
+	gcpWifConfig := func(subject string) *sdk.UserObjectWorkloadIdentityProperties {
+		return &sdk.UserObjectWorkloadIdentityProperties{
+			GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+				Subject: sdk.String(subject),
+			},
+		}
+	}
+	gcpWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, subject string) {
+		assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+			Subject: subject,
+		})
+	}
 	wifCreateTestCases := []struct {
-		provider           string
-		userType           sdk.UserType
-		setup              func() any
-		wifConfig          func(data any) *sdk.UserObjectWorkloadIdentityProperties
-		expectedWifType    sdk.WIFType
-		additionalInfoFunc func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
+		provider     sdk.WIFType
+		userType     sdk.UserType
+		setup        func() any
+		metadata     any
+		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityProperties
+		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
 	}{
 		{
-			provider: "AWS",
+			provider: sdk.WIFTypeAWS,
 			userType: sdk.UserTypeService,
 			setup: func() any {
 				accountNumber := random.NumericN(12)
@@ -595,26 +638,14 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(awsWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					AwsType: &sdk.UserObjectWorkloadIdentityAws{
-						Arn: sdk.String(d.arn),
-					},
-				}
+				return awsWifConfig(data.(awsWifData).arn)
 			},
-			expectedWifType: sdk.WIFTypeAWS,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(awsWifData)
-				assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
-					IamRole:      "test-role",
-					Type:         "IAM_ROLE",
-					AwsAccount:   d.accountNumber,
-					AwsPartition: "aws",
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
 			},
 		},
 		{
-			provider: "Azure",
+			provider: sdk.WIFTypeAzure,
 			userType: sdk.UserTypeService,
 			setup: func() any {
 				return azureWifData{
@@ -623,25 +654,14 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(azureWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					AzureType: &sdk.UserObjectWorkloadIdentityAzure{
-						Issuer:  sdk.String(d.issuer),
-						Subject: sdk.String(d.subject),
-					},
-				}
+				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
-			expectedWifType: sdk.WIFTypeAzure,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(azureWifData)
-				assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
-					Issuer:  d.issuer,
-					Subject: d.subject,
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 		},
 		{
-			provider: "GCP",
+			provider: sdk.WIFTypeGCP,
 			userType: sdk.UserTypeService,
 			setup: func() any {
 				return gcpWifData{
@@ -649,23 +669,14 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(gcpWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-						Subject: sdk.String(d.subject),
-					},
-				}
+				return gcpWifConfig(data.(gcpWifData).subject)
 			},
-			expectedWifType: sdk.WIFTypeGCP,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(gcpWifData)
-				assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
-					Subject: d.subject,
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
 			},
 		},
 		{
-			provider: "AWS",
+			provider: sdk.WIFTypeAWS,
 			userType: sdk.UserTypeLegacyService,
 			setup: func() any {
 				accountNumber := random.NumericN(12)
@@ -675,26 +686,14 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(awsWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					AwsType: &sdk.UserObjectWorkloadIdentityAws{
-						Arn: sdk.String(d.arn),
-					},
-				}
+				return awsWifConfig(data.(awsWifData).arn)
 			},
-			expectedWifType: sdk.WIFTypeAWS,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(awsWifData)
-				assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
-					IamRole:      "test-role",
-					Type:         "IAM_ROLE",
-					AwsAccount:   d.accountNumber,
-					AwsPartition: "aws",
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
 			},
 		},
 		{
-			provider: "Azure",
+			provider: sdk.WIFTypeAzure,
 			userType: sdk.UserTypeLegacyService,
 			setup: func() any {
 				return azureWifData{
@@ -703,25 +702,14 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(azureWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					AzureType: &sdk.UserObjectWorkloadIdentityAzure{
-						Issuer:  sdk.String(d.issuer),
-						Subject: sdk.String(d.subject),
-					},
-				}
+				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
-			expectedWifType: sdk.WIFTypeAzure,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(azureWifData)
-				assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
-					Issuer:  d.issuer,
-					Subject: d.subject,
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 		},
 		{
-			provider: "GCP",
+			provider: sdk.WIFTypeGCP,
 			userType: sdk.UserTypeLegacyService,
 			setup: func() any {
 				return gcpWifData{
@@ -729,25 +717,15 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(gcpWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-						Subject: sdk.String(d.subject),
-					},
-				}
+				return gcpWifConfig(data.(gcpWifData).subject)
 			},
-			expectedWifType: sdk.WIFTypeGCP,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(gcpWifData)
-				assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
-					Subject: d.subject,
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
 			},
 		},
 	}
 
 	for _, tt := range wifCreateTestCases {
-		tt := tt
 		t.Run(fmt.Sprintf("create: type %s with %s workload identity", tt.userType, tt.provider), func(t *testing.T) {
 			id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 			currentRole := testClientHelper().Context.CurrentRole(t)
@@ -778,11 +756,11 @@ func TestInt_Users(t *testing.T) {
 			assert.Equal(t, 1, len(methods))
 			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
-				HasType(tt.expectedWifType).
+				HasType(tt.provider).
 				HasNoComment().
 				HasLastUsedNotEmpty().
 				HasCreatedOnNotEmpty()
-			tt.additionalInfoFunc(t, assertion, data)
+			tt.wifAssertion(t, assertion, data)
 			assertThatObject(t, assertion)
 		})
 	}
@@ -1525,17 +1503,16 @@ func TestInt_Users(t *testing.T) {
 	})
 
 	wifAlterTestCases := []struct {
-		provider           string
-		userType           string
-		createUser         func(t *testing.T) (*sdk.User, func())
-		setup              func() any
-		wifConfig          func(data any) *sdk.UserObjectWorkloadIdentityProperties
-		expectedWifType    sdk.WIFType
-		additionalInfoFunc func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
+		provider     sdk.WIFType
+		userType     sdk.UserType
+		createUser   func(t *testing.T) (*sdk.User, func())
+		setup        func() any
+		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityProperties
+		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
 	}{
 		{
-			provider:   "AWS",
-			userType:   "service",
+			provider:   sdk.WIFTypeAWS,
+			userType:   sdk.UserTypeService,
 			createUser: testClientHelper().User.CreateServiceUser,
 			setup: func() any {
 				accountNumber := random.NumericN(12)
@@ -1545,26 +1522,15 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(awsWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					AwsType: &sdk.UserObjectWorkloadIdentityAws{
-						Arn: sdk.String(d.arn),
-					},
-				}
+				return awsWifConfig(data.(awsWifData).arn)
 			},
-			expectedWifType: sdk.WIFTypeAWS,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(awsWifData)
-				assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
-					IamRole:    "test-role",
-					Type:       "IAM_ROLE",
-					AwsAccount: d.accountNumber, AwsPartition: "aws",
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
 			},
 		},
 		{
-			provider:   "Azure",
-			userType:   "service",
+			provider:   sdk.WIFTypeAzure,
+			userType:   sdk.UserTypeService,
 			createUser: testClientHelper().User.CreateServiceUser,
 			setup: func() any {
 				return azureWifData{
@@ -1573,26 +1539,15 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(azureWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					AzureType: &sdk.UserObjectWorkloadIdentityAzure{
-						Issuer:  sdk.String(d.issuer),
-						Subject: sdk.String(d.subject),
-					},
-				}
+				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
-			expectedWifType: sdk.WIFTypeAzure,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(azureWifData)
-				assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
-					Issuer:  d.issuer,
-					Subject: d.subject,
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 		},
 		{
-			provider:   "GCP",
-			userType:   "service",
+			provider:   sdk.WIFTypeGCP,
+			userType:   sdk.UserTypeService,
 			createUser: testClientHelper().User.CreateServiceUser,
 			setup: func() any {
 				return gcpWifData{
@@ -1600,24 +1555,15 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(gcpWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-						Subject: sdk.String(d.subject),
-					},
-				}
+				return gcpWifConfig(data.(gcpWifData).subject)
 			},
-			expectedWifType: sdk.WIFTypeGCP,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(gcpWifData)
-				assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
-					Subject: d.subject,
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
 			},
 		},
 		{
-			provider:   "AWS",
-			userType:   "legacy service",
+			provider:   sdk.WIFTypeAWS,
+			userType:   sdk.UserTypeLegacyService,
 			createUser: testClientHelper().User.CreateLegacyServiceUser,
 			setup: func() any {
 				accountNumber := random.NumericN(12)
@@ -1627,27 +1573,15 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(awsWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					AwsType: &sdk.UserObjectWorkloadIdentityAws{
-						Arn: sdk.String(d.arn),
-					},
-				}
+				return awsWifConfig(data.(awsWifData).arn)
 			},
-			expectedWifType: sdk.WIFTypeAWS,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(awsWifData)
-				assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
-					IamRole:      "test-role",
-					Type:         "IAM_ROLE",
-					AwsAccount:   d.accountNumber,
-					AwsPartition: "aws",
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
 			},
 		},
 		{
-			provider:   "Azure",
-			userType:   "legacy service",
+			provider:   sdk.WIFTypeAzure,
+			userType:   sdk.UserTypeLegacyService,
 			createUser: testClientHelper().User.CreateLegacyServiceUser,
 			setup: func() any {
 				return azureWifData{
@@ -1656,26 +1590,15 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(azureWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					AzureType: &sdk.UserObjectWorkloadIdentityAzure{
-						Issuer:  sdk.String(d.issuer),
-						Subject: sdk.String(d.subject),
-					},
-				}
+				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
-			expectedWifType: sdk.WIFTypeAzure,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(azureWifData)
-				assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
-					Issuer:  d.issuer,
-					Subject: d.subject,
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 		},
 		{
-			provider:   "GCP",
-			userType:   "legacy service",
+			provider:   sdk.WIFTypeGCP,
+			userType:   sdk.UserTypeLegacyService,
 			createUser: testClientHelper().User.CreateLegacyServiceUser,
 			setup: func() any {
 				return gcpWifData{
@@ -1683,25 +1606,15 @@ func TestInt_Users(t *testing.T) {
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
-				d := data.(gcpWifData)
-				return &sdk.UserObjectWorkloadIdentityProperties{
-					GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-						Subject: sdk.String(d.subject),
-					},
-				}
+				return gcpWifConfig(data.(gcpWifData).subject)
 			},
-			expectedWifType: sdk.WIFTypeGCP,
-			additionalInfoFunc: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
-				d := data.(gcpWifData)
-				assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
-					Subject: d.subject,
-				})
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
 			},
 		},
 	}
 
 	for _, tt := range wifAlterTestCases {
-		tt := tt
 		t.Run(fmt.Sprintf("alter: set and unset %s workload identity - type %s", tt.provider, tt.userType), func(t *testing.T) {
 			user, userCleanup := tt.createUser(t)
 			t.Cleanup(userCleanup)
@@ -1734,11 +1647,11 @@ func TestInt_Users(t *testing.T) {
 			assert.Equal(t, 1, len(methods))
 			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
-				HasType(tt.expectedWifType).
+				HasType(tt.provider).
 				HasNoComment().
 				HasLastUsedNotEmpty().
 				HasCreatedOnNotEmpty()
-			tt.additionalInfoFunc(t, assertion, data)
+			tt.wifAssertion(t, assertion, data)
 			assertThatObject(t, assertion)
 
 			// Unset WIF
