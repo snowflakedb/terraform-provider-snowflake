@@ -18,7 +18,6 @@ import (
 )
 
 // TODO [SNOW-1645875]: test setting/unsetting policies
-// TODO (SNOW-2272350): add tests for AWS, Azure and GCP workload identity authentication methods.
 func TestInt_Users(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
