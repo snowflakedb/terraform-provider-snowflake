@@ -17,12 +17,14 @@ const (
 	ParametersIgnoreValueChangesIfNotOnObjectLevel ExperimentalFeature = "PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL"
 	WarehouseShowImprovedPerformance               ExperimentalFeature = "WAREHOUSE_SHOW_IMPROVED_PERFORMANCE"
 	GrantsStrictPrivilegeManagement                ExperimentalFeature = "GRANTS_STRICT_PRIVILEGE_MANAGEMENT"
+	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
 )
 
 var allExperimentalFeatures = []ExperimentalFeature{
 	ParametersIgnoreValueChangesIfNotOnObjectLevel,
 	WarehouseShowImprovedPerformance,
 	GrantsStrictPrivilegeManagement,
+	UserEnableDefaultWorkloadIdentity,
 }
 
 var AllExperimentalFeatures = sdk.AsStringList(allExperimentalFeatures)
