@@ -194,7 +194,8 @@ func TestInt_SemanticView(t *testing.T) {
 		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
 			ContainsDetail(factTable).
 			ContainsDetail(factExpression).
-			ContainsDetail(factDataType).
+			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
+			// ContainsDetail(factDataType).
 			ContainsDetail(factAccessModifier).
 			ContainsDetail(metricTable).
 			ContainsDetail(metricExpression).
