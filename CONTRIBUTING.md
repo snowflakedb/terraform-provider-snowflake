@@ -14,7 +14,6 @@
   - [Naming and describing the PR](#naming-and-describing-the-pr)
   - [Requesting the review](#requesting-the-review)
   - [Adding support for a new snowflake object](#adding-support-for-a-new-snowflake-object)
-    - [Introducing a new part of the SDK](#add-the-object-to-the-sdk)
 - [Advanced Debugging](#advanced-debugging)
 - [Extending the migration script](#extending-the-migration-script)
 
@@ -119,6 +118,30 @@ It's best to discuss with us what checks we expect prior to making the change.
 
 If the change requires manual actions when bumping the provider version, they should be added to the [migration guide](MIGRATION_GUIDE.md).
 
+### Hide the changes behind the feature switch (if applies)
+
+When modifying the stable parts of the provider, we need to be careful with introducing the breaking changes (we follow semantic versioning, so we shouldn't introduce breaking changes without bumping the major version number, except preview features and Snowflake BCR Bundles - [docs](https://docs.snowflake.com/en/user-guide/terraform#versioning-and-preview-features)).
+
+Instead of bumping the version, we can hide the behavior change behind the experiment, that way:
+- We limit the number of major version releases.
+- We allow accessing the newest features as early as possible.
+- We do not break existing configurations with the additional features.
+
+All current experiments are available in the [dedicated section in the registry documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#active-experiments).
+
+To add the experiment:
+- Add it to [`allExperiments`](pkg/provider/experimentalfeatures/experimental_features.go).
+- Guard the logic with conditional statement like (example in the [user resource](pkg/resources/user.go)):
+```go
+if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) { 
+  // new logic here
+} else {
+  // old logic here
+}
+```
+- Remember to generate the docs [before submitting the PR](#before-submitting-the-pr); the new experiment will be added to the docs automatically.
+- Add entry to the [migration guide](MIGRATION_GUIDE.md).
+
 ### Before submitting the PR
 
 The documentation for the provider is generated automatically. We follow the few formatting conventions that are automatically checked with every PR. They can fail and delay the resolution of your PR. To make it much less possible, run `make pre-push` before pushing your changes to GH. It will reformat your code (or suggest reformatting), generate all the missing docs, clean the dependencies, etc.
@@ -145,7 +168,7 @@ Please do not resolve our comments. We prefer to resolve ourselves after the com
 
 **⚠️ Important ⚠️** Tests and checks are not run automatically after your PR. We run them manually, when we are happy with the state of the change (even if some corrections are still necessary).
 
-## Adding Support for a new Snowflake Object
+### Adding Support for a new Snowflake Object
 
 This guide describes the end-to-end process to add support for a new Snowflake object in the Terraform provider. Work is typically split into multiple PRs:
 
@@ -156,7 +179,7 @@ This guide describes the end-to-end process to add support for a new Snowflake o
 | 3. Resource | Add resource | [#4195](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4195) |
 | 4. Data Source | Add data source | [#4209](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4209), [#4237](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4237) |
 
-### 1. Add the object to the SDK
+#### 1. Add the object to the SDK
 
 Take a look at an example [SDK implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4084).
 
@@ -164,7 +187,7 @@ Take a look at an example [SDK implementation for notebooks](https://github.com/
 
 - Implement unit tests.
 
-### 2. Add integration tests
+#### 2. Add integration tests
 
 Take a look at an example [Integration tests implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4123).
 
@@ -172,7 +195,7 @@ Add integration tests under the SDK’s testint package to validate the SDK beha
 
 - Follow the [Objects assertions guide](pkg/acceptance/bettertestspoc/README.md#adding-new-snowflake-object-assertions) to generate the necessary assertions.
 
-### 3. Add resource
+#### 3. Add resource
 
 Take a look at an example [Resource implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4195).
 
@@ -209,7 +232,7 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
 
 - Follow the [Resource assertions guide](pkg/acceptance/bettertestspoc/README.md#adding-new-resource-assertions) to generate the necessary assertions.
 
-### 4. Add data source
+#### 4. Add data source
 
 Take a look at an example [Data source implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4209) and its follow-up with extra tests [Extended test coverage for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4237)
 
