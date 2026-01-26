@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -37,11 +38,15 @@ func TestInt_Stages(t *testing.T) {
 	// ==================== INTERNAL STAGE TESTS ====================
 
 	t.Run("CreateInternal - minimal", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStage(t)
-		t.Cleanup(cleanup)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateInternalStageRequest(id)
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
-			HasName(stage.Name).
+		err := client.Stages.CreateInternal(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasType("INTERNAL").
@@ -66,43 +71,47 @@ func TestInt_Stages(t *testing.T) {
 				WithAutoRefresh(false)).
 			WithComment(comment)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageWithRequest(t, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateInternal(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasType("INTERNAL").
 			HasComment(comment).
 			HasDirectoryEnabled(true).
-			HasHasEncryptionKey(true).
+			HasHasEncryptionKey(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"))
 	})
 
-	t.Run("CreateInternal - temporary", func(t *testing.T) {
+	t.Run("CreateInternal - temporary and or replace", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		comment := "temporary stage"
 
 		request := sdk.NewCreateInternalStageRequest(id).
 			WithTemporary(true).
-			WithComment(comment)
+			WithOrReplace(true)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageWithRequest(t, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateInternal(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("INTERNAL TEMPORARY").
-			HasComment(comment))
+			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
+			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
+			HasType("INTERNAL TEMPORARY"),
+		)
 	})
 
 	t.Run("AlterInternalStage - complete", func(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(cleanup)
 
-		require.Equal(t, "", stage.Comment)
+		assertThatObject(t, objectassert.StageFromObject(t, stage).
+			HasComment(""))
 
 		err := client.Stages.AlterInternalStage(ctx, sdk.NewAlterInternalStageStageRequest(stage.ID()).
 			WithIfExists(true).
@@ -118,6 +127,30 @@ func TestInt_Stages(t *testing.T) {
 
 	// ==================== S3 STAGE TESTS ====================
 
+	t.Run("CreateOnS3 - minimal", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl)
+
+		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
+
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
+			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
+			HasType("EXTERNAL").
+			HasUrl(awsBucketUrl).
+			HasCloud("AWS").
+			HasNoStorageIntegration().
+			HasHasCredentials(false).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE"))
+	})
+
 	t.Run("CreateOnS3 - minimal with storage integration", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
@@ -126,69 +159,17 @@ func TestInt_Stages(t *testing.T) {
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
-			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasType("EXTERNAL").
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
-			HasStorageIntegration(s3StorageIntegration.Name).
 			HasHasCredentials(false).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"))
-	})
-
-	t.Run("CreateOnS3 - minimal with credentials", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
-				WithAwsKeyId(awsKeyId).
-				WithAwsSecretKey(awsSecretKey))
-
-		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
-
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithRequest(t, id, request)
-		t.Cleanup(cleanup)
-
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
-			HasName(id.Name()).
-			HasType("EXTERNAL").
-			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
-			HasHasCredentials(true).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
-	})
-
-	t.Run("CreateOnS3 - complete with storage integration", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		comment := "complete s3 stage with storage integration"
-
-		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
-
-		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
-			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().
-				WithEnable(true).
-				WithRefreshOnCreate(true).
-				WithAutoRefresh(false)).
-			WithComment(comment)
-
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithRequest(t, id, request)
-		t.Cleanup(cleanup)
-
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
-			HasName(id.Name()).
-			HasType("EXTERNAL").
-			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
-			HasStorageIntegration(s3StorageIntegration.Name).
-			HasDirectoryEnabled(true).
-			HasComment(comment))
 	})
 
 	t.Run("CreateOnS3 - complete with credentials", func(t *testing.T) {
@@ -197,7 +178,7 @@ func TestInt_Stages(t *testing.T) {
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 			WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
-			WithUsePrivatelinkEndpoint(true).
+			WithUsePrivatelinkEndpoint(false).
 			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
 				WithAwsKeyId(awsKeyId).
 				WithAwsSecretKey(awsSecretKey)).
@@ -211,10 +192,11 @@ func TestInt_Stages(t *testing.T) {
 				WithAutoRefresh(false)).
 			WithComment(comment)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL").
 			HasUrl(awsBucketUrl).
@@ -243,52 +225,42 @@ func TestInt_Stages(t *testing.T) {
 		})
 	})
 
-	t.Run("CreateOnS3 - temporary", func(t *testing.T) {
+	t.Run("CreateOnS3 - temporary and or replace", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		comment := "temporary s3 stage"
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
 			WithTemporary(true).
-			WithComment(comment)
+			WithOrReplace(true)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL TEMPORARY").
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
-			HasStorageIntegration(s3StorageIntegration.Name).
-			HasComment(comment))
+			HasStorageIntegration(s3StorageIntegration.Name),
+		)
 	})
 
 	t.Run("AlterExternalS3Stage - complete", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
-				WithAwsKeyId(awsKeyId).
-				WithAwsSecretKey(awsSecretKey))
-
-		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
-			WithComment("initial comment")
-
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithRequest(t, id, request)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
 		t.Cleanup(cleanup)
 
-		require.Equal(t, "initial comment", stage.Comment)
+		require.Equal(t, "", stage.Comment)
 
-		err := client.Stages.AlterExternalS3Stage(ctx, sdk.NewAlterExternalS3StageStageRequest(id).
+		err := client.Stages.AlterExternalS3Stage(ctx, sdk.NewAlterExternalS3StageStageRequest(stage.ID()).
 			WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 				WithStorageIntegration(ids.PrecreatedS3StorageIntegration)).
 			WithComment("Updated comment"))
 		require.NoError(t, err)
 
-		stage, err = client.Stages.ShowByID(ctx, id)
+		stage, err = client.Stages.ShowByID(ctx, stage.ID())
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
@@ -304,15 +276,40 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateOnGCS - minimal", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
+		gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl)
+		// WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
+
+		request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq)
+
+		err := client.Stages.CreateOnGCS(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
+			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
+			HasType("EXTERNAL").
+			HasUrl(gcsBucketUrl).
+			HasCloud("GCP").
+			HasNoStorageIntegration().
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE"))
+	})
+
+	t.Run("CreateOnGCS - minimal with storage integration", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
 		gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
 			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
 
 		request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnGCSWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnGCS(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
@@ -340,10 +337,11 @@ func TestInt_Stages(t *testing.T) {
 				WithAutoRefresh(false)).
 			WithComment(comment)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnGCSWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnGCS(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL").
 			HasUrl(gcsBucketUrl).
@@ -364,10 +362,11 @@ func TestInt_Stages(t *testing.T) {
 			WithTemporary(true).
 			WithComment(comment)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnGCSWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnGCS(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL TEMPORARY").
 			HasUrl(gcsBucketUrl).
@@ -377,26 +376,18 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterExternalGCSStage - complete", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
-
-		request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq).
-			WithComment("initial comment")
-
-		stage, cleanup := testClientHelper().Stage.CreateStageOnGCSWithRequest(t, id, request)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnGCS(t)
 		t.Cleanup(cleanup)
 
-		require.Equal(t, "initial comment", stage.Comment)
+		require.Equal(t, "", stage.Comment)
 
-		err := client.Stages.AlterExternalGCSStage(ctx, sdk.NewAlterExternalGCSStageStageRequest(id).
+		err := client.Stages.AlterExternalGCSStage(ctx, sdk.NewAlterExternalGCSStageStageRequest(stage.ID()).
 			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
 				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)).
 			WithComment("Updated comment"))
 		require.NoError(t, err)
 
-		stage, err = client.Stages.ShowByID(ctx, id)
+		stage, err = client.Stages.ShowByID(ctx, stage.ID())
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
@@ -409,6 +400,26 @@ func TestInt_Stages(t *testing.T) {
 
 	// ==================== AZURE STAGE TESTS ====================
 
+	t.Run("CreateOnAzure - minimal", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl)
+
+		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)
+
+		err := client.Stages.CreateOnAzure(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
+			HasType("EXTERNAL").
+			HasUrl(azureBucketUrl).
+			HasCloud("AZURE").
+			HasHasCredentials(false).
+			HasOwner(snowflakeroles.Accountadmin.Name()))
+	})
+
 	t.Run("CreateOnAzure - minimal with storage integration", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
@@ -417,10 +428,11 @@ func TestInt_Stages(t *testing.T) {
 
 		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnAzure(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
@@ -433,53 +445,6 @@ func TestInt_Stages(t *testing.T) {
 			HasOwnerRoleType("ROLE"))
 	})
 
-	t.Run("CreateOnAzure - minimal with credentials", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
-
-		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)
-
-		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithRequest(t, id, request)
-		t.Cleanup(cleanup)
-
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
-			HasName(id.Name()).
-			HasType("EXTERNAL").
-			HasUrl(azureBucketUrl).
-			HasCloud("AZURE").
-			HasHasCredentials(true).
-			HasOwner(snowflakeroles.Accountadmin.Name()))
-	})
-
-	t.Run("CreateOnAzure - complete with storage integration", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		comment := "complete azure stage with storage integration"
-
-		azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-			WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)
-
-		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq).
-			WithDirectoryTableOptions(*sdk.NewExternalAzureDirectoryTableOptionsRequest().
-				WithEnable(true).
-				WithRefreshOnCreate(true).
-				WithAutoRefresh(false)).
-			WithComment(comment)
-
-		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithRequest(t, id, request)
-		t.Cleanup(cleanup)
-
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
-			HasName(id.Name()).
-			HasType("EXTERNAL").
-			HasUrl(azureBucketUrl).
-			HasCloud("AZURE").
-			HasStorageIntegration(azureStorageIntegration.Name).
-			HasDirectoryEnabled(true).
-			HasComment(comment))
-	})
-
 	t.Run("CreateOnAzure - complete with credentials", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := "complete azure stage with credentials"
@@ -487,8 +452,7 @@ func TestInt_Stages(t *testing.T) {
 		azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
 			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken)).
 			WithEncryption(*sdk.NewExternalStageAzureEncryptionRequest().
-				WithAzureCse(*sdk.NewExternalStageAzureEncryptionAzureCseRequest().
-					WithMasterKey("test-master-key")))
+				WithAzureCse(*sdk.NewExternalStageAzureEncryptionAzureCseRequest(random.AlphaN(256 / 8)))) // TODO: add random master key
 
 		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq).
 			WithDirectoryTableOptions(*sdk.NewExternalAzureDirectoryTableOptionsRequest().
@@ -497,10 +461,11 @@ func TestInt_Stages(t *testing.T) {
 				WithAutoRefresh(false)).
 			WithComment(comment)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnAzure(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL").
 			HasUrl(azureBucketUrl).
@@ -522,10 +487,11 @@ func TestInt_Stages(t *testing.T) {
 			WithTemporary(true).
 			WithComment(comment)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnAzure(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL TEMPORARY").
 			HasUrl(azureBucketUrl).
@@ -535,26 +501,18 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterExternalAzureStage - complete", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
-
-		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq).
-			WithComment("initial comment")
-
-		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithRequest(t, id, request)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithCredentials(t)
 		t.Cleanup(cleanup)
 
-		require.Equal(t, "initial comment", stage.Comment)
+		require.Equal(t, "", stage.Comment)
 
-		err := client.Stages.AlterExternalAzureStage(ctx, sdk.NewAlterExternalAzureStageStageRequest(id).
+		err := client.Stages.AlterExternalAzureStage(ctx, sdk.NewAlterExternalAzureStageStageRequest(stage.ID()).
 			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
 				WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)).
 			WithComment("Updated comment"))
 		require.NoError(t, err)
 
-		stage, err = client.Stages.ShowByID(ctx, id)
+		stage, err = client.Stages.ShowByID(ctx, stage.ID())
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
@@ -572,15 +530,15 @@ func TestInt_Stages(t *testing.T) {
 		compatibleBucketUrl := strings.Replace(awsBucketUrl, "s3://", "s3compat://", 1)
 		endpoint := "s3.us-west-2.amazonaws.com"
 
-		s3CompatReq := sdk.NewExternalS3CompatibleStageParamsRequest(compatibleBucketUrl, endpoint).
-			WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
+		s3CompatReq := sdk.NewExternalS3CompatibleStageParamsRequest(compatibleBucketUrl, endpoint)
 
 		request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3CompatibleWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnS3Compatible(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
@@ -588,7 +546,7 @@ func TestInt_Stages(t *testing.T) {
 			HasUrl(compatibleBucketUrl).
 			HasCloud("AWS").
 			HasEndpoint(endpoint).
-			HasHasCredentials(true).
+			HasHasCredentials(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"))
 	})
@@ -609,10 +567,11 @@ func TestInt_Stages(t *testing.T) {
 				WithAutoRefresh(false)).
 			WithComment(comment)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3CompatibleWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnS3Compatible(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL").
 			HasUrl(compatibleBucketUrl).
@@ -635,10 +594,11 @@ func TestInt_Stages(t *testing.T) {
 			WithTemporary(true).
 			WithComment(comment)
 
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3CompatibleWithRequest(t, id, request)
-		t.Cleanup(cleanup)
+		err := client.Stages.CreateOnS3Compatible(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
-		assertThatObject(t, objectassert.StageFromObject(t, stage).
+		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL TEMPORARY").
 			HasUrl(compatibleBucketUrl).
@@ -673,19 +633,10 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterDirectoryTable", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
-				WithAwsKeyId(awsKeyId).
-				WithAwsSecretKey(awsSecretKey))
-
-		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
-
-		_, cleanup := testClientHelper().Stage.CreateStageOnS3WithRequest(t, id, request)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, id)
+		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
 		require.NoError(t, err)
 		assert.Contains(t, stageProperties, sdk.StageProperty{
 			Parent:  "DIRECTORY",
@@ -695,15 +646,15 @@ func TestInt_Stages(t *testing.T) {
 			Default: "false",
 		})
 
-		err = client.Stages.AlterDirectoryTable(ctx, sdk.NewAlterDirectoryTableStageRequest(id).
+		err = client.Stages.AlterDirectoryTable(ctx, sdk.NewAlterDirectoryTableStageRequest(stage.ID()).
 			WithSetDirectory(*sdk.NewDirectoryTableSetRequest(true)))
 		require.NoError(t, err)
 
-		err = client.Stages.AlterDirectoryTable(ctx, sdk.NewAlterDirectoryTableStageRequest(id).
+		err = client.Stages.AlterDirectoryTable(ctx, sdk.NewAlterDirectoryTableStageRequest(stage.ID()).
 			WithRefresh(*sdk.NewDirectoryTableRefreshRequest().WithSubpath("/")))
 		require.NoError(t, err)
 
-		stageProperties, err = client.Stages.Describe(ctx, id)
+		stageProperties, err = client.Stages.Describe(ctx, stage.ID())
 		require.NoError(t, err)
 		assert.Contains(t, stageProperties, sdk.StageProperty{
 			Parent:  "DIRECTORY",
@@ -753,19 +704,10 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("Describe external s3", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
-				WithAwsKeyId(awsKeyId).
-				WithAwsSecretKey(awsSecretKey))
-
-		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
-
-		_, cleanup := testClientHelper().Stage.CreateStageOnS3WithRequest(t, id, request)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, id)
+		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
 		require.NoError(t, err)
 		require.NotEmpty(t, stageProperties)
 		assert.Contains(t, stageProperties, sdk.StageProperty{
@@ -785,17 +727,10 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("Describe external gcs", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
-
-		request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq)
-
-		_, cleanup := testClientHelper().Stage.CreateStageOnGCSWithRequest(t, id, request)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnGCS(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, id)
+		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
 		require.NoError(t, err)
 		require.NotEmpty(t, stageProperties)
 		assert.Contains(t, stageProperties, sdk.StageProperty{
@@ -808,17 +743,10 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("Describe external azure", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
-
-		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)
-
-		_, cleanup := testClientHelper().Stage.CreateStageOnAzureWithRequest(t, id, request)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithCredentials(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, id)
+		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
 		require.NoError(t, err)
 		require.NotEmpty(t, stageProperties)
 		assert.Contains(t, stageProperties, sdk.StageProperty{
