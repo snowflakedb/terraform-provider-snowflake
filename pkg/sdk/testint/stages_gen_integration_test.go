@@ -57,6 +57,12 @@ func TestInt_Stages(t *testing.T) {
 			HasHasEncryptionKey(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(false).
+			HasDirectoryTableAutoRefresh(false).
+			HasDirectoryTableNotificationChannel("").
+			HasDirectoryTableLastRefreshedOnNil())
 	})
 
 	t.Run("CreateInternal - complete", func(t *testing.T) {
@@ -68,7 +74,7 @@ func TestInt_Stages(t *testing.T) {
 				WithSnowflakeFull(*sdk.NewInternalStageEncryptionSnowflakeFullRequest())).
 			WithDirectoryTableOptions(*sdk.NewInternalDirectoryTableOptionsRequest().
 				WithEnable(true).
-				WithAutoRefresh(false)).
+				WithAutoRefresh(true)).
 			WithComment(comment)
 
 		err := client.Stages.CreateInternal(ctx, request)
@@ -85,6 +91,12 @@ func TestInt_Stages(t *testing.T) {
 			HasHasEncryptionKey(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(true).
+			HasDirectoryTableAutoRefresh(true).
+			HasDirectoryTableNotificationChannel("").
+			HasDirectoryTableLastRefreshedOnNil())
 	})
 
 	t.Run("CreateInternal - temporary and or replace", func(t *testing.T) {
@@ -352,6 +364,31 @@ func TestInt_Stages(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()))
 	})
 
+	t.Run("CreateOnS3 - minimal with storage integration", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+			WithUsePrivatelinkEndpoint(true)
+
+		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
+
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
+			HasType("EXTERNAL").
+			HasUrl(awsBucketUrl).
+			HasCloud("AWS").
+			HasHasCredentials(false).
+			HasOwner(snowflakeroles.Accountadmin.Name()))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasPrivateLinkUsePrivatelinkEndpoint(true),
+		)
+	})
+
 	t.Run("CreateOnS3 - complete with credentials", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := "complete s3 stage with credentials"
@@ -385,6 +422,10 @@ func TestInt_Stages(t *testing.T) {
 			HasHasEncryptionKey(false).
 			HasDirectoryEnabled(true).
 			HasComment(comment))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(true).
+			HasDirectoryTableAutoRefresh(false))
 
 		stageProperties, err := client.Stages.Describe(ctx, id)
 		require.NoError(t, err)
@@ -529,6 +570,10 @@ func TestInt_Stages(t *testing.T) {
 			HasStorageIntegration(gcpStorageIntegration.Name).
 			HasDirectoryEnabled(true).
 			HasComment(comment))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(true).
+			HasDirectoryTableAutoRefresh(false))
 	})
 
 	t.Run("CreateOnGCS - temporary", func(t *testing.T) {
@@ -654,6 +699,10 @@ func TestInt_Stages(t *testing.T) {
 			HasHasEncryptionKey(true).
 			HasDirectoryEnabled(true).
 			HasComment(comment))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(true).
+			HasDirectoryTableAutoRefresh(false))
 	})
 
 	t.Run("CreateOnAzure - temporary", func(t *testing.T) {
@@ -759,6 +808,10 @@ func TestInt_Stages(t *testing.T) {
 			HasEndpoint(endpoint).
 			HasDirectoryEnabled(true).
 			HasComment(comment))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(true).
+			HasDirectoryTableAutoRefresh(false))
 	})
 
 	t.Run("CreateOnS3Compatible - temporary", func(t *testing.T) {
@@ -816,15 +869,8 @@ func TestInt_Stages(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
-		require.NoError(t, err)
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "DIRECTORY",
-			Name:    "ENABLE",
-			Type:    "Boolean",
-			Value:   "false",
-			Default: "false",
-		})
+		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
+			HasDirectoryTableEnable(false))
 
 		err = client.Stages.AlterDirectoryTable(ctx, sdk.NewAlterDirectoryTableStageRequest(stage.ID()).
 			WithSetDirectory(*sdk.NewDirectoryTableSetRequest(true)))
@@ -834,15 +880,9 @@ func TestInt_Stages(t *testing.T) {
 			WithRefresh(*sdk.NewDirectoryTableRefreshRequest().WithSubpath("/")))
 		require.NoError(t, err)
 
-		stageProperties, err = client.Stages.Describe(ctx, stage.ID())
-		require.NoError(t, err)
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "DIRECTORY",
-			Name:    "ENABLE",
-			Type:    "Boolean",
-			Value:   "true",
-			Default: "false",
-		})
+		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
+			HasDirectoryTableEnable(true).
+			HasDirectoryTableLastRefreshedOnNotEmpty())
 	})
 
 	t.Run("Drop", func(t *testing.T) {
@@ -881,6 +921,10 @@ func TestInt_Stages(t *testing.T) {
 			Value:   "",
 			Default: "",
 		})
+
+		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
+			HasDirectoryTableEnable(false).
+			HasDirectoryTableAutoRefresh(false))
 	})
 
 	t.Run("Describe external s3", func(t *testing.T) {
@@ -943,6 +987,9 @@ func TestInt_Stages(t *testing.T) {
 			Value:   fmt.Sprintf("[\"%s\"]", azureBucketUrl),
 			Default: "",
 		})
+
+		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
+			HasDirectoryTableEnable(false))
 	})
 
 	t.Run("Show internal", func(t *testing.T) {
@@ -967,6 +1014,9 @@ func TestInt_Stages(t *testing.T) {
 			HasType("INTERNAL").
 			HasDirectoryEnabled(true).
 			HasOwnerRoleType("ROLE"))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(true))
 	})
 }
 

@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -42,14 +43,31 @@ type FileFormatCsv struct {
 	MultiLine                  bool
 }
 
+// StageDirectoryTable represents directory table properties from DESCRIBE STAGE
+type StageDirectoryTable struct {
+	Enable                       bool
+	AutoRefresh                  bool
+	DirectoryNotificationChannel string
+	LastRefreshedOn              *time.Time
+}
+
 // StageDetails represents the parsed result of DESCRIBE STAGE
 type StageDetails struct {
-	FileFormatCsv *FileFormatCsv
+	FileFormatCsv  *FileFormatCsv
+	DirectoryTable *StageDirectoryTable
+	PrivateLink    *StagePrivateLink
+}
+
+type StagePrivateLink struct {
+	UsePrivatelinkEndpoint bool
 }
 
 // ParseStageDetails parses []StageProperty into StageDetails
 func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 	details := &StageDetails{}
+
+	details.DirectoryTable = parseDirectoryTable(properties)
+	details.PrivateLink = parsePrivateLink(properties)
 
 	fileFormat, err := collections.FindFirst(properties, func(prop StageProperty) bool {
 		return prop.Parent == "STAGE_FILE_FORMAT" && prop.Name == "TYPE"
@@ -125,4 +143,52 @@ func parseCsvFileFormat(properties []StageProperty) *FileFormatCsv {
 	}
 
 	return csv
+}
+
+func parseDirectoryTable(properties []StageProperty) *StageDirectoryTable {
+	dt := &StageDirectoryTable{}
+
+	for _, prop := range properties {
+		if prop.Parent != "DIRECTORY" {
+			continue
+		}
+		switch prop.Name {
+		case "ENABLE":
+			dt.Enable = prop.Value == "true"
+		case "AUTO_REFRESH":
+			dt.AutoRefresh = prop.Value == "true"
+		case "DIRECTORY_NOTIFICATION_CHANNEL":
+			dt.DirectoryNotificationChannel = prop.Value
+		case "LAST_REFRESHED_ON":
+			if prop.Value != "" {
+				t, err := time.Parse("2006-01-02 15:04:05.000 -0700", prop.Value)
+				if err == nil {
+					dt.LastRefreshedOn = &t
+				}
+			}
+		}
+	}
+
+	return dt
+}
+
+func parsePrivateLink(properties []StageProperty) *StagePrivateLink {
+	_, err := collections.FindFirst(properties, func(prop StageProperty) bool {
+		return prop.Parent == "PRIVATELINK"
+	})
+	if err != nil {
+		return nil
+	}
+	pl := &StagePrivateLink{}
+
+	for _, prop := range properties {
+		if prop.Parent != "DIRECTORY" {
+			continue
+		}
+		switch prop.Name {
+		case "USE_PRIVATELINK_ENDPOINT":
+			pl.UsePrivatelinkEndpoint = prop.Value == "true"
+		}
+	}
+	return pl
 }
