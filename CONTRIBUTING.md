@@ -141,6 +141,10 @@ if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefau
 ```
 - Remember to generate the docs [before submitting the PR](#before-submitting-the-pr); the new experiment will be added to the docs automatically.
 - Add entry to the [migration guide](MIGRATION_GUIDE.md).
+- For acceptance tests:
+  - Use the separate file (e.g., `data_source_users_experimental_features_acceptance_test.go` instead of `data_source_users_acceptance_test.go`).
+  - Use the secondary profile with the experiment enablement (e.g., `providerModelWithExperimentEnabled := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).WithExperimentalFeaturesEnabled(experimentalfeatures.ParametersReducedOutput)`)
+  - Use a separate provider factory for the steps with the experiment enabled (e.g., `providerFactoryUsingCache("TestAcc_Experimental_Users_ParametersReducedOutput")`).
 
 ### Before submitting the PR
 
