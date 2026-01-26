@@ -137,3 +137,99 @@ func (s *StageDetailsAssert) HasPrivateLinkUsePrivatelinkEndpoint(expected bool)
 	})
 	return s
 }
+
+// Location assertions
+
+func (s *StageDetailsAssert) HasStageLocation(expected sdk.StageLocationDetails) *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.Location == nil {
+			return fmt.Errorf("expected stage location to have value; got: nil")
+		}
+		if !reflect.DeepEqual(*o.Location, expected) {
+			return fmt.Errorf("expected stage location:\n%+v\ngot:\n%+v", expected, *o.Location)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageDetailsAssert) HasStageLocationUrl(expected string) *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.Location == nil {
+			return fmt.Errorf("expected stage location to have value; got: nil")
+		}
+		if o.Location.Url != expected {
+			return fmt.Errorf("expected stage location url: %v; got: %v", expected, o.Location.Url)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageDetailsAssert) HasStageLocationAwsAccessPointArn(expected string) *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.Location == nil {
+			return fmt.Errorf("expected stage location to have value; got: nil")
+		}
+		if o.Location.AwsAccessPointArn != expected {
+			return fmt.Errorf("expected stage location aws access point arn: %v; got: %v", expected, o.Location.AwsAccessPointArn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageDetailsAssert) HasStageLocationNil() *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.Location != nil {
+			return fmt.Errorf("expected stage location to be nil; got: %+v", *o.Location)
+		}
+		return nil
+	})
+	return s
+}
+
+// Credentials assertions
+
+func (s *StageDetailsAssert) HasStageCredentials(expected sdk.StageCredentials) *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.Credentials == nil {
+			return fmt.Errorf("expected stage credentials to have value; got: nil")
+		}
+		if !reflect.DeepEqual(*o.Credentials, expected) {
+			return fmt.Errorf("expected stage credentials:\n%+v\ngot:\n%+v", expected, *o.Credentials)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageDetailsAssert) HasStageCredentialsAwsKeyId(expected string) *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.Credentials == nil {
+			return fmt.Errorf("expected stage credentials to have value; got: nil")
+		}
+		if o.Credentials.AwsKeyId != expected {
+			return fmt.Errorf("expected stage credentials aws key id: %v; got: %v", expected, o.Credentials.AwsKeyId)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageDetailsAssert) HasStageCredentialsNil() *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.Credentials != nil {
+			return fmt.Errorf("expected stage credentials to be nil; got: %+v", *o.Credentials)
+		}
+		return nil
+	})
+	return s
+}

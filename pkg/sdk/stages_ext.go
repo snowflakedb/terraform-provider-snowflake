@@ -56,10 +56,23 @@ type StageDetails struct {
 	FileFormatCsv  *FileFormatCsv
 	DirectoryTable *StageDirectoryTable
 	PrivateLink    *StagePrivateLink
+	Location       *StageLocationDetails
+	Credentials    *StageCredentials
 }
 
 type StagePrivateLink struct {
 	UsePrivatelinkEndpoint bool
+}
+
+// StageLocationDetails represents location properties from DESCRIBE STAGE
+type StageLocationDetails struct {
+	Url               string
+	AwsAccessPointArn string
+}
+
+// StageCredentials represents credentials properties from DESCRIBE STAGE
+type StageCredentials struct {
+	AwsKeyId string
 }
 
 // ParseStageDetails parses []StageProperty into StageDetails
@@ -68,6 +81,8 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 
 	details.DirectoryTable = parseDirectoryTable(properties)
 	details.PrivateLink = parsePrivateLink(properties)
+	details.Location = parseStageLocationDetails(properties)
+	details.Credentials = parseStageCredentials(properties)
 
 	fileFormat, err := collections.FindFirst(properties, func(prop StageProperty) bool {
 		return prop.Parent == "STAGE_FILE_FORMAT" && prop.Name == "TYPE"
@@ -182,7 +197,7 @@ func parsePrivateLink(properties []StageProperty) *StagePrivateLink {
 	pl := &StagePrivateLink{}
 
 	for _, prop := range properties {
-		if prop.Parent != "DIRECTORY" {
+		if prop.Parent != "PRIVATELINK" {
 			continue
 		}
 		switch prop.Name {
@@ -191,4 +206,48 @@ func parsePrivateLink(properties []StageProperty) *StagePrivateLink {
 		}
 	}
 	return pl
+}
+
+func parseStageLocationDetails(properties []StageProperty) *StageLocationDetails {
+	loc := &StageLocationDetails{}
+	hasAnyProperty := false
+
+	for _, prop := range properties {
+		if prop.Parent != "STAGE_LOCATION" {
+			continue
+		}
+		hasAnyProperty = true
+		switch prop.Name {
+		case "URL":
+			loc.Url = prop.Value
+		case "AWS_ACCESS_POINT_ARN":
+			loc.AwsAccessPointArn = prop.Value
+		}
+	}
+
+	if !hasAnyProperty {
+		return nil
+	}
+	return loc
+}
+
+func parseStageCredentials(properties []StageProperty) *StageCredentials {
+	creds := &StageCredentials{}
+	hasAnyProperty := false
+
+	for _, prop := range properties {
+		if prop.Parent != "STAGE_CREDENTIALS" {
+			continue
+		}
+		hasAnyProperty = true
+		switch prop.Name {
+		case "AWS_KEY_ID":
+			creds.AwsKeyId = prop.Value
+		}
+	}
+
+	if !hasAnyProperty {
+		return nil
+	}
+	return creds
 }

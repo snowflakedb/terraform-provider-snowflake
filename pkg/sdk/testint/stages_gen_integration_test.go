@@ -13,7 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,7 +61,7 @@ func TestInt_Stages(t *testing.T) {
 			HasDirectoryTableEnable(false).
 			HasDirectoryTableAutoRefresh(false).
 			HasDirectoryTableNotificationChannel("").
-			HasDirectoryTableLastRefreshedOnNil())
+			HasDirectoryTableLastRefreshedOnNotEmpty())
 	})
 
 	t.Run("CreateInternal - complete", func(t *testing.T) {
@@ -425,25 +424,9 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.StageDetails(t, id).
 			HasDirectoryTableEnable(true).
-			HasDirectoryTableAutoRefresh(false))
-
-		stageProperties, err := client.Stages.Describe(ctx, id)
-		require.NoError(t, err)
-		require.NotEmpty(t, stageProperties)
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_LOCATION",
-			Name:    "AWS_ACCESS_POINT_ARN",
-			Type:    "String",
-			Value:   "arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap",
-			Default: "",
-		})
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "PRIVATELINK",
-			Name:    "USE_PRIVATELINK_ENDPOINT",
-			Type:    "Boolean",
-			Value:   "true",
-			Default: "false",
-		})
+			HasDirectoryTableAutoRefresh(false).
+			HasStageLocationAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
+			HasPrivateLinkUsePrivatelinkEndpoint(true))
 	})
 
 	t.Run("CreateOnS3 - temporary and or replace", func(t *testing.T) {
@@ -904,92 +887,36 @@ func TestInt_Stages(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
-		require.NoError(t, err)
-		require.NotEmpty(t, stageProperties)
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "DIRECTORY",
-			Name:    "ENABLE",
-			Type:    "Boolean",
-			Value:   "false",
-			Default: "false",
-		})
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_LOCATION",
-			Name:    "URL",
-			Type:    "String",
-			Value:   "",
-			Default: "",
-		})
-
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
 			HasDirectoryTableEnable(false).
-			HasDirectoryTableAutoRefresh(false))
+			HasDirectoryTableAutoRefresh(false).
+			HasStageLocationUrl(""))
 	})
 
 	t.Run("Describe external s3", func(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
-		require.NoError(t, err)
-		require.NotEmpty(t, stageProperties)
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_CREDENTIALS",
-			Name:    "AWS_KEY_ID",
-			Type:    "String",
-			Value:   awsKeyId,
-			Default: "",
-		})
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_LOCATION",
-			Name:    "URL",
-			Type:    "String",
-			Value:   fmt.Sprintf("[\"%s\"]", awsBucketUrl),
-			Default: "",
-		})
+		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
+			HasStageCredentialsAwsKeyId(awsKeyId).
+			HasStageLocationUrl(fmt.Sprintf("[\"%s\"]", awsBucketUrl)))
 	})
 
 	t.Run("Describe external gcs", func(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStageOnGCS(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
-		require.NoError(t, err)
-		require.NotEmpty(t, stageProperties)
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_LOCATION",
-			Name:    "URL",
-			Type:    "String",
-			Value:   fmt.Sprintf("[\"%s\"]", gcsBucketUrl),
-			Default: "",
-		})
+		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
+			HasStageLocationUrl(fmt.Sprintf("[\"%s\"]", gcsBucketUrl)))
 	})
 
 	t.Run("Describe external azure", func(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithCredentials(t)
 		t.Cleanup(cleanup)
 
-		stageProperties, err := client.Stages.Describe(ctx, stage.ID())
-		require.NoError(t, err)
-		require.NotEmpty(t, stageProperties)
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "DIRECTORY",
-			Name:    "ENABLE",
-			Type:    "Boolean",
-			Value:   "false",
-			Default: "false",
-		})
-		assert.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_LOCATION",
-			Name:    "URL",
-			Type:    "String",
-			Value:   fmt.Sprintf("[\"%s\"]", azureBucketUrl),
-			Default: "",
-		})
-
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
-			HasDirectoryTableEnable(false))
+			HasDirectoryTableEnable(false).
+			HasStageLocationUrl(fmt.Sprintf("[\"%s\"]", azureBucketUrl)))
 	})
 
 	t.Run("Show internal", func(t *testing.T) {
