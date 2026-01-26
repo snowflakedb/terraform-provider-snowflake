@@ -79,6 +79,58 @@ func (c *StageClient) CreateStageWithRequest(t *testing.T, request *sdk.CreateIn
 	return stage, c.DropStageFunc(t, request.ID())
 }
 
+func (c *StageClient) CreateStageOnS3WithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateOnS3StageRequest) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().CreateOnS3(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, id)
+}
+
+func (c *StageClient) CreateStageOnGCSWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateOnGCSStageRequest) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().CreateOnGCS(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, id)
+}
+
+func (c *StageClient) CreateStageOnAzureWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateOnAzureStageRequest) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().CreateOnAzure(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, id)
+}
+
+func (c *StageClient) CreateStageOnS3CompatibleWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateOnS3CompatibleStageRequest) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().CreateOnS3Compatible(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, id)
+}
+
 func (c *StageClient) DropStageFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
