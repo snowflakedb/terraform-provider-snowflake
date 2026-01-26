@@ -5,11 +5,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// Dual-value field helpers: String OR Keyword
-// Wrapped in functions to avoid generator's nested field parent conflict
 func stageFileFormatStringOrAuto() *g.QueryStruct {
 	return g.NewQueryStruct("StageFileFormatStringOrAuto").
-		// OptionalTextAssignment("Value", g.ParameterOptions().SingleQuotes().NoEquals().SQL("")).
 		OptionalText("Value", g.KeywordOptions().SingleQuotes()).
 		OptionalSQL("AUTO").
 		WithValidation(g.ExactlyOneValueSet, "Value", "Auto")
@@ -18,7 +15,6 @@ func stageFileFormatStringOrAuto() *g.QueryStruct {
 func stageFileFormatStringOrNone() *g.QueryStruct {
 	return g.NewQueryStruct("StageFileFormatStringOrNone").
 		OptionalText("Value", g.KeywordOptions().SingleQuotes()).
-		// Text("Key", g.KeywordOptions().Required().DoubleQuotes()).
 		OptionalSQL("NONE").
 		WithValidation(g.ExactlyOneValueSet, "Value", "None")
 }

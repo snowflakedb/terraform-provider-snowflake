@@ -358,7 +358,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	id := sdk.NewSchemaObjectIdentifier(dbName, schemaName, fileFormatName)
 
 	opts := sdk.CreateFileFormatOptions{
-		Type:                  sdk.FileFormatType(d.Get("format_type").(string)),
+		Type:                        sdk.FileFormatType(d.Get("format_type").(string)),
 		LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{},
 	}
 
