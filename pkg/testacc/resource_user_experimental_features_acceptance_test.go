@@ -12,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -33,7 +32,8 @@ func TestAcc_Experimental_User_ParametersReducedOutput_UpdateExisting(t *testing
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.User),
+		// TODO [SNOW-1653619]: check destroy for secondary account
+		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			// setting up initially with the whole output
 			{
@@ -150,7 +150,8 @@ func TestAcc_Experimental_User_ParametersReducedOutput_CreateNew(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.User),
+		// TODO [SNOW-1653619]: check destroy for secondary account
+		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, providerModelWithExperimentEnabled, userModel),
