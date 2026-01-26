@@ -1,4 +1,4 @@
-### Active experiments 
+### Active experiments
 
 The following experiments are currently active. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
 

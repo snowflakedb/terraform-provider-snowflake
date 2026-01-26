@@ -891,7 +891,7 @@ Similarly to preview features, they are not yet stable features of the provider.
 Enabling the given experiment is still considered a preview feature, even when applied to the stable resource.
 If the given experiment is successful, it can be considered an addition in the future provider versions.
 
-### Active experiments 
+### Active experiments
 
 The following experiments are currently active. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
 
