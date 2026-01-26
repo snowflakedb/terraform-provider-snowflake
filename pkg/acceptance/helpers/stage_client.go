@@ -223,3 +223,10 @@ func (c *StageClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) ([]s
 
 	return c.client().Describe(ctx, id)
 }
+
+func (c *StageClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Stage, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByID(ctx, id)
+}
