@@ -230,8 +230,8 @@ func (s *TableSetRequest) toOpts() *TableSet {
 		Comment:                    s.Comment,
 	}
 
-	if s.StageCopyOptions != nil {
-		set.StageCopyOptions = s.StageCopyOptions.toOpts()
+	if s.LegacyTableCopyOptions != nil {
+		set.StageCopyOptions = s.LegacyTableCopyOptions.toOpts()
 	}
 	if s.StageFileFormat != nil {
 		set.StageFileFormat = s.StageFileFormat.toOpts()
@@ -630,16 +630,16 @@ func (s *CreateTableCloneRequest) toOpts() *createTableCloneOptions {
 	}
 }
 
-func (v *StageFileFormatRequest) toOpts() *StageFileFormat {
-	return &StageFileFormat{
+func (v *LegacyFileFormatRequest) toOpts() *LegacyFileFormat {
+	return &LegacyFileFormat{
 		FormatName:     v.FormatName,
 		FileFormatType: v.FileFormatType,
 		Options:        v.Options.toOpts(),
 	}
 }
 
-func (v *StageCopyOptionsRequest) toOpts() *StageCopyOptions {
-	return &StageCopyOptions{
+func (v *LegacyTableCopyOptionsRequest) toOpts() *LegacyTableCopyOptions {
+	return &LegacyTableCopyOptions{
 		OnError:           v.OnError.toOpts(),
 		SizeLimit:         v.SizeLimit,
 		Purge:             v.Purge,
@@ -651,22 +651,22 @@ func (v *StageCopyOptionsRequest) toOpts() *StageCopyOptions {
 	}
 }
 
-func (s *StageCopyOnErrorOptionsRequest) toOpts() *StageCopyOnErrorOptions {
-	return &StageCopyOnErrorOptions{
+func (s *LegacyTableCopyOnErrorOptionsRequest) toOpts() *LegacyTableCopyOnErrorOptions {
+	return &LegacyTableCopyOnErrorOptions{
 		Continue_:      s.Continue_,
 		SkipFile:       s.SkipFile,
 		AbortStatement: s.AbortStatement,
 	}
 }
 
-func convertStageFileFormatOptions(stageFileFormatRequests []StageFileFormatRequest) []StageFileFormat {
-	fileFormats := make([]StageFileFormat, 0, len(stageFileFormatRequests))
+func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRequest) []LegacyFileFormat {
+	fileFormats := make([]LegacyFileFormat, 0, len(stageFileFormatRequests))
 	for _, request := range stageFileFormatRequests {
 		var options *FileFormatTypeOptions
 		if request.Options != nil {
 			options = request.Options.toOpts()
 		}
-		format := StageFileFormat{
+		format := LegacyFileFormat{
 			FormatName:     request.FormatName,
 			FileFormatType: request.FileFormatType,
 			Options:        options,
@@ -676,7 +676,7 @@ func convertStageFileFormatOptions(stageFileFormatRequests []StageFileFormatRequ
 	return fileFormats
 }
 
-func (v *FileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptions {
+func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptions {
 	if v == nil {
 		return nil
 	}

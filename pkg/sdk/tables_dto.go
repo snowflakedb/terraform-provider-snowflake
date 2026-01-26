@@ -64,8 +64,8 @@ type CreateTableRequest struct {
 	OutOfLineConstraints       []OutOfLineConstraintRequest
 	clusterBy                  []string
 	enableSchemaEvolution      *bool
-	stageFileFormat            *StageFileFormatRequest
-	stageCopyOptions           *StageCopyOptionsRequest
+	stageFileFormat            *LegacyFileFormatRequest
+	stageCopyOptions           *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
@@ -264,7 +264,7 @@ type TagAssociationRequest struct {
 	Value string           // required
 }
 
-type FileFormatTypeOptionsRequest struct {
+type LegacyFileFormatTypeOptionsRequest struct {
 	CSVCompression                *CSVCompression
 	CSVRecordDelimiter            *string
 	CSVFieldDelimiter             *string
@@ -491,8 +491,8 @@ type TableSearchOptimizationActionRequest struct {
 
 type TableSetRequest struct {
 	EnableSchemaEvolution      *bool
-	StageFileFormat            *StageFileFormatRequest
-	StageCopyOptions           *StageCopyOptionsRequest
+	StageFileFormat            *LegacyFileFormatRequest
+	LegacyTableCopyOptions     *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
@@ -544,4 +544,28 @@ type DescribeTableColumnsRequest struct {
 
 type DescribeTableStageRequest struct {
 	id SchemaObjectIdentifier // required
+}
+
+type LegacyTableCopyOptionsRequest struct {
+	OnError           *LegacyTableCopyOnErrorOptionsRequest
+	SizeLimit         *int
+	Purge             *bool
+	ReturnFailedOnly  *bool
+	MatchByColumnName *StageCopyColumnMapOption
+	EnforceLength     *bool
+	Truncatecolumns   *bool
+	Force             *bool
+}
+
+type LegacyTableCopyOnErrorOptionsRequest struct {
+	Continue_      *bool
+	SkipFile       *string
+	AbortStatement *bool
+}
+
+type LegacyFileFormatRequest struct {
+	FormatName     *string
+	FileFormatType *FileFormatType
+	// adjusted manually
+	Options *LegacyFileFormatTypeOptionsRequest
 }
