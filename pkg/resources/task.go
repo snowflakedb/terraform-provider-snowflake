@@ -629,7 +629,8 @@ func UpdateTask(ctx context.Context, d *schema.ResourceData, meta any) (diags di
 
 func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -751,7 +752,7 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 			handleTaskParameterRead(d, taskParameters),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.TaskToSchema(task)}),
-			d.Set(ParametersAttributeName, []map[string]any{schemas.TaskParametersToSchema(taskParameters)}),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.TaskParametersToSchema(taskParameters, providerCtx)}),
 		); errs != nil {
 			return diag.FromErr(errs)
 		}
