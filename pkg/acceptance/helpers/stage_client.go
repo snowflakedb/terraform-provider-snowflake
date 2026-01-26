@@ -415,6 +415,16 @@ func (c *StageClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) ([]s
 	return c.client().Describe(ctx, id)
 }
 
+func (c *StageClient) DescribeDetails(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.StageDetails, error) {
+	t.Helper()
+	properties, err := c.Describe(t, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return sdk.ParseStageDetails(properties)
+}
+
 func (c *StageClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Stage, error) {
 	t.Helper()
 	ctx := context.Background()

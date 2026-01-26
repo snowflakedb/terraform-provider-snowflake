@@ -106,6 +106,186 @@ func TestInt_Stages(t *testing.T) {
 		)
 	})
 
+	t.Run("CreateInternal - minimal with CSV file format", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		fileFormat := sdk.NewStageFileFormatRequest().
+			WithFileFormatOptions(sdk.FileFormatOptions{
+				CsvOptions: &sdk.FileFormatCsvOptions{},
+			})
+
+		request := sdk.NewCreateInternalStageRequest(id).
+			WithFileFormat(*fileFormat)
+
+		err := client.Stages.CreateInternal(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasFileFormatCsv(sdk.FileFormatCsv{
+				Type:                       "CSV",
+				RecordDelimiter:            "\\n",
+				FieldDelimiter:             ",",
+				FileExtension:              "",
+				SkipHeader:                 0,
+				ParseHeader:                false,
+				DateFormat:                 "AUTO",
+				TimeFormat:                 "AUTO",
+				TimestampFormat:            "AUTO",
+				BinaryFormat:               "HEX",
+				Escape:                     "NONE",
+				EscapeUnenclosedField:      "\\",
+				TrimSpace:                  false,
+				FieldOptionallyEnclosedBy:  "NONE",
+				NullIf:                     []string{"\\N"},
+				Compression:                "AUTO",
+				ErrorOnColumnCountMismatch: true,
+				ValidateUtf8:               true,
+				SkipBlankLines:             false,
+				ReplaceInvalidCharacters:   false,
+				EmptyFieldAsNull:           true,
+				SkipByteOrderMark:          true,
+				Encoding:                   "UTF8",
+				MultiLine:                  true,
+			}))
+	})
+
+	t.Run("CreateInternal - complete with CSV file format options", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		gzipCompression := sdk.CSVCompressionGzip
+		base64Format := sdk.BinaryFormatBase64
+		utf8Encoding := sdk.CSVEncodingUTF8
+		multiLine := false
+		fileExtension := ".csv"
+		skipHeader := 2
+		skipBlankLines := true
+		dateFormat := "YYYY-MM-DD"
+		timeFormat := "HH24:MI:SS"
+		timestampFormat := "YYYY-MM-DD HH24:MI:SS"
+		escapeVal := `\\`
+		trimSpace := true
+		enclosedBy := `'`
+		errorOnMismatch := false
+		replaceInvalid := true
+		emptyAsNull := false
+		skipBom := false
+
+		fileFormat := sdk.NewStageFileFormatRequest().
+			WithFileFormatOptions(sdk.FileFormatOptions{
+				CsvOptions: &sdk.FileFormatCsvOptions{
+					Compression:                &gzipCompression,
+					RecordDelimiter:            &sdk.StageFileFormatStringOrNone{Value: sdk.String("\\n")},
+					FieldDelimiter:             &sdk.StageFileFormatStringOrNone{Value: sdk.String("|")},
+					MultiLine:                  &multiLine,
+					FileExtension:              &fileExtension,
+					SkipHeader:                 &skipHeader,
+					SkipBlankLines:             &skipBlankLines,
+					DateFormat:                 &sdk.StageFileFormatStringOrAuto{Value: &dateFormat},
+					TimeFormat:                 &sdk.StageFileFormatStringOrAuto{Value: &timeFormat},
+					TimestampFormat:            &sdk.StageFileFormatStringOrAuto{Value: &timestampFormat},
+					BinaryFormat:               &base64Format,
+					Escape:                     &sdk.StageFileFormatStringOrNone{Value: &escapeVal},
+					EscapeUnenclosedField:      &sdk.StageFileFormatStringOrNone{Value: &escapeVal},
+					TrimSpace:                  &trimSpace,
+					FieldOptionallyEnclosedBy:  &sdk.StageFileFormatStringOrNone{Value: &enclosedBy},
+					NullIf:                     []sdk.NullString{{S: "NULL"}, {S: ""}},
+					ErrorOnColumnCountMismatch: &errorOnMismatch,
+					ReplaceInvalidCharacters:   &replaceInvalid,
+					EmptyFieldAsNull:           &emptyAsNull,
+					SkipByteOrderMark:          &skipBom,
+					Encoding:                   &utf8Encoding,
+				},
+			})
+
+		request := sdk.NewCreateInternalStageRequest(id).
+			WithFileFormat(*fileFormat)
+
+		err := client.Stages.CreateInternal(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasFileFormatCsv(sdk.FileFormatCsv{
+				Type:                       "CSV",
+				RecordDelimiter:            "\\n",
+				FieldDelimiter:             "|",
+				FileExtension:              ".csv",
+				SkipHeader:                 2,
+				ParseHeader:                false,
+				DateFormat:                 "YYYY-MM-DD",
+				TimeFormat:                 timeFormat,
+				TimestampFormat:            timestampFormat,
+				BinaryFormat:               "BASE64",
+				Escape:                     escapeVal,
+				EscapeUnenclosedField:      escapeVal,
+				TrimSpace:                  true,
+				FieldOptionallyEnclosedBy:  enclosedBy,
+				NullIf:                     []string{"NULL", ""},
+				Compression:                "GZIP",
+				ErrorOnColumnCountMismatch: false,
+				ValidateUtf8:               true,
+				SkipBlankLines:             true,
+				ReplaceInvalidCharacters:   true,
+				EmptyFieldAsNull:           false,
+				SkipByteOrderMark:          false,
+				Encoding:                   "UTF8",
+				MultiLine:                  false,
+			}))
+	})
+
+	t.Run("CreateInternal - complete with CSV file format options; auto/none", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		fileFormat := sdk.NewStageFileFormatRequest().
+			WithFileFormatOptions(sdk.FileFormatOptions{
+				CsvOptions: &sdk.FileFormatCsvOptions{
+					RecordDelimiter:           &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)},
+					FieldDelimiter:            &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)},
+					DateFormat:                &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
+					TimeFormat:                &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
+					TimestampFormat:           &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
+					Escape:                    &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)},
+					EscapeUnenclosedField:     &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)},
+					FieldOptionallyEnclosedBy: &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)},
+				},
+			})
+
+		request := sdk.NewCreateInternalStageRequest(id).
+			WithFileFormat(*fileFormat)
+
+		err := client.Stages.CreateInternal(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasFileFormatCsv(sdk.FileFormatCsv{
+				Type:                       "CSV",
+				RecordDelimiter:            "NONE",
+				FieldDelimiter:             "NONE",
+				FileExtension:              "",
+				SkipHeader:                 0,
+				ParseHeader:                false,
+				DateFormat:                 "AUTO",
+				TimeFormat:                 "AUTO",
+				TimestampFormat:            "AUTO",
+				BinaryFormat:               "HEX",
+				Escape:                     "NONE",
+				EscapeUnenclosedField:      "NONE",
+				TrimSpace:                  false,
+				FieldOptionallyEnclosedBy:  "NONE",
+				NullIf:                     []string{"\\\\N"},
+				Compression:                "AUTO",
+				ErrorOnColumnCountMismatch: true,
+				ValidateUtf8:               true,
+				SkipBlankLines:             false,
+				ReplaceInvalidCharacters:   false,
+				EmptyFieldAsNull:           true,
+				SkipByteOrderMark:          true,
+				Encoding:                   "UTF8",
+				MultiLine:                  true,
+			}))
+	})
 	t.Run("AlterInternalStage - complete", func(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(cleanup)
