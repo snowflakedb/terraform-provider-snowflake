@@ -72,7 +72,7 @@ var allExperiments = []Experiment{
 		ExperimentalFeatureStateActive,
 		joinWithDoubleNewline(
 			"Currently, the `parameters` field in various resources contains a verbatim output for the `SHOW PARAMETERS IN <object>` command. One of the fields contained in the output is the `description`. It does not change and is repeated for all objects containing the given parameter. It leads to an excessive output (check e.g., [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)).",
-			"To mitigate the problem, we are adding this option to reduce the output to only `value` and `level` fields, which should significantly reduce the state size.",
+			"To mitigate the problem, we are adding this option to reduce the output to only `value` and `level` fields, which should significantly reduce the state size. **Note**: it's also affecting the `parameters` output for data sources.",
 			"We considered the option to remove the `parameters` output completely, however, we plan to change the external change logic detection to use it (to make it consistent with other attributes using `show_output` and because we won't be able to implement the current logic when switching to the Terraform Plugin Framework).",
 		),
 	},
