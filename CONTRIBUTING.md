@@ -118,6 +118,30 @@ It's best to discuss with us what checks we expect prior to making the change.
 
 If the change requires manual actions when bumping the provider version, they should be added to the [migration guide](MIGRATION_GUIDE.md).
 
+### Hide the changes behind the feature switch (if applies)
+
+When modifying the stable parts of the provider, we need to be careful with introducing the breaking changes (we follow semantic versioning, so we shouldn't introduce breaking changes without bumping the major version number, except preview features and Snowflake BCR Bundles - [docs](https://docs.snowflake.com/en/user-guide/terraform#versioning-and-preview-features)).
+
+Instead of bumping the version, we can hide the behavior change behind the experiment, that way:
+- We limit the number of major version releases.
+- We allow accessing the newest features as early as possible.
+- We do not break existing configurations with the additional features.
+
+All current experiments are available in the [dedicated section in the registry documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#active-experiments).
+
+To add the experiment:
+- Add it to [`allExperiments`](pkg/provider/experimentalfeatures/experimental_features.go).
+- Guard the logic with conditional statement like (example in the [user resource](pkg/resources/user.go)):
+```go
+if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) { 
+  // new logic here
+} else {
+  // old logic here
+}
+```
+- Remember to generate the docs [before submitting the PR](#before-submitting-the-pr); the new experiment will be added to the docs automatically.
+- Add entry to the [migration guide](MIGRATION_GUIDE.md).
+
 ### Before submitting the PR
 
 The documentation for the provider is generated automatically. We follow the few formatting conventions that are automatically checked with every PR. They can fail and delay the resolution of your PR. To make it much less possible, run `make pre-push` before pushing your changes to GH. It will reformat your code (or suggest reformatting), generate all the missing docs, clean the dependencies, etc.
