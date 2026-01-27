@@ -112,7 +112,8 @@ func CreateContextProcedureScala(ctx context.Context, d *schema.ResourceData, me
 }
 
 func ReadContextProcedureScala(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -147,7 +148,7 @@ func ReadContextProcedureScala(ctx context.Context, d *schema.ResourceData, meta
 		handleProcedureParameterRead(d, allProcedureDetails.procedureParameters),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ProcedureToSchema(allProcedureDetails.procedure)}),
-		d.Set(ParametersAttributeName, []map[string]any{schemas.ProcedureParametersToSchema(allProcedureDetails.procedureParameters)}),
+		d.Set(ParametersAttributeName, []map[string]any{schemas.ProcedureParametersToSchema(allProcedureDetails.procedureParameters, providerCtx)}),
 	)
 	if errs != nil {
 		return diag.FromErr(err)

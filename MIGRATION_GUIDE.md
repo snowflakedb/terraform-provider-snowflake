@@ -109,7 +109,7 @@ Note: `auto_suspend` still uses `SET` with the default value (600) as a workarou
 
 No changes in the configuration is required.
 
-## *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
+### *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
 Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.
 
 In this release, this bug has been fixed. After failing Terraform operations, the state should be preserved correctly.
@@ -117,6 +117,51 @@ In this release, this bug has been fixed. After failing Terraform operations, th
 If you previously ended up in a corrupted state, you can remove the resource from the state and reimport it using `terraform import`.
 
 No changes in configuration are required.
+
+### *(new experiment)* Reduce the `parameters` output
+
+Currently, the `parameters` field in various resources contains a verbatim output for the `SHOW PARAMETERS IN <object>` command. One of the fields contained in the output is the `description`. It does not change and is repeated for all objects containing the given parameter. It leads to an excessive output (check e.g., [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)).
+
+To mitigate the problem, we are adding this option to reduce the output to only `value` and `level` fields, which should significantly reduce the state size. **Note**: it's also affecting the `parameters` output for data sources.
+
+We considered the option to remove the `parameters` output completely, however, we plan to change the external change logic detection to use it (to make it consistent with other attributes using `show_output` and because we won't be able to implement the current logic when switching to the Terraform Plugin Framework) and it still allows referencing the parameter value/level from other parts of the configuration.
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `PARAMETERS_REDUCED_OUTPUT` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.12.0/docs#experimental_features_enabled-1) provider field.
+It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/2.12.0/docs#preview_features_enabled-1),
+but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
+
+**It's still considered a preview feature, even when applied to the stable resources.**
+
+Affected data sources:
+- `snowflake_databases`
+- `snowflake_schemas`
+- `snowflake_tasks`
+- `snowflake_users`
+- `snowflake_warehouses`
+
+Affected resources:
+- `snowflake_external_oauth_integration`
+- `snowflake_oauth_integration_for_custom_clients`
+- `snowflake_oauth_integration_for_partner_applications`
+- `snowflake_schema`
+- `snowflake_task`
+- `snowflake_user`
+- `snowflake_service_user`
+- `snowflake_legacy_service_user`
+- `snowflake_warehouse`
+- `snowflake_function_java`
+- `snowflake_function_javascript`
+- `snowflake_function_python`
+- `snowflake_function_scala`
+- `snowflake_function_sql`
+- `snowflake_procedure_java`
+- `snowflake_procedure_javascript`
+- `snowflake_procedure_python`
+- `snowflake_procedure_scala`
+- `snowflake_procedure_sql`
+
+References: [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)
 
 ## v2.11.x ➞ v2.12.0
 
