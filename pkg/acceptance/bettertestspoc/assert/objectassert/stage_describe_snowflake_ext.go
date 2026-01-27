@@ -96,6 +96,17 @@ func (s *StageDetailsAssert) HasDirectoryTableAutoRefresh(expected bool) *StageD
 	return s
 }
 
+func (s *StageDetailsAssert) HasDirectoryTableNotificationChannelEmpty() *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.DirectoryTable == nil {
+			return fmt.Errorf("expected directory table to have value; got: nil")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageDetailsAssert) HasDirectoryTableNotificationChannel(expected string) *StageDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
 		t.Helper()

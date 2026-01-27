@@ -63,7 +63,7 @@ func TestInt_Stages(t *testing.T) {
 			}).
 			HasDirectoryTableEnable(false).
 			HasDirectoryTableAutoRefresh(false).
-			HasDirectoryTableNotificationChannel("").
+			HasDirectoryTableNotificationChannelEmpty().
 			HasDirectoryTableLastRefreshedOnNil(),
 		)
 	})
@@ -76,6 +76,7 @@ func TestInt_Stages(t *testing.T) {
 		t.Cleanup(fileFormatCleanup)
 
 		request := sdk.NewCreateInternalStageRequest(id).
+			WithIfNotExists(true).
 			WithEncryption(*sdk.NewInternalStageEncryptionRequest().
 				WithSnowflakeFull(*sdk.NewInternalStageEncryptionSnowflakeFullRequest())).
 			WithDirectoryTableOptions(*sdk.NewInternalDirectoryTableOptionsRequest().
@@ -89,6 +90,7 @@ func TestInt_Stages(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
+		// Encryption type are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
@@ -254,7 +256,7 @@ func TestInt_Stages(t *testing.T) {
 			}))
 	})
 
-	t.Run("CreateInternal - complete with CSV file format options; auto/none", func(t *testing.T) {
+	t.Run("CreateInternal - complete with CSV file format options; auto and none", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		fileFormat := sdk.NewStageFileFormatRequest().
@@ -357,7 +359,8 @@ func TestInt_Stages(t *testing.T) {
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
 				WithAwsKeyId(awsKeyId).
-				WithAwsSecretKey(awsSecretKey))
+				WithAwsSecretKey(awsSecretKey).
+				WithAwsToken("asdf"))
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
 
@@ -371,6 +374,56 @@ func TestInt_Stages(t *testing.T) {
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasHasCredentials(true).
+			HasOwner(snowflakeroles.Accountadmin.Name()))
+	})
+
+	t.Run("CreateOnS3 - with credentials using AWS_ROLE", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
+				WithAwsRole("arn:aws:iam::123456789012:role/MyRole"))
+
+		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
+
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		// AWS_ROLE is not returned by Snowflake in SHOW or DESCRIBE, so we can only verify the stage was created.
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
+			HasType("EXTERNAL").
+			HasUrl(awsBucketUrl).
+			HasCloud("AWS").
+			HasHasCredentials(true).
+			HasOwner(snowflakeroles.Accountadmin.Name()))
+	})
+
+	t.Run("CreateOnS3 - with AWS_CSE encryption", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		// It must be either 128 bits, 192 bits, or 256 bits long
+		masterKey := random.AlphaN(256 / 8)
+
+		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+			WithStorageIntegration(ids.PrecreatedS3StorageIntegration).
+			WithEncryption(*sdk.NewExternalStageS3EncryptionRequest().
+				WithAwsCse(*sdk.NewExternalStageS3EncryptionAwsCseRequest(masterKey)))
+
+		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
+
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		// Encryption type and master key are not returned by Snowflake in SHOW or DESCRIBE.
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
+			HasType("EXTERNAL").
+			HasUrl(awsBucketUrl).
+			HasCloud("AWS").
+			HasStorageIntegration(ids.PrecreatedS3StorageIntegration).
+			HasHasEncryptionKey(true).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
 	})
 
@@ -407,9 +460,10 @@ func TestInt_Stages(t *testing.T) {
 			WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
 			WithStorageIntegration(ids.PrecreatedS3StorageIntegration).
 			WithEncryption(*sdk.NewExternalStageS3EncryptionRequest().
-				WithAwsSseS3(*sdk.NewExternalStageS3EncryptionAwsSseS3Request()))
+				WithAwsSseKms(*sdk.NewExternalStageS3EncryptionAwsSseKmsRequest().WithKmsKeyId(random.AlphaN(12))))
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
+			WithIfNotExists(true).
 			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithRefreshOnCreate(true).
@@ -420,6 +474,7 @@ func TestInt_Stages(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
+		// Encryption type, RefreshOnCreate, and other credentials fields are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL").
@@ -445,6 +500,7 @@ func TestInt_Stages(t *testing.T) {
 			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
+			WithOrReplace(true).
 			WithTemporary(true).
 			WithOrReplace(true)
 
@@ -461,6 +517,24 @@ func TestInt_Stages(t *testing.T) {
 		)
 	})
 
+	t.Run("AlterExternalS3Stage - use privatelink", func(t *testing.T) {
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
+		t.Cleanup(cleanup)
+
+		require.Equal(t, "", stage.Comment)
+
+		err := client.Stages.AlterExternalS3Stage(ctx, sdk.NewAlterExternalS3StageStageRequest(stage.ID()).
+			WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(awsBucketUrl).WithUsePrivatelinkEndpoint(true)))
+		require.NoError(t, err)
+
+		stage, err = client.Stages.ShowByID(ctx, stage.ID())
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
+			HasPrivateLinkUsePrivatelinkEndpoint(true),
+		)
+	})
+
 	t.Run("AlterExternalS3Stage - complete", func(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
 		t.Cleanup(cleanup)
@@ -468,8 +542,10 @@ func TestInt_Stages(t *testing.T) {
 		require.Equal(t, "", stage.Comment)
 
 		err := client.Stages.AlterExternalS3Stage(ctx, sdk.NewAlterExternalS3StageStageRequest(stage.ID()).
+			WithIfExists(true).
 			WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-				WithStorageIntegration(ids.PrecreatedS3StorageIntegration)).
+				WithStorageIntegration(ids.PrecreatedS3StorageIntegration).
+				WithEncryption(*sdk.NewExternalStageS3EncryptionRequest().WithNone(*sdk.NewExternalStageS3EncryptionNoneRequest()))).
 			WithComment("Updated comment"))
 		require.NoError(t, err)
 
@@ -515,13 +591,15 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateOnGCS - complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := "complete gcs stage"
+		kmsKeyId := random.AlphaN(12)
 
 		gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
 			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration).
 			WithEncryption(*sdk.NewExternalStageGCSEncryptionRequest().
-				WithGcsSseKms(*sdk.NewExternalStageGCSEncryptionGcsSseKmsRequest()))
+				WithGcsSseKms(*sdk.NewExternalStageGCSEncryptionGcsSseKmsRequest().WithKmsKeyId(kmsKeyId)))
 
 		request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq).
+			WithIfNotExists(true).
 			WithDirectoryTableOptions(*sdk.NewExternalGCSDirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithRefreshOnCreate(true).
@@ -532,12 +610,15 @@ func TestInt_Stages(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
+		// Encryption type, RefreshOnCreate, and other credentials fields are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL").
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
 			HasStorageIntegration(gcpStorageIntegration.ID()).
+			HasHasEncryptionKey(true).
+			HasHasCredentials(false).
 			HasDirectoryEnabled(true).
 			HasComment(comment))
 
@@ -554,6 +635,7 @@ func TestInt_Stages(t *testing.T) {
 			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
 
 		request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq).
+			WithOrReplace(true).
 			WithTemporary(true).
 			WithComment(comment)
 
@@ -577,8 +659,10 @@ func TestInt_Stages(t *testing.T) {
 		require.Equal(t, "", stage.Comment)
 
 		err := client.Stages.AlterExternalGCSStage(ctx, sdk.NewAlterExternalGCSStageStageRequest(stage.ID()).
+			WithIfExists(true).
 			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
-				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)).
+				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration).
+				WithEncryption(*sdk.NewExternalStageGCSEncryptionRequest().WithNone(*sdk.NewExternalStageGCSEncryptionNoneRequest()))).
 			WithComment("Updated comment"))
 		require.NoError(t, err)
 
@@ -647,9 +731,10 @@ func TestInt_Stages(t *testing.T) {
 		azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
 			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken)).
 			WithEncryption(*sdk.NewExternalStageAzureEncryptionRequest().
-				WithAzureCse(*sdk.NewExternalStageAzureEncryptionAzureCseRequest(random.AlphaN(256 / 8)))) // TODO: add random master key
+				WithAzureCse(*sdk.NewExternalStageAzureEncryptionAzureCseRequest(random.AlphaN(256 / 8))))
 
 		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq).
+			WithIfNotExists(true).
 			WithDirectoryTableOptions(*sdk.NewExternalAzureDirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithRefreshOnCreate(false).
@@ -660,6 +745,7 @@ func TestInt_Stages(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
+		// Encryption type, RefreshOnCreate, and other credentials fields are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL").
@@ -683,6 +769,7 @@ func TestInt_Stages(t *testing.T) {
 			WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)
 
 		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq).
+			WithOrReplace(true).
 			WithTemporary(true).
 			WithComment(comment)
 
@@ -706,8 +793,10 @@ func TestInt_Stages(t *testing.T) {
 		require.Equal(t, "", stage.Comment)
 
 		err := client.Stages.AlterExternalAzureStage(ctx, sdk.NewAlterExternalAzureStageStageRequest(stage.ID()).
+			WithIfExists(true).
 			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-				WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)).
+				WithStorageIntegration(ids.PrecreatedAzureStorageIntegration).
+				WithEncryption(*sdk.NewExternalStageAzureEncryptionRequest().WithNone(*sdk.NewExternalStageAzureEncryptionNoneRequest()))).
 			WithComment("Updated comment"))
 		require.NoError(t, err)
 
@@ -760,6 +849,7 @@ func TestInt_Stages(t *testing.T) {
 			WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
 
 		request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq).
+			WithIfNotExists(true).
 			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithRefreshOnCreate(false).
@@ -770,6 +860,7 @@ func TestInt_Stages(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
 
+		// Encryption type, RefreshOnCreate, and other credentials fields are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
 			HasType("EXTERNAL").
@@ -777,6 +868,8 @@ func TestInt_Stages(t *testing.T) {
 			HasCloud("AWS").
 			HasEndpoint(endpoint).
 			HasDirectoryEnabled(true).
+			HasHasCredentials(true).
+			HasHasEncryptionKey(false).
 			HasComment(comment))
 
 		assertThatObject(t, objectassert.StageDetails(t, id).
@@ -794,6 +887,7 @@ func TestInt_Stages(t *testing.T) {
 			WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
 
 		request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq).
+			WithOrReplace(true).
 			WithTemporary(true).
 			WithComment(comment)
 
