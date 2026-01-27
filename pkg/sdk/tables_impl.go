@@ -662,7 +662,7 @@ func (s *LegacyTableCopyOnErrorOptionsRequest) toOpts() *LegacyTableCopyOnErrorO
 func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRequest) []LegacyFileFormat {
 	fileFormats := make([]LegacyFileFormat, 0, len(stageFileFormatRequests))
 	for _, request := range stageFileFormatRequests {
-		var options *FileFormatTypeOptions
+		var options *LegacyFileFormatTypeOptions
 		if request.Options != nil {
 			options = request.Options.toOpts()
 		}
@@ -676,11 +676,11 @@ func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRe
 	return fileFormats
 }
 
-func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptions {
+func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *LegacyFileFormatTypeOptions {
 	if v == nil {
 		return nil
 	}
-	return &FileFormatTypeOptions{
+	return &LegacyFileFormatTypeOptions{
 		CSVCompression:                  v.CSVCompression,
 		CSVRecordDelimiter:              v.CSVRecordDelimiter,
 		CSVFieldDelimiter:               v.CSVFieldDelimiter,
