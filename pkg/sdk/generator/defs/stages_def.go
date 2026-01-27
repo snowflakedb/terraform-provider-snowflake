@@ -406,7 +406,7 @@ var stagesDef = g.NewInterface(
 			Field("Type", "string").
 			Field("Cloud", "*string").
 			// notification_channel is deprecated in Snowflake.
-			Field("StorageIntegration", "*string").
+			Field("StorageIntegration", "*AccountObjectIdentifier").
 			Field("Endpoint", "*string").
 			Field("OwnerRoleType", "*string").
 			Field("DirectoryEnabled", "bool"),

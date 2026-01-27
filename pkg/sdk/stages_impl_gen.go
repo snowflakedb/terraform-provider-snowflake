@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -553,7 +554,11 @@ func (r stageShowRow) convert() (*Stage, error) {
 		stage.Cloud = &r.Cloud.String
 	}
 	if r.StorageIntegration.Valid {
-		stage.StorageIntegration = &r.StorageIntegration.String
+		id, err := ParseAccountObjectIdentifier(r.StorageIntegration.String)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse storage integration: %w", err)
+		}
+		stage.StorageIntegration = &id
 	}
 	if r.Endpoint.Valid {
 		stage.Endpoint = &r.Endpoint.String

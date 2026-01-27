@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -47,12 +48,13 @@ type FileFormatCsv struct {
 type StageDirectoryTable struct {
 	Enable                       bool
 	AutoRefresh                  bool
-	DirectoryNotificationChannel string
+	DirectoryNotificationChannel *string
 	LastRefreshedOn              *time.Time
 }
 
 // StageDetails represents the parsed result of DESCRIBE STAGE
 type StageDetails struct {
+	FileFormatName *SchemaObjectIdentifier
 	FileFormatCsv  *FileFormatCsv
 	DirectoryTable *StageDirectoryTable
 	PrivateLink    *StagePrivateLink
@@ -83,18 +85,34 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 	details.PrivateLink = parsePrivateLink(properties)
 	details.Location = parseStageLocationDetails(properties)
 	details.Credentials = parseStageCredentials(properties)
+	details.FileFormatName = parseFileFormatName(properties)
 
-	fileFormat, err := collections.FindFirst(properties, func(prop StageProperty) bool {
+	fileFormatType, err := collections.FindFirst(properties, func(prop StageProperty) bool {
 		return prop.Parent == "STAGE_FILE_FORMAT" && prop.Name == "TYPE"
 	})
 	if err != nil {
-		return nil, err
+		return details, nil
 	}
-	if fileFormat.Value == "CSV" {
+	if fileFormatType.Value == "CSV" {
 		details.FileFormatCsv = parseCsvFileFormat(properties)
 	}
 
 	return details, nil
+}
+
+func parseFileFormatName(properties []StageProperty) *SchemaObjectIdentifier {
+	fileFormatName, err := collections.FindFirst(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT" && prop.Name == "FORMAT_NAME"
+	})
+	if err != nil {
+		return nil
+	}
+	idRaw := strings.ReplaceAll(fileFormatName.Value, `\"`, `"`)
+	id, err := ParseSchemaObjectIdentifier(idRaw)
+	if err != nil {
+		return nil
+	}
+	return &id
 }
 
 func parseCsvFileFormat(properties []StageProperty) *FileFormatCsv {
@@ -173,7 +191,7 @@ func parseDirectoryTable(properties []StageProperty) *StageDirectoryTable {
 		case "AUTO_REFRESH":
 			dt.AutoRefresh = prop.Value == "true"
 		case "DIRECTORY_NOTIFICATION_CHANNEL":
-			dt.DirectoryNotificationChannel = prop.Value
+			dt.DirectoryNotificationChannel = &prop.Value
 		case "LAST_REFRESHED_ON":
 			if prop.Value != "" {
 				t, err := time.Parse("2006-01-02 15:04:05.000 -0700", prop.Value)

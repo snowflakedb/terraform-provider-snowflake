@@ -58,15 +58,22 @@ func TestInt_Stages(t *testing.T) {
 			HasOwnerRoleType("ROLE"))
 
 		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasStageLocation(sdk.StageLocationDetails{
+				Url: "",
+			}).
 			HasDirectoryTableEnable(false).
 			HasDirectoryTableAutoRefresh(false).
 			HasDirectoryTableNotificationChannel("").
-			HasDirectoryTableLastRefreshedOnNotEmpty())
+			HasDirectoryTableLastRefreshedOnNil(),
+		)
 	})
 
 	t.Run("CreateInternal - complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := "test comment"
+
+		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormat(t)
+		t.Cleanup(fileFormatCleanup)
 
 		request := sdk.NewCreateInternalStageRequest(id).
 			WithEncryption(*sdk.NewInternalStageEncryptionRequest().
@@ -74,6 +81,8 @@ func TestInt_Stages(t *testing.T) {
 			WithDirectoryTableOptions(*sdk.NewInternalDirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithAutoRefresh(true)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().
+				WithFormatName(fileFormat.ID())).
 			WithComment(comment)
 
 		err := client.Stages.CreateInternal(ctx, request)
@@ -92,10 +101,10 @@ func TestInt_Stages(t *testing.T) {
 			HasOwnerRoleType("ROLE"))
 
 		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasFileFormatName(fileFormat.ID()).
 			HasDirectoryTableEnable(true).
 			HasDirectoryTableAutoRefresh(true).
-			HasDirectoryTableNotificationChannel("").
-			HasDirectoryTableLastRefreshedOnNil())
+			HasDirectoryTableLastRefreshedOnNotEmpty())
 	})
 
 	t.Run("CreateInternal - temporary and or replace", func(t *testing.T) {
@@ -145,10 +154,10 @@ func TestInt_Stages(t *testing.T) {
 				TimestampFormat:            "AUTO",
 				BinaryFormat:               "HEX",
 				Escape:                     "NONE",
-				EscapeUnenclosedField:      "\\",
+				EscapeUnenclosedField:      `\\`,
 				TrimSpace:                  false,
 				FieldOptionallyEnclosedBy:  "NONE",
-				NullIf:                     []string{"\\N"},
+				NullIf:                     []string{`\\N`},
 				Compression:                "AUTO",
 				ErrorOnColumnCountMismatch: true,
 				ValidateUtf8:               true,
@@ -342,11 +351,13 @@ func TestInt_Stages(t *testing.T) {
 			HasOwnerRoleType("ROLE"))
 	})
 
-	t.Run("CreateOnS3 - minimal with storage integration", func(t *testing.T) {
+	t.Run("CreateOnS3 - minimal with credentials", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
+			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
+				WithAwsKeyId(awsKeyId).
+				WithAwsSecretKey(awsSecretKey))
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
 
@@ -359,11 +370,11 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL").
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
-			HasHasCredentials(false).
+			HasHasCredentials(true).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
 	})
 
-	t.Run("CreateOnS3 - minimal with storage integration", func(t *testing.T) {
+	t.Run("CreateOnS3 - minimal with private link", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
@@ -388,16 +399,13 @@ func TestInt_Stages(t *testing.T) {
 		)
 	})
 
-	t.Run("CreateOnS3 - complete with credentials", func(t *testing.T) {
+	t.Run("CreateOnS3 - complete with storage integration", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := "complete s3 stage with credentials"
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 			WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
-			WithUsePrivatelinkEndpoint(false).
-			WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
-				WithAwsKeyId(awsKeyId).
-				WithAwsSecretKey(awsSecretKey)).
+			WithStorageIntegration(ids.PrecreatedS3StorageIntegration).
 			WithEncryption(*sdk.NewExternalStageS3EncryptionRequest().
 				WithAwsSseS3(*sdk.NewExternalStageS3EncryptionAwsSseS3Request()))
 
@@ -417,8 +425,9 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL").
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
-			HasHasCredentials(true).
-			HasHasEncryptionKey(false).
+			HasHasCredentials(false).
+			HasStorageIntegration(ids.PrecreatedS3StorageIntegration).
+			HasHasEncryptionKey(true).
 			HasDirectoryEnabled(true).
 			HasComment(comment))
 
@@ -426,7 +435,7 @@ func TestInt_Stages(t *testing.T) {
 			HasDirectoryTableEnable(true).
 			HasDirectoryTableAutoRefresh(false).
 			HasStageLocationAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
-			HasPrivateLinkUsePrivatelinkEndpoint(true))
+			HasPrivateLinkUsePrivatelinkEndpoint(false))
 	})
 
 	t.Run("CreateOnS3 - temporary and or replace", func(t *testing.T) {
@@ -448,7 +457,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL TEMPORARY").
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
-			HasStorageIntegration(s3StorageIntegration.Name),
+			HasStorageIntegration(s3StorageIntegration.ID()),
 		)
 	})
 
@@ -471,7 +480,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL").
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
-			HasStorageIntegration(s3StorageIntegration.Name).
+			HasStorageIntegration(s3StorageIntegration.ID()).
 			HasComment("Updated comment"))
 	})
 
@@ -480,31 +489,9 @@ func TestInt_Stages(t *testing.T) {
 	t.Run("CreateOnGCS - minimal", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl)
-		// WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
-
-		request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq)
-
-		err := client.Stages.CreateOnGCS(ctx, request)
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
-
-		assertThatObject(t, objectassert.Stage(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
-			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType("EXTERNAL").
-			HasUrl(gcsBucketUrl).
-			HasCloud("GCP").
-			HasNoStorageIntegration().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE"))
-	})
-
-	t.Run("CreateOnGCS - minimal with storage integration", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
 		gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+			// We need to use a storage integration. Otherwise, we get:
+			// Creation of stages with direct credentials, including accessing public stages, has been forbidden for GCS stages. See your account administrator for details.
 			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
 
 		request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq)
@@ -520,7 +507,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL").
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
-			HasStorageIntegration(gcpStorageIntegration.Name).
+			HasStorageIntegration(ids.PrecreatedGcpStorageIntegration).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"))
 	})
@@ -550,7 +537,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL").
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
-			HasStorageIntegration(gcpStorageIntegration.Name).
+			HasStorageIntegration(gcpStorageIntegration.ID()).
 			HasDirectoryEnabled(true).
 			HasComment(comment))
 
@@ -579,7 +566,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL TEMPORARY").
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
-			HasStorageIntegration(gcpStorageIntegration.Name).
+			HasStorageIntegration(gcpStorageIntegration.ID()).
 			HasComment(comment))
 	})
 
@@ -602,7 +589,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL").
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
-			HasStorageIntegration(gcpStorageIntegration.Name).
+			HasStorageIntegration(gcpStorageIntegration.ID()).
 			HasComment("Updated comment"))
 	})
 
@@ -647,7 +634,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL").
 			HasUrl(azureBucketUrl).
 			HasCloud("AZURE").
-			HasStorageIntegration(azureStorageIntegration.Name).
+			HasStorageIntegration(azureStorageIntegration.ID()).
 			HasHasCredentials(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"))
@@ -665,7 +652,7 @@ func TestInt_Stages(t *testing.T) {
 		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq).
 			WithDirectoryTableOptions(*sdk.NewExternalAzureDirectoryTableOptionsRequest().
 				WithEnable(true).
-				WithRefreshOnCreate(true).
+				WithRefreshOnCreate(false).
 				WithAutoRefresh(false)).
 			WithComment(comment)
 
@@ -708,7 +695,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL TEMPORARY").
 			HasUrl(azureBucketUrl).
 			HasCloud("AZURE").
-			HasStorageIntegration(azureStorageIntegration.Name).
+			HasStorageIntegration(azureStorageIntegration.ID()).
 			HasComment(comment))
 	})
 
@@ -731,7 +718,7 @@ func TestInt_Stages(t *testing.T) {
 			HasType("EXTERNAL").
 			HasUrl(azureBucketUrl).
 			HasCloud("AZURE").
-			HasStorageIntegration(azureStorageIntegration.Name).
+			HasStorageIntegration(azureStorageIntegration.ID()).
 			HasComment("Updated comment"))
 	})
 
@@ -775,7 +762,7 @@ func TestInt_Stages(t *testing.T) {
 		request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq).
 			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().
 				WithEnable(true).
-				WithRefreshOnCreate(true).
+				WithRefreshOnCreate(false).
 				WithAutoRefresh(false)).
 			WithComment(comment)
 
@@ -849,7 +836,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterDirectoryTable", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t)
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).

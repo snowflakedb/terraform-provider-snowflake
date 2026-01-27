@@ -26,6 +26,20 @@ func StageDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *StageDetailsAsse
 	}
 }
 
+func (s *StageDetailsAssert) HasFileFormatName(expected sdk.SchemaObjectIdentifier) *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.FileFormatName == nil {
+			return fmt.Errorf("expected file format name to have value; got: nil")
+		}
+		if !reflect.DeepEqual(*o.FileFormatName, expected) {
+			return fmt.Errorf("expected file format name: %v; got: %v", expected, *o.FileFormatName)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageDetailsAssert) HasFileFormatCsv(expected sdk.FileFormatCsv) *StageDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
 		t.Helper()
@@ -88,8 +102,11 @@ func (s *StageDetailsAssert) HasDirectoryTableNotificationChannel(expected strin
 		if o.DirectoryTable == nil {
 			return fmt.Errorf("expected directory table to have value; got: nil")
 		}
-		if o.DirectoryTable.DirectoryNotificationChannel != expected {
-			return fmt.Errorf("expected directory notification channel: %v; got: %v", expected, o.DirectoryTable.DirectoryNotificationChannel)
+		if o.DirectoryTable.DirectoryNotificationChannel == nil {
+			return fmt.Errorf("expected directory table notification channel to have value; got: nil")
+		}
+		if *o.DirectoryTable.DirectoryNotificationChannel != expected {
+			return fmt.Errorf("expected directory notification channel: %v; got: %v", expected, *o.DirectoryTable.DirectoryNotificationChannel)
 		}
 		return nil
 	})

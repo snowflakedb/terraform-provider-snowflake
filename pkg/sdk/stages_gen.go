@@ -391,7 +391,7 @@ type Stage struct {
 	Region             *string
 	Type               string
 	Cloud              *string
-	StorageIntegration *string
+	StorageIntegration *AccountObjectIdentifier
 	Endpoint           *string
 	OwnerRoleType      *string
 	DirectoryEnabled   bool

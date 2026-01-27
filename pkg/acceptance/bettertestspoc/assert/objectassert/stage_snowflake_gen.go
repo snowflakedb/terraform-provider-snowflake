@@ -170,13 +170,13 @@ func (s *StageAssert) HasCloud(expected string) *StageAssert {
 	return s
 }
 
-func (s *StageAssert) HasStorageIntegration(expected string) *StageAssert {
+func (s *StageAssert) HasStorageIntegration(expected sdk.AccountObjectIdentifier) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.StorageIntegration == nil {
 			return fmt.Errorf("expected storage integration to have value; got: nil")
 		}
-		if *o.StorageIntegration != expected {
+		if o.StorageIntegration.FullyQualifiedName() != expected.FullyQualifiedName() {
 			return fmt.Errorf("expected storage integration: %v; got: %v", expected, *o.StorageIntegration)
 		}
 		return nil
