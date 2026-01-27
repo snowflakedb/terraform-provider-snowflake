@@ -11,13 +11,15 @@ import (
 type SnowflakeEnvironment string
 
 const (
-	SnowflakeProdEnvironment    SnowflakeEnvironment = "PROD"
-	SnowflakeNonProdEnvironment SnowflakeEnvironment = "NON_PROD"
+	SnowflakeProdEnvironment       SnowflakeEnvironment = "PROD"
+	SnowflakeNonProdEnvironment    SnowflakeEnvironment = "NON_PROD"
+	SnowflakePreProdGovEnvironment SnowflakeEnvironment = "PRE_PROD_GOV"
 )
 
 var allSnowflakeEnvironments = []SnowflakeEnvironment{
 	SnowflakeProdEnvironment,
 	SnowflakeNonProdEnvironment,
+	SnowflakePreProdGovEnvironment,
 }
 
 func parseSnowflakeEnvironment(environment string) (SnowflakeEnvironment, error) {

@@ -3,6 +3,7 @@ package testenvs
 import (
 	"fmt"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -73,7 +74,15 @@ func SkipTestIfSetTo(t *testing.T, envName Env, value string, reason string) {
 	t.Helper()
 	env := os.Getenv(fmt.Sprintf("%v", envName))
 	if env == value {
-		t.Skipf("Skipping %s, because env %v is set. Reason: \"%s\"", t.Name(), envName, reason)
+		t.Skipf("Skipping %s, because env %v is set to %s. Reason: \"%s\"", t.Name(), envName, value, reason)
+	}
+}
+
+func SkipTestIfValueIn(t *testing.T, envName Env, values []string, reason string) {
+	t.Helper()
+	env := os.Getenv(fmt.Sprintf("%v", envName))
+	if slices.Contains(values, env) {
+		t.Skipf("Skipping %s, because env %v is set to %s. Reason: \"%s\"", t.Name(), envName, env, reason)
 	}
 }
 
