@@ -15,6 +15,8 @@ const (
 	WarehouseShowImprovedPerformance               ExperimentalFeature = "WAREHOUSE_SHOW_IMPROVED_PERFORMANCE"
 	GrantsStrictPrivilegeManagement                ExperimentalFeature = "GRANTS_STRICT_PRIVILEGE_MANAGEMENT"
 	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
+	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
+	ParametersReducedOutput ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
 )
 
 type experimentalFeatureState string
@@ -63,6 +65,15 @@ var allExperiments = []Experiment{
 		joinWithDoubleNewline(
 			"Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).",
 			"When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.",
+		),
+	},
+	{
+		ParametersReducedOutput,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Currently, the `parameters` field in various resources contains a verbatim output for the `SHOW PARAMETERS IN <object>` command. One of the fields contained in the output is the `description`. It does not change and is repeated for all objects containing the given parameter. It leads to an excessive output (check e.g., [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)).",
+			"To mitigate the problem, we are adding this option to reduce the output to only `value` and `level` fields, which should significantly reduce the state size. **Note**: it's also affecting the `parameters` output for data sources.",
+			"We considered the option to remove the `parameters` output completely, however, we plan to change the external change logic detection to use it (to make it consistent with other attributes using `show_output` and because we won't be able to implement the current logic when switching to the Terraform Plugin Framework) and it still allows referencing the parameter value/level from other parts of the configuration.",
 		),
 	},
 	{
