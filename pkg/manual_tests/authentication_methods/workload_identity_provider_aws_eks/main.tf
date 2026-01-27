@@ -14,24 +14,12 @@ terraform {
 
 resource "snowflake_service_user" "auth_test" {
   name = "AUTH_TEST"
-}
-
-// TODO(SNOW-2272350): Update the example once WIF management is supported in users resources
-resource "snowflake_execute" "workload_identity_federation_oidc" {
-  execute = <<-SQL
-    ALTER USER ${snowflake_service_user.auth_test.name}
-      SET WORKLOAD_IDENTITY = (
-        TYPE = OIDC
-        ISSUER = '${var.workload_identity_oidc.oidc_issuer_url}'
-        SUBJECT = 'system:serviceaccount:${var.workload_identity_oidc.namespace}:${var.workload_identity_oidc.service_account}'
-      )
-  SQL
-  revert  = <<-SQL
-    ALTER USER IF EXISTS ${snowflake_service_user.auth_test.name}
-      UNSET WORKLOAD_IDENTITY;
-  SQL
-
-  depends_on = [snowflake_service_user.auth_test]
+  default_workload_identity {
+    oidc {
+      issuer  = var.workload_identity_oidc.oidc_issuer_url
+      subject = "system:serviceaccount:${var.workload_identity_oidc.namespace}:${var.workload_identity_oidc.service_account}"
+    }
+  }
 }
 
 variable "workload_identity_oidc" {
