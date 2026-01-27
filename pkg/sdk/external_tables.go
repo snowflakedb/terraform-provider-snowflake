@@ -125,7 +125,7 @@ type ExternalTableFileFormatTypeOptions struct {
 	CSVFieldOptionallyEnclosedBy *string                      `ddl:"parameter,single_quotes" sql:"FIELD_OPTIONALLY_ENCLOSED_BY"`
 	CSVNullIf                    *[]NullString                `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	CSVEmptyFieldAsNull          *bool                        `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
-	CSVEncoding                  *CSVEncoding                 `ddl:"parameter,single_quotes" sql:"ENCODING"`
+	CSVEncoding                  *CsvEncoding                 `ddl:"parameter,single_quotes" sql:"ENCODING"`
 
 	// JSON type options
 	JSONCompression              *ExternalTableJsonCompression `ddl:"parameter" sql:"COMPRESSION"`

@@ -408,7 +408,8 @@ func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 
 func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -561,7 +562,7 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set(RelatedParametersAttributeName, []map[string]any{schemas.ExternalOauthParametersToSchema([]*sdk.Parameter{param})}); err != nil {
+		if err = d.Set(RelatedParametersAttributeName, []map[string]any{schemas.ExternalOauthParametersToSchema([]*sdk.Parameter{param}, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 		return nil

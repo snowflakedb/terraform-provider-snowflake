@@ -21,28 +21,23 @@ type AuthenticationPolicies interface {
 
 // CreateAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy.
 type CreateAuthenticationPolicyOptions struct {
-	create                   bool                                        `ddl:"static" sql:"CREATE"`
-	OrReplace                *bool                                       `ddl:"keyword" sql:"OR REPLACE"`
-	authenticationPolicy     bool                                        `ddl:"static" sql:"AUTHENTICATION POLICY"`
-	IfNotExists              *bool                                       `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                     SchemaObjectIdentifier                      `ddl:"identifier"`
-	AuthenticationMethods    []AuthenticationMethods                     `ddl:"parameter,parentheses" sql:"AUTHENTICATION_METHODS"`
-	MfaAuthenticationMethods []MfaAuthenticationMethods                  `ddl:"parameter,parentheses" sql:"MFA_AUTHENTICATION_METHODS"`
-	MfaEnrollment            *MfaEnrollmentOption                        `ddl:"parameter" sql:"MFA_ENROLLMENT"`
-	MfaPolicy                *AuthenticationPolicyMfaPolicy              `ddl:"list,parentheses,no_comma" sql:"MFA_POLICY ="`
-	ClientTypes              []ClientTypes                               `ddl:"parameter,parentheses" sql:"CLIENT_TYPES"`
-	SecurityIntegrations     *SecurityIntegrationsOption                 `ddl:"parameter" sql:"SECURITY_INTEGRATIONS"`
-	PatPolicy                *AuthenticationPolicyPatPolicy              `ddl:"list,parentheses,no_comma" sql:"PAT_POLICY ="`
-	WorkloadIdentityPolicy   *AuthenticationPolicyWorkloadIdentityPolicy `ddl:"list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY_POLICY ="`
-	Comment                  *string                                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                 bool                                        `ddl:"static" sql:"CREATE"`
+	OrReplace              *bool                                       `ddl:"keyword" sql:"OR REPLACE"`
+	authenticationPolicy   bool                                        `ddl:"static" sql:"AUTHENTICATION POLICY"`
+	IfNotExists            *bool                                       `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                   SchemaObjectIdentifier                      `ddl:"identifier"`
+	AuthenticationMethods  []AuthenticationMethods                     `ddl:"parameter,parentheses" sql:"AUTHENTICATION_METHODS"`
+	MfaEnrollment          *MfaEnrollmentOption                        `ddl:"parameter" sql:"MFA_ENROLLMENT"`
+	MfaPolicy              *AuthenticationPolicyMfaPolicy              `ddl:"list,parentheses,no_comma" sql:"MFA_POLICY ="`
+	ClientTypes            []ClientTypes                               `ddl:"parameter,parentheses" sql:"CLIENT_TYPES"`
+	SecurityIntegrations   *SecurityIntegrationsOption                 `ddl:"parameter" sql:"SECURITY_INTEGRATIONS"`
+	PatPolicy              *AuthenticationPolicyPatPolicy              `ddl:"list,parentheses,no_comma" sql:"PAT_POLICY ="`
+	WorkloadIdentityPolicy *AuthenticationPolicyWorkloadIdentityPolicy `ddl:"list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY_POLICY ="`
+	Comment                *string                                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type AuthenticationMethods struct {
 	Method AuthenticationMethodsOption `ddl:"keyword,single_quotes"`
-}
-
-type MfaAuthenticationMethods struct {
-	Method MfaAuthenticationMethodsOption `ddl:"keyword,single_quotes"`
 }
 
 type ClientTypes struct {
@@ -92,27 +87,25 @@ type AlterAuthenticationPolicyOptions struct {
 }
 
 type AuthenticationPolicySet struct {
-	AuthenticationMethods    []AuthenticationMethods                     `ddl:"parameter,parentheses" sql:"AUTHENTICATION_METHODS"`
-	MfaAuthenticationMethods []MfaAuthenticationMethods                  `ddl:"parameter,parentheses" sql:"MFA_AUTHENTICATION_METHODS"`
-	MfaEnrollment            *MfaEnrollmentOption                        `ddl:"parameter" sql:"MFA_ENROLLMENT"`
-	MfaPolicy                *AuthenticationPolicyMfaPolicy              `ddl:"list,parentheses,no_comma" sql:"MFA_POLICY ="`
-	ClientTypes              []ClientTypes                               `ddl:"parameter,parentheses" sql:"CLIENT_TYPES"`
-	SecurityIntegrations     *SecurityIntegrationsOption                 `ddl:"parameter" sql:"SECURITY_INTEGRATIONS"`
-	PatPolicy                *AuthenticationPolicyPatPolicy              `ddl:"list,parentheses,no_comma" sql:"PAT_POLICY ="`
-	WorkloadIdentityPolicy   *AuthenticationPolicyWorkloadIdentityPolicy `ddl:"list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY_POLICY ="`
-	Comment                  *string                                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	AuthenticationMethods  []AuthenticationMethods                     `ddl:"parameter,parentheses" sql:"AUTHENTICATION_METHODS"`
+	MfaEnrollment          *MfaEnrollmentOption                        `ddl:"parameter" sql:"MFA_ENROLLMENT"`
+	MfaPolicy              *AuthenticationPolicyMfaPolicy              `ddl:"list,parentheses,no_comma" sql:"MFA_POLICY ="`
+	ClientTypes            []ClientTypes                               `ddl:"parameter,parentheses" sql:"CLIENT_TYPES"`
+	SecurityIntegrations   *SecurityIntegrationsOption                 `ddl:"parameter" sql:"SECURITY_INTEGRATIONS"`
+	PatPolicy              *AuthenticationPolicyPatPolicy              `ddl:"list,parentheses,no_comma" sql:"PAT_POLICY ="`
+	WorkloadIdentityPolicy *AuthenticationPolicyWorkloadIdentityPolicy `ddl:"list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY_POLICY ="`
+	Comment                *string                                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type AuthenticationPolicyUnset struct {
-	ClientTypes              *bool `ddl:"keyword" sql:"CLIENT_TYPES"`
-	AuthenticationMethods    *bool `ddl:"keyword" sql:"AUTHENTICATION_METHODS"`
-	SecurityIntegrations     *bool `ddl:"keyword" sql:"SECURITY_INTEGRATIONS"`
-	MfaAuthenticationMethods *bool `ddl:"keyword" sql:"MFA_AUTHENTICATION_METHODS"`
-	MfaEnrollment            *bool `ddl:"keyword" sql:"MFA_ENROLLMENT"`
-	MfaPolicy                *bool `ddl:"keyword" sql:"MFA_POLICY"`
-	PatPolicy                *bool `ddl:"keyword" sql:"PAT_POLICY"`
-	WorkloadIdentityPolicy   *bool `ddl:"keyword" sql:"WORKLOAD_IDENTITY_POLICY"`
-	Comment                  *bool `ddl:"keyword" sql:"COMMENT"`
+	ClientTypes            *bool `ddl:"keyword" sql:"CLIENT_TYPES"`
+	AuthenticationMethods  *bool `ddl:"keyword" sql:"AUTHENTICATION_METHODS"`
+	SecurityIntegrations   *bool `ddl:"keyword" sql:"SECURITY_INTEGRATIONS"`
+	MfaEnrollment          *bool `ddl:"keyword" sql:"MFA_ENROLLMENT"`
+	MfaPolicy              *bool `ddl:"keyword" sql:"MFA_POLICY"`
+	PatPolicy              *bool `ddl:"keyword" sql:"PAT_POLICY"`
+	WorkloadIdentityPolicy *bool `ddl:"keyword" sql:"WORKLOAD_IDENTITY_POLICY"`
+	Comment                *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-authentication-policy.

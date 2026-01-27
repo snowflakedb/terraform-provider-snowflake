@@ -48,7 +48,7 @@ func TestInt_Stages(t *testing.T) {
 				WithAwsKeyId(awsKeyId).
 				WithAwsSecretKey(awsSecretKey))
 		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(stageId, *s3Req).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
@@ -59,7 +59,7 @@ func TestInt_Stages(t *testing.T) {
 			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
 
 		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(stageId, *externalGcsReq).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
@@ -70,7 +70,7 @@ func TestInt_Stages(t *testing.T) {
 			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
 
 		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(stageId, *externalAzureReq).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)))
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})))
 		require.NoError(t, err)
 		cleanupStage(t, stageId)
 	}
@@ -97,7 +97,7 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateInternal(ctx, sdk.NewCreateInternalStageRequest(id).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -112,7 +112,7 @@ func TestInt_Stages(t *testing.T) {
 
 		err := client.Stages.CreateInternal(ctx, sdk.NewCreateInternalStageRequest(id).
 			WithTemporary(true).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -132,7 +132,7 @@ func TestInt_Stages(t *testing.T) {
 				WithAwsKeyId(awsKeyId).
 				WithAwsSecretKey(awsSecretKey))
 		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id, *s3Req).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -174,7 +174,7 @@ func TestInt_Stages(t *testing.T) {
 			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
 		err := client.Stages.CreateOnS3(ctx, sdk.NewCreateOnS3StageRequest(id, *s3Req).
 			WithTemporary(true).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -191,7 +191,7 @@ func TestInt_Stages(t *testing.T) {
 			WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
 
 		err := client.Stages.CreateOnGCS(ctx, sdk.NewCreateOnGCSStageRequest(id, *externalGcsReq).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -208,7 +208,7 @@ func TestInt_Stages(t *testing.T) {
 			WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)
 
 		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id, *externalAzureReq).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -226,7 +226,7 @@ func TestInt_Stages(t *testing.T) {
 			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
 
 		err := client.Stages.CreateOnAzure(ctx, sdk.NewCreateOnAzureStageRequest(id, *externalAzureReq).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -244,8 +244,8 @@ func TestInt_Stages(t *testing.T) {
 		s3Req := sdk.NewExternalS3CompatibleStageParamsRequest(compatibleBucketUrl, endpoint).WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
 		err := client.Stages.CreateOnS3Compatible(ctx, sdk.NewCreateOnS3CompatibleStageRequest(id, *s3Req).
 			WithTemporary(true).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
-			WithDirectoryTableOptions(*sdk.NewExternalS3DirectoryTableOptionsRequest().WithEnable(true)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
+			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().WithEnable(true)).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		cleanupStage(t, id)
@@ -287,8 +287,7 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := client.Stages.CreateInternal(ctx, sdk.NewCreateInternalStageRequest(id).
-			WithCopyOptions(*sdk.NewStageCopyOptionsRequest().WithSizeLimit(100)).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeJSON)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{JsonOptions: &sdk.FileFormatJsonOptions{}})).
 			WithComment("some comment"))
 		require.NoError(t, err)
 		t.Cleanup(func() {
@@ -303,13 +302,6 @@ func TestInt_Stages(t *testing.T) {
 		stageProperties, err := client.Stages.Describe(ctx, id)
 		require.NoError(t, err)
 		require.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_COPY_OPTIONS",
-			Name:    "SIZE_LIMIT",
-			Type:    "Long",
-			Value:   "100",
-			Default: "",
-		})
-		require.Contains(t, stageProperties, sdk.StageProperty{
 			Parent:  "STAGE_FILE_FORMAT",
 			Name:    "TYPE",
 			Type:    "String",
@@ -319,8 +311,7 @@ func TestInt_Stages(t *testing.T) {
 
 		err = client.Stages.AlterInternalStage(ctx, sdk.NewAlterInternalStageStageRequest(id).
 			WithIfExists(true).
-			WithCopyOptions(*sdk.NewStageCopyOptionsRequest().WithSizeLimit(200)).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeCSV)).
+			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}})).
 			WithComment("altered comment"))
 		require.NoError(t, err)
 
@@ -330,13 +321,6 @@ func TestInt_Stages(t *testing.T) {
 
 		stageProperties, err = client.Stages.Describe(ctx, id)
 		require.NoError(t, err)
-		require.Contains(t, stageProperties, sdk.StageProperty{
-			Parent:  "STAGE_COPY_OPTIONS",
-			Name:    "SIZE_LIMIT",
-			Type:    "Long",
-			Value:   "200",
-			Default: "",
-		})
 		require.Contains(t, stageProperties, sdk.StageProperty{
 			Parent:  "STAGE_FILE_FORMAT",
 			Name:    "TYPE",

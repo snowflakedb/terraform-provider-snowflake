@@ -520,7 +520,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseParametersToSchema(warehouseParameters)}); err != nil {
+		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseParametersToSchema(warehouseParameters, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -562,9 +562,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			set.WarehouseType = &warehouseType
 		} else {
-			// TODO [SNOW-1473453]: UNSET of type does not work
-			// unset.WarehouseType = sdk.Bool(true)
-			set.WarehouseType = sdk.Pointer(sdk.WarehouseTypeStandard)
+			unset.WarehouseType = sdk.Bool(true)
 		}
 	}
 	if d.HasChange("warehouse_size") {
@@ -599,9 +597,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			set.ScalingPolicy = &scalingPolicy
 		} else {
-			// TODO [SNOW-1473453]: UNSET of scaling policy does not work
-			// unset.ScalingPolicy = sdk.Bool(true)
-			set.ScalingPolicy = sdk.Pointer(sdk.ScalingPolicyStandard)
+			unset.ScalingPolicy = sdk.Bool(true)
 		}
 	}
 	if d.HasChange("auto_suspend") {
@@ -621,9 +617,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			set.AutoResume = sdk.Bool(parsed)
 		} else {
-			// TODO [SNOW-1473453]: UNSET of auto resume works incorrectly
-			// unset.AutoResume = sdk.Bool(true)
-			set.AutoResume = sdk.Bool(true)
+			unset.AutoResume = sdk.Bool(true)
 		}
 	}
 	if d.HasChange("resource_monitor") {

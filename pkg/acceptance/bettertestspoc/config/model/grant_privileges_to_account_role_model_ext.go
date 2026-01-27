@@ -34,6 +34,13 @@ func (g *GrantPrivilegesToAccountRoleModel) WithOnFutureSchemasInDatabase(id sdk
 	return g
 }
 
+func (g *GrantPrivilegesToAccountRoleModel) WithOnSchemaName(id sdk.DatabaseObjectIdentifier) *GrantPrivilegesToAccountRoleModel {
+	g.WithOnSchemaValue(config.ObjectVariable(map[string]config.Variable{
+		"schema_name": config.StringVariable(id.FullyQualifiedName()),
+	}))
+	return g
+}
+
 func (g *GrantPrivilegesToAccountRoleModel) WithOnAllSchemaObjectsInSchema(pluralObjectType sdk.PluralObjectType, schemaId sdk.DatabaseObjectIdentifier) *GrantPrivilegesToAccountRoleModel {
 	g.WithOnSchemaObjectValue(config.ObjectVariable(map[string]config.Variable{
 		"all": config.ListVariable(

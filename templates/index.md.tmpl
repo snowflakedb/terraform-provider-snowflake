@@ -379,3 +379,12 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 {{ index (split (codefile "" "examples/additional/preview_resources.MD") "```") 1 | trimspace }}
 
 {{ index (split (codefile "" "examples/additional/preview_data_sources.MD") "```") 1 | trimspace }}
+
+## Experimental features
+
+Experiments alter the provider behavior.
+Similarly to preview features, they are not yet stable features of the provider.
+Enabling the given experiment is still considered a preview feature, even when applied to the stable resource.
+If the given experiment is successful, it can be considered an addition in the future provider versions.
+
+{{ index (split (codefile "" "examples/additional/experimental_features.MD") "```") 1 | trimspace }}

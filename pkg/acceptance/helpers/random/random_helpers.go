@@ -104,3 +104,7 @@ func AlphaUpperN(num int) string {
 func Bytes() []byte {
 	return []byte(AlphaN(10))
 }
+
+func NumericN(num int) string {
+	return gofakeit.Password(false, false, true, false, false, num)
+}

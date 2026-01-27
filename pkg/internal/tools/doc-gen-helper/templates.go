@@ -13,6 +13,10 @@ var DeprecatedResourcesTemplate = template.Must(template.New("deprecated_resourc
 var DeprecatedDataSourcesTemplateContent string
 var DeprecatedDataSourcesTemplate = template.Must(template.New("deprecated_data_sources").Parse(DeprecatedDataSourcesTemplateContent))
 
+//go:embed templates/experimental_features.tmpl
+var ExperimentalFeaturesTemplateContent string
+var ExperimentalFeaturesTemplate = template.Must(template.New("experimental_features").Parse(ExperimentalFeaturesTemplateContent))
+
 //go:embed templates/feature_stability.tmpl
 var FeatureStabilityTemplateContent string
 var FeatureStabilityTemplate = template.Must(template.New("stable_resources").Parse(FeatureStabilityTemplateContent))

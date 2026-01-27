@@ -65,7 +65,8 @@ func Tasks() *schema.Resource {
 }
 
 func ReadTasks(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	req := sdk.NewShowTaskRequest()
 
 	handleLike(d, &req.Like)
@@ -94,7 +95,7 @@ func ReadTasks(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			taskParameters = []map[string]any{schemas.TaskParametersToSchema(parameters)}
+			taskParameters = []map[string]any{schemas.TaskParametersToSchema(parameters, providerCtx)}
 		}
 
 		flattenedTasks[i] = map[string]any{

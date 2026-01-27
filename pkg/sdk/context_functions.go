@@ -63,9 +63,21 @@ func (acc *CurrentSessionDetails) AccountURL() (string, error) {
 		if len(regionID) > 0 {
 			accountID = fmt.Sprintf("%s.%s", accountID, regionID)
 		}
-		return fmt.Sprintf("https://%s.snowflakecomputing.com", accountID), nil
+		return fmt.Sprintf("https://%s.%s", accountID, getDomainBasedOnRegion(regionID)), nil
 	}
 	return "", fmt.Errorf("failed to map Snowflake account region %s to a region_id", acc.Region)
+}
+
+const (
+	defaultDomain = "snowflakecomputing.com"
+	cnDomain      = "snowflakecomputing.cn"
+)
+
+func getDomainBasedOnRegion(region string) string {
+	if strings.HasPrefix(strings.ToLower(region), "cn-") {
+		return cnDomain
+	}
+	return defaultDomain
 }
 
 func (c *contextFunctions) CurrentAccount(ctx context.Context) (string, error) {
