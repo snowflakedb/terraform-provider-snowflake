@@ -518,7 +518,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterExternalS3Stage - use privatelink", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t, awsBucketUrl)
 		t.Cleanup(cleanup)
 
 		require.Equal(t, "", stage.Comment)
@@ -536,7 +536,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterExternalS3Stage - complete", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t, awsBucketUrl)
 		t.Cleanup(cleanup)
 
 		require.Equal(t, "", stage.Comment)
@@ -653,7 +653,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterExternalGCSStage - complete", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnGCS(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnGCS(t, gcsBucketUrl)
 		t.Cleanup(cleanup)
 
 		require.Equal(t, "", stage.Comment)
@@ -787,7 +787,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterExternalAzureStage - complete", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithCredentials(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnAzure(t, azureBucketUrl)
 		t.Cleanup(cleanup)
 
 		require.Equal(t, "", stage.Comment)
@@ -930,7 +930,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterDirectoryTable", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t, awsBucketUrl)
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
@@ -975,7 +975,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("Describe external s3", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t, awsBucketUrl)
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
@@ -984,7 +984,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("Describe external gcs", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnGCS(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnGCS(t, gcsBucketUrl)
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
@@ -992,7 +992,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("Describe external azure", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnAzureWithCredentials(t)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnAzure(t, azureBucketUrl)
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).

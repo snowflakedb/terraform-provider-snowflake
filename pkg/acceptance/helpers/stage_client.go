@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -82,64 +80,11 @@ func (c *StageClient) CreateStageWithRequest(t *testing.T, request *sdk.CreateIn
 	return stage, c.DropStageFunc(t, request.ID())
 }
 
-func (c *StageClient) CreateStageOnS3WithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateOnS3StageRequest) (*sdk.Stage, func()) {
-	t.Helper()
-	ctx := context.Background()
-
-	err := c.client().CreateOnS3(ctx, request)
-	require.NoError(t, err)
-
-	stage, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return stage, c.DropStageFunc(t, id)
-}
-
-func (c *StageClient) CreateStageOnGCSWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateOnGCSStageRequest) (*sdk.Stage, func()) {
-	t.Helper()
-	ctx := context.Background()
-
-	err := c.client().CreateOnGCS(ctx, request)
-	require.NoError(t, err)
-
-	stage, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return stage, c.DropStageFunc(t, id)
-}
-
-func (c *StageClient) CreateStageOnAzureWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateOnAzureStageRequest) (*sdk.Stage, func()) {
-	t.Helper()
-	ctx := context.Background()
-
-	err := c.client().CreateOnAzure(ctx, request)
-	require.NoError(t, err)
-
-	stage, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return stage, c.DropStageFunc(t, id)
-}
-
-func (c *StageClient) CreateStageOnS3CompatibleWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateOnS3CompatibleStageRequest) (*sdk.Stage, func()) {
-	t.Helper()
-	ctx := context.Background()
-
-	err := c.client().CreateOnS3Compatible(ctx, request)
-	require.NoError(t, err)
-
-	stage, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return stage, c.DropStageFunc(t, id)
-}
-
 // CreateStageOnS3 creates an S3 stage with sane defaults using pre-created storage integration.
-func (c *StageClient) CreateStageOnS3(t *testing.T) (*sdk.Stage, func()) {
+func (c *StageClient) CreateStageOnS3(t *testing.T, awsBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 	id := c.ids.RandomSchemaObjectIdentifier()
 
 	s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
@@ -155,37 +100,11 @@ func (c *StageClient) CreateStageOnS3(t *testing.T) (*sdk.Stage, func()) {
 	return stage, c.DropStageFunc(t, id)
 }
 
-// CreateStageOnS3WithCredentials creates an S3 stage using AWS credentials from env vars.
-func (c *StageClient) CreateStageOnS3WithCredentials(t *testing.T) (*sdk.Stage, func()) {
-	t.Helper()
-	ctx := context.Background()
-
-	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
-	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
-	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
-	id := c.ids.RandomSchemaObjectIdentifier()
-
-	s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
-		WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
-			WithAwsKeyId(awsKeyId).
-			WithAwsSecretKey(awsSecretKey))
-	request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
-
-	err := c.client().CreateOnS3(ctx, request)
-	require.NoError(t, err)
-
-	stage, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return stage, c.DropStageFunc(t, id)
-}
-
 // CreateStageOnGCS creates a GCS stage with sane defaults using pre-created storage integration.
-func (c *StageClient) CreateStageOnGCS(t *testing.T) (*sdk.Stage, func()) {
+func (c *StageClient) CreateStageOnGCS(t *testing.T, gcsBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	gcsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.GcsExternalBucketUrl)
 	id := c.ids.RandomSchemaObjectIdentifier()
 
 	gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
@@ -201,67 +120,17 @@ func (c *StageClient) CreateStageOnGCS(t *testing.T) (*sdk.Stage, func()) {
 	return stage, c.DropStageFunc(t, id)
 }
 
-// CreateStageOnAzure creates an Azure stage with sane defaults using pre-created storage integration.
-func (c *StageClient) CreateStageOnAzure(t *testing.T) (*sdk.Stage, func()) {
+// CreateStageOnAzure creates an Azure stage using SAS token from env vars.
+func (c *StageClient) CreateStageOnAzure(t *testing.T, azureBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
 	id := c.ids.RandomSchemaObjectIdentifier()
 
-	azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-		WithStorageIntegration(ids.PrecreatedAzureStorageIntegration)
+	azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl)
 	request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)
 
 	err := c.client().CreateOnAzure(ctx, request)
-	require.NoError(t, err)
-
-	stage, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return stage, c.DropStageFunc(t, id)
-}
-
-// CreateStageOnAzureWithCredentials creates an Azure stage using SAS token from env vars.
-func (c *StageClient) CreateStageOnAzureWithCredentials(t *testing.T) (*sdk.Stage, func()) {
-	t.Helper()
-	ctx := context.Background()
-
-	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
-	azureSasToken := testenvs.GetOrSkipTest(t, testenvs.AzureExternalSasToken)
-	id := c.ids.RandomSchemaObjectIdentifier()
-
-	azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
-		WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken))
-	request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)
-
-	err := c.client().CreateOnAzure(ctx, request)
-	require.NoError(t, err)
-
-	stage, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return stage, c.DropStageFunc(t, id)
-}
-
-// CreateStageOnS3Compatible creates an S3-compatible stage with sane defaults.
-func (c *StageClient) CreateStageOnS3Compatible(t *testing.T) (*sdk.Stage, func()) {
-	t.Helper()
-	ctx := context.Background()
-
-	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
-	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
-	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
-
-	compatibleBucketUrl := strings.Replace(awsBucketUrl, "s3://", "s3compat://", 1)
-	endpoint := "s3.us-west-2.amazonaws.com"
-	id := c.ids.RandomSchemaObjectIdentifier()
-
-	s3CompatReq := sdk.NewExternalS3CompatibleStageParamsRequest(compatibleBucketUrl, endpoint).
-		WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
-	request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq)
-
-	err := c.client().CreateOnS3Compatible(ctx, request)
 	require.NoError(t, err)
 
 	stage, err := c.client().ShowByID(ctx, id)

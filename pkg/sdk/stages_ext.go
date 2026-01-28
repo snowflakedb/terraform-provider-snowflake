@@ -81,7 +81,11 @@ type StageCredentials struct {
 func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 	details := &StageDetails{}
 
-	details.DirectoryTable = parseDirectoryTable(properties)
+	directoryTable, err := parseDirectoryTable(properties)
+	if err != nil {
+		return nil, err
+	}
+	details.DirectoryTable = directoryTable
 	details.PrivateLink = parsePrivateLink(properties)
 	details.Location = parseStageLocationDetails(properties)
 	details.Credentials = parseStageCredentials(properties)
@@ -178,7 +182,7 @@ func parseCsvFileFormat(properties []StageProperty) *FileFormatCsv {
 	return csv
 }
 
-func parseDirectoryTable(properties []StageProperty) *StageDirectoryTable {
+func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {
 	dt := &StageDirectoryTable{}
 
 	for _, prop := range properties {
@@ -195,14 +199,15 @@ func parseDirectoryTable(properties []StageProperty) *StageDirectoryTable {
 		case "LAST_REFRESHED_ON":
 			if prop.Value != "" {
 				t, err := time.Parse("2006-01-02 15:04:05.000 -0700", prop.Value)
-				if err == nil {
-					dt.LastRefreshedOn = &t
+				if err != nil {
+					return nil, err
 				}
+				dt.LastRefreshedOn = &t
 			}
 		}
 	}
 
-	return dt
+	return dt, nil
 }
 
 func parsePrivateLink(properties []StageProperty) *StagePrivateLink {
