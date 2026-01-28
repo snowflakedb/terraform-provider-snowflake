@@ -520,7 +520,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseParametersToSchema(warehouseParameters)}); err != nil {
+		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseParametersToSchema(warehouseParameters, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 

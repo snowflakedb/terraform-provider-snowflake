@@ -367,3 +367,16 @@ func (c *UserClient) UnsetWorkloadIdentity(t *testing.T, userId sdk.AccountObjec
 	})
 	require.NoError(t, err)
 }
+
+func (c *UserClient) UpdateEnableUnredactedQuerySyntaxError(t *testing.T, userId sdk.AccountObjectIdentifier, newValue bool) {
+	t.Helper()
+
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{Set: &sdk.UserSet{
+		ObjectParameters: &sdk.UserObjectParameters{
+			EnableUnredactedQuerySyntaxError: sdk.Bool(newValue),
+		},
+	}})
+	require.NoError(t, err)
+}

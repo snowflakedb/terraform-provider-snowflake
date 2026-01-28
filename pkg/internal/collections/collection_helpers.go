@@ -24,7 +24,6 @@ func Map[T any, R any](collection []T, mapper func(T) R) []R {
 	return result
 }
 
-// TODO [SNOW-2398035]: test
 func Filter[T any](collection []T, condition func(T) bool) []T {
 	result := make([]T, 0)
 	for _, o := range collection {
