@@ -116,8 +116,8 @@ jobs:
           cd $HOME/.snowflake
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
-          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
-          chmod 0600 ./config ./config_legacy ./config_v097_compatible
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE_WITH_SERVICE_USER }}" > ./config_v097_compatible_with_service_user
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible_with_service_user
 
       - name: Setup Terraform
         if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
