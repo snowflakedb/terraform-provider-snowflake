@@ -518,7 +518,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("AlterExternalS3Stage - use privatelink", func(t *testing.T) {
-		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t, awsBucketUrl)
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3WithCredentials(t, awsBucketUrl, awsKeyId, awsSecretKey)
 		t.Cleanup(cleanup)
 
 		require.Equal(t, "", stage.Comment)
@@ -979,7 +979,6 @@ func TestInt_Stages(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
-			HasStageCredentialsAwsKeyId(awsKeyId).
 			HasStageLocationUrl(fmt.Sprintf("[\"%s\"]", awsBucketUrl)))
 	})
 

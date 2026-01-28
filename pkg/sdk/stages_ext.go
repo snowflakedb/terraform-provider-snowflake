@@ -16,6 +16,10 @@ func (s *CreateInternalStageRequest) ID() SchemaObjectIdentifier {
 	return s.name
 }
 
+func (s *CreateOnS3StageRequest) ID() SchemaObjectIdentifier {
+	return s.name
+}
+
 // FileFormatCsv represents CSV file format properties from DESCRIBE STAGE
 type FileFormatCsv struct {
 	Type                       string
@@ -121,11 +125,10 @@ func parseFileFormatName(properties []StageProperty) *SchemaObjectIdentifier {
 
 func parseCsvFileFormat(properties []StageProperty) *FileFormatCsv {
 	csv := &FileFormatCsv{}
-
-	for _, prop := range properties {
-		if prop.Parent != "STAGE_FILE_FORMAT" {
-			continue
-		}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
 		switch prop.Name {
 		case "TYPE":
 			csv.Type = prop.Value
@@ -184,11 +187,10 @@ func parseCsvFileFormat(properties []StageProperty) *FileFormatCsv {
 
 func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {
 	dt := &StageDirectoryTable{}
-
-	for _, prop := range properties {
-		if prop.Parent != "DIRECTORY" {
-			continue
-		}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "DIRECTORY"
+	})
+	for _, prop := range filtered {
 		switch prop.Name {
 		case "ENABLE":
 			dt.Enable = prop.Value == "true"
@@ -211,18 +213,14 @@ func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, erro
 }
 
 func parsePrivateLink(properties []StageProperty) *StagePrivateLink {
-	_, err := collections.FindFirst(properties, func(prop StageProperty) bool {
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
 		return prop.Parent == "PRIVATELINK"
 	})
-	if err != nil {
+	if len(filtered) == 0 {
 		return nil
 	}
 	pl := &StagePrivateLink{}
-
-	for _, prop := range properties {
-		if prop.Parent != "PRIVATELINK" {
-			continue
-		}
+	for _, prop := range filtered {
 		switch prop.Name {
 		case "USE_PRIVATELINK_ENDPOINT":
 			pl.UsePrivatelinkEndpoint = prop.Value == "true"
@@ -232,14 +230,14 @@ func parsePrivateLink(properties []StageProperty) *StagePrivateLink {
 }
 
 func parseStageLocationDetails(properties []StageProperty) *StageLocationDetails {
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_LOCATION"
+	})
+	if len(filtered) == 0 {
+		return nil
+	}
 	loc := &StageLocationDetails{}
-	hasAnyProperty := false
-
-	for _, prop := range properties {
-		if prop.Parent != "STAGE_LOCATION" {
-			continue
-		}
-		hasAnyProperty = true
+	for _, prop := range filtered {
 		switch prop.Name {
 		case "URL":
 			loc.Url = prop.Value
@@ -247,30 +245,22 @@ func parseStageLocationDetails(properties []StageProperty) *StageLocationDetails
 			loc.AwsAccessPointArn = prop.Value
 		}
 	}
-
-	if !hasAnyProperty {
-		return nil
-	}
 	return loc
 }
 
 func parseStageCredentials(properties []StageProperty) *StageCredentials {
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_CREDENTIALS"
+	})
+	if len(filtered) == 0 {
+		return nil
+	}
 	creds := &StageCredentials{}
-	hasAnyProperty := false
-
-	for _, prop := range properties {
-		if prop.Parent != "STAGE_CREDENTIALS" {
-			continue
-		}
-		hasAnyProperty = true
+	for _, prop := range filtered {
 		switch prop.Name {
 		case "AWS_KEY_ID":
 			creds.AwsKeyId = prop.Value
 		}
-	}
-
-	if !hasAnyProperty {
-		return nil
 	}
 	return creds
 }

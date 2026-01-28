@@ -80,10 +80,8 @@ func (c *StageClient) CreateStageWithRequest(t *testing.T, request *sdk.CreateIn
 	return stage, c.DropStageFunc(t, request.ID())
 }
 
-// CreateStageOnS3 creates an S3 stage with sane defaults using pre-created storage integration.
 func (c *StageClient) CreateStageOnS3(t *testing.T, awsBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
-	ctx := context.Background()
 
 	id := c.ids.RandomSchemaObjectIdentifier()
 
@@ -91,16 +89,36 @@ func (c *StageClient) CreateStageOnS3(t *testing.T, awsBucketUrl string) (*sdk.S
 		WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
 	request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
 
+	return c.CreateStageOnS3WithRequest(t, request)
+}
+
+func (c *StageClient) CreateStageOnS3WithCredentials(t *testing.T, awsBucketUrl string, awsKeyId string, awsSecretKey string) (*sdk.Stage, func()) {
+	t.Helper()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+
+	s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+		WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
+			WithAwsKeyId(awsKeyId).
+			WithAwsSecretKey(awsSecretKey))
+	request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
+
+	return c.CreateStageOnS3WithRequest(t, request)
+}
+
+func (c *StageClient) CreateStageOnS3WithRequest(t *testing.T, request *sdk.CreateOnS3StageRequest) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
 	err := c.client().CreateOnS3(ctx, request)
 	require.NoError(t, err)
 
-	stage, err := c.client().ShowByID(ctx, id)
+	stage, err := c.client().ShowByID(ctx, request.ID())
 	require.NoError(t, err)
 
-	return stage, c.DropStageFunc(t, id)
+	return stage, c.DropStageFunc(t, request.ID())
 }
 
-// CreateStageOnGCS creates a GCS stage with sane defaults using pre-created storage integration.
 func (c *StageClient) CreateStageOnGCS(t *testing.T, gcsBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
 	ctx := context.Background()
@@ -120,7 +138,6 @@ func (c *StageClient) CreateStageOnGCS(t *testing.T, gcsBucketUrl string) (*sdk.
 	return stage, c.DropStageFunc(t, id)
 }
 
-// CreateStageOnAzure creates an Azure stage using SAS token from env vars.
 func (c *StageClient) CreateStageOnAzure(t *testing.T, azureBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
 	ctx := context.Background()
