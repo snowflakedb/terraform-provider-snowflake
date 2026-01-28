@@ -39,22 +39,31 @@ func ExternalProviderWithExactVersion(version string) map[string]resource.Extern
 	}
 }
 
-// SetV097CompatibleConfigPathEnv sets a new config path in a relevant env variable for a file that is compatible with v0.97.
-func SetV097CompatibleConfigPathEnv(t *testing.T) {
+func setConfigPathEnv(t *testing.T, configName string) {
 	t.Helper()
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
-	configPath := filepath.Join(home, ".snowflake", "config_v097_compatible")
+	configPath := filepath.Join(home, ".snowflake", configName)
 	t.Setenv(snowflakeenvs.ConfigPath, configPath)
+}
+
+// SetV097CompatibleConfigPathEnv sets a new config path in a relevant env variable for a file that is compatible with v0.97.
+func SetV097CompatibleConfigPathEnv(t *testing.T) {
+	t.Helper()
+	setConfigPathEnv(t, "config_v097_compatible")
+}
+
+// SetV097CompatibleConfigWithServiceUserPathEnv sets a new config path in a relevant env variable for a file that is compatible with v0.97,
+// and authenticates with a service user.
+func SetV097CompatibleConfigWithServiceUserPathEnv(t *testing.T) {
+	t.Helper()
+	setConfigPathEnv(t, "config_v097_compatible_with_service_user")
 }
 
 // SetLegacyConfigPathEnv sets a new config path in a relevant env variable for a file that uses the legacy format.
 func SetLegacyConfigPathEnv(t *testing.T) {
 	t.Helper()
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
-	configPath := filepath.Join(home, ".snowflake", "config_legacy")
-	t.Setenv(snowflakeenvs.ConfigPath, configPath)
+	setConfigPathEnv(t, "config_legacy")
 }
 
 // UnsetConfigPathEnv unsets a config path env
