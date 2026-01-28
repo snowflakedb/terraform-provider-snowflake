@@ -18,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -2030,6 +2031,7 @@ func TestAcc_Task_issue3113(t *testing.T) {
 		WithScheduleMinutes(schedule).
 		WithSqlStatement(statement).
 		WithErrorIntegration(errorNotificationIntegration.ID().Name())
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2038,9 +2040,9 @@ func TestAcc_Task_issue3113(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
-				Config:            taskConfigWithErrorIntegration(id, errorNotificationIntegration.ID()),
+				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar) + taskConfigWithErrorIntegration(id, errorNotificationIntegration.ID()),
 				ExpectError:       regexp.MustCompile("error_integration: '' expected type 'string', got unconvertible type 'sdk.AccountObjectIdentifier'"),
 			},
 			{

@@ -12,6 +12,8 @@ import (
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
@@ -1917,6 +1919,7 @@ resource "snowflake_table" "test_table" {
 
 func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resourceName := "snowflake_table.test_table"
 	resource.Test(t, resource.TestCase{
@@ -1926,9 +1929,9 @@ func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            tableConfig(tableId),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + tableConfig(tableId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", tableId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", tableId.FullyQualifiedName()),
@@ -1956,6 +1959,7 @@ func TestAcc_Table_SuppressQuotingOnDefaultSequence_issue2644(t *testing.T) {
 	t.Cleanup(schemaCleanup)
 
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resourceName := "snowflake_table.test_table"
 	resource.Test(t, resource.TestCase{
@@ -1964,10 +1968,10 @@ func TestAcc_Table_SuppressQuotingOnDefaultSequence_issue2644(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             tableConfigWithSequence(tableId),
+				Config:             accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + tableConfigWithSequence(tableId),
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },

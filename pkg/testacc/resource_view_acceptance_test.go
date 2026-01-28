@@ -9,6 +9,7 @@ import (
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	tfconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
@@ -1317,6 +1318,7 @@ func TestAcc_view_migrateFromVersion_0_94_1(t *testing.T) {
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	viewConfig := config.Variables{
 		"name":      config.StringVariable(id.Name()),
@@ -1341,9 +1343,9 @@ func TestAcc_view_migrateFromVersion_0_94_1(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            viewV0941WithTags(id, tag.ID(), "foo", statement),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + viewV0941WithTags(id, tag.ID(), "foo", statement),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "tag.#", "1"),

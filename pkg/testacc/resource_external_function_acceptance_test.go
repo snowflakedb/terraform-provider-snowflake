@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -227,6 +229,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsOld(sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -236,9 +239,9 @@ func TestAcc_ExternalFunction_migrateFromVersion085(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|%s|%s|VARCHAR-VARCHAR", TestDatabaseName, TestSchemaName, name)),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
@@ -270,6 +273,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValuePrese
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -279,9 +283,9 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValuePrese
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "return_null_allowed", "true"),
 				),
@@ -305,6 +309,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValueRemov
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -314,9 +319,9 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValueRemov
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "return_null_allowed", "true"),
 				),
@@ -425,6 +430,7 @@ func TestAcc_ExternalFunction_HeaderParsing(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resourceName := "snowflake_external_function.f"
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -433,9 +439,9 @@ func TestAcc_ExternalFunction_HeaderParsing(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.ExternalFunction),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            externalFunctionConfigIssueCurlyHeader(id),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfigIssueCurlyHeader(id),
 				// Previous implementation produces a plan with the following changes
 				//
 				// - header { # forces replacement
@@ -621,6 +627,7 @@ func TestAcc_ExternalFunction_EnsureSmoothResourceIdMigrationToV0950(t *testing.
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -629,9 +636,9 @@ func TestAcc_ExternalFunction_EnsureSmoothResourceIdMigrationToV0950(t *testing.
 		CheckDestroy: CheckDestroy(t, resources.ExternalFunction),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            externalFunctionConfigWithMoreArguments(TestDatabaseName, TestSchemaName, name),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfigWithMoreArguments(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`"%s"."%s"."%s"(VARCHAR, FLOAT, NUMBER)`, TestDatabaseName, TestSchemaName, name)),
 				),
@@ -690,6 +697,7 @@ func TestAcc_ExternalFunction_EnsureSmoothResourceIdMigrationToV0950_WithoutArgu
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -698,9 +706,9 @@ func TestAcc_ExternalFunction_EnsureSmoothResourceIdMigrationToV0950_WithoutArgu
 		CheckDestroy: CheckDestroy(t, resources.ExternalFunction),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            externalFunctionConfigWithoutArguments(TestDatabaseName, TestSchemaName, name),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfigWithoutArguments(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`"%s"."%s"."%s"`, TestDatabaseName, TestSchemaName, name)),
 				),

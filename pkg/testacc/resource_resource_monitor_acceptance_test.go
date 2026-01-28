@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -511,6 +512,7 @@ func TestAcc_ResourceMonitor_issue2167(t *testing.T) {
 func TestAcc_ResourceMonitor_Issue1990_RemovingResourceMonitorOutsideOfTerraform(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	configModel := model.ResourceMonitor("test", id.Name())
+	providerConfigModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -520,9 +522,9 @@ func TestAcc_ResourceMonitor_Issue1990_RemovingResourceMonitorOutsideOfTerraform
 		Steps: []resource.TestStep{
 			// Create resource monitor
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.69.0"),
-				Config:            config.FromModels(t, configModel),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModel),
 			},
 			// Same configuration, but we drop resource monitor externally
 			{
@@ -567,6 +569,7 @@ func TestAcc_ResourceMonitor_Issue_TimestampInfinitePlan(t *testing.T) {
 		WithFrequency(string(sdk.FrequencyWeekly)).
 		WithStartTimestamp(time.Now().Add(time.Hour * 24 * 30).Format("2006-01-02 15:04")).
 		WithEndTimestamp(time.Now().Add(time.Hour * 24 * 60).Format("2006-01-02 15:04"))
+	providerConfigModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -576,9 +579,9 @@ func TestAcc_ResourceMonitor_Issue_TimestampInfinitePlan(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create resource monitor without the timestamps
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModel),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModel),
 			},
 			// Alter resource timestamps to have the following format: 2006-01-02 (produces a plan because of the format difference)
 			{
@@ -627,6 +630,7 @@ func TestAcc_ResourceMonitor_Issue1500_CreatingWithOnlyTriggers(t *testing.T) {
 		)).
 		WithSuspendTrigger(120).
 		WithSuspendImmediateTrigger(150)
+	providerConfigModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -636,9 +640,9 @@ func TestAcc_ResourceMonitor_Issue1500_CreatingWithOnlyTriggers(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create resource monitor with only triggers (old version)
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModel),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModel),
 				ExpectError:       regexp.MustCompile("SQL compilation error"),
 			},
 			// Create resource monitor with only triggers (the latest version)
@@ -676,6 +680,7 @@ func TestAcc_ResourceMonitor_Issue1500_AlteringWithOnlyTriggers(t *testing.T) {
 
 	configModelWithoutTriggers := model.ResourceMonitor("test", id.Name()).
 		WithCreditQuota(100)
+	providerConfigModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -684,9 +689,9 @@ func TestAcc_ResourceMonitor_Issue1500_AlteringWithOnlyTriggers(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithCreditQuota),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModelWithCreditQuota),
 			},
 			// Update only triggers (not allowed in Snowflake)
 			{
@@ -833,6 +838,7 @@ func TestAcc_ResourceMonitor_SetForWarehouse(t *testing.T) {
 	newVersionModel := model.ResourceMonitor("test", id.Name()).
 		WithCreditQuota(100).
 		WithSuspendTrigger(100)
+	providerConfigModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -841,9 +847,9 @@ func TestAcc_ResourceMonitor_SetForWarehouse(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config: fmt.Sprintf(`
+				Config: config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar) + fmt.Sprintf(`
 resource "snowflake_resource_monitor" "test" {
 	name = "%[1]s"
 	credit_quota = 100

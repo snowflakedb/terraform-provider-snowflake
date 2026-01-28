@@ -215,6 +215,7 @@ func TestAcc_AccountRole_WithQuotedName(t *testing.T) {
 
 	accountRoleModelWithComment := model.AccountRole("role", quotedId).
 		WithComment(comment)
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -223,10 +224,10 @@ func TestAcc_AccountRole_WithQuotedName(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.AccountRole),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, accountRoleModelWithComment),
+				Config:             accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar, accountRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "id", id.Name()),

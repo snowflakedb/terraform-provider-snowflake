@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -753,15 +755,17 @@ func TestAcc_GrantPrivilegesToShare_migrateFromV0941_ensureSmoothUpgradeWithNewR
 	share, shareCleanup := testClient().Share.CreateShare(t)
 	t.Cleanup(shareCleanup)
 
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantPrivilegesToShareBasicConfig(database.ID(), share.ID()),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + grantPrivilegesToShareBasicConfig(database.ID(), share.ID()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_share.test", "id", fmt.Sprintf(`%s|USAGE|OnDatabase|%s`, share.ID().FullyQualifiedName(), database.ID().FullyQualifiedName())),
 				),
@@ -801,6 +805,7 @@ func TestAcc_GrantPrivilegesToShare_IdentifierQuotingDiffSuppression(t *testing.
 	t.Cleanup(databaseCleanup)
 
 	shareId := testClient().Ids.RandomAccountObjectIdentifier()
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -808,10 +813,10 @@ func TestAcc_GrantPrivilegesToShare_IdentifierQuotingDiffSuppression(t *testing.
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent final plan"),
-				Config:            grantPrivilegesToShareQuotedIdentifiers(database.ID(), shareId),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + grantPrivilegesToShareQuotedIdentifiers(database.ID(), shareId),
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },

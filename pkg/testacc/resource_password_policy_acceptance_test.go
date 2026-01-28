@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -189,6 +191,7 @@ func TestAcc_PasswordPolicyMaxAgeDays(t *testing.T) {
 
 func TestAcc_PasswordPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 
 	resourceName := "snowflake_password_policy.pa"
 	resource.Test(t, resource.TestCase{
@@ -198,9 +201,9 @@ func TestAcc_PasswordPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            passwordPolicyBasicConfig(id),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + passwordPolicyBasicConfig(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", id.FullyQualifiedName()),

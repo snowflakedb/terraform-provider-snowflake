@@ -9,6 +9,8 @@ import (
 	"testing"
 	"text/template"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -206,6 +208,7 @@ resource "snowflake_alert" "test_alert" {
 // Can't reproduce the issue, leaving the test for now.
 func TestAcc_Alert_Issue3117(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix("small caps with spaces")
+	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -213,9 +216,9 @@ func TestAcc_Alert_Issue3117(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Alert),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            alertIssue3117Config(id, testClient().Ids.WarehouseId(), "test_alert"),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + alertIssue3117Config(id, testClient().Ids.WarehouseId(), "test_alert"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_alert.test_alert", "name", id.Name()),
 				),
