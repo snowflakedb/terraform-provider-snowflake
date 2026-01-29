@@ -21,7 +21,7 @@ var storageIntegrationsDef = g.NewInterface(
 			SQL("STORAGE INTEGRATION").
 			IfNotExists().
 			Name().
-			PredefinedQueryStructField("externalStageType", "string", g.StaticOptions().SQL("TYPE = EXTERNAL_STAGE")).
+			SQLWithCustomFieldName("externalStageType", "TYPE = EXTERNAL_STAGE").
 			OptionalQueryStructField(
 				"S3StorageProviderParams",
 				g.NewQueryStruct("S3StorageParams").
@@ -35,17 +35,18 @@ var storageIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"GCSStorageProviderParams",
 				g.NewQueryStruct("GCSStorageParams").
-					PredefinedQueryStructField("storageProvider", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'GCS'")),
+					SQLWithCustomFieldName("storageProvider", "STORAGE_PROVIDER = 'GCS'"),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
 				"AzureStorageProviderParams",
 				g.NewQueryStruct("AzureStorageParams").
-					PredefinedQueryStructField("storageProvider", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'AZURE'")).
-					OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
+					SQLWithCustomFieldName("storageProvider", "STORAGE_PROVIDER = 'AZURE'").
+					TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).
+			// TODO [this PR]: confirm ENABLED is really required
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			ListAssignment("STORAGE_ALLOWED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses().Required()).
 			ListAssignment("STORAGE_BLOCKED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses()).
@@ -68,6 +69,7 @@ var storageIntegrationsDef = g.NewInterface(
 					OptionalQueryStructField(
 						"S3Params",
 						g.NewQueryStruct("SetS3StorageParams").
+							// TODO [this PR]: test if we need this is really required
 							TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 							OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 							OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
@@ -77,6 +79,7 @@ var storageIntegrationsDef = g.NewInterface(
 					OptionalQueryStructField(
 						"AzureParams",
 						g.NewQueryStruct("SetAzureStorageParams").
+							// TODO [this PR]: test if we need this is really required
 							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
 							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 						g.KeywordOptions(),
@@ -84,18 +87,25 @@ var storageIntegrationsDef = g.NewInterface(
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 					ListAssignment("STORAGE_ALLOWED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses()).
 					ListAssignment("STORAGE_BLOCKED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses()).
-					OptionalComment(),
+					OptionalComment().
+					WithValidation(g.ConflictingFields, "S3Params", "AzureParams").
+					WithValidation(g.AtLeastOneValueSet, "S3Params", "AzureParams", "Enabled", "StorageAllowedLocations", "StorageBlockedLocations", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("StorageIntegrationUnset").
+					// TODO [this PR]: split into multiple unsets?
 					OptionalSQL("STORAGE_AWS_EXTERNAL_ID").
 					OptionalSQL("STORAGE_AWS_OBJECT_ACL").
+					// TODO [this PR]: confirm enabled can be unset
 					OptionalSQL("ENABLED").
+					// TODO [this PR]: STORAGE_ALLOWED_LOCATIONS?
 					OptionalSQL("STORAGE_BLOCKED_LOCATIONS").
 					OptionalSQL("COMMENT").
-					OptionalSQL("USE_PRIVATELINK_ENDPOINT"),
+					OptionalSQL("USE_PRIVATELINK_ENDPOINT").
+					WithValidation(g.ConflictingFields, "...").
+					WithValidation(g.AtLeastOneValueSet, "..."),
 				g.ListOptions().SQL("UNSET"),
 			).
 			OptionalSetTags().
@@ -137,6 +147,7 @@ var storageIntegrationsDef = g.NewInterface(
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 	).
+	// TODO [this PR]: create structs with all the details mapped on the SDK level
 	DescribeOperation(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
