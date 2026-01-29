@@ -92,8 +92,8 @@ type SetAzureStorageParams struct {
 }
 
 type StorageIntegrationUnset struct {
-	S3Params                *UnsetS3StorageParams    `ddl:"keyword"`
-	AzureParams             *UnsetAzureStorageParams `ddl:"keyword"`
+	S3Params                *UnsetS3StorageParams    `ddl:"list"`
+	AzureParams             *UnsetAzureStorageParams `ddl:"list"`
 	Enabled                 *bool                    `ddl:"keyword" sql:"ENABLED"`
 	StorageBlockedLocations *bool                    `ddl:"keyword" sql:"STORAGE_BLOCKED_LOCATIONS"`
 	Comment                 *bool                    `ddl:"keyword" sql:"COMMENT"`

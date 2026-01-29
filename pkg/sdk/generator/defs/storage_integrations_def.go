@@ -104,14 +104,14 @@ var storageIntegrationsDef = g.NewInterface(
 							OptionalSQL("STORAGE_AWS_OBJECT_ACL").
 							OptionalSQL("USE_PRIVATELINK_ENDPOINT").
 							WithValidation(g.AtLeastOneValueSet, "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"),
-						g.KeywordOptions(),
+						g.ListOptions(),
 					).
 					OptionalQueryStructField(
 						"AzureParams",
 						g.NewQueryStruct("UnsetAzureStorageParams").
 							OptionalSQL("USE_PRIVATELINK_ENDPOINT").
 							WithValidation(g.AtLeastOneValueSet, "UsePrivatelinkEndpoint"),
-						g.KeywordOptions(),
+						g.ListOptions(),
 					).
 					OptionalSQL("ENABLED").
 					OptionalSQL("STORAGE_BLOCKED_LOCATIONS").
