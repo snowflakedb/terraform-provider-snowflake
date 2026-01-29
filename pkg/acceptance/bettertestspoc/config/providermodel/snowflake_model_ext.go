@@ -175,6 +175,7 @@ func PatConfig(h helpers.TmpServiceUserWithPat) *SnowflakeModel {
 // V097CompatibleProviderConfig returns a provider config for testing
 // migration from v0.97 compatible provider configurations.
 func V097CompatibleProviderConfig(t *testing.T) string {
+	t.Helper()
 	providerModel, privateKeyVar, passphraseVar := V097CompatibleProviderModels()
 	return config.FromModels(t, providerModel, privateKeyVar, passphraseVar)
 }

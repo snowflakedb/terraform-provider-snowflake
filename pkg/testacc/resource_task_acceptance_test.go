@@ -2042,7 +2042,7 @@ func TestAcc_Task_issue3113(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
-				Config:            providerConfig +taskConfigWithErrorIntegration(id, errorNotificationIntegration.ID()),
+				Config:            providerConfig + taskConfigWithErrorIntegration(id, errorNotificationIntegration.ID()),
 				ExpectError:       regexp.MustCompile("error_integration: '' expected type 'string', got unconvertible type 'sdk.AccountObjectIdentifier'"),
 			},
 			{

@@ -240,7 +240,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            providerConfig +externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|%s|%s|VARCHAR-VARCHAR", TestDatabaseName, TestSchemaName, name)),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
@@ -252,7 +252,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085(t *testing.T) {
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
@@ -284,7 +284,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValuePrese
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            providerConfig +externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
+				Config:            providerConfig + externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "return_null_allowed", "true"),
 				),
@@ -292,7 +292,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValuePrese
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
@@ -319,7 +319,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValueRemov
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            providerConfig +externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
+				Config:            providerConfig + externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "return_null_allowed", "true"),
 				),
@@ -327,7 +327,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValueRemov
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            providerConfig +externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(resourceName, "return_null_allowed"),
 				),
@@ -439,7 +439,7 @@ func TestAcc_ExternalFunction_HeaderParsing(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            providerConfig +externalFunctionConfigIssueCurlyHeader(id),
+				Config:            providerConfig + externalFunctionConfigIssueCurlyHeader(id),
 				// Previous implementation produces a plan with the following changes
 				//
 				// - header { # forces replacement
@@ -636,7 +636,7 @@ func TestAcc_ExternalFunction_EnsureSmoothResourceIdMigrationToV0950(t *testing.
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +externalFunctionConfigWithMoreArguments(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfigWithMoreArguments(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`"%s"."%s"."%s"(VARCHAR, FLOAT, NUMBER)`, TestDatabaseName, TestSchemaName, name)),
 				),
@@ -706,7 +706,7 @@ func TestAcc_ExternalFunction_EnsureSmoothResourceIdMigrationToV0950_WithoutArgu
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +externalFunctionConfigWithoutArguments(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfigWithoutArguments(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`"%s"."%s"."%s"`, TestDatabaseName, TestSchemaName, name)),
 				),

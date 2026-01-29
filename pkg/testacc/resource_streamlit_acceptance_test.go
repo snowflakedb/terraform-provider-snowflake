@@ -286,7 +286,7 @@ func TestAcc_Streamlit_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +accconfig.FromModels(t, streamlitModel),
+				Config:            providerConfig + accconfig.FromModels(t, streamlitModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(id)),
 				),
@@ -325,7 +325,7 @@ func TestAcc_Streamlit_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +accconfig.FromModels(t, streamlitModel),
+				Config:             providerConfig + accconfig.FromModels(t, streamlitModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "database", fmt.Sprintf("\"%s\"", id.DatabaseName())),
 					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "schema", id.SchemaName()),

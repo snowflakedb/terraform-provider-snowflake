@@ -234,7 +234,7 @@ func TestAcc_NotificationIntegration_migrateFromVersion085(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            providerConfig +googleAutoConfig(id, gcpPubsubSubscriptionName),
+				Config:            providerConfig + googleAutoConfig(id, gcpPubsubSubscriptionName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "name", id.Name()),
@@ -275,7 +275,7 @@ func TestAcc_NotificationIntegration_migrateFromVersion085_explicitType(t *testi
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            providerConfig +googleAutoConfigWithExplicitType(id, gcpPubsubSubscriptionName),
+				Config:            providerConfig + googleAutoConfigWithExplicitType(id, gcpPubsubSubscriptionName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "name", id.Name()),
 				),

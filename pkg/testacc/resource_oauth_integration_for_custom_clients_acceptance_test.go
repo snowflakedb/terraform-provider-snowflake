@@ -560,7 +560,7 @@ func TestAcc_OauthIntegrationForCustomClients_migrateFromV0941_ensureSmoothUpgra
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +accconfig.FromModels(t, basicModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),
 				),
@@ -596,7 +596,7 @@ func TestAcc_OauthIntegrationForCustomClients_WithQuotedName(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +accconfig.FromModels(t, basicModel),
+				Config:             providerConfig + accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),

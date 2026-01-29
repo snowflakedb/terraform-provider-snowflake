@@ -471,7 +471,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withRsaPublicKeysAnd
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +externalOauthIntegrationWithRsaPublicKeysAndBlockedRolesListv092(id.Name(), issuer, rsaKey, role.Name),
+				Config:            providerConfig + externalOauthIntegrationWithRsaPublicKeysAndBlockedRolesListv092(id.Name(), issuer, rsaKey, role.Name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
@@ -586,7 +586,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromVersion092_withJwsKeysUrlAndAll
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +externalOauthIntegrationWithJwsKeysUrlAndAllowedRolesListv092(id.Name(), issuer, role.Name),
+				Config:            providerConfig + externalOauthIntegrationWithJwsKeysUrlAndAllowedRolesListv092(id.Name(), issuer, role.Name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "type", string(sdk.ExternalOauthSecurityIntegrationTypeCustom)),
@@ -683,7 +683,7 @@ func TestAcc_ExternalOauthIntegration_migrateFromV0941_ensureSmoothUpgradeWithNe
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +externalOauthIntegrationBasicConfig(id.Name(), issuer),
+				Config:            providerConfig + externalOauthIntegrationBasicConfig(id.Name(), issuer),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "id", id.Name()),
 				),
@@ -716,7 +716,7 @@ func TestAcc_ExternalOauthIntegration_WithQuotedName(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +externalOauthIntegrationBasicConfig(quotedId, issuer),
+				Config:             providerConfig + externalOauthIntegrationBasicConfig(quotedId, issuer),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_external_oauth_integration.test", "id", id.Name()),

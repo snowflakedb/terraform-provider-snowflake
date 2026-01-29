@@ -217,7 +217,7 @@ func TestAcc_Alert_Issue3117(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +alertIssue3117Config(id, testClient().Ids.WarehouseId(), "test_alert"),
+				Config:            providerConfig + alertIssue3117Config(id, testClient().Ids.WarehouseId(), "test_alert"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_alert.test_alert", "name", id.Name()),
 				),

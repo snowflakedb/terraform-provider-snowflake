@@ -141,7 +141,7 @@ func TestAcc_GrantApplicationRole_migrateFromV0941_ensureSmoothUpgradeWithNewRes
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +grantApplicationRoleBasicConfig(fmt.Sprintf(`\"%s\".\"%s\"`, appRoleId.DatabaseName(), appRoleId.Name()), parentRoleId.Name()),
+				Config:            providerConfig + grantApplicationRoleBasicConfig(fmt.Sprintf(`\"%s\".\"%s\"`, appRoleId.DatabaseName(), appRoleId.Name()), parentRoleId.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_application_role.test", "id", fmt.Sprintf(`%s|ACCOUNT_ROLE|%s`, appRoleId.FullyQualifiedName(), parentRoleId.FullyQualifiedName())),
 				),
@@ -198,7 +198,7 @@ func TestAcc_GrantApplicationRole_IdentifierQuotingDiffSuppression(t *testing.T)
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent final plan"),
-				Config:            providerConfig +grantApplicationRoleBasicConfig(unquotedApplicationRoleId, quotedParentRoleId),
+				Config:            providerConfig + grantApplicationRoleBasicConfig(unquotedApplicationRoleId, quotedParentRoleId),
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },

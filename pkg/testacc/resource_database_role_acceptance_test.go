@@ -212,7 +212,7 @@ func TestAcc_DatabaseRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +config.FromModels(t, databaseRoleModelWithComment),
+				Config:            providerConfig + config.FromModels(t, databaseRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database_role.test", "id", fmt.Sprintf(`%s|%s`, id.DatabaseName(), id.Name())),
 				),
@@ -253,7 +253,7 @@ func TestAcc_DatabaseRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +config.FromModels(t, databaseRoleModelWithComment),
+				Config:             providerConfig + config.FromModels(t, databaseRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database_role.test", "database", id.DatabaseName()),
 					resource.TestCheckResourceAttr("snowflake_database_role.test", "name", id.Name()),

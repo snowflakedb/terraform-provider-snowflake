@@ -446,12 +446,12 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            providerConfig +schemaV093(schemaId),
+				Config:            providerConfig + schemaV093(schemaId),
 				ExpectError:       regexp.MustCompile("Error: error creating schema PUBLIC"),
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.0"),
-				Config:            providerConfig +schemaV094WithPipeExecutionPaused(schemaId, true),
+				Config:            providerConfig + schemaV094WithPipeExecutionPaused(schemaId, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_schema.test", "name", schemaId.Name()),
 					resource.TestCheckResourceAttr("snowflake_schema.test", "database", schemaId.DatabaseName()),
@@ -475,7 +475,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 					require.Zero(t, schemas[0].DroppedOn)
 					require.NotZero(t, schemas[1].DroppedOn)
 				},
-				Config: providerConfig +schemaV094WithPipeExecutionPaused(schemaId, false),
+				Config: providerConfig + schemaV094WithPipeExecutionPaused(schemaId, false),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("snowflake_schema.test", plancheck.ResourceActionUpdate),
@@ -509,7 +509,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_1(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            providerConfig +schemaV093(schemaId),
+				Config:            providerConfig + schemaV093(schemaId),
 				ExpectError:       regexp.MustCompile("Error: error creating schema PUBLIC"),
 			},
 			{
@@ -882,7 +882,7 @@ func TestAcc_Schema_migrateFromVersion093WithoutManagedAccess(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            providerConfig +schemaV093(id),
+				Config:            providerConfig + schemaV093(id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "is_managed", "false"),
@@ -918,7 +918,7 @@ func TestAcc_Schema_migrateFromVersion093(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            providerConfig +schemaV093WithIsManagedAndDataRetentionDays(id, tag.ID(), "foo", true, 10),
+				Config:            providerConfig + schemaV093WithIsManagedAndDataRetentionDays(id, tag.ID(), "foo", true, 10),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "is_managed", "true"),
@@ -1016,7 +1016,7 @@ func TestAcc_Schema_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *tes
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +accconfig.FromModels(t, basicSchemaModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicSchemaModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(id)),
 				),
@@ -1051,7 +1051,7 @@ func TestAcc_Schema_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +accconfig.FromModels(t, basicSchemaModelWithQuotes),
+				Config:             providerConfig + accconfig.FromModels(t, basicSchemaModelWithQuotes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicSchemaModelWithQuotes.ResourceReference(), "database", id.DatabaseName()),
 					resource.TestCheckResourceAttr(basicSchemaModelWithQuotes.ResourceReference(), "name", id.Name()),

@@ -202,7 +202,7 @@ func TestAcc_PasswordPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +passwordPolicyBasicConfig(id),
+				Config:            providerConfig + passwordPolicyBasicConfig(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", id.FullyQualifiedName()),

@@ -1575,7 +1575,7 @@ func TestAcc_Warehouse_migrateFromVersion092_withWarehouseSize(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +config.FromModels(t, warehouseModelFull),
+				Config:            providerConfig + config.FromModels(t, warehouseModelFull),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "warehouse_size", "4XLARGE"),
@@ -1625,7 +1625,7 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration(t *t
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +warehouseV092Config(id),
+				Config:            providerConfig + warehouseV092Config(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "wait_for_provisioning", "true"),
@@ -1688,7 +1688,7 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration_bool
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +warehouseV092Config(id),
+				Config:            providerConfig + warehouseV092Config(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFullWithBoolean.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(warehouseModelFullWithBoolean.ResourceReference(), "wait_for_provisioning", "true"),
@@ -1738,7 +1738,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_sam
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +config.FromModels(t, warehouseModelFullDefault),
+				Config:            providerConfig + config.FromModels(t, warehouseModelFullDefault),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFullDefault.ResourceReference(), "name", id.Name()),
 					resource.TestCheckNoResourceAttr(warehouseModelFullDefault.ResourceReference(), "query_acceleration_max_scale_factor"),
@@ -1794,7 +1794,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_noI
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +config.FromModels(t, warehouseModelFullDefault),
+				Config:            providerConfig + config.FromModels(t, warehouseModelFullDefault),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFullDefault.ResourceReference(), "name", id.Name()),
 					resource.TestCheckNoResourceAttr(warehouseModelFullDefault.ResourceReference(), "query_acceleration_max_scale_factor"),
@@ -1850,7 +1850,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_dif
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +config.FromModels(t, warehouseModelFullDefault),
+				Config:            providerConfig + config.FromModels(t, warehouseModelFullDefault),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFullDefault.ResourceReference(), "name", id.Name()),
 					resource.TestCheckNoResourceAttr(warehouseModelFullDefault.ResourceReference(), "query_acceleration_max_scale_factor"),
@@ -1904,7 +1904,7 @@ func TestAcc_Warehouse_migrateFromVersion092_noConfigToFullConfig(t *testing.T) 
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
 				// query acceleration is needed here because of the custom logic that was removed
-				Config: providerConfig +config.FromModels(t, warehouseModelBasicConfigWithQueryAcceleration),
+				Config: providerConfig + config.FromModels(t, warehouseModelBasicConfigWithQueryAcceleration),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelBasicConfigWithQueryAcceleration.ResourceReference(), "name", id.Name()),
 				),
@@ -1957,7 +1957,7 @@ func TestAcc_Warehouse_migrateFromVersion092_defaultsRemoved(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +config.FromModels(t, warehouseModel),
+				Config:            providerConfig + config.FromModels(t, warehouseModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "name", id.Name()),
 
@@ -2024,7 +2024,7 @@ func TestAcc_Warehouse_migrateFromVersion092_warehouseSizeCausingForceNew(t *tes
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +config.FromModels(t, warehouseModel),
+				Config:            providerConfig + config.FromModels(t, warehouseModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "name", id.Name()),
 				),
@@ -2061,7 +2061,7 @@ func TestAcc_Warehouse_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +config.FromModels(t, warehouseModel),
+				Config:            providerConfig + config.FromModels(t, warehouseModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "id", id.Name()),
 				),
@@ -2095,7 +2095,7 @@ func TestAcc_Warehouse_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +config.FromModels(t, warehouseModel),
+				Config:             providerConfig + config.FromModels(t, warehouseModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "id", id.Name()),

@@ -1345,7 +1345,7 @@ func TestAcc_view_migrateFromVersion_0_94_1(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +viewV0941WithTags(id, tag.ID(), "foo", statement),
+				Config:            providerConfig + viewV0941WithTags(id, tag.ID(), "foo", statement),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "tag.#", "1"),

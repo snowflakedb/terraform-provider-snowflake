@@ -1930,7 +1930,7 @@ func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +tableConfig(tableId),
+				Config:            providerConfig + tableConfig(tableId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", tableId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", tableId.FullyQualifiedName()),
@@ -1970,7 +1970,7 @@ func TestAcc_Table_SuppressQuotingOnDefaultSequence_issue2644(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +tableConfigWithSequence(tableId),
+				Config:             providerConfig + tableConfigWithSequence(tableId),
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },

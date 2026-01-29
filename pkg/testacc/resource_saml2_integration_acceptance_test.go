@@ -1076,7 +1076,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +accconfig.FromModels(t, basicModel, temporaryVariableModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:   configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "id", id.Name()),
@@ -1118,7 +1118,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +accconfig.FromModels(t, basicModel, temporaryVariableModel),
+				Config:             providerConfig + accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:    configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "name", id.Name()),

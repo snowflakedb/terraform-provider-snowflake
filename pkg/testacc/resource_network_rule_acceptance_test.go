@@ -136,7 +136,7 @@ func TestAcc_NetworkRule_migrateFromVersion_0_94_1(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +networkRuleIpv4(id, comment),
+				Config:            providerConfig + networkRuleIpv4(id, comment),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", id.FullyQualifiedName()),

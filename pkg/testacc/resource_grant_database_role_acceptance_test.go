@@ -291,7 +291,7 @@ func TestAcc_GrantDatabaseRole_migrateFromV0941_ensureSmoothUpgradeWithNewResour
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +grantDatabaseRoleBasicConfigQuoted(databaseRoleId, parentRoleId),
+				Config:            providerConfig + grantDatabaseRoleBasicConfigQuoted(databaseRoleId, parentRoleId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", fmt.Sprintf(`%s|DATABASE ROLE|%s`, databaseRoleId.FullyQualifiedName(), parentRoleId.FullyQualifiedName())),
 				),
@@ -348,7 +348,7 @@ func TestAcc_GrantDatabaseRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +grantDatabaseRoleBasicConfigUnquoted(databaseRoleId, parentRoleId),
+				Config:            providerConfig + grantDatabaseRoleBasicConfigUnquoted(databaseRoleId, parentRoleId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "database_role_name", fmt.Sprintf("%s.%s", databaseRoleId.DatabaseName(), databaseRoleId.Name())),
 					resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "parent_database_role_name", fmt.Sprintf("%s.%s", parentRoleId.DatabaseName(), parentRoleId.Name())),

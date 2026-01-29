@@ -360,7 +360,7 @@ func TestAcc_NetworkPolicy_Issue2236(t *testing.T) {
 				PreConfig: func() {
 					func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) }()
 				},
-				Config: providerConfig +accconfig.FromModels(t, networkPolicyWithNetworkRules),
+				Config: providerConfig + accconfig.FromModels(t, networkPolicyWithNetworkRules),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(networkPolicyWithNetworkRules.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(networkPolicyWithNetworkRules.ResourceReference(), "allowed_network_rule_list.#", "2"),
@@ -404,7 +404,7 @@ func TestAcc_NetworkPolicy_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +accconfig.FromModels(t, networkPolicyModelBasic),
+				Config:            providerConfig + accconfig.FromModels(t, networkPolicyModelBasic),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "id", id.Name()),
 				),
@@ -435,7 +435,7 @@ func TestAcc_NetworkPolicy_WithQuotedName(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +networkPolicyConfigBasicWithQuotedName(id),
+				Config:             providerConfig + networkPolicyConfigBasicWithQuotedName(id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_network_policy.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_network_policy.test", "id", id.Name()),

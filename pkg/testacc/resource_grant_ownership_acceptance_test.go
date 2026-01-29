@@ -1449,7 +1449,7 @@ func TestAcc_GrantOwnership_migrateFromV0941_ensureSmoothUpgradeWithNewResourceI
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +grantOwnershipOnTableBasicConfig(TestDatabaseName, TestSchemaName, tableId.Name(), accountRoleId.Name(), escapedFullyQualifiedName),
+				Config:            providerConfig + grantOwnershipOnTableBasicConfig(TestDatabaseName, TestSchemaName, tableId.Name(), accountRoleId.Name(), escapedFullyQualifiedName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TABLE|%s", accountRoleId.FullyQualifiedName(), tableId.FullyQualifiedName())),
 				),
@@ -1522,7 +1522,7 @@ func TestAcc_GrantOwnership_IdentifierQuotingDiffSuppression(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +grantOwnershipOnTableBasicConfigWithManagedDatabaseAndSchema(databaseId.Name(), schemaId.Name(), tableId.Name(), accountRoleId.Name(), unescapedFullyQualifiedName),
+				Config:            providerConfig + grantOwnershipOnTableBasicConfigWithManagedDatabaseAndSchema(databaseId.Name(), schemaId.Name(), tableId.Name(), accountRoleId.Name(), unescapedFullyQualifiedName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", unescapedFullyQualifiedName),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|TABLE|%s", accountRoleId.FullyQualifiedName(), tableId.FullyQualifiedName())),

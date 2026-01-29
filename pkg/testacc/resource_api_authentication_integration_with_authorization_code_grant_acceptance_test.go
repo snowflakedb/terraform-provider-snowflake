@@ -350,7 +350,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_migrateFromV
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +apiAuthenticationIntegrationWithAuthorizationCodeGrantBasicConfig(id.Name()),
+				Config:            providerConfig + apiAuthenticationIntegrationWithAuthorizationCodeGrantBasicConfig(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_authorization_code_grant.test", "id", id.Name()),
 				),
@@ -382,7 +382,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_WithQuotedNa
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +apiAuthenticationIntegrationWithAuthorizationCodeGrantBasicConfig(quotedId),
+				Config:             providerConfig + apiAuthenticationIntegrationWithAuthorizationCodeGrantBasicConfig(quotedId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_authorization_code_grant.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_authorization_code_grant.test", "id", id.Name()),

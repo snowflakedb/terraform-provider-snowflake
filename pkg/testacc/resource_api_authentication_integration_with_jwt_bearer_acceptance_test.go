@@ -337,7 +337,7 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_migrateFromV0941_ensureSm
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +apiAuthenticationIntegrationWithJwtBearerBasicConfig(id.Name()),
+				Config:            providerConfig + apiAuthenticationIntegrationWithJwtBearerBasicConfig(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_jwt_bearer.test", "id", id.Name()),
 				),
@@ -372,7 +372,7 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_IdentifierQuotingDiffSupp
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +apiAuthenticationIntegrationWithJwtBearerBasicConfig(quotedId),
+				Config:             providerConfig + apiAuthenticationIntegrationWithJwtBearerBasicConfig(quotedId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_jwt_bearer.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_jwt_bearer.test", "id", id.Name()),

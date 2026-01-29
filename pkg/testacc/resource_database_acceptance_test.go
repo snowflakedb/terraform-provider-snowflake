@@ -1016,7 +1016,7 @@ func TestAcc_Database_UpgradeWithDataRetentionSet(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +databaseStateUpgraderDataRetentionSet(id, comment, 10),
+				Config:            providerConfig + databaseStateUpgraderDataRetentionSet(id, comment, 10),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
@@ -1073,7 +1073,7 @@ func TestAcc_Database_WithReplication(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +databaseStateUpgraderWithReplicationOld(id, secondaryAccountLocator),
+				Config:            providerConfig + databaseStateUpgraderWithReplicationOld(id, secondaryAccountLocator),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
@@ -1236,7 +1236,7 @@ func TestAcc_Database_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *t
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +databaseConfigBasic(id.Name()),
+				Config:            providerConfig + databaseConfigBasic(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 				),
@@ -1286,7 +1286,7 @@ func TestAcc_Database_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +databaseConfigBasicWithExternalVolumeAndCatalog(quotedId, quotedExternalVolumeId, quotedCatalogId),
+				Config:             providerConfig + databaseConfigBasicWithExternalVolumeAndCatalog(quotedId, quotedExternalVolumeId, quotedCatalogId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),

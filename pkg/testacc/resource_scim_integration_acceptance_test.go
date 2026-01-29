@@ -346,7 +346,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledTrue(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +accconfig.FromModels(t, scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric)),
+				Config:            providerConfig + accconfig.FromModels(t, scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "provisioner_role", role.Name()),
@@ -392,7 +392,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledFalse(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric),
+				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "provisioner_role", role.Name()),
@@ -431,7 +431,7 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig +scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientAzure),
+				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientAzure),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 				),
@@ -445,7 +445,7 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 						planchecks.ExpectChange(resourceName, "sync_password", tfjson.ActionUpdate, nil, sdk.String(r.BooleanDefault)),
 					},
 				},
-				Config: providerConfig +scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientAzure),
+				Config: providerConfig + scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientAzure),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 				),
@@ -504,7 +504,7 @@ func TestAcc_ScimIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResource
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +accconfig.FromModels(t, scimModelBasic),
+				Config:            providerConfig + accconfig.FromModels(t, scimModelBasic),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(scimModelBasic.ResourceReference(), "id", id.Name()),
 				),
@@ -538,7 +538,7 @@ func TestAcc_ScimIntegration_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +accconfig.FromModels(t, scimModelBasic),
+				Config:             providerConfig + accconfig.FromModels(t, scimModelBasic),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(scimModelBasic.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(scimModelBasic.ResourceReference(), "id", id.Name()),

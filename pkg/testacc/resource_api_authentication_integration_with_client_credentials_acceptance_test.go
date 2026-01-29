@@ -349,7 +349,7 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_migrateFromV0941_
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +apiAuthenticationIntegrationWithClientCredentialsBasicConfig(id.Name()),
+				Config:            providerConfig + apiAuthenticationIntegrationWithClientCredentialsBasicConfig(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "id", id.Name()),
 				),
@@ -381,7 +381,7 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_WithQuotedName(t 
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +apiAuthenticationIntegrationWithClientCredentialsBasicConfig(quotedId),
+				Config:             providerConfig + apiAuthenticationIntegrationWithClientCredentialsBasicConfig(quotedId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "id", id.Name()),

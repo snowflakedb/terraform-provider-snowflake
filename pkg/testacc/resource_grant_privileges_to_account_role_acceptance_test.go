@@ -2077,7 +2077,7 @@ func TestAcc_GrantPrivilegesToAccountRole_migrateFromV0941_ensureSmoothUpgradeWi
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +grantPrivilegesToAccountRoleBasicConfig(role.ID(), quotedSchemaId),
+				Config:            providerConfig + grantPrivilegesToAccountRoleBasicConfig(role.ID(), quotedSchemaId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.test", "id", fmt.Sprintf("%s|false|false|USAGE|OnSchema|OnSchema|%s", role.ID().FullyQualifiedName(), schemaId.FullyQualifiedName())),
 				),
@@ -2131,7 +2131,7 @@ func TestAcc_GrantPrivilegesToAccountRole_IdentifierQuotingDiffSuppression(t *te
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +grantPrivilegesToAccountRoleBasicConfig(role.ID(), unquotedSchemaId),
+				Config:            providerConfig + grantPrivilegesToAccountRoleBasicConfig(role.ID(), unquotedSchemaId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.test", "account_role_name", role.ID().Name()),
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.test", "on_schema.0.schema_name", unquotedSchemaId),
@@ -2229,7 +2229,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnFutureModels_issue3050(t *testing.T)
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
-				Config:            providerConfig +grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeModels, databaseName),
+				Config:            providerConfig + grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeModels, databaseName),
 				// Previously, we expected a non-empty plan, because Snowflake returned MODULE instead of MODEL in SHOW FUTURE GRANTS.
 				// Now, this behavior is fixed in Snowflake, and the plan is empty.
 			},

@@ -396,7 +396,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +maskingPolicyConfig(id),
+				Config:            providerConfig + maskingPolicyConfig(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", id.FullyQualifiedName()),
@@ -557,7 +557,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
-				Config:            providerConfig +maskingPolicyV0950(id, body, comment),
+				Config:            providerConfig + maskingPolicyV0950(id, body, comment),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).

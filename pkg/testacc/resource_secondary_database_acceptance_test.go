@@ -478,7 +478,7 @@ func TestAcc_SecondaryDatabase_migrateFromV0941_ensureSmoothUpgradeWithNewResour
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            providerConfig +accconfig.FromModels(t, secondaryDatabaseModel),
+				Config:            providerConfig + accconfig.FromModels(t, secondaryDatabaseModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "id", id.Name()),
 				),
@@ -521,7 +521,7 @@ func TestAcc_SecondaryDatabase_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig +accconfig.FromModels(t, secondaryDatabaseModel),
+				Config:             providerConfig + accconfig.FromModels(t, secondaryDatabaseModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(secondaryDatabaseModel.ResourceReference(), "id", id.Name()),
