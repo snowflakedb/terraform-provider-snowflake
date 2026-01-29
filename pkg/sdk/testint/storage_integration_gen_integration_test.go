@@ -204,7 +204,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		req := sdk.NewCreateStorageIntegrationRequest(id, true, azureAllowedLocations).
 			WithIfNotExists(true).
-			WithAzureStorageProviderParams(*sdk.NewAzureStorageParamsRequest(sdk.String(azureTenantId))).
+			WithAzureStorageProviderParams(*sdk.NewAzureStorageParamsRequest(azureTenantId)).
 			WithStorageBlockedLocations(azureBlockedLocations).
 			WithComment("some comment")
 
@@ -269,7 +269,8 @@ func TestInt_StorageIntegrations(t *testing.T) {
 			WithSet(
 				*sdk.NewStorageIntegrationSetRequest().
 					WithS3Params(
-						*sdk.NewSetS3StorageParamsRequest(awsRoleARN).
+						*sdk.NewSetS3StorageParamsRequest().
+							WithStorageAwsRoleArn(awsRoleARN).
 							WithStorageAwsExternalId("new-external-id").
 							WithUsePrivatelinkEndpoint(true),
 					).
@@ -288,6 +289,19 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assert.Equal(t, "new-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
+	t.Run("Alter: set for S3, without STORAGE_AWS_ROLE_ARN", func(t *testing.T) {
+		id := createS3StorageIntegration(t, sdk.RegularS3Protocol)
+
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithSet(
+			*sdk.NewStorageIntegrationSetRequest().WithS3Params(
+				*sdk.NewSetS3StorageParamsRequest().
+					WithStorageAwsExternalId("new-external-id"),
+			),
+		)
+		err := client.StorageIntegrations.Alter(ctx, req)
+		require.NoError(t, err)
+	})
+
 	// TODO(SNOW-2356128): Add test for use_privatelink_endpoint
 	t.Run("Alter - set - Azure", func(t *testing.T) {
 		id := createAzureStorageIntegration(t)
@@ -297,7 +311,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		req := sdk.NewAlterStorageIntegrationRequest(id).
 			WithSet(
 				*sdk.NewStorageIntegrationSetRequest().
-					WithAzureParams(*sdk.NewSetAzureStorageParamsRequest(azureTenantId)).
+					WithAzureParams(*sdk.NewSetAzureStorageParamsRequest().WithAzureTenantId(azureTenantId)).
 					WithEnabled(true).
 					WithStorageAllowedLocations(changedAzureAllowedLocations).
 					WithStorageBlockedLocations(changedAzureBlockedLocations).
@@ -312,16 +326,32 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assertAzureStorageIntegrationDescResult(t, props, true, changedAzureAllowedLocations, changedAzureBlockedLocations, "changed comment")
 	})
 
+	// TODO [SNOW-2356128]: Unskip when can be run on the azure env
+	t.Run("Alter: set for Azure, no AZURE_TENANT_ID", func(t *testing.T) {
+		t.Skip("Unskip when can be run on the azure env. Current error: 511300 (0A000): SQL compilation error: Privatelink endpoints are not supported with 'Azure Storage' locations on 'aws' platform.")
+		id := createAzureStorageIntegration(t)
+
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithSet(
+			*sdk.NewStorageIntegrationSetRequest().WithAzureParams(
+				*sdk.NewSetAzureStorageParamsRequest().WithUsePrivatelinkEndpoint(true),
+			),
+		)
+		err := client.StorageIntegrations.Alter(ctx, req)
+		require.NoError(t, err)
+	})
+
 	t.Run("Alter - unset", func(t *testing.T) {
 		id := createS3StorageIntegration(t, sdk.RegularS3Protocol)
 
 		req := sdk.NewAlterStorageIntegrationRequest(id).
 			WithUnset(
 				*sdk.NewStorageIntegrationUnsetRequest().
-					WithStorageAwsObjectAcl(true).
+					WithS3Params(*sdk.NewUnsetS3StorageParamsRequest().
+						WithStorageAwsObjectAcl(true).
+						WithStorageAwsExternalId(true),
+					).
 					WithEnabled(true).
 					WithStorageBlockedLocations(true).
-					WithStorageAwsExternalId(true).
 					WithComment(true),
 			)
 		err := client.StorageIntegrations.Alter(ctx, req)
@@ -340,8 +370,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 
 		req := sdk.NewAlterStorageIntegrationRequest(id).
 			WithUnset(
-				*sdk.NewStorageIntegrationUnsetRequest().
-					WithUsePrivatelinkEndpoint(true),
+				*sdk.NewStorageIntegrationUnsetRequest().WithS3Params(*sdk.NewUnsetS3StorageParamsRequest().WithUsePrivatelinkEndpoint(true)),
 			)
 		err := client.StorageIntegrations.Alter(ctx, req)
 		require.ErrorContains(t, err, "Cannot unset property 'USE_PRIVATELINK_ENDPOINT' on integration")

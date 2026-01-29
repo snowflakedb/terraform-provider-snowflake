@@ -86,8 +86,7 @@ func TestAcc_StorageIntegration_AWS_Create_WithExternalId(t *testing.T) {
 				PreConfig: func() {
 					alterRequest := sdk.NewAlterStorageIntegrationRequest(id).
 						WithSet(*sdk.NewStorageIntegrationSetRequest().
-							WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).
-								WithStorageAwsExternalId("new-external-id")))
+							WithS3Params(*sdk.NewSetS3StorageParamsRequest().WithStorageAwsExternalId("new-external-id")))
 					testClient().StorageIntegration.Alter(t, alterRequest)
 				},
 				Check: resource.ComposeTestCheckFunc(
@@ -238,8 +237,10 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 				PreConfig: func() {
 					unsetRequest := sdk.NewAlterStorageIntegrationRequest(id).
 						WithUnset(*sdk.NewStorageIntegrationUnsetRequest().
-							WithStorageAwsExternalId(true).
-							WithStorageAwsObjectAcl(true).
+							WithS3Params(*sdk.NewUnsetS3StorageParamsRequest().
+								WithStorageAwsExternalId(true).
+								WithStorageAwsObjectAcl(true),
+							).
 							WithStorageBlockedLocations(true))
 					testClient().StorageIntegration.Alter(t, unsetRequest)
 				},
@@ -273,7 +274,8 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 				PreConfig: func() {
 					setRequest := sdk.NewAlterStorageIntegrationRequest(id).
 						WithSet(*sdk.NewStorageIntegrationSetRequest().
-							WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).
+							WithS3Params(*sdk.NewSetS3StorageParamsRequest().
+								WithStorageAwsRoleArn(awsRoleArn).
 								WithStorageAwsExternalId(awsExternalId).
 								WithStorageAwsObjectAcl("bucket-owner-full-control").
 								WithUsePrivatelinkEndpoint(true)).
@@ -642,7 +644,7 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateWithoutValue_Updat
 			},
 			{
 				PreConfig: func() {
-					testClient().StorageIntegration.Alter(t, sdk.NewAlterStorageIntegrationRequest(id).WithSet(*sdk.NewStorageIntegrationSetRequest().WithS3Params(*sdk.NewSetS3StorageParamsRequest(awsRoleArn).WithUsePrivatelinkEndpoint(true))))
+					testClient().StorageIntegration.Alter(t, sdk.NewAlterStorageIntegrationRequest(id).WithSet(*sdk.NewStorageIntegrationSetRequest().WithS3Params(*sdk.NewSetS3StorageParamsRequest().WithUsePrivatelinkEndpoint(true))))
 				},
 				Config:                   config.FromModels(t, s3Model),
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

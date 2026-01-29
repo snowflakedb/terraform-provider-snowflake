@@ -71,7 +71,6 @@ var storageIntegrationsDef = g.NewInterface(
 					OptionalQueryStructField(
 						"S3Params",
 						g.NewQueryStruct("SetS3StorageParams").
-							// TODO [this PR]: add test "Alter: set for S3, without STORAGE_AWS_ROLE_ARN"
 							OptionalTextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes()).
 							OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 							OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
@@ -82,7 +81,6 @@ var storageIntegrationsDef = g.NewInterface(
 					OptionalQueryStructField(
 						"AzureParams",
 						g.NewQueryStruct("SetAzureStorageParams").
-							// TODO [this PR]: add test "Alter: set for Azure, no AZURE_TENANT_ID"
 							OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes()).
 							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
 							WithValidation(g.AtLeastOneValueSet, "AzureTenantId", "UsePrivatelinkEndpoint"),
