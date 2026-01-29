@@ -180,7 +180,7 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 
 	accountRoleModelWithComment := model.AccountRole("role", id.Name()).
 		WithComment(comment)
-	providerModel, privateKeyVar, privateKeyPassphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -191,7 +191,7 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, privateKeyPassphraseVar, accountRoleModelWithComment),
+				Config:            providerConfig + accconfig.FromModels(t, accountRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "id", id.Name()),
 				),
@@ -215,7 +215,7 @@ func TestAcc_AccountRole_WithQuotedName(t *testing.T) {
 
 	accountRoleModelWithComment := model.AccountRole("role", quotedId).
 		WithComment(comment)
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -227,7 +227,7 @@ func TestAcc_AccountRole_WithQuotedName(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar, accountRoleModelWithComment),
+				Config:             providerConfig + accconfig.FromModels(t, accountRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "id", id.Name()),

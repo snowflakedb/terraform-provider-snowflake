@@ -1548,7 +1548,7 @@ func TestAcc_Warehouse_InitiallySuspendedChangesPostCreation(t *testing.T) {
 
 func TestAcc_Warehouse_migrateFromVersion092_withWarehouseSize(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModelFull := model.BasicWarehouseModel(id, "").
 		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard).
@@ -1575,7 +1575,7 @@ func TestAcc_Warehouse_migrateFromVersion092_withWarehouseSize(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModelFull),
+				Config:            providerConfig +config.FromModels(t, warehouseModelFull),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "warehouse_size", "4XLARGE"),
@@ -1601,7 +1601,7 @@ func TestAcc_Warehouse_migrateFromVersion092_withWarehouseSize(t *testing.T) {
 
 func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModelFull := model.WarehouseSnowflakeDefaultWithoutParameters(id, "").
 		WithEnableQueryAcceleration(r.BooleanTrue).
@@ -1625,7 +1625,7 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration(t *t
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar) + warehouseV092Config(id),
+				Config:            providerConfig +warehouseV092Config(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "wait_for_provisioning", "true"),
@@ -1670,7 +1670,7 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration(t *t
 
 func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration_booleanChangeRightAfter(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModelFullWithBoolean := model.WarehouseSnowflakeDefaultWithoutParameters(id, "new comment").
 		WithEnableQueryAccelerationValue(tfconfig.BoolVariable(false)).
@@ -1688,7 +1688,7 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration_bool
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar) + warehouseV092Config(id),
+				Config:            providerConfig +warehouseV092Config(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFullWithBoolean.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(warehouseModelFullWithBoolean.ResourceReference(), "wait_for_provisioning", "true"),
@@ -1720,7 +1720,7 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration_bool
 // The result of removing the custom conditional logic for enable_query_acceleration and query_acceleration_max_scale_factor.
 func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_sameConfig(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModelFullDefault := model.WarehouseSnowflakeDefaultWithoutParameters(id, "").
 		WithEnableQueryAcceleration(r.BooleanFalse).
@@ -1738,7 +1738,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_sam
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModelFullDefault),
+				Config:            providerConfig +config.FromModels(t, warehouseModelFullDefault),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFullDefault.ResourceReference(), "name", id.Name()),
 					resource.TestCheckNoResourceAttr(warehouseModelFullDefault.ResourceReference(), "query_acceleration_max_scale_factor"),
@@ -1769,7 +1769,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_sam
 // The result of removing the custom conditional logic for enable_query_acceleration and query_acceleration_max_scale_factor.
 func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_noInConfigAfter(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModelFullDefault := model.WarehouseSnowflakeDefaultWithoutParameters(id, "").
 		WithEnableQueryAcceleration(r.BooleanFalse).
@@ -1794,7 +1794,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_noI
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModelFullDefault),
+				Config:            providerConfig +config.FromModels(t, warehouseModelFullDefault),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFullDefault.ResourceReference(), "name", id.Name()),
 					resource.TestCheckNoResourceAttr(warehouseModelFullDefault.ResourceReference(), "query_acceleration_max_scale_factor"),
@@ -1825,7 +1825,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_noI
 // The result of removing the custom conditional logic for enable_query_acceleration and query_acceleration_max_scale_factor.
 func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_differentConfigAfterMigration(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModelFullDefault := model.WarehouseSnowflakeDefaultWithoutParameters(id, "").
 		WithEnableQueryAcceleration(r.BooleanFalse).
@@ -1850,7 +1850,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_dif
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModelFullDefault),
+				Config:            providerConfig +config.FromModels(t, warehouseModelFullDefault),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFullDefault.ResourceReference(), "name", id.Name()),
 					resource.TestCheckNoResourceAttr(warehouseModelFullDefault.ResourceReference(), "query_acceleration_max_scale_factor"),
@@ -1880,7 +1880,7 @@ func TestAcc_Warehouse_migrateFromVersion092_queryAccelerationMaxScaleFactor_dif
 
 func TestAcc_Warehouse_migrateFromVersion092_noConfigToFullConfig(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModelBasicConfigWithQueryAcceleration := model.Warehouse("test", id.Name()).
 		WithEnableQueryAcceleration(r.BooleanTrue).
@@ -1904,7 +1904,7 @@ func TestAcc_Warehouse_migrateFromVersion092_noConfigToFullConfig(t *testing.T) 
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
 				// query acceleration is needed here because of the custom logic that was removed
-				Config: config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModelBasicConfigWithQueryAcceleration),
+				Config: providerConfig +config.FromModels(t, warehouseModelBasicConfigWithQueryAcceleration),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelBasicConfigWithQueryAcceleration.ResourceReference(), "name", id.Name()),
 				),
@@ -1943,7 +1943,7 @@ func TestAcc_Warehouse_migrateFromVersion092_noConfigToFullConfig(t *testing.T) 
 
 func TestAcc_Warehouse_migrateFromVersion092_defaultsRemoved(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModel := model.Warehouse("test", id.Name()).WithWarehouseSizeEnum(sdk.WarehouseSizeXSmall)
 
@@ -1957,7 +1957,7 @@ func TestAcc_Warehouse_migrateFromVersion092_defaultsRemoved(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModel),
+				Config:            providerConfig +config.FromModels(t, warehouseModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "name", id.Name()),
 
@@ -2010,7 +2010,7 @@ func TestAcc_Warehouse_migrateFromVersion092_defaultsRemoved(t *testing.T) {
 
 func TestAcc_Warehouse_migrateFromVersion092_warehouseSizeCausingForceNew(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModel := model.Warehouse("test", id.Name())
 
@@ -2024,7 +2024,7 @@ func TestAcc_Warehouse_migrateFromVersion092_warehouseSizeCausingForceNew(t *tes
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModel),
+				Config:            providerConfig +config.FromModels(t, warehouseModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "name", id.Name()),
 				),
@@ -2048,7 +2048,7 @@ func TestAcc_Warehouse_migrateFromVersion092_warehouseSizeCausingForceNew(t *tes
 
 func TestAcc_Warehouse_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModel := model.Warehouse("test", id.Name())
 
@@ -2061,7 +2061,7 @@ func TestAcc_Warehouse_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModel),
+				Config:            providerConfig +config.FromModels(t, warehouseModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "id", id.Name()),
 				),
@@ -2081,7 +2081,7 @@ func TestAcc_Warehouse_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *
 func TestAcc_Warehouse_IdentifierQuotingDiffSuppression(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	warehouseModel := model.Warehouse("test", quotedId)
 
@@ -2095,7 +2095,7 @@ func TestAcc_Warehouse_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             config.FromModels(t, providerModel, privateKeyVar, passphraseVar, warehouseModel),
+				Config:             providerConfig +config.FromModels(t, warehouseModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(warehouseModel.ResourceReference(), "id", id.Name()),

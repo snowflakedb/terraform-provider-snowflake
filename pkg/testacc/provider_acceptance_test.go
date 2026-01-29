@@ -842,7 +842,7 @@ func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 func TestAcc_Provider_triValueBoolean(t *testing.T) {
 	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
-	v097ProviderModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	v097ProviderModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderModels()
 	v097ProviderModelWithBool := v097ProviderModel.WithClientStoreTemporaryCredentialBool(true)
 
 	resource.Test(t, resource.TestCase{

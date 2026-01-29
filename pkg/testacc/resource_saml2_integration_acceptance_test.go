@@ -1060,7 +1060,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 	cert := random.GenerateX509(t)
 	issuer := testClient().Ids.Alpha()
 	validUrl := "https://example.com"
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
@@ -1076,7 +1076,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar, basicModel, temporaryVariableModel),
+				Config:            providerConfig +accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:   configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "id", id.Name()),
@@ -1101,7 +1101,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	cert := random.GenerateX509(t)
 	issuer := testClient().Ids.Alpha()
 	validUrl := "https://example.com"
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
@@ -1118,7 +1118,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar, basicModel, temporaryVariableModel),
+				Config:             providerConfig +accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:    configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "name", id.Name()),

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -125,7 +124,7 @@ resource "snowflake_network_rule" "test" {
 func TestAcc_NetworkRule_migrateFromVersion_0_94_1(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_network_rule.test"
 	resource.Test(t, resource.TestCase{
@@ -137,7 +136,7 @@ func TestAcc_NetworkRule_migrateFromVersion_0_94_1(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + networkRuleIpv4(id, comment),
+				Config:            providerConfig +networkRuleIpv4(id, comment),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", id.FullyQualifiedName()),

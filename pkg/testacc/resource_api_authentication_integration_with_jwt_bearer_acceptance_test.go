@@ -326,7 +326,7 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_migrateFromV0941_ensureSm
 	t.Skip("Skip because of the error: Invalid value specified for property 'OAUTH_CLIENT_SECRET'")
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -337,7 +337,7 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_migrateFromV0941_ensureSm
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + apiAuthenticationIntegrationWithJwtBearerBasicConfig(id.Name()),
+				Config:            providerConfig +apiAuthenticationIntegrationWithJwtBearerBasicConfig(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_jwt_bearer.test", "id", id.Name()),
 				),
@@ -360,7 +360,7 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_IdentifierQuotingDiffSupp
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`\"%s\"`, id.Name())
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -372,7 +372,7 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_IdentifierQuotingDiffSupp
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + apiAuthenticationIntegrationWithJwtBearerBasicConfig(quotedId),
+				Config:             providerConfig +apiAuthenticationIntegrationWithJwtBearerBasicConfig(quotedId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_jwt_bearer.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_jwt_bearer.test", "id", id.Name()),

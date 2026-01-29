@@ -301,7 +301,7 @@ func TestAcc_RowAccessPolicy_Issue2053(t *testing.T) {
 			Type: testdatatypes.DataTypeVarchar,
 		},
 	}, body)
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -312,7 +312,7 @@ func TestAcc_RowAccessPolicy_Issue2053(t *testing.T) {
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
 				// these configs have "weird" format on purpose - to test against handling new lines during diff correctly
-				Config: accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + rowAccessPolicyV0950WithHeredoc(id, `    case
+				Config: providerConfig +rowAccessPolicyV0950WithHeredoc(id, `    case
       when current_role() in ('ANALYST') then true
       else false
     end
@@ -489,7 +489,7 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 			Type: testdatatypes.DataTypeVarchar,
 		},
 	}, body)
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -499,7 +499,7 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + rowAccessPolicyV0950(id, body),
+				Config:            providerConfig +rowAccessPolicyV0950(id, body),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						// expect change - arg name is lower case which causes a diff
@@ -558,7 +558,7 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 			Type: testdatatypes.DataTypeVarchar,
 		},
 	}, body)
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -568,7 +568,7 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + rowAccessPolicyV0950(id, body),
+				Config:            providerConfig +rowAccessPolicyV0950(id, body),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						// expect change - arg name is lower case which causes a diff

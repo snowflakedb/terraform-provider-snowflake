@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -224,7 +223,7 @@ func TestAcc_NotificationIntegration_migrateFromVersion085(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	const gcpPubsubSubscriptionName = "projects/project-1234/subscriptions/sub2"
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -235,7 +234,7 @@ func TestAcc_NotificationIntegration_migrateFromVersion085(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + googleAutoConfig(id, gcpPubsubSubscriptionName),
+				Config:            providerConfig +googleAutoConfig(id, gcpPubsubSubscriptionName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "name", id.Name()),
@@ -265,7 +264,7 @@ func TestAcc_NotificationIntegration_migrateFromVersion085_explicitType(t *testi
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	const gcpPubsubSubscriptionName = "projects/project-1234/subscriptions/sub2"
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -276,7 +275,7 @@ func TestAcc_NotificationIntegration_migrateFromVersion085_explicitType(t *testi
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + googleAutoConfigWithExplicitType(id, gcpPubsubSubscriptionName),
+				Config:            providerConfig +googleAutoConfigWithExplicitType(id, gcpPubsubSubscriptionName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_notification_integration.test", "name", id.Name()),
 				),

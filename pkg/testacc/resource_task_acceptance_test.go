@@ -2031,7 +2031,7 @@ func TestAcc_Task_issue3113(t *testing.T) {
 		WithScheduleMinutes(schedule).
 		WithSqlStatement(statement).
 		WithErrorIntegration(errorNotificationIntegration.ID().Name())
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2042,7 +2042,7 @@ func TestAcc_Task_issue3113(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar) + taskConfigWithErrorIntegration(id, errorNotificationIntegration.ID()),
+				Config:            providerConfig +taskConfigWithErrorIntegration(id, errorNotificationIntegration.ID()),
 				ExpectError:       regexp.MustCompile("error_integration: '' expected type 'string', got unconvertible type 'sdk.AccountObjectIdentifier'"),
 			},
 			{

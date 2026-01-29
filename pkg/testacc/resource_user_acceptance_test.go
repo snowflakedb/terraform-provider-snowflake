@@ -1188,7 +1188,7 @@ func TestAcc_User_migrateFromVersion094_defaultSecondaryRolesSet(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModelWithOptionAll := model.UserWithDefaultMeta(id.Name()).WithDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll)
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1199,7 +1199,7 @@ func TestAcc_User_migrateFromVersion094_defaultSecondaryRolesSet(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config: config.FromModels(t, providerModel, privateKeyVar, passphraseVar) + fmt.Sprintf(`
+				Config: providerConfig +fmt.Sprintf(`
 resource "snowflake_user" "test" {
 	name = "%s"
 	default_secondary_roles = ["ALL"]
@@ -1460,7 +1460,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModel := model.User("w", userId.Name())
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1471,7 +1471,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
-				Config:            config.FromModels(t, providerModel, privateKeyVar, passphraseVar, userModel),
+				Config:            providerConfig +config.FromModels(t, userModel),
 				ExpectError:       regexp.MustCompile("\"default_namespace\": converting NULL to string is unsupported"),
 			},
 			{

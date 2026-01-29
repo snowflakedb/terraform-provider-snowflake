@@ -107,7 +107,7 @@ func TestAcc_GrantAccountRole_user(t *testing.T) {
 func TestAcc_GrantAccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	roleId := testClient().Ids.RandomAccountObjectIdentifier()
 	parentRoleId := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -117,7 +117,7 @@ func TestAcc_GrantAccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + grantAccountRoleBasicConfig(roleId, parentRoleId),
+				Config:            providerConfig +grantAccountRoleBasicConfig(roleId, parentRoleId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_account_role.test", "id", fmt.Sprintf(`%v|ROLE|%v`, roleId.FullyQualifiedName(), parentRoleId.FullyQualifiedName())),
 				),
@@ -162,7 +162,7 @@ resource "snowflake_grant_account_role" "test" {
 func TestAcc_GrantAccountRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 	roleId := testClient().Ids.RandomAccountObjectIdentifier()
 	parentRoleId := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -173,7 +173,7 @@ func TestAcc_GrantAccountRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent final plan"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + grantAccountRoleConfigWithQuotedIdentifiers(roleId, parentRoleId),
+				Config:            providerConfig +grantAccountRoleConfigWithQuotedIdentifiers(roleId, parentRoleId),
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },

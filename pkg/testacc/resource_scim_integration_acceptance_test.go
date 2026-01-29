@@ -334,7 +334,7 @@ func TestAcc_ScimIntegration_InvalidUpdateWithSyncPasswordWithAzure(t *testing.T
 func TestAcc_ScimIntegration_migrateFromVersion092EnabledTrue(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	role := snowflakeroles.GenericScimProvisioner
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_scim_integration.test"
 	resource.Test(t, resource.TestCase{
@@ -346,7 +346,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledTrue(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric),
+				Config:            providerConfig +accconfig.FromModels(t, scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "provisioner_role", role.Name()),
@@ -380,7 +380,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledTrue(t *testing.T) {
 func TestAcc_ScimIntegration_migrateFromVersion092EnabledFalse(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	role := snowflakeroles.GenericScimProvisioner
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_scim_integration.test"
 	resource.Test(t, resource.TestCase{
@@ -392,7 +392,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledFalse(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric),
+				Config:            providerConfig +scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "provisioner_role", role.Name()),
@@ -418,7 +418,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledFalse(t *testing.T) {
 func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	role := snowflakeroles.GenericScimProvisioner
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_scim_integration.test"
 	resource.Test(t, resource.TestCase{
@@ -431,7 +431,7 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientAzure),
+				Config:            providerConfig +scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientAzure),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 				),
@@ -445,7 +445,7 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 						planchecks.ExpectChange(resourceName, "sync_password", tfjson.ActionUpdate, nil, sdk.String(r.BooleanDefault)),
 					},
 				},
-				Config: accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientAzure),
+				Config: providerConfig +scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientAzure),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 				),
@@ -491,7 +491,7 @@ resource "snowflake_scim_integration" "test" {
 
 func TestAcc_ScimIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	scimModelBasic := model.ScimSecurityIntegration("test", id.Name(), false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
@@ -504,7 +504,7 @@ func TestAcc_ScimIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResource
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar, scimModelBasic),
+				Config:            providerConfig +accconfig.FromModels(t, scimModelBasic),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(scimModelBasic.ResourceReference(), "id", id.Name()),
 				),
@@ -524,7 +524,7 @@ func TestAcc_ScimIntegration_migrateFromV0941_ensureSmoothUpgradeWithNewResource
 func TestAcc_ScimIntegration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	scimModelBasic := model.ScimSecurityIntegration("test", quotedId, false, snowflakeroles.GenericScimProvisioner.Name(), string(sdk.ScimSecurityIntegrationScimClientGeneric))
 
@@ -538,7 +538,7 @@ func TestAcc_ScimIntegration_IdentifierQuotingDiffSuppression(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar, scimModelBasic),
+				Config:             providerConfig +accconfig.FromModels(t, scimModelBasic),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(scimModelBasic.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(scimModelBasic.ResourceReference(), "id", id.Name()),

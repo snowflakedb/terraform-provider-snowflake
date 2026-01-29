@@ -345,7 +345,7 @@ func TestAcc_NetworkPolicy_Issue2236(t *testing.T) {
 	networkPolicyWithNetworkRules := model.NetworkPolicy("test", id.Name()).
 		WithAllowedNetworkRulesUnquotedNamePart(allowedNetworkRuleId1, allowedNetworkRuleId2).
 		WithBlockedNetworkRulesUnquotedNamePart(blockedNetworkRuleId1, blockedNetworkRuleId2)
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -360,7 +360,7 @@ func TestAcc_NetworkPolicy_Issue2236(t *testing.T) {
 				PreConfig: func() {
 					func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) }()
 				},
-				Config: accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar, networkPolicyWithNetworkRules),
+				Config: providerConfig +accconfig.FromModels(t, networkPolicyWithNetworkRules),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(networkPolicyWithNetworkRules.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(networkPolicyWithNetworkRules.ResourceReference(), "allowed_network_rule_list.#", "2"),
@@ -393,7 +393,7 @@ func TestAcc_NetworkPolicy_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	networkPolicyModelBasic := model.NetworkPolicy("test", id.Name())
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -404,7 +404,7 @@ func TestAcc_NetworkPolicy_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar, networkPolicyModelBasic),
+				Config:            providerConfig +accconfig.FromModels(t, networkPolicyModelBasic),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "id", id.Name()),
 				),
@@ -423,7 +423,7 @@ func TestAcc_NetworkPolicy_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId
 
 func TestAcc_NetworkPolicy_WithQuotedName(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -435,7 +435,7 @@ func TestAcc_NetworkPolicy_WithQuotedName(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + networkPolicyConfigBasicWithQuotedName(id),
+				Config:             providerConfig +networkPolicyConfigBasicWithQuotedName(id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_network_policy.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_network_policy.test", "id", id.Name()),
