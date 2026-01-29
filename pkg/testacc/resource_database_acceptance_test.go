@@ -1027,7 +1027,7 @@ func TestAcc_Database_UpgradeWithDataRetentionSet(t *testing.T) {
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            databaseStateUpgraderDataRetentionSet(id, comment, 10),
+				Config:            providerConfig + databaseStateUpgraderDataRetentionSet(id, comment, 10),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
