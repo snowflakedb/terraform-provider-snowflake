@@ -230,6 +230,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085(t *testing.T) {
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
 	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -241,7 +242,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("%s|%s|%s|VARCHAR-VARCHAR", TestDatabaseName, TestSchemaName, name)),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
@@ -253,7 +254,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085(t *testing.T) {
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
@@ -274,6 +275,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValuePrese
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
 	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
+	providerConfig := accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -285,7 +287,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValuePrese
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
+				Config:            providerConfig + externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "return_null_allowed", "true"),
 				),
@@ -293,7 +295,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValuePrese
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
@@ -310,7 +312,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValueRemov
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
 	providerModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderConfig()
-
+	providerConfig := accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar)
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -321,7 +323,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValueRemov
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
+				Config:            providerConfig + externalFunctionConfigWithReturnNullAllowed(TestDatabaseName, TestSchemaName, name, sdk.Bool(true)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "return_null_allowed", "true"),
 				),
@@ -329,7 +331,7 @@ func TestAcc_ExternalFunction_migrateFromVersion085_issue2694_previousValueRemov
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.85.0"),
-				Config:            externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
+				Config:            providerConfig + externalFunctionConfig(TestDatabaseName, TestSchemaName, name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(resourceName, "return_null_allowed"),
 				),

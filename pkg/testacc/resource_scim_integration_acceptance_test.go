@@ -445,7 +445,7 @@ func TestAcc_ScimIntegration_migrateFromVersion093HandleSyncPassword(t *testing.
 						planchecks.ExpectChange(resourceName, "sync_password", tfjson.ActionUpdate, nil, sdk.String(r.BooleanDefault)),
 					},
 				},
-				Config: scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientAzure),
+				Config: accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + scimIntegrationV093(id, role, true, sdk.ScimSecurityIntegrationScimClientAzure),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 				),

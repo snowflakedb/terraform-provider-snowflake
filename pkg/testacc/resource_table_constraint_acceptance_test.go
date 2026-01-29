@@ -237,7 +237,7 @@ func TestAcc_Table_issue2535_newConstraint(t *testing.T) {
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.89.0"),
-				Config:            tableConstraintUniqueConfigUsingTableId(id, "|"),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + tableConstraintUniqueConfigUsingTableId(id, "|"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_table_constraint.unique", "type", "UNIQUE"),
 				),
@@ -282,7 +282,7 @@ func TestAcc_Table_issue2535_existingTable(t *testing.T) {
 			// switched to qualified_name in 0.86.0
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.86.0"),
-				Config:            tableConstraintUniqueConfigUsingQualifiedName(id),
+				Config:            accconfig.FromModels(t, providerModel, privateKeyVar, passphraseVar) + tableConstraintUniqueConfigUsingQualifiedName(id),
 				ExpectError:       regexp.MustCompile(`.*table id is incorrect.*`),
 			},
 			// fixed in the current version

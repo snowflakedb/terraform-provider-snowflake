@@ -523,22 +523,22 @@ func TestAcc_ResourceMonitor_Issue1990_RemovingResourceMonitorOutsideOfTerraform
 			// Create resource monitor
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
-				ExternalProviders: ExternalProviderWithExactVersion("0.69.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
 				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModel),
 			},
 			// Same configuration, but we drop resource monitor externally
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("0.69.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
 				PreConfig: func() {
 					testClient().ResourceMonitor.DropResourceMonitorFunc(t, id)()
 				},
-				Config:      config.FromModels(t, configModel),
+				Config:      config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModel),
 				ExpectError: regexp.MustCompile("object does not exist or not authorized"),
 			},
 			// Same configuration, but it's the last version where it's still not working
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
-				Config:            config.FromModels(t, configModel),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModel),
 				ExpectError:       regexp.MustCompile("object does not exist or not authorized"),
 			},
 			// Same configuration, but it's the latest version of the provider (0.96.0 and above)
@@ -586,18 +586,18 @@ func TestAcc_ResourceMonitor_Issue_TimestampInfinitePlan(t *testing.T) {
 			// Alter resource timestamps to have the following format: 2006-01-02 (produces a plan because of the format difference)
 			{
 				ExternalProviders:  ExternalProviderWithExactVersion("0.90.0"),
-				Config:             config.FromModels(t, configModelWithDateStartTimestamp),
+				Config:             config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModelWithDateStartTimestamp),
 				ExpectNonEmptyPlan: true,
 			},
 			// Alter resource timestamps to have the following format: 2006-01-02 15:04 (won't produce plan because of the internal format mapping to this exact format)
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithDateTimeFormat),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModelWithDateTimeFormat),
 			},
 			// Destroy the resource
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithDateTimeFormat),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModelWithDateTimeFormat),
 				Destroy:           true,
 			},
 			// Create resource monitor without the timestamps
@@ -696,13 +696,13 @@ func TestAcc_ResourceMonitor_Issue1500_AlteringWithOnlyTriggers(t *testing.T) {
 			// Update only triggers (not allowed in Snowflake)
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithUpdatedTriggers),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModelWithUpdatedTriggers),
 				// For some reason, not returning error (SQL compilation error should be returned in this case; most likely update was handled incorrectly, or it was handled similarly as in the current version)
 			},
 			// Remove all triggers (not allowed in Snowflake)
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithoutTriggers),
+				Config:            config.FromModels(t, providerConfigModel, privateKeyVar, passphraseVar, configModelWithoutTriggers),
 				// For some reason, not returning the correct error (SQL compilation error should be returned in this case; most likely update was processed incorrectly)
 				ExpectError: regexp.MustCompile(`at least one of AlterResourceMonitorOptions fields \[Set Triggers] must be set`),
 			},
