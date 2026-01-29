@@ -83,7 +83,7 @@ var storageIntegrationsDef = g.NewInterface(
 						"AzureParams",
 						g.NewQueryStruct("SetAzureStorageParams").
 							// TODO [this PR]: add test "Alter: set for Azure, no AZURE_TENANT_ID"
-							OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
+							OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes()).
 							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
 							WithValidation(g.AtLeastOneValueSet, "AzureTenantId", "UsePrivatelinkEndpoint"),
 						g.KeywordOptions(),
@@ -99,16 +99,27 @@ var storageIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("StorageIntegrationUnset").
-					// TODO [this PR]: split into multiple unsets?
-					OptionalSQL("STORAGE_AWS_EXTERNAL_ID").
-					OptionalSQL("STORAGE_AWS_OBJECT_ACL").
+					OptionalQueryStructField(
+						"S3Params",
+						g.NewQueryStruct("UnsetS3StorageParams").
+							OptionalSQL("STORAGE_AWS_EXTERNAL_ID").
+							OptionalSQL("STORAGE_AWS_OBJECT_ACL").
+							OptionalSQL("USE_PRIVATELINK_ENDPOINT").
+							WithValidation(g.AtLeastOneValueSet, "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"),
+						g.KeywordOptions(),
+					).
+					OptionalQueryStructField(
+						"AzureParams",
+						g.NewQueryStruct("UnsetAzureStorageParams").
+							OptionalSQL("USE_PRIVATELINK_ENDPOINT").
+							WithValidation(g.AtLeastOneValueSet, "UsePrivatelinkEndpoint"),
+						g.KeywordOptions(),
+					).
 					OptionalSQL("ENABLED").
-					// TODO [this PR]: STORAGE_ALLOWED_LOCATIONS?
 					OptionalSQL("STORAGE_BLOCKED_LOCATIONS").
 					OptionalSQL("COMMENT").
-					OptionalSQL("USE_PRIVATELINK_ENDPOINT").
-					WithValidation(g.ConflictingFields, "...").
-					WithValidation(g.AtLeastOneValueSet, "..."),
+					WithValidation(g.ConflictingFields, "S3Params", "AzureParams").
+					WithValidation(g.AtLeastOneValueSet, "S3Params", "AzureParams", "Enabled", "StorageBlockedLocations", "Comment"),
 				g.ListOptions().SQL("UNSET"),
 			).
 			OptionalSetTags().
