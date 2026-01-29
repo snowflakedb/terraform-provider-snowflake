@@ -346,7 +346,7 @@ func TestAcc_ScimIntegration_migrateFromVersion092EnabledTrue(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            providerConfig + accconfig.FromModels(t, scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric)),
+				Config:            providerConfig + scimIntegrationV092(id, role, sdk.ScimSecurityIntegrationScimClientGeneric),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "provisioner_role", role.Name()),
