@@ -46,7 +46,9 @@ var storageIntegrationsDef = g.NewInterface(
 					OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).
-			// TODO [this PR]: confirm ENABLED is really required
+			// Enabled is required even though it can be UNSET. Not using it in create results in:
+			// 002029 (42601): SQL compilation error: Missing option(s): ENABLED
+			// TODO [this PR]: add a test showing this behavior through SQL exec (create and alter)
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			ListAssignment("STORAGE_ALLOWED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses().Required()).
 			ListAssignment("STORAGE_BLOCKED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses()).
@@ -98,7 +100,6 @@ var storageIntegrationsDef = g.NewInterface(
 					// TODO [this PR]: split into multiple unsets?
 					OptionalSQL("STORAGE_AWS_EXTERNAL_ID").
 					OptionalSQL("STORAGE_AWS_OBJECT_ACL").
-					// TODO [this PR]: confirm enabled can be unset
 					OptionalSQL("ENABLED").
 					// TODO [this PR]: STORAGE_ALLOWED_LOCATIONS?
 					OptionalSQL("STORAGE_BLOCKED_LOCATIONS").
