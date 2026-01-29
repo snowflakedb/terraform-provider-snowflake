@@ -298,7 +298,7 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 	})
 }
 
-// TODO(SNOW-2356128): Add test for use_privatelink_endpoint
+// TODO [SNOW-2356128]: Add test for use_privatelink_endpoint on Azure deployment (preprod?)
 func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
 	resourceName := "snowflake_storage_integration.test"

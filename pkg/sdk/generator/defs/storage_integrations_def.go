@@ -159,7 +159,7 @@ var storageIntegrationsDef = g.NewInterface(
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 	).
-	// TODO [this PR]: create structs with all the details mapped on the SDK level
+	// TODO [next PR]: create structs with all the details mapped on the SDK level
 	DescribeOperation(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",

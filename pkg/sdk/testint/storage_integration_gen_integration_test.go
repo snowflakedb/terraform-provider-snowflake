@@ -161,18 +161,17 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		req := sdk.NewCreateStorageIntegrationRequest(id, true, s3AllowedLocations).
 			WithIfNotExists(true).
-			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(protocol, awsRoleARN).WithStorageAwsExternalId("some-external-id").WithUsePrivatelinkEndpoint(true)).
+			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(protocol, awsRoleARN).
+				WithStorageAwsExternalId("some-external-id").
+				WithUsePrivatelinkEndpoint(true),
+			).
 			WithStorageBlockedLocations(s3BlockedLocations).
 			WithComment("some comment")
 
 		err := client.StorageIntegrations.Create(ctx, req)
 		require.NoError(t, err)
 
-		t.Cleanup(func() {
-			err := client.StorageIntegrations.Drop(ctx, sdk.NewDropStorageIntegrationRequest(id))
-			require.NoError(t, err)
-		})
-
+		t.Cleanup(testClientHelper().StorageIntegration.DropFunc(t, id))
 		return id
 	}
 
@@ -189,15 +188,11 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		err := client.StorageIntegrations.Create(ctx, req)
 		require.NoError(t, err)
 
-		t.Cleanup(func() {
-			err := client.StorageIntegrations.Drop(ctx, sdk.NewDropStorageIntegrationRequest(id))
-			require.NoError(t, err)
-		})
-
+		t.Cleanup(testClientHelper().StorageIntegration.DropFunc(t, id))
 		return id
 	}
 
-	// TODO(SNOW-2356128): Test use_privatelink_endpoint
+	// TODO [SNOW-2356128]: Add test for use_privatelink_endpoint on Azure deployment (preprod?)
 	createAzureStorageIntegration := func(t *testing.T) sdk.AccountObjectIdentifier {
 		t.Helper()
 
@@ -211,11 +206,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		err := client.StorageIntegrations.Create(ctx, req)
 		require.NoError(t, err)
 
-		t.Cleanup(func() {
-			err := client.StorageIntegrations.Drop(ctx, sdk.NewDropStorageIntegrationRequest(id))
-			require.NoError(t, err)
-		})
-
+		t.Cleanup(testClientHelper().StorageIntegration.DropFunc(t, id))
 		return id
 	}
 
@@ -232,8 +223,9 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assert.Equal(t, "some-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
+	// TODO [SNOW-1820099]: Run integration tests on gov preprod
 	t.Run("Create - S3GOV", func(t *testing.T) {
-		t.Skip("TODO(SNOW-1820099): Setup GOV accounts to be able to run this test on CI")
+		t.Skip("TODO [SNOW-1820099]: Run integration tests on gov preprod")
 		id := createS3StorageIntegration(t, sdk.GovS3Protocol)
 
 		storageIntegration, err := client.StorageIntegrations.ShowByID(ctx, id)
@@ -302,7 +294,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	// TODO(SNOW-2356128): Add test for use_privatelink_endpoint
+	// TODO [SNOW-2356128]: Add test for use_privatelink_endpoint on Azure deployment (preprod?)
 	t.Run("Alter - set - Azure", func(t *testing.T) {
 		id := createAzureStorageIntegration(t)
 
@@ -326,7 +318,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assertAzureStorageIntegrationDescResult(t, props, true, changedAzureAllowedLocations, changedAzureBlockedLocations, "changed comment")
 	})
 
-	// TODO [SNOW-2356128]: Unskip when can be run on the azure env
+	// TODO [SNOW-2356128]: Unskip when can be run on Azure deployment (preprod?)
 	t.Run("Alter: set for Azure, no AZURE_TENANT_ID", func(t *testing.T) {
 		t.Skip("Unskip when can be run on the azure env. Current error: 511300 (0A000): SQL compilation error: Privatelink endpoints are not supported with 'Azure Storage' locations on 'aws' platform.")
 		id := createAzureStorageIntegration(t)
