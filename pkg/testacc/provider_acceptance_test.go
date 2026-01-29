@@ -843,7 +843,7 @@ func TestAcc_Provider_triValueBoolean(t *testing.T) {
 	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
 	v097ProviderModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderModels()
-	v097ProviderModelWithBool := v097ProviderModel.WithClientStoreTemporaryCredentialBool(true)
+	v097ProviderModel = v097ProviderModel.WithClientStoreTemporaryCredentialBool(true)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -857,7 +857,7 @@ func TestAcc_Provider_triValueBoolean(t *testing.T) {
 			{
 				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
-				Config:            config.FromModels(t, v097ProviderModelWithBool, privateKeyVar, passphraseVar, datasourceModel()),
+				Config:            config.FromModels(t, v097ProviderModel, privateKeyVar, passphraseVar, datasourceModel()),
 			},
 			{
 				PreConfig: func() {
