@@ -2067,6 +2067,7 @@ func TestAcc_GrantPrivilegesToAccountRole_migrateFromV0941_ensureSmoothUpgradeWi
 
 	schemaId := testClient().Ids.SchemaId()
 	quotedSchemaId := fmt.Sprintf(`\"%s\".\"%s\"`, schemaId.DatabaseName(), schemaId.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2074,9 +2075,9 @@ func TestAcc_GrantPrivilegesToAccountRole_migrateFromV0941_ensureSmoothUpgradeWi
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantPrivilegesToAccountRoleBasicConfig(role.ID(), quotedSchemaId),
+				Config:            providerConfig + grantPrivilegesToAccountRoleBasicConfig(role.ID(), quotedSchemaId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.test", "id", fmt.Sprintf("%s|false|false|USAGE|OnSchema|OnSchema|%s", role.ID().FullyQualifiedName(), schemaId.FullyQualifiedName())),
 				),
@@ -2120,6 +2121,7 @@ func TestAcc_GrantPrivilegesToAccountRole_IdentifierQuotingDiffSuppression(t *te
 
 	schemaId := testClient().Ids.SchemaId()
 	unquotedSchemaId := fmt.Sprintf(`%s.%s`, schemaId.DatabaseName(), schemaId.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2127,9 +2129,9 @@ func TestAcc_GrantPrivilegesToAccountRole_IdentifierQuotingDiffSuppression(t *te
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantPrivilegesToAccountRoleBasicConfig(role.ID(), unquotedSchemaId),
+				Config:            providerConfig + grantPrivilegesToAccountRoleBasicConfig(role.ID(), unquotedSchemaId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.test", "account_role_name", role.ID().Name()),
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.test", "on_schema.0.schema_name", unquotedSchemaId),
@@ -2216,6 +2218,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnFutureModels_issue3050(t *testing.T)
 
 	accountRoleName := role.ID().Name()
 	databaseName := testClient().Ids.DatabaseId().Name()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -2224,9 +2227,9 @@ func TestAcc_GrantPrivilegesToAccountRole_OnFutureModels_issue3050(t *testing.T)
 		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
-				Config:            grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeModels, databaseName),
+				Config:            providerConfig + grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeModels, databaseName),
 				// Previously, we expected a non-empty plan, because Snowflake returned MODULE instead of MODEL in SHOW FUTURE GRANTS.
 				// Now, this behavior is fixed in Snowflake, and the plan is empty.
 			},

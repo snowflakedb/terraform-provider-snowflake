@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -280,6 +281,7 @@ func TestAcc_GrantDatabaseRole_shareWithDots(t *testing.T) {
 func TestAcc_GrantDatabaseRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
 	parentRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -287,9 +289,9 @@ func TestAcc_GrantDatabaseRole_migrateFromV0941_ensureSmoothUpgradeWithNewResour
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantDatabaseRoleBasicConfigQuoted(databaseRoleId, parentRoleId),
+				Config:            providerConfig + grantDatabaseRoleBasicConfigQuoted(databaseRoleId, parentRoleId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "id", fmt.Sprintf(`%s|DATABASE ROLE|%s`, databaseRoleId.FullyQualifiedName(), parentRoleId.FullyQualifiedName())),
 				),
@@ -336,6 +338,7 @@ resource "snowflake_grant_database_role" "test" {
 func TestAcc_GrantDatabaseRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
 	parentRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -343,9 +346,9 @@ func TestAcc_GrantDatabaseRole_IdentifierQuotingDiffSuppression(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            grantDatabaseRoleBasicConfigUnquoted(databaseRoleId, parentRoleId),
+				Config:            providerConfig + grantDatabaseRoleBasicConfigUnquoted(databaseRoleId, parentRoleId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "database_role_name", fmt.Sprintf("%s.%s", databaseRoleId.DatabaseName(), databaseRoleId.Name())),
 					resource.TestCheckResourceAttr("snowflake_grant_database_role.test", "parent_database_role_name", fmt.Sprintf("%s.%s", parentRoleId.DatabaseName(), parentRoleId.Name())),

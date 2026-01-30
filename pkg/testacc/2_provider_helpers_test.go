@@ -47,12 +47,6 @@ func setConfigPathEnv(t *testing.T, configName string) {
 	t.Setenv(snowflakeenvs.ConfigPath, configPath)
 }
 
-// SetV097CompatibleConfigPathEnv sets a new config path in a relevant env variable for a file that is compatible with v0.97.
-func SetV097CompatibleConfigPathEnv(t *testing.T) {
-	t.Helper()
-	setConfigPathEnv(t, "config_v097_compatible")
-}
-
 // SetV097CompatibleConfigWithServiceUserPathEnv sets a new config path in a relevant env variable for a file that is compatible with v0.97,
 // and authenticates with a service user.
 func SetV097CompatibleConfigWithServiceUserPathEnv(t *testing.T) {

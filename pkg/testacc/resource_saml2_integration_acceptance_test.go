@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -1059,6 +1060,7 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 	cert := random.GenerateX509(t)
 	issuer := testClient().Ids.Alpha()
 	validUrl := "https://example.com"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
@@ -1072,9 +1074,9 @@ func TestAcc_Saml2Integration_migrateFromV0941_ensureSmoothUpgradeWithNewResourc
 		CheckDestroy: CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, basicModel, temporaryVariableModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:   configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "id", id.Name()),
@@ -1099,6 +1101,7 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 	cert := random.GenerateX509(t)
 	issuer := testClient().Ids.Alpha()
 	validUrl := "https://example.com"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	temporaryVariableName := "saml2_x509_cert"
 	temporaryVariableModel, configVariables := accconfig.SecretStringVariableModelWithConfigVariables(temporaryVariableName, cert)
@@ -1112,10 +1115,10 @@ func TestAcc_Saml2Integration_IdentifierQuotingDiffSuppression(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Saml2SecurityIntegration),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, basicModel, temporaryVariableModel),
+				Config:             providerConfig + accconfig.FromModels(t, basicModel, temporaryVariableModel),
 				ConfigVariables:    configVariables,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_saml2_integration.test", "name", id.Name()),
