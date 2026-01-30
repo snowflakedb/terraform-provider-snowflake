@@ -411,7 +411,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertS3StorageIntegrationDescResult(t, props, false, changedS3AllowedLocations, []sdk.StorageLocation{}, "", true)
-		assert.NotEqual(t, "some-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
+		assert.NotEqual(t, "new-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
 	})
 
 	// TODO [SNOW-2356049]: Adjust this test when UNSET starts working correctly
@@ -427,7 +427,8 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		require.ErrorContains(t, err, "Cannot unset property 'USE_PRIVATELINK_ENDPOINT' on integration")
 	})
 
-	t.Run("Alter: set for S3, without STORAGE_AWS_ROLE_ARN", func(t *testing.T) {
+	// The docs currently list STORAGE_AWS_ROLE_ARN as a required parameter in ALTER. It seems the alter can be successfully run without it.
+	t.Run("alter: S3, without STORAGE_AWS_ROLE_ARN", func(t *testing.T) {
 		id := createS3StorageIntegration(t, sdk.RegularS3Protocol)
 
 		req := sdk.NewAlterStorageIntegrationRequest(id).WithSet(
@@ -441,7 +442,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 	})
 
 	// TODO [SNOW-2356128]: Add test for use_privatelink_endpoint on Azure deployment (preprod?)
-	t.Run("Alter - set - Azure", func(t *testing.T) {
+	t.Run("alter: azure, set and unset", func(t *testing.T) {
 		id := createAzureStorageIntegration(t)
 
 		changedAzureAllowedLocations := append([]sdk.StorageLocation{{Path: azureBucketUrl + "/allowed-location3"}}, azureAllowedLocations...)
@@ -462,10 +463,25 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assertAzureStorageIntegrationDescResult(t, props, true, changedAzureAllowedLocations, changedAzureBlockedLocations, "changed comment")
+
+		unset := sdk.NewAlterStorageIntegrationRequest(id).WithUnset(
+			*sdk.NewStorageIntegrationUnsetRequest().
+				// TODO [SNOW-2356128]: Add test for unsetting use_privatelink_endpoint on Azure deployment (preprod?)
+				WithEnabled(true).
+				WithStorageBlockedLocations(true).
+				WithComment(true),
+		)
+		err = client.StorageIntegrations.Alter(ctx, unset)
+		require.NoError(t, err)
+
+		props, err = client.StorageIntegrations.Describe(ctx, id)
+		require.NoError(t, err)
+
+		assertAzureStorageIntegrationDescResult(t, props, false, changedAzureAllowedLocations, []sdk.StorageLocation{}, "")
 	})
 
 	// TODO [SNOW-2356128]: Unskip when can be run on Azure deployment (preprod?)
-	t.Run("Alter: set for Azure, no AZURE_TENANT_ID", func(t *testing.T) {
+	t.Run("alter: azure, set without AZURE_TENANT_ID", func(t *testing.T) {
 		t.Skip("Unskip when can be run on the azure env. Current error: 511300 (0A000): SQL compilation error: Privatelink endpoints are not supported with 'Azure Storage' locations on 'aws' platform.")
 		id := createAzureStorageIntegration(t)
 
@@ -476,6 +492,42 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		)
 		err := client.StorageIntegrations.Alter(ctx, req)
 		require.NoError(t, err)
+	})
+
+	t.Run("alter: gcs, set and unset", func(t *testing.T) {
+		id := createGCSStorageIntegrationBasic(t)
+
+		changedGcsAllowedLocations := append([]sdk.StorageLocation{{Path: gcsBucketUrl + "/allowed-location3"}}, gcsAllowedLocations...)
+		changedGcsBlockedLocations := append([]sdk.StorageLocation{{Path: gcsBucketUrl + "/blocked-location3"}}, gcsBlockedLocations...)
+		req := sdk.NewAlterStorageIntegrationRequest(id).
+			WithSet(
+				*sdk.NewStorageIntegrationSetRequest().
+					WithEnabled(true).
+					WithStorageAllowedLocations(changedGcsAllowedLocations).
+					WithStorageBlockedLocations(changedGcsBlockedLocations).
+					WithComment("changed comment"),
+			)
+		err := client.StorageIntegrations.Alter(ctx, req)
+		require.NoError(t, err)
+
+		props, err := client.StorageIntegrations.Describe(ctx, id)
+		require.NoError(t, err)
+
+		assertGCSStorageIntegrationDescResult(t, props, true, changedGcsAllowedLocations, changedGcsBlockedLocations, "changed comment")
+
+		unset := sdk.NewAlterStorageIntegrationRequest(id).WithUnset(
+			*sdk.NewStorageIntegrationUnsetRequest().
+				WithEnabled(true).
+				WithStorageBlockedLocations(true).
+				WithComment(true),
+		)
+		err = client.StorageIntegrations.Alter(ctx, unset)
+		require.NoError(t, err)
+
+		props, err = client.StorageIntegrations.Describe(ctx, id)
+		require.NoError(t, err)
+
+		assertGCSStorageIntegrationDescResult(t, props, false, changedGcsAllowedLocations, []sdk.StorageLocation{}, "")
 	})
 
 	t.Run("Describe - S3", func(t *testing.T) {
