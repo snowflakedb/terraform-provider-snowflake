@@ -1302,7 +1302,7 @@ func TestStages_AlterInternalStage(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: Pointer(ffId),
 		}
-		opts.Comment = String("some comment")
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'", id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 }

@@ -649,7 +649,7 @@ func (s *AlterInternalStageStageRequest) WithFileFormat(fileFormat StageFileForm
 	return s
 }
 
-func (s *AlterInternalStageStageRequest) WithComment(comment string) *AlterInternalStageStageRequest {
+func (s *AlterInternalStageStageRequest) WithComment(comment StringAllowEmpty) *AlterInternalStageStageRequest {
 	s.Comment = &comment
 	return s
 }

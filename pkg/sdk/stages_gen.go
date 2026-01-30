@@ -263,7 +263,7 @@ type AlterInternalStageStageOptions struct {
 	name       SchemaObjectIdentifier `ddl:"identifier"`
 	set        bool                   `ddl:"static" sql:"SET"`
 	FileFormat *StageFileFormat       `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
-	Comment    *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Comment    *StringAllowEmpty      `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterExternalS3StageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
