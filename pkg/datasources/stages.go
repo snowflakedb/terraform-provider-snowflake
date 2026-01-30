@@ -93,11 +93,15 @@ func ReadStages(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	stagesList := make([]map[string]any, len(stages))
 	for i, stage := range stages {
 		stagesList[i] = map[string]any{
-			"name":                stage.Name,
-			"database":            stage.DatabaseName,
-			"schema":              stage.SchemaName,
-			"comment":             stage.Comment,
-			"storage_integration": stage.StorageIntegration,
+			"name":     stage.Name,
+			"database": stage.DatabaseName,
+			"schema":   stage.SchemaName,
+			"comment":  stage.Comment,
+		}
+		if stage.StorageIntegration != nil {
+			stagesList[i]["storage_integration"] = stage.StorageIntegration.Name()
+		} else {
+			stagesList[i]["storage_integration"] = ""
 		}
 	}
 
