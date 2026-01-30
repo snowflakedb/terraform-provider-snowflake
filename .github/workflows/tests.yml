@@ -107,7 +107,8 @@ jobs:
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
-          chmod 0600 ./config ./config_legacy ./config_v097_compatible
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE_WITH_SERVICE_USER }}" > ./config_v097_compatible_with_service_user
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible ./config_v097_compatible_with_service_user
 
       - name: Run unit tests
         run: make test-unit
@@ -152,6 +153,9 @@ jobs:
           TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN }}
           TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID }}
           TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE }}
+
 
       - name: Sweepers cleanup
         if: ${{ always() && steps.setup_go.conclusion == 'success' }}
