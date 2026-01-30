@@ -414,10 +414,14 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		t.Cleanup(warehouseCleanup)
 
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
-		require.Eventually(t, func() bool { return sdk.WarehouseStateStarted == returnedWarehouse.State }, 5*time.Second, time.Second)
+		var returnedWarehouse *sdk.Warehouse
+		var err error
+		require.Eventually(t, func() bool {
+			returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+			return err == nil &&
+				returnedWarehouse.State == sdk.WarehouseStateStarted &&
+				returnedWarehouse.Type == sdk.WarehouseTypeStandard
+		}, 5*time.Second, time.Second)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
 			Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized)},
