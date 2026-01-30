@@ -530,7 +530,73 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assertGCSStorageIntegrationDescResult(t, props, false, changedGcsAllowedLocations, []sdk.StorageLocation{}, "")
 	})
 
-	t.Run("Describe - S3", func(t *testing.T) {
+	t.Run("show: without like", func(t *testing.T) {
+		id := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
+		id2 := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
+
+		integrations, err := client.StorageIntegrations.Show(ctx, sdk.NewShowStorageIntegrationRequest())
+		require.NoError(t, err)
+		ids := collections.Map(integrations, func(i sdk.StorageIntegration) sdk.AccountObjectIdentifier { return i.ID() })
+
+		require.GreaterOrEqual(t, len(ids), 2)
+		require.Contains(t, ids, id)
+		require.Contains(t, ids, id2)
+	})
+
+	t.Run("show: with like", func(t *testing.T) {
+		id := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
+		id2 := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
+
+		integrations, err := client.StorageIntegrations.Show(ctx, sdk.NewShowStorageIntegrationRequest().WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
+		require.NoError(t, err)
+		ids := collections.Map(integrations, func(i sdk.StorageIntegration) sdk.AccountObjectIdentifier { return i.ID() })
+
+		require.Len(t, ids, 1)
+		require.Contains(t, ids, id)
+		require.NotContains(t, ids, id2)
+	})
+
+	t.Run("show: s3, no matches", func(t *testing.T) {
+		integrations, err := client.StorageIntegrations.Show(ctx, sdk.NewShowStorageIntegrationRequest().
+			WithLike(sdk.Like{Pattern: sdk.String(NonExistingSchemaObjectIdentifier.Name())}),
+		)
+		require.NoError(t, err)
+		require.Empty(t, integrations)
+	})
+
+	t.Run("drop: existing", func(t *testing.T) {
+		id := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
+
+		err := client.StorageIntegrations.Drop(ctx, sdk.NewDropStorageIntegrationRequest(id))
+		require.NoError(t, err)
+	})
+
+	t.Run("drop: non-existing", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		err := client.StorageIntegrations.Drop(ctx, sdk.NewDropStorageIntegrationRequest(id))
+		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+
+	t.Run("show by id safely: existing", func(t *testing.T) {
+		id := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
+
+		storageIntegration, err := client.StorageIntegrations.ShowByIDSafely(ctx, id)
+		require.NoError(t, err)
+
+		assertStorageIntegrationShowResult(t, storageIntegration, id, "")
+	})
+
+	t.Run("show by id safely: non-existing", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		_, err := client.StorageIntegrations.ShowByIDSafely(ctx, id)
+		require.Error(t, err)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	// TODO [next PR]: adjust describe tests when introducing details and dedicated assertions
+	t.Run("describe: s3", func(t *testing.T) {
 		id := createS3StorageIntegration(t, sdk.RegularS3Protocol)
 
 		desc, err := client.StorageIntegrations.Describe(ctx, id)
@@ -539,7 +605,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assertS3StorageIntegrationDescResult(t, desc, true, s3AllowedLocations, s3BlockedLocations, "some comment", true)
 	})
 
-	t.Run("Describe - GCS", func(t *testing.T) {
+	t.Run("describe: gcs", func(t *testing.T) {
 		id := createGCSStorageIntegration(t)
 
 		desc, err := client.StorageIntegrations.Describe(ctx, id)
@@ -548,7 +614,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assertGCSStorageIntegrationDescResult(t, desc, true, gcsAllowedLocations, gcsBlockedLocations, "some comment")
 	})
 
-	t.Run("Describe - Azure", func(t *testing.T) {
+	t.Run("describe: azure", func(t *testing.T) {
 		id := createAzureStorageIntegration(t)
 
 		desc, err := client.StorageIntegrations.Describe(ctx, id)
