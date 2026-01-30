@@ -102,6 +102,9 @@ func (s *StageDetailsAssert) HasDirectoryTableNotificationChannelEmpty() *StageD
 		if o.DirectoryTable == nil {
 			return fmt.Errorf("expected directory table to have value; got: nil")
 		}
+		if o.DirectoryTable.DirectoryNotificationChannel != nil {
+			return fmt.Errorf("expected directory table notification channel to be nil; got: %v", *o.DirectoryTable.DirectoryNotificationChannel)
+		}
 		return nil
 	})
 	return s

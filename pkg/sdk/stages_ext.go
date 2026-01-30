@@ -221,8 +221,7 @@ func parsePrivateLink(properties []StageProperty) *StagePrivateLink {
 	}
 	pl := &StagePrivateLink{}
 	for _, prop := range filtered {
-		switch prop.Name {
-		case "USE_PRIVATELINK_ENDPOINT":
+		if prop.Name == "USE_PRIVATELINK_ENDPOINT" {
 			pl.UsePrivatelinkEndpoint = prop.Value == "true"
 		}
 	}
@@ -257,8 +256,7 @@ func parseStageCredentials(properties []StageProperty) *StageCredentials {
 	}
 	creds := &StageCredentials{}
 	for _, prop := range filtered {
-		switch prop.Name {
-		case "AWS_KEY_ID":
+		if prop.Name == "AWS_KEY_ID" {
 			creds.AwsKeyId = prop.Value
 		}
 	}

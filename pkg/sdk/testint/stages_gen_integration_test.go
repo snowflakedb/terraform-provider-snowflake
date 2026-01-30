@@ -402,8 +402,7 @@ func TestInt_Stages(t *testing.T) {
 
 	t.Run("CreateOnS3 - with AWS_CSE encryption", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		// It must be either 128 bits, 192 bits, or 256 bits long
-		masterKey := random.AlphaN(256 / 8)
+		masterKey := random.AwsCseMasterKey()
 
 		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 			WithStorageIntegration(ids.PrecreatedS3StorageIntegration).
@@ -500,7 +499,6 @@ func TestInt_Stages(t *testing.T) {
 			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
-			WithOrReplace(true).
 			WithTemporary(true).
 			WithOrReplace(true)
 
@@ -731,7 +729,7 @@ func TestInt_Stages(t *testing.T) {
 		azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
 			WithCredentials(*sdk.NewExternalStageAzureCredentialsRequest(azureSasToken)).
 			WithEncryption(*sdk.NewExternalStageAzureEncryptionRequest().
-				WithAzureCse(*sdk.NewExternalStageAzureEncryptionAzureCseRequest(random.AlphaN(256 / 8))))
+				WithAzureCse(*sdk.NewExternalStageAzureEncryptionAzureCseRequest(random.AzureCseMasterKey())))
 
 		request := sdk.NewCreateOnAzureStageRequest(id, *azureReq).
 			WithIfNotExists(true).
@@ -908,17 +906,13 @@ func TestInt_Stages(t *testing.T) {
 
 	t.Run("Alter - rename", func(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStage(t)
+		t.Cleanup(cleanup)
 		newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err = client.Stages.Alter(ctx, sdk.NewAlterStageRequest(stage.ID()).
 			WithIfExists(true).
 			WithRenameTo(newId))
-		require.NoError(t, err)
 
-		// Update cleanup to use new id
-		t.Cleanup(func() {
-			cleanup() // This will fail but we need to clean up with the new id
-		})
 		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, newId))
 
 		renamedStage, err := client.Stages.ShowByID(ctx, newId)
