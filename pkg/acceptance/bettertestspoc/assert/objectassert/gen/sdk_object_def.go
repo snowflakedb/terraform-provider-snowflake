@@ -157,6 +157,10 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.UserWorkloadIdentityAuthenticationMethod{},
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.Stage{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

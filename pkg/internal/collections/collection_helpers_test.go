@@ -63,6 +63,25 @@ func Test_Map(t *testing.T) {
 	})
 }
 
+func Test_Filter(t *testing.T) {
+	stringSlice := []string{"1", "22", "333"}
+
+	t.Run("all matches", func(t *testing.T) {
+		allMatches := func(s string) bool { return true }
+		require.Equal(t, stringSlice, Filter(stringSlice, allMatches))
+	})
+
+	t.Run("no matches", func(t *testing.T) {
+		noMatches := func(s string) bool { return false }
+		require.Equal(t, []string{}, Filter(stringSlice, noMatches))
+	})
+
+	t.Run("some matches", func(t *testing.T) {
+		someMatches := func(s string) bool { return s == "22" }
+		require.Equal(t, []string{"22"}, Filter(stringSlice, someMatches))
+	})
+}
+
 func Test_MapErr(t *testing.T) {
 	t.Run("basic mapping", func(t *testing.T) {
 		stringSlice := []string{"1", "22", "333"}

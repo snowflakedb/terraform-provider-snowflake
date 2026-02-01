@@ -252,8 +252,14 @@ func ReadStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("storage_integration", stage.StorageIntegration); err != nil {
-		return diag.FromErr(err)
+	if stage.StorageIntegration != nil {
+		if err := d.Set("storage_integration", stage.StorageIntegration.Name()); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		if err := d.Set("storage_integration", ""); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if err := d.Set("comment", stage.Comment); err != nil {

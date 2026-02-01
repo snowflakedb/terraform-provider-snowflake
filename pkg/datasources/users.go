@@ -100,7 +100,8 @@ func Users() *schema.Resource {
 }
 
 func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	var opts sdk.ShowUserOptions
 
 	if likePattern, ok := d.GetOk("like"); ok {
@@ -149,7 +150,7 @@ func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			userParameters = []map[string]any{schemas.UserParametersToSchema(parameters)}
+			userParameters = []map[string]any{schemas.UserParametersToSchema(parameters, providerCtx)}
 		}
 
 		flattenedUsers[i] = map[string]any{

@@ -40,11 +40,6 @@ func (s *CreateInternalStageRequest) WithFileFormat(fileFormat StageFileFormatRe
 	return s
 }
 
-func (s *CreateInternalStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateInternalStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
 func (s *CreateInternalStageRequest) WithComment(comment string) *CreateInternalStageRequest {
 	s.Comment = &comment
 	return s
@@ -100,81 +95,13 @@ func NewStageFileFormatRequest() *StageFileFormatRequest {
 	return &s
 }
 
-func (s *StageFileFormatRequest) WithFormatName(formatName string) *StageFileFormatRequest {
+func (s *StageFileFormatRequest) WithFormatName(formatName SchemaObjectIdentifier) *StageFileFormatRequest {
 	s.FormatName = &formatName
 	return s
 }
 
-func (s *StageFileFormatRequest) WithFileFormatType(fileFormatType FileFormatType) *StageFileFormatRequest {
-	s.FileFormatType = &fileFormatType
-	return s
-}
-
-// adjusted manually
-func (s *StageFileFormatRequest) WithOptions(options FileFormatTypeOptionsRequest) *StageFileFormatRequest {
-	s.Options = &options
-	return s
-}
-
-func NewStageCopyOptionsRequest() *StageCopyOptionsRequest {
-	s := StageCopyOptionsRequest{}
-	return &s
-}
-
-func (s *StageCopyOptionsRequest) WithOnError(onError StageCopyOnErrorOptionsRequest) *StageCopyOptionsRequest {
-	s.OnError = &onError
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithSizeLimit(sizeLimit int) *StageCopyOptionsRequest {
-	s.SizeLimit = &sizeLimit
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithPurge(purge bool) *StageCopyOptionsRequest {
-	s.Purge = &purge
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *StageCopyOptionsRequest {
-	s.ReturnFailedOnly = &returnFailedOnly
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *StageCopyOptionsRequest {
-	s.MatchByColumnName = &matchByColumnName
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithEnforceLength(enforceLength bool) *StageCopyOptionsRequest {
-	s.EnforceLength = &enforceLength
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *StageCopyOptionsRequest {
-	s.Truncatecolumns = &truncatecolumns
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithForce(force bool) *StageCopyOptionsRequest {
-	s.Force = &force
-	return s
-}
-
-func NewStageCopyOnErrorOptionsRequest() *StageCopyOnErrorOptionsRequest {
-	s := StageCopyOnErrorOptionsRequest{}
-	return &s
-}
-
-func (s *StageCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *StageCopyOnErrorOptionsRequest {
-	s.Continue_ = &continue_
-	return s
-}
-
-// WithSkipFile removed manually
-
-func (s *StageCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *StageCopyOnErrorOptionsRequest {
-	s.AbortStatement = &abortStatement
+func (s *StageFileFormatRequest) WithFileFormatOptions(fileFormatOptions FileFormatOptions) *StageFileFormatRequest {
+	s.FileFormatOptions = &fileFormatOptions
 	return s
 }
 
@@ -210,11 +137,6 @@ func (s *CreateOnS3StageRequest) WithDirectoryTableOptions(directoryTableOptions
 
 func (s *CreateOnS3StageRequest) WithFileFormat(fileFormat StageFileFormatRequest) *CreateOnS3StageRequest {
 	s.FileFormat = &fileFormat
-	return s
-}
-
-func (s *CreateOnS3StageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateOnS3StageRequest {
-	s.CopyOptions = &copyOptions
 	return s
 }
 
@@ -394,11 +316,6 @@ func (s *CreateOnGCSStageRequest) WithFileFormat(fileFormat StageFileFormatReque
 	return s
 }
 
-func (s *CreateOnGCSStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateOnGCSStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
 func (s *CreateOnGCSStageRequest) WithComment(comment string) *CreateOnGCSStageRequest {
 	s.Comment = &comment
 	return s
@@ -514,11 +431,6 @@ func (s *CreateOnAzureStageRequest) WithDirectoryTableOptions(directoryTableOpti
 
 func (s *CreateOnAzureStageRequest) WithFileFormat(fileFormat StageFileFormatRequest) *CreateOnAzureStageRequest {
 	s.FileFormat = &fileFormat
-	return s
-}
-
-func (s *CreateOnAzureStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateOnAzureStageRequest {
-	s.CopyOptions = &copyOptions
 	return s
 }
 
@@ -656,11 +568,6 @@ func (s *CreateOnS3CompatibleStageRequest) WithFileFormat(fileFormat StageFileFo
 	return s
 }
 
-func (s *CreateOnS3CompatibleStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateOnS3CompatibleStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
 func (s *CreateOnS3CompatibleStageRequest) WithComment(comment string) *CreateOnS3CompatibleStageRequest {
 	s.Comment = &comment
 	return s
@@ -742,11 +649,6 @@ func (s *AlterInternalStageStageRequest) WithFileFormat(fileFormat StageFileForm
 	return s
 }
 
-func (s *AlterInternalStageStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *AlterInternalStageStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
 func (s *AlterInternalStageStageRequest) WithComment(comment string) *AlterInternalStageStageRequest {
 	s.Comment = &comment
 	return s
@@ -772,11 +674,6 @@ func (s *AlterExternalS3StageStageRequest) WithExternalStageParams(externalStage
 
 func (s *AlterExternalS3StageStageRequest) WithFileFormat(fileFormat StageFileFormatRequest) *AlterExternalS3StageStageRequest {
 	s.FileFormat = &fileFormat
-	return s
-}
-
-func (s *AlterExternalS3StageStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *AlterExternalS3StageStageRequest {
-	s.CopyOptions = &copyOptions
 	return s
 }
 
@@ -808,11 +705,6 @@ func (s *AlterExternalGCSStageStageRequest) WithFileFormat(fileFormat StageFileF
 	return s
 }
 
-func (s *AlterExternalGCSStageStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *AlterExternalGCSStageStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
 func (s *AlterExternalGCSStageStageRequest) WithComment(comment string) *AlterExternalGCSStageStageRequest {
 	s.Comment = &comment
 	return s
@@ -838,11 +730,6 @@ func (s *AlterExternalAzureStageStageRequest) WithExternalStageParams(externalSt
 
 func (s *AlterExternalAzureStageStageRequest) WithFileFormat(fileFormat StageFileFormatRequest) *AlterExternalAzureStageStageRequest {
 	s.FileFormat = &fileFormat
-	return s
-}
-
-func (s *AlterExternalAzureStageStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *AlterExternalAzureStageStageRequest {
-	s.CopyOptions = &copyOptions
 	return s
 }
 

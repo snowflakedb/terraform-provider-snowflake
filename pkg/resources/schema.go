@@ -228,7 +228,8 @@ func CreateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 
 func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseDatabaseObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -299,7 +300,7 @@ func ReadContextSchema(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(schemaParameters)}); err != nil {
+		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(schemaParameters, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 		return nil

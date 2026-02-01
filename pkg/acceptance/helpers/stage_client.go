@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -77,6 +78,82 @@ func (c *StageClient) CreateStageWithRequest(t *testing.T, request *sdk.CreateIn
 	require.NoError(t, err)
 
 	return stage, c.DropStageFunc(t, request.ID())
+}
+
+func (c *StageClient) CreateStageOnS3(t *testing.T, awsBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+
+	s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+		WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
+	request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
+
+	return c.CreateStageOnS3WithRequest(t, request)
+}
+
+func (c *StageClient) CreateStageOnS3WithCredentials(t *testing.T, awsBucketUrl string, awsKeyId string, awsSecretKey string) (*sdk.Stage, func()) {
+	t.Helper()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+
+	s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+		WithCredentials(*sdk.NewExternalStageS3CredentialsRequest().
+			WithAwsKeyId(awsKeyId).
+			WithAwsSecretKey(awsSecretKey))
+	request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
+
+	return c.CreateStageOnS3WithRequest(t, request)
+}
+
+func (c *StageClient) CreateStageOnS3WithRequest(t *testing.T, request *sdk.CreateOnS3StageRequest) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().CreateOnS3(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, request.ID())
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, request.ID())
+}
+
+func (c *StageClient) CreateStageOnGCS(t *testing.T, gcsBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+
+	gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
+		WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
+	request := sdk.NewCreateOnGCSStageRequest(id, *gcsReq)
+
+	err := c.client().CreateOnGCS(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, id)
+}
+
+func (c *StageClient) CreateStageOnAzure(t *testing.T, azureBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomSchemaObjectIdentifier()
+
+	azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl)
+	request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)
+
+	err := c.client().CreateOnAzure(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, id)
 }
 
 func (c *StageClient) DropStageFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
@@ -222,4 +299,21 @@ func (c *StageClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) ([]s
 	ctx := context.Background()
 
 	return c.client().Describe(ctx, id)
+}
+
+func (c *StageClient) DescribeDetails(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.StageDetails, error) {
+	t.Helper()
+	properties, err := c.Describe(t, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return sdk.ParseStageDetails(properties)
+}
+
+func (c *StageClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Stage, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByID(ctx, id)
 }

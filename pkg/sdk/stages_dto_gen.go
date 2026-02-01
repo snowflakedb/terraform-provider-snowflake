@@ -27,7 +27,6 @@ type CreateInternalStageRequest struct {
 	Encryption            *InternalStageEncryptionRequest
 	DirectoryTableOptions *InternalDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
-	CopyOptions           *StageCopyOptionsRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -37,9 +36,11 @@ type InternalStageEncryptionRequest struct {
 	SnowflakeSse  *InternalStageEncryptionSnowflakeSseRequest
 }
 
-type InternalStageEncryptionSnowflakeFullRequest struct{}
+type InternalStageEncryptionSnowflakeFullRequest struct {
+}
 
-type InternalStageEncryptionSnowflakeSseRequest struct{}
+type InternalStageEncryptionSnowflakeSseRequest struct {
+}
 
 type InternalDirectoryTableOptionsRequest struct {
 	Enable      bool
@@ -47,28 +48,8 @@ type InternalDirectoryTableOptionsRequest struct {
 }
 
 type StageFileFormatRequest struct {
-	FormatName     *string
-	FileFormatType *FileFormatType
-	// adjusted manually
-	Options *FileFormatTypeOptionsRequest
-}
-
-type StageCopyOptionsRequest struct {
-	OnError           *StageCopyOnErrorOptionsRequest
-	SizeLimit         *int
-	Purge             *bool
-	ReturnFailedOnly  *bool
-	MatchByColumnName *StageCopyColumnMapOption
-	EnforceLength     *bool
-	Truncatecolumns   *bool
-	Force             *bool
-}
-
-type StageCopyOnErrorOptionsRequest struct {
-	Continue_ *bool
-	// adjusted manually
-	SkipFile       *string
-	AbortStatement *bool
+	FormatName        *SchemaObjectIdentifier
+	FileFormatOptions *FileFormatOptions
 }
 
 type CreateOnS3StageRequest struct {
@@ -79,7 +60,6 @@ type CreateOnS3StageRequest struct {
 	ExternalStageParams   ExternalS3StageParamsRequest // required
 	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
-	CopyOptions           *StageCopyOptionsRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -111,13 +91,15 @@ type ExternalStageS3EncryptionAwsCseRequest struct {
 	MasterKey string // required
 }
 
-type ExternalStageS3EncryptionAwsSseS3Request struct{}
+type ExternalStageS3EncryptionAwsSseS3Request struct {
+}
 
 type ExternalStageS3EncryptionAwsSseKmsRequest struct {
 	KmsKeyId *string
 }
 
-type ExternalStageS3EncryptionNoneRequest struct{}
+type ExternalStageS3EncryptionNoneRequest struct {
+}
 
 type StageS3CommonDirectoryTableOptionsRequest struct {
 	Enable          bool
@@ -133,7 +115,6 @@ type CreateOnGCSStageRequest struct {
 	ExternalStageParams   ExternalGCSStageParamsRequest // required
 	DirectoryTableOptions *ExternalGCSDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
-	CopyOptions           *StageCopyOptionsRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -153,7 +134,8 @@ type ExternalStageGCSEncryptionGcsSseKmsRequest struct {
 	KmsKeyId *string
 }
 
-type ExternalStageGCSEncryptionNoneRequest struct{}
+type ExternalStageGCSEncryptionNoneRequest struct {
+}
 
 type ExternalGCSDirectoryTableOptionsRequest struct {
 	Enable                  bool
@@ -170,7 +152,6 @@ type CreateOnAzureStageRequest struct {
 	ExternalStageParams   ExternalAzureStageParamsRequest // required
 	DirectoryTableOptions *ExternalAzureDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
-	CopyOptions           *StageCopyOptionsRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -196,7 +177,8 @@ type ExternalStageAzureEncryptionAzureCseRequest struct {
 	MasterKey string // required
 }
 
-type ExternalStageAzureEncryptionNoneRequest struct{}
+type ExternalStageAzureEncryptionNoneRequest struct {
+}
 
 type ExternalAzureDirectoryTableOptionsRequest struct {
 	Enable                  bool
@@ -213,7 +195,6 @@ type CreateOnS3CompatibleStageRequest struct {
 	ExternalStageParams   ExternalS3CompatibleStageParamsRequest // required
 	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
-	CopyOptions           *StageCopyOptionsRequest
 	Comment               *string
 	Tag                   []TagAssociation
 }
@@ -238,11 +219,10 @@ type AlterStageRequest struct {
 }
 
 type AlterInternalStageStageRequest struct {
-	IfExists    *bool
-	name        SchemaObjectIdentifier // required
-	FileFormat  *StageFileFormatRequest
-	CopyOptions *StageCopyOptionsRequest
-	Comment     *string
+	IfExists   *bool
+	name       SchemaObjectIdentifier // required
+	FileFormat *StageFileFormatRequest
+	Comment    *string
 }
 
 type AlterExternalS3StageStageRequest struct {
@@ -250,7 +230,6 @@ type AlterExternalS3StageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalS3StageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	CopyOptions         *StageCopyOptionsRequest
 	Comment             *string
 }
 
@@ -259,7 +238,6 @@ type AlterExternalGCSStageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalGCSStageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	CopyOptions         *StageCopyOptionsRequest
 	Comment             *string
 }
 
@@ -268,7 +246,6 @@ type AlterExternalAzureStageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalAzureStageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	CopyOptions         *StageCopyOptionsRequest
 	Comment             *string
 }
 

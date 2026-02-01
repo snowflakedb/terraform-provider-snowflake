@@ -94,6 +94,10 @@ test-main-terraform-use-cases-docker-compose: ## run main terraform use cases te
 	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
 	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm test-main-terraform-use-cases
 
+test-main-terraform-use-cases-docker-compose-pre-prod-gov: ## run main terraform use cases tests within docker environment for pre-prod gov environment
+	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
+	TEST_SF_TF_SNOWFLAKE_TESTING_ENVIRONMENT=PRE_PROD_GOV docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm test-main-terraform-use-cases
+
 process-test-output-docker-compose: ## run test output processor within docker environment
 	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm process-test-output
 

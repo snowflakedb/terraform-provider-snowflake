@@ -55,7 +55,7 @@ func Test_ExtractStructDetails(t *testing.T) {
 		unexportedIdentifierSlice []sdk.SchemaObjectIdentifier
 
 		unexportedInterface sdk.ObjectIdentifier
-		unexportedStruct    sdk.FileFormatTypeOptions
+		unexportedStruct    sdk.LegacyFileFormatTypeOptions
 
 		ExportedString     string
 		ExportedInt        int
@@ -114,7 +114,7 @@ func Test_ExtractStructDetails(t *testing.T) {
 		assertFieldExtracted(structDetails.Fields[29], "unexportedIdentifierSlice", "[]sdk.SchemaObjectIdentifier", "slice")
 
 		assertFieldExtracted(structDetails.Fields[30], "unexportedInterface", "sdk.ObjectIdentifier", "interface")
-		assertFieldExtracted(structDetails.Fields[31], "unexportedStruct", "sdk.FileFormatTypeOptions", "struct")
+		assertFieldExtracted(structDetails.Fields[31], "unexportedStruct", "sdk.LegacyFileFormatTypeOptions", "struct")
 	})
 }
 

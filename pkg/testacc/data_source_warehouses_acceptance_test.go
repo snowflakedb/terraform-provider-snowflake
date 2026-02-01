@@ -85,7 +85,7 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 
 	commonShowAssert := func(t *testing.T, datasourceReference string) *resourceshowoutputassert.WarehouseShowOutputAssert {
 		t.Helper()
-		return resourceshowoutputassert.WarehousesDatasourceShowOutput(t, datasourceReference).
+		assert := resourceshowoutputassert.WarehousesDatasourceShowOutput(t, datasourceReference).
 			HasName(id.Name()).
 			HasStateNotEmpty().
 			HasType(sdk.WarehouseTypeStandard).
@@ -113,8 +113,13 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 			HasResourceMonitorEmpty().
 			HasScalingPolicy(sdk.ScalingPolicyStandard).
 			HasOwnerRoleTypeNotEmpty().
-			HasResourceConstraintEmpty().
-			HasGenerationNotEmpty()
+			HasResourceConstraintEmpty()
+		if testClient().SnowflakeDefaults.WarehouseGenerationEmptyByDefault(t) {
+			assert = assert.HasGenerationEmpty()
+		} else {
+			assert = assert.HasGenerationNotEmpty()
+		}
+		return assert
 	}
 
 	resource.Test(t, resource.TestCase{
