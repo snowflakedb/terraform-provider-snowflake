@@ -10,7 +10,6 @@ func InternalStageWithId(id sdk.SchemaObjectIdentifier) *InternalStageModel {
 	return InternalStage("test", id.DatabaseName(), id.SchemaName(), id.Name())
 }
 
-// WithDirectoryEnabled adds directory block with enable only
 func (i *InternalStageModel) WithDirectoryEnabled(enable string) *InternalStageModel {
 	i.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
@@ -20,7 +19,6 @@ func (i *InternalStageModel) WithDirectoryEnabled(enable string) *InternalStageM
 	return i
 }
 
-// WithDirectoryEnabledAndAutoRefresh adds directory block with enable and auto_refresh
 func (i *InternalStageModel) WithDirectoryEnabledAndAutoRefresh(enable bool, autoRefresh string) *InternalStageModel {
 	i.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
@@ -31,7 +29,6 @@ func (i *InternalStageModel) WithDirectoryEnabledAndAutoRefresh(enable bool, aut
 	return i
 }
 
-// WithEncryptionSnowflakeFull sets encryption to snowflake_full
 func (i *InternalStageModel) WithEncryptionSnowflakeFull() *InternalStageModel {
 	return i.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
@@ -44,7 +41,6 @@ func (i *InternalStageModel) WithEncryptionSnowflakeFull() *InternalStageModel {
 	)
 }
 
-// WithEncryptionSnowflakeSse sets encryption to snowflake_sse
 func (i *InternalStageModel) WithEncryptionSnowflakeSse() *InternalStageModel {
 	return i.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
@@ -57,7 +53,6 @@ func (i *InternalStageModel) WithEncryptionSnowflakeSse() *InternalStageModel {
 	)
 }
 
-// WithEncryptionBothTypes sets both encryption types to trigger ExactlyOneOf validation error
 func (i *InternalStageModel) WithEncryptionBothTypes() *InternalStageModel {
 	return i.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(

@@ -28,7 +28,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(new feature)* Internal stage resource
 
-To enhance clarity and functionality, the new resources `snowflake_internal_stage` has been introduced to replace the previous `snowflake_stage` for internal stages. Recognizing that the old resource carried multiple responsibilities within a single entity, we opted to divide it into more specialized resources.
+To enhance clarity and functionality, the new resource `snowflake_internal_stage` has been introduced to replace the previous `snowflake_stage` for internal stages. Recognizing that the old resource carried multiple responsibilities within a single entity, we opted to divide it into more specialized resources.
 The newly introduced resource is aligned with the latest Snowflake documentation at the time of implementation, and adhere to our [new conventions](#general-changes).
 
 This is a preview feature. To use it, add `snowflake_internal_stage_resource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.

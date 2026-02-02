@@ -7,7 +7,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// Directory block assertions
 func (i *InternalStageResourceAssert) HasDirectoryEnableString(expected string) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("directory.0.enable", expected))
 	return i
@@ -25,7 +24,6 @@ func (i *InternalStageResourceAssert) HasDirectory(enable bool, autoRefresh bool
 	return i
 }
 
-// Encryption block assertions
 func (i *InternalStageResourceAssert) HasEncryptionSnowflakeFull() *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("encryption.#", "1"))
 	i.AddAssertion(assert.ValueSet("encryption.0.snowflake_full.#", "1"))

@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [SNOW-XXX]: temporary is not supported because it creates a per-session object; add to limitations/design decisions
 var internalStageSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
@@ -135,10 +134,10 @@ func InternalStage() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StageResource), TrackingCreateWrapper(resources.InternalStage, CreateInternalStage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StageResource), TrackingReadWrapper(resources.InternalStage, ReadInternalStageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StageResource), TrackingUpdateWrapper(resources.InternalStage, UpdateInternalStage)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StageResource), TrackingDeleteWrapper(resources.InternalStage, deleteFunc)),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.InternalStageResource), TrackingCreateWrapper(resources.InternalStage, CreateInternalStage)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.InternalStageResource), TrackingReadWrapper(resources.InternalStage, ReadInternalStageFunc(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.InternalStageResource), TrackingUpdateWrapper(resources.InternalStage, UpdateInternalStage)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.InternalStageResource), TrackingDeleteWrapper(resources.InternalStage, deleteFunc)),
 		Description:   "Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.InternalStage, customdiff.All(
@@ -194,28 +193,6 @@ func CreateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	request := sdk.NewCreateInternalStageRequest(id)
 
-	// Handle encryption nested block
-	if v, ok := d.GetOk("encryption"); ok {
-		encryptionList := v.([]any)
-		if len(encryptionList) > 0 && encryptionList[0] != nil {
-			encryptionConfig := encryptionList[0].(map[string]any)
-			encryptionReq := sdk.NewInternalStageEncryptionRequest()
-
-			if snowflakeFull, ok := encryptionConfig["snowflake_full"]; ok {
-				if sfList := snowflakeFull.([]any); len(sfList) > 0 {
-					encryptionReq.WithSnowflakeFull(*sdk.NewInternalStageEncryptionSnowflakeFullRequest())
-				}
-			}
-
-			if snowflakeSse, ok := encryptionConfig["snowflake_sse"]; ok {
-				if sseList := snowflakeSse.([]any); len(sseList) > 0 {
-					encryptionReq.WithSnowflakeSse(*sdk.NewInternalStageEncryptionSnowflakeSseRequest())
-				}
-			}
-
-			request.WithEncryption(*encryptionReq)
-		}
-	}
 	parseEncryption := func(v any) (sdk.InternalStageEncryptionRequest, error) {
 		encryptionList := v.([]any)
 		if len(encryptionList) == 0 {

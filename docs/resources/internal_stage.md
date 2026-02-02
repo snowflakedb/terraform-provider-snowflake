@@ -7,6 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+-> **Note** Temporary stages are not supported because they result in per-session objects.
+
 # snowflake_internal_stage (Resource)
 
 Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).
@@ -57,8 +59,8 @@ resource "snowflake_internal_stage" "complete" {
 ### Optional
 
 - `comment` (String) Specifies a comment for the stage.
-- `directory` (Block List, Max: 1) Specifies the directory table settings for the stage. (see [below for nested schema](#nestedblock--directory))
-- `encryption` (Block List, Max: 1) Specifies the encryption settings for the internal stage. Internal stages support SNOWFLAKE_FULL (default) or SNOWFLAKE_SSE encryption types. (see [below for nested schema](#nestedblock--encryption))
+- `directory` (Block List, Max: 1) Directory tables store a catalog of staged files in cloud storage. (see [below for nested schema](#nestedblock--directory))
+- `encryption` (Block List, Max: 1) Specifies the encryption settings for the internal stage. (see [below for nested schema](#nestedblock--encryption))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -67,17 +69,18 @@ resource "snowflake_internal_stage" "complete" {
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW STAGES` for the given stage. (see [below for nested schema](#nestedatt--show_output))
+- `stage_type` (String) Specifies a type for the stage. This field is used for checking external changes and recreating the resources if needed.
 
 <a id="nestedblock--directory"></a>
 ### Nested Schema for `directory`
 
 Required:
 
-- `enable` (Boolean) Specifies whether to add a directory table to the stage. When enabled, the directory table stores a catalog of staged files.
+- `enable` (Boolean) Specifies whether to enable a directory table on the internal named stage.
 
 Optional:
 
-- `auto_refresh` (Boolean) Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata when new or updated data files are available.
+- `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should automatically refresh the directory table metadata when new or updated data files are available on the internal named stage.
 
 
 <a id="nestedblock--encryption"></a>
@@ -85,8 +88,8 @@ Optional:
 
 Optional:
 
-- `snowflake_full` (Block List, Max: 1) Use SNOWFLAKE_FULL encryption type. This provides client-side encryption where Snowflake manages the master key. (see [below for nested schema](#nestedblock--encryption--snowflake_full))
-- `snowflake_sse` (Block List, Max: 1) Use SNOWFLAKE_SSE encryption type. This provides server-side encryption. (see [below for nested schema](#nestedblock--encryption--snowflake_sse))
+- `snowflake_full` (Block List, Max: 1) Client-side and server-side encryption. (see [below for nested schema](#nestedblock--encryption--snowflake_full))
+- `snowflake_sse` (Block List, Max: 1) Server-side encryption only. (see [below for nested schema](#nestedblock--encryption--snowflake_sse))
 
 <a id="nestedblock--encryption--snowflake_full"></a>
 ### Nested Schema for `encryption.snowflake_full`
@@ -113,10 +116,16 @@ Optional:
 
 Read-Only:
 
-- `directory_auto_refresh` (Boolean)
-- `directory_enabled` (Boolean)
-- `directory_last_refreshed_on` (String)
-- `directory_notification_channel` (String)
+- `directory_table` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--directory_table))
+
+<a id="nestedobjatt--describe_output--directory_table"></a>
+### Nested Schema for `describe_output.directory_table`
+
+Read-Only:
+
+- `auto_refresh` (Boolean)
+- `enable` (Boolean)
+
 
 
 <a id="nestedatt--show_output"></a>
