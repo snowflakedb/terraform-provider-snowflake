@@ -24,30 +24,31 @@ import (
 
 func TestAcc_InternalStage_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
 
-	modelBasic := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name())
+	modelBasic := model.InternalStageWithId(id)
 
-	modelComplete := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
+	modelComplete := model.InternalStageWithId(id).
 		WithComment(comment).
 		WithDirectoryEnabled(r.BooleanTrue).
 		WithEncryptionSnowflakeFull()
 
-	modelUpdated := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
+	modelUpdated := model.InternalStageWithId(id).
 		WithComment(changedComment).
 		WithDirectoryEnabled(r.BooleanFalse).
 		WithEncryptionSnowflakeFull()
 
-	modelSseEncryptionWithDirectoryTableAndComment := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
+	modelSseEncryptionWithDirectoryTableAndComment := model.InternalStageWithId(id).
 		WithComment(changedComment).
 		WithDirectoryEnabled(r.BooleanTrue).
 		WithEncryptionSnowflakeSse()
 
-	modelSseEncryptionWithComment := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
+	modelSseEncryptionWithComment := model.InternalStageWithId(id).
 		WithComment(changedComment).
 		WithEncryptionSnowflakeSse()
 
-	modelSseEncryption := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
+	modelSseEncryption := model.InternalStageWithId(newId).
 		WithEncryptionSnowflakeSse()
 
 	resource.Test(t, resource.TestCase{
@@ -259,7 +260,7 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelSseEncryptionWithComment.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
-			// Unset comment
+			// Unset comment and rename
 			{
 				Config: accconfig.FromModels(t, modelSseEncryption),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -269,18 +270,18 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 				},
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelSseEncryption.ResourceReference()).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
+						HasNameString(newId.Name()).
+						HasDatabaseString(newId.DatabaseName()).
+						HasSchemaString(newId.SchemaName()).
 						HasCommentString("").
 						HasDirectoryEmpty().
 						HasEncryptionSnowflakeSse().
-						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
 						HasStageTypeEnum(sdk.StageTypeInternalNoCse),
 					resourceshowoutputassert.StageShowOutput(t, modelSseEncryption.ResourceReference()).
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
+						HasName(newId.Name()).
+						HasDatabaseName(newId.DatabaseName()).
+						HasSchemaName(newId.SchemaName()).
 						HasType(sdk.StageTypeInternalNoCse).
 						HasCommentEmpty().
 						HasDirectoryEnabled(false).
@@ -298,7 +299,7 @@ func TestAcc_InternalStage_complete(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	modelComplete := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
+	modelComplete := model.InternalStageWithId(id).
 		WithComment(comment).
 		WithDirectoryEnabledAndAutoRefresh(true, r.BooleanFalse).
 		WithEncryptionSnowflakeFull()
