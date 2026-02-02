@@ -2,7 +2,7 @@ name: Notify about new driver version
 
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened]
 
 jobs:
   jira-new-driver-version:
@@ -24,11 +24,11 @@ jobs:
           --header 'Content-Type: application/json' \
           --data-raw '{
             "issues": [
-              "${{ secrets.JIRA_PROJECT_NEW_DRIVER_VERSIONS }}"
+              "${{ secrets.JIRA_NEW_DRIVER_VERSIONS_EPIC }}"
             ],
             "data": {
               "summary": "${formatted_title}",
               "description": "",
-              "parent": "${{ secrets.JIRA_PROJECT_NEW_DRIVER_VERSIONS }}"
+              "parent": "${{ secrets.JIRA_NEW_DRIVER_VERSIONS_EPIC }}"
             }
           }'
