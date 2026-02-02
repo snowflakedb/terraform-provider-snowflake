@@ -12,7 +12,6 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -57,22 +56,24 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
-						HasDatabaseString(TestDatabaseName).
-						HasSchemaString(TestSchemaName).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
 						HasCommentString("").
 						HasDirectoryEmpty().
 						HasEncryptionEmpty().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasStageTypeString("INTERNAL"),
-					// Show output assertions
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "show_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "show_output.0.database_name", TestDatabaseName)),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "show_output.0.schema_name", TestSchemaName)),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "show_output.0.type", "INTERNAL")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "show_output.0.comment", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "show_output.0.directory_enabled", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "show_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "show_output.0.created_on")),
+						HasStageTypeEnum(sdk.StageTypeInternal),
+					resourceshowoutputassert.StageShowOutput(t, modelBasic.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeInternal).
+						HasComment("").
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// Import - without optionals
@@ -83,14 +84,15 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedInternalStageResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
-						HasDatabaseString(TestDatabaseName).
-						HasSchemaString(TestSchemaName).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
 						HasCommentString("").
 						HasDirectory(false, false).
 						HasEncryptionEmpty().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.name", id.Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "show_output.0.directory_enabled", "false")),
+					resourceshowoutputassert.ImportedStageShowOutput(t, helpers.EncodeResourceIdentifier(id)).
+						HasName(id.Name()).
+						HasDirectoryEnabled(false),
 				),
 			},
 			// Set optionals (complete)
@@ -99,14 +101,24 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
-						HasDatabaseString(TestDatabaseName).
-						HasSchemaString(TestSchemaName).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
 						HasCommentString(comment).
 						HasDirectoryEnableString(r.BooleanTrue).
 						HasEncryptionSnowflakeFull().
-						HasFullyQualifiedNameString(id.FullyQualifiedName()),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "show_output.0.comment", comment)),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "show_output.0.directory_enabled", "true")),
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeInternal),
+					resourceshowoutputassert.StageShowOutput(t, modelComplete.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeInternal).
+						HasComment(comment).
+						HasDirectoryEnabled(true).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// Import - complete
@@ -128,10 +140,24 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
 						HasCommentString(changedComment).
-						HasDirectoryEnableString(r.BooleanFalse),
-					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "show_output.0.comment", changedComment)),
-					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "show_output.0.directory_enabled", "false")),
+						HasDirectoryEnableString(r.BooleanFalse).
+						HasEncryptionSnowflakeFull().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeInternal),
+					resourceshowoutputassert.StageShowOutput(t, modelUpdated.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeInternal).
+						HasComment(changedComment).
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// External change detection
@@ -143,7 +169,25 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 				Config: accconfig.FromModels(t, modelUpdated),
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelUpdated.ResourceReference()).
-						HasCommentString(changedComment),
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(changedComment).
+						HasDirectoryEnableString(r.BooleanFalse).
+						HasEncryptionSnowflakeFull().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeInternal),
+					resourceshowoutputassert.StageShowOutput(t, modelUpdated.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeInternal).
+						HasComment(changedComment).
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// ForceNew - encryption change (requires recreate)
@@ -156,7 +200,25 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 				},
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelForceNewEncryption.ResourceReference()).
-						HasEncryptionSnowflakeSse(),
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(changedComment).
+						HasDirectoryEnableString(r.BooleanFalse).
+						HasEncryptionSnowflakeSse().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeInternal),
+					resourceshowoutputassert.StageShowOutput(t, modelForceNewEncryption.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeInternalNoCse).
+						HasComment(changedComment).
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelForceNewEncryption.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelForceNewEncryption.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 		},
@@ -184,22 +246,23 @@ func TestAcc_InternalStage_complete(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
-						HasDatabaseString(TestDatabaseName).
-						HasSchemaString(TestSchemaName).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
 						HasCommentString(comment).
 						HasDirectoryEnableString(r.BooleanTrue).
 						HasDirectoryAutoRefreshString(r.BooleanFalse).
 						HasEncryptionSnowflakeFull().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasStageTypeString("INTERNAL"),
+						HasStageTypeEnum(sdk.StageTypeInternal),
 					resourceshowoutputassert.StageShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
-						HasDatabaseName(TestDatabaseName).
-						HasSchemaName(TestSchemaName).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
 						HasType(sdk.StageTypeInternal).
 						HasComment(comment).
 						HasDirectoryEnabled(true).
-						HasOwner(snowflakeroles.Accountadmin.Name()),
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),

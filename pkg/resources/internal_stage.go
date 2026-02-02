@@ -325,7 +325,7 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 					"auto_refresh": details.DirectoryTable.AutoRefresh,
 				},
 			}
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe2(d,
 				outputMapping{"directory_table", "directory", directoryTable, directoryTable, nil},
 			); err != nil {
 				return diag.FromErr(err)

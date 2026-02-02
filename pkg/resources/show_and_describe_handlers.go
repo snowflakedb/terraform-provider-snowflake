@@ -2,6 +2,7 @@ package resources
 
 import (
 	"log"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -32,6 +33,31 @@ func handleExternalChangesToObject(d *schema.ResourceData, outputAttributeName s
 		}
 	}
 	return nil
+}
+
+func handleExternalChangesToObject2(d *schema.ResourceData, outputAttributeName string, mappings ...outputMapping) error {
+	if output, ok := d.GetOk(outputAttributeName); ok {
+		outputList := output.([]any)
+		if len(outputList) == 1 {
+			result := outputList[0].(map[string]any)
+			for _, mapping := range mappings {
+				valueToCompareFrom := result[mapping.nameInOutput]
+				if mapping.normalizeFunc != nil {
+					valueToCompareFrom = mapping.normalizeFunc(valueToCompareFrom)
+				}
+				if !reflect.DeepEqual(valueToCompareFrom, mapping.valueToCompare) {
+					if err := d.Set(mapping.nameInConfig, mapping.valueToSet); err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func handleExternalChangesToObjectInFlatDescribe2(d *schema.ResourceData, mappings ...outputMapping) error {
+	return handleExternalChangesToObject2(d, DescribeOutputAttributeName, mappings...)
 }
 
 // handleExternalChangesToObjectInShow assumes that show output is kept in ShowOutputAttributeName attribute

@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 // Directory block assertions
@@ -39,23 +40,7 @@ func (i *InternalStageResourceAssert) HasEncryptionSnowflakeSse() *InternalStage
 	return i
 }
 
-// Show output assertions
-func (i *InternalStageResourceAssert) HasShowOutputDirectoryEnabled(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("show_output.0.directory_enabled", strconv.FormatBool(expected)))
-	return i
-}
-
-func (i *InternalStageResourceAssert) HasShowOutputComment(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("show_output.0.comment", expected))
-	return i
-}
-
-func (i *InternalStageResourceAssert) HasShowOutputName(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("show_output.0.name", expected))
-	return i
-}
-
-func (i *InternalStageResourceAssert) HasShowOutputType(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("show_output.0.type", expected))
+func (i *InternalStageResourceAssert) HasStageTypeEnum(expected sdk.StageType) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("stage_type", string(expected)))
 	return i
 }
