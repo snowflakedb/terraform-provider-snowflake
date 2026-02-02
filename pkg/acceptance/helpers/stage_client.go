@@ -317,3 +317,11 @@ func (c *StageClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.St
 
 	return c.client().ShowByID(ctx, id)
 }
+
+func (c *StageClient) AlterInternalStage(t *testing.T, req *sdk.AlterInternalStageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterInternalStage(ctx, req)
+	require.NoError(t, err)
+}

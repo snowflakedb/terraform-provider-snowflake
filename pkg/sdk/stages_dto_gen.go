@@ -224,7 +224,7 @@ type AlterExternalS3StageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalS3StageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	Comment             *string
+	Comment             *StringAllowEmpty
 }
 
 type AlterExternalGCSStageStageRequest struct {
@@ -232,7 +232,7 @@ type AlterExternalGCSStageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalGCSStageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	Comment             *string
+	Comment             *StringAllowEmpty
 }
 
 type AlterExternalAzureStageStageRequest struct {
@@ -240,7 +240,7 @@ type AlterExternalAzureStageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalAzureStageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	Comment             *string
+	Comment             *StringAllowEmpty
 }
 
 type AlterDirectoryTableStageRequest struct {

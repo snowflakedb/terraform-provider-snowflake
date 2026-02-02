@@ -1,5 +1,11 @@
 package sdk
 
+import (
+	"fmt"
+	"slices"
+	"strings"
+)
+
 type InternalStageEncryptionOption string
 
 var (
@@ -37,3 +43,40 @@ var (
 	StageCopyColumnMapCaseInsensitive StageCopyColumnMapOption = "CASE_INSENSITIVE"
 	StageCopyColumnMapCaseNone        StageCopyColumnMapOption = "NONE"
 )
+
+type StageType string
+
+var (
+	StageTypeInternal          StageType = "INTERNAL"
+	StageTypeInternalNoCse     StageType = "INTERNAL NO CSE"
+	StageTypeInternalTemporary StageType = "INTERNAL TEMPORARY"
+	StageTypeExternal          StageType = "EXTERNAL"
+	StageTypeExternalTemporary StageType = "EXTERNAL TEMPORARY"
+)
+
+var allStageTypes = []StageType{
+	StageTypeInternal,
+	StageTypeInternalNoCse,
+	StageTypeInternalTemporary,
+	StageTypeExternal,
+	StageTypeExternalTemporary,
+}
+
+func ToStageType(s string) (StageType, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(allStageTypes, StageType(s)) {
+		return "", fmt.Errorf("invalid stage type: %s", s)
+	}
+	return StageType(s), nil
+}
+
+func (s StageType) Canonical() StageType {
+	switch s {
+	case StageTypeInternalNoCse, StageTypeInternal, StageTypeInternalTemporary:
+		return StageTypeInternal
+	case StageTypeExternal, StageTypeExternalTemporary:
+		return StageTypeExternal
+	default:
+		return s
+	}
+}

@@ -401,7 +401,7 @@ var stagesDef = g.NewInterface(
 			Field("Owner", "string").
 			Field("Comment", "string").
 			Field("Region", "*string").
-			Field("Type", "string").
+			Field("Type", "StageType").
 			Field("Cloud", "*string").
 			// notification_channel is deprecated in Snowflake.
 			Field("StorageIntegration", "*AccountObjectIdentifier").

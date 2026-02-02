@@ -145,7 +145,7 @@ func (s *StageAssert) HasRegion(expected string) *StageAssert {
 	return s
 }
 
-func (s *StageAssert) HasType(expected string) *StageAssert {
+func (s *StageAssert) HasType(expected sdk.StageType) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.Type != expected {

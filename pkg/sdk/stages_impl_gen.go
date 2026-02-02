@@ -544,9 +544,13 @@ func (r stageShowRow) convert() (*Stage, error) {
 		HasEncryptionKey: r.HasEncryptionKey == "Y",
 		Owner:            r.Owner,
 		Comment:          r.Comment,
-		Type:             r.Type,
 		DirectoryEnabled: r.DirectoryEnabled == "Y",
 	}
+	stageType, err := ToStageType(r.Type)
+	if err != nil {
+		return nil, fmt.Errorf("error converting stage type: %w", err)
+	}
+	stage.Type = stageType
 	if r.Region.Valid {
 		stage.Region = &r.Region.String
 	}

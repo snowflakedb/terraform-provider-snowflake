@@ -186,7 +186,7 @@ func attributeMappedValueUpdate[T, R any](d *schema.ResourceData, key string, se
 	return nil
 }
 
-func attributeMappedValueUpdateSetOnly[T, R any](d *schema.ResourceData, key string, setField **R, unsetField **bool, mapper func(T) (R, error)) error {
+func attributeMappedValueUpdateSetOnly[T, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) (R, error)) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
 			mappedValue, err := mapper(v.(T))

@@ -24,19 +24,14 @@ var StageDescribeSchema = map[string]*schema.Schema{
 	},
 }
 
-func StageDescribeToSchema(properties []sdk.StageProperty) (map[string]any, error) {
-	details, err := sdk.ParseStageDetails(properties)
-	if err != nil {
-		return nil, err
-	}
-
+func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
 	schema := make(map[string]any)
 
-	if details.DirectoryTable != nil {
+	if properties.DirectoryTable != nil {
 		schema["directory_table"] = []map[string]any{
 			{
-				"enable":       details.DirectoryTable.Enable,
-				"auto_refresh": details.DirectoryTable.AutoRefresh,
+				"enable":       properties.DirectoryTable.Enable,
+				"auto_refresh": properties.DirectoryTable.AutoRefresh,
 			},
 		}
 	}
