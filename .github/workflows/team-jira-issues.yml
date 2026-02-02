@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Curl to webhook
         run: |
-          curl --location --request POST '${{ secrets.JIRA_WEBHOOK_URL }}' \
+          curl --fail --location --request POST '${{ secrets.JIRA_WEBHOOK_URL }}' \
           --header 'X-Automation-Webhook-Token: ${{ secrets.JIRA_WEBHOOK_TOKEN }}' \
           --header 'Content-Type: application/json' \
           --data-raw '{
