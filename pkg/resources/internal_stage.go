@@ -145,7 +145,7 @@ func InternalStage() *schema.Resource {
 			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory"),
 			ComputedIfAnyAttributeChanged(internalStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
-			RecreateWhenResourceTypeChangedExternally("stage_type", sdk.StageTypeInternal, sdk.ToStageType),
+			RecreateWhenStageTypeChangedExternally(sdk.StageTypeInternal),
 		)),
 
 		Schema: internalStageSchema,
@@ -302,8 +302,14 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 					"auto_refresh": details.DirectoryTable.AutoRefresh,
 				},
 			}
+			directoryTableToSet := []any{
+				map[string]any{
+					"enable":       details.DirectoryTable.Enable,
+					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
+				},
+			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"directory_table", "directory", directoryTable, directoryTable, nil},
+				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -314,7 +320,7 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set("comment", stage.Comment),
-			d.Set("stage_type", stage.Type.Canonical()),
+			d.Set("stage_type", stage.Type),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

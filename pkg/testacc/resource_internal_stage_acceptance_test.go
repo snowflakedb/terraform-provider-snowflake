@@ -214,7 +214,7 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 						HasDirectoryEnableString(r.BooleanTrue).
 						HasEncryptionSnowflakeSse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasStageTypeEnum(sdk.StageTypeInternal),
+						HasStageTypeEnum(sdk.StageTypeInternalNoCse),
 					resourceshowoutputassert.StageShowOutput(t, modelSseEncryptionWithDirectoryTableAndComment.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -245,7 +245,7 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 						HasDirectoryEmpty().
 						HasEncryptionSnowflakeSse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasStageTypeEnum(sdk.StageTypeInternal),
+						HasStageTypeEnum(sdk.StageTypeInternalNoCse),
 					resourceshowoutputassert.StageShowOutput(t, modelSseEncryptionWithComment.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -276,7 +276,7 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 						HasDirectoryEmpty().
 						HasEncryptionSnowflakeSse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasStageTypeEnum(sdk.StageTypeInternal),
+						HasStageTypeEnum(sdk.StageTypeInternalNoCse),
 					resourceshowoutputassert.StageShowOutput(t, modelSseEncryption.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).

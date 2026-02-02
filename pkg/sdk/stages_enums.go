@@ -84,3 +84,8 @@ func (s StageType) Canonical() StageType {
 		return s
 	}
 }
+
+var AcceptableStageTypes = map[StageType][]StageType{
+	StageTypeInternal: {StageTypeInternal, StageTypeInternalNoCse},
+	StageTypeExternal: {StageTypeExternal},
+}
