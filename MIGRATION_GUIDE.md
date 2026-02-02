@@ -109,6 +109,18 @@ Note: `auto_suspend` still uses `SET` with the default value (600) as a workarou
 
 No changes in the configuration is required.
 
+### *(bugfix)* Fixed `snowflake_system_get_privatelink_config` and `snowflake_system_get_aws_sns_iam_policy` data sources with `QUOTED_IDENTIFIERS_IGNORE_CASE` enabled
+
+Previously, both data sources returned null values for all fields when an account had the `QUOTED_IDENTIFIERS_IGNORE_CASE` parameter set to `true`. This was caused by a case mismatch between the SQL column aliases and the internal struct field mappings.
+
+The data sources now work correctly regardless of the `QUOTED_IDENTIFIERS_IGNORE_CASE` setting.
+
+Note that these data sources are still in preview.
+
+No changes in configuration are required.
+
+References: [#1630](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1630)
+
 ### *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
 Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.
 
