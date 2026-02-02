@@ -22,6 +22,6 @@ jobs:
             "data": {
               "summary": "terraform-provider-snowflake issue ${{ github.event.issue.number }}",
               "description": "",
-              "parent": "${{  secrets.JIRA_ISSUES_EPIC }}"
+              "parent": "${{ secrets.JIRA_ISSUES_EPIC }}"
             }
           }'

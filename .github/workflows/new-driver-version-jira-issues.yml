@@ -22,13 +22,13 @@ jobs:
           curl --location --request POST '${{ secrets.JIRA_WEBHOOK_URL }}' \
           --header 'X-Automation-Webhook-Token: ${{ secrets.JIRA_WEBHOOK_TOKEN }}' \
           --header 'Content-Type: application/json' \
-          --data-raw '{
-            "issues": [
-              "${{ secrets.JIRA_NEW_DRIVER_VERSIONS_EPIC }}"
+          --data-raw "{
+            \"issues\": [
+              \"${{ secrets.JIRA_PROJECT_NEW_DRIVER_VERSIONS }}\"
             ],
-            "data": {
-              "summary": "${formatted_title}",
-              "description": "",
-              "parent": "${{ secrets.JIRA_NEW_DRIVER_VERSIONS_EPIC }}"
+            \"data\": {
+              \"summary\": \"${formatted_title}\",
+              \"description\": \"\",
+              \"parent\": \"${{ secrets.JIRA_PROJECT_NEW_DRIVER_VERSIONS }}\"
             }
-          }'
+          }"
