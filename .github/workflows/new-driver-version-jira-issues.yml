@@ -9,6 +9,8 @@ jobs:
     environment: jira
     runs-on: ubuntu-latest
     name: Create an issue
+    permissions:
+      pull-requests: read
     if: >
       github.event.pull_request.user.login == 'dependabot[bot]' &&
       contains(github.event.pull_request.title, 'github.com/snowflakedb/gosnowflake')
