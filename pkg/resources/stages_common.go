@@ -97,13 +97,15 @@ func handleStageDirectoryTable(ctx context.Context, client *sdk.Client, d *schem
 	return nil
 }
 
-var DeleteStage = PreviewFeatureDeleteContextWrapper(
-	string(previewfeatures.InternalStageResource),
-	TrackingDeleteWrapper(
-		resources.InternalStage,
-		ResourceDeleteContextFunc(
-			sdk.ParseSchemaObjectIdentifier,
-			func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Stages.DropSafely },
+func DeleteStage(previewFeature previewfeatures.PreviewFeature, resource resources.Resource) schema.DeleteContextFunc {
+	return PreviewFeatureDeleteContextWrapper(
+		previewFeature.String(),
+		TrackingDeleteWrapper(
+			resource,
+			ResourceDeleteContextFunc(
+				sdk.ParseSchemaObjectIdentifier,
+				func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Stages.DropSafely },
+			),
 		),
-	),
-)
+	)
+}

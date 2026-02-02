@@ -1839,25 +1839,3 @@ func TestStages_ToStageType(t *testing.T) {
 		})
 	}
 }
-
-func TestStageType_Canonical(t *testing.T) {
-	tests := []struct {
-		input StageType
-		want  StageType
-	}{
-		{input: StageTypeInternal, want: StageTypeInternal},
-		{input: StageTypeInternalNoCse, want: StageTypeInternal},
-
-		{input: StageTypeInternalTemporary, want: StageTypeInternalTemporary},
-
-		{input: StageTypeExternal, want: StageTypeExternal},
-
-		{input: StageTypeExternalTemporary, want: StageTypeExternalTemporary},
-	}
-	for _, tt := range tests {
-		t.Run(string(tt.input), func(t *testing.T) {
-			got := tt.input.Canonical()
-			require.Equal(t, tt.want, got)
-		})
-	}
-}

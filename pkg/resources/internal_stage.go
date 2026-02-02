@@ -92,7 +92,7 @@ func InternalStage() *schema.Resource {
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.InternalStageResource), TrackingCreateWrapper(resources.InternalStage, CreateInternalStage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.InternalStageResource), TrackingReadWrapper(resources.InternalStage, ReadInternalStageFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.InternalStageResource), TrackingUpdateWrapper(resources.InternalStage, UpdateInternalStage)),
-		DeleteContext: DeleteStage,
+		DeleteContext: DeleteStage(previewfeatures.InternalStageResource, resources.InternalStage),
 		Description:   "Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.InternalStage, customdiff.All(

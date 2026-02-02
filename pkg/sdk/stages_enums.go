@@ -70,21 +70,6 @@ func ToStageType(s string) (StageType, error) {
 	return StageType(s), nil
 }
 
-func (s StageType) Canonical() StageType {
-	switch s {
-	case StageTypeInternalNoCse, StageTypeInternal:
-		return StageTypeInternal
-	case StageTypeInternalTemporary:
-		return StageTypeInternalTemporary
-	case StageTypeExternal:
-		return StageTypeExternal
-	case StageTypeExternalTemporary:
-		return StageTypeExternalTemporary
-	default:
-		return s
-	}
-}
-
 var AcceptableStageTypes = map[StageType][]StageType{
 	StageTypeInternal: {StageTypeInternal, StageTypeInternalNoCse},
 	StageTypeExternal: {StageTypeExternal},

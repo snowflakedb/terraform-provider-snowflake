@@ -548,7 +548,7 @@ func (r stageShowRow) convert() (*Stage, error) {
 	}
 	stageType, err := ToStageType(r.Type)
 	if err != nil {
-		return nil, fmt.Errorf("error converting stage type: %w", err)
+		return nil, err
 	}
 	stage.Type = stageType
 	if r.Region.Valid {

@@ -232,3 +232,14 @@ func IsPromotedFeature(rawFeature string) bool {
 		return strings.EqualFold(rawFeature, s)
 	})
 }
+
+type PreviewFeature interface {
+	xxxProtected()
+	String() string
+}
+
+func (f feature) xxxProtected() {}
+
+func (f feature) String() string {
+	return string(f)
+}
