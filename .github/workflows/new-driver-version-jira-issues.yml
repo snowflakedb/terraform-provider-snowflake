@@ -1,0 +1,33 @@
+name: Notify about new driver version
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  jira-new-driver-version:
+    environment: jira
+    runs-on: ubuntu-latest
+    name: Create an issue
+    if: >
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      contains(github.event.pull_request.title, 'github.com/snowflakedb/gosnowflake')
+    steps:
+      - name: Curl to webhook
+        run: |
+          raw_title = "${{ github.event.pull_request.title }}"
+          formatted_title = "Go Driver Upgrade: ${raw_title#chore(deps): }"
+          
+          curl --location --request POST '${{ secrets.JIRA_WEBHOOK_URL }}' \
+          --header 'X-Automation-Webhook-Token: ${{ secrets.JIRA_WEBHOOK_TOKEN }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "issues": [
+              "${{ secrets.JIRA_PROJECT_NEW_DRIVER_VERSIONS }}"
+            ],
+            "data": {
+              "summary": "${formatted_title}",
+              "description": "",
+              "parent": "${{ secrets.JIRA_PROJECT_NEW_DRIVER_VERSIONS }}"
+            }
+          }'
