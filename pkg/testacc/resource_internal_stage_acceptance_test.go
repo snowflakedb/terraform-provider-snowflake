@@ -38,9 +38,16 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 		WithDirectoryEnabled(r.BooleanFalse).
 		WithEncryptionSnowflakeFull()
 
-	modelForceNewEncryption := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
+	modelSseEncryptionWithDirectoryTableAndComment := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
 		WithComment(changedComment).
-		WithDirectoryEnabled(r.BooleanFalse).
+		WithDirectoryEnabled(r.BooleanTrue).
+		WithEncryptionSnowflakeSse()
+
+	modelSseEncryptionWithComment := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
+		WithComment(changedComment).
+		WithEncryptionSnowflakeSse()
+
+	modelSseEncryption := model.InternalStage("test", TestDatabaseName, TestSchemaName, id.Name()).
 		WithEncryptionSnowflakeSse()
 
 	resource.Test(t, resource.TestCase{
@@ -192,23 +199,54 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 			},
 			// ForceNew - encryption change (requires recreate)
 			{
-				Config: accconfig.FromModels(t, modelForceNewEncryption),
+				Config: accconfig.FromModels(t, modelSseEncryptionWithDirectoryTableAndComment),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelForceNewEncryption.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(modelSseEncryptionWithDirectoryTableAndComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.InternalStageResource(t, modelForceNewEncryption.ResourceReference()).
+					resourceassert.InternalStageResource(t, modelSseEncryptionWithDirectoryTableAndComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasCommentString(changedComment).
-						HasDirectoryEnableString(r.BooleanFalse).
+						HasDirectoryEnableString(r.BooleanTrue).
 						HasEncryptionSnowflakeSse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasStageTypeEnum(sdk.StageTypeInternal),
-					resourceshowoutputassert.StageShowOutput(t, modelForceNewEncryption.ResourceReference()).
+					resourceshowoutputassert.StageShowOutput(t, modelSseEncryptionWithDirectoryTableAndComment.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeInternalNoCse).
+						HasComment(changedComment).
+						HasDirectoryEnabled(true).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelSseEncryptionWithDirectoryTableAndComment.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelSseEncryptionWithDirectoryTableAndComment.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
+			// ForceNew - unset directorytable
+			{
+				Config: accconfig.FromModels(t, modelSseEncryptionWithComment),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelSseEncryptionWithComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.InternalStageResource(t, modelSseEncryptionWithComment.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(changedComment).
+						HasDirectoryEmpty().
+						HasEncryptionSnowflakeSse().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeInternal),
+					resourceshowoutputassert.StageShowOutput(t, modelSseEncryptionWithComment.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
@@ -217,8 +255,39 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 						HasDirectoryEnabled(false).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasCreatedOnNotEmpty(),
-					assert.Check(resource.TestCheckResourceAttr(modelForceNewEncryption.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelForceNewEncryption.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelSseEncryptionWithComment.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelSseEncryptionWithComment.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
+			// Unset comment
+			{
+				Config: accconfig.FromModels(t, modelSseEncryption),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelSseEncryption.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.InternalStageResource(t, modelSseEncryption.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString("").
+						HasDirectoryEmpty().
+						HasEncryptionSnowflakeSse().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeInternal),
+					resourceshowoutputassert.StageShowOutput(t, modelSseEncryption.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeInternalNoCse).
+						HasCommentEmpty().
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelSseEncryption.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelSseEncryption.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 		},

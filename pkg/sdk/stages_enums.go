@@ -72,10 +72,14 @@ func ToStageType(s string) (StageType, error) {
 
 func (s StageType) Canonical() StageType {
 	switch s {
-	case StageTypeInternalNoCse, StageTypeInternal, StageTypeInternalTemporary:
+	case StageTypeInternalNoCse, StageTypeInternal:
 		return StageTypeInternal
-	case StageTypeExternal, StageTypeExternalTemporary:
+	case StageTypeInternalTemporary:
+		return StageTypeInternalTemporary
+	case StageTypeExternal:
 		return StageTypeExternal
+	case StageTypeExternalTemporary:
+		return StageTypeExternalTemporary
 	default:
 		return s
 	}

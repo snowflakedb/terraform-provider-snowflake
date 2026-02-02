@@ -15,6 +15,14 @@ const (
 )
 
 func handleExternalChangesToObject(d *schema.ResourceData, outputAttributeName string, mappings ...outputMapping) error {
+	return handleExternalChangesToObjectCmp(d, outputAttributeName, func(a, b any) bool { return a == b }, mappings...)
+}
+
+func handleExternalChangesToObjectDeepEqual(d *schema.ResourceData, outputAttributeName string, mappings ...outputMapping) error {
+	return handleExternalChangesToObjectCmp(d, outputAttributeName, reflect.DeepEqual, mappings...)
+}
+
+func handleExternalChangesToObjectCmp(d *schema.ResourceData, outputAttributeName string, cmpFunc func(any, any) bool, mappings ...outputMapping) error {
 	if output, ok := d.GetOk(outputAttributeName); ok {
 		outputList := output.([]any)
 		if len(outputList) == 1 {
@@ -24,7 +32,7 @@ func handleExternalChangesToObject(d *schema.ResourceData, outputAttributeName s
 				if mapping.normalizeFunc != nil {
 					valueToCompareFrom = mapping.normalizeFunc(valueToCompareFrom)
 				}
-				if valueToCompareFrom != mapping.valueToCompare {
+				if !cmpFunc(valueToCompareFrom, mapping.valueToCompare) {
 					if err := d.Set(mapping.nameInConfig, mapping.valueToSet); err != nil {
 						return err
 					}
@@ -35,29 +43,8 @@ func handleExternalChangesToObject(d *schema.ResourceData, outputAttributeName s
 	return nil
 }
 
-func handleExternalChangesToObject2(d *schema.ResourceData, outputAttributeName string, mappings ...outputMapping) error {
-	if output, ok := d.GetOk(outputAttributeName); ok {
-		outputList := output.([]any)
-		if len(outputList) == 1 {
-			result := outputList[0].(map[string]any)
-			for _, mapping := range mappings {
-				valueToCompareFrom := result[mapping.nameInOutput]
-				if mapping.normalizeFunc != nil {
-					valueToCompareFrom = mapping.normalizeFunc(valueToCompareFrom)
-				}
-				if !reflect.DeepEqual(valueToCompareFrom, mapping.valueToCompare) {
-					if err := d.Set(mapping.nameInConfig, mapping.valueToSet); err != nil {
-						return err
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func handleExternalChangesToObjectInFlatDescribe2(d *schema.ResourceData, mappings ...outputMapping) error {
-	return handleExternalChangesToObject2(d, DescribeOutputAttributeName, mappings...)
+func handleExternalChangesToObjectInFlatDescribeDeepEqual(d *schema.ResourceData, mappings ...outputMapping) error {
+	return handleExternalChangesToObjectDeepEqual(d, DescribeOutputAttributeName, mappings...)
 }
 
 // handleExternalChangesToObjectInShow assumes that show output is kept in ShowOutputAttributeName attribute

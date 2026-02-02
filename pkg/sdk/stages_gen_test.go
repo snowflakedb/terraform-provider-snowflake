@@ -1847,9 +1847,12 @@ func TestStageType_Canonical(t *testing.T) {
 	}{
 		{input: StageTypeInternal, want: StageTypeInternal},
 		{input: StageTypeInternalNoCse, want: StageTypeInternal},
-		{input: StageTypeInternalTemporary, want: StageTypeInternal},
+
+		{input: StageTypeInternalTemporary, want: StageTypeInternalTemporary},
+
 		{input: StageTypeExternal, want: StageTypeExternal},
-		{input: StageTypeExternalTemporary, want: StageTypeExternal},
+
+		{input: StageTypeExternalTemporary, want: StageTypeExternalTemporary},
 	}
 	for _, tt := range tests {
 		t.Run(string(tt.input), func(t *testing.T) {
