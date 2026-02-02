@@ -16,8 +16,8 @@ jobs:
     steps:
       - name: Curl to webhook
         run: |
-          raw_title = "${{ github.event.pull_request.title }}"
-          formatted_title = "Go Driver Upgrade: ${raw_title#chore(deps): }"
+          raw_title="${{ github.event.pull_request.title }}"
+          formatted_title="Go Driver Upgrade: ${raw_title#chore(deps): }"
           
           curl --location --request POST '${{ secrets.JIRA_WEBHOOK_URL }}' \
           --header 'X-Automation-Webhook-Token: ${{ secrets.JIRA_WEBHOOK_TOKEN }}' \
