@@ -265,7 +265,7 @@ type TagAssociationRequest struct {
 }
 
 type LegacyFileFormatTypeOptionsRequest struct {
-	CSVCompression                *CSVCompression
+	CSVCompression                *CsvCompression
 	CSVRecordDelimiter            *string
 	CSVFieldDelimiter             *string
 	CSVFileExtension              *string
@@ -285,10 +285,10 @@ type LegacyFileFormatTypeOptionsRequest struct {
 	CSVReplaceInvalidCharacters   *bool
 	CSVEmptyFieldAsNull           *bool
 	CSVSkipByteOrderMark          *bool
-	CSVEncoding                   *CSVEncoding
+	CSVEncoding                   *CsvEncoding
 
 	// JSON type options
-	JSONCompression              *JSONCompression
+	JSONCompression              *JsonCompression
 	JSONDateFormat               *string
 	JSONTimeFormat               *string
 	JSONTimestampFormat          *string
@@ -324,7 +324,7 @@ type LegacyFileFormatTypeOptionsRequest struct {
 	ParquetNullIf                   *[]NullString
 
 	// XML type options
-	XMLCompression              *XMLCompression
+	XMLCompression              *XmlCompression
 	XMLIgnoreUTF8Errors         *bool
 	XMLPreserveSpace            *bool
 	XMLStripOuterElement        *bool

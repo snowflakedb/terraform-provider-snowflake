@@ -438,7 +438,8 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 
 func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -571,7 +572,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			handleUserParameterRead(d, userParameters),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.UserToSchema(u)}),
-			d.Set(ParametersAttributeName, []map[string]any{schemas.UserParametersToSchema(userParameters)}),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.UserParametersToSchema(userParameters, providerCtx)}),
 		)
 		if errs != nil {
 			return diag.FromErr(err)

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -179,6 +180,7 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 
 	accountRoleModelWithComment := model.AccountRole("role", id.Name()).
 		WithComment(comment)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -187,9 +189,9 @@ func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t
 		CheckDestroy: CheckDestroy(t, resources.AccountRole),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, accountRoleModelWithComment),
+				Config:            providerConfig + accconfig.FromModels(t, accountRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "id", id.Name()),
 				),
@@ -213,6 +215,7 @@ func TestAcc_AccountRole_WithQuotedName(t *testing.T) {
 
 	accountRoleModelWithComment := model.AccountRole("role", quotedId).
 		WithComment(comment)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -221,10 +224,10 @@ func TestAcc_AccountRole_WithQuotedName(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.AccountRole),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, accountRoleModelWithComment),
+				Config:             providerConfig + accconfig.FromModels(t, accountRoleModelWithComment),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_account_role.role", "id", id.Name()),

@@ -120,6 +120,48 @@ func Test_SkipTestIfSetTo(t *testing.T) {
 	})
 }
 
+func Test_SkipTestIfValueIn(t *testing.T) {
+	// runSkipTestIfValueInInGoroutineAndWaitForCompletion is needed because underneath we test t.Skipf, that leads to t.SkipNow() that in turn call runtime.Goexit()
+	// so we need to be wrapped in a Goroutine.
+	runSkipTestIfValueInInGoroutineAndWaitForCompletion := func(t *testing.T, env testenvs.Env, values []string) {
+		t.Helper()
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			testenvs.SkipTestIfValueIn(t, env, values, "some good reason")
+		}()
+		wg.Wait()
+	}
+
+	t.Run("skip test if env is set to one of the values", func(t *testing.T) {
+		t.Setenv(string(testenvs.BusinessCriticalAccount), "value2")
+
+		tut := &testing.T{}
+		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, []string{"value1", "value2", "value3"})
+
+		require.True(t, tut.Skipped())
+	})
+
+	t.Run("do not skip if env is set to value not in list", func(t *testing.T) {
+		t.Setenv(string(testenvs.BusinessCriticalAccount), "different_value")
+
+		tut := &testing.T{}
+		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, []string{"value1", "value2", "value3"})
+
+		require.False(t, tut.Skipped())
+	})
+
+	t.Run("do not skip if env not set", func(t *testing.T) {
+		t.Setenv(string(testenvs.BusinessCriticalAccount), "")
+
+		tut := &testing.T{}
+		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, []string{"value1", "value2", "value3"})
+
+		require.False(t, tut.Skipped())
+	})
+}
+
 func Test_Assertions(t *testing.T) {
 	// runAssertionInGoroutineAndWaitForCompletion is needed because underneath we test require, that leads to t.FailNow() that in turn call runtime.Goexit()
 	// so we need to be wrapped in a Goroutine.

@@ -42,6 +42,13 @@ func TestInt_Warehouses(t *testing.T) {
 		time.Sleep(3 * time.Second)
 	}
 
+	warehouseCondition := func(id sdk.AccountObjectIdentifier, pred func(r *sdk.Warehouse) bool) func() bool {
+		return func() bool {
+			r, e := client.Warehouses.ShowByID(ctx, id)
+			return e == nil && pred(r)
+		}
+	}
+
 	t.Run("show: without options", func(t *testing.T) {
 		warehouses, err := client.Warehouses.Show(ctx, nil)
 		require.NoError(t, err)
@@ -414,18 +421,18 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		t.Cleanup(warehouseCleanup)
 
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
-		require.Eventually(t, func() bool { return sdk.WarehouseStateStarted == returnedWarehouse.State }, 5*time.Second, time.Second)
+		condition := warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool {
+			return r.State == sdk.WarehouseStateStarted && r.Type == sdk.WarehouseTypeStandard
+		})
+		require.Eventually(t, condition, 5*time.Second, time.Second)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
 			Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(sdk.WarehouseTypeSnowparkOptimized)},
 		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
+		err := client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
 		require.NoError(t, err)
 
-		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
 		assert.Equal(t, sdk.WarehouseTypeSnowparkOptimized, returnedWarehouse.Type)
 		assert.Contains(t, []any{sdk.WarehouseStateStarted, sdk.WarehouseStateResuming}, returnedWarehouse.State)
@@ -840,11 +847,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, 1, result.Running)
 		assert.Equal(t, 0, result.Queued)
 
-		warehouseSuspended := func() bool {
-			r, e := client.Warehouses.ShowByID(ctx, warehouse.ID())
-			return e == nil && r.State == sdk.WarehouseStateSuspended
-		}
-		assert.Eventually(t, warehouseSuspended, 10*time.Second, time.Second)
+		condition := warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool { return r.State == sdk.WarehouseStateSuspended })
+		require.Eventually(t, condition, 10*time.Second, time.Second)
 	})
 
 	t.Run("alter: resize with a long running-query", func(t *testing.T) {

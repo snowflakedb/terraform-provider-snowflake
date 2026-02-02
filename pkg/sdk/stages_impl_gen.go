@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -124,7 +125,6 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 		Temporary:   r.Temporary,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		FileFormat:  r.FileFormat,
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
@@ -143,6 +143,12 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 			AutoRefresh: r.DirectoryTableOptions.AutoRefresh,
 		}
 	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
+		}
+	}
 	return opts
 }
 
@@ -152,7 +158,6 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 		Temporary:   r.Temporary,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		FileFormat:  r.FileFormat,
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
@@ -196,6 +201,12 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 			AutoRefresh:     r.DirectoryTableOptions.AutoRefresh,
 		}
 	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
+		}
+	}
 	return opts
 }
 
@@ -205,7 +216,6 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 		Temporary:   r.Temporary,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		FileFormat:  r.FileFormat,
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
@@ -232,6 +242,12 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 			NotificationIntegration: r.DirectoryTableOptions.NotificationIntegration,
 		}
 	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
+		}
+	}
 	return opts
 }
 
@@ -241,7 +257,6 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 		Temporary:   r.Temporary,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		FileFormat:  r.FileFormat,
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
@@ -274,6 +289,12 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 			NotificationIntegration: r.DirectoryTableOptions.NotificationIntegration,
 		}
 	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
+		}
+	}
 	return opts
 }
 
@@ -283,7 +304,6 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 		Temporary:   r.Temporary,
 		IfNotExists: r.IfNotExists,
 		name:        r.name,
-		FileFormat:  r.FileFormat,
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
@@ -304,6 +324,12 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 			AutoRefresh:     r.DirectoryTableOptions.AutoRefresh,
 		}
 	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
+		}
+	}
 	return opts
 }
 
@@ -320,20 +346,24 @@ func (r *AlterStageRequest) toOpts() *AlterStageOptions {
 
 func (r *AlterInternalStageStageRequest) toOpts() *AlterInternalStageStageOptions {
 	opts := &AlterInternalStageStageOptions{
-		IfExists:   r.IfExists,
-		name:       r.name,
-		FileFormat: r.FileFormat,
-		Comment:    r.Comment,
+		IfExists: r.IfExists,
+		name:     r.name,
+		Comment:  r.Comment,
+	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
+		}
 	}
 	return opts
 }
 
 func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOptions {
 	opts := &AlterExternalS3StageStageOptions{
-		IfExists:   r.IfExists,
-		name:       r.name,
-		FileFormat: r.FileFormat,
-		Comment:    r.Comment,
+		IfExists: r.IfExists,
+		name:     r.name,
+		Comment:  r.Comment,
 	}
 	if r.ExternalStageParams != nil {
 		opts.ExternalStageParams = &ExternalS3StageParams{
@@ -370,15 +400,20 @@ func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOp
 			}
 		}
 	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
+		}
+	}
 	return opts
 }
 
 func (r *AlterExternalGCSStageStageRequest) toOpts() *AlterExternalGCSStageStageOptions {
 	opts := &AlterExternalGCSStageStageOptions{
-		IfExists:   r.IfExists,
-		name:       r.name,
-		FileFormat: r.FileFormat,
-		Comment:    r.Comment,
+		IfExists: r.IfExists,
+		name:     r.name,
+		Comment:  r.Comment,
 	}
 	if r.ExternalStageParams != nil {
 		opts.ExternalStageParams = &ExternalGCSStageParams{
@@ -397,15 +432,20 @@ func (r *AlterExternalGCSStageStageRequest) toOpts() *AlterExternalGCSStageStage
 			}
 		}
 	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
+		}
+	}
 	return opts
 }
 
 func (r *AlterExternalAzureStageStageRequest) toOpts() *AlterExternalAzureStageStageOptions {
 	opts := &AlterExternalAzureStageStageOptions{
-		IfExists:   r.IfExists,
-		name:       r.name,
-		FileFormat: r.FileFormat,
-		Comment:    r.Comment,
+		IfExists: r.IfExists,
+		name:     r.name,
+		Comment:  r.Comment,
 	}
 	if r.ExternalStageParams != nil {
 		opts.ExternalStageParams = &ExternalAzureStageParams{
@@ -428,6 +468,12 @@ func (r *AlterExternalAzureStageStageRequest) toOpts() *AlterExternalAzureStageS
 			if r.ExternalStageParams.Encryption.None != nil {
 				opts.ExternalStageParams.Encryption.None = &ExternalStageAzureEncryptionNone{}
 			}
+		}
+	}
+	if r.FileFormat != nil {
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -508,7 +554,11 @@ func (r stageShowRow) convert() (*Stage, error) {
 		stage.Cloud = &r.Cloud.String
 	}
 	if r.StorageIntegration.Valid {
-		stage.StorageIntegration = &r.StorageIntegration.String
+		id, err := ParseAccountObjectIdentifier(r.StorageIntegration.String)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse storage integration: %w", err)
+		}
+		stage.StorageIntegration = &id
 	}
 	if r.Endpoint.Valid {
 		stage.Endpoint = &r.Endpoint.String

@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -344,6 +345,7 @@ func TestAcc_NetworkPolicy_Issue2236(t *testing.T) {
 	networkPolicyWithNetworkRules := model.NetworkPolicy("test", id.Name()).
 		WithAllowedNetworkRulesUnquotedNamePart(allowedNetworkRuleId1, allowedNetworkRuleId2).
 		WithBlockedNetworkRulesUnquotedNamePart(blockedNetworkRuleId1, blockedNetworkRuleId2)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -356,9 +358,9 @@ func TestAcc_NetworkPolicy_Issue2236(t *testing.T) {
 				// Identifier quoting mismatch (no diff suppression)
 				ExpectNonEmptyPlan: true,
 				PreConfig: func() {
-					func() { SetV097CompatibleConfigPathEnv(t) }()
+					func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) }()
 				},
-				Config: accconfig.FromModels(t, networkPolicyWithNetworkRules),
+				Config: providerConfig + accconfig.FromModels(t, networkPolicyWithNetworkRules),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(networkPolicyWithNetworkRules.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(networkPolicyWithNetworkRules.ResourceReference(), "allowed_network_rule_list.#", "2"),
@@ -391,6 +393,7 @@ func TestAcc_NetworkPolicy_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	networkPolicyModelBasic := model.NetworkPolicy("test", id.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -399,9 +402,9 @@ func TestAcc_NetworkPolicy_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId
 		CheckDestroy: CheckDestroy(t, resources.NetworkPolicy),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, networkPolicyModelBasic),
+				Config:            providerConfig + accconfig.FromModels(t, networkPolicyModelBasic),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(networkPolicyModelBasic.ResourceReference(), "id", id.Name()),
 				),
@@ -420,6 +423,7 @@ func TestAcc_NetworkPolicy_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId
 
 func TestAcc_NetworkPolicy_WithQuotedName(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -428,10 +432,10 @@ func TestAcc_NetworkPolicy_WithQuotedName(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.NetworkPolicy),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             networkPolicyConfigBasicWithQuotedName(id),
+				Config:             providerConfig + networkPolicyConfigBasicWithQuotedName(id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_network_policy.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_network_policy.test", "id", id.Name()),

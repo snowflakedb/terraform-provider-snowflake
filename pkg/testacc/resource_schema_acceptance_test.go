@@ -434,6 +434,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 	t.Cleanup(cleanupDb)
 
 	schemaId := testClient().Ids.NewDatabaseObjectIdentifierInDatabase("PUBLIC", db.ID())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -443,14 +444,14 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 		Steps: []resource.TestStep{
 			// PUBLIC can not be created in v0.93
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            schemaV093(schemaId),
+				Config:            providerConfig + schemaV093(schemaId),
 				ExpectError:       regexp.MustCompile("Error: error creating schema PUBLIC"),
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.0"),
-				Config:            schemaV094WithPipeExecutionPaused(schemaId, true),
+				Config:            providerConfig + schemaV094WithPipeExecutionPaused(schemaId, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_schema.test", "name", schemaId.Name()),
 					resource.TestCheckResourceAttr("snowflake_schema.test", "database", schemaId.DatabaseName()),
@@ -474,7 +475,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 					require.Zero(t, schemas[0].DroppedOn)
 					require.NotZero(t, schemas[1].DroppedOn)
 				},
-				Config: schemaV094WithPipeExecutionPaused(schemaId, false),
+				Config: providerConfig + schemaV094WithPipeExecutionPaused(schemaId, false),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("snowflake_schema.test", plancheck.ResourceActionUpdate),
@@ -496,6 +497,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_1(t *testing.T) {
 	t.Cleanup(cleanupDb)
 
 	schemaId := testClient().Ids.NewDatabaseObjectIdentifierInDatabase("PUBLIC", db.ID())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -505,9 +507,9 @@ func TestAcc_Schema_ManagePublicVersion_0_94_1(t *testing.T) {
 		Steps: []resource.TestStep{
 			// PUBLIC can not be created in v0.93
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            schemaV093(schemaId),
+				Config:            providerConfig + schemaV093(schemaId),
 				ExpectError:       regexp.MustCompile("Error: error creating schema PUBLIC"),
 			},
 			{
@@ -868,6 +870,7 @@ func checkDatabaseAndSchemaDataRetentionTime(t *testing.T, schemaId sdk.Database
 
 func TestAcc_Schema_migrateFromVersion093WithoutManagedAccess(t *testing.T) {
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_schema.test"
 	resource.Test(t, resource.TestCase{
@@ -877,9 +880,9 @@ func TestAcc_Schema_migrateFromVersion093WithoutManagedAccess(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            schemaV093(id),
+				Config:            providerConfig + schemaV093(id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "is_managed", "false"),
@@ -903,6 +906,7 @@ func TestAcc_Schema_migrateFromVersion093(t *testing.T) {
 	t.Cleanup(tagCleanup)
 
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_schema.test"
 	resource.Test(t, resource.TestCase{
@@ -912,9 +916,9 @@ func TestAcc_Schema_migrateFromVersion093(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            schemaV093WithIsManagedAndDataRetentionDays(id, tag.ID(), "foo", true, 10),
+				Config:            providerConfig + schemaV093WithIsManagedAndDataRetentionDays(id, tag.ID(), "foo", true, 10),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "is_managed", "true"),
@@ -1001,6 +1005,7 @@ func TestAcc_Schema_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *tes
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
 
 	basicSchemaModel := model.Schema("test", id.DatabaseName(), id.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1009,9 +1014,9 @@ func TestAcc_Schema_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *tes
 		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, basicSchemaModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicSchemaModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(id)),
 				),
@@ -1034,6 +1039,7 @@ func TestAcc_Schema_IdentifierQuotingDiffSuppression(t *testing.T) {
 	quotedName := fmt.Sprintf(`"%s"`, id.Name())
 
 	basicSchemaModelWithQuotes := model.Schema("test", quotedDatabaseName, quotedName)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1042,10 +1048,10 @@ func TestAcc_Schema_IdentifierQuotingDiffSuppression(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, basicSchemaModelWithQuotes),
+				Config:             providerConfig + accconfig.FromModels(t, basicSchemaModelWithQuotes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicSchemaModelWithQuotes.ResourceReference(), "database", id.DatabaseName()),
 					resource.TestCheckResourceAttr(basicSchemaModelWithQuotes.ResourceReference(), "name", id.Name()),

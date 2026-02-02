@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	resourcenames "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -545,6 +546,7 @@ func TestAcc_OauthIntegrationForCustomClients_Invalid(t *testing.T) {
 func TestAcc_OauthIntegrationForCustomClients_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	validUrl := "https://example.com"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	basicModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
@@ -556,9 +558,9 @@ func TestAcc_OauthIntegrationForCustomClients_migrateFromV0941_ensureSmoothUpgra
 		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForCustomClients),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, basicModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),
 				),
@@ -579,6 +581,7 @@ func TestAcc_OauthIntegrationForCustomClients_WithQuotedName(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
 	validUrl := "https://example.com"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	basicModel := model.OauthIntegrationForCustomClients("test", quotedId, string(sdk.OauthSecurityIntegrationClientTypeConfidential), validUrl).
 		WithBlockedRolesList("ACCOUNTADMIN", "SECURITYADMIN")
@@ -590,10 +593,10 @@ func TestAcc_OauthIntegrationForCustomClients_WithQuotedName(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForCustomClients),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, basicModel),
+				Config:             providerConfig + accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),

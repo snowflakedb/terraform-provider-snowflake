@@ -6,7 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO(SNOW-1019005): use a custom file format struct with a nice nesting
 // TODO(SNOW-1019005): generate assertions
 // TODO(SNOW-1019005): add parsers for DESC output and return a nice struct; use them in integration tests assertions
 // TODO(SNOW-1019005): improve integration tests
@@ -20,8 +19,14 @@ func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Qu
 		Name()
 	qs = apply(qs)
 	return qs.
-		// OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-		PredefinedQueryStructField("FileFormat", "*LegacyFileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		OptionalQueryStructField(
+			"FileFormat",
+			g.NewQueryStruct("StageFileFormat").
+				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
+				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
+				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
+			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
+		).
 		OptionalComment().
 		OptionalTags().
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists")
@@ -36,8 +41,14 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		SQL("SET")
 	qs = apply(qs)
 	return qs.
-		// OptionalQueryStructField("FileFormat", fileFormatDef, g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-		PredefinedQueryStructField("FileFormat", "*LegacyFileFormat", g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
+		OptionalQueryStructField(
+			"FileFormat",
+			g.NewQueryStruct("StageFileFormat").
+				OptionalIdentifier("FormatName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FORMAT_NAME =")).
+				PredefinedQueryStructField("FileFormatOptions", "*FileFormatOptions", g.ListOptions()).
+				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
+			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
+		).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name")
 }
@@ -395,7 +406,7 @@ var stagesDef = g.NewInterface(
 			Field("Type", "string").
 			Field("Cloud", "*string").
 			// notification_channel is deprecated in Snowflake.
-			Field("StorageIntegration", "*string").
+			Field("StorageIntegration", "*AccountObjectIdentifier").
 			Field("Endpoint", "*string").
 			Field("OwnerRoleType", "*string").
 			Field("DirectoryEnabled", "bool"),
