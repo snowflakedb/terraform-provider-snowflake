@@ -37,15 +37,15 @@ func ExternalGcsStage(
 	database string,
 	schema string,
 	name string,
-	url string,
 	storageIntegration string,
+	url string,
 ) *ExternalGcsStageModel {
 	e := &ExternalGcsStageModel{ResourceModelMeta: config.Meta(resourceName, resources.ExternalGcsStage)}
 	e.WithDatabase(database)
 	e.WithSchema(schema)
 	e.WithName(name)
-	e.WithUrl(url)
 	e.WithStorageIntegration(storageIntegration)
+	e.WithUrl(url)
 	return e
 }
 
@@ -53,15 +53,15 @@ func ExternalGcsStageWithDefaultMeta(
 	database string,
 	schema string,
 	name string,
-	url string,
 	storageIntegration string,
+	url string,
 ) *ExternalGcsStageModel {
 	e := &ExternalGcsStageModel{ResourceModelMeta: config.DefaultMeta(resources.ExternalGcsStage)}
 	e.WithDatabase(database)
 	e.WithSchema(schema)
 	e.WithName(name)
-	e.WithUrl(url)
 	e.WithStorageIntegration(storageIntegration)
+	e.WithUrl(url)
 	return e
 }
 

@@ -93,7 +93,7 @@ var externalGcsStageSchema = func() map[string]*schema.Schema {
 						ValidateDiagFunc: validateBooleanString,
 						Optional:         true,
 						Description:      "Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.",
-						DiffSuppressFunc: ignoreNestedBooleanDefault,
+						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.directory_table", "auto_refresh"),
 					},
 					"notification_integration": {
 						Type:             schema.TypeString,

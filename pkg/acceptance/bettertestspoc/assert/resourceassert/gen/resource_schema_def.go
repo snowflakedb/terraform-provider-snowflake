@@ -78,6 +78,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ExternalAzureStage().Schema,
 	},
 	{
+		name:   "ExternalGcsStage",
+		schema: resources.ExternalGcsStage().Schema,
+	},
+	{
 		name:   "ExternalVolume",
 		schema: resources.ExternalVolume().Schema,
 	},

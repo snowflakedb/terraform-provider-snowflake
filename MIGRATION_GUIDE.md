@@ -34,7 +34,7 @@ The newly introduced resources are aligned with the latest Snowflake documentati
 
 These features are in preview. To use them, add `snowflake_internal_stage_resource`, `snowflake_external_gcs_stage_resource` or `snowflake_external_azure_stage_resource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
 
-The existing `snowflake_stage` resource remains available for both internal and external stages. The new resources are recommended for internal and external stages. See the [internal_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/internal_stage)
+The existing `snowflake_stage` resource remains available for both internal and external stages. The new resources are recommended for internal and external stages. See the [internal_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/internal_stage), [external_gcs_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_gcs_stage),
 and [external_azure_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_azure_stage) documentation for complete configuration details.
 
 To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
