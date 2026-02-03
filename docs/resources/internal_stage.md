@@ -9,6 +9,8 @@ description: |-
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
+-> **Note** External changes detection on `encryption`, and `directory` fields are not supported due to Snowflake and Terraform limitations.
+
 # snowflake_internal_stage (Resource)
 
 Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).

@@ -178,6 +178,11 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
 		return nil, err
 	}
+	stage, err := client.Stages.ShowByIDSafely(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
 	stageDetails, err := client.Stages.Describe(ctx, id)
 	if err != nil {
 		return nil, err
@@ -207,6 +212,11 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 	}
 	if details.Location != nil {
 		if err := d.Set("url", details.Location.Url); err != nil {
+			return nil, err
+		}
+	}
+	if stage.StorageIntegration != nil {
+		if err := d.Set("storage_integration", stage.StorageIntegration.Name()); err != nil {
 			return nil, err
 		}
 	}
@@ -333,11 +343,13 @@ func UpdateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 
 	id, err = handleStageRename(ctx, client, d, id)
 	if err != nil {
+		d.Partial(true)
 		return diag.FromErr(err)
 	}
 
 	err = handleStageDirectoryTable(ctx, client, d, id)
 	if err != nil {
+		d.Partial(true)
 		return diag.FromErr(err)
 	}
 
@@ -369,8 +381,9 @@ func UpdateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	if !reflect.DeepEqual(*set, sdk.NewAlterExternalAzureStageStageRequest(id)) {
+	if !reflect.DeepEqual(*set, *sdk.NewAlterExternalAzureStageStageRequest(id)) {
 		if err := client.Stages.AlterExternalAzureStage(ctx, set); err != nil {
+			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error updating external Azure stage: %w", err))
 		}
 	}
@@ -429,7 +442,7 @@ func parseAzureStageDirectory(v any) (sdk.ExternalAzureDirectoryTableOptionsRequ
 		directoryReq.WithRefreshOnCreate(refreshOnCreateBool)
 	}
 
-	if v, ok := directoryConfig["auto_refresh"]; ok && v.(string) != BooleanDefault {
+	if v, ok := directoryConfig["auto_refresh"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
 		autoRefreshBool, err := booleanStringToBool(v.(string))
 		if err != nil {
 			return sdk.ExternalAzureDirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)

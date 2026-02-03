@@ -105,6 +105,11 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 			},
 			// Set optionals (complete)
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
 				Config: accconfig.FromModels(t, modelComplete),
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelComplete.ResourceReference()).
