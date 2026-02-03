@@ -20,6 +20,14 @@ func NewSnowflakeDefaultsClient(context *TestClientContext) *SnowflakeDefaultsCl
 	}
 }
 
+func (c *SnowflakeDefaultsClient) EnabledForSnowflakeOauthSecurityIntegration(t *testing.T) bool {
+	t.Helper()
+	if slices.Contains([]testenvs.SnowflakeEnvironment{testenvs.SnowflakeNonProdEnvironment, testenvs.SnowflakePreProdGovEnvironment}, c.context.snowflakeEnvironment) {
+		return true
+	}
+	return false
+}
+
 func (c *SnowflakeDefaultsClient) StageIdentifierOutputFormatForStreamOnDirectoryTable(t *testing.T, id sdk.SchemaObjectIdentifier) string {
 	t.Helper()
 	if slices.Contains([]testenvs.SnowflakeEnvironment{testenvs.SnowflakeNonProdEnvironment, testenvs.SnowflakePreProdGovEnvironment}, c.context.snowflakeEnvironment) {
