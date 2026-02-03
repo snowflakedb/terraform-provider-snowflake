@@ -205,6 +205,48 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
+			// External change - disable directory
+			{
+				Config: accconfig.FromModels(t, modelComplete),
+				PreConfig: func() {
+					testClient().Stage.AlterDirectoryTable(t, sdk.NewAlterDirectoryTableStageRequest(id).WithSetDirectory(sdk.DirectoryTableSetRequest{
+						Enable: false,
+					}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalAzureStageResource(t, modelComplete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasUrlString(azureUrl).
+						HasStorageIntegrationString(storageIntegrationId.Name()).
+						HasCommentString(comment).
+						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+							Enable:      true,
+							AutoRefresh: sdk.Bool(false),
+						}).
+						HasEncryptionAzureCse().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
+						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelComplete.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasComment(comment).
+						HasDirectoryEnabled(true).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
 			// Import - complete
 			{
 				Config:       accconfig.FromModels(t, modelComplete),
@@ -242,9 +284,8 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
 						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
-							Enable:          false,
-							AutoRefresh:     sdk.Bool(false),
-							RefreshOnCreate: sdk.Bool(true),
+							Enable:      false,
+							AutoRefresh: sdk.Bool(false),
 						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).

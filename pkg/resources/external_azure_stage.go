@@ -311,6 +311,27 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			}
 		}
 
+		if withExternalChangesMarking {
+			directoryTable := []any{
+				map[string]any{
+					"enable":       details.DirectoryTable.Enable,
+					"auto_refresh": details.DirectoryTable.AutoRefresh,
+				},
+			}
+			directoryTableToSet := []any{
+				map[string]any{
+					"enable":       details.DirectoryTable.Enable,
+					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
+				},
+			}
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+			); err != nil {
+				return diag.FromErr(err)
+			}
+
+		}
+
 		var cloud string
 		if stage.Cloud != nil {
 			cloud = string(*stage.Cloud)
