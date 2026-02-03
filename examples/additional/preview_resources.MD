@@ -11,6 +11,7 @@
 - [snowflake_current_organization_account](./docs/resources/current_organization_account)
 - [snowflake_dynamic_table](./docs/resources/dynamic_table)
 - [snowflake_email_notification_integration](./docs/resources/email_notification_integration)
+- [snowflake_external_azure_stage](./docs/resources/external_azure_stage)
 - [snowflake_external_function](./docs/resources/external_function)
 - [snowflake_external_table](./docs/resources/external_table)
 - [snowflake_external_volume](./docs/resources/external_volume)

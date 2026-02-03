@@ -321,6 +321,10 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			}
 		}
 
+		var cloud string
+		if stage.Cloud != nil {
+			cloud = *stage.Cloud
+		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StageToSchema(stage)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),
@@ -328,6 +332,7 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			d.Set("url", stage.Url),
 			d.Set("comment", stage.Comment),
 			d.Set("stage_type", stage.Type),
+			d.Set("cloud", cloud),
 		)
 
 		if errs != nil {

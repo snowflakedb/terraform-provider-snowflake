@@ -94,22 +94,17 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 				),
 			},
 			// Import - without optionals
-			// {
-			// 	Config:       accconfig.FromModels(t, modelBasic),
-			// 	ResourceName: modelBasic.ResourceReference(),
-			// 	ImportState:  true,
-			// 	ImportStateCheck: assertThatImport(t,
-			// 		resourceassert.ImportedExternalAzureStageResource(t, helpers.EncodeResourceIdentifier(id)).
-			// 			HasNameString(id.Name()).
-			// 			HasDatabaseString(id.DatabaseName()).
-			// 			HasSchemaString(id.SchemaName()).
-			// 			HasCommentString("").
-			// 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-			// 		resourceshowoutputassert.ImportedStageShowOutput(t, helpers.EncodeResourceIdentifier(id)).
-			// 			HasName(id.Name()).
-			// 			HasDirectoryEnabled(false),
-			// 	),
-			// },
+			{
+				Config:       accconfig.FromModels(t, modelBasic),
+				ResourceName: modelBasic.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "database", id.DatabaseName()),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "schema", id.SchemaName()),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "use_privatelink_endpoint", "false"),
+				),
+			},
 			// Set optionals (complete)
 			{
 				Config: accconfig.FromModels(t, modelComplete),
@@ -138,13 +133,13 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 				),
 			},
 			// Import - complete
-			// {
-			// 	Config:                  accconfig.FromModels(t, modelComplete),
-			// 	ResourceName:            modelComplete.ResourceReference(),
-			// 	ImportState:             true,
-			// 	ImportStateVerify:       true,
-			// 	ImportStateVerifyIgnore: []string{"encryption", "directory"},
-			// },
+			{
+				Config:                  accconfig.FromModels(t, modelComplete),
+				ResourceName:            modelComplete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+			},
 			// Alter (update comment, directory.enable, encryption)
 			{
 				Config: accconfig.FromModels(t, modelUpdated),

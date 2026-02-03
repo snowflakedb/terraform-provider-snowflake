@@ -44,7 +44,6 @@ var stageCommonSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the stage.",
 	},
-
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,

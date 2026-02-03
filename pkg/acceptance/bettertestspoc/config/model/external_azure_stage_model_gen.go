@@ -14,15 +14,16 @@ type ExternalAzureStageModel struct {
 	Database               tfconfig.Variable `json:"database,omitempty"`
 	Schema                 tfconfig.Variable `json:"schema,omitempty"`
 	Name                   tfconfig.Variable `json:"name,omitempty"`
-	Url                    tfconfig.Variable `json:"url,omitempty"`
-	StorageIntegration     tfconfig.Variable `json:"storage_integration,omitempty"`
-	Credentials            tfconfig.Variable `json:"credentials,omitempty"`
-	Encryption             tfconfig.Variable `json:"encryption,omitempty"`
-	UsePrivatelinkEndpoint tfconfig.Variable `json:"use_privatelink_endpoint,omitempty"`
-	Directory              tfconfig.Variable `json:"directory,omitempty"`
+	Cloud                  tfconfig.Variable `json:"cloud,omitempty"`
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
+	Credentials            tfconfig.Variable `json:"credentials,omitempty"`
+	Directory              tfconfig.Variable `json:"directory,omitempty"`
+	Encryption             tfconfig.Variable `json:"encryption,omitempty"`
 	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	StageType              tfconfig.Variable `json:"stage_type,omitempty"`
+	StorageIntegration     tfconfig.Variable `json:"storage_integration,omitempty"`
+	Url                    tfconfig.Variable `json:"url,omitempty"`
+	UsePrivatelinkEndpoint tfconfig.Variable `json:"use_privatelink_endpoint,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -106,18 +107,8 @@ func (e *ExternalAzureStageModel) WithName(name string) *ExternalAzureStageModel
 	return e
 }
 
-func (e *ExternalAzureStageModel) WithUrl(url string) *ExternalAzureStageModel {
-	e.Url = tfconfig.StringVariable(url)
-	return e
-}
-
-func (e *ExternalAzureStageModel) WithStorageIntegration(storageIntegration string) *ExternalAzureStageModel {
-	e.StorageIntegration = tfconfig.StringVariable(storageIntegration)
-	return e
-}
-
-func (e *ExternalAzureStageModel) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint string) *ExternalAzureStageModel {
-	e.UsePrivatelinkEndpoint = tfconfig.StringVariable(usePrivatelinkEndpoint)
+func (e *ExternalAzureStageModel) WithCloud(cloud string) *ExternalAzureStageModel {
+	e.Cloud = tfconfig.StringVariable(cloud)
 	return e
 }
 
@@ -126,6 +117,12 @@ func (e *ExternalAzureStageModel) WithComment(comment string) *ExternalAzureStag
 	return e
 }
 
+// credentials attribute type is not yet supported, so WithCredentials can't be generated
+
+// directory attribute type is not yet supported, so WithDirectory can't be generated
+
+// encryption attribute type is not yet supported, so WithEncryption can't be generated
+
 func (e *ExternalAzureStageModel) WithFullyQualifiedName(fullyQualifiedName string) *ExternalAzureStageModel {
 	e.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return e
@@ -133,6 +130,21 @@ func (e *ExternalAzureStageModel) WithFullyQualifiedName(fullyQualifiedName stri
 
 func (e *ExternalAzureStageModel) WithStageType(stageType string) *ExternalAzureStageModel {
 	e.StageType = tfconfig.StringVariable(stageType)
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithStorageIntegration(storageIntegration string) *ExternalAzureStageModel {
+	e.StorageIntegration = tfconfig.StringVariable(storageIntegration)
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithUrl(url string) *ExternalAzureStageModel {
+	e.Url = tfconfig.StringVariable(url)
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint string) *ExternalAzureStageModel {
+	e.UsePrivatelinkEndpoint = tfconfig.StringVariable(usePrivatelinkEndpoint)
 	return e
 }
 
@@ -155,13 +167,13 @@ func (e *ExternalAzureStageModel) WithNameValue(value tfconfig.Variable) *Extern
 	return e
 }
 
-func (e *ExternalAzureStageModel) WithUrlValue(value tfconfig.Variable) *ExternalAzureStageModel {
-	e.Url = value
+func (e *ExternalAzureStageModel) WithCloudValue(value tfconfig.Variable) *ExternalAzureStageModel {
+	e.Cloud = value
 	return e
 }
 
-func (e *ExternalAzureStageModel) WithStorageIntegrationValue(value tfconfig.Variable) *ExternalAzureStageModel {
-	e.StorageIntegration = value
+func (e *ExternalAzureStageModel) WithCommentValue(value tfconfig.Variable) *ExternalAzureStageModel {
+	e.Comment = value
 	return e
 }
 
@@ -170,23 +182,13 @@ func (e *ExternalAzureStageModel) WithCredentialsValue(value tfconfig.Variable) 
 	return e
 }
 
-func (e *ExternalAzureStageModel) WithEncryptionValue(value tfconfig.Variable) *ExternalAzureStageModel {
-	e.Encryption = value
-	return e
-}
-
-func (e *ExternalAzureStageModel) WithUsePrivatelinkEndpointValue(value tfconfig.Variable) *ExternalAzureStageModel {
-	e.UsePrivatelinkEndpoint = value
-	return e
-}
-
 func (e *ExternalAzureStageModel) WithDirectoryValue(value tfconfig.Variable) *ExternalAzureStageModel {
 	e.Directory = value
 	return e
 }
 
-func (e *ExternalAzureStageModel) WithCommentValue(value tfconfig.Variable) *ExternalAzureStageModel {
-	e.Comment = value
+func (e *ExternalAzureStageModel) WithEncryptionValue(value tfconfig.Variable) *ExternalAzureStageModel {
+	e.Encryption = value
 	return e
 }
 
@@ -197,5 +199,20 @@ func (e *ExternalAzureStageModel) WithFullyQualifiedNameValue(value tfconfig.Var
 
 func (e *ExternalAzureStageModel) WithStageTypeValue(value tfconfig.Variable) *ExternalAzureStageModel {
 	e.StageType = value
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithStorageIntegrationValue(value tfconfig.Variable) *ExternalAzureStageModel {
+	e.StorageIntegration = value
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithUrlValue(value tfconfig.Variable) *ExternalAzureStageModel {
+	e.Url = value
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithUsePrivatelinkEndpointValue(value tfconfig.Variable) *ExternalAzureStageModel {
+	e.UsePrivatelinkEndpoint = value
 	return e
 }
