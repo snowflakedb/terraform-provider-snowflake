@@ -110,6 +110,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.GitRepository().Schema,
 	},
 	{
+		name:   "InternalStage",
+		schema: resources.InternalStage().Schema,
+	},
+	{
 		name:   "JobService",
 		schema: resources.JobService().Schema,
 	},

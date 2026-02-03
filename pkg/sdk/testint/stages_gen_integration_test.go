@@ -48,7 +48,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType("INTERNAL").
+			HasType(sdk.StageTypeInternal).
 			HasComment("").
 			HasUrl("").
 			HasDirectoryEnabled(false).
@@ -95,7 +95,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType("INTERNAL").
+			HasType(sdk.StageTypeInternal).
 			HasComment(comment).
 			HasDirectoryEnabled(true).
 			HasHasEncryptionKey(false).
@@ -124,7 +124,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType("INTERNAL TEMPORARY"),
+			HasType(sdk.StageTypeInternalTemporary),
 		)
 	})
 
@@ -317,7 +317,7 @@ func TestInt_Stages(t *testing.T) {
 
 		err := client.Stages.AlterInternalStage(ctx, sdk.NewAlterInternalStageStageRequest(stage.ID()).
 			WithIfExists(true).
-			WithComment("altered comment"))
+			WithComment(sdk.StringAllowEmpty{Value: "altered comment"}))
 		require.NoError(t, err)
 
 		stage, err = client.Stages.ShowByID(ctx, stage.ID())
@@ -344,7 +344,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasNoStorageIntegration().
@@ -370,7 +370,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasHasCredentials(true).
@@ -393,7 +393,7 @@ func TestInt_Stages(t *testing.T) {
 		// AWS_ROLE is not returned by Snowflake in SHOW or DESCRIBE, so we can only verify the stage was created.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasHasCredentials(true).
@@ -418,7 +418,7 @@ func TestInt_Stages(t *testing.T) {
 		// Encryption type and master key are not returned by Snowflake in SHOW or DESCRIBE.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasStorageIntegration(ids.PrecreatedS3StorageIntegration).
@@ -440,7 +440,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasHasCredentials(false).
@@ -476,7 +476,7 @@ func TestInt_Stages(t *testing.T) {
 		// Encryption type, RefreshOnCreate, and other credentials fields are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasHasCredentials(false).
@@ -508,7 +508,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL TEMPORARY").
+			HasType(sdk.StageTypeExternalTemporary).
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasStorageIntegration(s3StorageIntegration.ID()),
@@ -544,14 +544,14 @@ func TestInt_Stages(t *testing.T) {
 			WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 				WithStorageIntegration(ids.PrecreatedS3StorageIntegration).
 				WithEncryption(*sdk.NewExternalStageS3EncryptionRequest().WithNone(*sdk.NewExternalStageS3EncryptionNoneRequest()))).
-			WithComment("Updated comment"))
+			WithComment(sdk.StringAllowEmpty{Value: "Updated comment"}))
 		require.NoError(t, err)
 
 		stage, err = client.Stages.ShowByID(ctx, stage.ID())
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
 			HasCloud("AWS").
 			HasStorageIntegration(s3StorageIntegration.ID()).
@@ -578,7 +578,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
 			HasStorageIntegration(ids.PrecreatedGcpStorageIntegration).
@@ -611,7 +611,7 @@ func TestInt_Stages(t *testing.T) {
 		// Encryption type, RefreshOnCreate, and other credentials fields are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
 			HasStorageIntegration(gcpStorageIntegration.ID()).
@@ -643,7 +643,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL TEMPORARY").
+			HasType(sdk.StageTypeExternalTemporary).
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
 			HasStorageIntegration(gcpStorageIntegration.ID()).
@@ -661,14 +661,14 @@ func TestInt_Stages(t *testing.T) {
 			WithExternalStageParams(*sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
 				WithStorageIntegration(ids.PrecreatedGcpStorageIntegration).
 				WithEncryption(*sdk.NewExternalStageGCSEncryptionRequest().WithNone(*sdk.NewExternalStageGCSEncryptionNoneRequest()))).
-			WithComment("Updated comment"))
+			WithComment(sdk.StringAllowEmpty{Value: "Updated comment"}))
 		require.NoError(t, err)
 
 		stage, err = client.Stages.ShowByID(ctx, stage.ID())
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(gcsBucketUrl).
 			HasCloud("GCP").
 			HasStorageIntegration(gcpStorageIntegration.ID()).
@@ -690,7 +690,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(azureBucketUrl).
 			HasCloud("AZURE").
 			HasHasCredentials(false).
@@ -713,7 +713,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(azureBucketUrl).
 			HasCloud("AZURE").
 			HasStorageIntegration(azureStorageIntegration.ID()).
@@ -746,7 +746,7 @@ func TestInt_Stages(t *testing.T) {
 		// Encryption type, RefreshOnCreate, and other credentials fields are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(azureBucketUrl).
 			HasCloud("AZURE").
 			HasHasCredentials(true).
@@ -777,7 +777,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL TEMPORARY").
+			HasType(sdk.StageTypeExternalTemporary).
 			HasUrl(azureBucketUrl).
 			HasCloud("AZURE").
 			HasStorageIntegration(azureStorageIntegration.ID()).
@@ -795,14 +795,14 @@ func TestInt_Stages(t *testing.T) {
 			WithExternalStageParams(*sdk.NewExternalAzureStageParamsRequest(azureBucketUrl).
 				WithStorageIntegration(ids.PrecreatedAzureStorageIntegration).
 				WithEncryption(*sdk.NewExternalStageAzureEncryptionRequest().WithNone(*sdk.NewExternalStageAzureEncryptionNoneRequest()))).
-			WithComment("Updated comment"))
+			WithComment(sdk.StringAllowEmpty{Value: "Updated comment"}))
 		require.NoError(t, err)
 
 		stage, err = client.Stages.ShowByID(ctx, stage.ID())
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(azureBucketUrl).
 			HasCloud("AZURE").
 			HasStorageIntegration(azureStorageIntegration.ID()).
@@ -828,7 +828,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(compatibleBucketUrl).
 			HasCloud("AWS").
 			HasEndpoint(endpoint).
@@ -861,7 +861,7 @@ func TestInt_Stages(t *testing.T) {
 		// Encryption type, RefreshOnCreate, and other credentials fields are not asserted because it's missing from Snowflake.
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL").
+			HasType(sdk.StageTypeExternal).
 			HasUrl(compatibleBucketUrl).
 			HasCloud("AWS").
 			HasEndpoint(endpoint).
@@ -895,7 +895,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.Stage(t, id).
 			HasName(id.Name()).
-			HasType("EXTERNAL TEMPORARY").
+			HasType(sdk.StageTypeExternalTemporary).
 			HasUrl(compatibleBucketUrl).
 			HasCloud("AWS").
 			HasEndpoint(endpoint).
@@ -1012,7 +1012,7 @@ func TestInt_Stages(t *testing.T) {
 			HasHasCredentials(false).
 			HasHasEncryptionKey(false).
 			HasComment(comment).
-			HasType("INTERNAL").
+			HasType(sdk.StageTypeInternal).
 			HasDirectoryEnabled(true).
 			HasOwnerRoleType("ROLE"))
 

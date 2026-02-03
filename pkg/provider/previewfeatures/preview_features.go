@@ -49,6 +49,7 @@ const (
 	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
+	InternalStageResource                         feature = "snowflake_internal_stage_resource"
 	JobServiceResource                            feature = "snowflake_job_service_resource"
 	ListingResource                               feature = "snowflake_listing_resource"
 	ListingsDatasource                            feature = "snowflake_listings_datasource"
@@ -131,6 +132,7 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
+	InternalStageResource,
 	JobServiceResource,
 	ListingsDatasource,
 	ManagedAccountResource,
@@ -229,4 +231,15 @@ func IsPromotedFeature(rawFeature string) bool {
 	return slices.ContainsFunc(PromotedFeatures, func(s string) bool {
 		return strings.EqualFold(rawFeature, s)
 	})
+}
+
+type PreviewFeature interface {
+	xxxProtected()
+	String() string
+}
+
+func (f feature) xxxProtected() {}
+
+func (f feature) String() string {
+	return string(f)
 }

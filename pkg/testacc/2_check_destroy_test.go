@@ -250,6 +250,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ImageRepositories.ShowByID)
 	},
+	resources.InternalStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
 	resources.JobService: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Services.ShowByID)
 	},

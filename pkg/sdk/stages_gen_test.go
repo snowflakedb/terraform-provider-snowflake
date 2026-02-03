@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestStages_CreateInternal(t *testing.T) {
@@ -1302,7 +1304,7 @@ func TestStages_AlterInternalStage(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: Pointer(ffId),
 		}
-		opts.Comment = String("some comment")
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'", id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 }
@@ -1424,7 +1426,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: Pointer(ffId),
 		}
-		opts.Comment = String("some comment")
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
@@ -1516,7 +1518,7 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: Pointer(ffId),
 		}
-		opts.Comment = String("some comment")
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
@@ -1616,7 +1618,7 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 		opts.FileFormat = &StageFileFormat{
 			FormatName: Pointer(ffId),
 		}
-		opts.Comment = String("some comment")
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
@@ -1800,4 +1802,40 @@ func TestStages_Show(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES IN SCHEMA %s`, schemaId.FullyQualifiedName())
 	})
+}
+
+func TestStages_ToStageType(t *testing.T) {
+	valid := []struct {
+		input string
+		want  StageType
+	}{
+		{input: "INTERNAL", want: StageTypeInternal},
+		{input: "INTERNAL NO CSE", want: StageTypeInternalNoCse},
+		{input: "INTERNAL TEMPORARY", want: StageTypeInternalTemporary},
+		{input: "EXTERNAL", want: StageTypeExternal},
+		{input: "EXTERNAL TEMPORARY", want: StageTypeExternalTemporary},
+		// case insensitive
+		{input: "internal", want: StageTypeInternal},
+	}
+
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToStageType(tt.input)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+
+	invalid := []struct {
+		input   string
+		wantErr string
+	}{
+		{input: "invalid", wantErr: "invalid stage type: INVALID"},
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToStageType(tt.input)
+			require.ErrorContains(t, err, tt.wantErr)
+		})
+	}
 }

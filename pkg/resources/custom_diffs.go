@@ -18,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// TODO(SNOW-3043057): Refactor custom diffs. Now, code is duplicated for other resources and fields.
+
 func StringParameterValueComputedIf[T ~string](key string, params []*sdk.Parameter, parameterLevel sdk.ParameterType, parameterName T) schema.CustomizeDiffFunc {
 	return ParameterValueComputedIf(key, params, parameterLevel, parameterName, func(value any) string { return value.(string) })
 }
@@ -200,6 +202,20 @@ func RecreateWhenUserTypeChangedExternally(userType sdk.UserType) schema.Customi
 				// because with empty value (default snowflake behavior for type) ForceNew fails
 				// because there are no changes (at least from the SDKv2 point of view) for "user_type"
 				return errors.Join(diff.SetNew("user_type", "<changed externally>"), diff.ForceNew("user_type"))
+			}
+		}
+		return nil
+	}
+}
+
+func RecreateWhenStageTypeChangedExternally(stageType sdk.StageType) schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		if n := diff.Get("stage_type"); n != nil {
+			log.Printf("[DEBUG] new external value for stage type: %s", n.(string))
+
+			diffStageType, _ := sdk.ToStageType(n.(string))
+			if acceptableStageTypes, ok := sdk.AcceptableStageTypes[stageType]; ok && !slices.Contains(acceptableStageTypes, diffStageType) {
+				return errors.Join(diff.SetNew("stage_type", "<changed externally>"), diff.ForceNew("stage_type"))
 			}
 		}
 		return nil

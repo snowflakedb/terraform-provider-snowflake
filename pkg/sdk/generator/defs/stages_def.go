@@ -6,9 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// TODO(SNOW-1019005): generate assertions
-// TODO(SNOW-1019005): add parsers for DESC output and return a nice struct; use them in integration tests assertions
-// TODO(SNOW-1019005): improve integration tests
 func createStageOperation(structName string, apply func(qs *g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
 	qs := g.NewQueryStruct(structName).
 		Create().
@@ -49,7 +46,8 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 				WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatOptions"),
 			g.ListOptions().Parentheses().NoComma().SQL("FILE_FORMAT ="),
 		).
-		OptionalComment().
+		// TODO(SNOW-3035788): use COMMENT in unset and here use OptionalComment
+		OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
 		WithValidation(g.ValidIdentifier, "name")
 }
 
@@ -403,7 +401,7 @@ var stagesDef = g.NewInterface(
 			Field("Owner", "string").
 			Field("Comment", "string").
 			Field("Region", "*string").
-			Field("Type", "string").
+			Field("Type", "StageType").
 			Field("Cloud", "*string").
 			// notification_channel is deprecated in Snowflake.
 			Field("StorageIntegration", "*AccountObjectIdentifier").

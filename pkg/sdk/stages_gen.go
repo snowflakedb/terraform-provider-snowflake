@@ -263,7 +263,7 @@ type AlterInternalStageStageOptions struct {
 	name       SchemaObjectIdentifier `ddl:"identifier"`
 	set        bool                   `ddl:"static" sql:"SET"`
 	FileFormat *StageFileFormat       `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
-	Comment    *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Comment    *StringAllowEmpty      `ddl:"parameter" sql:"COMMENT"`
 }
 
 // AlterExternalS3StageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -274,8 +274,8 @@ type AlterExternalS3StageStageOptions struct {
 	name                SchemaObjectIdentifier `ddl:"identifier"`
 	set                 bool                   `ddl:"static" sql:"SET"`
 	ExternalStageParams *ExternalS3StageParams
-	FileFormat          *StageFileFormat `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
-	Comment             *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	FileFormat          *StageFileFormat  `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
+	Comment             *StringAllowEmpty `ddl:"parameter" sql:"COMMENT"`
 }
 
 // AlterExternalGCSStageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -286,8 +286,8 @@ type AlterExternalGCSStageStageOptions struct {
 	name                SchemaObjectIdentifier `ddl:"identifier"`
 	set                 bool                   `ddl:"static" sql:"SET"`
 	ExternalStageParams *ExternalGCSStageParams
-	FileFormat          *StageFileFormat `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
-	Comment             *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	FileFormat          *StageFileFormat  `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
+	Comment             *StringAllowEmpty `ddl:"parameter" sql:"COMMENT"`
 }
 
 // AlterExternalAzureStageStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -298,8 +298,8 @@ type AlterExternalAzureStageStageOptions struct {
 	name                SchemaObjectIdentifier `ddl:"identifier"`
 	set                 bool                   `ddl:"static" sql:"SET"`
 	ExternalStageParams *ExternalAzureStageParams
-	FileFormat          *StageFileFormat `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
-	Comment             *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	FileFormat          *StageFileFormat  `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
+	Comment             *StringAllowEmpty `ddl:"parameter" sql:"COMMENT"`
 }
 
 // AlterDirectoryTableStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -389,7 +389,7 @@ type Stage struct {
 	Owner              string
 	Comment            string
 	Region             *string
-	Type               string
+	Type               StageType
 	Cloud              *string
 	StorageIntegration *AccountObjectIdentifier
 	Endpoint           *string
