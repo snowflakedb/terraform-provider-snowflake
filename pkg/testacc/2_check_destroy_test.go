@@ -214,6 +214,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ExternalAzureStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Stages.ShowByID)
 	},
+	resources.ExternalGcsStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
 	resources.ExternalFunction: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ExternalFunctions.ShowByID)
 	},

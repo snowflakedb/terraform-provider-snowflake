@@ -25,6 +25,7 @@ const (
 	Execute                                                resource = "snowflake_execute"
 	ExternalAzureStage                                     resource = "snowflake_external_azure_stage"
 	ExternalFunction                                       resource = "snowflake_external_function"
+	ExternalGcsStage                                       resource = "snowflake_external_gcs_stage"
 	ExternalTable                                          resource = "snowflake_external_table"
 	ExternalOauthSecurityIntegration                       resource = "snowflake_external_oauth_integration"
 	ExternalVolume                                         resource = "snowflake_external_volume"
