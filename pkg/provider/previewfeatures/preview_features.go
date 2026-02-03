@@ -30,6 +30,7 @@ const (
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
 	DynamicTablesDatasource                       feature = "snowflake_dynamic_tables_datasource"
 	EmailNotificationIntegrationResource          feature = "snowflake_email_notification_integration_resource"
+	ExternalAzureStageResource                    feature = "snowflake_external_azure_stage_resource"
 	ExternalFunctionResource                      feature = "snowflake_external_function_resource"
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
@@ -98,7 +99,6 @@ const (
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
 	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
-	ExternalAzureStageResource                    feature = "snowflake_external_azure_stage_resource"
 )
 
 var allPreviewFeatures = []feature{
@@ -118,6 +118,7 @@ var allPreviewFeatures = []feature{
 	DatabaseRoleDatasource,
 	DynamicTableResource,
 	DynamicTablesDatasource,
+	ExternalAzureStageResource,
 	ExternalFunctionResource,
 	ExternalFunctionsDatasource,
 	ExternalTableResource,
@@ -178,7 +179,6 @@ var allPreviewFeatures = []feature{
 	UserAuthenticationPolicyAttachmentResource,
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
-	ExternalAzureStageResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 
