@@ -78,11 +78,6 @@ var internalStageSchema = func() map[string]*schema.Schema {
 				},
 			},
 		},
-		"comment": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Specifies a comment for the stage.",
-		},
 	}
 	return collections.MergeMaps(stageCommonSchema, internalStage)
 }()

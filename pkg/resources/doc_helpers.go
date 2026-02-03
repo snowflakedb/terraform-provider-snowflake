@@ -77,3 +77,7 @@ func exampleSchemaObjectIdentifier(schemaObjectName string) string {
 func experimentalFeatureDescription(feature experimentalfeatures.ExperimentalFeature) string {
 	return fmt.Sprintf("This field can be only used when `%s` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field.", feature)
 }
+
+func ignoredAfterCreationDescription() string {
+	return "This field is used only when creating the object. Changes on this field are ignored after creation."
+}

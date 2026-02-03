@@ -39,6 +39,12 @@ var stageCommonSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Specifies a type for the stage. This field is used for checking external changes and recreating the resources if needed.",
 	},
+	"comment": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Specifies a comment for the stage.",
+	},
+
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,

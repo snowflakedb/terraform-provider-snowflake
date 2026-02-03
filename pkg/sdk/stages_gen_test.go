@@ -1839,3 +1839,34 @@ func TestStages_ToStageType(t *testing.T) {
 		})
 	}
 }
+
+func TestStages_ToStageCloud(t *testing.T) {
+	valid := []struct {
+		input string
+		want  StageCloud
+	}{
+		{input: "AZURE", want: StageCloudAzure},
+		// case insensitive
+		{input: "azure", want: StageCloudAzure},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToStageCloud(tt.input)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+
+	invalid := []struct {
+		input   string
+		wantErr string
+	}{
+		{input: "invalid", wantErr: "invalid stage cloud: INVALID"},
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToStageCloud(tt.input)
+			require.ErrorContains(t, err, tt.wantErr)
+		})
+	}
+}

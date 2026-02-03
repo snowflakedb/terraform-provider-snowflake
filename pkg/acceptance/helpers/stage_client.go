@@ -325,3 +325,11 @@ func (c *StageClient) AlterInternalStage(t *testing.T, req *sdk.AlterInternalSta
 	err := c.client().AlterInternalStage(ctx, req)
 	require.NoError(t, err)
 }
+
+func (c *StageClient) AlterExternalAzureStage(t *testing.T, req *sdk.AlterExternalAzureStageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterExternalAzureStage(ctx, req)
+	require.NoError(t, err)
+}

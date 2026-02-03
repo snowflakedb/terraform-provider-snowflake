@@ -80,6 +80,19 @@ func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField *
 	return nil
 }
 
+func booleanStringAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **bool) error {
+	if d.HasChange(key) {
+		if v := d.Get(key).(string); v != BooleanDefault {
+			parsed, err := booleanStringToBool(v)
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Bool(parsed)
+		}
+	}
+	return nil
+}
+
 func booleanStringAttributeUnsetFallbackUpdate(d *schema.ResourceData, key string, setField **bool, fallbackValue bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(string); v != BooleanDefault {

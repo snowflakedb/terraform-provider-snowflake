@@ -618,6 +618,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_git_repository":                                               resources.GitRepository(),
 		"snowflake_image_repository":                                             resources.ImageRepository(),
 		"snowflake_internal_stage":                                               resources.InternalStage(),
+		"snowflake_external_azure_stage":                                         resources.ExternalAzureStage(),
 		"snowflake_job_service":                                                  resources.JobService(),
 		"snowflake_legacy_service_user":                                          resources.LegacyServiceUser(),
 		"snowflake_listing":                                                      resources.Listing(),

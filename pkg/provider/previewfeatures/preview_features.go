@@ -98,6 +98,7 @@ const (
 	UserPasswordPolicyAttachmentResource          feature = "snowflake_user_password_policy_attachment_resource"
 	UserProgrammaticAccessTokenResource           feature = "snowflake_user_programmatic_access_token_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
+	ExternalAzureStageResource                    feature = "snowflake_external_azure_stage_resource"
 )
 
 var allPreviewFeatures = []feature{
@@ -177,6 +178,7 @@ var allPreviewFeatures = []feature{
 	UserAuthenticationPolicyAttachmentResource,
 	UserPublicKeysResource,
 	UserPasswordPolicyAttachmentResource,
+	ExternalAzureStageResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 
