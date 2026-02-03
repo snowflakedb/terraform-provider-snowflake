@@ -305,7 +305,6 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 				storageIntegrationName = stage.StorageIntegration.Name()
 			}
 			if err = handleExternalChangesToObjectInShow(d,
-				outputMapping{"comment", "comment", stage.Comment, stage.Comment, nil},
 				outputMapping{"storage_integration", "storage_integration", storageIntegrationName, storageIntegrationName, nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -321,9 +320,9 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set("url", stage.Url),
-			d.Set("comment", stage.Comment),
 			d.Set("stage_type", stage.Type),
 			d.Set("cloud", cloud),
+			d.Set("comment", stage.Comment),
 		)
 
 		if errs != nil {

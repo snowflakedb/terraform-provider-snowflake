@@ -7,35 +7,24 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (e *ExternalAzureStageResourceAssert) HasDirectoryEnableString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory.0.enable", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasDirectoryAutoRefreshString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory.0.auto_refresh", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasDirectoryRefreshOnCreateString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory.0.refresh_on_create", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasNoDirectoryRefreshOnCreate() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory.0.refresh_on_create", ""))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasNoDirectoryAutoRefresh() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory.0.auto_refresh", ""))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasDirectory(enable bool, autoRefresh bool) *ExternalAzureStageResourceAssert {
+func (e *ExternalAzureStageResourceAssert) HasDirectory(opts sdk.ExternalAzureDirectoryTableOptionsRequest) *ExternalAzureStageResourceAssert {
+	var notificationIntegration string
+	if opts.NotificationIntegration != nil {
+		notificationIntegration = *opts.NotificationIntegration
+	}
+	var refreshOnCreate string
+	if opts.RefreshOnCreate != nil {
+		refreshOnCreate = strconv.FormatBool(*opts.RefreshOnCreate)
+	}
+	var autoRefresh string
+	if opts.AutoRefresh != nil {
+		autoRefresh = strconv.FormatBool(*opts.AutoRefresh)
+	}
 	e.AddAssertion(assert.ValueSet("directory.#", "1"))
-	e.AddAssertion(assert.ValueSet("directory.0.enable", strconv.FormatBool(enable)))
-	e.AddAssertion(assert.ValueSet("directory.0.auto_refresh", strconv.FormatBool(autoRefresh)))
+	e.AddAssertion(assert.ValueSet("directory.0.enable", strconv.FormatBool(opts.Enable)))
+	e.AddAssertion(assert.ValueSet("directory.0.auto_refresh", autoRefresh))
+	e.AddAssertion(assert.ValueSet("directory.0.notification_integration", notificationIntegration))
+	e.AddAssertion(assert.ValueSet("directory.0.refresh_on_create", refreshOnCreate))
 	return e
 }
 
@@ -55,6 +44,11 @@ func (e *ExternalAzureStageResourceAssert) HasEncryptionNone() *ExternalAzureSta
 
 func (e *ExternalAzureStageResourceAssert) HasStageTypeEnum(expected sdk.StageType) *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("stage_type", string(expected)))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasCloudEnum(expected sdk.StageCloud) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("cloud", string(expected)))
 	return e
 }
 

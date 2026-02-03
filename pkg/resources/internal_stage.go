@@ -238,14 +238,6 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
-				outputMapping{"comment", "comment", stage.Comment, stage.Comment, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StageToSchema(stage)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),

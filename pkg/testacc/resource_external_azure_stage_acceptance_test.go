@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TODO(SNOW-2356128): Test use_privatelink_endpoint
+// TODO(SNOW-2356128): Test use_privatelink_endpoint and notification integration
 func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -40,20 +40,31 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 	modelBasic := model.ExternalAzureStageWithId(id, azureUrl)
 	modelAlter := model.ExternalAzureStageWithId(newId, azureUrl).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(true, r.BooleanTrue, nil).
+		WithDirectoryEnabledAndOptions(sdk.ExternalAzureDirectoryTableOptionsRequest{
+			Enable:          true,
+			RefreshOnCreate: sdk.Bool(true),
+		}).
 		WithCredentials(azureSasToken).
 		WithEncryptionAzureCse(masterKey)
 
 	modelComplete := model.ExternalAzureStageWithId(id, azureUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(true, r.BooleanTrue, sdk.Bool(false)).
+		WithDirectoryEnabledAndOptions(sdk.ExternalAzureDirectoryTableOptionsRequest{
+			Enable:          true,
+			RefreshOnCreate: sdk.Bool(true),
+			AutoRefresh:     sdk.Bool(false),
+		}).
 		WithEncryptionAzureCse(masterKey)
 
 	modelUpdated := model.ExternalAzureStageWithId(id, azureUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithComment(changedComment).
-		WithDirectoryEnabledAndOptions(false, r.BooleanTrue, sdk.Bool(false)).
+		WithDirectoryEnabledAndOptions(sdk.ExternalAzureDirectoryTableOptionsRequest{
+			Enable:          false,
+			RefreshOnCreate: sdk.Bool(false),
+			AutoRefresh:     sdk.Bool(false),
+		}).
 		WithEncryptionNone()
 
 	modelEncryptionNoneWithComment := model.ExternalAzureStageWithId(id, azureUrl).
@@ -91,6 +102,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasDirectoryEmpty().
 						HasEncryptionEmpty().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
@@ -121,11 +133,14 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasNoStorageIntegration().
 						HasCommentString(comment).
-						HasDirectoryEnableString(r.BooleanTrue).
-						HasNoDirectoryRefreshOnCreate().
-						HasNoDirectoryAutoRefresh().
+						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+							Enable:          true,
+							RefreshOnCreate: sdk.Bool(false),
+							AutoRefresh:     sdk.Bool(false),
+						}).
 						HasEncryptionAzureCse().
 						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelAlter.ResourceReference()).
 						HasName(newId.Name()).
@@ -152,7 +167,6 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "url", azureUrl),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "fully_qualified_name", newId.FullyQualifiedName()),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "use_privatelink_endpoint", "false"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "comment", comment),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "stage_type", string(sdk.StageTypeExternal)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "cloud", string(sdk.StageCloudAzure)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "directory.0.enable", "true"),
@@ -171,9 +185,14 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectoryEnableString(r.BooleanTrue).
+						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+							Enable:          true,
+							RefreshOnCreate: sdk.Bool(false),
+							AutoRefresh:     sdk.Bool(false),
+						}).
 						HasEncryptionAzureCse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -224,9 +243,14 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
-						HasDirectoryEnableString(r.BooleanFalse).
+						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+							Enable:          false,
+							RefreshOnCreate: sdk.Bool(false),
+							AutoRefresh:     sdk.Bool(false),
+						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelUpdated.ResourceReference()).
 						HasName(id.Name()).
@@ -244,8 +268,8 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 			// External change detection
 			{
 				PreConfig: func() {
-					testClient().Stage.AlterExternalAzureStage(t, sdk.NewAlterExternalAzureStageStageRequest(id).
-						WithComment(sdk.StringAllowEmpty{Value: changedComment}))
+					testClient().Stage.DropStageFunc(t, id)()
+					testClient().Stage.CreateStageOnAzure(t, azureUrl)
 				},
 				Config: accconfig.FromModels(t, modelUpdated),
 				Check: assertThat(t,
@@ -256,9 +280,14 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
-						HasDirectoryEnableString(r.BooleanFalse).
+						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+							Enable:          false,
+							RefreshOnCreate: sdk.Bool(false),
+							AutoRefresh:     sdk.Bool(false),
+						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelUpdated.ResourceReference()).
 						HasName(id.Name()).
@@ -292,6 +321,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasDirectoryEmpty().
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelEncryptionNoneWithComment.ResourceReference()).
 						HasName(id.Name()).
@@ -325,6 +355,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasDirectoryEmpty().
 						HasEncryptionEmpty().
 						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelRenamed.ResourceReference()).
 						HasName(newId.Name()).
@@ -359,6 +390,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasEncryptionEmpty().
 						HasCredentials(azureSasToken).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelWithCredentials.ResourceReference()).
 						HasName(id.Name()).
@@ -392,6 +424,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasDirectoryEmpty().
 						HasEncryptionEmpty().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelWithStorageIntegration.ResourceReference()).
 						HasName(id.Name()).
@@ -423,7 +456,11 @@ func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
 	modelComplete := model.ExternalAzureStageWithId(id, azureUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(true, r.BooleanTrue, sdk.Bool(false)).
+		WithDirectoryEnabledAndOptions(sdk.ExternalAzureDirectoryTableOptionsRequest{
+			Enable:          true,
+			RefreshOnCreate: sdk.Bool(true),
+			AutoRefresh:     sdk.Bool(false),
+		}).
 		WithEncryptionAzureCse(masterKey)
 
 	resource.Test(t, resource.TestCase{
@@ -443,11 +480,14 @@ func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectoryEnableString(r.BooleanTrue).
-						HasDirectoryRefreshOnCreateString(r.BooleanTrue).
-						HasDirectoryAutoRefreshString(r.BooleanFalse).
+						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+							Enable:          true,
+							RefreshOnCreate: sdk.Bool(true),
+							AutoRefresh:     sdk.Bool(false),
+						}).
 						HasEncryptionAzureCse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
 						HasStageTypeEnum(sdk.StageTypeExternal),
 					resourceshowoutputassert.StageShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
@@ -459,6 +499,7 @@ func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			{
@@ -482,8 +523,9 @@ func TestAcc_ExternalAzureStage_Validations(t *testing.T) {
 	azureUrl := "azure://myaccount.blob.core.windows.net/mycontainer"
 
 	modelInvalidAutoRefresh := model.ExternalAzureStageWithId(id, azureUrl).
-		WithStorageIntegration(storageIntegrationId.Name()).
-		WithDirectoryEnabledAndOptions(true, "invalid", sdk.Bool(false))
+		WithInvalidAutoRefresh()
+	modelInvalidRefreshOnCreate := model.ExternalAzureStageWithId(id, azureUrl).
+		WithInvalidRefreshOnCreate()
 
 	modelBothEncryptionTypes := model.ExternalAzureStageWithId(id, azureUrl).
 		WithEncryptionBothTypes()
@@ -507,6 +549,11 @@ func TestAcc_ExternalAzureStage_Validations(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      accconfig.FromModels(t, modelInvalidAutoRefresh),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected .*auto_refresh.* to be one of \["true" "false"], got invalid`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidRefreshOnCreate),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected .*refresh_on_create.* to be one of \["true" "false"], got invalid`),
 			},

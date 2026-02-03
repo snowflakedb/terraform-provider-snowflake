@@ -19,25 +19,38 @@ func (e *ExternalAzureStageModel) WithDirectoryEnabled(enable string) *ExternalA
 	return e
 }
 
-func (e *ExternalAzureStageModel) WithDirectoryEnabledAndOptions(enable bool, refreshOnCreate string, autoRefresh *bool) *ExternalAzureStageModel {
+func (e *ExternalAzureStageModel) WithDirectoryEnabledAndOptions(opts sdk.ExternalAzureDirectoryTableOptionsRequest) *ExternalAzureStageModel {
 	directoryMap := map[string]tfconfig.Variable{
-		"enable": tfconfig.BoolVariable(enable),
+		"enable": tfconfig.BoolVariable(opts.Enable),
 	}
-	if refreshOnCreate != "" {
-		directoryMap["refresh_on_create"] = tfconfig.StringVariable(refreshOnCreate)
+	if opts.RefreshOnCreate != nil {
+		directoryMap["refresh_on_create"] = tfconfig.BoolVariable(*opts.RefreshOnCreate)
 	}
-	if autoRefresh != nil {
-		directoryMap["auto_refresh"] = tfconfig.BoolVariable(*autoRefresh)
+	if opts.AutoRefresh != nil {
+		directoryMap["auto_refresh"] = tfconfig.BoolVariable(*opts.AutoRefresh)
+	}
+	if opts.NotificationIntegration != nil {
+		directoryMap["notification_integration"] = tfconfig.StringVariable(*opts.NotificationIntegration)
 	}
 	e.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(directoryMap))
 	return e
 }
 
-func (e *ExternalAzureStageModel) WithDirectoryEnabledAndNotificationIntegration(enable bool, notificationIntegration string) *ExternalAzureStageModel {
+func (e *ExternalAzureStageModel) WithInvalidAutoRefresh() *ExternalAzureStageModel {
 	e.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
-			"enable":                   tfconfig.BoolVariable(enable),
-			"notification_integration": tfconfig.StringVariable(notificationIntegration),
+			"enable":       tfconfig.BoolVariable(true),
+			"auto_refresh": tfconfig.StringVariable("invalid"),
+		},
+	))
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithInvalidRefreshOnCreate() *ExternalAzureStageModel {
+	e.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(
+		map[string]tfconfig.Variable{
+			"enable":            tfconfig.BoolVariable(true),
+			"refresh_on_create": tfconfig.StringVariable("invalid"),
 		},
 	))
 	return e
