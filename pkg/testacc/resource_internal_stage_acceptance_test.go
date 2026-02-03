@@ -22,7 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_InternalStage_basic(t *testing.T) {
+func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
@@ -295,7 +295,7 @@ func TestAcc_InternalStage_basic(t *testing.T) {
 	})
 }
 
-func TestAcc_InternalStage_complete(t *testing.T) {
+func TestAcc_InternalStage_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 

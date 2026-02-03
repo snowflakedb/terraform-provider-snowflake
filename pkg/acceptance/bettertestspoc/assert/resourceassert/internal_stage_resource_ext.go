@@ -8,11 +8,13 @@ import (
 )
 
 func (i *InternalStageResourceAssert) HasDirectoryEnableString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("directory.#", "1"))
 	i.AddAssertion(assert.ValueSet("directory.0.enable", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasDirectoryAutoRefreshString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("directory.#", "1"))
 	i.AddAssertion(assert.ValueSet("directory.0.auto_refresh", expected))
 	return i
 }
