@@ -323,7 +323,7 @@ func RecreateWhenCredentialsAreSetOnExternalStageWithStorageIntegration() schema
 			return diff.ForceNew("credentials")
 		}
 		// Change credentials into security integrations
-		if diff.HasChange("storage_integration") && len(credentialsOld.([]any)) == 0 && storageIntegrationNew.(string) != "" {
+		if diff.HasChange("storage_integration") && len(credentialsOld.([]any)) > 0 && storageIntegrationNew.(string) != "" {
 			return diff.ForceNew("storage_integration")
 		}
 

@@ -134,9 +134,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasNoStorageIntegration().
 						HasCommentString(comment).
 						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
-							Enable:          true,
-							RefreshOnCreate: sdk.Bool(false),
-							AutoRefresh:     sdk.Bool(false),
+							Enable: true,
 						}).
 						HasEncryptionAzureCse().
 						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
@@ -187,8 +185,8 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasCommentString(comment).
 						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
 							Enable:          true,
-							RefreshOnCreate: sdk.Bool(false),
 							AutoRefresh:     sdk.Bool(false),
+							RefreshOnCreate: sdk.Bool(true),
 						}).
 						HasEncryptionAzureCse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -245,8 +243,8 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasCommentString(changedComment).
 						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
 							Enable:          false,
-							RefreshOnCreate: sdk.Bool(false),
 							AutoRefresh:     sdk.Bool(false),
+							RefreshOnCreate: sdk.Bool(true),
 						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -282,8 +280,8 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasCommentString(changedComment).
 						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
 							Enable:          false,
-							RefreshOnCreate: sdk.Bool(false),
 							AutoRefresh:     sdk.Bool(false),
+							RefreshOnCreate: sdk.Bool(false),
 						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -407,6 +405,45 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 			},
 			// set back to storage integration
 			{
+				Config: accconfig.FromModels(t, modelWithStorageIntegration),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithStorageIntegration.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalAzureStageResource(t, modelWithStorageIntegration.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasUrlString(azureUrl).
+						HasStorageIntegrationString(storageIntegrationId.Name()).
+						HasCommentString("").
+						HasDirectoryEmpty().
+						HasEncryptionEmpty().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudAzure).
+						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelWithStorageIntegration.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasStorageIntegration(storageIntegrationId).
+						HasComment("").
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
+			// Detect changing stage type externally
+			{
+				PreConfig: func() {
+					testClient().Stage.DropStageFunc(t, id)()
+					testClient().Stage.CreateStageWithId(t, id)
+				},
 				Config: accconfig.FromModels(t, modelWithStorageIntegration),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

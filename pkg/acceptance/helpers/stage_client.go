@@ -61,6 +61,11 @@ func (c *StageClient) CreateStage(t *testing.T) (*sdk.Stage, func()) {
 	return c.CreateStageInSchema(t, c.ids.SchemaId())
 }
 
+func (c *StageClient) CreateStageWithId(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Stage, func()) {
+	t.Helper()
+	return c.CreateStageWithRequest(t, sdk.NewCreateInternalStageRequest(id))
+}
+
 func (c *StageClient) CreateStageInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.Stage, func()) {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifierInSchema(schemaId)
@@ -140,9 +145,13 @@ func (c *StageClient) CreateStageOnGCS(t *testing.T, gcsBucketUrl string) (*sdk.
 
 func (c *StageClient) CreateStageOnAzure(t *testing.T, azureBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	id := c.ids.RandomSchemaObjectIdentifier()
+	return c.CreateStageOnAzureWithId(t, id, azureBucketUrl)
+}
+
+func (c *StageClient) CreateStageOnAzureWithId(t *testing.T, id sdk.SchemaObjectIdentifier, azureBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
 
 	azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl)
 	request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)

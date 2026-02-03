@@ -12,6 +12,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -26,6 +27,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
+
+	azureUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
 
 	modelBasic := model.InternalStageWithId(id)
 
@@ -273,6 +276,41 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelSseEncryption.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
+				Check: assertThat(t,
+					resourceassert.InternalStageResource(t, modelSseEncryption.ResourceReference()).
+						HasNameString(newId.Name()).
+						HasDatabaseString(newId.DatabaseName()).
+						HasSchemaString(newId.SchemaName()).
+						HasCommentString("").
+						HasDirectoryEmpty().
+						HasEncryptionSnowflakeSse().
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeInternalNoCse),
+					resourceshowoutputassert.StageShowOutput(t, modelSseEncryption.ResourceReference()).
+						HasName(newId.Name()).
+						HasDatabaseName(newId.DatabaseName()).
+						HasSchemaName(newId.SchemaName()).
+						HasType(sdk.StageTypeInternalNoCse).
+						HasCommentEmpty().
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelSseEncryption.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelSseEncryption.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
+			// External type change detection
+			{
+				PreConfig: func() {
+					testClient().Stage.DropStageFunc(t, newId)()
+					testClient().Stage.CreateStageOnAzureWithId(t, newId, azureUrl)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelSseEncryption.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, modelSseEncryption),
 				Check: assertThat(t,
 					resourceassert.InternalStageResource(t, modelSseEncryption.ResourceReference()).
 						HasNameString(newId.Name()).
