@@ -555,7 +555,11 @@ func (r stageShowRow) convert() (*Stage, error) {
 		stage.Region = &r.Region.String
 	}
 	if r.Cloud.Valid {
-		stage.Cloud = &r.Cloud.String
+		cloud, err := ToStageCloud(r.Cloud.String)
+		if err != nil {
+			return nil, err
+		}
+		stage.Cloud = &cloud
 	}
 	if r.StorageIntegration.Valid {
 		id, err := ParseAccountObjectIdentifier(r.StorageIntegration.String)

@@ -22,6 +22,16 @@ func (e *ExternalAzureStageResourceAssert) HasDirectoryRefreshOnCreateString(exp
 	return e
 }
 
+func (e *ExternalAzureStageResourceAssert) HasNoDirectoryRefreshOnCreate() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("directory.0.refresh_on_create", ""))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasNoDirectoryAutoRefresh() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("directory.0.auto_refresh", ""))
+	return e
+}
+
 func (e *ExternalAzureStageResourceAssert) HasDirectory(enable bool, autoRefresh bool) *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("directory.#", "1"))
 	e.AddAssertion(assert.ValueSet("directory.0.enable", strconv.FormatBool(enable)))
@@ -48,7 +58,8 @@ func (e *ExternalAzureStageResourceAssert) HasStageTypeEnum(expected sdk.StageTy
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasCredentials() *ExternalAzureStageResourceAssert {
+func (e *ExternalAzureStageResourceAssert) HasCredentials(token string) *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("credentials.#", "1"))
+	e.AddAssertion(assert.ValueSet("credentials.0.azure_sas_token", token))
 	return e
 }

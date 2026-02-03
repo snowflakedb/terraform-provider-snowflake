@@ -92,7 +92,6 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 			Default:          BooleanDefault,
 			ValidateDiagFunc: validateBooleanString,
 			ConflictsWith:    []string{"storage_integration"},
-			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("use_privatelink_endpoint"),
 			Description:      "Specifies whether to use a private link endpoint for Azure storage.",
 		},
 		"directory": {
@@ -103,10 +102,9 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"enable": {
-						Type:             schema.TypeBool,
-						Required:         true,
-						Description:      "Specifies whether to enable a directory table on the external stage.",
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("directory_table.0.enable"),
+						Type:        schema.TypeBool,
+						Required:    true,
+						Description: "Specifies whether to enable a directory table on the external stage.",
 					},
 					"refresh_on_create": {
 						Type:             schema.TypeString,
@@ -121,9 +119,8 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 						Default:          BooleanDefault,
 						ValidateDiagFunc: validateBooleanString,
 						Optional:         true,
-						ForceNew:         true,
 						Description:      "Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.",
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("directory_table.0.auto_refresh"),
+						DiffSuppressFunc: ignoreNestedBooleanDefault,
 					},
 					"notification_integration": {
 						Type:             schema.TypeString,
@@ -154,13 +151,14 @@ func ExternalAzureStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalAzureStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalAzureStageSchema, DescribeOutputAttributeName, "directory", "encryption"),
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
 			ForceNewIfChangeToEmptySlice[any]("encryption"),
+			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAzure),
+			RecreateWhenCredentialsAreSetOnExternalStageWithStorageIntegration(),
 		)),
 
 		Schema: externalAzureStageSchema,
@@ -302,28 +300,11 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			); err != nil {
 				return diag.FromErr(err)
 			}
-			directoryTable := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": details.DirectoryTable.AutoRefresh,
-				},
-			}
-			directoryTableToSet := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-				},
-			}
-			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
 		}
 
 		var cloud string
 		if stage.Cloud != nil {
-			cloud = *stage.Cloud
+			cloud = string(*stage.Cloud)
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StageToSchema(stage)}),
@@ -388,7 +369,7 @@ func UpdateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	if !reflect.DeepEqual(*set, sdk.AlterExternalAzureStageStageRequest{}) {
+	if !reflect.DeepEqual(*set, sdk.NewAlterExternalAzureStageStageRequest(id)) {
 		if err := client.Stages.AlterExternalAzureStage(ctx, set); err != nil {
 			return diag.FromErr(fmt.Errorf("error updating external Azure stage: %w", err))
 		}
@@ -443,7 +424,7 @@ func parseAzureStageDirectory(v any) (sdk.ExternalAzureDirectoryTableOptionsRequ
 	if v, ok := directoryConfig["refresh_on_create"]; ok && v.(string) != BooleanDefault {
 		refreshOnCreateBool, err := booleanStringToBool(v.(string))
 		if err != nil {
-			return sdk.ExternalAzureDirectoryTableOptionsRequest{}, err
+			return sdk.ExternalAzureDirectoryTableOptionsRequest{}, fmt.Errorf("parsing refresh_on_create: %w", err)
 		}
 		directoryReq.WithRefreshOnCreate(refreshOnCreateBool)
 	}
@@ -451,7 +432,7 @@ func parseAzureStageDirectory(v any) (sdk.ExternalAzureDirectoryTableOptionsRequ
 	if v, ok := directoryConfig["auto_refresh"]; ok && v.(string) != BooleanDefault {
 		autoRefreshBool, err := booleanStringToBool(v.(string))
 		if err != nil {
-			return sdk.ExternalAzureDirectoryTableOptionsRequest{}, err
+			return sdk.ExternalAzureDirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)
 		}
 		directoryReq.WithAutoRefresh(autoRefreshBool)
 	}

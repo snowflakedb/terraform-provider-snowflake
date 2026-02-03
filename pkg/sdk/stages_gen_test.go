@@ -1846,6 +1846,8 @@ func TestStages_ToStageCloud(t *testing.T) {
 		want  StageCloud
 	}{
 		{input: "AZURE", want: StageCloudAzure},
+		{input: "AWS", want: StageCloudAws},
+		{input: "GCP", want: StageCloudGcp},
 		// case insensitive
 		{input: "azure", want: StageCloudAzure},
 	}

@@ -77,10 +77,16 @@ var AcceptableStageTypes = map[StageType][]StageType{
 
 type StageCloud string
 
-var StageCloudAzure StageCloud = "AZURE"
+var (
+	StageCloudAzure StageCloud = "AZURE"
+	StageCloudAws   StageCloud = "AWS"
+	StageCloudGcp   StageCloud = "GCP"
+)
 
 var allStageClouds = []StageCloud{
 	StageCloudAzure,
+	StageCloudAws,
+	StageCloudGcp,
 }
 
 func ToStageCloud(s string) (StageCloud, error) {

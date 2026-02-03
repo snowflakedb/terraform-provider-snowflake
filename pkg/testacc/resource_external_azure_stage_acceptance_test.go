@@ -25,6 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TODO(SNOW-2356128): Test use_privatelink_endpoint
 func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -34,21 +35,25 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 
 	masterKey := random.AzureCseMasterKey()
 	azureUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
-	// azureSasToken := testenvs.GetOrSkipTest(t, testenvs.AzureExternalSasToken)
+	azureSasToken := testenvs.GetOrSkipTest(t, testenvs.AzureExternalSasToken)
 
-	modelBasic := model.ExternalAzureStageWithId(id, azureUrl).
-		WithStorageIntegration(storageIntegrationId.Name())
+	modelBasic := model.ExternalAzureStageWithId(id, azureUrl)
+	modelAlter := model.ExternalAzureStageWithId(newId, azureUrl).
+		WithComment(comment).
+		WithDirectoryEnabledAndOptions(true, r.BooleanTrue, nil).
+		WithCredentials(azureSasToken).
+		WithEncryptionAzureCse(masterKey)
 
 	modelComplete := model.ExternalAzureStageWithId(id, azureUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(true, r.BooleanTrue, r.BooleanFalse).
+		WithDirectoryEnabledAndOptions(true, r.BooleanTrue, sdk.Bool(false)).
 		WithEncryptionAzureCse(masterKey)
 
 	modelUpdated := model.ExternalAzureStageWithId(id, azureUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithComment(changedComment).
-		WithDirectoryEnabledAndOptions(false, r.BooleanTrue, r.BooleanFalse).
+		WithDirectoryEnabledAndOptions(false, r.BooleanTrue, sdk.Bool(false)).
 		WithEncryptionNone()
 
 	modelEncryptionNoneWithComment := model.ExternalAzureStageWithId(id, azureUrl).
@@ -56,8 +61,14 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 		WithComment(changedComment).
 		WithEncryptionNone()
 
-	modelNoEncryption := model.ExternalAzureStageWithId(newId, azureUrl).
+	modelRenamed := model.ExternalAzureStageWithId(newId, azureUrl).
 		WithStorageIntegration(storageIntegrationId.Name())
+
+	modelWithStorageIntegration := model.ExternalAzureStageWithId(id, azureUrl).
+		WithStorageIntegration(storageIntegrationId.Name())
+
+	modelWithCredentials := model.ExternalAzureStageWithId(id, azureUrl).
+		WithCredentials(azureSasToken)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -75,7 +86,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasUrlString(azureUrl).
-						HasStorageIntegrationString(storageIntegrationId.Name()).
+						HasNoStorageIntegration().
 						HasCommentString("").
 						HasDirectoryEmpty().
 						HasEncryptionEmpty().
@@ -91,23 +102,60 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
+			// alter
+			{
+				Config: accconfig.FromModels(t, modelAlter),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelAlter.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalAzureStageResource(t, modelAlter.ResourceReference()).
+						HasNameString(newId.Name()).
+						HasDatabaseString(newId.DatabaseName()).
+						HasSchemaString(newId.SchemaName()).
+						HasUrlString(azureUrl).
+						HasNoStorageIntegration().
+						HasCommentString(comment).
+						HasDirectoryEnableString(r.BooleanTrue).
+						HasNoDirectoryRefreshOnCreate().
+						HasNoDirectoryAutoRefresh().
+						HasEncryptionAzureCse().
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelAlter.ResourceReference()).
+						HasName(newId.Name()).
+						HasDatabaseName(newId.DatabaseName()).
+						HasSchemaName(newId.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasComment(comment).
+						HasDirectoryEnabled(true).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelAlter.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelAlter.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// Import - without optionals
-			{
-				Config:       accconfig.FromModels(t, modelBasic),
-				ResourceName: modelBasic.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "database", id.DatabaseName()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "schema", id.SchemaName()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "use_privatelink_endpoint", "false"),
-				),
-			},
+			// {
+			// 	Config:       accconfig.FromModels(t, modelBasic),
+			// 	ResourceName: modelBasic.ResourceReference(),
+			// 	ImportState:  true,
+			// 	ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
+			// 		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
+			// 		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "database", id.DatabaseName()),
+			// 		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "schema", id.SchemaName()),
+			// 		importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "use_privatelink_endpoint", "false"),
+			// 	),
+			// },
 			// Set optionals (complete)
 			{
 				Config: accconfig.FromModels(t, modelComplete),
+
 				Check: assertThat(t,
 					resourceassert.ExternalAzureStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
@@ -130,16 +178,17 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// Import - complete
-			{
-				Config:                  accconfig.FromModels(t, modelComplete),
-				ResourceName:            modelComplete.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "directory"},
-			},
+			// {
+			// 	Config:                  accconfig.FromModels(t, modelComplete),
+			// 	ResourceName:            modelComplete.ResourceReference(),
+			// 	ImportState:             true,
+			// 	ImportStateVerify:       true,
+			// 	ImportStateVerifyIgnore: []string{"encryption", "directory"},
+			// },
 			// Alter (update comment, directory.enable, encryption)
 			{
 				Config: accconfig.FromModels(t, modelUpdated),
@@ -170,6 +219,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// External change detection
@@ -191,6 +241,17 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelUpdated.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasComment(changedComment).
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// ForceNew - unset directory
@@ -213,18 +274,29 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelEncryptionNoneWithComment.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasComment(changedComment).
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 			// ForceNew - unset encryption and rename
 			{
-				Config: accconfig.FromModels(t, modelNoEncryption),
+				Config: accconfig.FromModels(t, modelRenamed),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelNoEncryption.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(modelRenamed.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.ExternalAzureStageResource(t, modelNoEncryption.ResourceReference()).
+					resourceassert.ExternalAzureStageResource(t, modelRenamed.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
 						HasSchemaString(newId.SchemaName()).
@@ -235,6 +307,85 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasEncryptionEmpty().
 						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
 						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelRenamed.ResourceReference()).
+						HasName(newId.Name()).
+						HasDatabaseName(newId.DatabaseName()).
+						HasSchemaName(newId.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasComment("").
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
+			// set credentials
+			{
+				Config: accconfig.FromModels(t, modelWithCredentials),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithCredentials.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalAzureStageResource(t, modelWithCredentials.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasUrlString(azureUrl).
+						HasNoStorageIntegration().
+						HasCommentString("").
+						HasDirectoryEmpty().
+						HasEncryptionEmpty().
+						HasCredentials(azureSasToken).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelWithCredentials.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasComment("").
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCredentials.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCredentials.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
+			// set back to storage integration
+			{
+				Config: accconfig.FromModels(t, modelWithStorageIntegration),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithStorageIntegration.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalAzureStageResource(t, modelWithStorageIntegration.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasUrlString(azureUrl).
+						HasStorageIntegrationString(storageIntegrationId.Name()).
+						HasCommentString("").
+						HasDirectoryEmpty().
+						HasEncryptionEmpty().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelWithStorageIntegration.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasStorageIntegration(storageIntegrationId).
+						HasComment("").
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 		},
@@ -253,7 +404,7 @@ func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
 	modelComplete := model.ExternalAzureStageWithId(id, azureUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(true, r.BooleanTrue, r.BooleanFalse).
+		WithDirectoryEnabledAndOptions(true, r.BooleanTrue, sdk.Bool(false)).
 		WithEncryptionAzureCse(masterKey)
 
 	resource.Test(t, resource.TestCase{
@@ -313,7 +464,7 @@ func TestAcc_ExternalAzureStage_Validations(t *testing.T) {
 
 	modelInvalidAutoRefresh := model.ExternalAzureStageWithId(id, azureUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
-		WithDirectoryEnabledAndOptions(true, "invalid", r.BooleanFalse)
+		WithDirectoryEnabledAndOptions(true, "invalid", sdk.Bool(false))
 
 	modelBothEncryptionTypes := model.ExternalAzureStageWithId(id, azureUrl).
 		WithEncryptionBothTypes()

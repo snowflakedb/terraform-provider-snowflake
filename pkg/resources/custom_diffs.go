@@ -99,6 +99,13 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 	})
 }
 
+// ForceNewIfNotDefault sets a ForceNew for a string field which was set to a default value.
+func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
+		return oldValue.(string) == "" && newValue.(string) != BooleanDefault
+	})
+}
+
 // ComputedIfAnyAttributeChanged marks the given fields as computed if any of the listed fields changes.
 // It takes field-level diffSuppress into consideration based on the schema passed.
 // If the field is not found in the given schema, it continues without error. Only top level schema fields should be used.
@@ -303,6 +310,23 @@ func RecreateWhenStreamIsStale() schema.CustomizeDiffFunc {
 		if old, _ := diff.GetChange("stale"); old.(bool) {
 			return diff.SetNew("stale", false)
 		}
+		return nil
+	}
+}
+
+func RecreateWhenCredentialsAreSetOnExternalStageWithStorageIntegration() schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		credentialsOld, credentialsNew := diff.GetChange("credentials")
+		storageIntegrationOld, storageIntegrationNew := diff.GetChange("storage_integration")
+		// Change security integrations into credentials
+		if diff.HasChange("credentials") && storageIntegrationOld.(string) != "" && len(credentialsNew.([]any)) > 0 {
+			return diff.ForceNew("credentials")
+		}
+		// Change credentials into security integrations
+		if diff.HasChange("storage_integration") && len(credentialsOld.([]any)) == 0 && storageIntegrationNew.(string) != "" {
+			return diff.ForceNew("storage_integration")
+		}
+
 		return nil
 	}
 }
