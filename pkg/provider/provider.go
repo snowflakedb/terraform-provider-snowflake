@@ -601,6 +601,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_external_function":                                            resources.ExternalFunction(),
 		"snowflake_external_gcs_stage":                                           resources.ExternalGcsStage(),
 		"snowflake_external_oauth_integration":                                   resources.ExternalOauthIntegration(),
+		"snowflake_external_s3_stage":                                            resources.ExternalS3Stage(),
 		"snowflake_external_table":                                               resources.ExternalTable(),
 		"snowflake_external_volume":                                              resources.ExternalVolume(),
 		"snowflake_failover_group":                                               resources.FailoverGroup(),

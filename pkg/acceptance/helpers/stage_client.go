@@ -347,6 +347,14 @@ func (c *StageClient) AlterExternalAzureStage(t *testing.T, req *sdk.AlterExtern
 	require.NoError(t, err)
 }
 
+func (c *StageClient) AlterExternalS3Stage(t *testing.T, req *sdk.AlterExternalS3StageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterExternalS3Stage(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *StageClient) AlterDirectoryTable(t *testing.T, req *sdk.AlterDirectoryTableStageRequest) {
 	t.Helper()
 	ctx := context.Background()
