@@ -475,14 +475,14 @@ func TestAcc_ExternalGcsStage_Validations(t *testing.T) {
 	storageIntegrationId := testClient().Ids.RandomAccountObjectIdentifier()
 	gcsUrl := "gcs://mybucket/mypath/"
 
-	modelInvalidAutoRefresh := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name()).
+	modelInvalidAutoRefresh := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithInvalidAutoRefresh()
-	modelInvalidRefreshOnCreate := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name()).
+	modelInvalidRefreshOnCreate := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithInvalidRefreshOnCreate()
 
-	modelBothEncryptionTypes := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name()).
+	modelBothEncryptionTypes := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithEncryptionBothTypes()
-	modelEncryptionNoneTypeSpecified := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name()).
+	modelEncryptionNoneTypeSpecified := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithEncryptionNoneTypeSpecified()
 
 	resource.Test(t, resource.TestCase{
