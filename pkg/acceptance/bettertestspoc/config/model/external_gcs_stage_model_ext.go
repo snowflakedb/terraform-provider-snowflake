@@ -1,13 +1,15 @@
 package model
 
 import (
+	"strconv"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-func ExternalGcsStageWithId(id sdk.SchemaObjectIdentifier, url string, storageIntegration string) *ExternalGcsStageModel {
-	return ExternalGcsStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), url, storageIntegration)
+func ExternalGcsStageWithId(id sdk.SchemaObjectIdentifier, storageIntegration, url string) *ExternalGcsStageModel {
+	return ExternalGcsStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), storageIntegration, url)
 }
 
 func (e *ExternalGcsStageModel) WithDirectoryEnabled(enable string) *ExternalGcsStageModel {
@@ -24,10 +26,10 @@ func (e *ExternalGcsStageModel) WithDirectoryEnabledAndOptions(opts sdk.External
 		"enable": tfconfig.BoolVariable(opts.Enable),
 	}
 	if opts.RefreshOnCreate != nil {
-		directoryMap["refresh_on_create"] = tfconfig.BoolVariable(*opts.RefreshOnCreate)
+		directoryMap["refresh_on_create"] = tfconfig.StringVariable(strconv.FormatBool(*opts.RefreshOnCreate))
 	}
 	if opts.AutoRefresh != nil {
-		directoryMap["auto_refresh"] = tfconfig.BoolVariable(*opts.AutoRefresh)
+		directoryMap["auto_refresh"] = tfconfig.StringVariable(strconv.FormatBool(*opts.AutoRefresh))
 	}
 	if opts.NotificationIntegration != nil {
 		directoryMap["notification_integration"] = tfconfig.StringVariable(*opts.NotificationIntegration)

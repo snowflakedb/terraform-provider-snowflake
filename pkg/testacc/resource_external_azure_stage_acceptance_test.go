@@ -133,7 +133,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasNoStorageIntegration().
 						HasCommentString(comment).
-						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:      true,
 							AutoRefresh: sdk.Pointer(r.BooleanDefault),
 						}).
@@ -184,7 +184,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:          true,
 							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 							RefreshOnCreate: sdk.Bool(true),
@@ -227,7 +227,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:      true,
 							AutoRefresh: sdk.Pointer(r.BooleanFalse),
 						}).
@@ -284,7 +284,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
-						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:      false,
 							AutoRefresh: sdk.Pointer(r.BooleanFalse),
 						}).
@@ -320,7 +320,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
-						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:          false,
 							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 							RefreshOnCreate: sdk.Bool(false),
@@ -559,7 +559,7 @@ func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:          true,
 							RefreshOnCreate: sdk.Bool(true),
 							AutoRefresh:     sdk.Pointer(r.BooleanFalse),

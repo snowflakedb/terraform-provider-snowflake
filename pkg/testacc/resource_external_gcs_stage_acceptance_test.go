@@ -18,12 +18,14 @@ import (
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TODO(SNOW-2356128): Test notification integration
 func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -34,8 +36,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 	gcsUrl := testenvs.GetOrSkipTest(t, testenvs.GcsExternalBucketUrl)
 	s3Url := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 
-	modelBasic := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name())
-	modelAlter := model.ExternalGcsStageWithId(newId, gcsUrl, storageIntegrationId.Name()).
+	modelBasic := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl)
+	modelAlter := model.ExternalGcsStageWithId(newId, storageIntegrationId.Name(), gcsUrl).
 		WithComment(comment).
 		WithDirectoryEnabledAndOptions(sdk.ExternalGCSDirectoryTableOptionsRequest{
 			Enable:          true,
@@ -43,7 +45,7 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 		}).
 		WithEncryptionNone()
 
-	modelComplete := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name()).
+	modelComplete := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithComment(comment).
 		WithDirectoryEnabledAndOptions(sdk.ExternalGCSDirectoryTableOptionsRequest{
 			Enable:          true,
@@ -52,7 +54,7 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 		}).
 		WithEncryptionNone()
 
-	modelUpdated := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name()).
+	modelUpdated := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithComment(changedComment).
 		WithDirectoryEnabledAndOptions(sdk.ExternalGCSDirectoryTableOptionsRequest{
 			Enable:          false,
@@ -61,11 +63,11 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 		}).
 		WithEncryptionNone()
 
-	modelEncryptionNoneWithComment := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name()).
+	modelEncryptionNoneWithComment := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithComment(changedComment).
 		WithEncryptionNone()
 
-	modelRenamed := model.ExternalGcsStageWithId(newId, gcsUrl, storageIntegrationId.Name())
+	modelRenamed := model.ExternalGcsStageWithId(newId, storageIntegrationId.Name(), gcsUrl)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -103,6 +105,40 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
+			// Alter - rename
+			{
+				Config: accconfig.FromModels(t, modelRenamed),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelRenamed.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalGcsStageResource(t, modelRenamed.ResourceReference()).
+						HasNameString(newId.Name()).
+						HasDatabaseString(newId.DatabaseName()).
+						HasSchemaString(newId.SchemaName()).
+						HasUrlString(gcsUrl).
+						HasStorageIntegrationString(storageIntegrationId.Name()).
+						HasCommentString("").
+						HasDirectoryEmpty().
+						HasEncryptionEmpty().
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudGcp).
+						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelRenamed.ResourceReference()).
+						HasName(newId.Name()).
+						HasDatabaseName(newId.DatabaseName()).
+						HasSchemaName(newId.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasComment("").
+						HasDirectoryEnabled(false).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
 			// alter
 			{
 				Config: accconfig.FromModels(t, modelAlter),
@@ -119,8 +155,9 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						HasUrlString(gcsUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(sdk.ExternalGCSDirectoryTableOptionsRequest{
-							Enable: true,
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
+							Enable:      true,
+							AutoRefresh: sdk.Pointer(r.BooleanDefault),
 						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
@@ -169,9 +206,9 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						HasUrlString(gcsUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(sdk.ExternalGCSDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:          true,
-							AutoRefresh:     sdk.Bool(false),
+							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 							RefreshOnCreate: sdk.Bool(true),
 						}).
 						HasEncryptionNone().
@@ -226,9 +263,9 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						HasUrlString(gcsUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
-						HasDirectory(sdk.ExternalGCSDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:          false,
-							AutoRefresh:     sdk.Bool(false),
+							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 							RefreshOnCreate: sdk.Bool(true),
 						}).
 						HasEncryptionNone().
@@ -252,7 +289,7 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Stage.DropStageFunc(t, id)()
-					testClient().Stage.CreateStageOnGCS(t, gcsUrl)
+					testClient().Stage.CreateStageOnGCSWithId(t, id, gcsUrl)
 				},
 				Config: accconfig.FromModels(t, modelUpdated),
 				Check: assertThat(t,
@@ -263,10 +300,10 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						HasUrlString(gcsUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
-						HasDirectory(sdk.ExternalGCSDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:          false,
-							AutoRefresh:     sdk.Bool(false),
-							RefreshOnCreate: sdk.Bool(false),
+							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
+							RefreshOnCreate: sdk.Bool(true),
 						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -319,78 +356,44 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
-			// ForceNew - unset encryption and rename
-			{
-				Config: accconfig.FromModels(t, modelRenamed),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelRenamed.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.ExternalGcsStageResource(t, modelRenamed.ResourceReference()).
-						HasNameString(newId.Name()).
-						HasDatabaseString(newId.DatabaseName()).
-						HasSchemaString(newId.SchemaName()).
-						HasUrlString(gcsUrl).
-						HasStorageIntegrationString(storageIntegrationId.Name()).
-						HasCommentString("").
-						HasDirectoryEmpty().
-						HasEncryptionEmpty().
-						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
-						HasCloudEnum(sdk.StageCloudGcp).
-						HasStageTypeEnum(sdk.StageTypeExternal),
-					resourceshowoutputassert.StageShowOutput(t, modelRenamed.ResourceReference()).
-						HasName(newId.Name()).
-						HasDatabaseName(newId.DatabaseName()).
-						HasSchemaName(newId.SchemaName()).
-						HasType(sdk.StageTypeExternal).
-						HasComment("").
-						HasDirectoryEnabled(false).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasCreatedOnNotEmpty(),
-					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
-				),
-			},
 			// Detect changing stage type externally
 			{
 				PreConfig: func() {
-					testClient().Stage.DropStageFunc(t, newId)()
+					testClient().Stage.DropStageFunc(t, id)()
 					testClient().Stage.CreateStageOnS3WithRequest(t,
-						sdk.NewCreateOnS3StageRequest(newId,
+						sdk.NewCreateOnS3StageRequest(id,
 							*sdk.NewExternalS3StageParamsRequest(s3Url)))
 				},
-				Config: accconfig.FromModels(t, modelRenamed),
+				Config: accconfig.FromModels(t, modelEncryptionNoneWithComment),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelRenamed.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(modelEncryptionNoneWithComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.ExternalGcsStageResource(t, modelRenamed.ResourceReference()).
-						HasNameString(newId.Name()).
-						HasDatabaseString(newId.DatabaseName()).
-						HasSchemaString(newId.SchemaName()).
+					resourceassert.ExternalGcsStageResource(t, modelEncryptionNoneWithComment.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
 						HasUrlString(gcsUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
-						HasCommentString("").
+						HasCommentString(changedComment).
 						HasDirectoryEmpty().
-						HasEncryptionEmpty().
-						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasEncryptionNone().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCloudEnum(sdk.StageCloudGcp).
 						HasStageTypeEnum(sdk.StageTypeExternal),
-					resourceshowoutputassert.StageShowOutput(t, modelRenamed.ResourceReference()).
-						HasName(newId.Name()).
-						HasDatabaseName(newId.DatabaseName()).
-						HasSchemaName(newId.SchemaName()).
+					resourceshowoutputassert.StageShowOutput(t, modelEncryptionNoneWithComment.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
 						HasType(sdk.StageTypeExternal).
-						HasComment("").
+						HasComment(changedComment).
 						HasDirectoryEnabled(false).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasCreatedOnNotEmpty(),
-					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
 		},
@@ -405,7 +408,7 @@ func TestAcc_ExternalGcsStage_CompleteUseCase(t *testing.T) {
 
 	gcsUrl := testenvs.GetOrSkipTest(t, testenvs.GcsExternalBucketUrl)
 
-	modelComplete := model.ExternalGcsStageWithId(id, gcsUrl, storageIntegrationId.Name()).
+	modelComplete := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithComment(comment).
 		WithDirectoryEnabledAndOptions(sdk.ExternalGCSDirectoryTableOptionsRequest{
 			Enable:          true,
@@ -431,10 +434,10 @@ func TestAcc_ExternalGcsStage_CompleteUseCase(t *testing.T) {
 						HasUrlString(gcsUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(sdk.ExternalGCSDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
 							Enable:          true,
-							RefreshOnCreate: sdk.Bool(true),
-							AutoRefresh:     sdk.Bool(false),
+							RefreshOnCreate: sdk.Pointer(true),
+							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
