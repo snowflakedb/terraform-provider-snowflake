@@ -9,7 +9,7 @@ description: |-
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
--> **Note** External changes detection on the `encryption` field is not supported due to Snowflake and Terraform limitations.
+-> **Note** External changes detection on the `encryption` field is not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
 # snowflake_external_gcs_stage (Resource)
 
