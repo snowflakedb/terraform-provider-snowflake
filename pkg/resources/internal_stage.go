@@ -71,7 +71,7 @@ var internalStageSchema = func() map[string]*schema.Schema {
 						ValidateDiagFunc: validateBooleanString,
 						Optional:         true,
 						Description:      "Specifies whether Snowflake should automatically refresh the directory table metadata when new or updated data files are available on the internal named stage.",
-						DiffSuppressFunc: ignoreNestedBooleanDefault,
+						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.directory_table", "auto_refresh"),
 					},
 				},
 			},
