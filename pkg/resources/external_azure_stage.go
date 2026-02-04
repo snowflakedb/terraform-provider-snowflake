@@ -93,6 +93,7 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 			ValidateDiagFunc: validateBooleanString,
 			ConflictsWith:    []string{"storage_integration"},
 			Description:      "Specifies whether to use a private link endpoint for Azure storage.",
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("private_link.0.use_privatelink_endpoint"),
 		},
 		"directory": {
 			Type:        schema.TypeList,
@@ -120,7 +121,7 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 						ValidateDiagFunc: validateBooleanString,
 						Optional:         true,
 						Description:      "Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.",
-						DiffSuppressFunc: ignoreNestedBooleanDefault,
+						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.directory_table", "auto_refresh"),
 					},
 					"notification_integration": {
 						Type:             schema.TypeString,
@@ -151,6 +152,7 @@ func ExternalAzureStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalAzureStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
+			ComputedIfAnyAttributeChanged(externalAzureStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint"),
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
@@ -158,7 +160,7 @@ func ExternalAzureStage() *schema.Resource {
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAzure),
-			RecreateWhenCredentialsAreSetOnExternalStageWithStorageIntegration(),
+			RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage(),
 		)),
 
 		Schema: externalAzureStageSchema,
@@ -205,11 +207,8 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		if err := d.Set("use_privatelink_endpoint", booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)); err != nil {
 			return nil, err
 		}
-	} else {
-		if err := d.Set("use_privatelink_endpoint", BooleanFalse); err != nil {
-			return nil, err
-		}
 	}
+	// If PrivateLink is nil, let the schema default (BooleanDefault) apply
 	if details.Location != nil {
 		if err := d.Set("url", details.Location.Url); err != nil {
 			return nil, err
@@ -329,7 +328,6 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			); err != nil {
 				return diag.FromErr(err)
 			}
-
 		}
 
 		var cloud string

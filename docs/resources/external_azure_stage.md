@@ -9,7 +9,7 @@ description: |-
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
--> **Note** External changes detection on `credentials.azure_sas_token`, and `encryption` fields are not supported due to Snowflake and Terraform limitations.
+-> **Note** External changes detection on `credentials.azure_sas_token`, and `encryption` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
 # snowflake_external_azure_stage (Resource)
 

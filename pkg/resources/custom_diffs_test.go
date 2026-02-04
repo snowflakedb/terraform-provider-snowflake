@@ -1147,7 +1147,7 @@ func Test_RecreateWhenResourceBoolFieldChangedExternally(t *testing.T) {
 	}
 }
 
-func Test_RecreateWhenCredentialsAreSetOnExternalStageWithStorageIntegration(t *testing.T) {
+func Test_RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage(t *testing.T) {
 	testSchema := map[string]*schema.Schema{
 		"credentials": {
 			Type:     schema.TypeList,
@@ -1278,7 +1278,7 @@ func Test_RecreateWhenCredentialsAreSetOnExternalStageWithStorageIntegration(t *
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			customDiff := resources.RecreateWhenCredentialsAreSetOnExternalStageWithStorageIntegration()
+			customDiff := resources.RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage()
 			testProvider := createProviderWithCustomSchemaAndCustomDiff(t, testSchema, customDiff)
 			diff := calculateDiffFromAttributes(
 				t,

@@ -133,8 +133,9 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasNoStorageIntegration().
 						HasCommentString(comment).
-						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
-							Enable: true,
+						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
+							Enable:      true,
+							AutoRefresh: sdk.Pointer(r.BooleanDefault),
 						}).
 						HasEncryptionAzureCse().
 						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
@@ -164,7 +165,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "schema", newId.SchemaName()),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "url", azureUrl),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "fully_qualified_name", newId.FullyQualifiedName()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "use_privatelink_endpoint", "false"),
+					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "use_privatelink_endpoint"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "stage_type", string(sdk.StageTypeExternal)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "cloud", string(sdk.StageCloudAzure)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(newId), "directory.0.enable", "true"),
@@ -183,9 +184,9 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
 							Enable:          true,
-							AutoRefresh:     sdk.Bool(false),
+							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 							RefreshOnCreate: sdk.Bool(true),
 						}).
 						HasEncryptionAzureCse().
@@ -226,9 +227,9 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
 							Enable:      true,
-							AutoRefresh: sdk.Bool(false),
+							AutoRefresh: sdk.Pointer(r.BooleanFalse),
 						}).
 						HasEncryptionAzureCse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -258,7 +259,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "schema", id.SchemaName()),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "url", azureUrl),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "fully_qualified_name", id.FullyQualifiedName()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "use_privatelink_endpoint", "false"),
+					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "use_privatelink_endpoint"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "comment", comment),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "storage_integration", storageIntegrationId.Name()),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "stage_type", string(sdk.StageTypeExternal)),
@@ -283,9 +284,9 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
-						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
 							Enable:      false,
-							AutoRefresh: sdk.Bool(false),
+							AutoRefresh: sdk.Pointer(r.BooleanFalse),
 						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -319,9 +320,9 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
-						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
 							Enable:          false,
-							AutoRefresh:     sdk.Bool(false),
+							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 							RefreshOnCreate: sdk.Bool(false),
 						}).
 						HasEncryptionNone().
@@ -483,7 +484,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Stage.DropStageFunc(t, id)()
-					testClient().Stage.CreateStageWithId(t, id)
+					testClient().Stage.CreateInternalStageWithId(t, id)
 				},
 				Config: accconfig.FromModels(t, modelWithStorageIntegration),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -558,10 +559,10 @@ func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
 						HasUrlString(azureUrl).
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(comment).
-						HasDirectory(sdk.ExternalAzureDirectoryTableOptionsRequest{
+						HasDirectory(resourceassert.AzureStageDirectoryTableAssert{
 							Enable:          true,
 							RefreshOnCreate: sdk.Bool(true),
-							AutoRefresh:     sdk.Bool(false),
+							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 						}).
 						HasEncryptionAzureCse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -585,7 +586,14 @@ func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
 				ResourceName: modelComplete.ResourceReference(),
 				ImportState:  true,
 				ImportStateCheck: importchecks.ComposeAggregateImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "use_privatelink_endpoint", "false"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "database", id.DatabaseName()),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "schema", id.SchemaName()),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "url", azureUrl),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "fully_qualified_name", id.FullyQualifiedName()),
+					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "use_privatelink_endpoint"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "stage_type", string(sdk.StageTypeExternal)),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "cloud", string(sdk.StageCloudAzure)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.enable", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.auto_refresh", "false"),
 				),

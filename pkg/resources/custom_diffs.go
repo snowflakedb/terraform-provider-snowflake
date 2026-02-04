@@ -99,7 +99,7 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 	})
 }
 
-// ForceNewIfNotDefault sets a ForceNew for a string field which was set to a default value.
+// ForceNewIfNotDefault sets a ForceNew for a string field which was set to a non-default value.
 func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
 	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
 		return oldValue.(string) == "" && newValue.(string) != BooleanDefault
@@ -314,15 +314,21 @@ func RecreateWhenStreamIsStale() schema.CustomizeDiffFunc {
 	}
 }
 
-func RecreateWhenCredentialsAreSetOnExternalStageWithStorageIntegration() schema.CustomizeDiffFunc {
+// RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage forces recreation when switching
+// between credentials-based authentication and storage integration-based authentication on external stages.
+// This is necessary because Snowflake doesn't allow updating between these two authentication methods in-place.
+// Handles both directions:
+// - From storage_integration to credentials: ForceNew on credentials
+// - From credentials to storage_integration: ForceNew on storage_integration
+func RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage() schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		credentialsOld, credentialsNew := diff.GetChange("credentials")
 		storageIntegrationOld, storageIntegrationNew := diff.GetChange("storage_integration")
-		// Change security integrations into credentials
+		// Change from storage_integration to credentials requires recreation
 		if diff.HasChange("credentials") && storageIntegrationOld.(string) != "" && len(credentialsNew.([]any)) > 0 {
 			return diff.ForceNew("credentials")
 		}
-		// Change credentials into security integrations
+		// Change from credentials to storage_integration requires recreation
 		if diff.HasChange("storage_integration") && len(credentialsOld.([]any)) > 0 && storageIntegrationNew.(string) != "" {
 			return diff.ForceNew("storage_integration")
 		}

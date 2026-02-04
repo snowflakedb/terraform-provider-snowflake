@@ -7,7 +7,14 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (e *ExternalAzureStageResourceAssert) HasDirectory(opts sdk.ExternalAzureDirectoryTableOptionsRequest) *ExternalAzureStageResourceAssert {
+type AzureStageDirectoryTableAssert struct {
+	Enable                  bool
+	RefreshOnCreate         *bool
+	AutoRefresh             *string
+	NotificationIntegration *string
+}
+
+func (e *ExternalAzureStageResourceAssert) HasDirectory(opts AzureStageDirectoryTableAssert) *ExternalAzureStageResourceAssert {
 	var notificationIntegration string
 	if opts.NotificationIntegration != nil {
 		notificationIntegration = *opts.NotificationIntegration
@@ -18,7 +25,7 @@ func (e *ExternalAzureStageResourceAssert) HasDirectory(opts sdk.ExternalAzureDi
 	}
 	var autoRefresh string
 	if opts.AutoRefresh != nil {
-		autoRefresh = strconv.FormatBool(*opts.AutoRefresh)
+		autoRefresh = *opts.AutoRefresh
 	}
 	e.AddAssertion(assert.ValueSet("directory.#", "1"))
 	e.AddAssertion(assert.ValueSet("directory.0.enable", strconv.FormatBool(opts.Enable)))

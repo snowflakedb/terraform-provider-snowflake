@@ -61,7 +61,7 @@ func (c *StageClient) CreateStage(t *testing.T) (*sdk.Stage, func()) {
 	return c.CreateStageInSchema(t, c.ids.SchemaId())
 }
 
-func (c *StageClient) CreateStageWithId(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Stage, func()) {
+func (c *StageClient) CreateInternalStageWithId(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Stage, func()) {
 	t.Helper()
 	return c.CreateStageWithRequest(t, sdk.NewCreateInternalStageRequest(id))
 }

@@ -90,6 +90,7 @@ func InternalStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.InternalStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(internalStageSchema, ShowOutputAttributeName, "name", "comment"),
+			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh"),
 			ComputedIfAnyAttributeChanged(internalStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
@@ -236,6 +237,26 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 		detailsSchema, err := schemas.StageDescribeToSchema(*details)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+
+		if withExternalChangesMarking {
+			directoryTable := []any{
+				map[string]any{
+					"enable":       details.DirectoryTable.Enable,
+					"auto_refresh": details.DirectoryTable.AutoRefresh,
+				},
+			}
+			directoryTableToSet := []any{
+				map[string]any{
+					"enable":       details.DirectoryTable.Enable,
+					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
+				},
+			}
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+			); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		errs := errors.Join(
