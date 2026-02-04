@@ -74,12 +74,12 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Execute().Schema,
 	},
 	{
-		name:   "ExternalVolume",
-		schema: resources.ExternalVolume().Schema,
+		name:   "ExternalAzureStage",
+		schema: resources.ExternalAzureStage().Schema,
 	},
 	{
-		name:   "ImageRepository",
-		schema: resources.ImageRepository().Schema,
+		name:   "ExternalVolume",
+		schema: resources.ExternalVolume().Schema,
 	},
 	{
 		name:   "ExternalOauthSecurityIntegration",
@@ -108,6 +108,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "GitRepository",
 		schema: resources.GitRepository().Schema,
+	},
+	{
+		name:   "ImageRepository",
+		schema: resources.ImageRepository().Schema,
 	},
 	{
 		name:   "InternalStage",

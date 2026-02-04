@@ -390,7 +390,7 @@ type Stage struct {
 	Comment            string
 	Region             *string
 	Type               StageType
-	Cloud              *string
+	Cloud              *StageCloud
 	StorageIntegration *AccountObjectIdentifier
 	Endpoint           *string
 	OwnerRoleType      *string

@@ -26,14 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.12.x ➞ v2.13.0
 
-### *(new feature)* Internal stage resource
+### *(new feature)* New stage resources
 
-To enhance clarity and functionality, the new resource `snowflake_internal_stage` has been introduced to replace the previous `snowflake_stage` for internal stages. Recognizing that the old resource carried multiple responsibilities within a single entity, we opted to divide it into more specialized resources.
-The newly introduced resource is aligned with the latest Snowflake documentation at the time of implementation, and adhere to our [new conventions](#general-changes).
+To enhance clarity and functionality, the new resources `snowflake_internal_stage` and `snowflake_external_azure_stage` have been introduced to replace the previous `snowflake_stage` for internal and external stages.
+Recognizing that the old resource carried multiple responsibilities within a single entity, we opted to divide it into more specialized resources.
+The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation, and adhere to our [new conventions](#general-changes).
 
-This is a preview feature. To use it, add `snowflake_internal_stage_resource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
+These features are in preview. To use them, add `snowflake_internal_stage_resource` or `snowflake_external_azure_stage_resource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
 
-The existing `snowflake_stage` resource remains available for both internal and external stages. The new `snowflake_internal_stage` is recommended for internal stages. See the [internal_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/internal_stage) documentation for complete configuration details.
+The existing `snowflake_stage` resource remains available for both internal and external stages. The new resources are recommended for internal and external stages. See the [internal_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/internal_stage)
+and [external_azure_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_azure_stage) documentation for complete configuration details.
 
 To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
 

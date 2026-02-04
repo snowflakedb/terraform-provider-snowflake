@@ -74,3 +74,25 @@ var AcceptableStageTypes = map[StageType][]StageType{
 	StageTypeInternal: {StageTypeInternal, StageTypeInternalNoCse},
 	StageTypeExternal: {StageTypeExternal},
 }
+
+type StageCloud string
+
+var (
+	StageCloudAzure StageCloud = "AZURE"
+	StageCloudAws   StageCloud = "AWS"
+	StageCloudGcp   StageCloud = "GCP"
+)
+
+var allStageClouds = []StageCloud{
+	StageCloudAzure,
+	StageCloudAws,
+	StageCloudGcp,
+}
+
+func ToStageCloud(s string) (StageCloud, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(allStageClouds, StageCloud(s)) {
+		return "", fmt.Errorf("invalid stage cloud: %s", s)
+	}
+	return StageCloud(s), nil
+}

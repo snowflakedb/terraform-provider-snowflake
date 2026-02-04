@@ -61,27 +61,20 @@ var internalStageSchema = func() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"enable": {
-						Type:             schema.TypeBool,
-						Required:         true,
-						Description:      "Specifies whether to enable a directory table on the internal named stage.",
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("directory_table.0.enable"),
+						Type:        schema.TypeBool,
+						Required:    true,
+						Description: "Specifies whether to enable a directory table on the internal named stage.",
 					},
 					"auto_refresh": {
 						Type:             schema.TypeString,
 						Default:          BooleanDefault,
 						ValidateDiagFunc: validateBooleanString,
 						Optional:         true,
-						ForceNew:         true,
 						Description:      "Specifies whether Snowflake should automatically refresh the directory table metadata when new or updated data files are available on the internal named stage.",
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("directory_table.0.auto_refresh"),
+						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.directory_table", "auto_refresh"),
 					},
 				},
 			},
-		},
-		"comment": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Specifies a comment for the stage.",
 		},
 	}
 	return collections.MergeMaps(stageCommonSchema, internalStage)
@@ -97,9 +90,10 @@ func InternalStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.InternalStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(internalStageSchema, ShowOutputAttributeName, "name", "comment"),
-			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory"),
+			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh"),
 			ComputedIfAnyAttributeChanged(internalStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
+			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeInternal),
 		)),
 
@@ -181,10 +175,10 @@ func CreateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 			directoryReq.WithEnable(enable.(bool))
 		}
 
-		if autoRefresh, ok := directoryConfig["auto_refresh"]; ok && autoRefresh.(string) != BooleanDefault {
+		if autoRefresh, ok := directoryConfig["auto_refresh"]; ok && autoRefresh.(string) != BooleanDefault && autoRefresh.(string) != "" {
 			autoRefreshBool, err := booleanStringToBool(autoRefresh.(string))
 			if err != nil {
-				return sdk.InternalDirectoryTableOptionsRequest{}, err
+				return sdk.InternalDirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)
 			}
 			directoryReq.WithAutoRefresh(autoRefreshBool)
 		}
@@ -246,11 +240,6 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
-				outputMapping{"comment", "comment", stage.Comment, stage.Comment, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
 			directoryTable := []any{
 				map[string]any{
 					"enable":       details.DirectoryTable.Enable,
@@ -294,11 +283,13 @@ func UpdateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	id, err = handleStageRename(ctx, client, d, id)
 	if err != nil {
+		d.Partial(true)
 		return diag.FromErr(err)
 	}
 
 	err = handleStageDirectoryTable(ctx, client, d, id)
 	if err != nil {
+		d.Partial(true)
 		return diag.FromErr(err)
 	}
 
@@ -312,6 +303,7 @@ func UpdateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	if !reflect.DeepEqual(*set, sdk.AlterInternalStageStageRequest{}) {
 		if err := client.Stages.AlterInternalStage(ctx, set); err != nil {
+			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error updating stage: %w", err))
 		}
 	}

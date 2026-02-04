@@ -99,6 +99,13 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 	})
 }
 
+// ForceNewIfNotDefault sets a ForceNew for a string field which was set to a non-default value.
+func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
+		return oldValue.(string) == "" && newValue.(string) != BooleanDefault
+	})
+}
+
 // ComputedIfAnyAttributeChanged marks the given fields as computed if any of the listed fields changes.
 // It takes field-level diffSuppress into consideration based on the schema passed.
 // If the field is not found in the given schema, it continues without error. Only top level schema fields should be used.
@@ -264,6 +271,11 @@ func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) sc
 	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)
 }
 
+// RecreateWhenStageCloudChangedExternally recreates a stage when argument stageCloud is different than in the state.
+func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.CustomizeDiffFunc {
+	return RecreateWhenResourceTypeChangedExternally("cloud", stageCloud, sdk.ToStageCloud)
+}
+
 // RecreateWhenResourceTypeChangedExternally recreates a resource when argument wantType is different than the value in typeField.
 func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, wantType T, toType func(string) (T, error)) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
@@ -298,6 +310,29 @@ func RecreateWhenStreamIsStale() schema.CustomizeDiffFunc {
 		if old, _ := diff.GetChange("stale"); old.(bool) {
 			return diff.SetNew("stale", false)
 		}
+		return nil
+	}
+}
+
+// RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage forces recreation when switching
+// between credentials-based authentication and storage integration-based authentication on external stages.
+// This is necessary because Snowflake doesn't allow updating between these two authentication methods in-place.
+// Handles both directions:
+// - From storage_integration to credentials: ForceNew on credentials
+// - From credentials to storage_integration: ForceNew on storage_integration
+func RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage() schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		credentialsOld, credentialsNew := diff.GetChange("credentials")
+		storageIntegrationOld, storageIntegrationNew := diff.GetChange("storage_integration")
+		// Change from storage_integration to credentials requires recreation
+		if diff.HasChange("credentials") && storageIntegrationOld.(string) != "" && len(credentialsNew.([]any)) > 0 {
+			return diff.ForceNew("credentials")
+		}
+		// Change from credentials to storage_integration requires recreation
+		if diff.HasChange("storage_integration") && len(credentialsOld.([]any)) > 0 && storageIntegrationNew.(string) != "" {
+			return diff.ForceNew("storage_integration")
+		}
+
 		return nil
 	}
 }

@@ -346,7 +346,7 @@ func TestInt_Stages(t *testing.T) {
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasNoStorageIntegration().
 			HasHasCredentials(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -372,7 +372,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasHasCredentials(true).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
 	})
@@ -395,7 +395,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasHasCredentials(true).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
 	})
@@ -420,7 +420,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasStorageIntegration(ids.PrecreatedS3StorageIntegration).
 			HasHasEncryptionKey(true).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
@@ -442,7 +442,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasHasCredentials(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
 
@@ -478,7 +478,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasHasCredentials(false).
 			HasStorageIntegration(ids.PrecreatedS3StorageIntegration).
 			HasHasEncryptionKey(true).
@@ -510,7 +510,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternalTemporary).
 			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasStorageIntegration(s3StorageIntegration.ID()),
 		)
 	})
@@ -553,7 +553,7 @@ func TestInt_Stages(t *testing.T) {
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(awsBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasStorageIntegration(s3StorageIntegration.ID()).
 			HasComment("Updated comment"))
 	})
@@ -580,7 +580,7 @@ func TestInt_Stages(t *testing.T) {
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(gcsBucketUrl).
-			HasCloud("GCP").
+			HasCloud(sdk.StageCloudGcp).
 			HasStorageIntegration(ids.PrecreatedGcpStorageIntegration).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"))
@@ -613,7 +613,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(gcsBucketUrl).
-			HasCloud("GCP").
+			HasCloud(sdk.StageCloudGcp).
 			HasStorageIntegration(gcpStorageIntegration.ID()).
 			HasHasEncryptionKey(true).
 			HasHasCredentials(false).
@@ -645,7 +645,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternalTemporary).
 			HasUrl(gcsBucketUrl).
-			HasCloud("GCP").
+			HasCloud(sdk.StageCloudGcp).
 			HasStorageIntegration(gcpStorageIntegration.ID()).
 			HasComment(comment))
 	})
@@ -670,12 +670,13 @@ func TestInt_Stages(t *testing.T) {
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(gcsBucketUrl).
-			HasCloud("GCP").
+			HasCloud(sdk.StageCloudGcp).
 			HasStorageIntegration(gcpStorageIntegration.ID()).
 			HasComment("Updated comment"))
 	})
 
 	// ==================== AZURE STAGE TESTS ====================
+	// TODO(SNOW-2356128): Test use_privatelink_endpoint
 
 	t.Run("CreateOnAzure - minimal", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
@@ -692,7 +693,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(azureBucketUrl).
-			HasCloud("AZURE").
+			HasCloud(sdk.StageCloudAzure).
 			HasHasCredentials(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()))
 	})
@@ -715,7 +716,7 @@ func TestInt_Stages(t *testing.T) {
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(azureBucketUrl).
-			HasCloud("AZURE").
+			HasCloud(sdk.StageCloudAzure).
 			HasStorageIntegration(azureStorageIntegration.ID()).
 			HasHasCredentials(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -748,7 +749,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(azureBucketUrl).
-			HasCloud("AZURE").
+			HasCloud(sdk.StageCloudAzure).
 			HasHasCredentials(true).
 			HasHasEncryptionKey(true).
 			HasDirectoryEnabled(true).
@@ -779,7 +780,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternalTemporary).
 			HasUrl(azureBucketUrl).
-			HasCloud("AZURE").
+			HasCloud(sdk.StageCloudAzure).
 			HasStorageIntegration(azureStorageIntegration.ID()).
 			HasComment(comment))
 	})
@@ -804,7 +805,7 @@ func TestInt_Stages(t *testing.T) {
 		assertThatObject(t, objectassert.StageFromObject(t, stage).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(azureBucketUrl).
-			HasCloud("AZURE").
+			HasCloud(sdk.StageCloudAzure).
 			HasStorageIntegration(azureStorageIntegration.ID()).
 			HasComment("Updated comment"))
 	})
@@ -830,7 +831,7 @@ func TestInt_Stages(t *testing.T) {
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(compatibleBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasEndpoint(endpoint).
 			HasHasCredentials(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -863,7 +864,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternal).
 			HasUrl(compatibleBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasEndpoint(endpoint).
 			HasDirectoryEnabled(true).
 			HasHasCredentials(true).
@@ -897,7 +898,7 @@ func TestInt_Stages(t *testing.T) {
 			HasName(id.Name()).
 			HasType(sdk.StageTypeExternalTemporary).
 			HasUrl(compatibleBucketUrl).
-			HasCloud("AWS").
+			HasCloud(sdk.StageCloudAws).
 			HasEndpoint(endpoint).
 			HasComment(comment))
 	})

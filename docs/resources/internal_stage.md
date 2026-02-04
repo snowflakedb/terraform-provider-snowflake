@@ -9,6 +9,8 @@ description: |-
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
+-> **Note** External changes detection on the `encryption` field is not supported because Snowflake does not return encryption settings in DESCRIBE or SHOW STAGE output.
+
 # snowflake_internal_stage (Resource)
 
 Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).

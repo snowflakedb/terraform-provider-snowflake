@@ -156,7 +156,7 @@ func (s *StageAssert) HasType(expected sdk.StageType) *StageAssert {
 	return s
 }
 
-func (s *StageAssert) HasCloud(expected string) *StageAssert {
+func (s *StageAssert) HasCloud(expected sdk.StageCloud) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.Cloud == nil {
