@@ -18,58 +18,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var externalAzureStageSchema = func() map[string]*schema.Schema {
-	azureStage := map[string]*schema.Schema{
+var externalGcsStageSchema = func() map[string]*schema.Schema {
+	gcsStage := map[string]*schema.Schema{
 		"url": {
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "Specifies the URL for the Azure storage container (e.g., 'azure://account.blob.core.windows.net/container').",
+			Description: "Specifies the URL for the GCS bucket (e.g., 'gcs://bucket/path/').",
 		},
 		"storage_integration": {
 			Type:             schema.TypeString,
-			Optional:         true,
-			ConflictsWith:    []string{"use_privatelink_endpoint", "credentials"},
-			Description:      blocklistedCharactersFieldDescription("Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity."),
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. GCS stages require a storage integration."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		},
-		"credentials": {
-			Type:          schema.TypeList,
-			Optional:      true,
-			MaxItems:      1,
-			ConflictsWith: []string{"storage_integration"},
-			Description:   "Specifies the Azure SAS token credentials for the external stage.",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"azure_sas_token": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Sensitive:   true,
-						Description: "Specifies the shared access signature (SAS) token for Azure.",
-					},
-				},
-			},
 		},
 		"encryption": {
 			Type:        schema.TypeList,
 			Optional:    true,
 			MaxItems:    1,
-			Description: "Specifies the encryption settings for the Azure external stage.",
+			Description: "Specifies the encryption settings for the GCS external stage.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"azure_cse": {
+					"gcs_sse_kms": {
 						Type:         schema.TypeList,
 						Optional:     true,
 						MaxItems:     1,
-						ExactlyOneOf: []string{"encryption.0.azure_cse", "encryption.0.none"},
-						Description:  "Azure client-side encryption using a master key.",
+						ExactlyOneOf: []string{"encryption.0.gcs_sse_kms", "encryption.0.none"},
+						Description:  "GCS server-side encryption using a KMS key.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"master_key": {
+								"kms_key_id": {
 									Type:        schema.TypeString,
-									Required:    true,
-									Sensitive:   true,
-									Description: "Specifies the 128-bit or 256-bit client-side master key.",
+									Optional:    true,
+									Description: "Specifies the KMS-managed key ID.",
 								},
 							},
 						},
@@ -78,7 +59,7 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 						Type:         schema.TypeList,
 						Optional:     true,
 						MaxItems:     1,
-						ExactlyOneOf: []string{"encryption.0.azure_cse", "encryption.0.none"},
+						ExactlyOneOf: []string{"encryption.0.gcs_sse_kms", "encryption.0.none"},
 						Description:  "No encryption.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{},
@@ -86,15 +67,6 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 					},
 				},
 			},
-		},
-		"use_privatelink_endpoint": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Default:          BooleanDefault,
-			ValidateDiagFunc: validateBooleanString,
-			ConflictsWith:    []string{"storage_integration"},
-			Description:      "Specifies whether to use a private link endpoint for Azure storage.",
-			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("private_link.0.use_privatelink_endpoint"),
 		},
 		"directory": {
 			Type:        schema.TypeList,
@@ -141,39 +113,37 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema, azureStage)
+	return collections.MergeMaps(stageCommonSchema, gcsStage)
 }()
 
-func ExternalAzureStage() *schema.Resource {
+func ExternalGcsStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingCreateWrapper(resources.ExternalAzureStage, CreateExternalAzureStage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingReadWrapper(resources.ExternalAzureStage, ReadExternalAzureStageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingUpdateWrapper(resources.ExternalAzureStage, UpdateExternalAzureStage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalAzureStageResource, resources.ExternalAzureStage),
-		Description:   "Resource used to manage external Azure stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalGcsStageResource), TrackingCreateWrapper(resources.ExternalGcsStage, CreateExternalGcsStage)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalGcsStageResource), TrackingReadWrapper(resources.ExternalGcsStage, ReadExternalGcsStageFunc(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalGcsStageResource), TrackingUpdateWrapper(resources.ExternalGcsStage, UpdateExternalGcsStage)),
+		DeleteContext: DeleteStage(previewfeatures.ExternalGcsStageResource, resources.ExternalGcsStage),
+		Description:   "Resource used to manage external GCS stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalAzureStage, customdiff.All(
-			ComputedIfAnyAttributeChanged(externalAzureStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalAzureStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint"),
-			ComputedIfAnyAttributeChanged(externalAzureStageSchema, FullyQualifiedNameAttributeName, "name"),
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalGcsStage, customdiff.All(
+			ComputedIfAnyAttributeChanged(externalGcsStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
+			ComputedIfAnyAttributeChanged(externalGcsStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
+			ComputedIfAnyAttributeChanged(externalGcsStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
-			ForceNewIfChangeToEmptySlice[any]("credentials"),
 			ForceNewIfChangeToEmptySlice[any]("encryption"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
-			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAzure),
-			RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage(),
+			RecreateWhenStageCloudChangedExternally(sdk.StageCloudGcp),
 		)),
 
-		Schema: externalAzureStageSchema,
+		Schema: externalGcsStageSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.ExternalAzureStage, ImportExternalAzureStage),
+			StateContext: TrackingImportWrapper(resources.ExternalGcsStage, ImportExternalGcsStage),
 		},
 		Timeouts: defaultTimeouts,
 	}
 }
 
-func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+func ImportExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
@@ -205,12 +175,6 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 			return nil, err
 		}
 	}
-	if details.PrivateLink != nil {
-		if err := d.Set("use_privatelink_endpoint", booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)); err != nil {
-			return nil, err
-		}
-	}
-	// If PrivateLink is nil, let the schema default (BooleanDefault) apply
 	if details.Location != nil {
 		if err := d.Set("url", details.Location.Url); err != nil {
 			return nil, err
@@ -224,7 +188,7 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func CreateExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	name := d.Get("name").(string)
 	database := d.Get("database").(string)
@@ -232,37 +196,37 @@ func CreateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 	id := sdk.NewSchemaObjectIdentifier(database, schemaName, name)
 
 	url := d.Get("url").(string)
-	externalStageParams := sdk.NewExternalAzureStageParamsRequest(url)
+	storageIntegrationRaw := d.Get("storage_integration").(string)
+	storageIntegrationId := sdk.NewAccountObjectIdentifier(storageIntegrationRaw)
+
+	externalStageParams := sdk.NewExternalGCSStageParamsRequest(url).
+		WithStorageIntegration(storageIntegrationId)
 
 	err := errors.Join(
-		attributeMappedValueCreateBuilder(d, "credentials", externalStageParams.WithCredentials, parseAzureStageCredentials),
-		attributeMappedValueCreateBuilder(d, "encryption", externalStageParams.WithEncryption, parseAzureStageEncryption),
-		booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", externalStageParams.WithUsePrivatelinkEndpoint),
-		accountObjectIdentifierAttributeCreate(d, "storage_integration", &externalStageParams.StorageIntegration),
+		attributeMappedValueCreateBuilder(d, "encryption", externalStageParams.WithEncryption, parseGcsStageEncryption),
 	)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	request := sdk.NewCreateOnAzureStageRequest(id, *externalStageParams)
-
+	request := sdk.NewCreateOnGCSStageRequest(id, *externalStageParams)
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseAzureStageDirectory),
+		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseGcsStageDirectory),
 	)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := client.Stages.CreateOnAzure(ctx, request); err != nil {
+	if err := client.Stages.CreateOnGCS(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-	return ReadExternalAzureStageFunc(false)(ctx, d, meta)
+	return ReadExternalGcsStageFunc(false)(ctx, d, meta)
 }
 
-func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+func ReadExternalGcsStageFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
@@ -277,8 +241,8 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 				return diag.Diagnostics{
 					diag.Diagnostic{
 						Severity: diag.Warning,
-						Summary:  "Failed to query external Azure stage. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("External Azure stage id: %s, Err: %s", id.FullyQualifiedName(), err),
+						Summary:  "Failed to query external GCS stage. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("External GCS stage id: %s, Err: %s", id.FullyQualifiedName(), err),
 					},
 				}
 			}
@@ -298,18 +262,6 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 		detailsSchema, err := schemas.StageDescribeToSchema(*details)
 		if err != nil {
 			return diag.FromErr(err)
-		}
-
-		if withExternalChangesMarking {
-			var storageIntegrationName string
-			if stage.StorageIntegration != nil {
-				storageIntegrationName = stage.StorageIntegration.Name()
-			}
-			if err = handleExternalChangesToObjectInShow(d,
-				outputMapping{"storage_integration", "storage_integration", storageIntegrationName, storageIntegrationName, nil},
-			); err != nil {
-				return diag.FromErr(err)
-			}
 		}
 
 		if withExternalChangesMarking {
@@ -336,6 +288,11 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 		if stage.Cloud != nil {
 			cloud = string(*stage.Cloud)
 		}
+		var storageIntegrationName string
+		if stage.StorageIntegration != nil {
+			storageIntegrationName = stage.StorageIntegration.Name()
+		}
+
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StageToSchema(stage)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),
@@ -344,6 +301,7 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			d.Set("stage_type", stage.Type),
 			d.Set("cloud", cloud),
 			d.Set("comment", stage.Comment),
+			d.Set("storage_integration", storageIntegrationName),
 		)
 
 		if errs != nil {
@@ -354,7 +312,7 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 	}
 }
 
-func UpdateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func UpdateExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
@@ -373,19 +331,20 @@ func UpdateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	set := sdk.NewAlterExternalAzureStageStageRequest(id)
+	set := sdk.NewAlterExternalGCSStageStageRequest(id)
 
-	needsExternalStageParams := d.HasChanges("url", "storage_integration", "credentials", "encryption", "use_privatelink_endpoint")
+	needsExternalStageParams := d.HasChanges("url", "storage_integration", "encryption")
 
 	if needsExternalStageParams {
 		url := d.Get("url").(string)
-		externalStageParams := sdk.NewExternalAzureStageParamsRequest(url)
+		storageIntegrationRaw := d.Get("storage_integration").(string)
+		storageIntegrationId := sdk.NewAccountObjectIdentifier(storageIntegrationRaw)
+
+		externalStageParams := sdk.NewExternalGCSStageParamsRequest(url).
+			WithStorageIntegration(storageIntegrationId)
 
 		err = errors.Join(
-			booleanStringAttributeUpdateSetOnly(d, "use_privatelink_endpoint", &externalStageParams.UsePrivatelinkEndpoint),
-			accountObjectIdentifierAttributeSetOnly(d, "storage_integration", &externalStageParams.StorageIntegration),
-			attributeMappedValueUpdateSetOnly(d, "credentials", &externalStageParams.Credentials, parseAzureStageCredentials),
-			attributeMappedValueUpdateSetOnly(d, "encryption", &externalStageParams.Encryption, parseAzureStageEncryption),
+			attributeMappedValueUpdateSetOnly(d, "encryption", &externalStageParams.Encryption, parseGcsStageEncryption),
 		)
 		if err != nil {
 			return diag.FromErr(err)
@@ -401,63 +360,56 @@ func UpdateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	if !reflect.DeepEqual(*set, *sdk.NewAlterExternalAzureStageStageRequest(id)) {
-		if err := client.Stages.AlterExternalAzureStage(ctx, set); err != nil {
+	if !reflect.DeepEqual(*set, *sdk.NewAlterExternalGCSStageStageRequest(id)) {
+		if err := client.Stages.AlterExternalGCSStage(ctx, set); err != nil {
 			d.Partial(true)
-			return diag.FromErr(fmt.Errorf("error updating external Azure stage: %w", err))
+			return diag.FromErr(fmt.Errorf("error updating external GCS stage: %w", err))
 		}
 	}
 
-	return ReadExternalAzureStageFunc(false)(ctx, d, meta)
+	return ReadExternalGcsStageFunc(false)(ctx, d, meta)
 }
 
-func parseAzureStageCredentials(v any) (sdk.ExternalStageAzureCredentialsRequest, error) {
-	credentialsList := v.([]any)
-	if len(credentialsList) == 0 {
-		return sdk.ExternalStageAzureCredentialsRequest{}, nil
-	}
-	credentialsConfig := credentialsList[0].(map[string]any)
-	sasToken := credentialsConfig["azure_sas_token"].(string)
-	return *sdk.NewExternalStageAzureCredentialsRequest(sasToken), nil
-}
-
-func parseAzureStageEncryption(v any) (sdk.ExternalStageAzureEncryptionRequest, error) {
+func parseGcsStageEncryption(v any) (sdk.ExternalStageGCSEncryptionRequest, error) {
 	encryptionList := v.([]any)
 	if len(encryptionList) == 0 {
-		return sdk.ExternalStageAzureEncryptionRequest{}, nil
+		return sdk.ExternalStageGCSEncryptionRequest{}, nil
 	}
 	encryptionConfig := encryptionList[0].(map[string]any)
-	encryptionReq := sdk.NewExternalStageAzureEncryptionRequest()
+	encryptionReq := sdk.NewExternalStageGCSEncryptionRequest()
 
-	if azureCse, ok := encryptionConfig["azure_cse"]; ok {
-		if cseList := azureCse.([]any); len(cseList) > 0 {
-			cseConfig := cseList[0].(map[string]any)
-			masterKey := cseConfig["master_key"].(string)
-			encryptionReq.WithAzureCse(*sdk.NewExternalStageAzureEncryptionAzureCseRequest(masterKey))
+	if gcsSseKms, ok := encryptionConfig["gcs_sse_kms"]; ok {
+		if kmsList := gcsSseKms.([]any); len(kmsList) > 0 {
+			kmsReq := sdk.NewExternalStageGCSEncryptionGcsSseKmsRequest()
+			kmsConfig := kmsList[0].(map[string]any)
+			if kmsKeyId, ok := kmsConfig["kms_key_id"]; ok && kmsKeyId.(string) != "" {
+				kmsReq.WithKmsKeyId(kmsKeyId.(string))
+			}
+			encryptionReq.WithGcsSseKms(*kmsReq)
 		}
 	}
 
 	if none, ok := encryptionConfig["none"]; ok {
 		if noneList := none.([]any); len(noneList) > 0 {
-			encryptionReq.WithNone(*sdk.NewExternalStageAzureEncryptionNoneRequest())
+			encryptionReq.WithNone(*sdk.NewExternalStageGCSEncryptionNoneRequest())
 		}
 	}
 
 	return *encryptionReq, nil
 }
 
-func parseAzureStageDirectory(v any) (sdk.ExternalAzureDirectoryTableOptionsRequest, error) {
+func parseGcsStageDirectory(v any) (sdk.ExternalGCSDirectoryTableOptionsRequest, error) {
 	directoryList := v.([]any)
 	if len(directoryList) == 0 {
-		return sdk.ExternalAzureDirectoryTableOptionsRequest{}, nil
+		return sdk.ExternalGCSDirectoryTableOptionsRequest{}, nil
 	}
 	directoryConfig := directoryList[0].(map[string]any)
-	directoryReq := sdk.NewExternalAzureDirectoryTableOptionsRequest().WithEnable(directoryConfig["enable"].(bool))
+	directoryReq := sdk.NewExternalGCSDirectoryTableOptionsRequest().WithEnable(directoryConfig["enable"].(bool))
 
 	if v, ok := directoryConfig["refresh_on_create"]; ok && v.(string) != BooleanDefault {
 		refreshOnCreateBool, err := booleanStringToBool(v.(string))
 		if err != nil {
-			return sdk.ExternalAzureDirectoryTableOptionsRequest{}, fmt.Errorf("parsing refresh_on_create: %w", err)
+			return sdk.ExternalGCSDirectoryTableOptionsRequest{}, fmt.Errorf("parsing refresh_on_create: %w", err)
 		}
 		directoryReq.WithRefreshOnCreate(refreshOnCreateBool)
 	}
@@ -465,7 +417,7 @@ func parseAzureStageDirectory(v any) (sdk.ExternalAzureDirectoryTableOptionsRequ
 	if v, ok := directoryConfig["auto_refresh"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
 		autoRefreshBool, err := booleanStringToBool(v.(string))
 		if err != nil {
-			return sdk.ExternalAzureDirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)
+			return sdk.ExternalGCSDirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)
 		}
 		directoryReq.WithAutoRefresh(autoRefreshBool)
 	}

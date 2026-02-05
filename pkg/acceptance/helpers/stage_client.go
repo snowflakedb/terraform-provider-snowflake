@@ -126,9 +126,13 @@ func (c *StageClient) CreateStageOnS3WithRequest(t *testing.T, request *sdk.Crea
 
 func (c *StageClient) CreateStageOnGCS(t *testing.T, gcsBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	id := c.ids.RandomSchemaObjectIdentifier()
+	return c.CreateStageOnGCSWithId(t, id, gcsBucketUrl)
+}
+
+func (c *StageClient) CreateStageOnGCSWithId(t *testing.T, id sdk.SchemaObjectIdentifier, gcsBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
 
 	gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
 		WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)

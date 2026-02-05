@@ -33,6 +33,7 @@ const (
 	ExternalAzureStageResource                    feature = "snowflake_external_azure_stage_resource"
 	ExternalFunctionResource                      feature = "snowflake_external_function_resource"
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
+	ExternalGcsStageResource                      feature = "snowflake_external_gcs_stage_resource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
 	ExternalTablesDatasource                      feature = "snowflake_external_tables_datasource"
 	ExternalVolumeResource                        feature = "snowflake_external_volume_resource"
@@ -121,6 +122,7 @@ var allPreviewFeatures = []feature{
 	ExternalAzureStageResource,
 	ExternalFunctionResource,
 	ExternalFunctionsDatasource,
+	ExternalGcsStageResource,
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	ExternalVolumeResource,

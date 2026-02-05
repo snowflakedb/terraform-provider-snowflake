@@ -11,6 +11,8 @@ description: |-
 
 -> **Note** External changes detection on the `encryption` field is not supported because Snowflake does not return encryption settings in DESCRIBE or SHOW STAGE output.
 
+-> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
+
 # snowflake_internal_stage (Resource)
 
 Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).

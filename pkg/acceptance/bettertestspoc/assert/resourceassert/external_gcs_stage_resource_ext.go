@@ -7,14 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-type ExternalStageDirectoryTableAssert struct {
-	Enable                  bool
-	RefreshOnCreate         *bool
-	AutoRefresh             *string
-	NotificationIntegration *string
-}
-
-func (e *ExternalAzureStageResourceAssert) HasDirectory(opts ExternalStageDirectoryTableAssert) *ExternalAzureStageResourceAssert {
+func (e *ExternalGcsStageResourceAssert) HasDirectory(opts ExternalStageDirectoryTableAssert) *ExternalGcsStageResourceAssert {
 	var notificationIntegration string
 	if opts.NotificationIntegration != nil {
 		notificationIntegration = *opts.NotificationIntegration
@@ -35,32 +28,26 @@ func (e *ExternalAzureStageResourceAssert) HasDirectory(opts ExternalStageDirect
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasEncryptionAzureCse() *ExternalAzureStageResourceAssert {
+func (e *ExternalGcsStageResourceAssert) HasEncryptionGcsSseKms() *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("encryption.#", "1"))
-	e.AddAssertion(assert.ValueSet("encryption.0.azure_cse.#", "1"))
+	e.AddAssertion(assert.ValueSet("encryption.0.gcs_sse_kms.#", "1"))
 	e.AddAssertion(assert.ValueSet("encryption.0.none.#", "0"))
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasEncryptionNone() *ExternalAzureStageResourceAssert {
+func (e *ExternalGcsStageResourceAssert) HasEncryptionNone() *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("encryption.#", "1"))
-	e.AddAssertion(assert.ValueSet("encryption.0.azure_cse.#", "0"))
+	e.AddAssertion(assert.ValueSet("encryption.0.gcs_sse_kms.#", "0"))
 	e.AddAssertion(assert.ValueSet("encryption.0.none.#", "1"))
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasStageTypeEnum(expected sdk.StageType) *ExternalAzureStageResourceAssert {
+func (e *ExternalGcsStageResourceAssert) HasStageTypeEnum(expected sdk.StageType) *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("stage_type", string(expected)))
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasCloudEnum(expected sdk.StageCloud) *ExternalAzureStageResourceAssert {
+func (e *ExternalGcsStageResourceAssert) HasCloudEnum(expected sdk.StageCloud) *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("cloud", string(expected)))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasCredentials(token string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("credentials.#", "1"))
-	e.AddAssertion(assert.ValueSet("credentials.0.azure_sas_token", token))
 	return e
 }

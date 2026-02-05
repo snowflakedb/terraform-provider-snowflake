@@ -1,21 +1,21 @@
 ---
-page_title: "snowflake_external_azure_stage Resource - terraform-provider-snowflake"
+page_title: "snowflake_external_gcs_stage Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage external Azure stages. For more information, check external stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams.
+  Resource used to manage external GCS stages. For more information, check external stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
--> **Note** External changes detection on `credentials.azure_sas_token`, `encryption` and `directory.notification_integration` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
+-> **Note** External changes detection on the `encryption` and `directory.notification_integration` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
 -> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
 
-# snowflake_external_azure_stage (Resource)
+# snowflake_external_gcs_stage (Resource)
 
-Resource used to manage external Azure stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
+Resource used to manage external GCS stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
 
 ## Example Usage
 
@@ -23,26 +23,26 @@ Resource used to manage external Azure stages. For more information, check [exte
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
-# Basic resource with storage integration
-resource "snowflake_external_azure_stage" "basic" {
-  name                = "my_azure_stage"
+# Basic resource with storage integration (required for GCS)
+resource "snowflake_external_gcs_stage" "basic" {
+  name                = "my_gcs_stage"
   database            = "my_database"
   schema              = "my_schema"
-  url                 = "azure://myaccount.blob.core.windows.net/mycontainer"
-  storage_integration = snowflake_storage_integration.azure.name
+  url                 = "gcs://mybucket/mypath/"
+  storage_integration = snowflake_storage_integration.gcs.name
 }
 
 # Complete resource with all options
-resource "snowflake_external_azure_stage" "complete" {
-  name                = "complete_azure_stage"
+resource "snowflake_external_gcs_stage" "complete" {
+  name                = "complete_gcs_stage"
   database            = "my_database"
   schema              = "my_schema"
-  url                 = "azure://myaccount.blob.core.windows.net/mycontainer/path/"
-  storage_integration = snowflake_storage_integration.azure.name
+  url                 = "gcs://mybucket/mypath/"
+  storage_integration = snowflake_storage_integration.gcs.name
 
   encryption {
-    azure_cse {
-      master_key = var.azure_master_key
+    gcs_sse_kms {
+      kms_key_id = var.gcs_kms_key_id
     }
   }
 
@@ -52,31 +52,32 @@ resource "snowflake_external_azure_stage" "complete" {
     auto_refresh      = false
   }
 
-  comment = "Fully configured Azure external stage"
-}
-
-# Resource with SAS token credentials instead of storage integration
-resource "snowflake_external_azure_stage" "with_credentials" {
-  name     = "azure_stage_with_sas"
-  database = "my_database"
-  schema   = "my_schema"
-  url      = "azure://myaccount.blob.core.windows.net/mycontainer"
-
-  credentials {
-    azure_sas_token = var.azure_sas_token
-  }
+  comment = "Fully configured GCS external stage"
 }
 
 # Resource with encryption set to none
-resource "snowflake_external_azure_stage" "no_encryption" {
-  name                = "azure_stage_no_encryption"
+resource "snowflake_external_gcs_stage" "no_encryption" {
+  name                = "gcs_stage_no_encryption"
   database            = "my_database"
   schema              = "my_schema"
-  url                 = "azure://myaccount.blob.core.windows.net/mycontainer"
-  storage_integration = snowflake_storage_integration.azure.name
+  url                 = "gcs://mybucket/mypath/"
+  storage_integration = snowflake_storage_integration.gcs.name
 
   encryption {
     none {}
+  }
+}
+
+# Resource with GCS SSE KMS encryption without specifying key
+resource "snowflake_external_gcs_stage" "default_kms" {
+  name                = "gcs_stage_default_kms"
+  database            = "my_database"
+  schema              = "my_schema"
+  url                 = "gcs://mybucket/mypath/"
+  storage_integration = snowflake_storage_integration.gcs.name
+
+  encryption {
+    gcs_sse_kms {}
   }
 }
 ```
@@ -91,17 +92,15 @@ resource "snowflake_external_azure_stage" "no_encryption" {
 - `database` (String) The database in which to create the stage. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the stage; must be unique for the database and schema in which the stage is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the stage. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `url` (String) Specifies the URL for the Azure storage container (e.g., 'azure://account.blob.core.windows.net/container').
+- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. GCS stages require a storage integration. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `url` (String) Specifies the URL for the GCS bucket (e.g., 'gcs://bucket/path/').
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the stage.
-- `credentials` (Block List, Max: 1) Specifies the Azure SAS token credentials for the external stage. (see [below for nested schema](#nestedblock--credentials))
 - `directory` (Block List, Max: 1) Directory tables store a catalog of staged files in cloud storage. (see [below for nested schema](#nestedblock--directory))
-- `encryption` (Block List, Max: 1) Specifies the encryption settings for the Azure external stage. (see [below for nested schema](#nestedblock--encryption))
-- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `encryption` (Block List, Max: 1) Specifies the encryption settings for the GCS external stage. (see [below for nested schema](#nestedblock--encryption))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use a private link endpoint for Azure storage.
 
 ### Read-Only
 
@@ -111,14 +110,6 @@ resource "snowflake_external_azure_stage" "no_encryption" {
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW STAGES` for the given stage. (see [below for nested schema](#nestedatt--show_output))
 - `stage_type` (String) Specifies a type for the stage. This field is used for checking external changes and recreating the resources if needed.
-
-<a id="nestedblock--credentials"></a>
-### Nested Schema for `credentials`
-
-Required:
-
-- `azure_sas_token` (String, Sensitive) Specifies the shared access signature (SAS) token for Azure.
-
 
 <a id="nestedblock--directory"></a>
 ### Nested Schema for `directory`
@@ -139,15 +130,15 @@ Optional:
 
 Optional:
 
-- `azure_cse` (Block List, Max: 1) Azure client-side encryption using a master key. (see [below for nested schema](#nestedblock--encryption--azure_cse))
+- `gcs_sse_kms` (Block List, Max: 1) GCS server-side encryption using a KMS key. (see [below for nested schema](#nestedblock--encryption--gcs_sse_kms))
 - `none` (Block List, Max: 1) No encryption. (see [below for nested schema](#nestedblock--encryption--none))
 
-<a id="nestedblock--encryption--azure_cse"></a>
-### Nested Schema for `encryption.azure_cse`
+<a id="nestedblock--encryption--gcs_sse_kms"></a>
+### Nested Schema for `encryption.gcs_sse_kms`
 
-Required:
+Optional:
 
-- `master_key` (String, Sensitive) Specifies the 128-bit or 256-bit client-side master key.
+- `kms_key_id` (String) Specifies the KMS-managed key ID.
 
 
 <a id="nestedblock--encryption--none"></a>
@@ -210,5 +201,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_external_azure_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
+terraform import snowflake_external_gcs_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
 ```

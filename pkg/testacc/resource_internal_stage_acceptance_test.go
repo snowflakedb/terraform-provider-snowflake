@@ -13,7 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -89,22 +88,11 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 			},
 			// Import - without optionals
 			{
-				Config:       accconfig.FromModels(t, modelBasic),
-				ResourceName: modelBasic.ResourceReference(),
-				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedInternalStageResource(t, helpers.EncodeResourceIdentifier(id)).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasCommentString("").
-						HasDirectory(false, false).
-						HasEncryptionEmpty().
-						HasFullyQualifiedNameString(id.FullyQualifiedName()),
-					resourceshowoutputassert.ImportedStageShowOutput(t, helpers.EncodeResourceIdentifier(id)).
-						HasName(id.Name()).
-						HasDirectoryEnabled(false),
-				),
+				Config:                  accconfig.FromModels(t, modelBasic),
+				ResourceName:            modelBasic.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"directory"},
 			},
 			// Set optionals (complete)
 			{

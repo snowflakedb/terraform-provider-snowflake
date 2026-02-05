@@ -102,7 +102,7 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 // ForceNewIfNotDefault sets a ForceNew for a string field which was set to a non-default value.
 func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
 	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
-		return oldValue.(string) == "" && newValue.(string) != BooleanDefault
+		return newValue.(string) != BooleanDefault
 	})
 }
 
