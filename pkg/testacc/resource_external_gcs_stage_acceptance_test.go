@@ -53,6 +53,13 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 			AutoRefresh:     sdk.Bool(false),
 		}).
 		WithEncryptionNone()
+	modelCompleteWithoutAutoRefresh := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
+		WithComment(comment).
+		WithDirectoryEnabledAndOptions(sdk.ExternalGCSDirectoryTableOptionsRequest{
+			Enable:          true,
+			RefreshOnCreate: sdk.Bool(true),
+		}).
+		WithEncryptionNone()
 
 	modelUpdated := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
 		WithComment(changedComment).
@@ -247,6 +254,48 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.auto_refresh", "false"),
 				),
 			},
+			// unset auto_refresh
+			{
+				Config: accconfig.FromModels(t, modelCompleteWithoutAutoRefresh),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteWithoutAutoRefresh.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalGcsStageResource(t, modelCompleteWithoutAutoRefresh.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasUrlString(gcsUrl).
+						HasStorageIntegrationString(storageIntegrationId.Name()).
+						HasCommentString(comment).
+						HasDirectory(resourceassert.ExternalStageDirectoryTableAssert{
+							Enable:          true,
+							RefreshOnCreate: sdk.Bool(true),
+							AutoRefresh:     sdk.Pointer(r.BooleanDefault),
+						}).
+						HasEncryptionNone().
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCloudEnum(sdk.StageCloudGcp).
+						HasStageTypeEnum(sdk.StageTypeExternal),
+					resourceshowoutputassert.StageShowOutput(t, modelComplete.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.StageTypeExternal).
+						HasComment(comment).
+						HasDirectoryEnabled(true).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithoutAutoRefresh.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelCompleteWithoutAutoRefresh.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+				),
+			},
+			// Bring back the complete model
+			{
+				Config: accconfig.FromModels(t, modelComplete),
+			},
 			// Alter (update comment, directory.enable)
 			{
 				Config: accconfig.FromModels(t, modelUpdated),
@@ -292,6 +341,11 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 					testClient().Stage.CreateStageOnGCSWithId(t, id, gcsUrl)
 				},
 				Config: accconfig.FromModels(t, modelUpdated),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: assertThat(t,
 					resourceassert.ExternalGcsStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).

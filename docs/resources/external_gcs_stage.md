@@ -11,6 +11,8 @@ description: |-
 
 -> **Note** External changes detection on the `encryption` field is not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
+-> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
+
 # snowflake_external_gcs_stage (Resource)
 
 Resource used to manage external GCS stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
@@ -90,7 +92,7 @@ resource "snowflake_external_gcs_stage" "default_kms" {
 - `database` (String) The database in which to create the stage. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the stage; must be unique for the database and schema in which the stage is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the stage. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. GCS stages require a storage integration.
+- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. GCS stages require a storage integration. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `url` (String) Specifies the URL for the GCS bucket (e.g., 'gcs://bucket/path/').
 
 ### Optional
@@ -119,7 +121,7 @@ Required:
 Optional:
 
 - `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.
-- `notification_integration` (String) Specifies the name of the notification integration used to automatically refresh the directory table metadata.
+- `notification_integration` (String) Specifies the name of the notification integration used to automatically refresh the directory table metadata. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `refresh_on_create` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to automatically refresh the directory table metadata once, immediately after the stage is created.This field is used only when creating the object. Changes on this field are ignored after creation.
 
 

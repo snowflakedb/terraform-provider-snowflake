@@ -28,8 +28,9 @@ var externalGcsStageSchema = func() map[string]*schema.Schema {
 		"storage_integration": {
 			Type:             schema.TypeString,
 			Required:         true,
-			Description:      "Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. GCS stages require a storage integration.",
+			Description:      blocklistedCharactersFieldDescription("Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. GCS stages require a storage integration."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
+			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		},
 		"encryption": {
 			Type:        schema.TypeList,
@@ -99,8 +100,9 @@ var externalGcsStageSchema = func() map[string]*schema.Schema {
 						Type:             schema.TypeString,
 						Optional:         true,
 						ForceNew:         true,
-						Description:      "Specifies the name of the notification integration used to automatically refresh the directory table metadata.",
+						Description:      blocklistedCharactersFieldDescription("Specifies the name of the notification integration used to automatically refresh the directory table metadata."),
 						DiffSuppressFunc: suppressIdentifierQuoting,
+						ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 					},
 				},
 			},
@@ -208,7 +210,6 @@ func CreateExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	request := sdk.NewCreateOnGCSStageRequest(id, *externalStageParams)
-
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseGcsStageDirectory),

@@ -11,6 +11,8 @@ description: |-
 
 -> **Note** External changes detection on `credentials.azure_sas_token`, and `encryption` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
+-> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
+
 # snowflake_external_azure_stage (Resource)
 
 Resource used to manage external Azure stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
@@ -97,7 +99,7 @@ resource "snowflake_external_azure_stage" "no_encryption" {
 - `credentials` (Block List, Max: 1) Specifies the Azure SAS token credentials for the external stage. (see [below for nested schema](#nestedblock--credentials))
 - `directory` (Block List, Max: 1) Directory tables store a catalog of staged files in cloud storage. (see [below for nested schema](#nestedblock--directory))
 - `encryption` (Block List, Max: 1) Specifies the encryption settings for the Azure external stage. (see [below for nested schema](#nestedblock--encryption))
-- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity.
+- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use a private link endpoint for Azure storage.
 
@@ -128,7 +130,7 @@ Required:
 Optional:
 
 - `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.
-- `notification_integration` (String) Specifies the name of the notification integration used to automatically refresh the directory table metadata.
+- `notification_integration` (String) Specifies the name of the notification integration used to automatically refresh the directory table metadata. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `refresh_on_create` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to automatically refresh the directory table metadata once, immediately after the stage is created.This field is used only when creating the object. Changes on this field are ignored after creation.
 
 
