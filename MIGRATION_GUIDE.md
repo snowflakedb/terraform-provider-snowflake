@@ -26,6 +26,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.12.x ➞ v2.13.0
 
+### *(bugfix)* Fixed `snowflake_tag_association` usage with function or procedure object types
+
+Previously, after creating the `snowflake_tag_association` resource with functions or procedures,
+any modifications to the `object_identifiers` or `tag_value` fields would lead to the following error:
+
+```text
+Error: unable to read identifier: ABC, err = parse error on line 1, column 2: extraneous or missing " in quoted-field
+```
+
+Now, it's possible to use the `snowflake_tag_association` resource with functions and procedures.
+
+No changes in the configuration are required.
+
+Reference: [#4403](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4403)
+
 ### *(new feature)* New stage resources
 
 To enhance clarity and functionality, the new resources `snowflake_internal_stage`, `snowflake_external_gcs_stage` and `snowflake_external_azure_stage` have been introduced to replace the previous `snowflake_stage` for internal and external stages.
