@@ -28,8 +28,8 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(bugfix)* Fixed `snowflake_tag_association` usage with function or procedure object types
 
-Previously, we had a bug where you would like to use either functions or procedures in the `snowflake_tag_association` resource.
-Any update for the `object_identifiers` or `tag_value` would end up in the following identifier parsing error:
+Previously, after creating the `snowflake_tag_association` resource with functions or procedures,
+any modifications to the `object_identifiers` or `tag_value` fields would lead to the following error:
 
 ```text
 Error: unable to read identifier: ABC, err = parse error on line 1, column 2: extraneous or missing " in quoted-field
