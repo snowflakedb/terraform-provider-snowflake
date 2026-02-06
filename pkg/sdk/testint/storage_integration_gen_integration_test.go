@@ -44,6 +44,14 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		return prop
 	}
 
+	flattenLocations := func(locations []sdk.StorageLocation) []string {
+		flat := make([]string, len(locations))
+		for i, a := range locations {
+			flat[i] = a.Path
+		}
+		return flat
+	}
+
 	awsPropertiesAssertions := func(
 		t *testing.T,
 		totalProps int,
@@ -56,53 +64,39 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		usePrivateLinkEndpoint bool,
 	) *objectassert.StorageIntegrationPropertiesAssert {
 		t.Helper()
-		allowed := make([]string, len(allowedLocations))
-		for i, a := range allowedLocations {
-			allowed[i] = a.Path
-		}
-		blocked := make([]string, len(blockedLocations))
-		for i, b := range blockedLocations {
-			blocked[i] = b.Path
-		}
-
 		return objectassert.StorageIntegrationPropertiesFromObject(t, id, props).
 			HasCount(totalProps).
 			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"ENABLED", "Boolean", strconv.FormatBool(enabled), "false"}).
 			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_PROVIDER", "String", "S3", ""}).
-			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_ALLOWED_LOCATIONS", "List", strings.Join(allowed, ","), "[]"}).
-			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_BLOCKED_LOCATIONS", "List", strings.Join(blocked, ","), "[]"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_ALLOWED_LOCATIONS", "List", strings.Join(flattenLocations(allowedLocations), ","), "[]"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_BLOCKED_LOCATIONS", "List", strings.Join(flattenLocations(blockedLocations), ","), "[]"}).
 			ContainsNotEmptyPropertyWithTypeAndDefault("STORAGE_AWS_IAM_USER_ARN", "String", "").
 			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_AWS_ROLE_ARN", "String", awsRoleARN, ""}).
 			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"COMMENT", "String", comment, ""}).
 			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"USE_PRIVATELINK_ENDPOINT", "Boolean", strconv.FormatBool(usePrivateLinkEndpoint), "false"})
 	}
 
-	// TODO [next PR]: replace with fluent assertions like ContainsDetail for semantic views
-	assertGCSStorageIntegrationDescResult := func(
+	gcsPropertiesAssertions := func(
 		t *testing.T,
+		totalProps int,
+		id sdk.AccountObjectIdentifier,
 		props []sdk.StorageIntegrationProperty,
 		enabled bool,
 		allowedLocations []sdk.StorageLocation,
 		blockedLocations []sdk.StorageLocation,
 		comment string,
-	) {
+	) *objectassert.StorageIntegrationPropertiesAssert {
 		t.Helper()
-		allowed := make([]string, len(allowedLocations))
-		for i, a := range allowedLocations {
-			allowed[i] = a.Path
-		}
-		blocked := make([]string, len(blockedLocations))
-		for i, b := range blockedLocations {
-			blocked[i] = b.Path
-		}
-		assert.Equal(t, "Boolean", findProp(t, props, "ENABLED").Type)
-		assert.Equal(t, strconv.FormatBool(enabled), findProp(t, props, "ENABLED").Value)
-		assert.Equal(t, "false", findProp(t, props, "ENABLED").Default)
-		assert.Equal(t, "GCS", findProp(t, props, "STORAGE_PROVIDER").Value)
-		assert.Equal(t, strings.Join(allowed, ","), findProp(t, props, "STORAGE_ALLOWED_LOCATIONS").Value)
-		assert.Equal(t, strings.Join(blocked, ","), findProp(t, props, "STORAGE_BLOCKED_LOCATIONS").Value)
-		assert.NotEmpty(t, findProp(t, props, "STORAGE_GCP_SERVICE_ACCOUNT").Value)
-		assert.Equal(t, comment, findProp(t, props, "COMMENT").Value)
+		return objectassert.StorageIntegrationPropertiesFromObject(t, id, props).
+			HasCount(totalProps).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"ENABLED", "Boolean", strconv.FormatBool(enabled), "false"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_PROVIDER", "String", "GCS", ""}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_ALLOWED_LOCATIONS", "List", strings.Join(flattenLocations(allowedLocations), ","), "[]"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_BLOCKED_LOCATIONS", "List", strings.Join(flattenLocations(blockedLocations), ","), "[]"}).
+			ContainsNotEmptyPropertyWithTypeAndDefault("STORAGE_GCP_SERVICE_ACCOUNT", "String", "").
+			// TODO [next PR]: test if use privatelink endpoint can be set on gcs
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"USE_PRIVATELINK_ENDPOINT", "Boolean", "false", "false"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"COMMENT", "String", comment, ""})
 	}
 
 	// TODO [next PR]: replace with fluent assertions like ContainsDetail for semantic views
@@ -528,7 +522,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertGCSStorageIntegrationDescResult(t, props, true, changedGcsAllowedLocations, changedGcsBlockedLocations, "changed comment")
+		assertThatObject(t, gcsPropertiesAssertions(t, 7, id, props, true, changedGcsAllowedLocations, changedGcsBlockedLocations, "changed comment"))
 
 		unset := sdk.NewAlterStorageIntegrationRequest(id).WithUnset(
 			*sdk.NewStorageIntegrationUnsetRequest().
@@ -542,7 +536,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err = client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertGCSStorageIntegrationDescResult(t, props, false, changedGcsAllowedLocations, []sdk.StorageLocation{}, "")
+		assertThatObject(t, gcsPropertiesAssertions(t, 7, id, props, false, changedGcsAllowedLocations, []sdk.StorageLocation{}, ""))
 	})
 
 	t.Run("show: without like", func(t *testing.T) {
@@ -626,10 +620,10 @@ func TestInt_StorageIntegrations(t *testing.T) {
 	t.Run("describe: gcs", func(t *testing.T) {
 		id := createGCSStorageIntegration(t)
 
-		desc, err := client.StorageIntegrations.Describe(ctx, id)
+		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertGCSStorageIntegrationDescResult(t, desc, true, gcsAllowedLocations, gcsBlockedLocations, "some comment")
+		assertThatObject(t, gcsPropertiesAssertions(t, 7, id, props, true, gcsAllowedLocations, gcsBlockedLocations, "some comment"))
 	})
 
 	t.Run("describe: azure", func(t *testing.T) {
