@@ -177,6 +177,7 @@ var storageIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 		g.PlainStruct("StorageIntegrationAwsDetails").
+			AccountObjectIdentifier().
 			Bool("Enabled").
 			// TODO [next PRs]: enum?
 			Text("Provider").
@@ -189,6 +190,7 @@ var storageIntegrationsDef = g.NewInterface(
 			Text("ObjectAcl").
 			Text("ExternalId"),
 		g.PlainStruct("StorageIntegrationAzureDetails").
+			AccountObjectIdentifier().
 			Bool("Enabled").
 			Text("Provider").
 			StringList("AllowedLocations").
@@ -199,6 +201,7 @@ var storageIntegrationsDef = g.NewInterface(
 			Text("ConsentUrl").
 			Text("MultiTenantAppName"),
 		g.PlainStruct("StorageIntegrationGcsDetails").
+			AccountObjectIdentifier().
 			Bool("Enabled").
 			Text("Provider").
 			StringList("AllowedLocations").

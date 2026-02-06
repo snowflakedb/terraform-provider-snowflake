@@ -61,6 +61,10 @@ func (v *plainStruct) StringList(dbName string) *plainStruct {
 	return v.Field(dbName, "[]string")
 }
 
+func (v *plainStruct) AccountObjectIdentifier() *plainStruct {
+	return v.Field("Id", "AccountObjectIdentifier")
+}
+
 func (v *plainStruct) IntoField() *Field {
 	f := NewField(v.name, v.name, nil, nil)
 	for _, field := range v.fields {

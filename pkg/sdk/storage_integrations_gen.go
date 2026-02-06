@@ -179,6 +179,7 @@ type StorageIntegrationProperty struct {
 }
 
 type StorageIntegrationAwsDetails struct {
+	Id                     AccountObjectIdentifier
 	Enabled                bool
 	Provider               string
 	AllowedLocations       []string
@@ -192,6 +193,7 @@ type StorageIntegrationAwsDetails struct {
 }
 
 type StorageIntegrationAzureDetails struct {
+	Id                     AccountObjectIdentifier
 	Enabled                bool
 	Provider               string
 	AllowedLocations       []string
@@ -204,6 +206,7 @@ type StorageIntegrationAzureDetails struct {
 }
 
 type StorageIntegrationGcsDetails struct {
+	Id                     AccountObjectIdentifier
 	Enabled                bool
 	Provider               string
 	AllowedLocations       []string
