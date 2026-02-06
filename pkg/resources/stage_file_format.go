@@ -49,6 +49,7 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 		Optional:         true,
 		Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllCsvCompressions)),
 		ValidateDiagFunc: sdkValidation(sdk.ToCsvCompression),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToCsvCompression),
 	},
 	"record_delimiter": {
 		Type:        schema.TypeString,
@@ -115,6 +116,7 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 		Optional:         true,
 		Description:      fmt.Sprintf("Defines the encoding format for binary input or output. Valid values: %s.", possibleValuesListed(sdk.AllBinaryFormats)),
 		ValidateDiagFunc: sdkValidation(sdk.ToBinaryFormat),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToBinaryFormat),
 	},
 	"escape": {
 		Type:        schema.TypeString,
@@ -177,6 +179,7 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 		Optional:         true,
 		Description:      fmt.Sprintf("Specifies the character set of the source data when loading data into a table. Valid values: %s.", possibleValuesListed(sdk.AllCsvEncodings)),
 		ValidateDiagFunc: sdkValidation(sdk.ToCsvEncoding),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToCsvEncoding),
 	},
 }
 
