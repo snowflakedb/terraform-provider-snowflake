@@ -326,12 +326,6 @@ func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 
 // stageCsvFileFormatToSchema converts the SDK details for a CSV file format to a Terraform schema.
 func stageCsvFileFormatToSchema(csv *sdk.FileFormatCsv) map[string]any {
-	if csv.Escape == "\\" {
-		fmt.Println("escape is empty")
-	}
-	if csv.Escape == "\\\\" {
-		fmt.Println("escape i empty")
-	}
 	return map[string]any{
 		"record_delimiter":               csv.RecordDelimiter,
 		"field_delimiter":                csv.FieldDelimiter,
