@@ -170,3 +170,38 @@ type StorageIntegrationProperty struct {
 	Value   string
 	Default string
 }
+
+type StorageIntegrationAwsDetails struct {
+	Enabled                bool
+	Provider               string
+	AllowedLocations       []string
+	BlockedLocations       []string
+	Comment                string
+	UsePrivatelinkEndpoint bool
+	IamUserArn             string
+	RoleArn                string
+	ObjectAcl              string
+	ExternalId             string
+}
+
+type StorageIntegrationAzureDetails struct {
+	Enabled                bool
+	Provider               string
+	AllowedLocations       []string
+	BlockedLocations       []string
+	Comment                string
+	UsePrivatelinkEndpoint bool
+	TenantId               string
+	ConsentUrl             string
+	MultiTenantAppName     string
+}
+
+type StorageIntegrationGcsDetails struct {
+	Enabled                  bool
+	Provider                 string
+	AllowedLocations         []string
+	BlockedLocations         []string
+	Comment                  string
+	UsePrivatelinkEndpoint   bool
+	StorageGcpServiceAccount string
+}

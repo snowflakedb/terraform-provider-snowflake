@@ -158,7 +158,6 @@ var storageIntegrationsDef = g.NewInterface(
 	ShowByIdOperationWithFiltering(
 		g.ShowByIDLikeFiltering,
 	).
-	// TODO [next PR]: create structs with all the details mapped on the SDK level
 	DescribeOperation(
 		g.DescriptionMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-integration",
@@ -177,4 +176,33 @@ var storageIntegrationsDef = g.NewInterface(
 			SQL("STORAGE INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		g.PlainStruct("StorageIntegrationAwsDetails").
+			Bool("Enabled").
+			Text("Provider").
+			StringList("AllowedLocations").
+			StringList("BlockedLocations").
+			Text("Comment").
+			Bool("UsePrivatelinkEndpoint").
+			Text("IamUserArn").
+			Text("RoleArn").
+			Text("ObjectAcl").
+			Text("ExternalId"),
+		g.PlainStruct("StorageIntegrationAzureDetails").
+			Bool("Enabled").
+			Text("Provider").
+			StringList("AllowedLocations").
+			StringList("BlockedLocations").
+			Text("Comment").
+			Bool("UsePrivatelinkEndpoint").
+			Text("TenantId").
+			Text("ConsentUrl").
+			Text("MultiTenantAppName"),
+		g.PlainStruct("StorageIntegrationGcsDetails").
+			Bool("Enabled").
+			Text("Provider").
+			StringList("AllowedLocations").
+			StringList("BlockedLocations").
+			Text("Comment").
+			Bool("UsePrivatelinkEndpoint").
+			Text("StorageGcpServiceAccount"),
 	)
