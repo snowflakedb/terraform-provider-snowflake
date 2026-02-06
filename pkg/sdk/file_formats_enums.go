@@ -60,6 +60,7 @@ var AllCsvCompressions = []CsvCompression{
 	CSVCompressionZstd,
 	CSVCompressionDeflate,
 	CSVCompressionRawDeflate,
+	CSVCompressionNone,
 }
 
 func ToCsvCompression(s string) (CsvCompression, error) {

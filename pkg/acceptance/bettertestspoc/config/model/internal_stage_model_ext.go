@@ -207,7 +207,7 @@ func (i *InternalStageModel) WithFileFormatCsvInvalidSkipHeader() *InternalStage
 	})
 }
 
-func (i *InternalStageModel) WithFileFormaInvalidFormatName() *InternalStageModel {
+func (i *InternalStageModel) WithFileFormatInvalidFormatName() *InternalStageModel {
 	return i.WithFileFormatValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
@@ -247,7 +247,7 @@ func (i *InternalStageModel) WithFileFormatCsvInvalidCompression() *InternalStag
 	})
 }
 
-func (i *InternalStageModel) WithFileFormatMuttipleFormats() *InternalStageModel {
+func (i *InternalStageModel) WithFileFormatMultipleFormats() *InternalStageModel {
 	return i.WithFileFormatValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{

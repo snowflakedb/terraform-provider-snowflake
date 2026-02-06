@@ -40,7 +40,7 @@ var StageDescribeSchema = map[string]*schema.Schema{
 
 var csvFileFormatSchema = &schema.Schema{
 	Type:     schema.TypeList,
-	Optional: true,
+	Computed: true,
 	Elem: &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"type": {

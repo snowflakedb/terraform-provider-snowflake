@@ -585,6 +585,34 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 			Encoding:                   sdk.CSVEncodingISO88591,
 			RecordDelimiter:            ":",
 		})
+	defaultAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteCsv.ResourceReference()).
+			HasFileFormatCsv(),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.type", string(sdk.FileFormatTypeCSV))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.record_delimiter", "\\n")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.field_delimiter", ",")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.file_extension", "")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.skip_header", "0")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.parse_header", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.date_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.time_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.timestamp_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.binary_format", string(sdk.BinaryFormatHex))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.escape", "NONE")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.escape_unenclosed_field", "\\\\")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.trim_space", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.field_optionally_enclosed_by", "NONE")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.null_if.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.null_if.0", "\\\\N")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.compression", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.error_on_column_count_mismatch", "true")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.skip_blank_lines", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.replace_invalid_characters", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.empty_field_as_null", "true")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.skip_byte_order_mark", "true")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.encoding", string(sdk.CSVEncodingUTF8))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.multi_line", "true")),
+	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelCompleteCsv.ResourceReference()).
@@ -717,8 +745,7 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.InternalStageResource(t, modelWithoutFileFormat.ResourceReference()).
-						HasFileFormatCsv(),
+					defaultAssertions...,
 				),
 			},
 			// Set all fields
@@ -789,7 +816,7 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	modelBothFormats := model.InternalStageWithId(id).
-		WithFileFormatMuttipleFormats()
+		WithFileFormatMultipleFormats()
 	modelInvalidCompression := model.InternalStageWithId(id).
 		WithFileFormatCsvInvalidCompression()
 	modelInvalidBinaryFormat := model.InternalStageWithId(id).
@@ -801,7 +828,7 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 	modelInvalidSkipHeader := model.InternalStageWithId(id).
 		WithFileFormatCsvInvalidSkipHeader()
 	modelInvalidFormatName := model.InternalStageWithId(id).
-		WithFileFormaInvalidFormatName()
+		WithFileFormatInvalidFormatName()
 	modelConflictingOptions := model.InternalStageWithId(id).
 		WithFileFormatCsvConflictingOptions()
 

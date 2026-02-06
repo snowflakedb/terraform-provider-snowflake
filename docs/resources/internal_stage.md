@@ -118,27 +118,27 @@ Optional:
 
 Optional:
 
-- `binary_format` (String) Defines the encoding format for binary input or output. Valid values: HEX, BASE64, UTF8.
-- `compression` (String) Specifies the compression format. Valid values: AUTO, GZIP, BZ2, BROTLI, ZSTD, DEFLATE, RAW_DEFLATE, NONE.
-- `date_format` (String) Defines the format of date values in the data files. Use AUTO to have Snowflake auto-detect the format.
+- `binary_format` (String) Defines the encoding format for binary input or output. Valid values: `HEX` | `BASE64` | `UTF8`.
+- `compression` (String) Specifies the compression format. Valid values: `AUTO` | `GZIP` | `BZ2` | `BROTLI` | `ZSTD` | `DEFLATE` | `RAW_DEFLATE`.
+- `date_format` (String) Defines the format of date values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
 - `empty_field_as_null` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to insert SQL NULL for empty fields in an input file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `encoding` (String) String (constant) that specifies the character set of the source data when loading data into a table.
+- `encoding` (String) Specifies the character set of the source data when loading data into a table. Valid values: `BIG5` | `EUCJP` | `EUCKR` | `GB18030` | `IBM420` | `IBM424` | `ISO2022CN` | `ISO2022JP` | `ISO2022KR` | `ISO88591` | `ISO88592` | `ISO88595` | `ISO88596` | `ISO88597` | `ISO88598` | `ISO88599` | `ISO885915` | `KOI8R` | `SHIFTJIS` | `UTF8` | `UTF16` | `UTF16BE` | `UTF16LE` | `UTF32` | `UTF32BE` | `UTF32LE` | `WINDOWS1250` | `WINDOWS1251` | `WINDOWS1252` | `WINDOWS1253` | `WINDOWS1254` | `WINDOWS1255` | `WINDOWS1256`.
 - `error_on_column_count_mismatch` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to generate a parsing error if the number of delimited columns in an input file does not match the number of columns in the corresponding table. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `escape` (String) Single character string used as the escape character for field values. Use NONE to specify no escape character.
-- `escape_unenclosed_field` (String) Single character string used as the escape character for unenclosed field values only. Use NONE to specify no escape character.
-- `field_delimiter` (String) One or more singlebyte or multibyte characters that separate fields in an input file. Use NONE to specify no delimiter.
-- `field_optionally_enclosed_by` (String) Character used to enclose strings. Use NONE to specify no enclosure character.
+- `escape` (String) Single character string used as the escape character for field values. Use `NONE` to specify no escape character.
+- `escape_unenclosed_field` (String) Single character string used as the escape character for unenclosed field values only. Use `NONE` to specify no escape character.
+- `field_delimiter` (String) One or more singlebyte or multibyte characters that separate fields in an input file. Use `NONE` to specify no delimiter.
+- `field_optionally_enclosed_by` (String) Character used to enclose strings. Use `NONE` to specify no enclosure character.
 - `file_extension` (String) Specifies the extension for files unloaded to a stage.
 - `multi_line` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to parse CSV files containing multiple records on a single line. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `null_if` (List of String) String used to convert to and from SQL NULL.
 - `parse_header` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to use the first row headers in the data files to determine column names. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `record_delimiter` (String) One or more singlebyte or multibyte characters that separate records in an input file. Use NONE to specify no delimiter.
+- `record_delimiter` (String) One or more singlebyte or multibyte characters that separate records in an input file. Use `NONE` to specify no delimiter.
 - `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `skip_blank_lines` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies to skip any blank lines encountered in the data files. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `skip_byte_order_mark` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `skip_header` (Number) Number of lines at the start of the file to skip.
-- `time_format` (String) Defines the format of time values in the data files. Use AUTO to have Snowflake auto-detect the format.
-- `timestamp_format` (String) Defines the format of timestamp values in the data files. Use AUTO to have Snowflake auto-detect the format.
+- `skip_header` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Number of lines at the start of the file to skip.
+- `time_format` (String) Defines the format of time values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `timestamp_format` (String) Defines the format of timestamp values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
 - `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 
