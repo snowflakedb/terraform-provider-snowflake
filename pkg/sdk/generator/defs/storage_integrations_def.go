@@ -48,7 +48,6 @@ var storageIntegrationsDef = g.NewInterface(
 			).
 			// Enabled is required even though it can be UNSET. Not using it in create results in:
 			// 002029 (42601): SQL compilation error: Missing option(s): ENABLED
-			// TODO [this PR]: add a test showing this behavior through SQL exec (create and alter)
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			ListAssignment("STORAGE_ALLOWED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses().Required()).
 			ListAssignment("STORAGE_BLOCKED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses()).

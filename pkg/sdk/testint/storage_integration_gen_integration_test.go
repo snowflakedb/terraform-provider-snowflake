@@ -260,6 +260,16 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		return id
 	}
 
+	// Enabled is required even though it can be UNSET. Not using it in create results in:
+	// 002029 (42601): SQL compilation error: Missing option(s): ENABLED
+	t.Run("create: without enabled, even though it can be unset", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := testClientHelper().StorageIntegration.CreateWithoutEnabled(t, id, awsRoleARN, s3AllowedLocations[0])
+
+		require.Error(t, err)
+		require.ErrorContains(t, err, "Missing option(s): ENABLED")
+	})
+
 	t.Run("create: s3 basic", func(t *testing.T) {
 		id := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
 
