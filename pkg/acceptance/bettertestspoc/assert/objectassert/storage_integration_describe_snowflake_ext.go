@@ -41,11 +41,25 @@ func StorageIntegrationPropertiesFromObject(t *testing.T, id sdk.AccountObjectId
 	}
 }
 
-func (s *StorageIntegrationPropertiesAssert) HasDetailsCount(expected int) *StorageIntegrationPropertiesAssert {
+func (s *StorageIntegrationPropertiesAssert) HasCount(expected int) *StorageIntegrationPropertiesAssert {
 	s.AddAssertion(func(t *testing.T, o *StorageIntegrationPropertiesWrapper) error {
 		t.Helper()
 		if len(o.Properties) != expected {
 			return fmt.Errorf("expected %d storage integration details; got: %d", expected, len(o.Properties))
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationPropertiesAssert) DoesNotContainProperty(name string) *StorageIntegrationPropertiesAssert {
+	s.AddAssertion(func(t *testing.T, o *StorageIntegrationPropertiesWrapper) error {
+		t.Helper()
+		prop, err := collections.FindFirst(o.Properties, func(prop sdk.StorageIntegrationProperty) bool {
+			return prop.Name == name
+		})
+		if err == nil {
+			return fmt.Errorf("expected storage integration describe output not to contain a property row %s, contains: %s", name, storageIntegrationPropertyString(*prop))
 		}
 		return nil
 	})
