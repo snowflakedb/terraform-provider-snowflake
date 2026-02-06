@@ -48,6 +48,27 @@ type FileFormatCsv struct {
 	MultiLine                  bool
 }
 
+// FileFormatJson represents JSON file format properties from DESCRIBE STAGE
+type FileFormatJson struct {
+	Type                     string
+	Compression              string
+	DateFormat               string
+	TimeFormat               string
+	TimestampFormat          string
+	BinaryFormat             string
+	TrimSpace                bool
+	MultiLine                bool
+	NullIf                   []string
+	FileExtension            string
+	EnableOctal              bool
+	AllowDuplicate           bool
+	StripOuterArray          bool
+	StripNullValues          bool
+	ReplaceInvalidCharacters bool
+	IgnoreUtf8Errors         bool
+	SkipByteOrderMark        bool
+}
+
 // StageDirectoryTable represents directory table properties from DESCRIBE STAGE
 type StageDirectoryTable struct {
 	Enable                       bool
@@ -60,6 +81,7 @@ type StageDirectoryTable struct {
 type StageDetails struct {
 	FileFormatName *SchemaObjectIdentifier
 	FileFormatCsv  *FileFormatCsv
+	FileFormatJson *FileFormatJson
 	DirectoryTable *StageDirectoryTable
 	PrivateLink    *StagePrivateLink
 	Location       *StageLocationDetails
@@ -105,8 +127,11 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 	if err != nil {
 		return nil, err
 	}
-	if formatType == FileFormatTypeCSV {
+	switch formatType {
+	case FileFormatTypeCSV:
 		details.FileFormatCsv = parseCsvFileFormat(properties)
+	case FileFormatTypeJSON:
+		details.FileFormatJson = parseJsonFileFormat(properties)
 	}
 
 	return details, nil
@@ -187,6 +212,53 @@ func parseCsvFileFormat(properties []StageProperty) *FileFormatCsv {
 	}
 
 	return csv
+}
+
+func parseJsonFileFormat(properties []StageProperty) *FileFormatJson {
+	json := &FileFormatJson{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			json.Type = prop.Value
+		case "COMPRESSION":
+			json.Compression = prop.Value
+		case "DATE_FORMAT":
+			json.DateFormat = prop.Value
+		case "TIME_FORMAT":
+			json.TimeFormat = prop.Value
+		case "TIMESTAMP_FORMAT":
+			json.TimestampFormat = prop.Value
+		case "BINARY_FORMAT":
+			json.BinaryFormat = prop.Value
+		case "TRIM_SPACE":
+			json.TrimSpace = prop.Value == "true"
+		case "MULTI_LINE":
+			json.MultiLine = prop.Value == "true"
+		case "NULL_IF":
+			json.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		case "FILE_EXTENSION":
+			json.FileExtension = prop.Value
+		case "ENABLE_OCTAL":
+			json.EnableOctal = prop.Value == "true"
+		case "ALLOW_DUPLICATE":
+			json.AllowDuplicate = prop.Value == "true"
+		case "STRIP_OUTER_ARRAY":
+			json.StripOuterArray = prop.Value == "true"
+		case "STRIP_NULL_VALUES":
+			json.StripNullValues = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			json.ReplaceInvalidCharacters = prop.Value == "true"
+		case "IGNORE_UTF8_ERRORS":
+			json.IgnoreUtf8Errors = prop.Value == "true"
+		case "SKIP_BYTE_ORDER_MARK":
+			json.SkipByteOrderMark = prop.Value == "true"
+		}
+	}
+
+	return json
 }
 
 func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {

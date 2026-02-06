@@ -836,6 +836,271 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 	})
 }
 
+func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	trimSpace := true
+	multiLine := true
+	enableOctal := true
+	allowDuplicate := true
+	stripOuterArray := true
+	stripNullValues := true
+	skipByteOrderMark := true
+	ignoreUtf8Errors := false
+
+	modelWithoutFileFormat := model.InternalStageWithId(id).
+		WithFileFormatJson(model.JsonFileFormatOptions{})
+
+	modelCompleteJson := model.InternalStageWithId(id).
+		WithFileFormatJson(model.JsonFileFormatOptions{
+			Compression:       sdk.JSONCompressionGzip,
+			DateFormat:        "AUTO",
+			TimeFormat:        "AUTO",
+			TimestampFormat:   "AUTO",
+			BinaryFormat:      sdk.BinaryFormatHex,
+			TrimSpace:         &trimSpace,
+			MultiLine:         &multiLine,
+			NullIf:            []string{"NULL", ""},
+			FileExtension:     "json",
+			EnableOctal:       &enableOctal,
+			AllowDuplicate:    &allowDuplicate,
+			StripOuterArray:   &stripOuterArray,
+			StripNullValues:   &stripNullValues,
+			SkipByteOrderMark: &skipByteOrderMark,
+			IgnoreUtf8Errors:  &ignoreUtf8Errors,
+		})
+
+	modelJsonWithReplaceInvalidCharacters := model.InternalStageWithId(id).
+		WithFileFormatJson(model.JsonFileFormatOptions{
+			ReplaceInvalidCharacters: sdk.Pointer(true),
+		})
+
+	altTrimSpace := false
+	altMultiLine := false
+	altEnableOctal := false
+	altAllowDuplicate := false
+	altStripOuterArray := false
+	altStripNullValues := false
+	altIgnoreUtf8Errors := true
+	altSkipByteOrderMark := false
+
+	modelAlteredJson := model.InternalStageWithId(id).
+		WithFileFormatJson(model.JsonFileFormatOptions{
+			Compression:       sdk.JSONCompressionZstd,
+			DateFormat:        "YYYY",
+			TimeFormat:        "HH24:MI:SS",
+			TimestampFormat:   "YYYY-MM-DD HH24:MI:SS",
+			BinaryFormat:      sdk.BinaryFormatBase64,
+			TrimSpace:         &altTrimSpace,
+			MultiLine:         &altMultiLine,
+			NullIf:            []string{"NA"},
+			FileExtension:     "txt",
+			EnableOctal:       &altEnableOctal,
+			AllowDuplicate:    &altAllowDuplicate,
+			StripOuterArray:   &altStripOuterArray,
+			StripNullValues:   &altStripNullValues,
+			IgnoreUtf8Errors:  &altIgnoreUtf8Errors,
+			SkipByteOrderMark: &altSkipByteOrderMark,
+		})
+
+	defaultAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteJson.ResourceReference()).
+			HasFileFormatJson(),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJSON))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JSONCompressionAuto))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.date_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.time_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.timestamp_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.binary_format", string(sdk.BinaryFormatHex))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.trim_space", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.multi_line", "true")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.null_if.#", "0")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.file_extension", "")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.enable_octal", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.allow_duplicate", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.strip_outer_array", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.strip_null_values", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.replace_invalid_characters", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.ignore_utf8_errors", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.skip_byte_order_mark", "true")),
+	}
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteJson.ResourceReference()).
+			HasFileFormatJson().
+			HasFileFormatJsonCompression(sdk.JSONCompressionGzip).
+			HasFileFormatJsonDateFormat("AUTO").
+			HasFileFormatJsonTimeFormat("AUTO").
+			HasFileFormatJsonTimestampFormat("AUTO").
+			HasFileFormatJsonBinaryFormat(sdk.BinaryFormatHex).
+			HasFileFormatJsonTrimSpace(trimSpace).
+			HasFileFormatJsonMultiLine(multiLine).
+			HasFileFormatJsonNullIfCount(2).
+			HasFileFormatJsonFileExtension("json").
+			HasFileFormatJsonEnableOctal(enableOctal).
+			HasFileFormatJsonAllowDuplicate(allowDuplicate).
+			HasFileFormatJsonStripOuterArray(stripOuterArray).
+			HasFileFormatJsonStripNullValues(stripNullValues).
+			HasFileFormatJsonReplaceInvalidCharactersString(r.BooleanDefault).
+			HasFileFormatJsonSkipByteOrderMark(skipByteOrderMark),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJSON))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JSONCompressionGzip))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.date_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.time_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.timestamp_format", "AUTO")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.binary_format", string(sdk.BinaryFormatHex))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.trim_space", strconv.FormatBool(trimSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.multi_line", strconv.FormatBool(multiLine))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.null_if.#", "2")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.null_if.0", "NULL")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.null_if.1", "")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.file_extension", "json")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.enable_octal", strconv.FormatBool(enableOctal))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.allow_duplicate", strconv.FormatBool(allowDuplicate))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.strip_outer_array", strconv.FormatBool(stripOuterArray))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.strip_null_values", strconv.FormatBool(stripNullValues))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.replace_invalid_characters", r.BooleanFalse)),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.ignore_utf8_errors", strconv.FormatBool(ignoreUtf8Errors))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteJson.ResourceReference(), "describe_output.0.file_format.0.json.0.skip_byte_order_mark", strconv.FormatBool(skipByteOrderMark))),
+	}
+
+	alteredAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelAlteredJson.ResourceReference()).
+			HasFileFormatJson().
+			HasFileFormatJsonCompression(sdk.JSONCompressionZstd).
+			HasFileFormatJsonDateFormat("YYYY").
+			HasFileFormatJsonTimeFormat("HH24:MI:SS").
+			HasFileFormatJsonTimestampFormat("YYYY-MM-DD HH24:MI:SS").
+			HasFileFormatJsonBinaryFormat(sdk.BinaryFormatBase64).
+			HasFileFormatJsonTrimSpace(altTrimSpace).
+			HasFileFormatJsonMultiLine(altMultiLine).
+			HasFileFormatJsonNullIfCount(1).
+			HasFileFormatJsonFileExtension("txt").
+			HasFileFormatJsonEnableOctal(altEnableOctal).
+			HasFileFormatJsonAllowDuplicate(altAllowDuplicate).
+			HasFileFormatJsonStripOuterArray(altStripOuterArray).
+			HasFileFormatJsonStripNullValues(altStripNullValues).
+			HasFileFormatJsonIgnoreUtf8Errors(altIgnoreUtf8Errors).
+			HasFileFormatJsonSkipByteOrderMark(altSkipByteOrderMark),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.type", string(sdk.FileFormatTypeJSON))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.compression", string(sdk.JSONCompressionZstd))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.date_format", "YYYY")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.time_format", "HH24:MI:SS")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.timestamp_format", "YYYY-MM-DD HH24:MI:SS")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.binary_format", string(sdk.BinaryFormatBase64))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.trim_space", strconv.FormatBool(altTrimSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.multi_line", strconv.FormatBool(altMultiLine))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.null_if.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.null_if.0", "NA")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.file_extension", "txt")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.enable_octal", strconv.FormatBool(altEnableOctal))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.allow_duplicate", strconv.FormatBool(altAllowDuplicate))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.strip_outer_array", strconv.FormatBool(altStripOuterArray))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.strip_null_values", strconv.FormatBool(altStripNullValues))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.replace_invalid_characters", r.BooleanFalse)),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.ignore_utf8_errors", strconv.FormatBool(altIgnoreUtf8Errors))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredJson.ResourceReference(), "describe_output.0.file_format.0.json.0.skip_byte_order_mark", strconv.FormatBool(altSkipByteOrderMark))),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.InternalStage),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelCompleteJson),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			{
+				Config:                  accconfig.FromModels(t, modelCompleteJson),
+				ResourceName:            modelCompleteJson.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory", "file_format.0.json.0.ignore_utf8_errors", "file_format.0.json.0.replace_invalid_characters"},
+			},
+			// unset
+			{
+				Config: accconfig.FromModels(t, modelWithoutFileFormat),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithoutFileFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					defaultAssertions...,
+				),
+			},
+			// Set all fields
+			{
+				Config: accconfig.FromModels(t, modelCompleteJson),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			// alter values
+			{
+				Config: accconfig.FromModels(t, modelAlteredJson),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelAlteredJson.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					alteredAssertions...,
+				),
+			},
+			// detect external changes
+			{
+				PreConfig: func() {
+					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
+						FileFormatOptions: &sdk.FileFormatOptions{
+							JsonOptions: &sdk.FileFormatJsonOptions{
+								Compression:              sdk.Pointer(sdk.JSONCompressionZstd),
+								DateFormat:               &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
+								TimeFormat:               &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
+								TimestampFormat:          &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
+								BinaryFormat:             sdk.Pointer(sdk.BinaryFormatBase64),
+								TrimSpace:                sdk.Bool(false),
+								MultiLine:                sdk.Bool(false),
+								NullIf:                   []sdk.NullString{{S: "NA"}},
+								FileExtension:            sdk.Pointer("txt"),
+								EnableOctal:              sdk.Bool(false),
+								AllowDuplicate:           sdk.Bool(false),
+								StripOuterArray:          sdk.Bool(false),
+								StripNullValues:          sdk.Bool(false),
+								ReplaceInvalidCharacters: sdk.Bool(false),
+								SkipByteOrderMark:        sdk.Bool(false),
+							},
+						},
+					}))
+				},
+				Config: accconfig.FromModels(t, modelCompleteJson),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteJson.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelJsonWithReplaceInvalidCharacters),
+				Check: assertThat(t,
+					resourceassert.InternalStageResource(t, modelJsonWithReplaceInvalidCharacters.ResourceReference()).
+						HasFileFormatJson().
+						HasFileFormatJsonReplaceInvalidCharacters(true),
+					assert.Check(resource.TestCheckResourceAttr(modelJsonWithReplaceInvalidCharacters.ResourceReference(), "describe_output.0.file_format.0.json.0.replace_invalid_characters", "true")),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -855,6 +1120,14 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 		WithFileFormatInvalidFormatName()
 	modelConflictingOptions := model.InternalStageWithId(id).
 		WithFileFormatCsvConflictingOptions()
+	modelJsonInvalidCompression := model.InternalStageWithId(id).
+		WithFileFormatJsonInvalidCompression()
+	modelJsonInvalidBinaryFormat := model.InternalStageWithId(id).
+		WithFileFormatJsonInvalidBinaryFormat()
+	modelJsonInvalidBooleanString := model.InternalStageWithId(id).
+		WithFileFormatJsonInvalidBooleanString()
+	modelJsonConflictingOptions := model.InternalStageWithId(id).
+		WithFileFormatJsonConflictingOptions()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -866,7 +1139,7 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelBothFormats),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`file_format.0.csv,file_format.0.format_name.* can be specified`),
+				ExpectError: regexp.MustCompile(`file_format.0.csv,file_format.0.format_name,file_format.0.json`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidCompression),
@@ -902,6 +1175,26 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelConflictingOptions),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`file_format.0.csv.0.skip_header.*conflicts with\nfile_format.0.csv.0.parse_header`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelJsonInvalidCompression),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid json compression: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelJsonInvalidBinaryFormat),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid binary format: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelJsonInvalidBooleanString),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected .*multi_line.* to be one of \["true" "false"\], got invalid`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelJsonConflictingOptions),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`file_format.0.json.0.replace_invalid_characters.*conflicts with\nfile_format.0.json.0.ignore_utf8_errors`),
 			},
 		},
 	})

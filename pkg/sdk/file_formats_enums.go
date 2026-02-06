@@ -183,6 +183,25 @@ var (
 	JSONCompressionNone       JsonCompression = "NONE"
 )
 
+var AllJsonCompressions = []JsonCompression{
+	JSONCompressionAuto,
+	JSONCompressionGzip,
+	JSONCompressionBz2,
+	JSONCompressionBrotli,
+	JSONCompressionZstd,
+	JSONCompressionDeflate,
+	JSONCompressionRawDeflate,
+	JSONCompressionNone,
+}
+
+func ToJsonCompression(s string) (JsonCompression, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllJsonCompressions, JsonCompression(s)) {
+		return "", fmt.Errorf("invalid json compression: %s", s)
+	}
+	return JsonCompression(s), nil
+}
+
 type AvroCompression string
 
 var (

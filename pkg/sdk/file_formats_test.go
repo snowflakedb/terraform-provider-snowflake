@@ -195,3 +195,46 @@ func Test_FileFormat_ToCsvEncoding(t *testing.T) {
 		})
 	}
 }
+
+func Test_FileFormat_ToJsonCompression(t *testing.T) {
+	type test struct {
+		input string
+		want  JsonCompression
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "gzip", want: JSONCompressionGzip},
+
+		// Supported Values
+		{input: "AUTO", want: JSONCompressionAuto},
+		{input: "GZIP", want: JSONCompressionGzip},
+		{input: "BZ2", want: JSONCompressionBz2},
+		{input: "BROTLI", want: JSONCompressionBrotli},
+		{input: "ZSTD", want: JSONCompressionZstd},
+		{input: "DEFLATE", want: JSONCompressionDeflate},
+		{input: "RAW_DEFLATE", want: JSONCompressionRawDeflate},
+		{input: "NONE", want: JSONCompressionNone},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToJsonCompression(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToJsonCompression(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
