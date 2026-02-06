@@ -94,6 +94,12 @@ func (c *StorageIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdenti
 	return c.client().ShowByID(ctx, id)
 }
 
+func (c *StorageIntegrationClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) ([]sdk.StorageIntegrationProperty, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().Describe(ctx, id)
+}
+
 func (c *StorageIntegrationClient) CreateWithoutEnabled(t *testing.T, id sdk.AccountObjectIdentifier, iamRole string, allowedLocation sdk.StorageLocation) error {
 	t.Helper()
 	ctx := context.Background()
