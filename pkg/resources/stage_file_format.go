@@ -75,7 +75,7 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 		Default:          BooleanDefault,
 		ValidateDiagFunc: validateBooleanString,
 		Description:      booleanStringFieldDescription("Boolean that specifies whether to use the first row headers in the data files to determine column names."),
-		ConflictsWith:    []string{"skip_header"},
+		ConflictsWith:    []string{"file_format.0.csv.0.skip_header"},
 	},
 	"skip_header": {
 		Type:          schema.TypeInt,
@@ -83,7 +83,7 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 		ValidateFunc:  validation.IntAtLeast(0),
 		Default:       IntDefault,
 		Description:   "Number of lines at the start of the file to skip.",
-		ConflictsWith: []string{"parse_header"},
+		ConflictsWith: []string{"file_format.0.csv.0.parse_header"},
 	},
 	"skip_blank_lines": {
 		Type:             schema.TypeString,

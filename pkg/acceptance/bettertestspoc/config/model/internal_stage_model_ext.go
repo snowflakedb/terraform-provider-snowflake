@@ -8,7 +8,7 @@ import (
 
 // CsvFileFormatOptions holds CSV file format configuration options.
 type CsvFileFormatOptions struct {
-	Compression                string
+	Compression                sdk.CsvCompression
 	RecordDelimiter            string
 	FieldDelimiter             string
 	MultiLine                  *bool
@@ -19,7 +19,7 @@ type CsvFileFormatOptions struct {
 	DateFormat                 string
 	TimeFormat                 string
 	TimestampFormat            string
-	BinaryFormat               string
+	BinaryFormat               sdk.BinaryFormat
 	Escape                     string
 	EscapeUnenclosedField      string
 	TrimSpace                  *bool
@@ -29,7 +29,7 @@ type CsvFileFormatOptions struct {
 	ReplaceInvalidCharacters   *bool
 	EmptyFieldAsNull           *bool
 	SkipByteOrderMark          *bool
-	Encoding                   string
+	Encoding                   sdk.CsvEncoding
 }
 
 func InternalStageWithId(id sdk.SchemaObjectIdentifier) *InternalStageModel {
@@ -110,7 +110,7 @@ func (i *InternalStageModel) WithFileFormatCsv(opts CsvFileFormatOptions) *Inter
 	csvMap := make(map[string]tfconfig.Variable)
 
 	if opts.Compression != "" {
-		csvMap["compression"] = tfconfig.StringVariable(opts.Compression)
+		csvMap["compression"] = tfconfig.StringVariable(string(opts.Compression))
 	}
 	if opts.RecordDelimiter != "" {
 		csvMap["record_delimiter"] = tfconfig.StringVariable(opts.RecordDelimiter)
@@ -143,7 +143,7 @@ func (i *InternalStageModel) WithFileFormatCsv(opts CsvFileFormatOptions) *Inter
 		csvMap["timestamp_format"] = tfconfig.StringVariable(opts.TimestampFormat)
 	}
 	if opts.BinaryFormat != "" {
-		csvMap["binary_format"] = tfconfig.StringVariable(opts.BinaryFormat)
+		csvMap["binary_format"] = tfconfig.StringVariable(string(opts.BinaryFormat))
 	}
 	if opts.Escape != "" {
 		csvMap["escape"] = tfconfig.StringVariable(opts.Escape)
@@ -177,7 +177,7 @@ func (i *InternalStageModel) WithFileFormatCsv(opts CsvFileFormatOptions) *Inter
 		csvMap["skip_byte_order_mark"] = tfconfig.BoolVariable(*opts.SkipByteOrderMark)
 	}
 	if opts.Encoding != "" {
-		csvMap["encoding"] = tfconfig.StringVariable(opts.Encoding)
+		csvMap["encoding"] = tfconfig.StringVariable(string(opts.Encoding))
 	}
 
 	// Workaround for empty objects - Terraform requires at least one attribute
@@ -189,6 +189,72 @@ func (i *InternalStageModel) WithFileFormatCsv(opts CsvFileFormatOptions) *Inter
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
 				"csv": tfconfig.ListVariable(tfconfig.ObjectVariable(csvMap)),
+			},
+		)),
+	)
+}
+
+func (i *InternalStageModel) WithFileFormatCsvConflictingOptions() *InternalStageModel {
+	return i.WithFileFormatCsv(CsvFileFormatOptions{
+		SkipHeader:  sdk.Pointer(1),
+		ParseHeader: sdk.Pointer(true),
+	})
+}
+
+func (i *InternalStageModel) WithFileFormatCsvInvalidSkipHeader() *InternalStageModel {
+	return i.WithFileFormatCsv(CsvFileFormatOptions{
+		SkipHeader: sdk.Pointer(-1),
+	})
+}
+
+func (i *InternalStageModel) WithFileFormaInvalidFormatName() *InternalStageModel {
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"format_name": tfconfig.StringVariable("invalid"),
+			},
+		)),
+	)
+}
+
+func (i *InternalStageModel) WithFileFormatCsvInvalidEncoding() *InternalStageModel {
+	return i.WithFileFormatCsv(CsvFileFormatOptions{
+		Encoding: "INVALID",
+	})
+}
+
+func (i *InternalStageModel) WithFileFormatCsvInvalidBooleanString() *InternalStageModel {
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"csv": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"multi_line": tfconfig.StringVariable("invalid"),
+				})),
+			},
+		)),
+	)
+}
+
+func (i *InternalStageModel) WithFileFormatCsvInvalidBinaryFormat() *InternalStageModel {
+	return i.WithFileFormatCsv(CsvFileFormatOptions{
+		BinaryFormat: "INVALID",
+	})
+}
+
+func (i *InternalStageModel) WithFileFormatCsvInvalidCompression() *InternalStageModel {
+	return i.WithFileFormatCsv(CsvFileFormatOptions{
+		Compression: "INVALID",
+	})
+}
+
+func (i *InternalStageModel) WithFileFormatMuttipleFormats() *InternalStageModel {
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"format_name": tfconfig.StringVariable("some_format"),
+				"csv": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"field_delimiter": tfconfig.StringVariable(","),
+				})),
 			},
 		)),
 	)

@@ -45,13 +45,11 @@ func (i *InternalStageResourceAssert) HasStageTypeEnum(expected sdk.StageType) *
 	return i
 }
 
-// HasFileFormatEmpty asserts that file_format is not set.
 func (i *InternalStageResourceAssert) HasFileFormatEmpty() *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("file_format.#", "0"))
 	return i
 }
 
-// HasFileFormatFormatName asserts that file_format.0.format_name equals expected.
 func (i *InternalStageResourceAssert) HasFileFormatFormatName(expected string) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", expected))
@@ -59,164 +57,117 @@ func (i *InternalStageResourceAssert) HasFileFormatFormatName(expected string) *
 	return i
 }
 
-// HasFileFormatCsv asserts that file_format.0.csv is set (inline CSV format).
 func (i *InternalStageResourceAssert) HasFileFormatCsv() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
 	return i
 }
 
-func (i *InternalStageResourceAssert) HasFileFormatCsvCompression(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.compression", expected))
+func (i *InternalStageResourceAssert) HasFileFormatCsvCompression(expected sdk.CsvCompression) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.compression", string(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvRecordDelimiter(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.record_delimiter", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvFieldDelimiter(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.field_delimiter", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvMultiLine(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.multi_line", strconv.FormatBool(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvFileExtension(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.file_extension", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvParseHeader(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.parse_header", strconv.FormatBool(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvSkipHeader(expected int) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.skip_header", strconv.Itoa(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvSkipBlankLines(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.skip_blank_lines", strconv.FormatBool(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvDateFormat(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.date_format", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvTimeFormat(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.time_format", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvTimestampFormat(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.timestamp_format", expected))
 	return i
 }
 
-func (i *InternalStageResourceAssert) HasFileFormatCsvBinaryFormat(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.binary_format", expected))
+func (i *InternalStageResourceAssert) HasFileFormatCsvBinaryFormat(expected sdk.BinaryFormat) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.binary_format", string(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvEscape(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.escape", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvEscapeUnenclosedField(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.escape_unenclosed_field", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvTrimSpace(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.trim_space", strconv.FormatBool(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvFieldOptionallyEnclosedBy(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.field_optionally_enclosed_by", expected))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvNullIfCount(expected int) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.null_if.#", strconv.Itoa(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvErrorOnColumnCountMismatch(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.error_on_column_count_mismatch", strconv.FormatBool(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvReplaceInvalidCharacters(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.replace_invalid_characters", strconv.FormatBool(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvEmptyFieldAsNull(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.empty_field_as_null", strconv.FormatBool(expected)))
 	return i
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvSkipByteOrderMark(expected bool) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.skip_byte_order_mark", strconv.FormatBool(expected)))
 	return i
 }
 
-func (i *InternalStageResourceAssert) HasFileFormatCsvEncoding(expected string) *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
-	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.encoding", expected))
+func (i *InternalStageResourceAssert) HasFileFormatCsvEncoding(expected sdk.CsvEncoding) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.encoding", string(expected)))
 	return i
 }
