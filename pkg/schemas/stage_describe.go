@@ -235,21 +235,20 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		}
 	}
 
-	if properties.FileFormatName != nil || properties.FileFormatCsv != nil {
-		fileFormat := map[string]any{
-			"format_name": "",
-			"csv":         []any{},
-			"json":        []any{},
-		}
-		if properties.FileFormatName != nil {
-			fileFormat["format_name"] = properties.FileFormatName.FullyQualifiedName()
-		} else if properties.FileFormatCsv != nil {
-			fileFormat["csv"] = []any{StageFileFormatCsvToSchema(properties.FileFormatCsv)}
-		} else if properties.FileFormatJson != nil {
-			fileFormat["json"] = []any{StageFileFormatJsonToSchema(properties.FileFormatJson)}
-		}
-		schema["file_format"] = []map[string]any{fileFormat}
+	fileFormat := map[string]any{
+		"format_name": "",
+		"csv":         []any{},
+		"json":        []any{},
 	}
+	switch {
+	case properties.FileFormatName != nil:
+		fileFormat["format_name"] = properties.FileFormatName.FullyQualifiedName()
+	case properties.FileFormatCsv != nil:
+		fileFormat["csv"] = []any{StageFileFormatCsvToSchema(properties.FileFormatCsv)}
+	case properties.FileFormatJson != nil:
+		fileFormat["json"] = []any{StageFileFormatJsonToSchema(properties.FileFormatJson)}
+	}
+	schema["file_format"] = []map[string]any{fileFormat}
 
 	return schema, nil
 }
