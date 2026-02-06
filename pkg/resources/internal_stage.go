@@ -198,7 +198,6 @@ func CreateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	if err := client.Stages.CreateInternal(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
@@ -252,33 +251,6 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 					"auto_refresh": details.DirectoryTable.AutoRefresh,
 				},
 			}
-			var fileFormat, fileFormatToSet []any
-			if details.FileFormatName != nil {
-				fileFormat = []any{
-					map[string]any{
-						"format_name": details.FileFormatName.FullyQualifiedName(),
-						"csv":         []any{},
-					},
-				}
-				fileFormatToSet = []any{
-					map[string]any{
-						"format_name": details.FileFormatName.FullyQualifiedName(),
-					},
-				}
-			}
-			if details.FileFormatCsv != nil {
-				fileFormat = []any{
-					map[string]any{
-						"format_name": "",
-						"csv":         []any{schemas.StageFileFormatCsvToSchema(details.FileFormatCsv)},
-					},
-				}
-				fileFormatToSet = []any{
-					map[string]any{
-						"csv": []any{stageCsvFileFormatToSchema(details.FileFormatCsv)},
-					},
-				}
-			}
 			directoryTableToSet := []any{
 				map[string]any{
 					"enable":       details.DirectoryTable.Enable,
@@ -287,8 +259,10 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
 				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
-				outputMapping{"file_format", "file_format", fileFormat, fileFormatToSet, nil},
 			); err != nil {
+				return diag.FromErr(err)
+			}
+			if err := handleStageFileFormatRead(d, details); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -330,7 +304,7 @@ func UpdateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 	set := sdk.NewAlterInternalStageStageRequest(id)
 	err = errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
-		attributeMappedValueUpdateSetOnlyFallback(d, "file_format", &set.FileFormat, parseStageFileFormat, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
+		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat2, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
 	)
 	if err != nil {
 		return diag.FromErr(err)

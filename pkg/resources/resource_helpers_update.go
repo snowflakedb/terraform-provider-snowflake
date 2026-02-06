@@ -227,6 +227,21 @@ func attributeMappedValueUpdateSetOnlyFallback[T, R any](d *schema.ResourceData,
 	return nil
 }
 
+func attributeMappedValueUpdateSetOnlyFallbackNested[R any](d *schema.ResourceData, key string, setField **R, mapper func(*schema.ResourceData) (R, error), fallbackValue R) error {
+	if d.HasChange(key) {
+		if _, ok := d.GetOk(key); ok {
+			mappedValue, err := mapper(d)
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(mappedValue)
+		} else {
+			*setField = sdk.Pointer(fallbackValue)
+		}
+	}
+	return nil
+}
+
 func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, setField **R, unsetField **bool, mapper func(T) (R, error)) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {

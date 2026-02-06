@@ -17,6 +17,23 @@ var (
 	FileFormatTypeXML     FileFormatType = "XML"
 )
 
+var AllFileFormatTypes = []FileFormatType{
+	FileFormatTypeCSV,
+	FileFormatTypeJSON,
+	FileFormatTypeAvro,
+	FileFormatTypeORC,
+	FileFormatTypeParquet,
+	FileFormatTypeXML,
+}
+
+func ToFileFormatType(s string) (FileFormatType, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllFileFormatTypes, FileFormatType(s)) {
+		return "", fmt.Errorf("invalid file format type: %s", s)
+	}
+	return FileFormatType(s), nil
+}
+
 type BinaryFormat string
 
 var (

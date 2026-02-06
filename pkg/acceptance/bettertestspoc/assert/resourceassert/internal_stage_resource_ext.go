@@ -58,6 +58,8 @@ func (i *InternalStageResourceAssert) HasFileFormatFormatName(expected string) *
 }
 
 func (i *InternalStageResourceAssert) HasFileFormatCsv() *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
+	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
 	return i
 }

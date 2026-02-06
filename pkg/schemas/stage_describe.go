@@ -160,12 +160,14 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		schema["file_format"] = []map[string]any{
 			{
 				"format_name": properties.FileFormatName.FullyQualifiedName(),
+				"csv":         []any{},
 			},
 		}
 	} else if properties.FileFormatCsv != nil {
 		schema["file_format"] = []map[string]any{
 			{
-				"csv": []any{StageFileFormatCsvToSchema(properties.FileFormatCsv)},
+				"format_name": "",
+				"csv":         []any{StageFileFormatCsvToSchema(properties.FileFormatCsv)},
 			},
 		}
 	}

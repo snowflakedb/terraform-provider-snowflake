@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -177,6 +179,7 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 	},
 }
 
+// parseStageFileFormat parses the stage file format from the configuration to an SDK object.
 func parseStageFileFormat(v any) (sdk.StageFileFormatRequest, error) {
 	fileFormatList := v.([]any)
 	if len(fileFormatList) == 0 {
@@ -210,6 +213,7 @@ func parseStageFileFormat(v any) (sdk.StageFileFormatRequest, error) {
 	return *fileFormatReq, nil
 }
 
+// parseCsvFileFormatOptions parses the CSV file format options from the configuration to an SDK object.
 func parseCsvFileFormatOptions(csvConfig map[string]any) (*sdk.FileFormatCsvOptions, error) {
 	csvOptions := &sdk.FileFormatCsvOptions{}
 
@@ -375,6 +379,7 @@ func parseStageFileFormatStringOrAuto(v string) *sdk.StageFileFormatStringOrAuto
 	return &sdk.StageFileFormatStringOrAuto{Value: sdk.String(v)}
 }
 
+// stageFileFormatToSchema converts the SDK details to a Terraform schema.
 func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 	if details == nil {
 		return nil
@@ -400,57 +405,44 @@ func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 	return nil
 }
 
+// stageCsvFileFormatToSchema converts the SDK details for a CSV file format to a Terraform schema.
 func stageCsvFileFormatToSchema(csv *sdk.FileFormatCsv) map[string]any {
-	result := map[string]any{}
+	return map[string]any{
+		"record_delimiter":               csv.RecordDelimiter,
+		"field_delimiter":                csv.FieldDelimiter,
+		"file_extension":                 csv.FileExtension,
+		"skip_header":                    csv.SkipHeader,
+		"parse_header":                   booleanStringFromBool(csv.ParseHeader),
+		"date_format":                    csv.DateFormat,
+		"time_format":                    csv.TimeFormat,
+		"timestamp_format":               csv.TimestampFormat,
+		"binary_format":                  csv.BinaryFormat,
+		"escape":                         csv.Escape,
+		"escape_unenclosed_field":        csv.EscapeUnenclosedField,
+		"trim_space":                     booleanStringFromBool(csv.TrimSpace),
+		"field_optionally_enclosed_by":   csv.FieldOptionallyEnclosedBy,
+		"null_if":                        collections.Map(csv.NullIf, func(v string) any { return v }),
+		"compression":                    csv.Compression,
+		"error_on_column_count_mismatch": booleanStringFromBool(csv.ErrorOnColumnCountMismatch),
+		"skip_blank_lines":               booleanStringFromBool(csv.SkipBlankLines),
+		"replace_invalid_characters":     booleanStringFromBool(csv.ReplaceInvalidCharacters),
+		"empty_field_as_null":            booleanStringFromBool(csv.EmptyFieldAsNull),
+		"skip_byte_order_mark":           booleanStringFromBool(csv.SkipByteOrderMark),
+		"encoding":                       csv.Encoding,
+		"multi_line":                     booleanStringFromBool(csv.MultiLine),
+	}
+}
 
-	if csv.Compression != "" {
-		result["compression"] = csv.Compression
+func handleStageFileFormatRead(d *schema.ResourceData, details *sdk.StageDetails) error {
+	fileFormatSchema, err := schemas.StageDescribeToSchema(*details)
+	if err != nil {
+		return err
 	}
-	if csv.RecordDelimiter != "" {
-		result["record_delimiter"] = csv.RecordDelimiter
-	}
-	if csv.FieldDelimiter != "" {
-		result["field_delimiter"] = csv.FieldDelimiter
-	}
-	result["multi_line"] = booleanStringFromBool(csv.MultiLine)
-	if csv.FileExtension != "" {
-		result["file_extension"] = csv.FileExtension
-	}
-	result["parse_header"] = booleanStringFromBool(csv.ParseHeader)
-	result["skip_header"] = csv.SkipHeader
-	result["skip_blank_lines"] = booleanStringFromBool(csv.SkipBlankLines)
-	if csv.DateFormat != "" {
-		result["date_format"] = csv.DateFormat
-	}
-	if csv.TimeFormat != "" {
-		result["time_format"] = csv.TimeFormat
-	}
-	if csv.TimestampFormat != "" {
-		result["timestamp_format"] = csv.TimestampFormat
-	}
-	if csv.BinaryFormat != "" {
-		result["binary_format"] = csv.BinaryFormat
-	}
-	if csv.Escape != "" {
-		result["escape"] = csv.Escape
-	}
-	if csv.EscapeUnenclosedField != "" {
-		result["escape_unenclosed_field"] = csv.EscapeUnenclosedField
-	}
-	result["trim_space"] = booleanStringFromBool(csv.TrimSpace)
-	if csv.FieldOptionallyEnclosedBy != "" {
-		result["field_optionally_enclosed_by"] = csv.FieldOptionallyEnclosedBy
-	}
-	if len(csv.NullIf) > 0 {
-		result["null_if"] = csv.NullIf
-	}
-	result["error_on_column_count_mismatch"] = booleanStringFromBool(csv.ErrorOnColumnCountMismatch)
-	result["replace_invalid_characters"] = booleanStringFromBool(csv.ReplaceInvalidCharacters)
-	result["empty_field_as_null"] = booleanStringFromBool(csv.EmptyFieldAsNull)
-	result["skip_byte_order_mark"] = booleanStringFromBool(csv.SkipByteOrderMark)
-	if csv.Encoding != "" {
-		result["encoding"] = csv.Encoding
-	}
-
-	return result
+	fileFormatToCompare := collections.Map(fileFormatSchema["file_format"].([]map[string]any), func(v map[string]any) any {
+		return v
+	})
+	fileFormatToSet := stageFileFormatToSchema(details)
+	return handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+		outputMapping{"file_format", "file_format", fileFormatToCompare, fileFormatToSet, nil},
+	)
 }
