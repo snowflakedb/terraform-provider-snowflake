@@ -23,7 +23,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 				"format_name": {
 					Type:             schema.TypeString,
 					Optional:         true,
-					ExactlyOneOf:     []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json"},
+					ExactlyOneOf:     []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro"},
 					Description:      "Fully qualified name of the file format (e.g., 'database.schema.format_name').",
 					DiffSuppressFunc: suppressIdentifierQuoting,
 					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
@@ -32,7 +32,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					Type:         schema.TypeList,
 					Optional:     true,
 					MaxItems:     1,
-					ExactlyOneOf: []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json"},
+					ExactlyOneOf: []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro"},
 					Description:  "CSV file format options.",
 					Elem: &schema.Resource{
 						Schema: csvFileFormatSchema,
@@ -42,10 +42,20 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					Type:         schema.TypeList,
 					Optional:     true,
 					MaxItems:     1,
-					ExactlyOneOf: []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json"},
+					ExactlyOneOf: []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro"},
 					Description:  "JSON file format options.",
 					Elem: &schema.Resource{
 						Schema: jsonFileFormatSchema,
+					},
+				},
+				"avro": {
+					Type:         schema.TypeList,
+					Optional:     true,
+					MaxItems:     1,
+					ExactlyOneOf: []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro"},
+					Description:  "AVRO file format options.",
+					Elem: &schema.Resource{
+						Schema: avroFileFormatSchema,
 					},
 				},
 			},
@@ -301,6 +311,36 @@ var jsonFileFormatSchema = map[string]*schema.Schema{
 	},
 }
 
+var avroFileFormatSchema = map[string]*schema.Schema{
+	"compression": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllAvroCompressions)),
+		ValidateDiagFunc: sdkValidation(sdk.ToAvroCompression),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToAvroCompression),
+	},
+	"trim_space": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
+	},
+	"replace_invalid_characters": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+	},
+	"null_if": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "String used to convert to and from SQL NULL.",
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	},
+}
+
 // parseStageFileFormat parses the stage file format from the resource data to an SDK object.
 func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, error) {
 	if len(d.Get("file_format").([]any)) == 0 {
@@ -321,6 +361,11 @@ func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, e
 				JsonOptions: fileFormatOptions,
 			})
 		}, parseJsonFileFormatOptions),
+		attributeMappedValueCreateBuilderNested(d, prefix+"avro", func(fileFormatOptions *sdk.FileFormatAvroOptions) *sdk.StageFileFormatRequest {
+			return fileFormatReq.WithFileFormatOptions(sdk.FileFormatOptions{
+				AvroOptions: fileFormatOptions,
+			})
+		}, parseAvroFileFormatOptions),
 	)
 	if err != nil {
 		return sdk.StageFileFormatRequest{}, err
@@ -454,6 +499,44 @@ func parseJsonFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatJsonOpti
 	return jsonOptions, nil
 }
 
+// parseAvroFileFormatOptions parses the AVRO file format options from the resource data to an SDK object.
+func parseAvroFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatAvroOptions, error) {
+	avroOptions := &sdk.FileFormatAvroOptions{}
+	prefix := "file_format.0.avro.0."
+
+	err := errors.Join(
+		attributeMappedValueCreate(d, prefix+"compression", &avroOptions.Compression, func(v any) (*sdk.AvroCompression, error) {
+			c, err := sdk.ToAvroCompression(v.(string))
+			return &c, err
+		}),
+		booleanStringAttributeCreate(d, prefix+"trim_space", &avroOptions.TrimSpace),
+		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &avroOptions.ReplaceInvalidCharacters),
+		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatAvroOptions {
+			avroOptions.NullIf = nullIf
+			return avroOptions
+		}, func(v any) ([]sdk.NullString, error) {
+			nullIfList := v.([]any)
+			if len(nullIfList) == 0 {
+				return nil, nil
+			}
+			nullIf := make([]sdk.NullString, len(nullIfList))
+			for i, s := range nullIfList {
+				str := ""
+				if s != nil {
+					str = s.(string)
+				}
+				nullIf[i] = sdk.NullString{S: str}
+			}
+			return nullIf, nil
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return avroOptions, nil
+}
+
 func parseStageFileFormatStringOrNone(v string) *sdk.StageFileFormatStringOrNone {
 	if strings.ToUpper(v) == "NONE" {
 		return &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)}
@@ -496,6 +579,15 @@ func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 		return []map[string]any{
 			{
 				"json": []map[string]any{jsonSchema},
+			},
+		}
+	}
+
+	if details.FileFormatAvro != nil {
+		avroSchema := stageAvroFileFormatToSchema(details.FileFormatAvro)
+		return []map[string]any{
+			{
+				"avro": []map[string]any{avroSchema},
 			},
 		}
 	}
@@ -550,6 +642,16 @@ func stageJsonFileFormatToSchema(json *sdk.FileFormatJson) map[string]any {
 		"replace_invalid_characters": booleanStringFromBool(json.ReplaceInvalidCharacters),
 		"ignore_utf8_errors":         booleanStringFromBool(json.IgnoreUtf8Errors),
 		"skip_byte_order_mark":       booleanStringFromBool(json.SkipByteOrderMark),
+	}
+}
+
+// stageAvroFileFormatToSchema converts the SDK details for an AVRO file format to a Terraform schema.
+func stageAvroFileFormatToSchema(avro *sdk.FileFormatAvro) map[string]any {
+	return map[string]any{
+		"compression":                avro.Compression,
+		"trim_space":                 booleanStringFromBool(avro.TrimSpace),
+		"replace_invalid_characters": booleanStringFromBool(avro.ReplaceInvalidCharacters),
+		"null_if":                    collections.Map(avro.NullIf, func(v string) any { return v }),
 	}
 }
 

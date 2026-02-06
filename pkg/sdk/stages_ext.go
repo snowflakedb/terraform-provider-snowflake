@@ -69,6 +69,15 @@ type FileFormatJson struct {
 	SkipByteOrderMark        bool
 }
 
+// FileFormatAvro represents AVRO file format properties from DESCRIBE STAGE
+type FileFormatAvro struct {
+	Type                     string
+	Compression              string
+	TrimSpace                bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
+}
+
 // StageDirectoryTable represents directory table properties from DESCRIBE STAGE
 type StageDirectoryTable struct {
 	Enable                       bool
@@ -82,6 +91,7 @@ type StageDetails struct {
 	FileFormatName *SchemaObjectIdentifier
 	FileFormatCsv  *FileFormatCsv
 	FileFormatJson *FileFormatJson
+	FileFormatAvro *FileFormatAvro
 	DirectoryTable *StageDirectoryTable
 	PrivateLink    *StagePrivateLink
 	Location       *StageLocationDetails
@@ -132,6 +142,8 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 		details.FileFormatCsv = parseCsvFileFormat(properties)
 	case FileFormatTypeJSON:
 		details.FileFormatJson = parseJsonFileFormat(properties)
+	case FileFormatTypeAvro:
+		details.FileFormatAvro = parseAvroFileFormat(properties)
 	}
 
 	return details, nil
@@ -259,6 +271,29 @@ func parseJsonFileFormat(properties []StageProperty) *FileFormatJson {
 	}
 
 	return json
+}
+
+func parseAvroFileFormat(properties []StageProperty) *FileFormatAvro {
+	avro := &FileFormatAvro{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			avro.Type = prop.Value
+		case "COMPRESSION":
+			avro.Compression = prop.Value
+		case "TRIM_SPACE":
+			avro.TrimSpace = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			avro.ReplaceInvalidCharacters = prop.Value == "true"
+		case "NULL_IF":
+			avro.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		}
+	}
+
+	return avro
 }
 
 func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {

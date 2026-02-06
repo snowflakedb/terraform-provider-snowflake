@@ -52,6 +52,14 @@ type JsonFileFormatOptions struct {
 	SkipByteOrderMark        *bool
 }
 
+// AvroFileFormatOptions holds AVRO file format configuration options.
+type AvroFileFormatOptions struct {
+	Compression              sdk.AvroCompression
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []string
+}
+
 func InternalStageWithId(id sdk.SchemaObjectIdentifier) *InternalStageModel {
 	return InternalStage("test", id.DatabaseName(), id.SchemaName(), id.Name())
 }
@@ -380,4 +388,39 @@ func (i *InternalStageModel) WithFileFormatJsonConflictingOptions() *InternalSta
 		ReplaceInvalidCharacters: sdk.Pointer(true),
 		IgnoreUtf8Errors:         sdk.Pointer(true),
 	})
+}
+
+// WithFileFormatAvro sets inline AVRO file format with the provided options.
+func (i *InternalStageModel) WithFileFormatAvro(opts AvroFileFormatOptions) *InternalStageModel {
+	avroMap := make(map[string]tfconfig.Variable)
+
+	if opts.Compression != "" {
+		avroMap["compression"] = tfconfig.StringVariable(string(opts.Compression))
+	}
+	if opts.TrimSpace != nil {
+		avroMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
+	}
+	if opts.ReplaceInvalidCharacters != nil {
+		avroMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
+	}
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
+			nullIfVars[idx] = tfconfig.StringVariable(v)
+		}
+		avroMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
+	}
+
+	// Workaround for empty objects - Terraform requires at least one attribute
+	if len(avroMap) == 0 {
+		avroMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
+	}
+
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"avro": tfconfig.ListVariable(tfconfig.ObjectVariable(avroMap)),
+			},
+		)),
+	)
 }

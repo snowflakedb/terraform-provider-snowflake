@@ -214,6 +214,24 @@ var (
 	AvroCompressionNone       AvroCompression = "NONE"
 )
 
+var AllAvroCompressions = []AvroCompression{
+	AvroCompressionAuto,
+	AvroCompressionGzip,
+	AvroCompressionBrotli,
+	AvroCompressionZstd,
+	AvroCompressionDeflate,
+	AvroCompressionRawDeflate,
+	AvroCompressionNone,
+}
+
+func ToAvroCompression(s string) (AvroCompression, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllAvroCompressions, AvroCompression(s)) {
+		return "", fmt.Errorf("invalid avro compression: %s", s)
+	}
+	return AvroCompression(s), nil
+}
+
 type ParquetCompression string
 
 var (

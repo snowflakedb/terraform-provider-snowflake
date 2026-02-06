@@ -1101,6 +1101,154 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 	})
 }
 
+func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	trimSpace := true
+	replaceInvalidCharacters := true
+
+	modelWithoutFileFormat := model.InternalStageWithId(id).
+		WithFileFormatAvro(model.AvroFileFormatOptions{})
+
+	modelCompleteAvro := model.InternalStageWithId(id).
+		WithFileFormatAvro(model.AvroFileFormatOptions{
+			Compression:              sdk.AvroCompressionGzip,
+			TrimSpace:                &trimSpace,
+			ReplaceInvalidCharacters: &replaceInvalidCharacters,
+			NullIf:                   []string{"NULL", ""},
+		})
+
+	altTrimSpace := false
+	altReplaceInvalidCharacters := false
+
+	modelAlteredAvro := model.InternalStageWithId(id).
+		WithFileFormatAvro(model.AvroFileFormatOptions{
+			Compression:              sdk.AvroCompressionZstd,
+			TrimSpace:                &altTrimSpace,
+			ReplaceInvalidCharacters: &altReplaceInvalidCharacters,
+			NullIf:                   []string{"NA"},
+		})
+
+	defaultAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteAvro.ResourceReference()).
+			HasFileFormatAvro(),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.type", string(sdk.FileFormatTypeAvro))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.compression", string(sdk.AvroCompressionAuto))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.trim_space", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.replace_invalid_characters", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.null_if.#", "0")),
+	}
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteAvro.ResourceReference()).
+			HasFileFormatAvro().
+			HasFileFormatAvroCompression(sdk.AvroCompressionGzip).
+			HasFileFormatAvroTrimSpace(trimSpace).
+			HasFileFormatAvroReplaceInvalidCharacters(replaceInvalidCharacters).
+			HasFileFormatAvroNullIfCount(2),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.type", string(sdk.FileFormatTypeAvro))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.compression", string(sdk.AvroCompressionGzip))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.trim_space", strconv.FormatBool(trimSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.replace_invalid_characters", strconv.FormatBool(replaceInvalidCharacters))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.null_if.#", "2")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.null_if.0", "NULL")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.null_if.1", "")),
+	}
+
+	alteredAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelAlteredAvro.ResourceReference()).
+			HasFileFormatAvro().
+			HasFileFormatAvroCompression(sdk.AvroCompressionZstd).
+			HasFileFormatAvroTrimSpace(altTrimSpace).
+			HasFileFormatAvroReplaceInvalidCharacters(altReplaceInvalidCharacters).
+			HasFileFormatAvroNullIfCount(1),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.type", string(sdk.FileFormatTypeAvro))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.compression", string(sdk.AvroCompressionZstd))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.trim_space", strconv.FormatBool(altTrimSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.replace_invalid_characters", strconv.FormatBool(altReplaceInvalidCharacters))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.null_if.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.null_if.0", "NA")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.InternalStage),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelCompleteAvro),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			{
+				Config:                  accconfig.FromModels(t, modelCompleteAvro),
+				ResourceName:            modelCompleteAvro.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+			},
+			// unset
+			{
+				Config: accconfig.FromModels(t, modelWithoutFileFormat),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithoutFileFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					defaultAssertions...,
+				),
+			},
+			// Set all fields
+			{
+				Config: accconfig.FromModels(t, modelCompleteAvro),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			// alter values
+			{
+				Config: accconfig.FromModels(t, modelAlteredAvro),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelAlteredAvro.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					alteredAssertions...,
+				),
+			},
+			// detect external changes
+			{
+				PreConfig: func() {
+					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
+						FileFormatOptions: &sdk.FileFormatOptions{
+							AvroOptions: &sdk.FileFormatAvroOptions{
+								Compression:              sdk.Pointer(sdk.AvroCompressionZstd),
+								TrimSpace:                sdk.Bool(false),
+								ReplaceInvalidCharacters: sdk.Bool(false),
+								NullIf:                   []sdk.NullString{{S: "NA"}},
+							},
+						},
+					}))
+				},
+				Config: accconfig.FromModels(t, modelCompleteAvro),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelCompleteAvro.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -1139,7 +1287,7 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelBothFormats),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`file_format.0.csv,file_format.0.format_name,file_format.0.json`),
+				ExpectError: regexp.MustCompile(`file_format.0.avro,file_format.0.csv,file_format.0.format_name,file_format.0.json`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidCompression),
