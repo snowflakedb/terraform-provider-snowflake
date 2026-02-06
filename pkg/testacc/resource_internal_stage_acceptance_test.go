@@ -457,6 +457,14 @@ func TestAcc_InternalStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", fileFormat.ID().FullyQualifiedName())),
 				),
 			},
+			// import named format
+			{
+				Config:                  accconfig.FromModels(t, modelWithNamedFormat),
+				ResourceName:            modelWithNamedFormat.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+			},
 			// Detect external change
 			{
 				Config: accconfig.FromModels(t, modelWithNamedFormat),
@@ -524,8 +532,7 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 	emptyFieldAsNull := true
 	skipByteOrderMark := true
 
-	modelWithoutFileFormat := model.InternalStageWithId(id).
-		WithFileFormatCsv(model.CsvFileFormatOptions{})
+	modelWithoutFileFormat := model.InternalStageWithId(id)
 
 	modelCompleteCsv := model.InternalStageWithId(id).
 		WithFileFormatCsv(model.CsvFileFormatOptions{
@@ -587,7 +594,7 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 		})
 	defaultAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelCompleteCsv.ResourceReference()).
-			HasFileFormatCsv(),
+			HasFileFormatEmpty(),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.type", string(sdk.FileFormatTypeCSV))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.record_delimiter", "\\n")),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteCsv.ResourceReference(), "describe_output.0.file_format.0.csv.0.field_delimiter", ",")),
@@ -730,11 +737,15 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, modelCompleteCsv),
-				ResourceName:            modelCompleteCsv.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "directory", "file_format"},
+				Config:            accconfig.FromModels(t, modelCompleteCsv),
+				ResourceName:      modelCompleteCsv.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// File format escape and escape_unenclosed_field are returned excessively escaped from Snowflake.
+				// E.g., when escape is set to '\\' in SQL, Snowflake returns '\\\\' in the response.
+				// This should be resolved with appropriate team. Alternatively, we can "unescape" such values in SDK.
+				// skip_header is skipped due to "-1" default value.
+				ImportStateVerifyIgnore: []string{"encryption", "directory", "file_format.0.csv.0.escape", "file_format.0.csv.0.field_optionally_enclosed_by", "file_format.0.csv.0.skip_header"},
 			},
 			// unset
 			{

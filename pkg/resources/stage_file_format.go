@@ -121,12 +121,12 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 	"escape": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Single character string used as the escape character for field values. Use `NONE` to specify no escape character.",
+		Description: "Single character string used as the escape character for field values. Use `NONE` to specify no escape character. NOTE: This value may be not imported properly from Snowflake. Snowflake returns escaped values.",
 	},
 	"escape_unenclosed_field": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "Single character string used as the escape character for unenclosed field values only. Use `NONE` to specify no escape character.",
+		Description: "Single character string used as the escape character for unenclosed field values only. Use `NONE` to specify no escape character. NOTE: This value may be not imported properly from Snowflake. Snowflake returns escaped values.",
 	},
 	"trim_space": {
 		Type:             schema.TypeString,
@@ -326,6 +326,12 @@ func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 
 // stageCsvFileFormatToSchema converts the SDK details for a CSV file format to a Terraform schema.
 func stageCsvFileFormatToSchema(csv *sdk.FileFormatCsv) map[string]any {
+	if csv.Escape == "\\" {
+		fmt.Println("escape is empty")
+	}
+	if csv.Escape == "\\\\" {
+		fmt.Println("escape i empty")
+	}
 	return map[string]any{
 		"record_delimiter":               csv.RecordDelimiter,
 		"field_delimiter":                csv.FieldDelimiter,
