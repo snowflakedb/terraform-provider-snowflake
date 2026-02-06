@@ -193,7 +193,7 @@ func CreateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseDirectoryTable),
 		attributeMappedValueCreateBuilder(d, "encryption", request.WithEncryption, parseEncryption),
-		attributeMappedValueCreateBuilder(d, "file_format", request.WithFileFormat, parseStageFileFormat),
+		attributeMappedValueCreateBuilderNested(d, "file_format", request.WithFileFormat, parseStageFileFormat),
 	)
 	if err != nil {
 		return diag.FromErr(err)
@@ -304,7 +304,7 @@ func UpdateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 	set := sdk.NewAlterInternalStageStageRequest(id)
 	err = errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
-		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat2, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
+		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
 	)
 	if err != nil {
 		return diag.FromErr(err)

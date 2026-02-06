@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -179,137 +180,89 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 	},
 }
 
-// parseStageFileFormat parses the stage file format from the configuration to an SDK object.
-func parseStageFileFormat(v any) (sdk.StageFileFormatRequest, error) {
-	fileFormatList := v.([]any)
-	if len(fileFormatList) == 0 {
+// parseStageFileFormat parses the stage file format from the resource data to an SDK object.
+func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, error) {
+	if len(d.Get("file_format").([]any)) == 0 {
 		return sdk.StageFileFormatRequest{}, nil
 	}
-	fileFormatConfig := fileFormatList[0].(map[string]any)
+	prefix := "file_format.0."
 	fileFormatReq := sdk.NewStageFileFormatRequest()
 
-	if formatName, ok := fileFormatConfig["format_name"]; ok && formatName.(string) != "" {
-		formatNameStr := formatName.(string)
-		id, err := sdk.ParseSchemaObjectIdentifier(formatNameStr)
-		if err != nil {
-			return sdk.StageFileFormatRequest{}, fmt.Errorf("parsing format_name: %w", err)
-		}
-		fileFormatReq.WithFormatName(id)
-	}
-
-	if csv, ok := fileFormatConfig["csv"]; ok {
-		csvList := csv.([]any)
-		if len(csvList) > 0 {
-			csvOptions, err := parseCsvFileFormatOptions(csvList[0].(map[string]any))
-			if err != nil {
-				return sdk.StageFileFormatRequest{}, err
-			}
-			fileFormatReq.WithFileFormatOptions(sdk.FileFormatOptions{
-				CsvOptions: csvOptions,
+	err := errors.Join(
+		schemaObjectIdentifierAttributeCreate(d, prefix+"format_name", &fileFormatReq.FormatName),
+		attributeMappedValueCreateBuilderNested(d, prefix+"csv", func(fileFormatOptions *sdk.FileFormatCsvOptions) *sdk.StageFileFormatRequest {
+			return fileFormatReq.WithFileFormatOptions(sdk.FileFormatOptions{
+				CsvOptions: fileFormatOptions,
 			})
-		}
+		}, parseCsvFileFormatOptions),
+	)
+	if err != nil {
+		return sdk.StageFileFormatRequest{}, err
 	}
 
 	return *fileFormatReq, nil
 }
 
-// parseCsvFileFormatOptions parses the CSV file format options from the configuration to an SDK object.
-func parseCsvFileFormatOptions(csvConfig map[string]any) (*sdk.FileFormatCsvOptions, error) {
+// parseCsvFileFormatOptions parses the CSV file format options from the resource data to an SDK object.
+func parseCsvFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatCsvOptions, error) {
 	csvOptions := &sdk.FileFormatCsvOptions{}
+	prefix := "file_format.0.csv.0."
 
-	if v, ok := csvConfig["compression"]; ok && v.(string) != "" {
-		compression, err := sdk.ToCsvCompression(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing compression: %w", err)
-		}
-		csvOptions.Compression = &compression
-	}
-
-	if v, ok := csvConfig["record_delimiter"]; ok && v.(string) != "" {
-		csvOptions.RecordDelimiter = parseStageFileFormatStringOrNone(v.(string))
-	}
-
-	if v, ok := csvConfig["field_delimiter"]; ok && v.(string) != "" {
-		csvOptions.FieldDelimiter = parseStageFileFormatStringOrNone(v.(string))
-	}
-
-	if v, ok := csvConfig["multi_line"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		multiLine, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing multi_line: %w", err)
-		}
-		csvOptions.MultiLine = &multiLine
-	}
-
-	if v, ok := csvConfig["file_extension"]; ok && v.(string) != "" {
-		fileExtension := v.(string)
-		csvOptions.FileExtension = &fileExtension
-	}
-
-	if v, ok := csvConfig["parse_header"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		parseHeader, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing parse_header: %w", err)
-		}
-		csvOptions.ParseHeader = &parseHeader
-	}
-
-	if v, ok := csvConfig["skip_header"]; ok && v.(int) > IntDefault {
-		skipHeader := v.(int)
-		csvOptions.SkipHeader = &skipHeader
-	}
-
-	if v, ok := csvConfig["skip_blank_lines"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		skipBlankLines, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing skip_blank_lines: %w", err)
-		}
-		csvOptions.SkipBlankLines = &skipBlankLines
-	}
-
-	if v, ok := csvConfig["date_format"]; ok && v.(string) != "" {
-		csvOptions.DateFormat = parseStageFileFormatStringOrAuto(v.(string))
-	}
-
-	if v, ok := csvConfig["time_format"]; ok && v.(string) != "" {
-		csvOptions.TimeFormat = parseStageFileFormatStringOrAuto(v.(string))
-	}
-
-	if v, ok := csvConfig["timestamp_format"]; ok && v.(string) != "" {
-		csvOptions.TimestampFormat = parseStageFileFormatStringOrAuto(v.(string))
-	}
-
-	if v, ok := csvConfig["binary_format"]; ok && v.(string) != "" {
-		binaryFormat, err := sdk.ToBinaryFormat(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing binary_format: %w", err)
-		}
-		csvOptions.BinaryFormat = &binaryFormat
-	}
-
-	if v, ok := csvConfig["escape"]; ok && v.(string) != "" {
-		csvOptions.Escape = parseStageFileFormatStringOrNone(v.(string))
-	}
-
-	if v, ok := csvConfig["escape_unenclosed_field"]; ok && v.(string) != "" {
-		csvOptions.EscapeUnenclosedField = parseStageFileFormatStringOrNone(v.(string))
-	}
-
-	if v, ok := csvConfig["trim_space"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		trimSpace, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing trim_space: %w", err)
-		}
-		csvOptions.TrimSpace = &trimSpace
-	}
-
-	if v, ok := csvConfig["field_optionally_enclosed_by"]; ok && v.(string) != "" {
-		csvOptions.FieldOptionallyEnclosedBy = parseStageFileFormatStringOrNone(v.(string))
-	}
-
-	if v, ok := csvConfig["null_if"]; ok {
-		nullIfList := v.([]any)
-		if len(nullIfList) > 0 {
+	err := errors.Join(
+		attributeMappedValueCreate(d, prefix+"compression", &csvOptions.Compression, func(v any) (*sdk.CsvCompression, error) {
+			c, err := sdk.ToCsvCompression(v.(string))
+			return &c, err
+		}),
+		attributeMappedValueCreate(d, prefix+"record_delimiter", &csvOptions.RecordDelimiter, func(v any) (*sdk.StageFileFormatStringOrNone, error) {
+			return parseStageFileFormatStringOrNone(v.(string)), nil
+		}),
+		attributeMappedValueCreate(d, prefix+"field_delimiter", &csvOptions.FieldDelimiter, func(v any) (*sdk.StageFileFormatStringOrNone, error) {
+			return parseStageFileFormatStringOrNone(v.(string)), nil
+		}),
+		booleanStringAttributeCreate(d, prefix+"multi_line", &csvOptions.MultiLine),
+		stringAttributeCreate(d, prefix+"file_extension", &csvOptions.FileExtension),
+		booleanStringAttributeCreate(d, prefix+"parse_header", &csvOptions.ParseHeader),
+		intAttributeWithSpecialDefaultCreate(d, prefix+"skip_header", &csvOptions.SkipHeader),
+		booleanStringAttributeCreate(d, prefix+"skip_blank_lines", &csvOptions.SkipBlankLines),
+		attributeMappedValueCreate(d, prefix+"date_format", &csvOptions.DateFormat, func(v any) (*sdk.StageFileFormatStringOrAuto, error) {
+			return parseStageFileFormatStringOrAuto(v.(string)), nil
+		}),
+		attributeMappedValueCreate(d, prefix+"time_format", &csvOptions.TimeFormat, func(v any) (*sdk.StageFileFormatStringOrAuto, error) {
+			return parseStageFileFormatStringOrAuto(v.(string)), nil
+		}),
+		attributeMappedValueCreate(d, prefix+"timestamp_format", &csvOptions.TimestampFormat, func(v any) (*sdk.StageFileFormatStringOrAuto, error) {
+			return parseStageFileFormatStringOrAuto(v.(string)), nil
+		}),
+		attributeMappedValueCreate(d, prefix+"binary_format", &csvOptions.BinaryFormat, func(v any) (*sdk.BinaryFormat, error) {
+			b, err := sdk.ToBinaryFormat(v.(string))
+			return &b, err
+		}),
+		attributeMappedValueCreate(d, prefix+"escape", &csvOptions.Escape, func(v any) (*sdk.StageFileFormatStringOrNone, error) {
+			return parseStageFileFormatStringOrNone(v.(string)), nil
+		}),
+		attributeMappedValueCreate(d, prefix+"escape_unenclosed_field", &csvOptions.EscapeUnenclosedField, func(v any) (*sdk.StageFileFormatStringOrNone, error) {
+			return parseStageFileFormatStringOrNone(v.(string)), nil
+		}),
+		booleanStringAttributeCreate(d, prefix+"trim_space", &csvOptions.TrimSpace),
+		attributeMappedValueCreate(d, prefix+"field_optionally_enclosed_by", &csvOptions.FieldOptionallyEnclosedBy, func(v any) (*sdk.StageFileFormatStringOrNone, error) {
+			return parseStageFileFormatStringOrNone(v.(string)), nil
+		}),
+		booleanStringAttributeCreate(d, prefix+"error_on_column_count_mismatch", &csvOptions.ErrorOnColumnCountMismatch),
+		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &csvOptions.ReplaceInvalidCharacters),
+		booleanStringAttributeCreate(d, prefix+"empty_field_as_null", &csvOptions.EmptyFieldAsNull),
+		booleanStringAttributeCreate(d, prefix+"skip_byte_order_mark", &csvOptions.SkipByteOrderMark),
+		attributeMappedValueCreate(d, prefix+"encoding", &csvOptions.Encoding, func(v any) (*sdk.CsvEncoding, error) {
+			e, err := sdk.ToCsvEncoding(v.(string))
+			return &e, err
+		}),
+		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatCsvOptions {
+			csvOptions.NullIf = nullIf
+			return csvOptions
+		}, func(v any) ([]sdk.NullString, error) {
+			nullIfList := v.([]any)
+			if len(nullIfList) == 0 {
+				return nil, nil
+			}
 			nullIf := make([]sdk.NullString, len(nullIfList))
 			for i, s := range nullIfList {
 				str := ""
@@ -318,48 +271,11 @@ func parseCsvFileFormatOptions(csvConfig map[string]any) (*sdk.FileFormatCsvOpti
 				}
 				nullIf[i] = sdk.NullString{S: str}
 			}
-			csvOptions.NullIf = nullIf
-		}
-	}
-
-	if v, ok := csvConfig["error_on_column_count_mismatch"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		errorOnColumnCountMismatch, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing error_on_column_count_mismatch: %w", err)
-		}
-		csvOptions.ErrorOnColumnCountMismatch = &errorOnColumnCountMismatch
-	}
-
-	if v, ok := csvConfig["replace_invalid_characters"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		replaceInvalidCharacters, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing replace_invalid_characters: %w", err)
-		}
-		csvOptions.ReplaceInvalidCharacters = &replaceInvalidCharacters
-	}
-
-	if v, ok := csvConfig["empty_field_as_null"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		emptyFieldAsNull, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing empty_field_as_null: %w", err)
-		}
-		csvOptions.EmptyFieldAsNull = &emptyFieldAsNull
-	}
-
-	if v, ok := csvConfig["skip_byte_order_mark"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		skipByteOrderMark, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing skip_byte_order_mark: %w", err)
-		}
-		csvOptions.SkipByteOrderMark = &skipByteOrderMark
-	}
-
-	if v, ok := csvConfig["encoding"]; ok && v.(string) != "" {
-		encoding, err := sdk.ToCsvEncoding(v.(string))
-		if err != nil {
-			return nil, fmt.Errorf("parsing encoding: %w", err)
-		}
-		csvOptions.Encoding = &encoding
+			return nullIf, nil
+		}),
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	return csvOptions, nil
