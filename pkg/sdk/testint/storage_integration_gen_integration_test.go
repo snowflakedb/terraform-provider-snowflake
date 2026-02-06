@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,13 +34,6 @@ func TestInt_StorageIntegrations(t *testing.T) {
 			HasCategoryStorage().
 			HasComment(comment),
 		)
-	}
-
-	findProp := func(t *testing.T, props []sdk.StorageIntegrationProperty, name string) *sdk.StorageIntegrationProperty {
-		t.Helper()
-		prop, err := collections.FindFirst(props, func(property sdk.StorageIntegrationProperty) bool { return property.Name == name })
-		require.NoError(t, err)
-		return prop
 	}
 
 	flattenLocations := func(locations []sdk.StorageLocation) []string {
@@ -273,8 +265,10 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		// TODO [next PR]: assert all properties from describe
-		assert.NotEmpty(t, findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
+		assertThatObject(t, awsPropertiesAssertions(t, 9, id, props, true, s3AllowedLocations, []sdk.StorageLocation{}, "", false).
+			DoesNotContainProperty("STORAGE_AWS_OBJECT_ACL").
+			ContainsNotEmptyPropertyWithTypeAndDefault("STORAGE_AWS_EXTERNAL_ID", "String", ""),
+		)
 	})
 
 	t.Run("create: s3", func(t *testing.T) {
@@ -288,8 +282,10 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		// TODO [next PR]: assert all properties from describe
-		assert.Equal(t, "some-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
+		assertThatObject(t, awsPropertiesAssertions(t, 10, id, props, true, s3AllowedLocations, s3BlockedLocations, "some comment", true).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_AWS_OBJECT_ACL", "String", "bucket-owner-full-control", ""}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_AWS_EXTERNAL_ID", "String", "some-external-id", ""}),
+		)
 	})
 
 	// TODO [SNOW-1820099]: Run integration tests on gov preprod
@@ -316,8 +312,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, "GCS", findProp(t, props, "STORAGE_PROVIDER").Value)
-		// TODO [next PR]: assert all properties from describe
+		assertThatObject(t, gcsPropertiesAssertions(t, 7, id, props, true, gcsAllowedLocations, []sdk.StorageLocation{}, ""))
 	})
 
 	t.Run("create: gcs", func(t *testing.T) {
@@ -331,8 +326,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, "GCS", findProp(t, props, "STORAGE_PROVIDER").Value)
-		// TODO [next PR]: assert all properties from describe
+		assertThatObject(t, gcsPropertiesAssertions(t, 7, id, props, true, gcsAllowedLocations, gcsBlockedLocations, "some comment"))
 	})
 
 	t.Run("create: azure basic", func(t *testing.T) {
@@ -346,8 +340,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, "AZURE", findProp(t, props, "STORAGE_PROVIDER").Value)
-		// TODO [next PR]: assert all properties from describe
+		assertThatObject(t, azurePropertiesAssertions(t, 9, id, props, true, azureAllowedLocations, []sdk.StorageLocation{}, azureTenantId, "", false))
 	})
 
 	t.Run("create: azure", func(t *testing.T) {
@@ -361,8 +354,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Equal(t, "AZURE", findProp(t, props, "STORAGE_PROVIDER").Value)
-		// TODO [next PR]: assert all properties from describe
+		assertThatObject(t, azurePropertiesAssertions(t, 9, id, props, true, azureAllowedLocations, azureBlockedLocations, azureTenantId, "some comment", false))
 	})
 
 	t.Run("alter: s3, set and unset", func(t *testing.T) {
@@ -601,7 +593,6 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
-	// TODO [next PR]: adjust describe tests when introducing details and dedicated assertions
 	t.Run("describe: s3", func(t *testing.T) {
 		id := createS3StorageIntegration(t, sdk.RegularS3Protocol)
 
