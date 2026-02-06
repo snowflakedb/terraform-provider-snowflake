@@ -156,6 +156,7 @@ Optional:
 
 - `csv` (Block List, Max: 1) CSV file format options. (see [below for nested schema](#nestedblock--file_format--csv))
 - `format_name` (String) Fully qualified name of the file format (e.g., 'database.schema.format_name').
+- `json` (Block List, Max: 1) JSON file format options. (see [below for nested schema](#nestedblock--file_format--json))
 
 <a id="nestedblock--file_format--csv"></a>
 ### Nested Schema for `file_format.csv`
@@ -181,6 +182,29 @@ Optional:
 - `skip_blank_lines` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies to skip any blank lines encountered in the data files. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `skip_byte_order_mark` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `skip_header` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Number of lines at the start of the file to skip.
+- `time_format` (String) Defines the format of time values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `timestamp_format` (String) Defines the format of timestamp values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
+
+<a id="nestedblock--file_format--json"></a>
+### Nested Schema for `file_format.json`
+
+Optional:
+
+- `allow_duplicate` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to allow duplicate object field names (only the last one will be preserved). Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `binary_format` (String) Defines the encoding format for binary input or output. Valid values: `HEX` | `BASE64` | `UTF8`.
+- `compression` (String) Specifies the compression format. Valid values: `AUTO` | `GZIP` | `BZ2` | `BROTLI` | `ZSTD` | `DEFLATE` | `RAW_DEFLATE` | `NONE`.
+- `date_format` (String) Defines the format of date values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `enable_octal` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that enables parsing of octal numbers. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `file_extension` (String) Specifies the extension for files unloaded to a stage.
+- `ignore_utf8_errors` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether UTF-8 encoding errors produce error conditions. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `multi_line` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to allow multiple records on a single line. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `null_if` (List of String) String used to convert to and from SQL NULL.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `skip_byte_order_mark` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `strip_null_values` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that instructs the JSON parser to remove object fields or array elements containing null values. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `strip_outer_array` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that instructs the JSON parser to remove outer brackets. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `time_format` (String) Defines the format of time values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
 - `timestamp_format` (String) Defines the format of timestamp values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
 - `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
@@ -222,6 +246,7 @@ Read-Only:
 
 - `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
 - `format_name` (String)
+- `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
 
 <a id="nestedobjatt--describe_output--file_format--csv"></a>
 ### Nested Schema for `describe_output.file_format.csv`
@@ -252,6 +277,30 @@ Read-Only:
 - `trim_space` (Boolean)
 - `type` (String)
 - `validate_utf8` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format--json"></a>
+### Nested Schema for `describe_output.file_format.json`
+
+Read-Only:
+
+- `allow_duplicate` (Boolean)
+- `binary_format` (String)
+- `compression` (String)
+- `date_format` (String)
+- `enable_octal` (Boolean)
+- `file_extension` (String)
+- `ignore_utf8_errors` (Boolean)
+- `multi_line` (Boolean)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `strip_null_values` (Boolean)
+- `strip_outer_array` (Boolean)
+- `time_format` (String)
+- `timestamp_format` (String)
+- `trim_space` (Boolean)
+- `type` (String)
 
 
 
