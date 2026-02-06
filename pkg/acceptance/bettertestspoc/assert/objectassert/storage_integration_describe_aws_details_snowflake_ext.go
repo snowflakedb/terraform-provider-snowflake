@@ -112,6 +112,17 @@ func (s *StorageIntegrationAwsDetailsAssert) HasIamUserArn(expected string) *Sto
 	return s
 }
 
+func (s *StorageIntegrationAwsDetailsAssert) HasIamUserArnNotEmpty() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.IamUserArn == "" {
+			return fmt.Errorf("expected iam user arn not empty; got empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAwsDetailsAssert) HasRoleArn(expected string) *StorageIntegrationAwsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
 		t.Helper()
@@ -139,6 +150,28 @@ func (s *StorageIntegrationAwsDetailsAssert) HasExternalId(expected string) *Sto
 		t.Helper()
 		if o.ExternalId != expected {
 			return fmt.Errorf("expected external id: %v; got: %v", expected, o.ExternalId)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationAwsDetailsAssert) HasExternalIdNotEmpty() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ExternalId == "" {
+			return fmt.Errorf("expected external id not empty; got empty")
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationAwsDetailsAssert) HasExternalIdNotEqualTo(externalId string) *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ExternalId == externalId {
+			return fmt.Errorf("expected external id not to be equal to: %s ; got: %s", externalId, o.ExternalId)
 		}
 		return nil
 	})

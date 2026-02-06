@@ -111,3 +111,14 @@ func (s *StorageIntegrationGcsDetailsAssert) HasServiceAccount(expected string) 
 	})
 	return s
 }
+
+func (s *StorageIntegrationGcsDetailsAssert) HasServiceAccountNotEmpty() *StorageIntegrationGcsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
+		t.Helper()
+		if o.ServiceAccount == "" {
+			return fmt.Errorf("expected service account not empty; got empty")
+		}
+		return nil
+	})
+	return s
+}

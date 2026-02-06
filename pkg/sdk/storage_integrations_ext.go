@@ -81,9 +81,9 @@ func parseAwsProperties(properties []StorageIntegrationProperty) (*StorageIntegr
 		case "STORAGE_PROVIDER":
 			details.Provider = prop.Value
 		case "STORAGE_ALLOWED_LOCATIONS":
-			details.AllowedLocations = strings.Split(prop.Value, ",")
+			details.AllowedLocations = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "STORAGE_BLOCKED_LOCATIONS":
-			details.BlockedLocations = strings.Split(prop.Value, ",")
+			details.BlockedLocations = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "COMMENT":
 			details.Comment = prop.Value
 		case "USE_PRIVATELINK_ENDPOINT":
@@ -119,9 +119,9 @@ func parseAzureProperties(properties []StorageIntegrationProperty) (*StorageInte
 		case "STORAGE_PROVIDER":
 			details.Provider = prop.Value
 		case "STORAGE_ALLOWED_LOCATIONS":
-			details.AllowedLocations = strings.Split(prop.Value, ",")
+			details.AllowedLocations = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "STORAGE_BLOCKED_LOCATIONS":
-			details.BlockedLocations = strings.Split(prop.Value, ",")
+			details.BlockedLocations = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "COMMENT":
 			details.Comment = prop.Value
 		case "USE_PRIVATELINK_ENDPOINT":
@@ -155,9 +155,9 @@ func parseGcsProperties(properties []StorageIntegrationProperty) (*StorageIntegr
 		case "STORAGE_PROVIDER":
 			details.Provider = prop.Value
 		case "STORAGE_ALLOWED_LOCATIONS":
-			details.AllowedLocations = strings.Split(prop.Value, ",")
+			details.AllowedLocations = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "STORAGE_BLOCKED_LOCATIONS":
-			details.BlockedLocations = strings.Split(prop.Value, ",")
+			details.BlockedLocations = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "COMMENT":
 			details.Comment = prop.Value
 		case "USE_PRIVATELINK_ENDPOINT":
