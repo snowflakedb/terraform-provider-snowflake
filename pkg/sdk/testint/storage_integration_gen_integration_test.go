@@ -99,34 +99,31 @@ func TestInt_StorageIntegrations(t *testing.T) {
 			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"COMMENT", "String", comment, ""})
 	}
 
-	// TODO [next PR]: replace with fluent assertions like ContainsDetail for semantic views
-	assertAzureStorageIntegrationDescResult := func(
+	azurePropertiesAssertions := func(
 		t *testing.T,
+		totalProps int,
+		id sdk.AccountObjectIdentifier,
 		props []sdk.StorageIntegrationProperty,
 		enabled bool,
 		allowedLocations []sdk.StorageLocation,
 		blockedLocations []sdk.StorageLocation,
+		tenantId string,
 		comment string,
-	) {
+		usePrivateLinkEndpoint bool,
+	) *objectassert.StorageIntegrationPropertiesAssert {
 		t.Helper()
-		allowed := make([]string, len(allowedLocations))
-		for i, a := range allowedLocations {
-			allowed[i] = a.Path
-		}
-		blocked := make([]string, len(blockedLocations))
-		for i, b := range blockedLocations {
-			blocked[i] = b.Path
-		}
-		assert.Equal(t, "Boolean", findProp(t, props, "ENABLED").Type)
-		assert.Equal(t, strconv.FormatBool(enabled), findProp(t, props, "ENABLED").Value)
-		assert.Equal(t, "false", findProp(t, props, "ENABLED").Default)
-		assert.Equal(t, "AZURE", findProp(t, props, "STORAGE_PROVIDER").Value)
-		assert.Equal(t, strings.Join(allowed, ","), findProp(t, props, "STORAGE_ALLOWED_LOCATIONS").Value)
-		assert.Equal(t, strings.Join(blocked, ","), findProp(t, props, "STORAGE_BLOCKED_LOCATIONS").Value)
-		assert.NotEmpty(t, findProp(t, props, "AZURE_TENANT_ID").Value)
-		assert.NotEmpty(t, findProp(t, props, "AZURE_CONSENT_URL").Value)
-		assert.NotEmpty(t, findProp(t, props, "AZURE_MULTI_TENANT_APP_NAME").Value)
-		assert.Equal(t, comment, findProp(t, props, "COMMENT").Value)
+
+		return objectassert.StorageIntegrationPropertiesFromObject(t, id, props).
+			HasCount(totalProps).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"ENABLED", "Boolean", strconv.FormatBool(enabled), "false"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_PROVIDER", "String", "AZURE", ""}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_ALLOWED_LOCATIONS", "List", strings.Join(flattenLocations(allowedLocations), ","), "[]"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_BLOCKED_LOCATIONS", "List", strings.Join(flattenLocations(blockedLocations), ","), "[]"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"AZURE_TENANT_ID", "String", tenantId, ""}).
+			ContainsNotEmptyPropertyWithTypeAndDefault("AZURE_CONSENT_URL", "String", "").
+			ContainsNotEmptyPropertyWithTypeAndDefault("AZURE_MULTI_TENANT_APP_NAME", "String", "").
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"COMMENT", "String", comment, ""}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"USE_PRIVATELINK_ENDPOINT", "Boolean", strconv.FormatBool(usePrivateLinkEndpoint), "false"})
 	}
 
 	allowedLocations := func(prefix string) []sdk.StorageLocation {
@@ -471,7 +468,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertAzureStorageIntegrationDescResult(t, props, true, changedAzureAllowedLocations, changedAzureBlockedLocations, "changed comment")
+		assertThatObject(t, azurePropertiesAssertions(t, 9, id, props, true, changedAzureAllowedLocations, changedAzureBlockedLocations, azureTenantId, "changed comment", false))
 
 		unset := sdk.NewAlterStorageIntegrationRequest(id).WithUnset(
 			*sdk.NewStorageIntegrationUnsetRequest().
@@ -486,7 +483,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err = client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertAzureStorageIntegrationDescResult(t, props, false, changedAzureAllowedLocations, []sdk.StorageLocation{}, "")
+		assertThatObject(t, azurePropertiesAssertions(t, 9, id, props, false, changedAzureAllowedLocations, []sdk.StorageLocation{}, azureTenantId, "", false))
 	})
 
 	// TODO [SNOW-2356128]: Unskip when can be run on Azure deployment (preprod?)
@@ -608,10 +605,10 @@ func TestInt_StorageIntegrations(t *testing.T) {
 	t.Run("describe: s3", func(t *testing.T) {
 		id := createS3StorageIntegration(t, sdk.RegularS3Protocol)
 
-		desc, err := client.StorageIntegrations.Describe(ctx, id)
+		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, awsPropertiesAssertions(t, 10, id, desc, true, s3AllowedLocations, s3BlockedLocations, "some comment", true).
+		assertThatObject(t, awsPropertiesAssertions(t, 10, id, props, true, s3AllowedLocations, s3BlockedLocations, "some comment", true).
 			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_AWS_OBJECT_ACL", "String", "bucket-owner-full-control", ""}).
 			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_AWS_EXTERNAL_ID", "String", "some-external-id", ""}),
 		)
@@ -629,9 +626,9 @@ func TestInt_StorageIntegrations(t *testing.T) {
 	t.Run("describe: azure", func(t *testing.T) {
 		id := createAzureStorageIntegration(t)
 
-		desc, err := client.StorageIntegrations.Describe(ctx, id)
+		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertAzureStorageIntegrationDescResult(t, desc, true, azureAllowedLocations, azureBlockedLocations, "some comment")
+		assertThatObject(t, azurePropertiesAssertions(t, 9, id, props, true, azureAllowedLocations, azureBlockedLocations, azureTenantId, "some comment", false))
 	})
 }
