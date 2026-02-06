@@ -414,8 +414,12 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			// If not set, this isn't an S3 storage integration
 			return diag.Errorf("storage_aws_role_arn must be set for S3 storage integrations")
 		}
-		s3SetParams := sdk.NewSetS3StorageParamsRequest().WithStorageAwsRoleArn(awsRoleArn.(string))
+		s3SetParams := sdk.NewSetS3StorageParamsRequest()
 		s3UnsetParams := sdk.NewUnsetS3StorageParamsRequest()
+
+		if d.HasChange("storage_aws_role_arn") {
+			s3SetParams.WithStorageAwsRoleArn(awsRoleArn.(string))
+		}
 
 		if d.HasChange("storage_aws_object_acl") {
 			if v, ok := d.GetOk("storage_aws_object_acl"); ok {
@@ -438,9 +442,12 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		// TODO [this PR]: this logic is incorrect (setting it like it means that  later deep equal will be always successful)
-		set.WithS3Params(*s3SetParams)
-		unset.WithS3Params(*s3UnsetParams)
+		if !reflect.DeepEqual(*s3SetParams, *sdk.NewSetS3StorageParamsRequest()) {
+			set.WithS3Params(*s3SetParams)
+		}
+		if !reflect.DeepEqual(*s3UnsetParams, *sdk.NewUnsetS3StorageParamsRequest()) {
+			unset.WithS3Params(*s3UnsetParams)
+		}
 	}
 
 	if (d.HasChange("azure_tenant_id") || d.HasChange("use_privatelink_endpoint")) && storageProvider == "AZURE" {
@@ -448,15 +455,20 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		if !ok {
 			return diag.Errorf("azure_tenant_id must be set for AZURE storage integrations")
 		}
-		azureParams := sdk.NewSetAzureStorageParamsRequest().WithAzureTenantId(azureTenantID.(string))
+		azureParams := sdk.NewSetAzureStorageParamsRequest()
+
+		if d.HasChange("azure_tenant_id") {
+			azureParams.WithAzureTenantId(azureTenantID.(string))
+		}
 
 		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
 		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivatelinkEndpoint, false); err != nil {
 			return diag.FromErr(err)
 		}
 
-		// TODO [this PR]: this logic is incorrect (setting it like it means that  later deep equal will be always successful)
-		set.WithAzureParams(*azureParams)
+		if !reflect.DeepEqual(*azureParams, *sdk.NewSetAzureStorageParamsRequest()) {
+			set.WithAzureParams(*azureParams)
+		}
 	}
 
 	if !reflect.DeepEqual(*set, *sdk.NewStorageIntegrationSetRequest()) {
