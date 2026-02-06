@@ -44,16 +44,16 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		return prop
 	}
 
-	// TODO [next PR]: replace with fluent assertions like ContainsDetail for semantic views
-	assertS3StorageIntegrationDescResult := func(
+	awsPropertiesAssertions := func(
 		t *testing.T,
+		id sdk.AccountObjectIdentifier,
 		props []sdk.StorageIntegrationProperty,
 		enabled bool,
 		allowedLocations []sdk.StorageLocation,
 		blockedLocations []sdk.StorageLocation,
 		comment string,
 		usePrivateLinkEndpoint bool,
-	) {
+	) *objectassert.StorageIntegrationPropertiesAssert {
 		t.Helper()
 		allowed := make([]string, len(allowedLocations))
 		for i, a := range allowedLocations {
@@ -63,17 +63,16 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		for i, b := range blockedLocations {
 			blocked[i] = b.Path
 		}
-		assert.Equal(t, "Boolean", findProp(t, props, "ENABLED").Type)
-		assert.Equal(t, strconv.FormatBool(enabled), findProp(t, props, "ENABLED").Value)
-		assert.Equal(t, "false", findProp(t, props, "ENABLED").Default)
-		assert.Equal(t, "S3", findProp(t, props, "STORAGE_PROVIDER").Value)
-		assert.Equal(t, strings.Join(allowed, ","), findProp(t, props, "STORAGE_ALLOWED_LOCATIONS").Value)
-		assert.Equal(t, strings.Join(blocked, ","), findProp(t, props, "STORAGE_BLOCKED_LOCATIONS").Value)
-		assert.NotEmpty(t, findProp(t, props, "STORAGE_AWS_IAM_USER_ARN").Value)
-		assert.NotEmpty(t, findProp(t, props, "STORAGE_AWS_ROLE_ARN").Value)
-		assert.NotEmpty(t, findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
-		assert.Equal(t, comment, findProp(t, props, "COMMENT").Value)
-		assert.Equal(t, strconv.FormatBool(usePrivateLinkEndpoint), findProp(t, props, "USE_PRIVATELINK_ENDPOINT").Value)
+
+		return objectassert.StorageIntegrationPropertiesFromObject(t, id, props).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"ENABLED", "Boolean", strconv.FormatBool(enabled), "false"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_PROVIDER", "String", "S3", ""}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_ALLOWED_LOCATIONS", "List", strings.Join(allowed, ","), "[]"}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_BLOCKED_LOCATIONS", "List", strings.Join(blocked, ","), "[]"}).
+			ContainsNotEmptyPropertyWithTypeAndDefault("STORAGE_AWS_IAM_USER_ARN", "String", "").
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_AWS_ROLE_ARN", "String", awsRoleARN, ""}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"COMMENT", "String", comment, ""}).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"USE_PRIVATELINK_ENDPOINT", "Boolean", strconv.FormatBool(usePrivateLinkEndpoint), "false"})
 	}
 
 	// TODO [next PR]: replace with fluent assertions like ContainsDetail for semantic views
@@ -399,8 +398,9 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertS3StorageIntegrationDescResult(t, props, true, changedS3AllowedLocations, changedS3BlockedLocations, "changed comment", true)
-		assert.Equal(t, "new-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
+		assertThatObject(t, awsPropertiesAssertions(t, id, props, true, changedS3AllowedLocations, changedS3BlockedLocations, "changed comment", true).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_AWS_EXTERNAL_ID", "String", "new-external-id", ""}),
+		)
 
 		unset := sdk.NewAlterStorageIntegrationRequest(id).
 			WithUnset(
@@ -420,8 +420,9 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		props, err = client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertS3StorageIntegrationDescResult(t, props, false, changedS3AllowedLocations, []sdk.StorageLocation{}, "", true)
-		assert.NotEqual(t, "new-external-id", findProp(t, props, "STORAGE_AWS_EXTERNAL_ID").Value)
+		assertThatObject(t, awsPropertiesAssertions(t, id, props, false, changedS3AllowedLocations, []sdk.StorageLocation{}, "", true).
+			ContainsPropertyNotEqualToWithTypeAndDefault("STORAGE_AWS_EXTERNAL_ID", "new-external-id", "String", ""),
+		)
 	})
 
 	// TODO [SNOW-2356049]: Adjust this test when UNSET starts working correctly
@@ -612,7 +613,9 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		desc, err := client.StorageIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertS3StorageIntegrationDescResult(t, desc, true, s3AllowedLocations, s3BlockedLocations, "some comment", true)
+		assertThatObject(t, awsPropertiesAssertions(t, id, desc, true, s3AllowedLocations, s3BlockedLocations, "some comment", true).
+			ContainsPropertyEqualTo(sdk.StorageIntegrationProperty{"STORAGE_AWS_EXTERNAL_ID", "String", "some-external-id", ""}),
+		)
 	})
 
 	t.Run("describe: gcs", func(t *testing.T) {
