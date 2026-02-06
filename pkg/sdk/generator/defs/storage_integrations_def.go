@@ -178,6 +178,7 @@ var storageIntegrationsDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name"),
 		g.PlainStruct("StorageIntegrationAwsDetails").
 			Bool("Enabled").
+			// TODO [next PRs]: enum?
 			Text("Provider").
 			StringList("AllowedLocations").
 			StringList("BlockedLocations").
@@ -204,5 +205,5 @@ var storageIntegrationsDef = g.NewInterface(
 			StringList("BlockedLocations").
 			Text("Comment").
 			Bool("UsePrivatelinkEndpoint").
-			Text("StorageGcpServiceAccount"),
+			Text("ServiceAccount"),
 	)

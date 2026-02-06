@@ -17,6 +17,13 @@ type StorageIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]StorageIntegrationProperty, error)
+
+	// DescribeAwsDetails is added manually; it returns converted describe output for AWS storage integrations.
+	DescribeAwsDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAwsDetails, error)
+	// DescribeAwsDetails is added manually; it returns converted describe output for Azure storage integrations.
+	DescribeAzureDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAzureDetails, error)
+	// DescribeAwsDetails is added manually; it returns converted describe output for GCS storage integrations.
+	DescribeGcsDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationGcsDetails, error)
 }
 
 // CreateStorageIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration.
@@ -197,11 +204,11 @@ type StorageIntegrationAzureDetails struct {
 }
 
 type StorageIntegrationGcsDetails struct {
-	Enabled                  bool
-	Provider                 string
-	AllowedLocations         []string
-	BlockedLocations         []string
-	Comment                  string
-	UsePrivatelinkEndpoint   bool
-	StorageGcpServiceAccount string
+	Enabled                bool
+	Provider               string
+	AllowedLocations       []string
+	BlockedLocations       []string
+	Comment                string
+	UsePrivatelinkEndpoint bool
+	ServiceAccount         string
 }
