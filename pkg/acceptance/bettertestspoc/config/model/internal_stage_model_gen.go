@@ -17,6 +17,7 @@ type InternalStageModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	Directory          tfconfig.Variable `json:"directory,omitempty"`
 	Encryption         tfconfig.Variable `json:"encryption,omitempty"`
+	FileFormat         tfconfig.Variable `json:"file_format,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	StageType          tfconfig.Variable `json:"stage_type,omitempty"`
 
@@ -107,6 +108,8 @@ func (i *InternalStageModel) WithComment(comment string) *InternalStageModel {
 
 // encryption attribute type is not yet supported, so WithEncryption can't be generated
 
+// file_format attribute type is not yet supported, so WithFileFormat can't be generated
+
 func (i *InternalStageModel) WithFullyQualifiedName(fullyQualifiedName string) *InternalStageModel {
 	i.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return i
@@ -148,6 +151,11 @@ func (i *InternalStageModel) WithDirectoryValue(value tfconfig.Variable) *Intern
 
 func (i *InternalStageModel) WithEncryptionValue(value tfconfig.Variable) *InternalStageModel {
 	i.Encryption = value
+	return i
+}
+
+func (i *InternalStageModel) WithFileFormatValue(value tfconfig.Variable) *InternalStageModel {
+	i.FileFormat = value
 	return i
 }
 
