@@ -71,18 +71,16 @@ var storageIntegrationAzureSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Computed:    true,
 		Description: "Outputs the result of `SHOW STORAGE INTEGRATIONS` for the given storage integration.",
-		Elem:        &schema.Resource{
-			// TODO [this PR]: add schema
-			// Schema: schemas.,
+		Elem: &schema.Resource{
+			Schema: schemas.ShowStorageIntegrationSchema,
 		},
 	},
 	DescribeOutputAttributeName: {
 		Type:        schema.TypeList,
 		Computed:    true,
 		Description: "Outputs the result of `DESCRIBE STORAGE INTEGRATION` for the given storage integration.",
-		Elem:        &schema.Resource{
-			// TODO [this PR]: add schema
-			// Schema: schemas.,
+		Elem: &schema.Resource{
+			Schema: schemas.DescribeStorageIntegrationAzureDetailsSchema,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
