@@ -23,11 +23,15 @@ var DescribeStorageIntegrationGcsDetailsSchema = map[string]*schema.Schema{
 		Computed: true,
 	},
 	"allowed_locations": {
-		Type:     schema.TypeInvalid,
+		// adjusted manually
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
 	"blocked_locations": {
-		Type:     schema.TypeInvalid,
+		// adjusted manually
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
 	"comment": {

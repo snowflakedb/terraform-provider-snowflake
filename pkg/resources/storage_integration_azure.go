@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -27,13 +26,6 @@ var storageIntegrationAzureSchema = map[string]*schema.Schema{
 			"`TRUE` allows users to create new stages that reference this integration. Existing stages that reference this integration function normally.",
 			"`FALSE` prevents users from creating new stages that reference this integration. Existing stages that reference this integration cannot access the storage location in the stage definition.",
 		),
-	},
-	"storage_provider": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		ValidateDiagFunc: StringInSlice(sdk.AllStorageProviders, true),
-		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
 	},
 	"storage_allowed_locations": {
 		Type:        schema.TypeList,
@@ -99,6 +91,7 @@ func StorageIntegrationAzure() *schema.Resource {
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationAzureResource), TrackingReadWrapper(resources.StorageIntegrationAzure, DummyStorageIntegrationAzure)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationAzureResource), TrackingUpdateWrapper(resources.StorageIntegrationAzure, DummyStorageIntegrationAzure)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageIntegrationAzureResource), TrackingDeleteWrapper(resources.StorageIntegrationAzure, deleteFunc)),
+		Description:   "Resource used to manage Azure storage integration objects. For more information, check [storage integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration).",
 
 		Schema: storageIntegrationAzureSchema,
 		Importer: &schema.ResourceImporter{
