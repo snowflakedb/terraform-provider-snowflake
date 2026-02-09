@@ -24,7 +24,7 @@ import (
 // validations test
 // external changes/dedicated tests?
 
-func TestAcc_StorageIntegrationAws_BasicFlows(t *testing.T) {
+func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 	awsRoleArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
 
@@ -107,34 +107,13 @@ func TestAcc_StorageIntegrationAws_BasicFlows(t *testing.T) {
 						HasObjectAcl(""),
 				),
 			},
-			//// RENAME AND CHANGE ONE PROP
-			//{
-			//	Config: config.FromModels(t, userModelNoAttributesRenamed),
-			//	Check: assertThat(t,
-			//		resourceassert.UserResource(t, userModelNoAttributes.ResourceReference()).
-			//			HasNameString(id2.Name()).
-			//			HasCommentString(newComment),
-			//		// default names stay the same
-			//		resourceshowoutputassert.UserShowOutput(t, userModelNoAttributes.ResourceReference()).
-			//			HasLoginName(strings.ToUpper(id.Name())).
-			//			HasDisplayName(id.Name()),
-			//	),
-			//},
-			//// IMPORT
-			//{
-			//	ResourceName:            userModelNoAttributesRenamed.ResourceReference(),
-			//	ImportState:             true,
-			//	ImportStateVerify:       true,
-			//	ImportStateVerifyIgnore: []string{"password", "disable_mfa", "days_to_expiry", "mins_to_unlock", "mins_to_bypass_mfa", "login_name", "display_name", "disabled", "must_change_password", "default_secondary_roles_option"},
-			//	ImportStateCheck: assertThatImport(t,
-			//		resourceassert.ImportedUserResource(t, id2.Name()).
-			//			HasLoginNameString(strings.ToUpper(id.Name())).
-			//			HasDisplayNameString(id.Name()).
-			//			HasDisabled(false).
-			//			HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
-			//			HasMustChangePassword(false),
-			//	),
-			//},
+			// IMPORT
+			{
+				ResourceName:            storageIntegrationAwsModelNoAttributes.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
+			},
 			//// DESTROY
 			//{
 			//	Config:  config.FromModels(t, userModelNoAttributes),

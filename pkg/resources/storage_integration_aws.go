@@ -123,7 +123,7 @@ func StorageIntegrationAws() *schema.Resource {
 
 		Schema: storageIntegrationAwsSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: TrackingImportWrapper(resources.StorageIntegrationAws, ImportStorageIntegrationAws),
 		},
 		Timeouts: defaultTimeouts,
 		// TODO [next PR]: add CustomizeDiff logic
@@ -133,6 +133,29 @@ func StorageIntegrationAws() *schema.Resource {
 
 func DummyStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return nil
+}
+
+// TODO [next PR]: errors when importing the wrong type/category/provider
+func ImportStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	client := meta.(*provider.Context).Client
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	awsDetails, err := client.StorageIntegrations.DescribeAwsDetails(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	errs := errors.Join(
+		d.Set("name", awsDetails.ID().Name()),
+		d.Set("use_privatelink_endpoint", booleanStringFromBool(awsDetails.UsePrivatelinkEndpoint)),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return []*schema.ResourceData{d}, nil
 }
 
 func GetReadStorageIntegrationAwsFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
