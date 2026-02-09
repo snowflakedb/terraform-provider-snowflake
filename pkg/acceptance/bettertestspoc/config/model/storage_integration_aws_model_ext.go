@@ -9,12 +9,12 @@ import (
 
 func (s *StorageIntegrationAwsModel) WithStorageAllowedLocations(allowedLocations []sdk.StorageLocation) *StorageIntegrationAwsModel {
 	allowedLocationsStringVariables := collections.Map(allowedLocations, func(location sdk.StorageLocation) tfconfig.Variable { return tfconfig.StringVariable(location.Path) })
-	s.WithStorageAllowedLocationsValue(tfconfig.ListVariable(allowedLocationsStringVariables...))
+	s.WithStorageAllowedLocationsValue(tfconfig.SetVariable(allowedLocationsStringVariables...))
 	return s
 }
 
 func (s *StorageIntegrationAwsModel) WithStorageBlockedLocations(blockedLocations []sdk.StorageLocation) *StorageIntegrationAwsModel {
 	blockedLocationsStringVariables := collections.Map(blockedLocations, func(location sdk.StorageLocation) tfconfig.Variable { return tfconfig.StringVariable(location.Path) })
-	s.WithStorageBlockedLocationsValue(tfconfig.ListVariable(blockedLocationsStringVariables...))
+	s.WithStorageBlockedLocationsValue(tfconfig.SetVariable(blockedLocationsStringVariables...))
 	return s
 }

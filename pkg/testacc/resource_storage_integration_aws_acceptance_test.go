@@ -24,8 +24,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// external changes/dedicated tests?
-
 func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 	awsRoleArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
@@ -113,6 +111,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
 						HasId(id).
 						HasEnabled(false).
+						HasAllowedLocations(allowedLocations...).
+						HasNoBlockedLocations().
 						HasProvider(string(sdk.RegularS3Protocol)).
 						HasComment("").
 						HasUsePrivatelinkEndpoint(false).
@@ -179,6 +179,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsAllAttributes.ResourceReference()).
 						HasId(id).
 						HasEnabled(false).
+						HasAllowedLocations(allowedLocations...).
+						HasBlockedLocations(blockedLocations...).
 						HasProvider(string(sdk.RegularS3Protocol)).
 						HasComment(comment).
 						HasUsePrivatelinkEndpoint(false).
@@ -215,6 +217,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsAllAttributesChanged.ResourceReference()).
 						HasId(id).
 						HasEnabled(true).
+						HasAllowedLocations(allowedLocations2...).
+						HasBlockedLocations(blockedLocations2...).
 						HasProvider(string(sdk.RegularS3Protocol)).
 						HasComment(newComment).
 						HasUsePrivatelinkEndpoint(true).
@@ -299,6 +303,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
 						HasId(id).
 						HasEnabled(false).
+						HasAllowedLocations(allowedLocations...).
+						HasNoBlockedLocations().
 						HasProvider(string(sdk.RegularS3Protocol)).
 						HasComment("").
 						HasUsePrivatelinkEndpoint(false).
@@ -392,6 +398,81 @@ func TestAcc_StorageIntegrationAws_ImportValidation(t *testing.T) {
 				ImportState:   true,
 				ImportStateId: azureIntegration.ID().Name(),
 				ExpectError:   regexp.MustCompile(`invalid S3 protocol: AZURE`),
+			},
+		},
+	})
+}
+
+func TestAcc_StorageIntegrationAws_AllowedLocationsUnordered(t *testing.T) {
+	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsRoleArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	allowedLocations := []sdk.StorageLocation{
+		{Path: awsBucketUrl + "allowed-location/"},
+		{Path: awsBucketUrl + "allowed-location2/"},
+	}
+	allowedLocationsDifferentOrder := []sdk.StorageLocation{
+		{Path: awsBucketUrl + "allowed-location2/"},
+		{Path: awsBucketUrl + "allowed-location/"},
+	}
+
+	storageIntegrationAwsModel := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol))
+	storageIntegrationAwsModel2 := model.StorageIntegrationAws("w", id.Name(), false, allowedLocationsDifferentOrder, awsRoleArn, string(sdk.RegularS3Protocol))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegrationAws),
+		Steps: []resource.TestStep{
+			// create
+			{
+				Config: config.FromModels(t, storageIntegrationAwsModel),
+				Check: assertThat(t,
+					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel.ResourceReference()).
+						HasStorageAllowedLocations(allowedLocations...),
+					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel.ResourceReference()).
+						HasAllowedLocations(allowedLocations...),
+				),
+			},
+			// change ordering externally
+			{
+				PreConfig: func() {
+					alterRequest := sdk.NewAlterStorageIntegrationRequest(id).WithSet(
+						*sdk.NewStorageIntegrationSetRequest().WithStorageAllowedLocations(allowedLocationsDifferentOrder),
+					)
+					testClient().StorageIntegration.Alter(t, alterRequest)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, storageIntegrationAwsModel),
+				Check: assertThat(t,
+					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel.ResourceReference()).
+						HasStorageAllowedLocations(allowedLocations...),
+					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel.ResourceReference()).
+						HasAllowedLocations(allowedLocationsDifferentOrder...),
+				),
+			},
+			// change ordering in config
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsModel2.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, storageIntegrationAwsModel2),
+				Check: assertThat(t,
+					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel2.ResourceReference()).
+						HasStorageAllowedLocations(allowedLocations...),
+					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel2.ResourceReference()).
+						HasAllowedLocations(allowedLocationsDifferentOrder...),
+				),
 			},
 		},
 	})

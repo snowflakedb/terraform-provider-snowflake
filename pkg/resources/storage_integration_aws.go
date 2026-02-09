@@ -43,17 +43,15 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: validators.NormalizeValidation(sdk.ToS3Protocol),
 		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
 	},
-	// TODO [this PR]: change to sets?
 	"storage_allowed_locations": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Required:    true,
 		Description: "Explicitly limits external stages that use the integration to reference one or more storage locations.",
 		MinItems:    1,
 	},
-	// TODO [this PR]: change to sets?
 	"storage_blocked_locations": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Optional:    true,
 		Description: "Explicitly prohibits external stages that use the integration from referencing one or more storage locations.",
@@ -229,7 +227,7 @@ func CreateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 	name := d.Get("name").(string)
 	id := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(name)
 	enabled := d.Get("enabled").(bool)
-	storageAllowedLocations, _ := parseLocations(d.Get("storage_allowed_locations").([]any))
+	storageAllowedLocations, _ := parseLocations(d.Get("storage_allowed_locations").(*schema.Set).List())
 	storageProvider := strings.ToUpper(d.Get("storage_provider").(string))
 	s3Protocol, err := sdk.ToS3Protocol(storageProvider)
 	if err != nil {
@@ -243,7 +241,7 @@ func CreateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		func() error {
 			if _, ok := d.GetOk("storage_blocked_locations"); ok {
-				storageBlockedLocations, _ := parseLocations(d.Get("storage_blocked_locations").([]any))
+				storageBlockedLocations, _ := parseLocations(d.Get("storage_blocked_locations").(*schema.Set).List())
 				request.WithStorageBlockedLocations(storageBlockedLocations)
 			}
 			return nil
@@ -280,7 +278,7 @@ func UpdateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 		func() error {
 			if d.HasChange("storage_allowed_locations") {
 				if v, ok := d.GetOk("storage_allowed_locations"); ok {
-					locations, err := parseLocations(v.([]any))
+					locations, err := parseLocations(v.(*schema.Set).List())
 					if err != nil {
 						return err
 					}
@@ -292,8 +290,8 @@ func UpdateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 		func() error {
 			if d.HasChange("storage_blocked_locations") {
 				v := d.Get("storage_blocked_locations")
-				if len(v.([]any)) > 0 {
-					locations, err := parseLocations(v.([]any))
+				if len(v.(*schema.Set).List()) > 0 {
+					locations, err := parseLocations(v.(*schema.Set).List())
 					if err != nil {
 						return err
 					}
@@ -305,7 +303,7 @@ func UpdateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 			return nil
 		}(),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
+		// TODO [SNOW-2356049]: implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
 		booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", s3SetParams.WithUsePrivatelinkEndpoint, false),
 		stringAttributeUpdateSetOnlyNotEmpty(d, "storage_aws_role_arn", &s3SetParams.StorageAwsRoleArn),
 		stringAttributeUpdate(d, "storage_aws_external_id", &s3SetParams.StorageAwsExternalId, &s3UnsetParams.StorageAwsExternalId),
