@@ -77,7 +77,7 @@ var internalStageSchema = func() map[string]*schema.Schema {
 			},
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema, internalStage)
+	return collections.MergeMaps(stageCommonSchema, internalStage, stageFileFormatSchema)
 }()
 
 func InternalStage() *schema.Resource {
@@ -90,7 +90,7 @@ func InternalStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.InternalStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(internalStageSchema, ShowOutputAttributeName, "name", "comment"),
-			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh"),
+			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "file_format"),
 			ComputedIfAnyAttributeChanged(internalStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
@@ -129,6 +129,11 @@ func ImportInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 		},
 	}); err != nil {
 		return nil, err
+	}
+	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
+		if err := d.Set("file_format", fileFormat); err != nil {
+			return nil, err
+		}
 	}
 	return []*schema.ResourceData{d}, nil
 }
@@ -188,11 +193,11 @@ func CreateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseDirectoryTable),
 		attributeMappedValueCreateBuilder(d, "encryption", request.WithEncryption, parseEncryption),
+		attributeMappedValueCreateBuilderNested(d, "file_format", request.WithFileFormat, parseStageFileFormat),
 	)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	if err := client.Stages.CreateInternal(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
@@ -257,6 +262,9 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 			); err != nil {
 				return diag.FromErr(err)
 			}
+			if err := handleStageFileFormatRead(d, details); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		errs := errors.Join(
@@ -296,12 +304,13 @@ func UpdateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 	set := sdk.NewAlterInternalStageStageRequest(id)
 	err = errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
 	)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if !reflect.DeepEqual(*set, sdk.AlterInternalStageStageRequest{}) {
+	if !reflect.DeepEqual(*set, *sdk.NewAlterInternalStageStageRequest(id)) {
 		if err := client.Stages.AlterInternalStage(ctx, set); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error updating stage: %w", err))

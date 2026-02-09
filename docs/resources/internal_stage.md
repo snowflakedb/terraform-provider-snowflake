@@ -47,6 +47,50 @@ resource "snowflake_internal_stage" "complete" {
 
   comment = "Fully configured internal stage"
 }
+
+# resource with inline CSV file format
+resource "snowflake_internal_stage" "with_csv_format" {
+  name     = "csv_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    csv {
+      compression                    = "GZIP"
+      record_delimiter               = "\n"
+      field_delimiter                = "|"
+      multi_line                     = "false"
+      file_extension                 = ".csv"
+      skip_header                    = 1 # or parse_header = true
+      skip_blank_lines               = "true"
+      date_format                    = "AUTO"
+      time_format                    = "AUTO"
+      timestamp_format               = "AUTO"
+      binary_format                  = "HEX"
+      escape                         = "\\"
+      escape_unenclosed_field        = "\\"
+      trim_space                     = "false"
+      field_optionally_enclosed_by   = "\""
+      null_if                        = ["NULL", ""]
+      error_on_column_count_mismatch = "true"
+      replace_invalid_characters     = "false"
+      empty_field_as_null            = "true"
+      skip_byte_order_mark           = "true"
+      encoding                       = "UTF8"
+    }
+  }
+}
+
+# resource with named file format
+resource "snowflake_internal_stage" "with_named_format" {
+  name     = "named_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    format_name = snowflake_file_format.test.fully_qualified_name
+  }
+}
 ```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
@@ -65,6 +109,7 @@ resource "snowflake_internal_stage" "complete" {
 - `comment` (String) Specifies a comment for the stage.
 - `directory` (Block List, Max: 1) Directory tables store a catalog of staged files in cloud storage. (see [below for nested schema](#nestedblock--directory))
 - `encryption` (Block List, Max: 1) Specifies the encryption settings for the internal stage. (see [below for nested schema](#nestedblock--encryption))
+- `file_format` (Block List, Max: 1) Specifies the file format for the stage. (see [below for nested schema](#nestedblock--file_format))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -104,6 +149,44 @@ Optional:
 
 
 
+<a id="nestedblock--file_format"></a>
+### Nested Schema for `file_format`
+
+Optional:
+
+- `csv` (Block List, Max: 1) CSV file format options. (see [below for nested schema](#nestedblock--file_format--csv))
+- `format_name` (String) Fully qualified name of the file format (e.g., 'database.schema.format_name').
+
+<a id="nestedblock--file_format--csv"></a>
+### Nested Schema for `file_format.csv`
+
+Optional:
+
+- `binary_format` (String) Defines the encoding format for binary input or output. Valid values: `HEX` | `BASE64` | `UTF8`.
+- `compression` (String) Specifies the compression format. Valid values: `AUTO` | `GZIP` | `BZ2` | `BROTLI` | `ZSTD` | `DEFLATE` | `RAW_DEFLATE` | `NONE`.
+- `date_format` (String) Defines the format of date values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `empty_field_as_null` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to insert SQL NULL for empty fields in an input file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `encoding` (String) Specifies the character set of the source data when loading data into a table. Valid values: `BIG5` | `EUCJP` | `EUCKR` | `GB18030` | `IBM420` | `IBM424` | `ISO2022CN` | `ISO2022JP` | `ISO2022KR` | `ISO88591` | `ISO88592` | `ISO88595` | `ISO88596` | `ISO88597` | `ISO88598` | `ISO88599` | `ISO885915` | `KOI8R` | `SHIFTJIS` | `UTF8` | `UTF16` | `UTF16BE` | `UTF16LE` | `UTF32` | `UTF32BE` | `UTF32LE` | `WINDOWS1250` | `WINDOWS1251` | `WINDOWS1252` | `WINDOWS1253` | `WINDOWS1254` | `WINDOWS1255` | `WINDOWS1256`.
+- `error_on_column_count_mismatch` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to generate a parsing error if the number of delimited columns in an input file does not match the number of columns in the corresponding table. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `escape` (String) Single character string used as the escape character for field values. Use `NONE` to specify no escape character. NOTE: This value may be not imported properly from Snowflake. Snowflake returns escaped values.
+- `escape_unenclosed_field` (String) Single character string used as the escape character for unenclosed field values only. Use `NONE` to specify no escape character. NOTE: This value may be not imported properly from Snowflake. Snowflake returns escaped values.
+- `field_delimiter` (String) One or more singlebyte or multibyte characters that separate fields in an input file. Use `NONE` to specify no delimiter.
+- `field_optionally_enclosed_by` (String) Character used to enclose strings. Use `NONE` to specify no enclosure character.
+- `file_extension` (String) Specifies the extension for files unloaded to a stage.
+- `multi_line` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to parse CSV files containing multiple records on a single line. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `null_if` (List of String) String used to convert to and from SQL NULL.
+- `parse_header` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to use the first row headers in the data files to determine column names. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `record_delimiter` (String) One or more singlebyte or multibyte characters that separate records in an input file. Use `NONE` to specify no delimiter.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `skip_blank_lines` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies to skip any blank lines encountered in the data files. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `skip_byte_order_mark` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `skip_header` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Number of lines at the start of the file to skip.
+- `time_format` (String) Defines the format of time values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `timestamp_format` (String) Defines the format of timestamp values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
+
+
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
 
@@ -121,6 +204,7 @@ Optional:
 Read-Only:
 
 - `directory_table` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--directory_table))
+- `file_format` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format))
 
 <a id="nestedobjatt--describe_output--directory_table"></a>
 ### Nested Schema for `describe_output.directory_table`
@@ -129,6 +213,46 @@ Read-Only:
 
 - `auto_refresh` (Boolean)
 - `enable` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format"></a>
+### Nested Schema for `describe_output.file_format`
+
+Read-Only:
+
+- `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
+- `format_name` (String)
+
+<a id="nestedobjatt--describe_output--file_format--csv"></a>
+### Nested Schema for `describe_output.file_format.csv`
+
+Read-Only:
+
+- `binary_format` (String)
+- `compression` (String)
+- `date_format` (String)
+- `empty_field_as_null` (Boolean)
+- `encoding` (String)
+- `error_on_column_count_mismatch` (Boolean)
+- `escape` (String)
+- `escape_unenclosed_field` (String)
+- `field_delimiter` (String)
+- `field_optionally_enclosed_by` (String)
+- `file_extension` (String)
+- `multi_line` (Boolean)
+- `null_if` (List of String)
+- `parse_header` (Boolean)
+- `record_delimiter` (String)
+- `replace_invalid_characters` (Boolean)
+- `skip_blank_lines` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `skip_header` (Number)
+- `time_format` (String)
+- `timestamp_format` (String)
+- `trim_space` (Boolean)
+- `type` (String)
+- `validate_utf8` (Boolean)
+
 
 
 

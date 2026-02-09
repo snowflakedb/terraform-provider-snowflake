@@ -101,7 +101,11 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 	if err != nil {
 		return details, nil
 	}
-	if fileFormatType.Value == "CSV" {
+	formatType, err := ToFileFormatType(fileFormatType.Value)
+	if err != nil {
+		return nil, err
+	}
+	if formatType == FileFormatTypeCSV {
 		details.FileFormatCsv = parseCsvFileFormat(properties)
 	}
 
