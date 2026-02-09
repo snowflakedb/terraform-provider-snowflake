@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -22,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// validations test
 // external changes/dedicated tests?
 
 func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
@@ -306,6 +306,45 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 						HasExternalIdSet().
 						HasObjectAcl(""),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_StorageIntegrationAws_Validations(t *testing.T) {
+	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsRoleArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	allowedLocations := []sdk.StorageLocation{
+		{Path: awsBucketUrl + "allowed-location/"},
+	}
+
+	storageIntegrationAwsModelNoAllowedLocations := model.StorageIntegrationAws("w", id.Name(), false, []sdk.StorageLocation{}, awsRoleArn, string(sdk.RegularS3Protocol))
+	storageIntegrationAwsModelMissingRole := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, "", string(sdk.RegularS3Protocol))
+	storageIntegrationAwsModelIncorrectProtocol := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, "GCS")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegrationAws),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, storageIntegrationAwsModelNoAllowedLocations),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Attribute storage_allowed_locations requires 1 item minimum`),
+			},
+			{
+				Config:      config.FromModels(t, storageIntegrationAwsModelMissingRole),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected "storage_aws_role_arn" to not be an empty string`),
+			},
+			{
+				Config:      config.FromModels(t, storageIntegrationAwsModelIncorrectProtocol),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid S3 protocol: GCS`),
 			},
 		},
 	})

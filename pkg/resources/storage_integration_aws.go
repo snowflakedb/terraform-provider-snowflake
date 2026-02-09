@@ -9,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -39,7 +40,7 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: StringInSlice(sdk.AllStorageProviders, true),
+		ValidateDiagFunc: validators.NormalizeValidation(sdk.ToS3Protocol),
 		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
 	},
 	// TODO [this PR]: change to sets?
@@ -71,9 +72,10 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		Description:      booleanStringFieldDescription("Specifies whether to use outbound private connectivity to harden the security posture."),
 	},
 	"storage_aws_role_arn": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "Specifies the Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.",
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.StringIsNotEmpty,
+		Description:  "Specifies the Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.",
 	},
 	"storage_aws_external_id": {
 		Type:             schema.TypeString,
