@@ -1393,6 +1393,177 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 	})
 }
 
+func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	binaryAsText := true
+	useLogicalType := true
+	trimSpace := true
+	useVectorizedScanner := true
+	replaceInvalidCharacters := true
+
+	modelWithoutFileFormat := model.InternalStageWithId(id).
+		WithFileFormatParquet(model.ParquetFileFormatOptions{})
+
+	modelCompleteParquet := model.InternalStageWithId(id).
+		WithFileFormatParquet(model.ParquetFileFormatOptions{
+			Compression:              sdk.ParquetCompressionSnappy,
+			BinaryAsText:             &binaryAsText,
+			UseLogicalType:           &useLogicalType,
+			TrimSpace:                &trimSpace,
+			UseVectorizedScanner:     &useVectorizedScanner,
+			ReplaceInvalidCharacters: &replaceInvalidCharacters,
+			NullIf:                   []string{"NULL", ""},
+		})
+
+	altBinaryAsText := false
+	altUseLogicalType := false
+	altTrimSpace := false
+	altUseVectorizedScanner := false
+	altReplaceInvalidCharacters := false
+
+	modelAlteredParquet := model.InternalStageWithId(id).
+		WithFileFormatParquet(model.ParquetFileFormatOptions{
+			Compression:              sdk.ParquetCompressionLzo,
+			BinaryAsText:             &altBinaryAsText,
+			UseLogicalType:           &altUseLogicalType,
+			TrimSpace:                &altTrimSpace,
+			UseVectorizedScanner:     &altUseVectorizedScanner,
+			ReplaceInvalidCharacters: &altReplaceInvalidCharacters,
+			NullIf:                   []string{"NA"},
+		})
+
+	defaultAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelWithoutFileFormat.ResourceReference()).
+			HasFileFormatParquet().
+			HasFileFormatParquetTrimSpaceString(r.BooleanDefault).
+			HasFileFormatParquetBinaryAsTextString(r.BooleanDefault).
+			HasFileFormatParquetUseLogicalTypeString(r.BooleanDefault).
+			HasFileFormatParquetUseVectorizedScannerString(r.BooleanDefault).
+			HasFileFormatParquetReplaceInvalidCharactersString(r.BooleanDefault),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.parquet.0.type", string(sdk.FileFormatTypeParquet))),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.parquet.0.compression", string(sdk.ParquetCompressionAuto))),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.parquet.0.binary_as_text", "true")),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.parquet.0.use_logical_type", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.parquet.0.trim_space", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.parquet.0.use_vectorized_scanner", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.parquet.0.replace_invalid_characters", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.parquet.0.null_if.#", "0")),
+	}
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteParquet.ResourceReference()).
+			HasFileFormatParquet().
+			HasFileFormatParquetCompression(sdk.ParquetCompressionSnappy).
+			HasFileFormatParquetBinaryAsText(binaryAsText).
+			HasFileFormatParquetUseLogicalType(useLogicalType).
+			HasFileFormatParquetTrimSpace(trimSpace).
+			HasFileFormatParquetUseVectorizedScanner(useVectorizedScanner).
+			HasFileFormatParquetReplaceInvalidCharacters(replaceInvalidCharacters).
+			HasFileFormatParquetNullIfCount(2),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.type", string(sdk.FileFormatTypeParquet))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.compression", string(sdk.ParquetCompressionSnappy))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.binary_as_text", strconv.FormatBool(binaryAsText))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.use_logical_type", strconv.FormatBool(useLogicalType))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.trim_space", strconv.FormatBool(trimSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.use_vectorized_scanner", strconv.FormatBool(useVectorizedScanner))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.replace_invalid_characters", strconv.FormatBool(replaceInvalidCharacters))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.null_if.#", "2")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.null_if.0", "NULL")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.null_if.1", "")),
+	}
+
+	alteredAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelAlteredParquet.ResourceReference()).
+			HasFileFormatParquet().
+			HasFileFormatParquetCompression(sdk.ParquetCompressionLzo).
+			HasFileFormatParquetBinaryAsText(altBinaryAsText).
+			HasFileFormatParquetUseLogicalType(altUseLogicalType).
+			HasFileFormatParquetTrimSpace(altTrimSpace).
+			HasFileFormatParquetUseVectorizedScanner(altUseVectorizedScanner).
+			HasFileFormatParquetReplaceInvalidCharacters(altReplaceInvalidCharacters).
+			HasFileFormatParquetNullIfCount(1),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.type", string(sdk.FileFormatTypeParquet))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.compression", string(sdk.ParquetCompressionLzo))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.binary_as_text", strconv.FormatBool(altBinaryAsText))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.use_logical_type", strconv.FormatBool(altUseLogicalType))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.trim_space", strconv.FormatBool(altTrimSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.use_vectorized_scanner", strconv.FormatBool(altUseVectorizedScanner))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.replace_invalid_characters", strconv.FormatBool(altReplaceInvalidCharacters))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.null_if.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredParquet.ResourceReference(), "describe_output.0.file_format.0.parquet.0.null_if.0", "NA")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.InternalStage),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelCompleteParquet),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			{
+				Config:                  accconfig.FromModels(t, modelCompleteParquet),
+				ResourceName:            modelCompleteParquet.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+			},
+			// unset
+			{
+				Config: accconfig.FromModels(t, modelWithoutFileFormat),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithoutFileFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					defaultAssertions...,
+				),
+			},
+			// Set all fields
+			{
+				Config: accconfig.FromModels(t, modelCompleteParquet),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			// External change detection
+			{
+				PreConfig: func() {
+					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
+						FileFormatOptions: &sdk.FileFormatOptions{
+							ParquetOptions: &sdk.FileFormatParquetOptions{
+								Compression:              sdk.Pointer(sdk.ParquetCompressionLzo),
+								BinaryAsText:             sdk.Bool(true),
+								UseLogicalType:           sdk.Bool(true),
+								TrimSpace:                sdk.Bool(true),
+								UseVectorizedScanner:     sdk.Bool(true),
+								ReplaceInvalidCharacters: sdk.Bool(true),
+								NullIf:                   []sdk.NullString{{S: "EXT"}},
+							},
+						},
+					}))
+				},
+				Config: accconfig.FromModels(t, modelAlteredParquet),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelAlteredParquet.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					alteredAssertions...,
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -1420,6 +1591,10 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 		WithFileFormatJsonInvalidBooleanString()
 	modelJsonConflictingOptions := model.InternalStageWithId(id).
 		WithFileFormatJsonConflictingOptions()
+	modelParquetInvalidCompression := model.InternalStageWithId(id).
+		WithFileFormatParquetInvalidCompression()
+	modelParquetInvalidBooleanString := model.InternalStageWithId(id).
+		WithFileFormatParquetInvalidBooleanString()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1431,7 +1606,7 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelBothFormats),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`file_format.0.avro,file_format.0.csv,file_format.0.format_name,file_format.0.json`),
+				ExpectError: regexp.MustCompile(`file_format.0.avro,file_format.0.csv,file_format.0.format_name,file_format.0.json,file_format.0.orc,file_format.0.parquet`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidCompression),
@@ -1487,6 +1662,16 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelJsonConflictingOptions),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`file_format.0.json.0.replace_invalid_characters.*conflicts with\nfile_format.0.json.0.ignore_utf8_errors`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelParquetInvalidCompression),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid parquet compression: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelParquetInvalidBooleanString),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected .*trim_space.* to be one of \["true" "false"\], got invalid`),
 			},
 		},
 	})

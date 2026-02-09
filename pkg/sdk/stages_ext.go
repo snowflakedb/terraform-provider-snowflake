@@ -86,6 +86,18 @@ type FileFormatOrc struct {
 	NullIf                   []string
 }
 
+// FileFormatParquet represents Parquet file format properties from DESCRIBE STAGE
+type FileFormatParquet struct {
+	Type                     string
+	Compression              string
+	BinaryAsText             bool
+	UseLogicalType           bool
+	TrimSpace                bool
+	UseVectorizedScanner     bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
+}
+
 // StageDirectoryTable represents directory table properties from DESCRIBE STAGE
 type StageDirectoryTable struct {
 	Enable                       bool
@@ -96,15 +108,16 @@ type StageDirectoryTable struct {
 
 // StageDetails represents the parsed result of DESCRIBE STAGE
 type StageDetails struct {
-	FileFormatName *SchemaObjectIdentifier
-	FileFormatCsv  *FileFormatCsv
-	FileFormatJson *FileFormatJson
-	FileFormatAvro *FileFormatAvro
-	FileFormatOrc  *FileFormatOrc
-	DirectoryTable *StageDirectoryTable
-	PrivateLink    *StagePrivateLink
-	Location       *StageLocationDetails
-	Credentials    *StageCredentials
+	FileFormatName    *SchemaObjectIdentifier
+	FileFormatCsv     *FileFormatCsv
+	FileFormatJson    *FileFormatJson
+	FileFormatAvro    *FileFormatAvro
+	FileFormatOrc     *FileFormatOrc
+	FileFormatParquet *FileFormatParquet
+	DirectoryTable    *StageDirectoryTable
+	PrivateLink       *StagePrivateLink
+	Location          *StageLocationDetails
+	Credentials       *StageCredentials
 }
 
 type StagePrivateLink struct {
@@ -155,6 +168,8 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 		details.FileFormatAvro = parseAvroFileFormat(properties)
 	case FileFormatTypeORC:
 		details.FileFormatOrc = parseOrcFileFormat(properties)
+	case FileFormatTypeParquet:
+		details.FileFormatParquet = parseParquetFileFormat(properties)
 	}
 
 	return details, nil
@@ -326,6 +341,35 @@ func parseOrcFileFormat(properties []StageProperty) *FileFormatOrc {
 	}
 
 	return orc
+}
+
+func parseParquetFileFormat(properties []StageProperty) *FileFormatParquet {
+	parquet := &FileFormatParquet{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			parquet.Type = prop.Value
+		case "COMPRESSION":
+			parquet.Compression = prop.Value
+		case "BINARY_AS_TEXT":
+			parquet.BinaryAsText = prop.Value == "true"
+		case "USE_LOGICAL_TYPE":
+			parquet.UseLogicalType = prop.Value == "true"
+		case "TRIM_SPACE":
+			parquet.TrimSpace = prop.Value == "true"
+		case "USE_VECTORIZED_SCANNER":
+			parquet.UseVectorizedScanner = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			parquet.ReplaceInvalidCharacters = prop.Value == "true"
+		case "NULL_IF":
+			parquet.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		}
+	}
+
+	return parquet
 }
 
 func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {

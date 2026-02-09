@@ -67,6 +67,17 @@ type OrcFileFormatOptions struct {
 	NullIf                   []string
 }
 
+// ParquetFileFormatOptions holds Parquet file format configuration options.
+type ParquetFileFormatOptions struct {
+	Compression              sdk.ParquetCompression
+	BinaryAsText             *bool
+	UseLogicalType           *bool
+	TrimSpace                *bool
+	UseVectorizedScanner     *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []string
+}
+
 func InternalStageWithId(id sdk.SchemaObjectIdentifier) *InternalStageModel {
 	return InternalStage("test", id.DatabaseName(), id.SchemaName(), id.Name())
 }
@@ -459,6 +470,68 @@ func (i *InternalStageModel) WithFileFormatOrc(opts OrcFileFormatOptions) *Inter
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
 				"orc": tfconfig.ListVariable(tfconfig.ObjectVariable(orcMap)),
+			},
+		)),
+	)
+}
+
+// WithFileFormatParquet sets inline Parquet file format with the provided options.
+func (i *InternalStageModel) WithFileFormatParquet(opts ParquetFileFormatOptions) *InternalStageModel {
+	parquetMap := make(map[string]tfconfig.Variable)
+
+	if opts.Compression != "" {
+		parquetMap["compression"] = tfconfig.StringVariable(string(opts.Compression))
+	}
+	if opts.BinaryAsText != nil {
+		parquetMap["binary_as_text"] = tfconfig.BoolVariable(*opts.BinaryAsText)
+	}
+	if opts.UseLogicalType != nil {
+		parquetMap["use_logical_type"] = tfconfig.BoolVariable(*opts.UseLogicalType)
+	}
+	if opts.TrimSpace != nil {
+		parquetMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
+	}
+	if opts.UseVectorizedScanner != nil {
+		parquetMap["use_vectorized_scanner"] = tfconfig.BoolVariable(*opts.UseVectorizedScanner)
+	}
+	if opts.ReplaceInvalidCharacters != nil {
+		parquetMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
+	}
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
+			nullIfVars[idx] = tfconfig.StringVariable(v)
+		}
+		parquetMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
+	}
+
+	// Workaround for empty objects - Terraform requires at least one attribute
+	if len(parquetMap) == 0 {
+		parquetMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
+	}
+
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"parquet": tfconfig.ListVariable(tfconfig.ObjectVariable(parquetMap)),
+			},
+		)),
+	)
+}
+
+func (i *InternalStageModel) WithFileFormatParquetInvalidCompression() *InternalStageModel {
+	return i.WithFileFormatParquet(ParquetFileFormatOptions{
+		Compression: "INVALID",
+	})
+}
+
+func (i *InternalStageModel) WithFileFormatParquetInvalidBooleanString() *InternalStageModel {
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"parquet": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"trim_space": tfconfig.StringVariable("invalid"),
+				})),
 			},
 		)),
 	)

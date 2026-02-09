@@ -114,6 +114,25 @@ resource "snowflake_internal_stage" "with_orc_format" {
   }
 }
 
+# resource with inline Parquet file format
+resource "snowflake_internal_stage" "with_parquet_format" {
+  name     = "parquet_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    parquet {
+      compression                = "SNAPPY"
+      binary_as_text             = "true"
+      use_logical_type           = "true"
+      trim_space                 = "false"
+      use_vectorized_scanner     = "false"
+      replace_invalid_characters = "false"
+      null_if                    = ["NULL", ""]
+    }
+  }
+}
+
 # resource with named file format
 resource "snowflake_internal_stage" "with_named_format" {
   name     = "named_format_stage"

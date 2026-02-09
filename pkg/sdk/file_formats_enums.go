@@ -241,6 +241,21 @@ var (
 	ParquetCompressionNone   ParquetCompression = "NONE"
 )
 
+var AllParquetCompressions = []ParquetCompression{
+	ParquetCompressionAuto,
+	ParquetCompressionLzo,
+	ParquetCompressionSnappy,
+	ParquetCompressionNone,
+}
+
+func ToParquetCompression(s string) (ParquetCompression, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllParquetCompressions, ParquetCompression(s)) {
+		return "", fmt.Errorf("invalid parquet compression: %s", s)
+	}
+	return ParquetCompression(s), nil
+}
+
 type XmlCompression string
 
 var (
