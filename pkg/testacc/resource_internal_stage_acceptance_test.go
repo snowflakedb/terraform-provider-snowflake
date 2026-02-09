@@ -1279,7 +1279,9 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 
 	defaultAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelCompleteOrc.ResourceReference()).
-			HasFileFormatOrc(),
+			HasFileFormatOrc().
+			HasFileFormatOrcTrimSpaceString(r.BooleanDefault).
+			HasFileFormatOrcReplaceInvalidCharactersString(r.BooleanDefault),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeORC))),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.trim_space", "false")),
 		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.replace_invalid_characters", "false")),

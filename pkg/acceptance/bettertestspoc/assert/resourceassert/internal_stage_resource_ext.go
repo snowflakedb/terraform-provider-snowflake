@@ -330,6 +330,11 @@ func (i *InternalStageResourceAssert) HasFileFormatOrcTrimSpace(expected bool) *
 	return i
 }
 
+func (i *InternalStageResourceAssert) HasFileFormatOrcTrimSpaceString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.0.trim_space", expected))
+	return i
+}
+
 func (i *InternalStageResourceAssert) HasFileFormatOrcReplaceInvalidCharacters(expected bool) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("file_format.0.orc.0.replace_invalid_characters", strconv.FormatBool(expected)))
 	return i
