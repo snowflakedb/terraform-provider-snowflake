@@ -39,7 +39,7 @@ resource "snowflake_storage_integration_aws" "minimal" {
 
 - `enabled` (Boolean) Specifies whether this storage integration is available for usage in stages. `TRUE` allows users to create new stages that reference this integration. Existing stages that reference this integration function normally. `FALSE` prevents users from creating new stages that reference this integration. Existing stages that reference this integration cannot access the storage location in the stage definition.
 - `name` (String) String that specifies the identifier (i.e. name) for the integration; must be unique in your account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `storage_allowed_locations` (List of String) Explicitly limits external stages that use the integration to reference one or more storage locations.
+- `storage_allowed_locations` (Set of String) Explicitly limits external stages that use the integration to reference one or more storage locations.
 - `storage_aws_role_arn` (String) Specifies the Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.
 - `storage_provider` (String) Specifies the storage provider for the integration. Valid options are: `S3` | `S3GOV` | `S3CHINA` | `GCS` | `AZURE`
 
@@ -47,8 +47,8 @@ resource "snowflake_storage_integration_aws" "minimal" {
 
 - `comment` (String) Specifies a comment for the storage integration.
 - `storage_aws_external_id` (String) Optionally specifies an external ID that Snowflake uses to establish a trust relationship with AWS.
-- `storage_aws_object_acl` (String) Enables support for AWS access control lists (ACLs) to grant the bucket owner full control.
-- `storage_blocked_locations` (List of String) Explicitly prohibits external stages that use the integration from referencing one or more storage locations.
+- `storage_aws_object_acl` (String) Enables support for AWS access control lists (ACLs) to grant the bucket owner full control. `bucket-owner-full-control` is the only currently supported value.
+- `storage_blocked_locations` (Set of String) Explicitly prohibits external stages that use the integration from referencing one or more storage locations.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use outbound private connectivity to harden the security posture. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
