@@ -533,6 +533,17 @@ func TestInt_Stages(t *testing.T) {
 		)
 	})
 
+	t.Run("AlterExternalS3Stage - setting privatelink for a stage with storage integration - error", func(t *testing.T) {
+		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t, awsBucketUrl)
+		t.Cleanup(cleanup)
+
+		require.Equal(t, "", stage.Comment)
+
+		err := client.Stages.AlterExternalS3Stage(ctx, sdk.NewAlterExternalS3StageStageRequest(stage.ID()).
+			WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(awsBucketUrl).WithUsePrivatelinkEndpoint(true)))
+		require.ErrorContains(t, err, "SQL compilation error: Integration based stages are not allowed to be altered to use privatelink endpoint. Please alter the storage integration instead")
+	})
+
 	t.Run("AlterExternalS3Stage - complete", func(t *testing.T) {
 		stage, cleanup := testClientHelper().Stage.CreateStageOnS3(t, awsBucketUrl)
 		t.Cleanup(cleanup)
