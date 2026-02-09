@@ -29,13 +29,15 @@ var externalS3StageSchema = func() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ConflictsWith:    []string{"use_privatelink_endpoint", "credentials"},
-			Description:      "Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity.",
+			Description:      blocklistedCharactersFieldDescription("Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
+			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		},
 		"aws_access_point_arn": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Specifies the ARN for an AWS S3 Access Point to use for data transfer.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Specifies the ARN for an AWS S3 Access Point to use for data transfer.",
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("location.0.aws_access_point_arn"),
 		},
 		"credentials": {
 			Type:          schema.TypeList,
@@ -204,6 +206,7 @@ func ExternalS3Stage() *schema.Resource {
 			ForceNewIfChangeToEmptySlice[any]("encryption"),
 			ForceNewIfChangeToEmptyString("storage_integration"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
+			ForceNewIfChangeToEmptyString("aws_access_point_arn"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAws),
 			RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage(),
@@ -373,6 +376,7 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
 				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+				outputMapping{"location.0.aws_access_point_arn", "aws_access_point_arn", details.Location.AwsAccessPointArn, details.Location.AwsAccessPointArn, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -442,15 +446,10 @@ func UpdateExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 			accountObjectIdentifierAttributeSetOnly(d, "storage_integration", &externalStageParams.StorageIntegration),
 			attributeMappedValueUpdateSetOnly(d, "credentials", &externalStageParams.Credentials, parseS3StageCredentials),
 			attributeMappedValueUpdateSetOnly(d, "encryption", &externalStageParams.Encryption, parseS3StageEncryption),
+			attributeMappedValueUpdateSetOnly(d, "aws_access_point_arn", &externalStageParams.AwsAccessPointArn, identityMapping),
 		)
 		if err != nil {
 			return diag.FromErr(err)
-		}
-
-		if d.HasChange("aws_access_point_arn") {
-			if v, ok := d.GetOk("aws_access_point_arn"); ok {
-				externalStageParams.AwsAccessPointArn = sdk.String(v.(string))
-			}
 		}
 
 		set.WithExternalStageParams(*externalStageParams)

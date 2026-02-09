@@ -44,11 +44,13 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 		}).
+		WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
 		WithCredentialsAwsKey(awsKeyId, awsSecretKey).
 		WithEncryptionAwsCse(masterKey)
 
 	modelComplete := model.ExternalS3StageWithId(id, awsUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
+		WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/complete").
 		WithComment(comment).
 		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
 			Enable:          true,
@@ -59,6 +61,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 
 	modelUpdated := model.ExternalS3StageWithId(id, awsUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
+		WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/updated").
 		WithComment(changedComment).
 		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
 			Enable:          false,
@@ -219,6 +222,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					testClient().Stage.AlterDirectoryTable(t, sdk.NewAlterDirectoryTableStageRequest(id).WithSetDirectory(sdk.DirectoryTableSetRequest{
 						Enable: false,
 					}))
+					testClient().Stage.AlterExternalS3Stage(t, sdk.NewAlterExternalS3StageStageRequest(id).WithExternalStageParams(*sdk.NewExternalS3StageParamsRequest(awsUrl).WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/external")))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -253,6 +257,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.aws_access_point_arn", "arn:aws:s3:us-west-2:123456789012:accesspoint/complete")),
 				),
 			},
 			// Import - complete
@@ -311,6 +316,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.aws_access_point_arn", "arn:aws:s3:us-west-2:123456789012:accesspoint/updated")),
 				),
 			},
 			// External change detection
@@ -672,7 +678,7 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
-					assert.Check(resource.TestCheckNoResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 				),
 			},
 			{

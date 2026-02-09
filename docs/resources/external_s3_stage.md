@@ -11,6 +11,8 @@ description: |-
 
 -> **Note** External changes detection on `credentials`, and `encryption` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
+-> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
+
 -> **Note** Integration based stages are not allowed to be altered to use privatelink endpoint. You must either alter the storage integration itself, or first unset the storage integration from the stage instead.
 
 # snowflake_external_s3_stage (Resource)
@@ -141,7 +143,7 @@ resource "snowflake_external_s3_stage" "no_encryption" {
 - `credentials` (Block List, Max: 1) Specifies the AWS credentials for the external stage. (see [below for nested schema](#nestedblock--credentials))
 - `directory` (Block List, Max: 1) Directory tables store a catalog of staged files in cloud storage. (see [below for nested schema](#nestedblock--directory))
 - `encryption` (Block List, Max: 1) Specifies the encryption settings for the S3 external stage. (see [below for nested schema](#nestedblock--encryption))
-- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity.
+- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use a private link endpoint for S3 storage.
 
