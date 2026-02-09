@@ -3,6 +3,8 @@
 package testacc
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	tfjson "github.com/hashicorp/terraform-json"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -52,6 +54,7 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 
 	externalId := "some_external_id"
 	externalId2 := "some_external_id_2"
+	externalId3 := "new-external-id"
 
 	storageIntegrationAwsModelNoAttributes := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol))
 
@@ -66,6 +69,13 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 		WithUsePrivatelinkEndpoint(r.BooleanTrue).
 		WithComment(newComment).
 		WithStorageAwsExternalId(externalId2).
+		WithStorageAwsObjectAcl("bucket-owner-full-control")
+
+	storageIntegrationAwsAllAttributesChangedWithDifferentExternalId := model.StorageIntegrationAws("w", id.Name(), true, allowedLocations2, awsRoleArn, string(sdk.RegularS3Protocol)).
+		WithStorageBlockedLocations(blockedLocations2).
+		WithUsePrivatelinkEndpoint(r.BooleanTrue).
+		WithComment(newComment).
+		WithStorageAwsExternalId(externalId3).
 		WithStorageAwsObjectAcl("bucket-owner-full-control")
 
 	resource.Test(t, resource.TestCase{
@@ -217,18 +227,42 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 						HasStorageAwsExternalIdString(externalId2),
 				),
 			},
-			//// CHANGE PROP TO THE CURRENT SNOWFLAKE VALUE
-			//{
-			//	PreConfig: func() {
-			//		testClient().User.SetLoginName(t, id, loginName)
-			//	},
-			//	Config: config.FromModels(t, userModelAllAttributesChanged(loginName)),
-			//	ConfigPlanChecks: resource.ConfigPlanChecks{
-			//		PostApplyPostRefresh: []plancheck.PlanCheck{
-			//			plancheck.ExpectEmptyPlan(),
-			//		},
-			//	},
-			//},
+			// CHANGE PROP EXTERNALLY
+			{
+				PreConfig: func() {
+					alterRequest := sdk.NewAlterStorageIntegrationRequest(id).WithSet(
+						*sdk.NewStorageIntegrationSetRequest().WithS3Params(
+							*sdk.NewSetS3StorageParamsRequest().WithStorageAwsExternalId(externalId3),
+						),
+					)
+					testClient().StorageIntegration.Alter(t, alterRequest)
+				},
+				Config: config.FromModels(t, storageIntegrationAwsAllAttributesChanged),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(storageIntegrationAwsAllAttributesChanged.ResourceReference(), "storage_aws_external_id", sdk.String(externalId2), sdk.String(externalId3)),
+						planchecks.ExpectChange(storageIntegrationAwsAllAttributesChanged.ResourceReference(), "storage_aws_external_id", tfjson.ActionUpdate, sdk.String(externalId3), sdk.String(externalId2)),
+					},
+				},
+			},
+			// CHANGE PROP TO THE CURRENT SNOWFLAKE VALUE
+			{
+				PreConfig: func() {
+					alterRequest := sdk.NewAlterStorageIntegrationRequest(id).WithSet(
+						*sdk.NewStorageIntegrationSetRequest().WithS3Params(
+							*sdk.NewSetS3StorageParamsRequest().WithStorageAwsExternalId(externalId3),
+						),
+					)
+					testClient().StorageIntegration.Alter(t, alterRequest)
+				},
+				Config: config.FromModels(t, storageIntegrationAwsAllAttributesChangedWithDifferentExternalId),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
 			//// UNSET ALL
 			//{
 			//	Config: config.FromModels(t, userModelNoAttributes),
