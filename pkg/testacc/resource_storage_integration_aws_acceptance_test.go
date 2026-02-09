@@ -66,7 +66,6 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 		WithStorageAwsExternalId(externalId2).
 		WithStorageAwsObjectAcl("bucket-owner-full-control")
 
-	_ = storageIntegrationAwsAllAttributes
 	_ = storageIntegrationAwsAllAttributesChanged
 
 	resource.Test(t, resource.TestCase{
@@ -114,40 +113,42 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 			},
-			//// DESTROY
-			//{
-			//	Config:  config.FromModels(t, userModelNoAttributes),
-			//	Destroy: true,
-			//},
-			//// CREATE WITH ALL ATTRIBUTES
-			//{
-			//	Config: config.FromModels(t, userModelAllAttributes),
-			//	Check: assertThat(t,
-			//		resourceassert.UserResource(t, userModelAllAttributes.ResourceReference()).
-			//			HasNameString(id.Name()).
-			//			HasPasswordString(pass).
-			//			HasLoginNameString(loginName).
-			//			HasDisplayNameString("Display Name").
-			//			HasFirstNameString("Jan").
-			//			HasMiddleNameString("Jakub").
-			//			HasLastNameString("Testowski").
-			//			HasEmailString("fake@email.com").
-			//			HasMustChangePassword(true).
-			//			HasDisabled(false).
-			//			HasDaysToExpiryString("8").
-			//			HasMinsToUnlockString("9").
-			//			HasDefaultWarehouseString("some_warehouse").
-			//			HasDefaultNamespaceString("some.namespace").
-			//			HasDefaultRoleString("some_role").
-			//			HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
-			//			HasMinsToBypassMfaString("10").
-			//			HasRsaPublicKeyString(key1).
-			//			HasRsaPublicKey2String(key2).
-			//			HasCommentString(comment).
-			//			HasDisableMfaString(r.BooleanTrue).
-			//			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-			//	),
-			//},
+			// DESTROY
+			{
+				Config:  config.FromModels(t, storageIntegrationAwsModelNoAttributes),
+				Destroy: true,
+			},
+			// CREATE WITH ALL ATTRIBUTES
+			{
+				Config: config.FromModels(t, storageIntegrationAwsAllAttributes),
+				Check: assertThat(t,
+					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsAllAttributes.ResourceReference()).
+						HasNameString(id.Name()).
+						HasEnabledString(r.BooleanFalse).
+						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageBlockedLocations(blockedLocations...).
+						HasCommentString(comment).
+						HasStorageAwsRoleArnString(awsRoleArn).
+						HasStorageAwsExternalIdString(externalId).
+						HasStorageAwsObjectAclString("bucket-owner-full-control"),
+					resourceshowoutputassert.StorageIntegrationShowOutput(t, storageIntegrationAwsAllAttributes.ResourceReference()).
+						HasName(id.Name()).
+						HasEnabled(false).
+						HasComment(comment).
+						HasStorageType("EXTERNAL_STAGE").
+						HasCategory("STORAGE"),
+					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsAllAttributes.ResourceReference()).
+						HasId(id).
+						HasEnabled(false).
+						HasProvider(string(sdk.RegularS3Protocol)).
+						HasComment(comment).
+						HasUsePrivatelinkEndpoint(false).
+						HasIamUserArnSet().
+						HasRoleArn(awsRoleArn).
+						HasExternalId(externalId).
+						HasObjectAcl("bucket-owner-full-control"),
+				),
+			},
 			//// CHANGE PROPERTIES
 			//{
 			//	Config: config.FromModels(t, userModelAllAttributesChanged(newLoginName)),
