@@ -47,7 +47,7 @@ func (v *storageIntegrations) DescribeAwsDetails(ctx context.Context, id Account
 	if err != nil {
 		return nil, err
 	}
-	return parseAwsProperties(properties)
+	return parseAwsProperties(properties, id)
 }
 
 func (v *storageIntegrations) DescribeAzureDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAzureDetails, error) {
@@ -55,7 +55,7 @@ func (v *storageIntegrations) DescribeAzureDetails(ctx context.Context, id Accou
 	if err != nil {
 		return nil, err
 	}
-	return parseAzureProperties(properties)
+	return parseAzureProperties(properties, id)
 }
 
 func (v *storageIntegrations) DescribeGcsDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationGcsDetails, error) {
@@ -63,12 +63,14 @@ func (v *storageIntegrations) DescribeGcsDetails(ctx context.Context, id Account
 	if err != nil {
 		return nil, err
 	}
-	return parseGcsProperties(properties)
+	return parseGcsProperties(properties, id)
 }
 
 // TODO [next PRs]: extract common mapping logic
-func parseAwsProperties(properties []StorageIntegrationProperty) (*StorageIntegrationAwsDetails, error) {
-	details := &StorageIntegrationAwsDetails{}
+func parseAwsProperties(properties []StorageIntegrationProperty, id AccountObjectIdentifier) (*StorageIntegrationAwsDetails, error) {
+	details := &StorageIntegrationAwsDetails{
+		Id: id,
+	}
 	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
@@ -105,8 +107,10 @@ func parseAwsProperties(properties []StorageIntegrationProperty) (*StorageIntegr
 	return details, errors.Join(errs...)
 }
 
-func parseAzureProperties(properties []StorageIntegrationProperty) (*StorageIntegrationAzureDetails, error) {
-	details := &StorageIntegrationAzureDetails{}
+func parseAzureProperties(properties []StorageIntegrationProperty, id AccountObjectIdentifier) (*StorageIntegrationAzureDetails, error) {
+	details := &StorageIntegrationAzureDetails{
+		Id: id,
+	}
 	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
@@ -141,8 +145,10 @@ func parseAzureProperties(properties []StorageIntegrationProperty) (*StorageInte
 	return details, errors.Join(errs...)
 }
 
-func parseGcsProperties(properties []StorageIntegrationProperty) (*StorageIntegrationGcsDetails, error) {
-	details := &StorageIntegrationGcsDetails{}
+func parseGcsProperties(properties []StorageIntegrationProperty, id AccountObjectIdentifier) (*StorageIntegrationGcsDetails, error) {
+	details := &StorageIntegrationGcsDetails{
+		Id: id,
+	}
 	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
