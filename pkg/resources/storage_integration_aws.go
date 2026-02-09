@@ -86,7 +86,7 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		Type:         schema.TypeString,
 		Optional:     true,
 		ValidateFunc: validation.StringInSlice([]string{"bucket-owner-full-control"}, false),
-		Description:  "Enables support for AWS access control lists (ACLs) to grant the bucket owner full control.",
+		Description:  "Enables support for AWS access control lists (ACLs) to grant the bucket owner full control. `bucket-owner-full-control` is the only currently supported value.",
 	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -148,6 +148,7 @@ func ImportStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 	errs := errors.Join(
 		d.Set("name", awsDetails.ID().Name()),
 		d.Set("use_privatelink_endpoint", booleanStringFromBool(awsDetails.UsePrivatelinkEndpoint)),
+		d.Set("storage_aws_external_id", awsDetails.ExternalId),
 	)
 	if errs != nil {
 		return nil, errs
@@ -202,7 +203,7 @@ func GetReadStorageIntegrationAwsFunc(withExternalChangesMarking bool) schema.Re
 			// not reading use_privatelink_endpoint on purpose (handled as external change to describe output)
 			d.Set("storage_aws_role_arn", awsDetails.RoleArn),
 			// not reading storage_aws_external_id on purpose (handled as external change to describe output)
-			// not reading storage_aws_object_acl on purpose (handled as external change to describe output)
+			d.Set("storage_aws_object_acl", awsDetails.ObjectAcl),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)
 
@@ -221,14 +222,7 @@ func CreateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 	name := d.Get("name").(string)
 	id := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(name)
 	enabled := d.Get("enabled").(bool)
-	stringStorageAllowedLocations := expandStringList(d.Get("storage_allowed_locations").([]any))
-	storageAllowedLocations := make([]sdk.StorageLocation, len(stringStorageAllowedLocations))
-	for i, loc := range stringStorageAllowedLocations {
-		storageAllowedLocations[i] = sdk.StorageLocation{
-			Path: loc,
-		}
-	}
-
+	storageAllowedLocations, _ := parseLocations(d.Get("storage_allowed_locations").([]any))
 	storageProvider := strings.ToUpper(d.Get("storage_provider").(string))
 	s3Protocol, err := sdk.ToS3Protocol(storageProvider)
 	if err != nil {
@@ -242,13 +236,7 @@ func CreateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		func() error {
 			if _, ok := d.GetOk("storage_blocked_locations"); ok {
-				stringStorageBlockedLocations := expandStringList(d.Get("storage_blocked_locations").([]any))
-				storageBlockedLocations := make([]sdk.StorageLocation, len(stringStorageBlockedLocations))
-				for i, loc := range stringStorageBlockedLocations {
-					storageBlockedLocations[i] = sdk.StorageLocation{
-						Path: loc,
-					}
-				}
+				storageBlockedLocations, _ := parseLocations(d.Get("storage_blocked_locations").([]any))
 				request.WithStorageBlockedLocations(storageBlockedLocations)
 			}
 			return nil
@@ -285,7 +273,7 @@ func UpdateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 		func() error {
 			if d.HasChange("storage_allowed_locations") {
 				if v, ok := d.GetOk("storage_allowed_locations"); ok {
-					locations, err := parseLocationsUpdate(v.([]any))
+					locations, err := parseLocations(v.([]any))
 					if err != nil {
 						return err
 					}
@@ -298,7 +286,7 @@ func UpdateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 			if d.HasChange("storage_blocked_locations") {
 				v := d.Get("storage_blocked_locations")
 				if len(v.([]any)) > 0 {
-					locations, err := parseLocationsUpdate(v.([]any))
+					locations, err := parseLocations(v.([]any))
 					if err != nil {
 						return err
 					}
@@ -343,7 +331,7 @@ func UpdateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 	return GetReadStorageIntegrationAwsFunc(false)(ctx, d, meta)
 }
 
-func parseLocationsUpdate(allowedLocationsRaw []any) ([]sdk.StorageLocation, error) {
+func parseLocations(allowedLocationsRaw []any) ([]sdk.StorageLocation, error) {
 	stringStorageAllowedLocations := expandStringList(allowedLocationsRaw)
 	storageAllowedLocations := make([]sdk.StorageLocation, len(stringStorageAllowedLocations))
 	for i, loc := range stringStorageAllowedLocations {

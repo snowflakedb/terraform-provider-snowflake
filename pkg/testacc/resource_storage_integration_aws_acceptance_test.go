@@ -92,7 +92,7 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 						HasCommentString("").
 						HasStorageAwsRoleArnString(awsRoleArn).
 						HasNoStorageAwsExternalId().
-						HasNoStorageAwsObjectAcl(),
+						HasStorageAwsObjectAclEmpty(),
 					resourceshowoutputassert.StorageIntegrationShowOutput(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
 						HasName(id.Name()).
 						HasEnabled(false).
@@ -116,7 +116,12 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 				ResourceName:            storageIntegrationAwsModelNoAttributes.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint", "storage_aws_external_id"},
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
+						HasUsePrivatelinkEndpointString(r.BooleanFalse).
+						HasStorageAwsExternalIdNotEmpty(),
+				),
 			},
 			// DESTROY
 			{
@@ -200,18 +205,18 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 						HasObjectAcl("bucket-owner-full-control"),
 				),
 			},
-			//// IMPORT
-			//{
-			//	ResourceName:            userModelAllAttributesChanged(newLoginName).ResourceReference(),
-			//	ImportState:             true,
-			//	ImportStateVerify:       true,
-			//	ImportStateVerifyIgnore: []string{"password", "disable_mfa", "days_to_expiry", "mins_to_unlock", "mins_to_bypass_mfa", "default_namespace", "login_name", "show_output.0.days_to_expiry"},
-			//	ImportStateCheck: assertThatImport(t,
-			//		resourceassert.ImportedUserResource(t, id.Name()).
-			//			HasDefaultNamespaceString("ONE_PART_NAMESPACE").
-			//			HasLoginNameString(strings.ToUpper(newLoginName)),
-			//	),
-			//},
+			// IMPORT
+			{
+				ResourceName:            storageIntegrationAwsAllAttributesChanged.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
+						HasUsePrivatelinkEndpointString(r.BooleanTrue).
+						HasStorageAwsExternalIdString(externalId2),
+				),
+			},
 			//// CHANGE PROP TO THE CURRENT SNOWFLAKE VALUE
 			//{
 			//	PreConfig: func() {
