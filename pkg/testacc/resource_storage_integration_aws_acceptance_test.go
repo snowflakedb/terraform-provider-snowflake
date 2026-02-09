@@ -16,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -32,18 +33,18 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 
 	// TODO [next PRs]: extract allowed location logic and use throughout integration and acceptance tests
 	allowedLocations := []sdk.StorageLocation{
-		{Path: awsBucketUrl + "/allowed-location"},
+		{Path: awsBucketUrl + "allowed-location/"},
 	}
 	allowedLocations2 := []sdk.StorageLocation{
-		{Path: awsBucketUrl + "/allowed-location"},
-		{Path: awsBucketUrl + "/allowed-location2"},
+		{Path: awsBucketUrl + "allowed-location/"},
+		{Path: awsBucketUrl + "allowed-location2/"},
 	}
 	blockedLocations := []sdk.StorageLocation{
-		{Path: awsBucketUrl + "/blocked-location"},
+		{Path: awsBucketUrl + "blocked-location/"},
 	}
 	blockedLocations2 := []sdk.StorageLocation{
-		{Path: awsBucketUrl + "/blocked-location"},
-		{Path: awsBucketUrl + "/blocked-location2"},
+		{Path: awsBucketUrl + "blocked-location/"},
+		{Path: awsBucketUrl + "blocked-location2/"},
 	}
 
 	comment := random.Comment()
@@ -62,11 +63,10 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 
 	storageIntegrationAwsAllAttributesChanged := model.StorageIntegrationAws("w", id.Name(), true, allowedLocations2, awsRoleArn, string(sdk.RegularS3Protocol)).
 		WithStorageBlockedLocations(blockedLocations2).
+		WithUsePrivatelinkEndpoint(r.BooleanTrue).
 		WithComment(newComment).
 		WithStorageAwsExternalId(externalId2).
 		WithStorageAwsObjectAcl("bucket-owner-full-control")
-
-	_ = storageIntegrationAwsAllAttributesChanged
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -77,6 +77,11 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// CREATE WITHOUT ATTRIBUTES
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
 				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributes),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
@@ -115,11 +120,21 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 			},
 			// DESTROY
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionDestroy),
+					},
+				},
 				Config:  config.FromModels(t, storageIntegrationAwsModelNoAttributes),
 				Destroy: true,
 			},
 			// CREATE WITH ALL ATTRIBUTES
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
 				Config: config.FromModels(t, storageIntegrationAwsAllAttributes),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsAllAttributes.ResourceReference()).
@@ -149,35 +164,42 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 						HasObjectAcl("bucket-owner-full-control"),
 				),
 			},
-			//// CHANGE PROPERTIES
-			//{
-			//	Config: config.FromModels(t, userModelAllAttributesChanged(newLoginName)),
-			//	Check: assertThat(t,
-			//		resourceassert.UserResource(t, userModelAllAttributesChanged(newLoginName).ResourceReference()).
-			//			HasNameString(id.Name()).
-			//			HasPasswordString(newPass).
-			//			HasLoginNameString(newLoginName).
-			//			HasDisplayNameString("New Display Name").
-			//			HasFirstNameString("Janek").
-			//			HasMiddleNameString("Kuba").
-			//			HasLastNameString("Terraformowski").
-			//			HasEmailString("fake@email.net").
-			//			HasMustChangePassword(false).
-			//			HasDisabled(true).
-			//			HasDaysToExpiryString("12").
-			//			HasMinsToUnlockString("13").
-			//			HasDefaultWarehouseString("other_warehouse").
-			//			HasDefaultNamespaceString("one_part_namespace").
-			//			HasDefaultRoleString("other_role").
-			//			HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
-			//			HasMinsToBypassMfaString("14").
-			//			HasRsaPublicKeyString(key2).
-			//			HasRsaPublicKey2String(key1).
-			//			HasCommentString(newComment).
-			//			HasDisableMfaString(r.BooleanFalse).
-			//			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-			//	),
-			//},
+			// CHANGE PROPERTIES
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, storageIntegrationAwsAllAttributesChanged),
+				Check: assertThat(t,
+					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsAllAttributesChanged.ResourceReference()).
+						HasNameString(id.Name()).
+						HasEnabledString(r.BooleanTrue).
+						HasStorageAllowedLocations(allowedLocations2...).
+						HasStorageBlockedLocations(blockedLocations2...).
+						HasCommentString(newComment).
+						HasStorageAwsRoleArnString(awsRoleArn).
+						HasStorageAwsExternalIdString(externalId2).
+						HasStorageAwsObjectAclString("bucket-owner-full-control"),
+					resourceshowoutputassert.StorageIntegrationShowOutput(t, storageIntegrationAwsAllAttributesChanged.ResourceReference()).
+						HasName(id.Name()).
+						HasEnabled(true).
+						HasComment(newComment).
+						HasStorageType("EXTERNAL_STAGE").
+						HasCategory("STORAGE"),
+					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsAllAttributesChanged.ResourceReference()).
+						HasId(id).
+						HasEnabled(true).
+						HasProvider(string(sdk.RegularS3Protocol)).
+						HasComment(newComment).
+						HasUsePrivatelinkEndpoint(true).
+						HasIamUserArnSet().
+						HasRoleArn(awsRoleArn).
+						HasExternalId(externalId2).
+						HasObjectAcl("bucket-owner-full-control"),
+				),
+			},
 			//// IMPORT
 			//{
 			//	ResourceName:            userModelAllAttributesChanged(newLoginName).ResourceReference(),

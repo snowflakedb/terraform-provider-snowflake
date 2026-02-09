@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -117,7 +118,7 @@ func StorageIntegrationAws() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingCreateWrapper(resources.StorageIntegrationAws, CreateStorageIntegrationAws)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingReadWrapper(resources.StorageIntegrationAws, GetReadStorageIntegrationAwsFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingUpdateWrapper(resources.StorageIntegrationAws, DummyStorageIntegrationAws)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingUpdateWrapper(resources.StorageIntegrationAws, UpdateStorageIntegrationAws)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingDeleteWrapper(resources.StorageIntegrationAws, deleteFunc)),
 		Description:   "Resource used to manage AWS storage integration objects. For more information, check [storage integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration).",
 
@@ -129,10 +130,6 @@ func StorageIntegrationAws() *schema.Resource {
 		// TODO [next PR]: add CustomizeDiff logic
 		// TODO [next PR]: react to external stage type change (recreate)
 	}
-}
-
-func DummyStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	return nil
 }
 
 // TODO [next PR]: errors when importing the wrong type/category/provider
@@ -270,4 +267,89 @@ func CreateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 	return GetReadStorageIntegrationAwsFunc(false)(ctx, d, meta)
+}
+
+func UpdateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	set, unset := sdk.NewStorageIntegrationSetRequest(), sdk.NewStorageIntegrationUnsetRequest()
+	s3SetParams, s3UnsetParams := sdk.NewSetS3StorageParamsRequest(), sdk.NewUnsetS3StorageParamsRequest()
+
+	errs := errors.Join(
+		booleanAttributeUpdateSetOnly(d, "enabled", &set.Enabled),
+		// TODO [next PRs]: extract helpers for lists with builders
+		func() error {
+			if d.HasChange("storage_allowed_locations") {
+				if v, ok := d.GetOk("storage_allowed_locations"); ok {
+					locations, err := parseLocationsUpdate(v.([]any))
+					if err != nil {
+						return err
+					}
+					set.WithStorageAllowedLocations(locations)
+				}
+			}
+			return nil
+		}(),
+		func() error {
+			if d.HasChange("storage_blocked_locations") {
+				v := d.Get("storage_blocked_locations")
+				if len(v.([]any)) > 0 {
+					locations, err := parseLocationsUpdate(v.([]any))
+					if err != nil {
+						return err
+					}
+					set.WithStorageBlockedLocations(locations)
+				} else {
+					unset.WithStorageBlockedLocations(true)
+				}
+			}
+			return nil
+		}(),
+		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
+		booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", s3SetParams.WithUsePrivatelinkEndpoint, false),
+		stringAttributeUpdateSetOnlyNotEmpty(d, "storage_aws_role_arn", &s3SetParams.StorageAwsRoleArn),
+		stringAttributeUpdate(d, "storage_aws_external_id", &s3SetParams.StorageAwsExternalId, &s3UnsetParams.StorageAwsExternalId),
+		stringAttributeUpdate(d, "storage_aws_object_acl", &s3SetParams.StorageAwsObjectAcl, &s3UnsetParams.StorageAwsObjectAcl),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if !reflect.DeepEqual(*s3SetParams, *sdk.NewSetS3StorageParamsRequest()) {
+		set.WithS3Params(*s3SetParams)
+	}
+	if !reflect.DeepEqual(*set, *sdk.NewStorageIntegrationSetRequest()) {
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithSet(*set)
+		if err := client.StorageIntegrations.Alter(ctx, req); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating aws storage integration, err = %w", err))
+		}
+	}
+
+	if !reflect.DeepEqual(*s3UnsetParams, *sdk.NewUnsetS3StorageParamsRequest()) {
+		unset.WithS3Params(*s3UnsetParams)
+	}
+	if !reflect.DeepEqual(*unset, *sdk.NewStorageIntegrationUnsetRequest()) {
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithUnset(*unset)
+		if err := client.StorageIntegrations.Alter(ctx, req); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating aws storage integration, err = %w", err))
+		}
+	}
+
+	return GetReadStorageIntegrationAwsFunc(false)(ctx, d, meta)
+}
+
+func parseLocationsUpdate(allowedLocationsRaw []any) ([]sdk.StorageLocation, error) {
+	stringStorageAllowedLocations := expandStringList(allowedLocationsRaw)
+	storageAllowedLocations := make([]sdk.StorageLocation, len(stringStorageAllowedLocations))
+	for i, loc := range stringStorageAllowedLocations {
+		storageAllowedLocations[i] = sdk.StorageLocation{
+			Path: loc,
+		}
+	}
+	return storageAllowedLocations, nil
 }
