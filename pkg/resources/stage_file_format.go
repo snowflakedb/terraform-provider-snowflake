@@ -514,21 +514,7 @@ func parseAvroFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatAvroOpti
 		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatAvroOptions {
 			avroOptions.NullIf = nullIf
 			return avroOptions
-		}, func(v any) ([]sdk.NullString, error) {
-			nullIfList := v.([]any)
-			if len(nullIfList) == 0 {
-				return nil, nil
-			}
-			nullIf := make([]sdk.NullString, len(nullIfList))
-			for i, s := range nullIfList {
-				str := ""
-				if s != nil {
-					str = s.(string)
-				}
-				nullIf[i] = sdk.NullString{S: str}
-			}
-			return nullIf, nil
-		}),
+		}, parseNullIf),
 	)
 	if err != nil {
 		return nil, err

@@ -1130,13 +1130,15 @@ func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
 		})
 
 	defaultAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.InternalStageResource(t, modelCompleteAvro.ResourceReference()).
-			HasFileFormatAvro(),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.type", string(sdk.FileFormatTypeAvro))),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.compression", string(sdk.AvroCompressionAuto))),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.trim_space", "false")),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.replace_invalid_characters", "false")),
-		assert.Check(resource.TestCheckResourceAttr(modelCompleteAvro.ResourceReference(), "describe_output.0.file_format.0.avro.0.null_if.#", "0")),
+		resourceassert.InternalStageResource(t, modelWithoutFileFormat.ResourceReference()).
+			HasFileFormatAvro().
+			HasFileFormatAvroTrimSpaceString(r.BooleanDefault).
+			HasFileFormatAvroReplaceInvalidCharactersString(r.BooleanDefault),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.avro.0.type", string(sdk.FileFormatTypeAvro))),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.avro.0.compression", string(sdk.AvroCompressionAuto))),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.avro.0.trim_space", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.avro.0.replace_invalid_characters", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelWithoutFileFormat.ResourceReference(), "describe_output.0.file_format.0.avro.0.null_if.#", "0")),
 	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{

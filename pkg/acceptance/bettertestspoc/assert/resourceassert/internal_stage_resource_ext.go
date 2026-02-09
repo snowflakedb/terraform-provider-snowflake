@@ -296,6 +296,11 @@ func (i *InternalStageResourceAssert) HasFileFormatAvroReplaceInvalidCharacters(
 	return i
 }
 
+func (i *InternalStageResourceAssert) HasFileFormatAvroTrimSpaceString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.avro.0.trim_space", expected))
+	return i
+}
+
 func (i *InternalStageResourceAssert) HasFileFormatAvroReplaceInvalidCharactersString(expected string) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.0.replace_invalid_characters", expected))
 	return i
