@@ -419,7 +419,7 @@ func TestAcc_InternalStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 	modelBasic := model.InternalStageWithId(id)
 
 	modelWithCsvFormat := model.InternalStageWithId(id).
-		WithFileFormatCsv(model.CsvFileFormatOptions{})
+		WithFileFormatCsv(sdk.FileFormatCsvOptions{})
 
 	modelWithNamedFormat := model.InternalStageWithId(id).
 		WithFileFormatName(fileFormat.ID().FullyQualifiedName())
@@ -536,32 +536,32 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 	modelWithoutFileFormat := model.InternalStageWithId(id)
 
 	modelCompleteCsv := model.InternalStageWithId(id).
-		WithFileFormatCsv(model.CsvFileFormatOptions{
-			Compression:                sdk.CSVCompressionGzip,
-			FieldDelimiter:             "|",
+		WithFileFormatCsv(sdk.FileFormatCsvOptions{
+			Compression:                sdk.Pointer(sdk.CSVCompressionGzip),
+			FieldDelimiter:             &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer("|")},
 			MultiLine:                  &multiLine,
-			FileExtension:              "csv",
+			FileExtension:              sdk.Pointer("csv"),
 			ParseHeader:                &parseHeader,
 			SkipBlankLines:             &skipBlankLines,
-			DateFormat:                 "AUTO",
-			TimeFormat:                 "AUTO",
-			TimestampFormat:            "AUTO",
-			BinaryFormat:               sdk.BinaryFormatHex,
-			Escape:                     `\`,
-			EscapeUnenclosedField:      "NONE",
+			DateFormat:                 &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
+			TimeFormat:                 &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
+			TimestampFormat:            &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
+			BinaryFormat:               sdk.Pointer(sdk.BinaryFormatHex),
+			Escape:                     &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(`\`)},
+			EscapeUnenclosedField:      &sdk.StageFileFormatStringOrNone{None: sdk.Pointer(true)},
 			TrimSpace:                  &trimSpace,
-			FieldOptionallyEnclosedBy:  `"`,
-			NullIf:                     []string{"NULL", ""},
+			FieldOptionallyEnclosedBy:  &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(`"`)},
+			NullIf:                     []sdk.NullString{{S: "NULL"}, {S: ""}},
 			ErrorOnColumnCountMismatch: &errorOnColumnCountMismatch,
 			ReplaceInvalidCharacters:   &replaceInvalidCharacters,
 			EmptyFieldAsNull:           &emptyFieldAsNull,
 			SkipByteOrderMark:          &skipByteOrderMark,
-			Encoding:                   sdk.CSVEncodingUTF8,
-			RecordDelimiter:            ";",
+			Encoding:                   sdk.Pointer(sdk.CSVEncodingUTF8),
+			RecordDelimiter:            &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(";")},
 		})
 
 	modelWithSkipHeader := model.InternalStageWithId(id).
-		WithFileFormatCsv(model.CsvFileFormatOptions{SkipHeader: sdk.Pointer(1)})
+		WithFileFormatCsv(sdk.FileFormatCsvOptions{SkipHeader: sdk.Pointer(1)})
 
 	altMultiLine := false
 	altParseHeader := true
@@ -573,28 +573,28 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 	altSkipByteOrderMark := false
 
 	modelAlteredCsv := model.InternalStageWithId(id).
-		WithFileFormatCsv(model.CsvFileFormatOptions{
-			Compression:                sdk.CSVCompressionZstd,
-			FieldDelimiter:             ",",
+		WithFileFormatCsv(sdk.FileFormatCsvOptions{
+			Compression:                sdk.Pointer(sdk.CSVCompressionZstd),
+			FieldDelimiter:             &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(",")},
 			MultiLine:                  &altMultiLine,
-			FileExtension:              "txt",
+			FileExtension:              sdk.Pointer("txt"),
 			ParseHeader:                &altParseHeader,
 			SkipBlankLines:             &altSkipBlankLines,
-			DateFormat:                 "YYYY",
-			TimeFormat:                 "HH24:MI:SS",
-			TimestampFormat:            "YYYY-MM-DD HH24:MI:SS",
-			BinaryFormat:               sdk.BinaryFormatBase64,
-			Escape:                     `\\`,
-			EscapeUnenclosedField:      "NONE",
+			DateFormat:                 &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("YYYY")},
+			TimeFormat:                 &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("HH24:MI:SS")},
+			TimestampFormat:            &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("YYYY-MM-DD HH24:MI:SS")},
+			BinaryFormat:               sdk.Pointer(sdk.BinaryFormatBase64),
+			Escape:                     &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(`\\`)},
+			EscapeUnenclosedField:      &sdk.StageFileFormatStringOrNone{None: sdk.Pointer(true)},
 			TrimSpace:                  &altTrimSpace,
-			FieldOptionallyEnclosedBy:  `"`,
-			NullIf:                     []string{"NA"},
+			FieldOptionallyEnclosedBy:  &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(`"`)},
+			NullIf:                     []sdk.NullString{{S: "NA"}},
 			ErrorOnColumnCountMismatch: &altErrorOnColumnCountMismatch,
 			ReplaceInvalidCharacters:   &altReplaceInvalidCharacters,
 			EmptyFieldAsNull:           &altEmptyFieldAsNull,
 			SkipByteOrderMark:          &altSkipByteOrderMark,
-			Encoding:                   sdk.CSVEncodingISO88591,
-			RecordDelimiter:            ":",
+			Encoding:                   sdk.Pointer(sdk.CSVEncodingISO88591),
+			RecordDelimiter:            &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(":")},
 		})
 	defaultAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.InternalStageResource(t, modelCompleteCsv.ResourceReference()).
@@ -849,19 +849,19 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 	ignoreUtf8Errors := false
 
 	modelWithoutFileFormat := model.InternalStageWithId(id).
-		WithFileFormatJson(model.JsonFileFormatOptions{})
+		WithFileFormatJson(sdk.FileFormatJsonOptions{})
 
 	modelCompleteJson := model.InternalStageWithId(id).
-		WithFileFormatJson(model.JsonFileFormatOptions{
-			Compression:       sdk.JSONCompressionGzip,
-			DateFormat:        "AUTO",
-			TimeFormat:        "AUTO",
-			TimestampFormat:   "AUTO",
-			BinaryFormat:      sdk.BinaryFormatHex,
+		WithFileFormatJson(sdk.FileFormatJsonOptions{
+			Compression:       sdk.Pointer(sdk.JSONCompressionGzip),
+			DateFormat:        &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
+			TimeFormat:        &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
+			TimestampFormat:   &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("AUTO")},
+			BinaryFormat:      sdk.Pointer(sdk.BinaryFormatHex),
 			TrimSpace:         &trimSpace,
 			MultiLine:         &multiLine,
-			NullIf:            []string{"NULL", ""},
-			FileExtension:     "json",
+			NullIf:            []sdk.NullString{{S: "NULL"}, {S: ""}},
+			FileExtension:     sdk.Pointer("json"),
 			EnableOctal:       &enableOctal,
 			AllowDuplicate:    &allowDuplicate,
 			StripOuterArray:   &stripOuterArray,
@@ -871,7 +871,7 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 		})
 
 	modelJsonWithReplaceInvalidCharacters := model.InternalStageWithId(id).
-		WithFileFormatJson(model.JsonFileFormatOptions{
+		WithFileFormatJson(sdk.FileFormatJsonOptions{
 			ReplaceInvalidCharacters: sdk.Pointer(true),
 		})
 
@@ -885,16 +885,16 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 	altSkipByteOrderMark := false
 
 	modelAlteredJson := model.InternalStageWithId(id).
-		WithFileFormatJson(model.JsonFileFormatOptions{
-			Compression:       sdk.JSONCompressionZstd,
-			DateFormat:        "YYYY",
-			TimeFormat:        "HH24:MI:SS",
-			TimestampFormat:   "YYYY-MM-DD HH24:MI:SS",
-			BinaryFormat:      sdk.BinaryFormatBase64,
+		WithFileFormatJson(sdk.FileFormatJsonOptions{
+			Compression:       sdk.Pointer(sdk.JSONCompressionZstd),
+			DateFormat:        &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("YYYY")},
+			TimeFormat:        &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("HH24:MI:SS")},
+			TimestampFormat:   &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("YYYY-MM-DD HH24:MI:SS")},
+			BinaryFormat:      sdk.Pointer(sdk.BinaryFormatBase64),
 			TrimSpace:         &altTrimSpace,
 			MultiLine:         &altMultiLine,
-			NullIf:            []string{"NA"},
-			FileExtension:     "txt",
+			NullIf:            []sdk.NullString{{S: "NA"}},
+			FileExtension:     sdk.Pointer("txt"),
 			EnableOctal:       &altEnableOctal,
 			AllowDuplicate:    &altAllowDuplicate,
 			StripOuterArray:   &altStripOuterArray,
@@ -1108,25 +1108,25 @@ func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
 	replaceInvalidCharacters := true
 
 	modelWithoutFileFormat := model.InternalStageWithId(id).
-		WithFileFormatAvro(model.AvroFileFormatOptions{})
+		WithFileFormatAvro(sdk.FileFormatAvroOptions{})
 
 	modelCompleteAvro := model.InternalStageWithId(id).
-		WithFileFormatAvro(model.AvroFileFormatOptions{
-			Compression:              sdk.AvroCompressionGzip,
+		WithFileFormatAvro(sdk.FileFormatAvroOptions{
+			Compression:              sdk.Pointer(sdk.AvroCompressionGzip),
 			TrimSpace:                &trimSpace,
 			ReplaceInvalidCharacters: &replaceInvalidCharacters,
-			NullIf:                   []string{"NULL", ""},
+			NullIf:                   []sdk.NullString{{S: "NULL"}, {S: ""}},
 		})
 
 	altTrimSpace := false
 	altReplaceInvalidCharacters := false
 
 	modelAlteredAvro := model.InternalStageWithId(id).
-		WithFileFormatAvro(model.AvroFileFormatOptions{
-			Compression:              sdk.AvroCompressionZstd,
+		WithFileFormatAvro(sdk.FileFormatAvroOptions{
+			Compression:              sdk.Pointer(sdk.AvroCompressionZstd),
 			TrimSpace:                &altTrimSpace,
 			ReplaceInvalidCharacters: &altReplaceInvalidCharacters,
-			NullIf:                   []string{"NA"},
+			NullIf:                   []sdk.NullString{{S: "NA"}},
 		})
 
 	defaultAssertions := []assert.TestCheckFuncProvider{
@@ -1258,23 +1258,23 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 	replaceInvalidCharacters := true
 
 	modelBasicOrc := model.InternalStageWithId(id).
-		WithFileFormatOrc(model.OrcFileFormatOptions{})
+		WithFileFormatOrc(sdk.FileFormatOrcOptions{})
 
 	modelCompleteOrc := model.InternalStageWithId(id).
-		WithFileFormatOrc(model.OrcFileFormatOptions{
+		WithFileFormatOrc(sdk.FileFormatOrcOptions{
 			TrimSpace:                &trimSpace,
 			ReplaceInvalidCharacters: &replaceInvalidCharacters,
-			NullIf:                   []string{"NULL", ""},
+			NullIf:                   []sdk.NullString{{S: "NULL"}, {S: ""}},
 		})
 
 	altTrimSpace := false
 	altReplaceInvalidCharacters := false
 
 	modelAlteredOrc := model.InternalStageWithId(id).
-		WithFileFormatOrc(model.OrcFileFormatOptions{
+		WithFileFormatOrc(sdk.FileFormatOrcOptions{
 			TrimSpace:                &altTrimSpace,
 			ReplaceInvalidCharacters: &altReplaceInvalidCharacters,
-			NullIf:                   []string{"NA"},
+			NullIf:                   []sdk.NullString{{S: "NA"}},
 		})
 
 	defaultAssertions := []assert.TestCheckFuncProvider{
@@ -1403,17 +1403,17 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 	replaceInvalidCharacters := true
 
 	modelWithoutFileFormat := model.InternalStageWithId(id).
-		WithFileFormatParquet(model.ParquetFileFormatOptions{})
+		WithFileFormatParquet(sdk.FileFormatParquetOptions{})
 
 	modelCompleteParquet := model.InternalStageWithId(id).
-		WithFileFormatParquet(model.ParquetFileFormatOptions{
-			Compression:              sdk.ParquetCompressionSnappy,
+		WithFileFormatParquet(sdk.FileFormatParquetOptions{
+			Compression:              sdk.Pointer(sdk.ParquetCompressionSnappy),
 			BinaryAsText:             &binaryAsText,
 			UseLogicalType:           &useLogicalType,
 			TrimSpace:                &trimSpace,
 			UseVectorizedScanner:     &useVectorizedScanner,
 			ReplaceInvalidCharacters: &replaceInvalidCharacters,
-			NullIf:                   []string{"NULL", ""},
+			NullIf:                   []sdk.NullString{{S: "NULL"}, {S: ""}},
 		})
 
 	altBinaryAsText := false
@@ -1423,14 +1423,14 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 	altReplaceInvalidCharacters := false
 
 	modelAlteredParquet := model.InternalStageWithId(id).
-		WithFileFormatParquet(model.ParquetFileFormatOptions{
-			Compression:              sdk.ParquetCompressionLzo,
+		WithFileFormatParquet(sdk.FileFormatParquetOptions{
+			Compression:              sdk.Pointer(sdk.ParquetCompressionLzo),
 			BinaryAsText:             &altBinaryAsText,
 			UseLogicalType:           &altUseLogicalType,
 			TrimSpace:                &altTrimSpace,
 			UseVectorizedScanner:     &altUseVectorizedScanner,
 			ReplaceInvalidCharacters: &altReplaceInvalidCharacters,
-			NullIf:                   []string{"NA"},
+			NullIf:                   []sdk.NullString{{S: "NA"}},
 		})
 
 	defaultAssertions := []assert.TestCheckFuncProvider{

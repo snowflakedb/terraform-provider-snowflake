@@ -6,78 +6,6 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-// CsvFileFormatOptions holds CSV file format configuration options.
-type CsvFileFormatOptions struct {
-	Compression                sdk.CsvCompression
-	RecordDelimiter            string
-	FieldDelimiter             string
-	MultiLine                  *bool
-	FileExtension              string
-	ParseHeader                *bool
-	SkipHeader                 *int
-	SkipBlankLines             *bool
-	DateFormat                 string
-	TimeFormat                 string
-	TimestampFormat            string
-	BinaryFormat               sdk.BinaryFormat
-	Escape                     string
-	EscapeUnenclosedField      string
-	TrimSpace                  *bool
-	FieldOptionallyEnclosedBy  string
-	NullIf                     []string
-	ErrorOnColumnCountMismatch *bool
-	ReplaceInvalidCharacters   *bool
-	EmptyFieldAsNull           *bool
-	SkipByteOrderMark          *bool
-	Encoding                   sdk.CsvEncoding
-}
-
-// JsonFileFormatOptions holds JSON file format configuration options.
-type JsonFileFormatOptions struct {
-	Compression              sdk.JsonCompression
-	DateFormat               string
-	TimeFormat               string
-	TimestampFormat          string
-	BinaryFormat             sdk.BinaryFormat
-	TrimSpace                *bool
-	MultiLine                *bool
-	NullIf                   []string
-	FileExtension            string
-	EnableOctal              *bool
-	AllowDuplicate           *bool
-	StripOuterArray          *bool
-	StripNullValues          *bool
-	ReplaceInvalidCharacters *bool
-	IgnoreUtf8Errors         *bool
-	SkipByteOrderMark        *bool
-}
-
-// AvroFileFormatOptions holds AVRO file format configuration options.
-type AvroFileFormatOptions struct {
-	Compression              sdk.AvroCompression
-	TrimSpace                *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []string
-}
-
-// OrcFileFormatOptions holds ORC file format configuration options.
-type OrcFileFormatOptions struct {
-	TrimSpace                *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []string
-}
-
-// ParquetFileFormatOptions holds Parquet file format configuration options.
-type ParquetFileFormatOptions struct {
-	Compression              sdk.ParquetCompression
-	BinaryAsText             *bool
-	UseLogicalType           *bool
-	TrimSpace                *bool
-	UseVectorizedScanner     *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []string
-}
-
 func InternalStageWithId(id sdk.SchemaObjectIdentifier) *InternalStageModel {
 	return InternalStage("test", id.DatabaseName(), id.SchemaName(), id.Name())
 }
@@ -152,23 +80,31 @@ func (i *InternalStageModel) WithFileFormatName(formatName string) *InternalStag
 }
 
 // WithFileFormatCsv sets inline CSV file format with the provided options.
-func (i *InternalStageModel) WithFileFormatCsv(opts CsvFileFormatOptions) *InternalStageModel {
+func (i *InternalStageModel) WithFileFormatCsv(opts sdk.FileFormatCsvOptions) *InternalStageModel {
 	csvMap := make(map[string]tfconfig.Variable)
 
-	if opts.Compression != "" {
-		csvMap["compression"] = tfconfig.StringVariable(string(opts.Compression))
+	if opts.Compression != nil {
+		csvMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
 	}
-	if opts.RecordDelimiter != "" {
-		csvMap["record_delimiter"] = tfconfig.StringVariable(opts.RecordDelimiter)
+	if opts.RecordDelimiter != nil {
+		if opts.RecordDelimiter.None != nil && *opts.RecordDelimiter.None {
+			csvMap["record_delimiter"] = tfconfig.StringVariable("NONE")
+		} else if opts.RecordDelimiter.Value != nil {
+			csvMap["record_delimiter"] = tfconfig.StringVariable(*opts.RecordDelimiter.Value)
+		}
 	}
-	if opts.FieldDelimiter != "" {
-		csvMap["field_delimiter"] = tfconfig.StringVariable(opts.FieldDelimiter)
+	if opts.FieldDelimiter != nil {
+		if opts.FieldDelimiter.None != nil && *opts.FieldDelimiter.None {
+			csvMap["field_delimiter"] = tfconfig.StringVariable("NONE")
+		} else if opts.FieldDelimiter.Value != nil {
+			csvMap["field_delimiter"] = tfconfig.StringVariable(*opts.FieldDelimiter.Value)
+		}
 	}
 	if opts.MultiLine != nil {
 		csvMap["multi_line"] = tfconfig.BoolVariable(*opts.MultiLine)
 	}
-	if opts.FileExtension != "" {
-		csvMap["file_extension"] = tfconfig.StringVariable(opts.FileExtension)
+	if opts.FileExtension != nil {
+		csvMap["file_extension"] = tfconfig.StringVariable(*opts.FileExtension)
 	}
 	if opts.ParseHeader != nil {
 		csvMap["parse_header"] = tfconfig.BoolVariable(*opts.ParseHeader)
@@ -179,34 +115,58 @@ func (i *InternalStageModel) WithFileFormatCsv(opts CsvFileFormatOptions) *Inter
 	if opts.SkipBlankLines != nil {
 		csvMap["skip_blank_lines"] = tfconfig.BoolVariable(*opts.SkipBlankLines)
 	}
-	if opts.DateFormat != "" {
-		csvMap["date_format"] = tfconfig.StringVariable(opts.DateFormat)
+	if opts.DateFormat != nil {
+		if opts.DateFormat.Auto != nil && *opts.DateFormat.Auto {
+			csvMap["date_format"] = tfconfig.StringVariable("AUTO")
+		} else if opts.DateFormat.Value != nil {
+			csvMap["date_format"] = tfconfig.StringVariable(*opts.DateFormat.Value)
+		}
 	}
-	if opts.TimeFormat != "" {
-		csvMap["time_format"] = tfconfig.StringVariable(opts.TimeFormat)
+	if opts.TimeFormat != nil {
+		if opts.TimeFormat.Auto != nil && *opts.TimeFormat.Auto {
+			csvMap["time_format"] = tfconfig.StringVariable("AUTO")
+		} else if opts.TimeFormat.Value != nil {
+			csvMap["time_format"] = tfconfig.StringVariable(*opts.TimeFormat.Value)
+		}
 	}
-	if opts.TimestampFormat != "" {
-		csvMap["timestamp_format"] = tfconfig.StringVariable(opts.TimestampFormat)
+	if opts.TimestampFormat != nil {
+		if opts.TimestampFormat.Auto != nil && *opts.TimestampFormat.Auto {
+			csvMap["timestamp_format"] = tfconfig.StringVariable("AUTO")
+		} else if opts.TimestampFormat.Value != nil {
+			csvMap["timestamp_format"] = tfconfig.StringVariable(*opts.TimestampFormat.Value)
+		}
 	}
-	if opts.BinaryFormat != "" {
-		csvMap["binary_format"] = tfconfig.StringVariable(string(opts.BinaryFormat))
+	if opts.BinaryFormat != nil {
+		csvMap["binary_format"] = tfconfig.StringVariable(string(*opts.BinaryFormat))
 	}
-	if opts.Escape != "" {
-		csvMap["escape"] = tfconfig.StringVariable(opts.Escape)
+	if opts.Escape != nil {
+		if opts.Escape.None != nil && *opts.Escape.None {
+			csvMap["escape"] = tfconfig.StringVariable("NONE")
+		} else if opts.Escape.Value != nil {
+			csvMap["escape"] = tfconfig.StringVariable(*opts.Escape.Value)
+		}
 	}
-	if opts.EscapeUnenclosedField != "" {
-		csvMap["escape_unenclosed_field"] = tfconfig.StringVariable(opts.EscapeUnenclosedField)
+	if opts.EscapeUnenclosedField != nil {
+		if opts.EscapeUnenclosedField.None != nil && *opts.EscapeUnenclosedField.None {
+			csvMap["escape_unenclosed_field"] = tfconfig.StringVariable("NONE")
+		} else if opts.EscapeUnenclosedField.Value != nil {
+			csvMap["escape_unenclosed_field"] = tfconfig.StringVariable(*opts.EscapeUnenclosedField.Value)
+		}
 	}
 	if opts.TrimSpace != nil {
 		csvMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
 	}
-	if opts.FieldOptionallyEnclosedBy != "" {
-		csvMap["field_optionally_enclosed_by"] = tfconfig.StringVariable(opts.FieldOptionallyEnclosedBy)
+	if opts.FieldOptionallyEnclosedBy != nil {
+		if opts.FieldOptionallyEnclosedBy.None != nil && *opts.FieldOptionallyEnclosedBy.None {
+			csvMap["field_optionally_enclosed_by"] = tfconfig.StringVariable("NONE")
+		} else if opts.FieldOptionallyEnclosedBy.Value != nil {
+			csvMap["field_optionally_enclosed_by"] = tfconfig.StringVariable(*opts.FieldOptionallyEnclosedBy.Value)
+		}
 	}
 	if len(opts.NullIf) > 0 {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
 		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v)
+			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		csvMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
 	}
@@ -222,8 +182,8 @@ func (i *InternalStageModel) WithFileFormatCsv(opts CsvFileFormatOptions) *Inter
 	if opts.SkipByteOrderMark != nil {
 		csvMap["skip_byte_order_mark"] = tfconfig.BoolVariable(*opts.SkipByteOrderMark)
 	}
-	if opts.Encoding != "" {
-		csvMap["encoding"] = tfconfig.StringVariable(string(opts.Encoding))
+	if opts.Encoding != nil {
+		csvMap["encoding"] = tfconfig.StringVariable(string(*opts.Encoding))
 	}
 
 	// Workaround for empty objects - Terraform requires at least one attribute
@@ -241,14 +201,14 @@ func (i *InternalStageModel) WithFileFormatCsv(opts CsvFileFormatOptions) *Inter
 }
 
 func (i *InternalStageModel) WithFileFormatCsvConflictingOptions() *InternalStageModel {
-	return i.WithFileFormatCsv(CsvFileFormatOptions{
+	return i.WithFileFormatCsv(sdk.FileFormatCsvOptions{
 		SkipHeader:  sdk.Pointer(1),
 		ParseHeader: sdk.Pointer(true),
 	})
 }
 
 func (i *InternalStageModel) WithFileFormatCsvInvalidSkipHeader() *InternalStageModel {
-	return i.WithFileFormatCsv(CsvFileFormatOptions{
+	return i.WithFileFormatCsv(sdk.FileFormatCsvOptions{
 		SkipHeader: sdk.Pointer(-1),
 	})
 }
@@ -264,8 +224,8 @@ func (i *InternalStageModel) WithFileFormatInvalidFormatName() *InternalStageMod
 }
 
 func (i *InternalStageModel) WithFileFormatCsvInvalidEncoding() *InternalStageModel {
-	return i.WithFileFormatCsv(CsvFileFormatOptions{
-		Encoding: "INVALID",
+	return i.WithFileFormatCsv(sdk.FileFormatCsvOptions{
+		Encoding: sdk.Pointer(sdk.CsvEncoding("INVALID")),
 	})
 }
 
@@ -282,14 +242,14 @@ func (i *InternalStageModel) WithFileFormatCsvInvalidBooleanString() *InternalSt
 }
 
 func (i *InternalStageModel) WithFileFormatCsvInvalidBinaryFormat() *InternalStageModel {
-	return i.WithFileFormatCsv(CsvFileFormatOptions{
-		BinaryFormat: "INVALID",
+	return i.WithFileFormatCsv(sdk.FileFormatCsvOptions{
+		BinaryFormat: sdk.Pointer(sdk.BinaryFormat("INVALID")),
 	})
 }
 
 func (i *InternalStageModel) WithFileFormatCsvInvalidCompression() *InternalStageModel {
-	return i.WithFileFormatCsv(CsvFileFormatOptions{
-		Compression: "INVALID",
+	return i.WithFileFormatCsv(sdk.FileFormatCsvOptions{
+		Compression: sdk.Pointer(sdk.CsvCompression("INVALID")),
 	})
 }
 
@@ -307,23 +267,35 @@ func (i *InternalStageModel) WithFileFormatMultipleFormats() *InternalStageModel
 }
 
 // WithFileFormatJson sets inline JSON file format with the provided options.
-func (i *InternalStageModel) WithFileFormatJson(opts JsonFileFormatOptions) *InternalStageModel {
+func (i *InternalStageModel) WithFileFormatJson(opts sdk.FileFormatJsonOptions) *InternalStageModel {
 	jsonMap := make(map[string]tfconfig.Variable)
 
-	if opts.Compression != "" {
-		jsonMap["compression"] = tfconfig.StringVariable(string(opts.Compression))
+	if opts.Compression != nil {
+		jsonMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
 	}
-	if opts.DateFormat != "" {
-		jsonMap["date_format"] = tfconfig.StringVariable(opts.DateFormat)
+	if opts.DateFormat != nil {
+		if opts.DateFormat.Auto != nil && *opts.DateFormat.Auto {
+			jsonMap["date_format"] = tfconfig.StringVariable("AUTO")
+		} else if opts.DateFormat.Value != nil {
+			jsonMap["date_format"] = tfconfig.StringVariable(*opts.DateFormat.Value)
+		}
 	}
-	if opts.TimeFormat != "" {
-		jsonMap["time_format"] = tfconfig.StringVariable(opts.TimeFormat)
+	if opts.TimeFormat != nil {
+		if opts.TimeFormat.Auto != nil && *opts.TimeFormat.Auto {
+			jsonMap["time_format"] = tfconfig.StringVariable("AUTO")
+		} else if opts.TimeFormat.Value != nil {
+			jsonMap["time_format"] = tfconfig.StringVariable(*opts.TimeFormat.Value)
+		}
 	}
-	if opts.TimestampFormat != "" {
-		jsonMap["timestamp_format"] = tfconfig.StringVariable(opts.TimestampFormat)
+	if opts.TimestampFormat != nil {
+		if opts.TimestampFormat.Auto != nil && *opts.TimestampFormat.Auto {
+			jsonMap["timestamp_format"] = tfconfig.StringVariable("AUTO")
+		} else if opts.TimestampFormat.Value != nil {
+			jsonMap["timestamp_format"] = tfconfig.StringVariable(*opts.TimestampFormat.Value)
+		}
 	}
-	if opts.BinaryFormat != "" {
-		jsonMap["binary_format"] = tfconfig.StringVariable(string(opts.BinaryFormat))
+	if opts.BinaryFormat != nil {
+		jsonMap["binary_format"] = tfconfig.StringVariable(string(*opts.BinaryFormat))
 	}
 	if opts.TrimSpace != nil {
 		jsonMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
@@ -334,12 +306,12 @@ func (i *InternalStageModel) WithFileFormatJson(opts JsonFileFormatOptions) *Int
 	if len(opts.NullIf) > 0 {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
 		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v)
+			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		jsonMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
 	}
-	if opts.FileExtension != "" {
-		jsonMap["file_extension"] = tfconfig.StringVariable(opts.FileExtension)
+	if opts.FileExtension != nil {
+		jsonMap["file_extension"] = tfconfig.StringVariable(*opts.FileExtension)
 	}
 	if opts.EnableOctal != nil {
 		jsonMap["enable_octal"] = tfconfig.BoolVariable(*opts.EnableOctal)
@@ -378,14 +350,14 @@ func (i *InternalStageModel) WithFileFormatJson(opts JsonFileFormatOptions) *Int
 }
 
 func (i *InternalStageModel) WithFileFormatJsonInvalidCompression() *InternalStageModel {
-	return i.WithFileFormatJson(JsonFileFormatOptions{
-		Compression: "INVALID",
+	return i.WithFileFormatJson(sdk.FileFormatJsonOptions{
+		Compression: sdk.Pointer(sdk.JsonCompression("INVALID")),
 	})
 }
 
 func (i *InternalStageModel) WithFileFormatJsonInvalidBinaryFormat() *InternalStageModel {
-	return i.WithFileFormatJson(JsonFileFormatOptions{
-		BinaryFormat: "INVALID",
+	return i.WithFileFormatJson(sdk.FileFormatJsonOptions{
+		BinaryFormat: sdk.Pointer(sdk.BinaryFormat("INVALID")),
 	})
 }
 
@@ -402,18 +374,18 @@ func (i *InternalStageModel) WithFileFormatJsonInvalidBooleanString() *InternalS
 }
 
 func (i *InternalStageModel) WithFileFormatJsonConflictingOptions() *InternalStageModel {
-	return i.WithFileFormatJson(JsonFileFormatOptions{
+	return i.WithFileFormatJson(sdk.FileFormatJsonOptions{
 		ReplaceInvalidCharacters: sdk.Pointer(true),
 		IgnoreUtf8Errors:         sdk.Pointer(true),
 	})
 }
 
 // WithFileFormatAvro sets inline AVRO file format with the provided options.
-func (i *InternalStageModel) WithFileFormatAvro(opts AvroFileFormatOptions) *InternalStageModel {
+func (i *InternalStageModel) WithFileFormatAvro(opts sdk.FileFormatAvroOptions) *InternalStageModel {
 	avroMap := make(map[string]tfconfig.Variable)
 
-	if opts.Compression != "" {
-		avroMap["compression"] = tfconfig.StringVariable(string(opts.Compression))
+	if opts.Compression != nil {
+		avroMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
 	}
 	if opts.TrimSpace != nil {
 		avroMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
@@ -424,7 +396,7 @@ func (i *InternalStageModel) WithFileFormatAvro(opts AvroFileFormatOptions) *Int
 	if len(opts.NullIf) > 0 {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
 		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v)
+			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		avroMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
 	}
@@ -444,7 +416,7 @@ func (i *InternalStageModel) WithFileFormatAvro(opts AvroFileFormatOptions) *Int
 }
 
 // WithFileFormatOrc sets inline ORC file format with the provided options.
-func (i *InternalStageModel) WithFileFormatOrc(opts OrcFileFormatOptions) *InternalStageModel {
+func (i *InternalStageModel) WithFileFormatOrc(opts sdk.FileFormatOrcOptions) *InternalStageModel {
 	orcMap := make(map[string]tfconfig.Variable)
 
 	if opts.TrimSpace != nil {
@@ -456,7 +428,7 @@ func (i *InternalStageModel) WithFileFormatOrc(opts OrcFileFormatOptions) *Inter
 	if len(opts.NullIf) > 0 {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
 		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v)
+			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		orcMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
 	}
@@ -476,11 +448,11 @@ func (i *InternalStageModel) WithFileFormatOrc(opts OrcFileFormatOptions) *Inter
 }
 
 // WithFileFormatParquet sets inline Parquet file format with the provided options.
-func (i *InternalStageModel) WithFileFormatParquet(opts ParquetFileFormatOptions) *InternalStageModel {
+func (i *InternalStageModel) WithFileFormatParquet(opts sdk.FileFormatParquetOptions) *InternalStageModel {
 	parquetMap := make(map[string]tfconfig.Variable)
 
-	if opts.Compression != "" {
-		parquetMap["compression"] = tfconfig.StringVariable(string(opts.Compression))
+	if opts.Compression != nil {
+		parquetMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
 	}
 	if opts.BinaryAsText != nil {
 		parquetMap["binary_as_text"] = tfconfig.BoolVariable(*opts.BinaryAsText)
@@ -500,7 +472,7 @@ func (i *InternalStageModel) WithFileFormatParquet(opts ParquetFileFormatOptions
 	if len(opts.NullIf) > 0 {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
 		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v)
+			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		parquetMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
 	}
@@ -520,9 +492,15 @@ func (i *InternalStageModel) WithFileFormatParquet(opts ParquetFileFormatOptions
 }
 
 func (i *InternalStageModel) WithFileFormatParquetInvalidCompression() *InternalStageModel {
-	return i.WithFileFormatParquet(ParquetFileFormatOptions{
-		Compression: "INVALID",
-	})
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"parquet": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"compression": tfconfig.StringVariable("INVALID"),
+				})),
+			},
+		)),
+	)
 }
 
 func (i *InternalStageModel) WithFileFormatParquetInvalidBooleanString() *InternalStageModel {
