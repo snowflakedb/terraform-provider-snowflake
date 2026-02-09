@@ -183,6 +183,7 @@ Read-Only:
 - `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
 - `format_name` (String)
 - `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
+- `orc` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--orc))
 
 <a id="nestedobjatt--describe_output--file_format--avro"></a>
 ### Nested Schema for `describe_output.file_format.avro`
@@ -247,6 +248,17 @@ Read-Only:
 - `strip_outer_array` (Boolean)
 - `time_format` (String)
 - `timestamp_format` (String)
+- `trim_space` (Boolean)
+- `type` (String)
+
+
+<a id="nestedobjatt--describe_output--file_format--orc"></a>
+### Nested Schema for `describe_output.file_format.orc`
+
+Read-Only:
+
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
 - `trim_space` (Boolean)
 - `type` (String)
 
