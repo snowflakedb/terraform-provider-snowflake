@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -345,6 +346,52 @@ func TestAcc_StorageIntegrationAws_Validations(t *testing.T) {
 				Config:      config.FromModels(t, storageIntegrationAwsModelIncorrectProtocol),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`invalid S3 protocol: GCS`),
+			},
+		},
+	})
+}
+
+func TestAcc_StorageIntegrationAws_ImportValidation(t *testing.T) {
+	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsRoleArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
+	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
+	azureTenantId := testenvs.GetOrSkipTest(t, testenvs.AzureExternalTenantId)
+
+	notificationIntegration, notificationIntegrationCleanup := testClient().NotificationIntegration.Create(t)
+	t.Cleanup(notificationIntegrationCleanup)
+
+	azureIntegration, azureIntegrationCleanup := testClient().StorageIntegration.CreateAzure(t, azureBucketUrl, azureTenantId)
+	t.Cleanup(azureIntegrationCleanup)
+
+	allowedLocations := []sdk.StorageLocation{
+		{Path: awsBucketUrl + "allowed-location/"},
+	}
+
+	storageIntegrationAwsModel := model.StorageIntegrationAws("w", notificationIntegration.ID().Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol))
+	storageIntegrationAwsModel2 := model.StorageIntegrationAws("w", azureIntegration.ID().Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegrationAws),
+		Steps: []resource.TestStep{
+			// import a different integration category
+			{
+				Config:        config.FromModels(t, storageIntegrationAwsModel),
+				ResourceName:  storageIntegrationAwsModel.ResourceReference(),
+				ImportState:   true,
+				ImportStateId: notificationIntegration.ID().Name(),
+				ExpectError:   regexp.MustCompile(fmt.Sprintf(`Integration %s is not a STORAGE integration`, notificationIntegration.ID().Name())),
+			},
+			// import a different provider type (Azure)
+			{
+				Config:        config.FromModels(t, storageIntegrationAwsModel2),
+				ResourceName:  storageIntegrationAwsModel2.ResourceReference(),
+				ImportState:   true,
+				ImportStateId: azureIntegration.ID().Name(),
+				ExpectError:   regexp.MustCompile(`invalid S3 protocol: AZURE`),
 			},
 		},
 	})

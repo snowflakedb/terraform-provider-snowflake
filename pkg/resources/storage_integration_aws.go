@@ -108,6 +108,7 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
+// TODO [next PR]: react to external provider type change (recreate)
 func StorageIntegrationAws() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
 		sdk.ParseAccountObjectIdentifier,
@@ -135,7 +136,6 @@ func StorageIntegrationAws() *schema.Resource {
 	}
 }
 
-// TODO [next PR]: errors when importing the wrong type/category/provider
 func ImportStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -144,6 +144,10 @@ func ImportStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	awsDetails, err := client.StorageIntegrations.DescribeAwsDetails(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	_, err = sdk.ToS3Protocol(awsDetails.Provider)
 	if err != nil {
 		return nil, err
 	}
@@ -180,12 +184,6 @@ func GetReadStorageIntegrationAwsFunc(withExternalChangesMarking bool) schema.Re
 				}
 			}
 			return diag.FromErr(err)
-		}
-
-		// TODO [next PR]: react to external stage type change (recreate)
-		// TODO [next PR]: replace with force?
-		if s.Category != "STORAGE" {
-			return diag.FromErr(fmt.Errorf("expected %v to be a STORAGE integration, got %v", d.Id(), s.Category))
 		}
 
 		awsDetails, err := client.StorageIntegrations.DescribeAwsDetails(ctx, id)
