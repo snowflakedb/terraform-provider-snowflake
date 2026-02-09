@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -75,11 +76,10 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		Description: "Specifies the Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.",
 	},
 	"storage_aws_external_id": {
-		Type:     schema.TypeString,
-		Optional: true,
-		// TODO [next PR]: verify the DiffSuppressFunc
-		// DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("storage_aws_external_id"),
-		Description: "Optionally specifies an external ID that Snowflake uses to establish a trust relationship with AWS.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("external_id"),
+		Description:      "Optionally specifies an external ID that Snowflake uses to establish a trust relationship with AWS.",
 	},
 	"storage_aws_object_acl": {
 		Type:         schema.TypeString,
@@ -126,8 +126,10 @@ func StorageIntegrationAws() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.StorageIntegrationAws, ImportStorageIntegrationAws),
 		},
 		Timeouts: defaultTimeouts,
-		// TODO [next PR]: add CustomizeDiff logic
-		// TODO [next PR]: react to external stage type change (recreate)
+		CustomizeDiff: customdiff.All(
+			ComputedIfAnyAttributeChanged(storageIntegrationAwsSchema, ShowOutputAttributeName, "enabled", "comment"),
+			ComputedIfAnyAttributeChanged(storageIntegrationAwsSchema, DescribeOutputAttributeName, "enabled", "storage_allowed_locations", "storage_blocked_locations", "comment", "use_privatelink_endpoint", "storage_aws_role_arn", "storage_aws_external_id", "storage_aws_object_acl"),
+		),
 	}
 }
 
@@ -178,6 +180,7 @@ func GetReadStorageIntegrationAwsFunc(withExternalChangesMarking bool) schema.Re
 			return diag.FromErr(err)
 		}
 
+		// TODO [next PR]: react to external stage type change (recreate)
 		// TODO [next PR]: replace with force?
 		if s.Category != "STORAGE" {
 			return diag.FromErr(fmt.Errorf("expected %v to be a STORAGE integration, got %v", d.Id(), s.Category))
