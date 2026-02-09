@@ -36,6 +36,7 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: StringInSlice(sdk.AllStorageProviders, true),
 		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
 	},
+	// TODO [this PR]: change to sets?
 	"storage_allowed_locations": {
 		Type:        schema.TypeList,
 		Elem:        &schema.Schema{Type: schema.TypeString},
@@ -43,6 +44,7 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		Description: "Explicitly limits external stages that use the integration to reference one or more storage locations.",
 		MinItems:    1,
 	},
+	// TODO [this PR]: change to sets?
 	"storage_blocked_locations": {
 		Type:        schema.TypeList,
 		Elem:        &schema.Schema{Type: schema.TypeString},
