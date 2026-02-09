@@ -37,6 +37,11 @@ func (s *StorageIntegrationAzureResourceAssert) HasNameString(expected string) *
 	return s
 }
 
+func (s *StorageIntegrationAzureResourceAssert) HasAzureTenantIdString(expected string) *StorageIntegrationAzureResourceAssert {
+	s.AddAssertion(assert.ValueSet("azure_tenant_id", expected))
+	return s
+}
+
 func (s *StorageIntegrationAzureResourceAssert) HasCommentString(expected string) *StorageIntegrationAzureResourceAssert {
 	s.AddAssertion(assert.ValueSet("comment", expected))
 	return s
@@ -57,28 +62,8 @@ func (s *StorageIntegrationAzureResourceAssert) HasStorageAllowedLocationsString
 	return s
 }
 
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAwsExternalIdString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_external_id", expected))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAwsObjectAclString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_object_acl", expected))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAwsRoleArnString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_role_arn", expected))
-	return s
-}
-
 func (s *StorageIntegrationAzureResourceAssert) HasStorageBlockedLocationsString(expected string) *StorageIntegrationAzureResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_blocked_locations", expected))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageProviderString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_provider", expected))
 	return s
 }
 
@@ -96,6 +81,11 @@ func (s *StorageIntegrationAzureResourceAssert) HasNoName() *StorageIntegrationA
 	return s
 }
 
+func (s *StorageIntegrationAzureResourceAssert) HasNoAzureTenantId() *StorageIntegrationAzureResourceAssert {
+	s.AddAssertion(assert.ValueNotSet("azure_tenant_id"))
+	return s
+}
+
 func (s *StorageIntegrationAzureResourceAssert) HasNoComment() *StorageIntegrationAzureResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("comment"))
 	return s
@@ -108,26 +98,6 @@ func (s *StorageIntegrationAzureResourceAssert) HasNoEnabled() *StorageIntegrati
 
 func (s *StorageIntegrationAzureResourceAssert) HasNoFullyQualifiedName() *StorageIntegrationAzureResourceAssert {
 	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasNoStorageAwsExternalId() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_external_id"))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasNoStorageAwsObjectAcl() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_object_acl"))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasNoStorageAwsRoleArn() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_role_arn"))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasNoStorageProvider() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_provider"))
 	return s
 }
 
@@ -150,16 +120,6 @@ func (s *StorageIntegrationAzureResourceAssert) HasFullyQualifiedNameEmpty() *St
 	return s
 }
 
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAwsExternalIdEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_external_id", ""))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAwsObjectAclEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_object_acl", ""))
-	return s
-}
-
 func (s *StorageIntegrationAzureResourceAssert) HasStorageBlockedLocationsEmpty() *StorageIntegrationAzureResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_blocked_locations.#", "0"))
 	return s
@@ -179,6 +139,11 @@ func (s *StorageIntegrationAzureResourceAssert) HasNameNotEmpty() *StorageIntegr
 	return s
 }
 
+func (s *StorageIntegrationAzureResourceAssert) HasAzureTenantIdNotEmpty() *StorageIntegrationAzureResourceAssert {
+	s.AddAssertion(assert.ValuePresent("azure_tenant_id"))
+	return s
+}
+
 func (s *StorageIntegrationAzureResourceAssert) HasCommentNotEmpty() *StorageIntegrationAzureResourceAssert {
 	s.AddAssertion(assert.ValuePresent("comment"))
 	return s
@@ -191,26 +156,6 @@ func (s *StorageIntegrationAzureResourceAssert) HasEnabledNotEmpty() *StorageInt
 
 func (s *StorageIntegrationAzureResourceAssert) HasFullyQualifiedNameNotEmpty() *StorageIntegrationAzureResourceAssert {
 	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAwsExternalIdNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_external_id"))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAwsObjectAclNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_object_acl"))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAwsRoleArnNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_role_arn"))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageProviderNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_provider"))
 	return s
 }
 
