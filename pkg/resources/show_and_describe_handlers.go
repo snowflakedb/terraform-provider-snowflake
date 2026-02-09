@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 
@@ -29,9 +28,6 @@ func handleExternalChangesToObjectCmp(d *schema.ResourceData, outputAttributeNam
 		if len(outputList) == 1 {
 			result := outputList[0].(map[string]any)
 			for _, mapping := range mappings {
-				if mapping.nameInOutput == "privatelink.0.use_privatelink_endpoint" {
-					fmt.Println(mapping.nameInOutput)
-				}
 				valueToCompareFrom := result[mapping.nameInOutput]
 				if mapping.normalizeFunc != nil {
 					valueToCompareFrom = mapping.normalizeFunc(valueToCompareFrom)

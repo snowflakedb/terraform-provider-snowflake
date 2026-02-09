@@ -11,7 +11,7 @@ description: |-
 
 -> **Note** External changes detection on `credentials`, and `encryption` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
--> **Note** Integration based stages are not allowed to be altered to use privatelink endpoint. You must either alter the storage integration itself, or first unset the storage intgration from the stage instead.
+-> **Note** Integration based stages are not allowed to be altered to use privatelink endpoint. You must either alter the storage integration itself, or first unset the storage integration from the stage instead.
 
 # snowflake_external_s3_stage (Resource)
 
