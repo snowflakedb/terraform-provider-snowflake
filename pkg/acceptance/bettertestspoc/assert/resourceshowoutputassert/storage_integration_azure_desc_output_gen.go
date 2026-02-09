@@ -9,6 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+// file edited manually; all ShowOutput changed to DescribeOutput
+
 type StorageIntegrationAzureDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -38,42 +40,42 @@ func ImportedStorageIntegrationAzureDescribeOutput(t *testing.T, id string) *Sto
 ////////////////////////////
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasId(expected sdk.AccountObjectIdentifier) *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("id", expected.Name()))
+	s.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("id", expected.Name()))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasEnabled(expected bool) *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("enabled", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("enabled", expected))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasProvider(expected string) *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("provider", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("provider", expected))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasComment(expected string) *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("use_privatelink_endpoint", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("use_privatelink_endpoint", expected))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasTenantId(expected string) *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("tenant_id", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("tenant_id", expected))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasConsentUrl(expected string) *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("consent_url", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("consent_url", expected))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasMultiTenantAppName(expected string) *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("multi_tenant_app_name", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("multi_tenant_app_name", expected))
 	return s
 }
 
@@ -82,51 +84,51 @@ func (s *StorageIntegrationAzureDescribeOutputAssert) HasMultiTenantAppName(expe
 ///////////////////////////////
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoId() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("id"))
+	s.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("id"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoEnabled() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("enabled"))
+	s.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("enabled"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoProvider() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("provider"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("provider"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoAllowedLocations() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("allowed_locations.#", "0"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_locations.#", "0"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoBlockedLocations() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("blocked_locations.#", "0"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("blocked_locations.#", "0"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoComment() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoUsePrivatelinkEndpoint() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("use_privatelink_endpoint"))
+	s.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("use_privatelink_endpoint"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoTenantId() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("tenant_id"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("tenant_id"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoConsentUrl() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("consent_url"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("consent_url"))
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasNoMultiTenantAppName() *StorageIntegrationAzureDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("multi_tenant_app_name"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("multi_tenant_app_name"))
 	return s
 }

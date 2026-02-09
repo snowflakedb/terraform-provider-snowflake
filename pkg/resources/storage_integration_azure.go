@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var storageIntegrationAzureSchema = map[string]*schema.Schema{
@@ -60,9 +61,10 @@ var storageIntegrationAzureSchema = map[string]*schema.Schema{
 		Description:      booleanStringFieldDescription("Specifies whether to use outbound private connectivity to harden the security posture."),
 	},
 	"azure_tenant_id": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.",
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.StringIsNotEmpty,
+		Description:  "Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.",
 	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
@@ -276,7 +278,7 @@ func UpdateStorageIntegrationAzure(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(errs)
 	}
 
-	if !reflect.DeepEqual(*azureSetParams, *sdk.NewSetS3StorageParamsRequest()) {
+	if !reflect.DeepEqual(*azureSetParams, *sdk.NewSetAzureStorageParamsRequest()) {
 		set.WithAzureParams(*azureSetParams)
 	}
 	if !reflect.DeepEqual(*set, *sdk.NewStorageIntegrationSetRequest()) {
