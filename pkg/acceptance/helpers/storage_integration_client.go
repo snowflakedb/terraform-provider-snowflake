@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -91,4 +92,14 @@ func (c *StorageIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdenti
 	ctx := context.Background()
 
 	return c.client().ShowByID(ctx, id)
+}
+
+func (c *StorageIntegrationClient) CreateWithoutEnabled(t *testing.T, id sdk.AccountObjectIdentifier, iamRole string, allowedLocation sdk.StorageLocation) error {
+	t.Helper()
+	ctx := context.Background()
+
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`CREATE STORAGE INTEGRATION %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = '%s' STORAGE_ALLOWED_LOCATIONS = ('%s')`, id.FullyQualifiedName(), iamRole, allowedLocation.Path))
+	t.Cleanup(c.DropFunc(t, id))
+
+	return err
 }

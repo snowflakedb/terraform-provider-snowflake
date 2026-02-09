@@ -9,15 +9,13 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -344,7 +342,7 @@ func CreateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		if !ok {
 			return diag.FromErr(fmt.Errorf("if you use the Azure storage provider you must specify an azure_tenant_id"))
 		}
-		azureParams := sdk.NewAzureStorageParamsRequest(sdk.String(v.(string)))
+		azureParams := sdk.NewAzureStorageParamsRequest(v.(string))
 		if err := booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivatelinkEndpoint); err != nil {
 			return diag.FromErr(err)
 		}
@@ -416,13 +414,18 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			// If not set, this isn't an S3 storage integration
 			return diag.Errorf("storage_aws_role_arn must be set for S3 storage integrations")
 		}
-		s3SetParams := sdk.NewSetS3StorageParamsRequest(awsRoleArn.(string))
+		s3SetParams := sdk.NewSetS3StorageParamsRequest()
+		s3UnsetParams := sdk.NewUnsetS3StorageParamsRequest()
+
+		if d.HasChange("storage_aws_role_arn") {
+			s3SetParams.WithStorageAwsRoleArn(awsRoleArn.(string))
+		}
 
 		if d.HasChange("storage_aws_object_acl") {
 			if v, ok := d.GetOk("storage_aws_object_acl"); ok {
 				s3SetParams.WithStorageAwsObjectAcl(v.(string))
 			} else {
-				unset.WithStorageAwsObjectAcl(true)
+				s3UnsetParams.WithStorageAwsObjectAcl(true)
 			}
 		}
 
@@ -430,7 +433,7 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			if v, ok := d.GetOk("storage_aws_external_id"); ok {
 				s3SetParams.WithStorageAwsExternalId(v.(string))
 			} else {
-				unset.WithStorageAwsExternalId(true)
+				s3UnsetParams.WithStorageAwsExternalId(true)
 			}
 		}
 
@@ -439,7 +442,12 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		set.WithS3Params(*s3SetParams)
+		if !reflect.DeepEqual(*s3SetParams, *sdk.NewSetS3StorageParamsRequest()) {
+			set.WithS3Params(*s3SetParams)
+		}
+		if !reflect.DeepEqual(*s3UnsetParams, *sdk.NewUnsetS3StorageParamsRequest()) {
+			unset.WithS3Params(*s3UnsetParams)
+		}
 	}
 
 	if (d.HasChange("azure_tenant_id") || d.HasChange("use_privatelink_endpoint")) && storageProvider == "AZURE" {
@@ -447,14 +455,20 @@ func UpdateStorageIntegration(ctx context.Context, d *schema.ResourceData, meta 
 		if !ok {
 			return diag.Errorf("azure_tenant_id must be set for AZURE storage integrations")
 		}
-		azureParams := sdk.NewSetAzureStorageParamsRequest(azureTenantID.(string))
+		azureParams := sdk.NewSetAzureStorageParamsRequest()
+
+		if d.HasChange("azure_tenant_id") {
+			azureParams.WithAzureTenantId(azureTenantID.(string))
+		}
 
 		// TODO(SNOW-2356049): implement & use booleanStringAttributeUnsetBuilder when UNSET starts working correctly
 		if err := booleanStringAttributeUnsetFallbackUpdateBuilder(d, "use_privatelink_endpoint", azureParams.WithUsePrivatelinkEndpoint, false); err != nil {
 			return diag.FromErr(err)
 		}
 
-		set.WithAzureParams(*azureParams)
+		if !reflect.DeepEqual(*azureParams, *sdk.NewSetAzureStorageParamsRequest()) {
+			set.WithAzureParams(*azureParams)
+		}
 	}
 
 	if !reflect.DeepEqual(*set, *sdk.NewStorageIntegrationSetRequest()) {
