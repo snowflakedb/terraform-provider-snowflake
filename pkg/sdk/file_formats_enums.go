@@ -268,3 +268,22 @@ var (
 	XMLCompressionRawDeflate XmlCompression = "RAW_DEFLATE"
 	XMLCompressionNone       XmlCompression = "NONE"
 )
+
+var AllXmlCompressions = []XmlCompression{
+	XMLCompressionAuto,
+	XMLCompressionGzip,
+	XMLCompressionBz2,
+	XMLCompressionBrotli,
+	XMLCompressionZstd,
+	XMLCompressionDeflate,
+	XMLCompressionRawDeflate,
+	XMLCompressionNone,
+}
+
+func ToXmlCompression(s string) (XmlCompression, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllXmlCompressions, XmlCompression(s)) {
+		return "", fmt.Errorf("invalid xml compression: %s", s)
+	}
+	return XmlCompression(s), nil
+}

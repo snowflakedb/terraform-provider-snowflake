@@ -36,6 +36,7 @@ var StageDescribeSchema = map[string]*schema.Schema{
 				"avro":    avroFileFormatSchema,
 				"orc":     orcFileFormatSchema,
 				"parquet": parquetFileFormatSchema,
+				"xml":     xmlFileFormatSchema,
 			},
 		},
 		Computed: true,
@@ -324,6 +325,47 @@ var parquetFileFormatSchema = &schema.Schema{
 	},
 }
 
+var xmlFileFormatSchema = &schema.Schema{
+	Type:     schema.TypeList,
+	Computed: true,
+	Elem: &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"compression": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"ignore_utf8_errors": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"preserve_space": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"strip_outer_element": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"disable_auto_convert": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"replace_invalid_characters": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"skip_byte_order_mark": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+		},
+	},
+}
+
 func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
 	schema := make(map[string]any)
 
@@ -343,6 +385,7 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		"avro":        []any{},
 		"orc":         []any{},
 		"parquet":     []any{},
+		"xml":         []any{},
 	}
 	switch {
 	case properties.FileFormatName != nil:
@@ -357,6 +400,8 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		fileFormat["orc"] = []any{StageFileFormatOrcToSchema(properties.FileFormatOrc)}
 	case properties.FileFormatParquet != nil:
 		fileFormat["parquet"] = []any{StageFileFormatParquetToSchema(properties.FileFormatParquet)}
+	case properties.FileFormatXml != nil:
+		fileFormat["xml"] = []any{StageFileFormatXmlToSchema(properties.FileFormatXml)}
 	}
 	schema["file_format"] = []map[string]any{fileFormat}
 
@@ -443,5 +488,18 @@ func StageFileFormatParquetToSchema(parquet *sdk.FileFormatParquet) map[string]a
 		"use_vectorized_scanner":     parquet.UseVectorizedScanner,
 		"replace_invalid_characters": parquet.ReplaceInvalidCharacters,
 		"null_if":                    collections.Map(parquet.NullIf, func(v string) any { return v }),
+	}
+}
+
+func StageFileFormatXmlToSchema(xml *sdk.FileFormatXml) map[string]any {
+	return map[string]any{
+		"type":                       xml.Type,
+		"compression":                xml.Compression,
+		"ignore_utf8_errors":         xml.IgnoreUtf8Errors,
+		"preserve_space":             xml.PreserveSpace,
+		"strip_outer_element":        xml.StripOuterElement,
+		"disable_auto_convert":       xml.DisableAutoConvert,
+		"replace_invalid_characters": xml.ReplaceInvalidCharacters,
+		"skip_byte_order_mark":       xml.SkipByteOrderMark,
 	}
 }

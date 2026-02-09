@@ -1564,6 +1564,190 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 	})
 }
 
+func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	preserveSpace := true
+	stripOuterElement := true
+	disableAutoConvert := true
+	skipByteOrderMark := true
+	ignoreUtf8Errors := false
+
+	modelWithoutFileFormat := model.InternalStageWithId(id).
+		WithFileFormatXml(sdk.FileFormatXmlOptions{})
+
+	modelCompleteXml := model.InternalStageWithId(id).
+		WithFileFormatXml(sdk.FileFormatXmlOptions{
+			Compression:        sdk.Pointer(sdk.XMLCompressionGzip),
+			PreserveSpace:      &preserveSpace,
+			StripOuterElement:  &stripOuterElement,
+			DisableAutoConvert: &disableAutoConvert,
+			SkipByteOrderMark:  &skipByteOrderMark,
+			IgnoreUtf8Errors:   &ignoreUtf8Errors,
+		})
+
+	modelXmlWithReplaceInvalidCharacters := model.InternalStageWithId(id).
+		WithFileFormatXml(sdk.FileFormatXmlOptions{
+			ReplaceInvalidCharacters: sdk.Pointer(true),
+		})
+
+	altPreserveSpace := false
+	altStripOuterElement := false
+	altDisableAutoConvert := false
+	altSkipByteOrderMark := false
+	altIgnoreUtf8Errors := true
+
+	modelAlteredXml := model.InternalStageWithId(id).
+		WithFileFormatXml(sdk.FileFormatXmlOptions{
+			Compression:        sdk.Pointer(sdk.XMLCompressionZstd),
+			PreserveSpace:      &altPreserveSpace,
+			StripOuterElement:  &altStripOuterElement,
+			DisableAutoConvert: &altDisableAutoConvert,
+			SkipByteOrderMark:  &altSkipByteOrderMark,
+			IgnoreUtf8Errors:   &altIgnoreUtf8Errors,
+		})
+
+	defaultAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteXml.ResourceReference()).
+			HasFileFormatXml(),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXML))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XMLCompressionAuto))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.ignore_utf8_errors", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.preserve_space", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.strip_outer_element", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.disable_auto_convert", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.replace_invalid_characters", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.skip_byte_order_mark", "true")),
+	}
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteXml.ResourceReference()).
+			HasFileFormatXml().
+			HasFileFormatXmlCompression(sdk.XMLCompressionGzip).
+			HasFileFormatXmlPreserveSpace(preserveSpace).
+			HasFileFormatXmlStripOuterElement(stripOuterElement).
+			HasFileFormatXmlDisableAutoConvert(disableAutoConvert).
+			HasFileFormatXmlSkipByteOrderMark(skipByteOrderMark).
+			HasFileFormatXmlReplaceInvalidCharactersString(r.BooleanDefault),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXML))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XMLCompressionGzip))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.ignore_utf8_errors", strconv.FormatBool(ignoreUtf8Errors))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.preserve_space", strconv.FormatBool(preserveSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.strip_outer_element", strconv.FormatBool(stripOuterElement))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.disable_auto_convert", strconv.FormatBool(disableAutoConvert))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.replace_invalid_characters", r.BooleanFalse)),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.skip_byte_order_mark", strconv.FormatBool(skipByteOrderMark))),
+	}
+
+	alteredAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelAlteredXml.ResourceReference()).
+			HasFileFormatXml().
+			HasFileFormatXmlCompression(sdk.XMLCompressionZstd).
+			HasFileFormatXmlPreserveSpace(altPreserveSpace).
+			HasFileFormatXmlStripOuterElement(altStripOuterElement).
+			HasFileFormatXmlDisableAutoConvert(altDisableAutoConvert).
+			HasFileFormatXmlIgnoreUtf8Errors(altIgnoreUtf8Errors).
+			HasFileFormatXmlSkipByteOrderMark(altSkipByteOrderMark),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.type", string(sdk.FileFormatTypeXML))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.compression", string(sdk.XMLCompressionZstd))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.ignore_utf8_errors", strconv.FormatBool(altIgnoreUtf8Errors))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.preserve_space", strconv.FormatBool(altPreserveSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.strip_outer_element", strconv.FormatBool(altStripOuterElement))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.disable_auto_convert", strconv.FormatBool(altDisableAutoConvert))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.replace_invalid_characters", r.BooleanFalse)),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredXml.ResourceReference(), "describe_output.0.file_format.0.xml.0.skip_byte_order_mark", strconv.FormatBool(altSkipByteOrderMark))),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.InternalStage),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelCompleteXml),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			{
+				Config:                  accconfig.FromModels(t, modelCompleteXml),
+				ResourceName:            modelCompleteXml.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory", "file_format.0.xml.0.ignore_utf8_errors", "file_format.0.xml.0.replace_invalid_characters"},
+			},
+			// unset
+			{
+				Config: accconfig.FromModels(t, modelWithoutFileFormat),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithoutFileFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					defaultAssertions...,
+				),
+			},
+			// Set all fields
+			{
+				Config: accconfig.FromModels(t, modelCompleteXml),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			// alter values
+			{
+				Config: accconfig.FromModels(t, modelAlteredXml),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelAlteredXml.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					alteredAssertions...,
+				),
+			},
+			// detect external changes
+			{
+				PreConfig: func() {
+					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
+						FileFormatOptions: &sdk.FileFormatOptions{
+							XmlOptions: &sdk.FileFormatXmlOptions{
+								Compression:              sdk.Pointer(sdk.XMLCompressionGzip),
+								PreserveSpace:            sdk.Bool(true),
+								StripOuterElement:        sdk.Bool(true),
+								DisableAutoConvert:       sdk.Bool(true),
+								ReplaceInvalidCharacters: sdk.Bool(true),
+								SkipByteOrderMark:        sdk.Bool(true),
+							},
+						},
+					}))
+				},
+				Config: accconfig.FromModels(t, modelAlteredXml),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelAlteredXml.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					alteredAssertions...,
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelXmlWithReplaceInvalidCharacters),
+				Check: assertThat(t,
+					resourceassert.InternalStageResource(t, modelXmlWithReplaceInvalidCharacters.ResourceReference()).
+						HasFileFormatXml().
+						HasFileFormatXmlReplaceInvalidCharacters(true),
+					assert.Check(resource.TestCheckResourceAttr(modelXmlWithReplaceInvalidCharacters.ResourceReference(), "describe_output.0.file_format.0.xml.0.replace_invalid_characters", "true")),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -1595,6 +1779,12 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 		WithFileFormatParquetInvalidCompression()
 	modelParquetInvalidBooleanString := model.InternalStageWithId(id).
 		WithFileFormatParquetInvalidBooleanString()
+	modelXmlInvalidCompression := model.InternalStageWithId(id).
+		WithFileFormatXmlInvalidCompression()
+	modelXmlInvalidBooleanString := model.InternalStageWithId(id).
+		WithFileFormatXmlInvalidBooleanString()
+	modelXmlConflictingOptions := model.InternalStageWithId(id).
+		WithFileFormatXmlConflictingOptions()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1606,7 +1796,7 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelBothFormats),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`file_format.0.avro,file_format.0.csv,file_format.0.format_name,file_format.0.json,file_format.0.orc,file_format.0.parquet`),
+				ExpectError: regexp.MustCompile(`file_format.0.avro,file_format.0.csv,file_format.0.format_name,file_format.0.json,file_format.0.orc,file_format.0.parquet,file_format.0.xml`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelInvalidCompression),
@@ -1672,6 +1862,21 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelParquetInvalidBooleanString),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected .*trim_space.* to be one of \["true" "false"\], got invalid`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelXmlInvalidCompression),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid xml compression: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelXmlInvalidBooleanString),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected .*preserve_space.* to be one of \["true" "false"\], got invalid`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelXmlConflictingOptions),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`file_format.0.xml.0.replace_invalid_characters.*conflicts with\nfile_format.0.xml.0.ignore_utf8_errors`),
 			},
 		},
 	})

@@ -158,6 +158,24 @@ resource "snowflake_internal_stage" "with_parquet_format" {
   }
 }
 
+# resource with inline XML file format
+resource "snowflake_internal_stage" "with_xml_format" {
+  name     = "xml_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    xml {
+      compression                = "AUTO"
+      preserve_space             = "false"
+      strip_outer_element        = "false"
+      disable_auto_convert       = "false"
+      replace_invalid_characters = "false" # or ignore_utf8_errors = true
+      skip_byte_order_mark       = "false"
+    }
+  }
+}
+
 # resource with named file format
 resource "snowflake_internal_stage" "with_named_format" {
   name     = "named_format_stage"
@@ -237,6 +255,7 @@ Optional:
 - `json` (Block List, Max: 1) JSON file format options. (see [below for nested schema](#nestedblock--file_format--json))
 - `orc` (Block List, Max: 1) ORC file format options. (see [below for nested schema](#nestedblock--file_format--orc))
 - `parquet` (Block List, Max: 1) Parquet file format options. (see [below for nested schema](#nestedblock--file_format--parquet))
+- `xml` (Block List, Max: 1) XML file format options. (see [below for nested schema](#nestedblock--file_format--xml))
 
 <a id="nestedblock--file_format--avro"></a>
 ### Nested Schema for `file_format.avro`
@@ -325,6 +344,20 @@ Optional:
 - `use_vectorized_scanner` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to use a vectorized scanner for loading Parquet files. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 
+<a id="nestedblock--file_format--xml"></a>
+### Nested Schema for `file_format.xml`
+
+Optional:
+
+- `compression` (String) Specifies the compression format. Valid values: `AUTO` | `GZIP` | `BZ2` | `BROTLI` | `ZSTD` | `DEFLATE` | `RAW_DEFLATE` | `NONE`.
+- `disable_auto_convert` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser disables automatic conversion of numeric and Boolean values from text to native representation. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `ignore_utf8_errors` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether UTF-8 encoding errors produce error conditions. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `preserve_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser preserves leading and trailing spaces in element content. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `skip_byte_order_mark` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `strip_outer_element` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser strips out the outer XML element, exposing 2nd level elements as separate documents. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -365,6 +398,7 @@ Read-Only:
 - `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
 - `orc` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--orc))
 - `parquet` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--parquet))
+- `xml` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--xml))
 
 <a id="nestedobjatt--describe_output--file_format--avro"></a>
 ### Nested Schema for `describe_output.file_format.avro`
@@ -457,6 +491,21 @@ Read-Only:
 - `type` (String)
 - `use_logical_type` (Boolean)
 - `use_vectorized_scanner` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format--xml"></a>
+### Nested Schema for `describe_output.file_format.xml`
+
+Read-Only:
+
+- `compression` (String)
+- `disable_auto_convert` (Boolean)
+- `ignore_utf8_errors` (Boolean)
+- `preserve_space` (Boolean)
+- `replace_invalid_characters` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `strip_outer_element` (Boolean)
+- `type` (String)
 
 
 

@@ -514,3 +514,74 @@ func (i *InternalStageModel) WithFileFormatParquetInvalidBooleanString() *Intern
 		)),
 	)
 }
+
+// WithFileFormatXml sets inline XML file format with the provided options.
+func (i *InternalStageModel) WithFileFormatXml(opts sdk.FileFormatXmlOptions) *InternalStageModel {
+	xmlMap := make(map[string]tfconfig.Variable)
+
+	if opts.Compression != nil {
+		xmlMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
+	}
+	if opts.IgnoreUtf8Errors != nil {
+		xmlMap["ignore_utf8_errors"] = tfconfig.BoolVariable(*opts.IgnoreUtf8Errors)
+	}
+	if opts.PreserveSpace != nil {
+		xmlMap["preserve_space"] = tfconfig.BoolVariable(*opts.PreserveSpace)
+	}
+	if opts.StripOuterElement != nil {
+		xmlMap["strip_outer_element"] = tfconfig.BoolVariable(*opts.StripOuterElement)
+	}
+	if opts.DisableAutoConvert != nil {
+		xmlMap["disable_auto_convert"] = tfconfig.BoolVariable(*opts.DisableAutoConvert)
+	}
+	if opts.ReplaceInvalidCharacters != nil {
+		xmlMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
+	}
+	if opts.SkipByteOrderMark != nil {
+		xmlMap["skip_byte_order_mark"] = tfconfig.BoolVariable(*opts.SkipByteOrderMark)
+	}
+
+	// Workaround for empty objects - Terraform requires at least one attribute
+	if len(xmlMap) == 0 {
+		xmlMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
+	}
+
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"xml": tfconfig.ListVariable(tfconfig.ObjectVariable(xmlMap)),
+			},
+		)),
+	)
+}
+
+func (i *InternalStageModel) WithFileFormatXmlConflictingOptions() *InternalStageModel {
+	return i.WithFileFormatXml(sdk.FileFormatXmlOptions{
+		ReplaceInvalidCharacters: sdk.Pointer(true),
+		IgnoreUtf8Errors:         sdk.Pointer(true),
+	})
+}
+
+func (i *InternalStageModel) WithFileFormatXmlInvalidCompression() *InternalStageModel {
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"xml": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"compression": tfconfig.StringVariable("INVALID"),
+				})),
+			},
+		)),
+	)
+}
+
+func (i *InternalStageModel) WithFileFormatXmlInvalidBooleanString() *InternalStageModel {
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"xml": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"preserve_space": tfconfig.StringVariable("invalid"),
+				})),
+			},
+		)),
+	)
+}
