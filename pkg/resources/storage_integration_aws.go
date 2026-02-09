@@ -2,8 +2,12 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -111,8 +115,8 @@ func StorageIntegrationAws() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingCreateWrapper(resources.StorageIntegrationAws, DummyStorageIntegrationAws)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingReadWrapper(resources.StorageIntegrationAws, DummyStorageIntegrationAws)),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingCreateWrapper(resources.StorageIntegrationAws, CreateStorageIntegrationAws)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingReadWrapper(resources.StorageIntegrationAws, GetReadStorageIntegrationAwsFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingUpdateWrapper(resources.StorageIntegrationAws, DummyStorageIntegrationAws)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageIntegrationAwsResource), TrackingDeleteWrapper(resources.StorageIntegrationAws, deleteFunc)),
 		Description:   "Resource used to manage AWS storage integration objects. For more information, check [storage integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration).",
@@ -129,4 +133,118 @@ func StorageIntegrationAws() *schema.Resource {
 
 func DummyStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return nil
+}
+
+func GetReadStorageIntegrationAwsFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		client := meta.(*provider.Context).Client
+		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		s, err := client.StorageIntegrations.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query aws storage integration. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Aws storage integration id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
+		}
+
+		// TODO [next PR]: replace with force?
+		if s.Category != "STORAGE" {
+			return diag.FromErr(fmt.Errorf("expected %v to be a STORAGE integration, got %v", d.Id(), s.Category))
+		}
+
+		awsDetails, err := client.StorageIntegrations.DescribeAwsDetails(ctx, id)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("could not describe aws storage integration (%s), err = %w", d.Id(), err))
+		}
+
+		if withExternalChangesMarking {
+			// TODO [this PR]: implement
+		}
+
+		errs := errors.Join(
+			// not reading name on purpose (we never update the name externally)
+			d.Set("storage_provider", awsDetails.Provider),
+			d.Set("enabled", s.Enabled),
+			d.Set("storage_allowed_locations", awsDetails.AllowedLocations),
+			d.Set("storage_blocked_locations", awsDetails.BlockedLocations),
+			d.Set("comment", s.Comment),
+			// not reading use_privatelink_endpoint on purpose (handled as external change to describe output)
+			d.Set("storage_aws_role_arn", awsDetails.RoleArn),
+			// not reading storage_aws_external_id on purpose (handled as external change to describe output)
+			// not reading storage_aws_object_acl on purpose (handled as external change to describe output)
+			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+		)
+
+		errs = errors.Join(errs,
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StorageIntegrationToSchema(s)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StorageIntegrationAwsDetailsToSchema(awsDetails)}),
+		)
+
+		return diag.FromErr(errs)
+	}
+}
+
+func CreateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	name := d.Get("name").(string)
+	id := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(name)
+	enabled := d.Get("enabled").(bool)
+	stringStorageAllowedLocations := expandStringList(d.Get("storage_allowed_locations").([]any))
+	storageAllowedLocations := make([]sdk.StorageLocation, len(stringStorageAllowedLocations))
+	for i, loc := range stringStorageAllowedLocations {
+		storageAllowedLocations[i] = sdk.StorageLocation{
+			Path: loc,
+		}
+	}
+
+	storageProvider := strings.ToUpper(d.Get("storage_provider").(string))
+	s3Protocol, err := sdk.ToS3Protocol(storageProvider)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	awsRoleArn := d.Get("storage_aws_role_arn").(string)
+
+	request := sdk.NewCreateStorageIntegrationRequest(id, enabled, storageAllowedLocations)
+	awsRequest := sdk.NewS3StorageParamsRequest(s3Protocol, awsRoleArn)
+	errs := errors.Join(
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+		func() error {
+			if _, ok := d.GetOk("storage_blocked_locations"); ok {
+				stringStorageBlockedLocations := expandStringList(d.Get("storage_blocked_locations").([]any))
+				storageBlockedLocations := make([]sdk.StorageLocation, len(stringStorageBlockedLocations))
+				for i, loc := range stringStorageBlockedLocations {
+					storageBlockedLocations[i] = sdk.StorageLocation{
+						Path: loc,
+					}
+				}
+				request.WithStorageBlockedLocations(storageBlockedLocations)
+			}
+			return nil
+		}(),
+		booleanStringAttributeCreateBuilder(d, "use_privatelink_endpoint", awsRequest.WithUsePrivatelinkEndpoint),
+		stringAttributeCreateBuilder(d, "storage_aws_external_id", awsRequest.WithStorageAwsExternalId),
+		stringAttributeCreateBuilder(d, "storage_aws_object_acl", awsRequest.WithStorageAwsObjectAcl),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if err = client.StorageIntegrations.Create(ctx, request.WithS3StorageProviderParams(*awsRequest)); err != nil {
+		return diag.FromErr(fmt.Errorf("error creating storage integration aws: %w", err))
+	}
+
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+	return GetReadStorageIntegrationAwsFunc(false)(ctx, d, meta)
 }
