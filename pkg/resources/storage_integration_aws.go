@@ -66,9 +66,8 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		Optional:         true,
 		Default:          BooleanDefault,
 		ValidateDiagFunc: validateBooleanString,
-		// TODO [next PR]: verify the DiffSuppressFunc
-		// DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeListValueInDescribe("use_privatelink_endpoint"),
-		Description: booleanStringFieldDescription("Specifies whether to use outbound private connectivity to harden the security posture."),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("use_privatelink_endpoint"),
+		Description:      booleanStringFieldDescription("Specifies whether to use outbound private connectivity to harden the security posture."),
 	},
 	"storage_aws_role_arn": {
 		Type:        schema.TypeString,

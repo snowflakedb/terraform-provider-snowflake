@@ -55,6 +55,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 	externalId3 := "new-external-id"
 
 	storageIntegrationAwsModelNoAttributes := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol))
+	storageIntegrationAwsModelNoAttributesUsePrivatelinkEndpointExplicit := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol)).
+		WithUsePrivatelinkEndpoint("false")
 
 	storageIntegrationAwsAllAttributes := model.StorageIntegrationAws("w", id.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol)).
 		WithStorageBlockedLocations(blockedLocations).
@@ -87,7 +89,7 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(storageIntegrationAwsModelNoAttributes.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributes),
@@ -131,11 +133,19 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 						HasStorageAwsExternalIdNotEmpty(),
 				),
 			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributesUsePrivatelinkEndpointExplicit),
+			},
 			// DESTROY
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionDestroy),
+						plancheck.ExpectResourceAction(storageIntegrationAwsModelNoAttributes.ResourceReference(), plancheck.ResourceActionDestroy),
 					},
 				},
 				Config:  config.FromModels(t, storageIntegrationAwsModelNoAttributes),
@@ -145,7 +155,7 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributes.ResourceReference(), plancheck.ResourceActionCreate),
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAwsAllAttributes),
@@ -235,7 +245,6 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					)
 					testClient().StorageIntegration.Alter(t, alterRequest)
 				},
-				Config: config.FromModels(t, storageIntegrationAwsAllAttributesChanged),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(storageIntegrationAwsAllAttributesChanged.ResourceReference(), plancheck.ResourceActionUpdate),
@@ -243,6 +252,7 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(storageIntegrationAwsAllAttributesChanged.ResourceReference(), "storage_aws_external_id", tfjson.ActionUpdate, sdk.String(externalId3), sdk.String(externalId2)),
 					},
 				},
+				Config: config.FromModels(t, storageIntegrationAwsAllAttributesChanged),
 			},
 			// CHANGE PROP TO THE CURRENT SNOWFLAKE VALUE
 			{
@@ -254,15 +264,20 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					)
 					testClient().StorageIntegration.Alter(t, alterRequest)
 				},
-				Config: config.FromModels(t, storageIntegrationAwsAllAttributesChangedWithDifferentExternalId),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
+				Config: config.FromModels(t, storageIntegrationAwsAllAttributesChangedWithDifferentExternalId),
 			},
 			// UNSET ALL
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(storageIntegrationAwsModelNoAttributes.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributes),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
