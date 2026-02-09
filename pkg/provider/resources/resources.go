@@ -99,6 +99,8 @@ const (
 	TagAssociation                                         resource = "snowflake_tag_association"
 	TagMaskingPolicyAssociation                            resource = "snowflake_tag_masking_policy_association"
 	Task                                                   resource = "snowflake_task"
+	TrustCenterScanner                                     resource = "snowflake_trust_center_scanner"
+	TrustCenterScannerPackage                              resource = "snowflake_trust_center_scanner_package"
 	User                                                   resource = "snowflake_user"
 	UserAuthenticationPolicyAttachment                     resource = "snowflake_user_authentication_policy_attachment"
 	UserPasswordPolicyAttachment                           resource = "snowflake_user_password_policy_attachment"
