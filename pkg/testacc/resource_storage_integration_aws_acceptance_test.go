@@ -3,17 +3,17 @@
 package testacc
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	tfjson "github.com/hashicorp/terraform-json"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -22,8 +22,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// basic
-// complex
 // validations test
 // external changes/dedicated tests?
 
@@ -263,38 +261,37 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					},
 				},
 			},
-			//// UNSET ALL
-			//{
-			//	Config: config.FromModels(t, userModelNoAttributes),
-			//	Check: assertThat(t,
-			//		resourceassert.UserResource(t, userModelNoAttributes.ResourceReference()).
-			//			HasNameString(id.Name()).
-			//			HasPasswordString("").
-			//			HasLoginNameString("").
-			//			HasDisplayNameString("").
-			//			HasFirstNameString("").
-			//			HasMiddleNameString("").
-			//			HasLastNameString("").
-			//			HasEmailString("").
-			//			HasMustChangePasswordString(r.BooleanDefault).
-			//			HasDisabledString(r.BooleanDefault).
-			//			HasDaysToExpiryString("0").
-			//			HasMinsToUnlockString(r.IntDefaultString).
-			//			HasDefaultWarehouseString("").
-			//			HasDefaultNamespaceString("").
-			//			HasDefaultRoleString("").
-			//			HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
-			//			HasMinsToBypassMfaString(r.IntDefaultString).
-			//			HasRsaPublicKeyString("").
-			//			HasRsaPublicKey2String("").
-			//			HasCommentString("").
-			//			HasDisableMfaString(r.BooleanDefault).
-			//			HasFullyQualifiedNameString(id.FullyQualifiedName()),
-			//		resourceshowoutputassert.UserShowOutput(t, userModelNoAttributes.ResourceReference()).
-			//			HasLoginName(strings.ToUpper(id.Name())).
-			//			HasDisplayName(""),
-			//	),
-			//},
+			// UNSET ALL
+			{
+				Config: config.FromModels(t, storageIntegrationAwsModelNoAttributes),
+				Check: assertThat(t,
+					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
+						HasNameString(id.Name()).
+						HasEnabledString(r.BooleanFalse).
+						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageBlockedLocationsEmpty().
+						HasCommentString("").
+						HasStorageAwsRoleArnString(awsRoleArn).
+						HasStorageAwsExternalIdEmpty().
+						HasStorageAwsObjectAclEmpty(),
+					resourceshowoutputassert.StorageIntegrationShowOutput(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
+						HasName(id.Name()).
+						HasEnabled(false).
+						HasComment("").
+						HasStorageType("EXTERNAL_STAGE").
+						HasCategory("STORAGE"),
+					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
+						HasId(id).
+						HasEnabled(false).
+						HasProvider(string(sdk.RegularS3Protocol)).
+						HasComment("").
+						HasUsePrivatelinkEndpoint(false).
+						HasIamUserArnSet().
+						HasRoleArn(awsRoleArn).
+						HasExternalIdSet().
+						HasObjectAcl(""),
+				),
+			},
 		},
 	})
 }

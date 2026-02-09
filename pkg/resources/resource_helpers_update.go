@@ -85,9 +85,7 @@ func booleanAttributeUpdate(d *schema.ResourceData, key string, setField **bool,
 
 func booleanAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **bool) error {
 	if d.HasChange(key) {
-		if v, ok := d.GetOk(key); ok {
-			*setField = sdk.Bool(v.(bool))
-		}
+		*setField = sdk.Bool(d.Get(key).(bool))
 	}
 	return nil
 }
