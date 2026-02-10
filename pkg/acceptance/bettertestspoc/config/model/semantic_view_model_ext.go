@@ -303,23 +303,18 @@ func WindowFunctionMetricDefinitionWithProps(
 	return windowFunctionMetricDefinition
 }
 
-func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition, accessModifier string) *sdk.MetricDefinition {
+func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition, isPrivate bool) *sdk.MetricDefinition {
 	metric := &sdk.MetricDefinition{}
 	if semExp != nil {
 		metric.SetSemanticExpression(semExp)
 	} else if windowFunc != nil {
 		metric.SetWindowFunctionMetricDefinition(windowFunc)
 	}
-	if accessModifier == "PRIVATE" {
+	if isPrivate {
 		metric.SetPrivate(true)
 	}
 
 	return metric
-}
-
-// Helper for backwards compatibility - creates PUBLIC metric (default)
-func MetricDefinitionWithPropsPublic(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition) *sdk.MetricDefinition {
-	return MetricDefinitionWithProps(semExp, windowFunc, "PUBLIC")
 }
 
 func RelationshipTableAliasWithProps(

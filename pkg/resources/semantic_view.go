@@ -637,7 +637,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 		metricDefinitionRequest = metricDefinitionRequest.WithSemanticExpression(*semExpRequest)
 
 		// Handle access modifier
-		if accessModifier, ok := semanticExpression["access_modifier"].(string); ok && accessModifier == "PRIVATE" {
+		if isPrivate, ok := semanticExpression["access_modifier"].(string); ok && isPrivate == "PRIVATE" {
 			metricDefinitionRequest = metricDefinitionRequest.WithPrivate(true)
 		}
 
@@ -668,7 +668,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 		metricDefinitionRequest = metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest)
 
 		// Handle access modifier
-		if accessModifier, ok := windowFunctionDefinition["access_modifier"].(string); ok && accessModifier == "PRIVATE" {
+		if isPrivate, ok := windowFunctionDefinition["access_modifier"].(string); ok && isPrivate == "PRIVATE" {
 			metricDefinitionRequest = metricDefinitionRequest.WithPrivate(true)
 		}
 

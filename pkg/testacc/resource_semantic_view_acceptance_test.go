@@ -40,7 +40,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, []sdk.Synonym{{"orders"}, {"sales"}}, "logical table 1")
 	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "")
 	semExp1 := model.SemanticExpressionWithProps(`"lt1"."m1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil, "PUBLIC")
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil, false)
 	relTableAlias := model.RelationshipTableAliasWithProps("lt1", table1.ID())
 	relTableColumns := []sdk.SemanticViewColumn{
 		{
@@ -86,7 +86,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	fact2 := model.SemanticExpressionWithProps(`"lt1"."f2"`, `"lt1"."a1"`, []sdk.Synonym{{Synonym: "fact2"}}, "fact 2")
 	dimension2 := model.SemanticExpressionWithProps(`"lt1"."d2"`, `"lt1"."a2"`, []sdk.Synonym{{Synonym: "dim2"}}, "dimension 2")
 	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps(`"lt1"."wf1"`, `SUM("lt1"."m1")`, sdk.WindowFunctionOverClause{PartitionBy: sdk.Pointer(`"lt1"."d2"`)})
-	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1, "PUBLIC")
+	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1, false)
 
 	lt1Request := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt1"})
 	lt2Request := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt2"})
@@ -415,7 +415,7 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}}, []sdk.Synonym{}, "")
 	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{}, "")
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil, "PUBLIC")
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil, false)
 
 	modelBasic := model.SemanticViewWithMetrics(
 		"test",
@@ -554,15 +554,15 @@ func TestAcc_SemanticView_PrivateMetrics(t *testing.T) {
 
 	// PRIVATE semantic expression metric
 	privateSemanticExp := model.SemanticExpressionWithProps(`"lt1"."privateMetric"`, `COUNT("lt1"."a1")`, nil, "private metric")
-	privateMetric := model.MetricDefinitionWithProps(privateSemanticExp, nil, "PRIVATE")
+	privateMetric := model.MetricDefinitionWithProps(privateSemanticExp, nil, true)
 
 	// PUBLIC semantic expression metric (default)
 	publicSemanticExp := model.SemanticExpressionWithProps(`"lt1"."publicMetric"`, `SUM("lt1"."a2")`, nil, "public metric")
-	publicMetric := model.MetricDefinitionWithProps(publicSemanticExp, nil, "PUBLIC")
+	publicMetric := model.MetricDefinitionWithProps(publicSemanticExp, nil, false)
 
 	// PRIVATE window function metric
 	privateWindowFunc := model.WindowFunctionMetricDefinitionWithProps(`"lt1"."privateWindowMetric"`, `AVG("lt1"."a1")`, sdk.WindowFunctionOverClause{PartitionBy: sdk.Pointer(`"lt1"."a2"`)})
-	privateWindowMetric := model.MetricDefinitionWithProps(nil, privateWindowFunc, "PRIVATE")
+	privateWindowMetric := model.MetricDefinitionWithProps(nil, privateWindowFunc, true)
 
 	semanticViewModel := model.SemanticViewWithMetrics(
 		"test",
@@ -573,10 +573,10 @@ func TestAcc_SemanticView_PrivateMetrics(t *testing.T) {
 
 	// Updated: change public metric to private and vice versa
 	publicSemanticExp2 := model.SemanticExpressionWithProps(`"lt1"."privateMetric"`, `COUNT("lt1"."a1")`, nil, "now public metric")
-	publicMetric2 := model.MetricDefinitionWithProps(publicSemanticExp2, nil, "PUBLIC")
+	publicMetric2 := model.MetricDefinitionWithProps(publicSemanticExp2, nil, false)
 
 	privateSemanticExp2 := model.SemanticExpressionWithProps(`"lt1"."publicMetric"`, `SUM("lt1"."a2")`, nil, "now private metric")
-	privateMetric2 := model.MetricDefinitionWithProps(privateSemanticExp2, nil, "PRIVATE")
+	privateMetric2 := model.MetricDefinitionWithProps(privateSemanticExp2, nil, true)
 
 	semanticViewModelUpdated := model.SemanticViewWithMetrics(
 		"test",
