@@ -495,6 +495,22 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		)
 	})
 
+	t.Run("alter: s3, set enabled to false", func(t *testing.T) {
+		id := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
+
+		assertThatObject(t, objectassert.StorageIntegrationAwsDetails(t, id).
+			HasEnabled(true),
+		)
+
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithSet(*sdk.NewStorageIntegrationSetRequest().WithEnabled(false))
+		err := client.StorageIntegrations.Alter(ctx, req)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.StorageIntegrationAwsDetails(t, id).
+			HasEnabled(false),
+		)
+	})
+
 	// TODO [SNOW-2356049]: Adjust this test when UNSET starts working correctly
 	t.Run("alter: unset privatelink endpoint does not work", func(t *testing.T) {
 		id := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
