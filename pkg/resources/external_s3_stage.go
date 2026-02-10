@@ -147,7 +147,7 @@ var externalS3StageSchema = func() map[string]*schema.Schema {
 			ValidateDiagFunc: validateBooleanString,
 			ConflictsWith:    []string{"storage_integration"},
 			Description:      "Specifies whether to use a private link endpoint for S3 storage.",
-			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("private_link.0.use_privatelink_endpoint"),
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("privatelink.0.use_privatelink_endpoint"),
 		},
 		"directory": {
 			Type:        schema.TypeList,
