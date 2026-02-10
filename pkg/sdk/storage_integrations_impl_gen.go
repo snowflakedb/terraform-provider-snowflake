@@ -132,12 +132,21 @@ func (r *AlterStorageIntegrationRequest) toOpts() *AlterStorageIntegrationOption
 	}
 	if r.Unset != nil {
 		opts.Unset = &StorageIntegrationUnset{
-			StorageAwsExternalId:    r.Unset.StorageAwsExternalId,
-			StorageAwsObjectAcl:     r.Unset.StorageAwsObjectAcl,
 			Enabled:                 r.Unset.Enabled,
 			StorageBlockedLocations: r.Unset.StorageBlockedLocations,
 			Comment:                 r.Unset.Comment,
-			UsePrivatelinkEndpoint:  r.Unset.UsePrivatelinkEndpoint,
+		}
+		if r.Unset.S3Params != nil {
+			opts.Unset.S3Params = &UnsetS3StorageParams{
+				StorageAwsExternalId:   r.Unset.S3Params.StorageAwsExternalId,
+				StorageAwsObjectAcl:    r.Unset.S3Params.StorageAwsObjectAcl,
+				UsePrivatelinkEndpoint: r.Unset.S3Params.UsePrivatelinkEndpoint,
+			}
+		}
+		if r.Unset.AzureParams != nil {
+			opts.Unset.AzureParams = &UnsetAzureStorageParams{
+				UsePrivatelinkEndpoint: r.Unset.AzureParams.UsePrivatelinkEndpoint,
+			}
 		}
 	}
 	return opts
