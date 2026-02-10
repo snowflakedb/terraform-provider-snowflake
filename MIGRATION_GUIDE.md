@@ -56,6 +56,40 @@ To achieve zero-downtime migration, please follow our [Resource migration guide]
 
 References: [GitHub issues](https://github.com/snowflakedb/terraform-provider-snowflake/issues?q=is%3Aissue%20state%3Aopen%20label%3Aresource%3Astage).
 
+### *(new feature)* Storage integrations reworked
+
+#### *(new feature/deprecation)* Storage integration resources
+
+Existing `snowflake_storage_integration` resource has been deprecated. It has been split into three new dedicated ones: `snowflake_storage_integration_aws`, `snowflake_storage_integration_azure`, and `snowflake_storage_integration_gcs`. These new resources have updated logic and manage only a single type of integration, simplifying the schemas (earlier, properties from all types were present in a single schema, making the resource management more complex).
+The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation, and adhere to our [new conventions](#general-changes).
+
+These resources are in preview. To use them, add `snowflake_storage_integration_aws_resource`, `snowflake_storage_integration_azure_resource`, or `snowflake_storage_integration_gcs_resource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
+
+Changes against the old `snowflake_storage_integration` resource:
+- `storage_allowed_locations` and `storage_blocked_locations` changed from lists to sets in all the new resources
+- `storage_provider` was not added to Azure and GCS resources
+- `type` was not used in any of the new resources
+- non-settable attributes moved to `show_output` or `describe_output`
+- `describe_output` was flattened (it does contain only attributes with values and not list of properties as before)
+- each type's schema contains only the attributes valid for the given type
+
+To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
+
+#### *(breaking change)* Storage integration data source
+
+Note: this data source was in preview allowing us to make breaking changes without bumping the major version (following [our docs](https://docs.snowflake.com/en/user-guide/terraform#preview-features)).
+
+Reworked existing datasource enabling querying and filtering all types of storage integrations. Notes:
+- all results are stored in `storage_integrations` field.
+- `like` field enables storage integrations filtering.
+- `SHOW STORAGE INTEGRATIONS` output is enclosed in `show_output` field inside `storage_integrations`.
+- Output from `DESC STORAGE INTEGRATION` (which can be turned off by declaring `with_describe = false`, **it's turned on by default**) is enclosed in `describe_output` field inside `storage_integrations`.
+  `DESC STORAGE INTEGRATION` returns different properties based on the integration type. Consult the documentation to check which ones will be filled for which integration.
+  The additional parameters call `DESC STORAGE INTEGRATION` (with `with_describe` turned on) **per storage integration** returned by `SHOW STORAGE INTEGRATIONS`.
+  It's important to limit the records and calls to Snowflake to the minimum. That's why we recommend assessing which information you need from the data source and then providing strong filters and turning off additional fields for better plan performance.
+
+The data source is still in preview. To use it, add `snowflake_storage_integrations_datasource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
+
 ### Enhanced region mappings in `current_account` datasource
 
 Previously, this resource was missing a number of regions for mapping in the `url` field, which may have resulted in empty field.
