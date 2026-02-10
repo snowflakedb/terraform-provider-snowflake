@@ -7,6 +7,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+func (s *StorageIntegrationGcsDescribeOutputAssert) HasServiceAccountSet() *StorageIntegrationGcsDescribeOutputAssert {
+	s.AddAssertion(assert.ResourceDescribeOutputValuePresent("service_account"))
+	return s
+}
+
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasAllowedLocations(expected ...sdk.StorageLocation) *StorageIntegrationGcsDescribeOutputAssert {
 	s.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_locations.#", strconv.FormatInt(int64(len(expected)), 10)))
 	// TODO [next PRs]: these are sets so the order varies
