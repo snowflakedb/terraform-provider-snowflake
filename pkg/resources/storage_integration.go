@@ -147,6 +147,8 @@ func StorageIntegration() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		DeprecationMessage: "Please use snowflake_storage_integration_aws, snowflake_storage_integration_azure, and snowflake_storage_integration_gcs instead.",
+
 		SchemaVersion: 1,
 
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationResource), TrackingCreateWrapper(resources.StorageIntegration, CreateStorageIntegration)),

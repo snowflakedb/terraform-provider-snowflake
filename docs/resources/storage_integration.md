@@ -13,7 +13,7 @@ description: |-
 
 # snowflake_storage_integration (Resource)
 
-
+~> **Deprecation** Please use snowflake_storage_integration_aws, snowflake_storage_integration_azure, and snowflake_storage_integration_gcs instead. <deprecation>
 
 ## Example Usage
 
