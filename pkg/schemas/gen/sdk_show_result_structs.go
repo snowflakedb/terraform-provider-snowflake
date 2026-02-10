@@ -72,4 +72,5 @@ var AdditionalStructs = []any{
 	sdk.StorageIntegrationAwsDetails{},
 	sdk.StorageIntegrationAzureDetails{},
 	sdk.StorageIntegrationGcsDetails{},
+	sdk.StorageIntegrationAllDetails{},
 }

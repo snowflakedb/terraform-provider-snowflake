@@ -8,7 +8,7 @@ import (
 )
 
 // edited manually
-// DescribeStorageIntegrationAzureDetailsSchema represents output of SHOW query for the single StorageIntegrationAzureDetails.
+// DescribeStorageIntegrationAzureDetailsSchema represents output of DESCRIBE query for the single Azure Storage Integration.
 var DescribeStorageIntegrationAzureDetailsSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
