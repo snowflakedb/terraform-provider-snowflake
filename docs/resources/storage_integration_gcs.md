@@ -37,12 +37,12 @@ resource "snowflake_storage_integration_gcs" "minimal" {
 
 - `enabled` (Boolean) Specifies whether this storage integration is available for usage in stages. `TRUE` allows users to create new stages that reference this integration. Existing stages that reference this integration function normally. `FALSE` prevents users from creating new stages that reference this integration. Existing stages that reference this integration cannot access the storage location in the stage definition.
 - `name` (String) String that specifies the identifier (i.e. name) for the integration; must be unique in your account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `storage_allowed_locations` (List of String) Explicitly limits external stages that use the integration to reference one or more storage locations.
+- `storage_allowed_locations` (Set of String) Explicitly limits external stages that use the integration to reference one or more storage locations.
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the storage integration.
-- `storage_blocked_locations` (List of String) Explicitly prohibits external stages that use the integration from referencing one or more storage locations.
+- `storage_blocked_locations` (Set of String) Explicitly prohibits external stages that use the integration from referencing one or more storage locations.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
