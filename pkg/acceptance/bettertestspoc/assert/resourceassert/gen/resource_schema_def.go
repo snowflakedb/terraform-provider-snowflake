@@ -251,6 +251,18 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Streamlit().Schema,
 	},
 	{
+		name:   "StorageIntegrationAws",
+		schema: resources.StorageIntegrationAws().Schema,
+	},
+	{
+		name:   "StorageIntegrationAzure",
+		schema: resources.StorageIntegrationAws().Schema,
+	},
+	{
+		name:   "StorageIntegrationGcs",
+		schema: resources.StorageIntegrationAws().Schema,
+	},
+	{
 		name:   "StreamOnDirectoryTable",
 		schema: resources.StreamOnDirectoryTable().Schema,
 	},

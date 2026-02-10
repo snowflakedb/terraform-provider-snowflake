@@ -69,4 +69,7 @@ var SdkShowResultStructs = []any{
 // TODO [SNOW-1501905]: temporary struct, may be refactored with addition to generation of describe results; for now used to some structs needing a schema representation
 var AdditionalStructs = []any{
 	sdk.SecurityIntegrationProperty{},
+	sdk.StorageIntegrationAwsDetails{},
+	sdk.StorageIntegrationAzureDetails{},
+	sdk.StorageIntegrationGcsDetails{},
 }

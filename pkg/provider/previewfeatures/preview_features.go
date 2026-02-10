@@ -86,6 +86,9 @@ const (
 	StageResource                                 feature = "snowflake_stage_resource"
 	StagesDatasource                              feature = "snowflake_stages_datasource"
 	StorageIntegrationResource                    feature = "snowflake_storage_integration_resource"
+	StorageIntegrationAwsResource                 feature = "snowflake_storage_integration_aws_resource"
+	StorageIntegrationAzureResource               feature = "snowflake_storage_integration_azure_resource"
+	StorageIntegrationGcsResource                 feature = "snowflake_storage_integration_gcs_resource"
 	StorageIntegrationsDatasource                 feature = "snowflake_storage_integrations_datasource"
 	SystemGenerateSCIMAccessTokenDatasource       feature = "snowflake_system_generate_scim_access_token_datasource"
 	SystemGetAWSSNSIAMPolicyDatasource            feature = "snowflake_system_get_aws_sns_iam_policy_datasource"
@@ -169,6 +172,9 @@ var allPreviewFeatures = []feature{
 	StageResource,
 	StagesDatasource,
 	StorageIntegrationResource,
+	StorageIntegrationAwsResource,
+	StorageIntegrationAzureResource,
+	StorageIntegrationGcsResource,
 	StorageIntegrationsDatasource,
 	SystemGenerateSCIMAccessTokenDatasource,
 	SystemGetAWSSNSIAMPolicyDatasource,
