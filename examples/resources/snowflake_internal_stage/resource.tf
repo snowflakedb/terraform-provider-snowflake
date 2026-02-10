@@ -99,6 +99,21 @@ resource "snowflake_internal_stage" "with_avro_format" {
   }
 }
 
+# resource with inline ORC file format
+resource "snowflake_internal_stage" "with_orc_format" {
+  name     = "orc_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    orc {
+      trim_space                 = "false"
+      replace_invalid_characters = "false"
+      null_if                    = ["NULL", ""]
+    }
+  }
+}
+
 # resource with named file format
 resource "snowflake_internal_stage" "with_named_format" {
   name     = "named_format_stage"

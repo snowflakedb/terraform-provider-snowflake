@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+var stageFileFormatExactlyOneOf = []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro", "file_format.0.orc"}
+
 var stageFileFormatSchema = map[string]*schema.Schema{
 	"file_format": {
 		Type:        schema.TypeList,
@@ -23,7 +25,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 				"format_name": {
 					Type:             schema.TypeString,
 					Optional:         true,
-					ExactlyOneOf:     []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro"},
+					ExactlyOneOf:     stageFileFormatExactlyOneOf,
 					Description:      "Fully qualified name of the file format (e.g., 'database.schema.format_name').",
 					DiffSuppressFunc: suppressIdentifierQuoting,
 					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
@@ -32,7 +34,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					Type:         schema.TypeList,
 					Optional:     true,
 					MaxItems:     1,
-					ExactlyOneOf: []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro"},
+					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "CSV file format options.",
 					Elem: &schema.Resource{
 						Schema: csvFileFormatSchema,
@@ -42,7 +44,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					Type:         schema.TypeList,
 					Optional:     true,
 					MaxItems:     1,
-					ExactlyOneOf: []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro"},
+					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "JSON file format options.",
 					Elem: &schema.Resource{
 						Schema: jsonFileFormatSchema,
@@ -52,10 +54,20 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					Type:         schema.TypeList,
 					Optional:     true,
 					MaxItems:     1,
-					ExactlyOneOf: []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro"},
+					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "AVRO file format options.",
 					Elem: &schema.Resource{
 						Schema: avroFileFormatSchema,
+					},
+				},
+				"orc": {
+					Type:         schema.TypeList,
+					Optional:     true,
+					MaxItems:     1,
+					ExactlyOneOf: stageFileFormatExactlyOneOf,
+					Description:  "ORC file format options.",
+					Elem: &schema.Resource{
+						Schema: orcFileFormatSchema,
 					},
 				},
 			},
@@ -341,6 +353,29 @@ var avroFileFormatSchema = map[string]*schema.Schema{
 	},
 }
 
+var orcFileFormatSchema = map[string]*schema.Schema{
+	"trim_space": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
+	},
+	"replace_invalid_characters": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+	},
+	"null_if": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "String used to convert to and from SQL NULL.",
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	},
+}
+
 // parseStageFileFormat parses the stage file format from the resource data to an SDK object.
 func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, error) {
 	if len(d.Get("file_format").([]any)) == 0 {
@@ -366,6 +401,11 @@ func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, e
 				AvroOptions: fileFormatOptions,
 			})
 		}, parseAvroFileFormatOptions),
+		attributeMappedValueCreateBuilderNested(d, prefix+"orc", func(fileFormatOptions *sdk.FileFormatOrcOptions) *sdk.StageFileFormatRequest {
+			return fileFormatReq.WithFileFormatOptions(sdk.FileFormatOptions{
+				OrcOptions: fileFormatOptions,
+			})
+		}, parseOrcFileFormatOptions),
 	)
 	if err != nil {
 		return sdk.StageFileFormatRequest{}, err
@@ -523,6 +563,26 @@ func parseAvroFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatAvroOpti
 	return avroOptions, nil
 }
 
+// parseOrcFileFormatOptions parses the ORC file format options from the resource data to an SDK object.
+func parseOrcFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatOrcOptions, error) {
+	orcOptions := &sdk.FileFormatOrcOptions{}
+	prefix := "file_format.0.orc.0."
+
+	err := errors.Join(
+		booleanStringAttributeCreate(d, prefix+"trim_space", &orcOptions.TrimSpace),
+		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &orcOptions.ReplaceInvalidCharacters),
+		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatOrcOptions {
+			orcOptions.NullIf = nullIf
+			return orcOptions
+		}, parseNullIf),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return orcOptions, nil
+}
+
 func parseStageFileFormatStringOrNone(v string) *sdk.StageFileFormatStringOrNone {
 	if strings.ToUpper(v) == "NONE" {
 		return &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)}
@@ -574,6 +634,15 @@ func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 		return []map[string]any{
 			{
 				"avro": []map[string]any{avroSchema},
+			},
+		}
+	}
+
+	if details.FileFormatOrc != nil {
+		orcSchema := stageOrcFileFormatToSchema(details.FileFormatOrc)
+		return []map[string]any{
+			{
+				"orc": []map[string]any{orcSchema},
 			},
 		}
 	}
@@ -638,6 +707,15 @@ func stageAvroFileFormatToSchema(avro *sdk.FileFormatAvro) map[string]any {
 		"trim_space":                 booleanStringFromBool(avro.TrimSpace),
 		"replace_invalid_characters": booleanStringFromBool(avro.ReplaceInvalidCharacters),
 		"null_if":                    collections.Map(avro.NullIf, func(v string) any { return v }),
+	}
+}
+
+// stageOrcFileFormatToSchema converts the SDK details for an ORC file format to a Terraform schema.
+func stageOrcFileFormatToSchema(orc *sdk.FileFormatOrc) map[string]any {
+	return map[string]any{
+		"trim_space":                 booleanStringFromBool(orc.TrimSpace),
+		"replace_invalid_characters": booleanStringFromBool(orc.ReplaceInvalidCharacters),
+		"null_if":                    collections.Map(orc.NullIf, func(v string) any { return v }),
 	}
 }
 

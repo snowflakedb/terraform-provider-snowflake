@@ -34,6 +34,7 @@ var StageDescribeSchema = map[string]*schema.Schema{
 				"csv":  csvFileFormatSchema,
 				"json": jsonFileFormatSchema,
 				"avro": avroFileFormatSchema,
+				"orc":  orcFileFormatSchema,
 			},
 		},
 		Computed: true,
@@ -254,6 +255,32 @@ var avroFileFormatSchema = &schema.Schema{
 	},
 }
 
+var orcFileFormatSchema = &schema.Schema{
+	Type:     schema.TypeList,
+	Computed: true,
+	Elem: &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"trim_space": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"replace_invalid_characters": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"null_if": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+		},
+	},
+}
+
 func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
 	schema := make(map[string]any)
 
@@ -271,6 +298,7 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		"csv":         []any{},
 		"json":        []any{},
 		"avro":        []any{},
+		"orc":         []any{},
 	}
 	switch {
 	case properties.FileFormatName != nil:
@@ -281,6 +309,8 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		fileFormat["json"] = []any{StageFileFormatJsonToSchema(properties.FileFormatJson)}
 	case properties.FileFormatAvro != nil:
 		fileFormat["avro"] = []any{StageFileFormatAvroToSchema(properties.FileFormatAvro)}
+	case properties.FileFormatOrc != nil:
+		fileFormat["orc"] = []any{StageFileFormatOrcToSchema(properties.FileFormatOrc)}
 	}
 	schema["file_format"] = []map[string]any{fileFormat}
 
@@ -345,5 +375,14 @@ func StageFileFormatAvroToSchema(avro *sdk.FileFormatAvro) map[string]any {
 		"trim_space":                 avro.TrimSpace,
 		"replace_invalid_characters": avro.ReplaceInvalidCharacters,
 		"null_if":                    collections.Map(avro.NullIf, func(v string) any { return v }),
+	}
+}
+
+func StageFileFormatOrcToSchema(orc *sdk.FileFormatOrc) map[string]any {
+	return map[string]any{
+		"type":                       orc.Type,
+		"trim_space":                 orc.TrimSpace,
+		"replace_invalid_characters": orc.ReplaceInvalidCharacters,
+		"null_if":                    collections.Map(orc.NullIf, func(v string) any { return v }),
 	}
 }

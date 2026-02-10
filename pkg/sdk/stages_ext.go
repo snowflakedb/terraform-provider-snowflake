@@ -78,6 +78,14 @@ type FileFormatAvro struct {
 	NullIf                   []string
 }
 
+// FileFormatOrc represents ORC file format properties from DESCRIBE STAGE
+type FileFormatOrc struct {
+	Type                     string
+	TrimSpace                bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
+}
+
 // StageDirectoryTable represents directory table properties from DESCRIBE STAGE
 type StageDirectoryTable struct {
 	Enable                       bool
@@ -92,6 +100,7 @@ type StageDetails struct {
 	FileFormatCsv  *FileFormatCsv
 	FileFormatJson *FileFormatJson
 	FileFormatAvro *FileFormatAvro
+	FileFormatOrc  *FileFormatOrc
 	DirectoryTable *StageDirectoryTable
 	PrivateLink    *StagePrivateLink
 	Location       *StageLocationDetails
@@ -144,6 +153,8 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 		details.FileFormatJson = parseJsonFileFormat(properties)
 	case FileFormatTypeAvro:
 		details.FileFormatAvro = parseAvroFileFormat(properties)
+	case FileFormatTypeORC:
+		details.FileFormatOrc = parseOrcFileFormat(properties)
 	}
 
 	return details, nil
@@ -294,6 +305,27 @@ func parseAvroFileFormat(properties []StageProperty) *FileFormatAvro {
 	}
 
 	return avro
+}
+
+func parseOrcFileFormat(properties []StageProperty) *FileFormatOrc {
+	orc := &FileFormatOrc{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			orc.Type = prop.Value
+		case "TRIM_SPACE":
+			orc.TrimSpace = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			orc.ReplaceInvalidCharacters = prop.Value == "true"
+		case "NULL_IF":
+			orc.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		}
+	}
+
+	return orc
 }
 
 func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {

@@ -56,6 +56,7 @@ func (i *InternalStageResourceAssert) HasFileFormatFormatName(expected string) *
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
 	return i
 }
 
@@ -65,6 +66,7 @@ func (i *InternalStageResourceAssert) HasFileFormatCsv() *InternalStageResourceA
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
 	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
 	return i
 }
 
@@ -184,6 +186,7 @@ func (i *InternalStageResourceAssert) HasFileFormatJson() *InternalStageResource
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
 	return i
 }
 
@@ -278,6 +281,7 @@ func (i *InternalStageResourceAssert) HasFileFormatAvro() *InternalStageResource
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
 	return i
 }
 
@@ -308,5 +312,40 @@ func (i *InternalStageResourceAssert) HasFileFormatAvroReplaceInvalidCharactersS
 
 func (i *InternalStageResourceAssert) HasFileFormatAvroNullIfCount(expected int) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.0.null_if.#", strconv.Itoa(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatOrc() *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "1"))
+	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
+	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatOrcTrimSpace(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.0.trim_space", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatOrcTrimSpaceString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.0.trim_space", expected))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatOrcReplaceInvalidCharacters(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.0.replace_invalid_characters", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatOrcReplaceInvalidCharactersString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.0.replace_invalid_characters", expected))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatOrcNullIfCount(expected int) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.0.null_if.#", strconv.Itoa(expected)))
 	return i
 }

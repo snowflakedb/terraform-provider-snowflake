@@ -788,39 +788,39 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
 						FileFormatOptions: &sdk.FileFormatOptions{
 							CsvOptions: &sdk.FileFormatCsvOptions{
-								Compression:                sdk.Pointer(sdk.CSVCompressionZstd),
+								Compression:                sdk.Pointer(sdk.CSVCompressionGzip),
 								FieldDelimiter:             &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer(",")},
 								RecordDelimiter:            &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer("\n")},
 								MultiLine:                  sdk.Bool(false),
-								FileExtension:              sdk.Pointer("txt"),
+								FileExtension:              sdk.Pointer("EXT"),
 								SkipBlankLines:             sdk.Bool(false),
-								BinaryFormat:               sdk.Pointer(sdk.BinaryFormatBase64),
-								TrimSpace:                  sdk.Bool(false),
-								NullIf:                     []sdk.NullString{{S: "NA"}},
+								BinaryFormat:               sdk.Pointer(sdk.BinaryFormatHex),
+								TrimSpace:                  sdk.Bool(true),
+								NullIf:                     []sdk.NullString{{S: "EXT"}},
 								ErrorOnColumnCountMismatch: sdk.Bool(true),
-								ReplaceInvalidCharacters:   sdk.Bool(false),
+								ReplaceInvalidCharacters:   sdk.Bool(true),
 								EmptyFieldAsNull:           sdk.Bool(false),
-								SkipByteOrderMark:          sdk.Bool(false),
-								Encoding:                   sdk.Pointer(sdk.CSVEncodingISO88591),
+								SkipByteOrderMark:          sdk.Bool(true),
+								Encoding:                   sdk.Pointer(sdk.CSVEncodingUTF8),
 								ParseHeader:                new(bool),
-								DateFormat:                 &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("YYYY")},
-								TimeFormat:                 &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("HH24:MI:SS")},
-								TimestampFormat:            &sdk.StageFileFormatStringOrAuto{Value: sdk.Pointer("YYYY-MM-DD HH24:MI:SS")},
+								DateFormat:                 &sdk.StageFileFormatStringOrAuto{Auto: sdk.Pointer(true)},
+								TimeFormat:                 &sdk.StageFileFormatStringOrAuto{Auto: sdk.Pointer(true)},
+								TimestampFormat:            &sdk.StageFileFormatStringOrAuto{Auto: sdk.Pointer(true)},
 								Escape:                     &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer("\\")},
-								EscapeUnenclosedField:      &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer("NONE")},
+								EscapeUnenclosedField:      &sdk.StageFileFormatStringOrNone{None: sdk.Pointer(true)},
 								FieldOptionallyEnclosedBy:  &sdk.StageFileFormatStringOrNone{Value: sdk.Pointer("\"")},
 							},
 						},
 					}))
 				},
-				Config: accconfig.FromModels(t, modelCompleteCsv),
+				Config: accconfig.FromModels(t, modelAlteredCsv),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelCompleteCsv.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelAlteredCsv.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: assertThat(t,
-					completeAssertions...,
+					alteredAssertions...,
 				),
 			},
 			{
@@ -1059,33 +1059,33 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
 						FileFormatOptions: &sdk.FileFormatOptions{
 							JsonOptions: &sdk.FileFormatJsonOptions{
-								Compression:              sdk.Pointer(sdk.JSONCompressionZstd),
+								Compression:              sdk.Pointer(sdk.JSONCompressionGzip),
 								DateFormat:               &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
 								TimeFormat:               &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
 								TimestampFormat:          &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)},
-								BinaryFormat:             sdk.Pointer(sdk.BinaryFormatBase64),
-								TrimSpace:                sdk.Bool(false),
-								MultiLine:                sdk.Bool(false),
-								NullIf:                   []sdk.NullString{{S: "NA"}},
-								FileExtension:            sdk.Pointer("txt"),
-								EnableOctal:              sdk.Bool(false),
-								AllowDuplicate:           sdk.Bool(false),
-								StripOuterArray:          sdk.Bool(false),
-								StripNullValues:          sdk.Bool(false),
-								ReplaceInvalidCharacters: sdk.Bool(false),
-								SkipByteOrderMark:        sdk.Bool(false),
+								BinaryFormat:             sdk.Pointer(sdk.BinaryFormatHex),
+								TrimSpace:                sdk.Bool(true),
+								MultiLine:                sdk.Bool(true),
+								NullIf:                   []sdk.NullString{{S: "EXT"}},
+								FileExtension:            sdk.Pointer("EXT"),
+								EnableOctal:              sdk.Bool(true),
+								AllowDuplicate:           sdk.Bool(true),
+								StripOuterArray:          sdk.Bool(true),
+								StripNullValues:          sdk.Bool(true),
+								ReplaceInvalidCharacters: sdk.Bool(true),
+								SkipByteOrderMark:        sdk.Bool(true),
 							},
 						},
 					}))
 				},
-				Config: accconfig.FromModels(t, modelCompleteJson),
+				Config: accconfig.FromModels(t, modelAlteredJson),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelCompleteJson.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelAlteredJson.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: assertThat(t,
-					completeAssertions...,
+					alteredAssertions...,
 				),
 			},
 			{
@@ -1229,22 +1229,164 @@ func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
 					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
 						FileFormatOptions: &sdk.FileFormatOptions{
 							AvroOptions: &sdk.FileFormatAvroOptions{
-								Compression:              sdk.Pointer(sdk.AvroCompressionZstd),
-								TrimSpace:                sdk.Bool(false),
-								ReplaceInvalidCharacters: sdk.Bool(false),
-								NullIf:                   []sdk.NullString{{S: "NA"}},
+								Compression:              sdk.Pointer(sdk.AvroCompressionGzip),
+								TrimSpace:                sdk.Bool(true),
+								ReplaceInvalidCharacters: sdk.Bool(true),
+								NullIf:                   []sdk.NullString{{S: "EXT"}},
 							},
 						},
 					}))
 				},
-				Config: accconfig.FromModels(t, modelCompleteAvro),
+				Config: accconfig.FromModels(t, modelAlteredAvro),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(modelCompleteAvro.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(modelAlteredAvro.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: assertThat(t,
+					alteredAssertions...,
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	trimSpace := true
+	replaceInvalidCharacters := true
+
+	modelBasicOrc := model.InternalStageWithId(id).
+		WithFileFormatOrc(model.OrcFileFormatOptions{})
+
+	modelCompleteOrc := model.InternalStageWithId(id).
+		WithFileFormatOrc(model.OrcFileFormatOptions{
+			TrimSpace:                &trimSpace,
+			ReplaceInvalidCharacters: &replaceInvalidCharacters,
+			NullIf:                   []string{"NULL", ""},
+		})
+
+	altTrimSpace := false
+	altReplaceInvalidCharacters := false
+
+	modelAlteredOrc := model.InternalStageWithId(id).
+		WithFileFormatOrc(model.OrcFileFormatOptions{
+			TrimSpace:                &altTrimSpace,
+			ReplaceInvalidCharacters: &altReplaceInvalidCharacters,
+			NullIf:                   []string{"NA"},
+		})
+
+	defaultAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteOrc.ResourceReference()).
+			HasFileFormatOrc().
+			HasFileFormatOrcTrimSpaceString(r.BooleanDefault).
+			HasFileFormatOrcReplaceInvalidCharactersString(r.BooleanDefault),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeORC))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.trim_space", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.replace_invalid_characters", "false")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.#", "0")),
+	}
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelCompleteOrc.ResourceReference()).
+			HasFileFormatOrc().
+			HasFileFormatOrcTrimSpace(trimSpace).
+			HasFileFormatOrcReplaceInvalidCharacters(replaceInvalidCharacters).
+			HasFileFormatOrcNullIfCount(2),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeORC))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.trim_space", strconv.FormatBool(trimSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.replace_invalid_characters", strconv.FormatBool(replaceInvalidCharacters))),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.#", "2")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.0", "NULL")),
+		assert.Check(resource.TestCheckResourceAttr(modelCompleteOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.1", "")),
+	}
+
+	alteredAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.InternalStageResource(t, modelAlteredOrc.ResourceReference()).
+			HasFileFormatOrc().
+			HasFileFormatOrcTrimSpace(altTrimSpace).
+			HasFileFormatOrcReplaceInvalidCharacters(altReplaceInvalidCharacters).
+			HasFileFormatOrcNullIfCount(1),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.type", string(sdk.FileFormatTypeORC))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.trim_space", strconv.FormatBool(altTrimSpace))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.replace_invalid_characters", strconv.FormatBool(altReplaceInvalidCharacters))),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(modelAlteredOrc.ResourceReference(), "describe_output.0.file_format.0.orc.0.null_if.0", "NA")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.InternalStage),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelCompleteOrc),
+				Check: assertThat(t,
 					completeAssertions...,
+				),
+			},
+			{
+				Config:                  accconfig.FromModels(t, modelCompleteOrc),
+				ResourceName:            modelCompleteOrc.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+			},
+			// unset
+			{
+				Config: accconfig.FromModels(t, modelBasicOrc),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasicOrc.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					defaultAssertions...,
+				),
+			},
+			// Set all fields
+			{
+				Config: accconfig.FromModels(t, modelCompleteOrc),
+				Check: assertThat(t,
+					completeAssertions...,
+				),
+			},
+			// alter values
+			{
+				Config: accconfig.FromModels(t, modelAlteredOrc),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelAlteredOrc.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					alteredAssertions...,
+				),
+			},
+			// detect external changes
+			{
+				PreConfig: func() {
+					testClient().Stage.AlterInternalStage(t, sdk.NewAlterInternalStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{
+						FileFormatOptions: &sdk.FileFormatOptions{
+							OrcOptions: &sdk.FileFormatOrcOptions{
+								TrimSpace:                sdk.Bool(true),
+								ReplaceInvalidCharacters: sdk.Bool(true),
+								NullIf:                   []sdk.NullString{{S: "EXT"}},
+							},
+						},
+					}))
+				},
+				Config: accconfig.FromModels(t, modelAlteredOrc),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelAlteredOrc.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					alteredAssertions...,
 				),
 			},
 		},

@@ -124,6 +124,21 @@ resource "snowflake_internal_stage" "with_avro_format" {
   }
 }
 
+# resource with inline ORC file format
+resource "snowflake_internal_stage" "with_orc_format" {
+  name     = "orc_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    orc {
+      trim_space                 = "false"
+      replace_invalid_characters = "false"
+      null_if                    = ["NULL", ""]
+    }
+  }
+}
+
 # resource with named file format
 resource "snowflake_internal_stage" "with_named_format" {
   name     = "named_format_stage"
@@ -201,6 +216,7 @@ Optional:
 - `csv` (Block List, Max: 1) CSV file format options. (see [below for nested schema](#nestedblock--file_format--csv))
 - `format_name` (String) Fully qualified name of the file format (e.g., 'database.schema.format_name').
 - `json` (Block List, Max: 1) JSON file format options. (see [below for nested schema](#nestedblock--file_format--json))
+- `orc` (Block List, Max: 1) ORC file format options. (see [below for nested schema](#nestedblock--file_format--orc))
 
 <a id="nestedblock--file_format--avro"></a>
 ### Nested Schema for `file_format.avro`
@@ -265,6 +281,16 @@ Optional:
 - `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 
+<a id="nestedblock--file_format--orc"></a>
+### Nested Schema for `file_format.orc`
+
+Optional:
+
+- `null_if` (List of String) String used to convert to and from SQL NULL.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -303,6 +329,7 @@ Read-Only:
 - `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
 - `format_name` (String)
 - `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
+- `orc` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--orc))
 
 <a id="nestedobjatt--describe_output--file_format--avro"></a>
 ### Nested Schema for `describe_output.file_format.avro`
@@ -367,6 +394,17 @@ Read-Only:
 - `strip_outer_array` (Boolean)
 - `time_format` (String)
 - `timestamp_format` (String)
+- `trim_space` (Boolean)
+- `type` (String)
+
+
+<a id="nestedobjatt--describe_output--file_format--orc"></a>
+### Nested Schema for `describe_output.file_format.orc`
+
+Read-Only:
+
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
 - `trim_space` (Boolean)
 - `type` (String)
 

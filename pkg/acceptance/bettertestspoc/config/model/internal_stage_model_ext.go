@@ -60,6 +60,13 @@ type AvroFileFormatOptions struct {
 	NullIf                   []string
 }
 
+// OrcFileFormatOptions holds ORC file format configuration options.
+type OrcFileFormatOptions struct {
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []string
+}
+
 func InternalStageWithId(id sdk.SchemaObjectIdentifier) *InternalStageModel {
 	return InternalStage("test", id.DatabaseName(), id.SchemaName(), id.Name())
 }
@@ -420,6 +427,38 @@ func (i *InternalStageModel) WithFileFormatAvro(opts AvroFileFormatOptions) *Int
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
 				"avro": tfconfig.ListVariable(tfconfig.ObjectVariable(avroMap)),
+			},
+		)),
+	)
+}
+
+// WithFileFormatOrc sets inline ORC file format with the provided options.
+func (i *InternalStageModel) WithFileFormatOrc(opts OrcFileFormatOptions) *InternalStageModel {
+	orcMap := make(map[string]tfconfig.Variable)
+
+	if opts.TrimSpace != nil {
+		orcMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
+	}
+	if opts.ReplaceInvalidCharacters != nil {
+		orcMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
+	}
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
+			nullIfVars[idx] = tfconfig.StringVariable(v)
+		}
+		orcMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
+	}
+
+	// Workaround for empty objects - Terraform requires at least one attribute
+	if len(orcMap) == 0 {
+		orcMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
+	}
+
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"orc": tfconfig.ListVariable(tfconfig.ObjectVariable(orcMap)),
 			},
 		)),
 	)
