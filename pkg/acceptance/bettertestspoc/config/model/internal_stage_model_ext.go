@@ -32,6 +32,26 @@ type CsvFileFormatOptions struct {
 	Encoding                   sdk.CsvEncoding
 }
 
+// JsonFileFormatOptions holds JSON file format configuration options.
+type JsonFileFormatOptions struct {
+	Compression              sdk.JsonCompression
+	DateFormat               string
+	TimeFormat               string
+	TimestampFormat          string
+	BinaryFormat             sdk.BinaryFormat
+	TrimSpace                *bool
+	MultiLine                *bool
+	NullIf                   []string
+	FileExtension            string
+	EnableOctal              *bool
+	AllowDuplicate           *bool
+	StripOuterArray          *bool
+	StripNullValues          *bool
+	ReplaceInvalidCharacters *bool
+	IgnoreUtf8Errors         *bool
+	SkipByteOrderMark        *bool
+}
+
 func InternalStageWithId(id sdk.SchemaObjectIdentifier) *InternalStageModel {
 	return InternalStage("test", id.DatabaseName(), id.SchemaName(), id.Name())
 }
@@ -258,4 +278,106 @@ func (i *InternalStageModel) WithFileFormatMultipleFormats() *InternalStageModel
 			},
 		)),
 	)
+}
+
+// WithFileFormatJson sets inline JSON file format with the provided options.
+func (i *InternalStageModel) WithFileFormatJson(opts JsonFileFormatOptions) *InternalStageModel {
+	jsonMap := make(map[string]tfconfig.Variable)
+
+	if opts.Compression != "" {
+		jsonMap["compression"] = tfconfig.StringVariable(string(opts.Compression))
+	}
+	if opts.DateFormat != "" {
+		jsonMap["date_format"] = tfconfig.StringVariable(opts.DateFormat)
+	}
+	if opts.TimeFormat != "" {
+		jsonMap["time_format"] = tfconfig.StringVariable(opts.TimeFormat)
+	}
+	if opts.TimestampFormat != "" {
+		jsonMap["timestamp_format"] = tfconfig.StringVariable(opts.TimestampFormat)
+	}
+	if opts.BinaryFormat != "" {
+		jsonMap["binary_format"] = tfconfig.StringVariable(string(opts.BinaryFormat))
+	}
+	if opts.TrimSpace != nil {
+		jsonMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
+	}
+	if opts.MultiLine != nil {
+		jsonMap["multi_line"] = tfconfig.BoolVariable(*opts.MultiLine)
+	}
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
+			nullIfVars[idx] = tfconfig.StringVariable(v)
+		}
+		jsonMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
+	}
+	if opts.FileExtension != "" {
+		jsonMap["file_extension"] = tfconfig.StringVariable(opts.FileExtension)
+	}
+	if opts.EnableOctal != nil {
+		jsonMap["enable_octal"] = tfconfig.BoolVariable(*opts.EnableOctal)
+	}
+	if opts.AllowDuplicate != nil {
+		jsonMap["allow_duplicate"] = tfconfig.BoolVariable(*opts.AllowDuplicate)
+	}
+	if opts.StripOuterArray != nil {
+		jsonMap["strip_outer_array"] = tfconfig.BoolVariable(*opts.StripOuterArray)
+	}
+	if opts.StripNullValues != nil {
+		jsonMap["strip_null_values"] = tfconfig.BoolVariable(*opts.StripNullValues)
+	}
+	if opts.ReplaceInvalidCharacters != nil {
+		jsonMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
+	}
+	if opts.IgnoreUtf8Errors != nil {
+		jsonMap["ignore_utf8_errors"] = tfconfig.BoolVariable(*opts.IgnoreUtf8Errors)
+	}
+	if opts.SkipByteOrderMark != nil {
+		jsonMap["skip_byte_order_mark"] = tfconfig.BoolVariable(*opts.SkipByteOrderMark)
+	}
+
+	// Workaround for empty objects - Terraform requires at least one attribute
+	if len(jsonMap) == 0 {
+		jsonMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
+	}
+
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"json": tfconfig.ListVariable(tfconfig.ObjectVariable(jsonMap)),
+			},
+		)),
+	)
+}
+
+func (i *InternalStageModel) WithFileFormatJsonInvalidCompression() *InternalStageModel {
+	return i.WithFileFormatJson(JsonFileFormatOptions{
+		Compression: "INVALID",
+	})
+}
+
+func (i *InternalStageModel) WithFileFormatJsonInvalidBinaryFormat() *InternalStageModel {
+	return i.WithFileFormatJson(JsonFileFormatOptions{
+		BinaryFormat: "INVALID",
+	})
+}
+
+func (i *InternalStageModel) WithFileFormatJsonInvalidBooleanString() *InternalStageModel {
+	return i.WithFileFormatValue(
+		tfconfig.ListVariable(tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"json": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+					"multi_line": tfconfig.StringVariable("invalid"),
+				})),
+			},
+		)),
+	)
+}
+
+func (i *InternalStageModel) WithFileFormatJsonConflictingOptions() *InternalStageModel {
+	return i.WithFileFormatJson(JsonFileFormatOptions{
+		ReplaceInvalidCharacters: sdk.Pointer(true),
+		IgnoreUtf8Errors:         sdk.Pointer(true),
+	})
 }

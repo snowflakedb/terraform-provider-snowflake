@@ -54,6 +54,7 @@ func (i *InternalStageResourceAssert) HasFileFormatFormatName(expected string) *
 	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", expected))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
 	return i
 }
 
@@ -61,6 +62,7 @@ func (i *InternalStageResourceAssert) HasFileFormatCsv() *InternalStageResourceA
 	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
+	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
 	return i
 }
 
@@ -171,5 +173,98 @@ func (i *InternalStageResourceAssert) HasFileFormatCsvSkipByteOrderMark(expected
 
 func (i *InternalStageResourceAssert) HasFileFormatCsvEncoding(expected sdk.CsvEncoding) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("file_format.0.csv.0.encoding", string(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJson() *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
+	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "1"))
+	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
+	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonCompression(expected sdk.JsonCompression) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.compression", string(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonDateFormat(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.date_format", expected))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonTimeFormat(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.time_format", expected))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonTimestampFormat(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.timestamp_format", expected))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonBinaryFormat(expected sdk.BinaryFormat) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.binary_format", string(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonTrimSpace(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.trim_space", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonMultiLine(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.multi_line", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonNullIfCount(expected int) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.null_if.#", strconv.Itoa(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonFileExtension(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.file_extension", expected))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonEnableOctal(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.enable_octal", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonAllowDuplicate(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.allow_duplicate", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonStripOuterArray(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.strip_outer_array", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonStripNullValues(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.strip_null_values", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonReplaceInvalidCharacters(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.replace_invalid_characters", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonIgnoreUtf8Errors(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.ignore_utf8_errors", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonSkipByteOrderMark(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.skip_byte_order_mark", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatJsonReplaceInvalidCharactersString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.json.0.replace_invalid_characters", expected))
 	return i
 }

@@ -56,6 +56,33 @@ resource "snowflake_internal_stage" "with_csv_format" {
   }
 }
 
+# resource with inline JSON file format
+resource "snowflake_internal_stage" "with_json_format" {
+  name     = "json_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    json {
+      compression                = "AUTO"
+      date_format                = "AUTO"
+      time_format                = "AUTO"
+      timestamp_format           = "AUTO"
+      binary_format              = "HEX"
+      trim_space                 = "false"
+      multi_line                 = "false"
+      null_if                    = ["NULL", ""]
+      file_extension             = ".json"
+      enable_octal               = "false"
+      allow_duplicate            = "false"
+      strip_outer_array          = "false"
+      strip_null_values          = "false"
+      replace_invalid_characters = "false" # or ignore_utf8_errors = true
+      skip_byte_order_mark       = "false"
+    }
+  }
+}
+
 # resource with named file format
 resource "snowflake_internal_stage" "with_named_format" {
   name     = "named_format_stage"

@@ -31,7 +31,8 @@ var StageDescribeSchema = map[string]*schema.Schema{
 					Type:     schema.TypeString,
 					Computed: true,
 				},
-				"csv": csvFileFormatSchema,
+				"csv":  csvFileFormatSchema,
+				"json": jsonFileFormatSchema,
 			},
 		},
 		Computed: true,
@@ -144,6 +145,84 @@ var csvFileFormatSchema = &schema.Schema{
 	},
 }
 
+var jsonFileFormatSchema = &schema.Schema{
+	Type:     schema.TypeList,
+	Computed: true,
+	Elem: &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"compression": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"date_format": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"time_format": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"timestamp_format": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"binary_format": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"trim_space": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"multi_line": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"null_if": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"file_extension": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"enable_octal": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"allow_duplicate": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"strip_outer_array": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"strip_null_values": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"replace_invalid_characters": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"ignore_utf8_errors": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"skip_byte_order_mark": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+		},
+	},
+}
+
 func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
 	schema := make(map[string]any)
 
@@ -156,20 +235,44 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		}
 	}
 
-	if properties.FileFormatName != nil || properties.FileFormatCsv != nil {
-		fileFormat := map[string]any{
-			"format_name": "",
-			"csv":         []any{},
-		}
-		if properties.FileFormatName != nil {
-			fileFormat["format_name"] = properties.FileFormatName.FullyQualifiedName()
-		} else if properties.FileFormatCsv != nil {
-			fileFormat["csv"] = []any{StageFileFormatCsvToSchema(properties.FileFormatCsv)}
-		}
-		schema["file_format"] = []map[string]any{fileFormat}
+	fileFormat := map[string]any{
+		"format_name": "",
+		"csv":         []any{},
+		"json":        []any{},
 	}
+	switch {
+	case properties.FileFormatName != nil:
+		fileFormat["format_name"] = properties.FileFormatName.FullyQualifiedName()
+	case properties.FileFormatCsv != nil:
+		fileFormat["csv"] = []any{StageFileFormatCsvToSchema(properties.FileFormatCsv)}
+	case properties.FileFormatJson != nil:
+		fileFormat["json"] = []any{StageFileFormatJsonToSchema(properties.FileFormatJson)}
+	}
+	schema["file_format"] = []map[string]any{fileFormat}
 
 	return schema, nil
+}
+
+func StageFileFormatJsonToSchema(json *sdk.FileFormatJson) map[string]any {
+	return map[string]any{
+		"type":                       json.Type,
+		"compression":                json.Compression,
+		"date_format":                json.DateFormat,
+		"time_format":                json.TimeFormat,
+		"timestamp_format":           json.TimestampFormat,
+		"binary_format":              json.BinaryFormat,
+		"trim_space":                 json.TrimSpace,
+		"multi_line":                 json.MultiLine,
+		"null_if":                    collections.Map(json.NullIf, func(v string) any { return v }),
+		"file_extension":             json.FileExtension,
+		"enable_octal":               json.EnableOctal,
+		"allow_duplicate":            json.AllowDuplicate,
+		"strip_outer_array":          json.StripOuterArray,
+		"strip_null_values":          json.StripNullValues,
+		"replace_invalid_characters": json.ReplaceInvalidCharacters,
+		"ignore_utf8_errors":         json.IgnoreUtf8Errors,
+		"skip_byte_order_mark":       json.SkipByteOrderMark,
+	}
 }
 
 func StageFileFormatCsvToSchema(csv *sdk.FileFormatCsv) map[string]any {

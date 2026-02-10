@@ -181,6 +181,7 @@ Read-Only:
 
 - `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
 - `format_name` (String)
+- `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
 
 <a id="nestedobjatt--describe_output--file_format--csv"></a>
 ### Nested Schema for `describe_output.file_format.csv`
@@ -211,6 +212,30 @@ Read-Only:
 - `trim_space` (Boolean)
 - `type` (String)
 - `validate_utf8` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format--json"></a>
+### Nested Schema for `describe_output.file_format.json`
+
+Read-Only:
+
+- `allow_duplicate` (Boolean)
+- `binary_format` (String)
+- `compression` (String)
+- `date_format` (String)
+- `enable_octal` (Boolean)
+- `file_extension` (String)
+- `ignore_utf8_errors` (Boolean)
+- `multi_line` (Boolean)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `strip_null_values` (Boolean)
+- `strip_outer_array` (Boolean)
+- `time_format` (String)
+- `timestamp_format` (String)
+- `trim_space` (Boolean)
+- `type` (String)
 
 
 
