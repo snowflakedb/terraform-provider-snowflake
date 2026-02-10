@@ -83,6 +83,22 @@ resource "snowflake_internal_stage" "with_json_format" {
   }
 }
 
+# resource with inline AVRO file format
+resource "snowflake_internal_stage" "with_avro_format" {
+  name     = "avro_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    avro {
+      compression                = "GZIP"
+      trim_space                 = "false"
+      replace_invalid_characters = "false"
+      null_if                    = ["NULL", ""]
+    }
+  }
+}
+
 # resource with named file format
 resource "snowflake_internal_stage" "with_named_format" {
   name     = "named_format_stage"

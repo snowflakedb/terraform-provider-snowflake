@@ -179,9 +179,22 @@ Read-Only:
 
 Read-Only:
 
+- `avro` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--avro))
 - `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
 - `format_name` (String)
 - `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
+
+<a id="nestedobjatt--describe_output--file_format--avro"></a>
+### Nested Schema for `describe_output.file_format.avro`
+
+Read-Only:
+
+- `compression` (String)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `trim_space` (Boolean)
+- `type` (String)
+
 
 <a id="nestedobjatt--describe_output--file_format--csv"></a>
 ### Nested Schema for `describe_output.file_format.csv`

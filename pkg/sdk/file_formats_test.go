@@ -238,3 +238,45 @@ func Test_FileFormat_ToJsonCompression(t *testing.T) {
 		})
 	}
 }
+
+func Test_FileFormat_ToAvroCompression(t *testing.T) {
+	type test struct {
+		input string
+		want  AvroCompression
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "gzip", want: AvroCompressionGzip},
+
+		// Supported Values
+		{input: "AUTO", want: AvroCompressionAuto},
+		{input: "GZIP", want: AvroCompressionGzip},
+		{input: "BROTLI", want: AvroCompressionBrotli},
+		{input: "ZSTD", want: AvroCompressionZstd},
+		{input: "DEFLATE", want: AvroCompressionDeflate},
+		{input: "RAW_DEFLATE", want: AvroCompressionRawDeflate},
+		{input: "NONE", want: AvroCompressionNone},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToAvroCompression(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToAvroCompression(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
