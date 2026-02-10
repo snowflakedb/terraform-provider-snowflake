@@ -169,7 +169,7 @@ func GetReadStorageIntegrationAzureFunc(withExternalChangesMarking bool) schema.
 
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInFlatDescribe(d,
-				outputMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", azureDetails.UsePrivatelinkEndpoint, azureDetails.UsePrivatelinkEndpoint, nil},
+				outputMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", azureDetails.UsePrivatelinkEndpoint, booleanStringFromBool(azureDetails.UsePrivatelinkEndpoint), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
