@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -337,11 +338,5 @@ func UpdateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 
 func parseLocations(allowedLocationsRaw []any) ([]sdk.StorageLocation, error) {
 	stringStorageAllowedLocations := expandStringList(allowedLocationsRaw)
-	storageAllowedLocations := make([]sdk.StorageLocation, len(stringStorageAllowedLocations))
-	for i, loc := range stringStorageAllowedLocations {
-		storageAllowedLocations[i] = sdk.StorageLocation{
-			Path: loc,
-		}
-	}
-	return storageAllowedLocations, nil
+	return collections.Map(stringStorageAllowedLocations, func(l string) sdk.StorageLocation { return sdk.StorageLocation{Path: l} }), nil
 }

@@ -7,6 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+-> **Note** External changes to integration `category`, `type`, or incompatible `storage_provider` are not currently supported. They will be handled in the following versions of the provider which may still affect this resource.
+
 # snowflake_storage_integration_aws (Resource)
 
 Resource used to manage AWS storage integration objects. For more information, check [storage integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration).
@@ -26,8 +28,20 @@ resource "snowflake_storage_integration_aws" "minimal" {
   storage_aws_role_arn      = "arn:aws:iam::001234567890:role/myrole"
 }
 
-# TODO [next PR]: add all fields example
 # all fields
+resource "snowflake_storage_integration_aws" "all" {
+  name                      = "example_aws_storage_integration"
+  enabled                   = true
+  storage_provider          = "S3"
+  storage_allowed_locations = ["s3://mybucket1/allowed-location/", "s3://mybucket1/allowed-location2/"]
+  storage_blocked_locations = ["s3://mybucket1/blocked-location/", "s3://mybucket1/blocked-location2/"]
+  use_privatelink_endpoint  = "true"
+  comment                   = "some comment"
+
+  storage_aws_role_arn    = "arn:aws:iam::001234567890:role/myrole"
+  storage_aws_external_id = "some_external_id"
+  storage_aws_object_acl  = "bucket-owner-full-control"
+}
 ```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.

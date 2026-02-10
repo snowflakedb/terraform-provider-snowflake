@@ -37,11 +37,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 	}
 
 	flattenLocations := func(locations []sdk.StorageLocation) []string {
-		flat := make([]string, len(locations))
-		for i, a := range locations {
-			flat[i] = a.Path
-		}
-		return flat
+		return collections.Map(locations, func(l sdk.StorageLocation) string { return l.Path })
 	}
 
 	awsPropertiesAssertions := func(

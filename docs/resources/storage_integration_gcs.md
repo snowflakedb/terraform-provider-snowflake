@@ -7,6 +7,8 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
+-> **Note** External changes to integration `category`, `type`, or `storage_provider` are not currently supported. They will be handled in the following versions of the provider which may still affect this resource.
+
 # snowflake_storage_integration_gcs (Resource)
 
 Resource used to manage GCS storage integration objects. For more information, check [storage integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration).
@@ -24,8 +26,18 @@ resource "snowflake_storage_integration_gcs" "minimal" {
   storage_allowed_locations = ["gcs://mybucket1/path1"]
 }
 
-# TODO [next PR]: add all fields example
 # all fields
+resource "snowflake_storage_integration_gcs" "all" {
+  name    = "example_gcs_storage_integration"
+  enabled = true
+  storage_allowed_locations = [
+    "gcs://mybucket1/allowed-location/", "gcs://mybucket1/allowed-location2/"
+  ]
+  storage_blocked_locations = [
+    "gcs://mybucket1/blocked-location/", "gcs://mybucket1/blocked-location2/"
+  ]
+  comment = "some comment"
+}
 ```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
