@@ -17,6 +17,15 @@ type StorageIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]StorageIntegrationProperty, error)
+
+	// DescribeAwsDetails is added manually; it returns converted describe output for AWS storage integrations.
+	DescribeAwsDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAwsDetails, error)
+	// DescribeAwsDetails is added manually; it returns converted describe output for Azure storage integrations.
+	DescribeAzureDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAzureDetails, error)
+	// DescribeAwsDetails is added manually; it returns converted describe output for GCS storage integrations.
+	DescribeGcsDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationGcsDetails, error)
+	// DescribeDetails is added manually; it returns combined describe output for all types of storage integrations.
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAllDetails, error)
 }
 
 // CreateStorageIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration.
@@ -26,7 +35,7 @@ type CreateStorageIntegrationOptions struct {
 	storageIntegration         bool                    `ddl:"static" sql:"STORAGE INTEGRATION"`
 	IfNotExists                *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name                       AccountObjectIdentifier `ddl:"identifier"`
-	externalStageType          string                  `ddl:"static" sql:"TYPE = EXTERNAL_STAGE"`
+	externalStageType          bool                    `ddl:"static" sql:"TYPE = EXTERNAL_STAGE"`
 	S3StorageProviderParams    *S3StorageParams        `ddl:"keyword"`
 	GCSStorageProviderParams   *GCSStorageParams       `ddl:"keyword"`
 	AzureStorageProviderParams *AzureStorageParams     `ddl:"keyword"`
@@ -49,13 +58,13 @@ type S3StorageParams struct {
 }
 
 type GCSStorageParams struct {
-	storageProvider string `ddl:"static" sql:"STORAGE_PROVIDER = 'GCS'"`
+	storageProvider bool `ddl:"static" sql:"STORAGE_PROVIDER = 'GCS'"`
 }
 
 type AzureStorageParams struct {
-	storageProvider        string  `ddl:"static" sql:"STORAGE_PROVIDER = 'AZURE'"`
-	AzureTenantId          *string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
-	UsePrivatelinkEndpoint *bool   `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
+	storageProvider        bool   `ddl:"static" sql:"STORAGE_PROVIDER = 'AZURE'"`
+	AzureTenantId          string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
+	UsePrivatelinkEndpoint *bool  `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 // AlterStorageIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-storage-integration.
@@ -80,24 +89,33 @@ type StorageIntegrationSet struct {
 }
 
 type SetS3StorageParams struct {
-	StorageAwsRoleArn      string  `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
+	StorageAwsRoleArn      *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
 	StorageAwsExternalId   *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_EXTERNAL_ID"`
 	StorageAwsObjectAcl    *string `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_OBJECT_ACL"`
 	UsePrivatelinkEndpoint *bool   `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type SetAzureStorageParams struct {
-	AzureTenantId          string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
-	UsePrivatelinkEndpoint *bool  `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
+	AzureTenantId          *string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
+	UsePrivatelinkEndpoint *bool   `ddl:"parameter" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 type StorageIntegrationUnset struct {
-	StorageAwsExternalId    *bool `ddl:"keyword" sql:"STORAGE_AWS_EXTERNAL_ID"`
-	StorageAwsObjectAcl     *bool `ddl:"keyword" sql:"STORAGE_AWS_OBJECT_ACL"`
-	Enabled                 *bool `ddl:"keyword" sql:"ENABLED"`
-	StorageBlockedLocations *bool `ddl:"keyword" sql:"STORAGE_BLOCKED_LOCATIONS"`
-	Comment                 *bool `ddl:"keyword" sql:"COMMENT"`
-	UsePrivatelinkEndpoint  *bool `ddl:"keyword" sql:"USE_PRIVATELINK_ENDPOINT"`
+	S3Params                *UnsetS3StorageParams    `ddl:"list"`
+	AzureParams             *UnsetAzureStorageParams `ddl:"list"`
+	Enabled                 *bool                    `ddl:"keyword" sql:"ENABLED"`
+	StorageBlockedLocations *bool                    `ddl:"keyword" sql:"STORAGE_BLOCKED_LOCATIONS"`
+	Comment                 *bool                    `ddl:"keyword" sql:"COMMENT"`
+}
+
+type UnsetS3StorageParams struct {
+	StorageAwsExternalId   *bool `ddl:"keyword" sql:"STORAGE_AWS_EXTERNAL_ID"`
+	StorageAwsObjectAcl    *bool `ddl:"keyword" sql:"STORAGE_AWS_OBJECT_ACL"`
+	UsePrivatelinkEndpoint *bool `ddl:"keyword" sql:"USE_PRIVATELINK_ENDPOINT"`
+}
+
+type UnsetAzureStorageParams struct {
+	UsePrivatelinkEndpoint *bool `ddl:"keyword" sql:"USE_PRIVATELINK_ENDPOINT"`
 }
 
 // DropStorageIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-integration.
@@ -160,4 +178,60 @@ type StorageIntegrationProperty struct {
 	Type    string
 	Value   string
 	Default string
+}
+
+type StorageIntegrationAwsDetails struct {
+	Id                     AccountObjectIdentifier
+	Enabled                bool
+	Provider               string
+	AllowedLocations       []string
+	BlockedLocations       []string
+	Comment                string
+	UsePrivatelinkEndpoint bool
+	IamUserArn             string
+	RoleArn                string
+	ObjectAcl              string
+	ExternalId             string
+}
+
+type StorageIntegrationAzureDetails struct {
+	Id                     AccountObjectIdentifier
+	Enabled                bool
+	Provider               string
+	AllowedLocations       []string
+	BlockedLocations       []string
+	Comment                string
+	UsePrivatelinkEndpoint bool
+	TenantId               string
+	ConsentUrl             string
+	MultiTenantAppName     string
+}
+
+type StorageIntegrationGcsDetails struct {
+	Id                     AccountObjectIdentifier
+	Enabled                bool
+	Provider               string
+	AllowedLocations       []string
+	BlockedLocations       []string
+	Comment                string
+	UsePrivatelinkEndpoint bool
+	ServiceAccount         string
+}
+
+type StorageIntegrationAllDetails struct {
+	Id                     AccountObjectIdentifier
+	Enabled                bool
+	Provider               string
+	AllowedLocations       []string
+	BlockedLocations       []string
+	Comment                string
+	UsePrivatelinkEndpoint bool
+	IamUserArn             string
+	RoleArn                string
+	ObjectAcl              string
+	ExternalId             string
+	TenantId               string
+	ConsentUrl             string
+	MultiTenantAppName     string
+	ServiceAccount         string
 }
