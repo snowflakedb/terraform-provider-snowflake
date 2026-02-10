@@ -17,12 +17,7 @@ type StorageIntegrationGcsModel struct {
 	Enabled                 tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	StorageAllowedLocations tfconfig.Variable `json:"storage_allowed_locations,omitempty"`
-	StorageAwsExternalId    tfconfig.Variable `json:"storage_aws_external_id,omitempty"`
-	StorageAwsObjectAcl     tfconfig.Variable `json:"storage_aws_object_acl,omitempty"`
-	StorageAwsRoleArn       tfconfig.Variable `json:"storage_aws_role_arn,omitempty"`
 	StorageBlockedLocations tfconfig.Variable `json:"storage_blocked_locations,omitempty"`
-	StorageProvider         tfconfig.Variable `json:"storage_provider,omitempty"`
-	UsePrivatelinkEndpoint  tfconfig.Variable `json:"use_privatelink_endpoint,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -38,15 +33,11 @@ func StorageIntegrationGcs(
 	name string,
 	enabled bool,
 	storageAllowedLocations []sdk.StorageLocation,
-	storageAwsRoleArn string,
-	storageProvider string,
 ) *StorageIntegrationGcsModel {
 	s := &StorageIntegrationGcsModel{ResourceModelMeta: config.Meta(resourceName, resources.StorageIntegrationGcs)}
 	s.WithName(name)
 	s.WithEnabled(enabled)
 	s.WithStorageAllowedLocations(storageAllowedLocations)
-	s.WithStorageAwsRoleArn(storageAwsRoleArn)
-	s.WithStorageProvider(storageProvider)
 	return s
 }
 
@@ -54,15 +45,11 @@ func StorageIntegrationGcsWithDefaultMeta(
 	name string,
 	enabled bool,
 	storageAllowedLocations []sdk.StorageLocation,
-	storageAwsRoleArn string,
-	storageProvider string,
 ) *StorageIntegrationGcsModel {
 	s := &StorageIntegrationGcsModel{ResourceModelMeta: config.DefaultMeta(resources.StorageIntegrationGcs)}
 	s.WithName(name)
 	s.WithEnabled(enabled)
 	s.WithStorageAllowedLocations(storageAllowedLocations)
-	s.WithStorageAwsRoleArn(storageAwsRoleArn)
-	s.WithStorageProvider(storageProvider)
 	return s
 }
 
@@ -117,32 +104,7 @@ func (s *StorageIntegrationGcsModel) WithFullyQualifiedName(fullyQualifiedName s
 
 // storage_allowed_locations attribute type is not yet supported, so WithStorageAllowedLocations can't be generated
 
-func (s *StorageIntegrationGcsModel) WithStorageAwsExternalId(storageAwsExternalId string) *StorageIntegrationGcsModel {
-	s.StorageAwsExternalId = tfconfig.StringVariable(storageAwsExternalId)
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithStorageAwsObjectAcl(storageAwsObjectAcl string) *StorageIntegrationGcsModel {
-	s.StorageAwsObjectAcl = tfconfig.StringVariable(storageAwsObjectAcl)
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithStorageAwsRoleArn(storageAwsRoleArn string) *StorageIntegrationGcsModel {
-	s.StorageAwsRoleArn = tfconfig.StringVariable(storageAwsRoleArn)
-	return s
-}
-
 // storage_blocked_locations attribute type is not yet supported, so WithStorageBlockedLocations can't be generated
-
-func (s *StorageIntegrationGcsModel) WithStorageProvider(storageProvider string) *StorageIntegrationGcsModel {
-	s.StorageProvider = tfconfig.StringVariable(storageProvider)
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint string) *StorageIntegrationGcsModel {
-	s.UsePrivatelinkEndpoint = tfconfig.StringVariable(usePrivatelinkEndpoint)
-	return s
-}
 
 //////////////////////////////////////////
 // below it's possible to set any value //
@@ -173,32 +135,7 @@ func (s *StorageIntegrationGcsModel) WithStorageAllowedLocationsValue(value tfco
 	return s
 }
 
-func (s *StorageIntegrationGcsModel) WithStorageAwsExternalIdValue(value tfconfig.Variable) *StorageIntegrationGcsModel {
-	s.StorageAwsExternalId = value
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithStorageAwsObjectAclValue(value tfconfig.Variable) *StorageIntegrationGcsModel {
-	s.StorageAwsObjectAcl = value
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithStorageAwsRoleArnValue(value tfconfig.Variable) *StorageIntegrationGcsModel {
-	s.StorageAwsRoleArn = value
-	return s
-}
-
 func (s *StorageIntegrationGcsModel) WithStorageBlockedLocationsValue(value tfconfig.Variable) *StorageIntegrationGcsModel {
 	s.StorageBlockedLocations = value
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithStorageProviderValue(value tfconfig.Variable) *StorageIntegrationGcsModel {
-	s.StorageProvider = value
-	return s
-}
-
-func (s *StorageIntegrationGcsModel) WithUsePrivatelinkEndpointValue(value tfconfig.Variable) *StorageIntegrationGcsModel {
-	s.UsePrivatelinkEndpoint = value
 	return s
 }

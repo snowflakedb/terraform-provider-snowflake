@@ -39,12 +39,12 @@ resource "snowflake_storage_integration_azure" "minimal" {
 - `azure_tenant_id` (String) Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.
 - `enabled` (Boolean) Specifies whether this storage integration is available for usage in stages. `TRUE` allows users to create new stages that reference this integration. Existing stages that reference this integration function normally. `FALSE` prevents users from creating new stages that reference this integration. Existing stages that reference this integration cannot access the storage location in the stage definition.
 - `name` (String) String that specifies the identifier (i.e. name) for the integration; must be unique in your account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `storage_allowed_locations` (List of String) Explicitly limits external stages that use the integration to reference one or more storage locations.
+- `storage_allowed_locations` (Set of String) Explicitly limits external stages that use the integration to reference one or more storage locations.
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the storage integration.
-- `storage_blocked_locations` (List of String) Explicitly prohibits external stages that use the integration from referencing one or more storage locations.
+- `storage_blocked_locations` (Set of String) Explicitly prohibits external stages that use the integration from referencing one or more storage locations.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use outbound private connectivity to harden the security posture. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
