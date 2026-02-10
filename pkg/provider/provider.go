@@ -600,7 +600,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_external_azure_stage":                                         resources.ExternalAzureStage(),
 		"snowflake_external_function":                                            resources.ExternalFunction(),
 		"snowflake_external_gcs_stage":                                           resources.ExternalGcsStage(),
-		"snowflake_external_s3_compat_stage":                                     resources.ExternalS3CompatStage(),
+		"snowflake_external_s3_compatible_stage":                                     resources.ExternalS3CompatStage(),
 		"snowflake_external_oauth_integration":                                   resources.ExternalOauthIntegration(),
 		"snowflake_external_s3_stage":                                            resources.ExternalS3Stage(),
 		"snowflake_external_table":                                               resources.ExternalTable(),

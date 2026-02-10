@@ -35,7 +35,7 @@ const (
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
 	ExternalGcsStageResource                      feature = "snowflake_external_gcs_stage_resource"
 	ExternalS3StageResource                       feature = "snowflake_external_s3_stage_resource"
-	ExternalS3CompatStageResource                 feature = "snowflake_external_s3_compat_stage_resource"
+	ExternalS3CompatStageResource                 feature = "snowflake_external_s3_compatible_stage_resource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
 	ExternalTablesDatasource                      feature = "snowflake_external_tables_datasource"
 	ExternalVolumeResource                        feature = "snowflake_external_volume_resource"

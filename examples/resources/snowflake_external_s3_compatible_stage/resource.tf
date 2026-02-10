@@ -1,6 +1,6 @@
 # Basic resource with credentials
-resource "snowflake_external_s3_compat_stage" "basic" {
-  name     = "my_s3_compat_stage"
+resource "snowflake_external_s3_compatible_stage" "basic" {
+  name     = "my_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
   url      = "s3compat://bucket/path/"
@@ -8,8 +8,8 @@ resource "snowflake_external_s3_compat_stage" "basic" {
 }
 
 # Complete resource with all options
-resource "snowflake_external_s3_compat_stage" "complete" {
-  name     = "complete_s3_compat_stage"
+resource "snowflake_external_s3_compatible_stage" "complete" {
+  name     = "complete_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
   url      = "s3compat://bucket/path/"

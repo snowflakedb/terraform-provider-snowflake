@@ -1,5 +1,5 @@
 ---
-page_title: "snowflake_external_s3_compat_stage Resource - terraform-provider-snowflake"
+page_title: "snowflake_external_s3_compatible_stage Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
   Resource used to manage external S3-compatible stages. For more information, check external stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams.
@@ -11,7 +11,7 @@ description: |-
 
 -> **Note** External changes detection on `credentials` field is not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
-# snowflake_external_s3_compat_stage (Resource)
+# snowflake_external_s3_compatible_stage (Resource)
 
 Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
 
@@ -22,8 +22,8 @@ Resource used to manage external S3-compatible stages. For more information, che
 
 ```terraform
 # Basic resource with credentials
-resource "snowflake_external_s3_compat_stage" "basic" {
-  name     = "my_s3_compat_stage"
+resource "snowflake_external_s3_compatible_stage" "basic" {
+  name     = "my_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
   url      = "s3compat://bucket/path/"
@@ -31,8 +31,8 @@ resource "snowflake_external_s3_compat_stage" "basic" {
 }
 
 # Complete resource with all options
-resource "snowflake_external_s3_compat_stage" "complete" {
-  name     = "complete_s3_compat_stage"
+resource "snowflake_external_s3_compatible_stage" "complete" {
+  name     = "complete_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
   url      = "s3compat://bucket/path/"
@@ -159,5 +159,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_external_s3_compat_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
+terraform import snowflake_external_s3_compatible_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
 ```
