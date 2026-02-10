@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -40,7 +38,8 @@ var storageIntegrationAwsSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: validators.NormalizeValidation(sdk.ToS3Protocol),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToS3Protocol),
+		ValidateDiagFunc: sdkValidation(sdk.ToS3Protocol),
 		Description:      fmt.Sprintf("Specifies the storage provider for the integration. Valid options are: %s", possibleValuesListed(sdk.AllStorageProviders)),
 	},
 	"storage_allowed_locations": {
@@ -192,7 +191,7 @@ func GetReadStorageIntegrationAwsFunc(withExternalChangesMarking bool) schema.Re
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInFlatDescribe(d,
 				outputMapping{"external_id", "storage_aws_external_id", awsDetails.ExternalId, awsDetails.ExternalId, nil},
-				outputMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", awsDetails.UsePrivatelinkEndpoint, awsDetails.UsePrivatelinkEndpoint, nil},
+				outputMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", awsDetails.UsePrivatelinkEndpoint, booleanStringFromBool(awsDetails.UsePrivatelinkEndpoint), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -228,7 +227,7 @@ func CreateStorageIntegrationAws(ctx context.Context, d *schema.ResourceData, me
 	id := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(name)
 	enabled := d.Get("enabled").(bool)
 	storageAllowedLocations, _ := parseLocations(d.Get("storage_allowed_locations").(*schema.Set).List())
-	storageProvider := strings.ToUpper(d.Get("storage_provider").(string))
+	storageProvider := d.Get("storage_provider").(string)
 	s3Protocol, err := sdk.ToS3Protocol(storageProvider)
 	if err != nil {
 		return diag.FromErr(err)
