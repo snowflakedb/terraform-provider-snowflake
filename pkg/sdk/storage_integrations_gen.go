@@ -215,3 +215,21 @@ type StorageIntegrationGcsDetails struct {
 	UsePrivatelinkEndpoint bool
 	ServiceAccount         string
 }
+
+type StorageIntegrationAllDetails struct {
+	Id                     AccountObjectIdentifier
+	Enabled                bool
+	Provider               string
+	AllowedLocations       []string
+	BlockedLocations       []string
+	Comment                string
+	UsePrivatelinkEndpoint bool
+	IamUserArn             string
+	RoleArn                string
+	ObjectAcl              string
+	ExternalId             string
+	TenantId               string
+	ConsentUrl             string
+	MultiTenantAppName     string
+	ServiceAccount         string
+}

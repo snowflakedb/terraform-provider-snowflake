@@ -209,4 +209,20 @@ var storageIntegrationsDef = g.NewInterface(
 			Text("Comment").
 			Bool("UsePrivatelinkEndpoint").
 			Text("ServiceAccount"),
+		g.PlainStruct("StorageIntegrationAllDetails").
+			AccountObjectIdentifier().
+			Bool("Enabled").
+			Text("Provider").
+			StringList("AllowedLocations").
+			StringList("BlockedLocations").
+			Text("Comment").
+			Bool("UsePrivatelinkEndpoint").
+			Text("IamUserArn").
+			Text("RoleArn").
+			Text("ObjectAcl").
+			Text("ExternalId").
+			Text("TenantId").
+			Text("ConsentUrl").
+			Text("MultiTenantAppName").
+			Text("ServiceAccount"),
 	)
