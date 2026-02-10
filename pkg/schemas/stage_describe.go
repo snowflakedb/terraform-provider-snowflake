@@ -31,10 +31,11 @@ var StageDescribeSchema = map[string]*schema.Schema{
 					Type:     schema.TypeString,
 					Computed: true,
 				},
-				"csv":  csvFileFormatSchema,
-				"json": jsonFileFormatSchema,
-				"avro": avroFileFormatSchema,
-				"orc":  orcFileFormatSchema,
+				"csv":     csvFileFormatSchema,
+				"json":    jsonFileFormatSchema,
+				"avro":    avroFileFormatSchema,
+				"orc":     orcFileFormatSchema,
+				"parquet": parquetFileFormatSchema,
 			},
 		},
 		Computed: true,
@@ -281,6 +282,48 @@ var orcFileFormatSchema = &schema.Schema{
 	},
 }
 
+var parquetFileFormatSchema = &schema.Schema{
+	Type:     schema.TypeList,
+	Computed: true,
+	Elem: &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"compression": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"binary_as_text": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"use_logical_type": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"trim_space": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"use_vectorized_scanner": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"replace_invalid_characters": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"null_if": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+		},
+	},
+}
+
 func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
 	schema := make(map[string]any)
 
@@ -299,6 +342,7 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		"json":        []any{},
 		"avro":        []any{},
 		"orc":         []any{},
+		"parquet":     []any{},
 	}
 	switch {
 	case properties.FileFormatName != nil:
@@ -311,6 +355,8 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 		fileFormat["avro"] = []any{StageFileFormatAvroToSchema(properties.FileFormatAvro)}
 	case properties.FileFormatOrc != nil:
 		fileFormat["orc"] = []any{StageFileFormatOrcToSchema(properties.FileFormatOrc)}
+	case properties.FileFormatParquet != nil:
+		fileFormat["parquet"] = []any{StageFileFormatParquetToSchema(properties.FileFormatParquet)}
 	}
 	schema["file_format"] = []map[string]any{fileFormat}
 
@@ -384,5 +430,18 @@ func StageFileFormatOrcToSchema(orc *sdk.FileFormatOrc) map[string]any {
 		"trim_space":                 orc.TrimSpace,
 		"replace_invalid_characters": orc.ReplaceInvalidCharacters,
 		"null_if":                    collections.Map(orc.NullIf, func(v string) any { return v }),
+	}
+}
+
+func StageFileFormatParquetToSchema(parquet *sdk.FileFormatParquet) map[string]any {
+	return map[string]any{
+		"type":                       parquet.Type,
+		"compression":                parquet.Compression,
+		"binary_as_text":             parquet.BinaryAsText,
+		"use_logical_type":           parquet.UseLogicalType,
+		"trim_space":                 parquet.TrimSpace,
+		"use_vectorized_scanner":     parquet.UseVectorizedScanner,
+		"replace_invalid_characters": parquet.ReplaceInvalidCharacters,
+		"null_if":                    collections.Map(parquet.NullIf, func(v string) any { return v }),
 	}
 }

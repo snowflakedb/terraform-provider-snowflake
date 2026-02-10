@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var stageFileFormatExactlyOneOf = []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro", "file_format.0.orc"}
+var stageFileFormatExactlyOneOf = []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro", "file_format.0.orc", "file_format.0.parquet"}
 
 var stageFileFormatSchema = map[string]*schema.Schema{
 	"file_format": {
@@ -68,6 +68,16 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					Description:  "ORC file format options.",
 					Elem: &schema.Resource{
 						Schema: orcFileFormatSchema,
+					},
+				},
+				"parquet": {
+					Type:         schema.TypeList,
+					Optional:     true,
+					MaxItems:     1,
+					ExactlyOneOf: stageFileFormatExactlyOneOf,
+					Description:  "Parquet file format options.",
+					Elem: &schema.Resource{
+						Schema: parquetFileFormatSchema,
 					},
 				},
 			},
@@ -376,6 +386,57 @@ var orcFileFormatSchema = map[string]*schema.Schema{
 	},
 }
 
+var parquetFileFormatSchema = map[string]*schema.Schema{
+	"compression": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllParquetCompressions)),
+		ValidateDiagFunc: sdkValidation(sdk.ToParquetCompression),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToParquetCompression),
+	},
+	"binary_as_text": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to interpret columns with no defined logical data type as UTF-8 text."),
+	},
+	"use_logical_type": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to use Parquet logical types when loading data."),
+	},
+	"trim_space": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
+	},
+	"use_vectorized_scanner": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to use a vectorized scanner for loading Parquet files."),
+	},
+	"replace_invalid_characters": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+	},
+	"null_if": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "String used to convert to and from SQL NULL.",
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	},
+}
+
 // parseStageFileFormat parses the stage file format from the resource data to an SDK object.
 func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, error) {
 	if len(d.Get("file_format").([]any)) == 0 {
@@ -406,6 +467,11 @@ func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, e
 				OrcOptions: fileFormatOptions,
 			})
 		}, parseOrcFileFormatOptions),
+		attributeMappedValueCreateBuilderNested(d, prefix+"parquet", func(fileFormatOptions *sdk.FileFormatParquetOptions) *sdk.StageFileFormatRequest {
+			return fileFormatReq.WithFileFormatOptions(sdk.FileFormatOptions{
+				ParquetOptions: fileFormatOptions,
+			})
+		}, parseParquetFileFormatOptions),
 	)
 	if err != nil {
 		return sdk.StageFileFormatRequest{}, err
@@ -583,6 +649,33 @@ func parseOrcFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatOrcOption
 	return orcOptions, nil
 }
 
+// parseParquetFileFormatOptions parses the Parquet file format options from the resource data to an SDK object.
+func parseParquetFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatParquetOptions, error) {
+	parquetOptions := &sdk.FileFormatParquetOptions{}
+	prefix := "file_format.0.parquet.0."
+
+	err := errors.Join(
+		attributeMappedValueCreate(d, prefix+"compression", &parquetOptions.Compression, func(v any) (*sdk.ParquetCompression, error) {
+			c, err := sdk.ToParquetCompression(v.(string))
+			return &c, err
+		}),
+		booleanStringAttributeCreate(d, prefix+"binary_as_text", &parquetOptions.BinaryAsText),
+		booleanStringAttributeCreate(d, prefix+"use_logical_type", &parquetOptions.UseLogicalType),
+		booleanStringAttributeCreate(d, prefix+"trim_space", &parquetOptions.TrimSpace),
+		booleanStringAttributeCreate(d, prefix+"use_vectorized_scanner", &parquetOptions.UseVectorizedScanner),
+		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &parquetOptions.ReplaceInvalidCharacters),
+		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatParquetOptions {
+			parquetOptions.NullIf = nullIf
+			return parquetOptions
+		}, parseNullIf),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return parquetOptions, nil
+}
+
 func parseStageFileFormatStringOrNone(v string) *sdk.StageFileFormatStringOrNone {
 	if strings.ToUpper(v) == "NONE" {
 		return &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)}
@@ -643,6 +736,15 @@ func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 		return []map[string]any{
 			{
 				"orc": []map[string]any{orcSchema},
+			},
+		}
+	}
+
+	if details.FileFormatParquet != nil {
+		parquetSchema := stageParquetFileFormatToSchema(details.FileFormatParquet)
+		return []map[string]any{
+			{
+				"parquet": []map[string]any{parquetSchema},
 			},
 		}
 	}
@@ -716,6 +818,19 @@ func stageOrcFileFormatToSchema(orc *sdk.FileFormatOrc) map[string]any {
 		"trim_space":                 booleanStringFromBool(orc.TrimSpace),
 		"replace_invalid_characters": booleanStringFromBool(orc.ReplaceInvalidCharacters),
 		"null_if":                    collections.Map(orc.NullIf, func(v string) any { return v }),
+	}
+}
+
+// stageParquetFileFormatToSchema converts the SDK details for a Parquet file format to a Terraform schema.
+func stageParquetFileFormatToSchema(parquet *sdk.FileFormatParquet) map[string]any {
+	return map[string]any{
+		"compression":                parquet.Compression,
+		"binary_as_text":             booleanStringFromBool(parquet.BinaryAsText),
+		"use_logical_type":           booleanStringFromBool(parquet.UseLogicalType),
+		"trim_space":                 booleanStringFromBool(parquet.TrimSpace),
+		"use_vectorized_scanner":     booleanStringFromBool(parquet.UseVectorizedScanner),
+		"replace_invalid_characters": booleanStringFromBool(parquet.ReplaceInvalidCharacters),
+		"null_if":                    collections.Map(parquet.NullIf, func(v string) any { return v }),
 	}
 }
 

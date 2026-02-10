@@ -280,3 +280,42 @@ func Test_FileFormat_ToAvroCompression(t *testing.T) {
 		})
 	}
 }
+
+func Test_FileFormat_ToParquetCompression(t *testing.T) {
+	type test struct {
+		input string
+		want  ParquetCompression
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "snappy", want: ParquetCompressionSnappy},
+
+		// Supported Values
+		{input: "AUTO", want: ParquetCompressionAuto},
+		{input: "LZO", want: ParquetCompressionLzo},
+		{input: "SNAPPY", want: ParquetCompressionSnappy},
+		{input: "NONE", want: ParquetCompressionNone},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToParquetCompression(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToParquetCompression(tc.input)
+			require.Error(t, err)
+		})
+	}
+}

@@ -184,6 +184,7 @@ Read-Only:
 - `format_name` (String)
 - `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
 - `orc` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--orc))
+- `parquet` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--parquet))
 
 <a id="nestedobjatt--describe_output--file_format--avro"></a>
 ### Nested Schema for `describe_output.file_format.avro`
@@ -261,6 +262,21 @@ Read-Only:
 - `replace_invalid_characters` (Boolean)
 - `trim_space` (Boolean)
 - `type` (String)
+
+
+<a id="nestedobjatt--describe_output--file_format--parquet"></a>
+### Nested Schema for `describe_output.file_format.parquet`
+
+Read-Only:
+
+- `binary_as_text` (Boolean)
+- `compression` (String)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `trim_space` (Boolean)
+- `type` (String)
+- `use_logical_type` (Boolean)
+- `use_vectorized_scanner` (Boolean)
 
 
 
