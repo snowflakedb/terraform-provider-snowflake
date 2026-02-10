@@ -94,6 +94,30 @@ func (c *StorageIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdenti
 	return c.client().ShowByID(ctx, id)
 }
 
+func (c *StorageIntegrationClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) ([]sdk.StorageIntegrationProperty, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().Describe(ctx, id)
+}
+
+func (c *StorageIntegrationClient) DescribeAws(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.StorageIntegrationAwsDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeAwsDetails(ctx, id)
+}
+
+func (c *StorageIntegrationClient) DescribeAzure(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.StorageIntegrationAzureDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeAzureDetails(ctx, id)
+}
+
+func (c *StorageIntegrationClient) DescribeGcs(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.StorageIntegrationGcsDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeGcsDetails(ctx, id)
+}
+
 func (c *StorageIntegrationClient) CreateWithoutEnabled(t *testing.T, id sdk.AccountObjectIdentifier, iamRole string, allowedLocation sdk.StorageLocation) error {
 	t.Helper()
 	ctx := context.Background()
