@@ -92,7 +92,7 @@ var externalS3CompatStageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema, s3CompatStage)
+	return collections.MergeMaps(stageCommonSchema(schemas.AwsStageDescribeSchema()), s3CompatStage)
 }()
 
 func ExternalS3CompatibleStage() *schema.Resource {
@@ -187,7 +187,7 @@ func CreateExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseS3CompatStageDirectory),
+		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseS3StageDirectory),
 	)
 	if err != nil {
 		return diag.FromErr(err)
@@ -337,32 +337,4 @@ func parseS3CompatStageCredentials(v any) (sdk.ExternalStageS3CompatibleCredenti
 	awsKeyId := credentialsConfig["aws_key_id"].(string)
 	awsSecretKey := credentialsConfig["aws_secret_key"].(string)
 	return *sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey), nil
-}
-
-// TODO: rm and use s3
-func parseS3CompatStageDirectory(v any) (sdk.StageS3CommonDirectoryTableOptionsRequest, error) {
-	directoryList := v.([]any)
-	if len(directoryList) == 0 {
-		return sdk.StageS3CommonDirectoryTableOptionsRequest{}, nil
-	}
-	directoryConfig := directoryList[0].(map[string]any)
-	directoryReq := sdk.NewStageS3CommonDirectoryTableOptionsRequest().WithEnable(directoryConfig["enable"].(bool))
-
-	if v, ok := directoryConfig["refresh_on_create"]; ok && v.(string) != BooleanDefault {
-		refreshOnCreateBool, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return sdk.StageS3CommonDirectoryTableOptionsRequest{}, fmt.Errorf("parsing refresh_on_create: %w", err)
-		}
-		directoryReq.WithRefreshOnCreate(refreshOnCreateBool)
-	}
-
-	if v, ok := directoryConfig["auto_refresh"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
-		autoRefreshBool, err := booleanStringToBool(v.(string))
-		if err != nil {
-			return sdk.StageS3CommonDirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)
-		}
-		directoryReq.WithAutoRefresh(autoRefreshBool)
-	}
-
-	return *directoryReq, nil
 }

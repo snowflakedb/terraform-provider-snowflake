@@ -6,11 +6,11 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-func ExternalS3CompatStageWithId(id sdk.SchemaObjectIdentifier, url string, endpoint string) *ExternalS3CompatStageModel {
-	return ExternalS3CompatStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), endpoint, url)
+func ExternalS3CompatibleStageWithId(id sdk.SchemaObjectIdentifier, url string, endpoint string) *ExternalS3CompatibleStageModel {
+	return ExternalS3CompatibleStage("test", id.DatabaseName(), id.SchemaName(), id.Name(), endpoint, url)
 }
 
-func (e *ExternalS3CompatStageModel) WithDirectoryEnabled(enable string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithDirectoryEnabled(enable string) *ExternalS3CompatibleStageModel {
 	e.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"enable": tfconfig.StringVariable(enable),
@@ -19,7 +19,7 @@ func (e *ExternalS3CompatStageModel) WithDirectoryEnabled(enable string) *Extern
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithDirectoryEnabledAndOptions(opts sdk.StageS3CommonDirectoryTableOptionsRequest) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithDirectoryEnabledAndOptions(opts sdk.StageS3CommonDirectoryTableOptionsRequest) *ExternalS3CompatibleStageModel {
 	directoryMap := map[string]tfconfig.Variable{
 		"enable": tfconfig.BoolVariable(opts.Enable),
 	}
@@ -33,7 +33,7 @@ func (e *ExternalS3CompatStageModel) WithDirectoryEnabledAndOptions(opts sdk.Sta
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithInvalidAutoRefresh() *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithInvalidAutoRefresh() *ExternalS3CompatibleStageModel {
 	e.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"enable":       tfconfig.BoolVariable(true),
@@ -43,7 +43,7 @@ func (e *ExternalS3CompatStageModel) WithInvalidAutoRefresh() *ExternalS3CompatS
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithInvalidRefreshOnCreate() *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithInvalidRefreshOnCreate() *ExternalS3CompatibleStageModel {
 	e.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"enable":            tfconfig.BoolVariable(true),
@@ -53,7 +53,7 @@ func (e *ExternalS3CompatStageModel) WithInvalidRefreshOnCreate() *ExternalS3Com
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithCredentials(awsKeyId string, awsSecretKey string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithCredentials(awsKeyId string, awsSecretKey string) *ExternalS3CompatibleStageModel {
 	e.Credentials = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"aws_key_id":     tfconfig.StringVariable(awsKeyId),
@@ -63,7 +63,7 @@ func (e *ExternalS3CompatStageModel) WithCredentials(awsKeyId string, awsSecretK
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithEmptyCredentials() *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithEmptyCredentials() *ExternalS3CompatibleStageModel {
 	e.Credentials = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),

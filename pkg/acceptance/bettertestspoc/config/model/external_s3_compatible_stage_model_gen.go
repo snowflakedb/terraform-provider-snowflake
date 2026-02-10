@@ -10,7 +10,7 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-type ExternalS3CompatStageModel struct {
+type ExternalS3CompatibleStageModel struct {
 	Database           tfconfig.Variable `json:"database,omitempty"`
 	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	Name               tfconfig.Variable `json:"name,omitempty"`
@@ -32,15 +32,15 @@ type ExternalS3CompatStageModel struct {
 // Basic builders (resource name and required) //
 /////////////////////////////////////////////////
 
-func ExternalS3CompatStage(
+func ExternalS3CompatibleStage(
 	resourceName string,
 	database string,
 	schema string,
 	name string,
 	endpoint string,
 	url string,
-) *ExternalS3CompatStageModel {
-	e := &ExternalS3CompatStageModel{ResourceModelMeta: config.Meta(resourceName, resources.ExternalS3CompatibleStage)}
+) *ExternalS3CompatibleStageModel {
+	e := &ExternalS3CompatibleStageModel{ResourceModelMeta: config.Meta(resourceName, resources.ExternalS3CompatibleStage)}
 	e.WithDatabase(database)
 	e.WithSchema(schema)
 	e.WithName(name)
@@ -49,14 +49,14 @@ func ExternalS3CompatStage(
 	return e
 }
 
-func ExternalS3CompatStageWithDefaultMeta(
+func ExternalS3CompatibleStageWithDefaultMeta(
 	database string,
 	schema string,
 	name string,
 	endpoint string,
 	url string,
-) *ExternalS3CompatStageModel {
-	e := &ExternalS3CompatStageModel{ResourceModelMeta: config.DefaultMeta(resources.ExternalS3CompatibleStage)}
+) *ExternalS3CompatibleStageModel {
+	e := &ExternalS3CompatibleStageModel{ResourceModelMeta: config.DefaultMeta(resources.ExternalS3CompatibleStage)}
 	e.WithDatabase(database)
 	e.WithSchema(schema)
 	e.WithName(name)
@@ -69,8 +69,8 @@ func ExternalS3CompatStageWithDefaultMeta(
 // set proper json marshalling, handle depends on and dynamic blocks //
 ///////////////////////////////////////////////////////////////////////
 
-func (e *ExternalS3CompatStageModel) MarshalJSON() ([]byte, error) {
-	type Alias ExternalS3CompatStageModel
+func (e *ExternalS3CompatibleStageModel) MarshalJSON() ([]byte, error) {
+	type Alias ExternalS3CompatibleStageModel
 	return json.Marshal(&struct {
 		*Alias
 		DependsOn []string `json:"depends_on,omitempty"`
@@ -80,12 +80,12 @@ func (e *ExternalS3CompatStageModel) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (e *ExternalS3CompatStageModel) WithDependsOn(values ...string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithDependsOn(values ...string) *ExternalS3CompatibleStageModel {
 	e.SetDependsOn(values...)
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithDynamicBlock(dynamicBlock *config.DynamicBlock) *ExternalS3CompatibleStageModel {
 	e.DynamicBlock = dynamicBlock
 	return e
 }
@@ -94,27 +94,27 @@ func (e *ExternalS3CompatStageModel) WithDynamicBlock(dynamicBlock *config.Dynam
 // below all the proper values //
 /////////////////////////////////
 
-func (e *ExternalS3CompatStageModel) WithDatabase(database string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithDatabase(database string) *ExternalS3CompatibleStageModel {
 	e.Database = tfconfig.StringVariable(database)
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithSchema(schema string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithSchema(schema string) *ExternalS3CompatibleStageModel {
 	e.Schema = tfconfig.StringVariable(schema)
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithName(name string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithName(name string) *ExternalS3CompatibleStageModel {
 	e.Name = tfconfig.StringVariable(name)
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithCloud(cloud string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithCloud(cloud string) *ExternalS3CompatibleStageModel {
 	e.Cloud = tfconfig.StringVariable(cloud)
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithComment(comment string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithComment(comment string) *ExternalS3CompatibleStageModel {
 	e.Comment = tfconfig.StringVariable(comment)
 	return e
 }
@@ -123,22 +123,22 @@ func (e *ExternalS3CompatStageModel) WithComment(comment string) *ExternalS3Comp
 
 // directory attribute type is not yet supported, so WithDirectory can't be generated
 
-func (e *ExternalS3CompatStageModel) WithEndpoint(endpoint string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithEndpoint(endpoint string) *ExternalS3CompatibleStageModel {
 	e.Endpoint = tfconfig.StringVariable(endpoint)
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithFullyQualifiedName(fullyQualifiedName string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithFullyQualifiedName(fullyQualifiedName string) *ExternalS3CompatibleStageModel {
 	e.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithStageType(stageType string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithStageType(stageType string) *ExternalS3CompatibleStageModel {
 	e.StageType = tfconfig.StringVariable(stageType)
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithUrl(url string) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithUrl(url string) *ExternalS3CompatibleStageModel {
 	e.Url = tfconfig.StringVariable(url)
 	return e
 }
@@ -147,57 +147,57 @@ func (e *ExternalS3CompatStageModel) WithUrl(url string) *ExternalS3CompatStageM
 // below it's possible to set any value //
 //////////////////////////////////////////
 
-func (e *ExternalS3CompatStageModel) WithDatabaseValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithDatabaseValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Database = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithSchemaValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithSchemaValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Schema = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithNameValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithNameValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Name = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithCloudValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithCloudValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Cloud = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithCommentValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithCommentValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Comment = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithCredentialsValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithCredentialsValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Credentials = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithDirectoryValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithDirectoryValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Directory = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithEndpointValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithEndpointValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Endpoint = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.FullyQualifiedName = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithStageTypeValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithStageTypeValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.StageType = value
 	return e
 }
 
-func (e *ExternalS3CompatStageModel) WithUrlValue(value tfconfig.Variable) *ExternalS3CompatStageModel {
+func (e *ExternalS3CompatibleStageModel) WithUrlValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Url = value
 	return e
 }
