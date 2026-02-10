@@ -187,7 +187,9 @@ func (r *CreateSemanticViewRequest) toOpts() *CreateSemanticViewOptions {
 	if r.semanticViewMetrics != nil {
 		s := make([]MetricDefinition, len(r.semanticViewMetrics))
 		for i, v := range r.semanticViewMetrics {
-			s[i] = MetricDefinition{}
+			s[i] = MetricDefinition{
+				private: v.private,
+			}
 			if v.semanticExpression != nil {
 				s[i].semanticExpression = &SemanticExpression{
 					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: v.semanticExpression.qualifiedExpressionName.QualifiedExpressionName},

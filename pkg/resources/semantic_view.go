@@ -259,7 +259,7 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				// TODO [SNOW-2396311]: update the SDK with the newly added/updated fields for semantic expressions, then add them here
-				// TODO [SNOW-2396371]: add PUBLIC/PRIVATE field
+				// Note [SNOW-2396371]: access_modifier field added for PUBLIC/PRIVATE support
 				// TODO [SNOW-2398097]: add table_alias
 				// TODO [SNOW-2398097]: add fact_or_metric
 				"semantic_expression": {
@@ -272,6 +272,13 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
+							"access_modifier": {
+								Type:         schema.TypeString,
+								Optional:     true,
+								Default:      "PUBLIC",
+								ValidateFunc: validation.StringInSlice([]string{"PUBLIC", "PRIVATE"}, false),
+								Description:  "Access modifier for the metric. Valid values are PUBLIC (default) and PRIVATE.",
+							},
 							"qualified_expression_name": {
 								Type:     schema.TypeString,
 								Required: true,
@@ -313,6 +320,13 @@ var semanticViewsSchema = map[string]*schema.Schema{
 					MaxItems: 1,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
+							"access_modifier": {
+								Type:         schema.TypeString,
+								Optional:     true,
+								Default:      "PUBLIC",
+								ValidateFunc: validation.StringInSlice([]string{"PUBLIC", "PRIVATE"}, false),
+								Description:  "Access modifier for the metric. Valid values are PUBLIC (default) and PRIVATE.",
+							},
 							"qualified_expression_name": {
 								Type:     schema.TypeString,
 								Required: true,
@@ -620,7 +634,14 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				semExpRequest = semExpRequest.WithSynonyms(sRequest)
 			}
 		}
-		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
+		metricDefinitionRequest = metricDefinitionRequest.WithSemanticExpression(*semExpRequest)
+
+		// Handle access modifier
+		if accessModifier, ok := semanticExpression["access_modifier"].(string); ok && accessModifier == "PRIVATE" {
+			metricDefinitionRequest = metricDefinitionRequest.WithPrivate(true)
+		}
+
+		return metricDefinitionRequest, nil
 	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
@@ -644,7 +665,14 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				windowFuncRequest = windowFuncRequest.WithOverClause(*overClauseRequest)
 			}
 		}
-		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest), nil
+		metricDefinitionRequest = metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest)
+
+		// Handle access modifier
+		if accessModifier, ok := windowFunctionDefinition["access_modifier"].(string); ok && accessModifier == "PRIVATE" {
+			metricDefinitionRequest = metricDefinitionRequest.WithPrivate(true)
+		}
+
+		return metricDefinitionRequest, nil
 	default:
 		return nil, fmt.Errorf("either semantic expression or window function is required")
 	}

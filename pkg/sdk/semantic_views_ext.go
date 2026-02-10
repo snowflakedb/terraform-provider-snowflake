@@ -58,6 +58,14 @@ func (m *MetricDefinition) SetWindowFunctionMetricDefinition(windowFunc *WindowF
 	m.windowFunctionMetricDefinition = windowFunc
 }
 
+func (m *MetricDefinition) SetPrivate(private bool) {
+	m.private = &private
+}
+
+func (m *MetricDefinition) GetPrivate() *bool {
+	return m.private
+}
+
 func (s *SemanticExpression) GetQualifiedExpressionName() *QualifiedExpressionName {
 	return s.qualifiedExpressionName
 }

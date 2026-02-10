@@ -113,6 +113,7 @@ type SemanticSqlExpressionRequest struct {
 }
 
 type MetricDefinitionRequest struct {
+	private                        *bool
 	semanticExpression             *SemanticExpressionRequest
 	windowFunctionMetricDefinition *WindowFunctionMetricDefinitionRequest
 }

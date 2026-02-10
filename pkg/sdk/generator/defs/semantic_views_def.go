@@ -166,7 +166,7 @@ var qualifiedExpressionName = g.NewQueryStruct("QualifiedExpressionName").
 var semanticSqlExpression = g.NewQueryStruct("SemanticSqlExpression").
 	Text("SqlExpression", g.KeywordOptions().NoQuotes().Required())
 
-// TODO [SNOW-2396371]: add PUBLIC/PRIVATE optional field
+// Note [SNOW-2396371]: PRIVATE optional field added to metricDefinition (PUBLIC is implicit default)
 // TODO [SNOW-2398097]: replace qualifiedExpressionName with table_alias and fact_or_metric fields
 var semanticExpression = g.NewQueryStruct("SemanticExpression").
 	OptionalQueryStructField("qualifiedExpressionName", qualifiedExpressionName, g.KeywordOptions().Required()).
@@ -189,6 +189,7 @@ var windowFunctionMetricDefinition = g.NewQueryStruct("WindowFunctionMetricDefin
 	OptionalQueryStructField("OverClause", windowFunctionOverClause, g.ListOptions().Parentheses().NoComma().SQL("OVER"))
 
 var metricDefinition = g.NewQueryStruct("MetricDefinition").
+	OptionalSQL("PRIVATE").
 	OptionalQueryStructField("semanticExpression", semanticExpression, g.KeywordOptions()).
 	OptionalQueryStructField("windowFunctionMetricDefinition", windowFunctionMetricDefinition, g.KeywordOptions()).
 	WithValidation(g.ExactlyOneValueSet, "semanticExpression", "windowFunctionMetricDefinition")

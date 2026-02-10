@@ -40,7 +40,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, []sdk.Synonym{{"orders"}, {"sales"}}, "logical table 1")
 	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "")
 	semExp1 := model.SemanticExpressionWithProps(`"lt1"."m1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil, "PUBLIC")
 	relTableAlias := model.RelationshipTableAliasWithProps("lt1", table1.ID())
 	relTableColumns := []sdk.SemanticViewColumn{
 		{
@@ -86,7 +86,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	fact2 := model.SemanticExpressionWithProps(`"lt1"."f2"`, `"lt1"."a1"`, []sdk.Synonym{{Synonym: "fact2"}}, "fact 2")
 	dimension2 := model.SemanticExpressionWithProps(`"lt1"."d2"`, `"lt1"."a2"`, []sdk.Synonym{{Synonym: "dim2"}}, "dimension 2")
 	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps(`"lt1"."wf1"`, `SUM("lt1"."m1")`, sdk.WindowFunctionOverClause{PartitionBy: sdk.Pointer(`"lt1"."d2"`)})
-	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1)
+	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1, "PUBLIC")
 
 	lt1Request := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt1"})
 	lt2Request := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt2"})
@@ -415,7 +415,7 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 
 	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}}, []sdk.Synonym{}, "")
 	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{}, "")
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil)
+	metric1 := model.MetricDefinitionWithProps(semExp1, nil, "PUBLIC")
 
 	modelBasic := model.SemanticViewWithMetrics(
 		"test",
@@ -535,6 +535,90 @@ func TestAcc_SemanticView_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelWithoutMetricNorDimension),
 				ExpectError: regexp.MustCompile("one of `dimensions,metrics` must be specified"),
+			},
+		},
+	})
+}
+
+func TestAcc_SemanticView_PrivateMetrics(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := "private metrics test"
+
+	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest(`"a1"`, sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest(`"a2"`, sdk.DataTypeNumber),
+	})
+	t.Cleanup(table1Cleanup)
+
+	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "")
+
+	// PRIVATE semantic expression metric
+	privateSemanticExp := model.SemanticExpressionWithProps(`"lt1"."privateMetric"`, `COUNT("lt1"."a1")`, nil, "private metric")
+	privateMetric := model.MetricDefinitionWithProps(privateSemanticExp, nil, "PRIVATE")
+
+	// PUBLIC semantic expression metric (default)
+	publicSemanticExp := model.SemanticExpressionWithProps(`"lt1"."publicMetric"`, `SUM("lt1"."a2")`, nil, "public metric")
+	publicMetric := model.MetricDefinitionWithProps(publicSemanticExp, nil, "PUBLIC")
+
+	// PRIVATE window function metric
+	privateWindowFunc := model.WindowFunctionMetricDefinitionWithProps(`"lt1"."privateWindowMetric"`, `AVG("lt1"."a1")`, sdk.WindowFunctionOverClause{PartitionBy: sdk.Pointer(`"lt1"."a2"`)})
+	privateWindowMetric := model.MetricDefinitionWithProps(nil, privateWindowFunc, "PRIVATE")
+
+	semanticViewModel := model.SemanticViewWithMetrics(
+		"test",
+		id,
+		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.MetricDefinition{*privateMetric, *publicMetric, *privateWindowMetric},
+	).WithComment(comment)
+
+	// Updated: change public metric to private and vice versa
+	publicSemanticExp2 := model.SemanticExpressionWithProps(`"lt1"."privateMetric"`, `COUNT("lt1"."a1")`, nil, "now public metric")
+	publicMetric2 := model.MetricDefinitionWithProps(publicSemanticExp2, nil, "PUBLIC")
+
+	privateSemanticExp2 := model.SemanticExpressionWithProps(`"lt1"."publicMetric"`, `SUM("lt1"."a2")`, nil, "now private metric")
+	privateMetric2 := model.MetricDefinitionWithProps(privateSemanticExp2, nil, "PRIVATE")
+
+	semanticViewModelUpdated := model.SemanticViewWithMetrics(
+		"test",
+		id,
+		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.MetricDefinition{*publicMetric2, *privateMetric2, *privateWindowMetric},
+	).WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, semanticViewModel),
+				Check: assertThat(t,
+					resourceassert.SemanticViewResource(t, semanticViewModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(comment).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.SemanticViewShowOutput(t, semanticViewModel.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasComment(comment),
+					objectassert.SemanticView(t, id).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, semanticViewModelUpdated),
+				Check: assertThat(t,
+					resourceassert.SemanticViewResource(t, semanticViewModelUpdated.ResourceReference()).
+						HasNameString(id.Name()).
+						HasCommentString(comment),
+				),
 			},
 		},
 	})

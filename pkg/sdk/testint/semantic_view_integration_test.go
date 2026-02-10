@@ -501,4 +501,75 @@ func TestInt_SemanticView(t *testing.T) {
 		err := client.SemanticViews.Drop(ctx, dropRequest)
 		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
+
+	t.Run("create: PRIVATE metrics", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		// Create a PRIVATE semantic expression metric
+		privateMetricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."privateMetric"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `COUNT("table1"."first_b")`})
+		privateMetric := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*privateMetricSemanticExpression).WithPrivate(true)
+
+		// Create a PUBLIC semantic expression metric (default)
+		publicMetricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."publicMetric"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `SUM("table1"."first_a")`})
+		publicMetric := sdk.NewMetricDefinitionRequest().WithSemanticExpression(*publicMetricSemanticExpression)
+
+		// Create a PRIVATE window function metric
+		privateWindowMetricSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."privateWindowMetric"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `AVG("table1"."first_b")`})
+		windowFuncMetric := sdk.NewWindowFunctionMetricDefinitionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."privateWindowMetric"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `AVG("table1"."first_b")`}).
+			WithOverClause(*sdk.NewWindowFunctionOverClauseRequest().WithPartitionBy(`"table1"."first_c"`))
+		privateWindowMetric := sdk.NewMetricDefinitionRequest().WithWindowFunctionMetricDefinition(*windowFuncMetric).WithPrivate(true)
+
+		metricsWithPrivate := []sdk.MetricDefinitionRequest{
+			*privateMetric,
+			*publicMetric,
+			*privateWindowMetric,
+		}
+
+		request := sdk.NewCreateSemanticViewRequest(id, logicalTables).WithSemanticViewMetrics(metricsWithPrivate).WithComment("test private metrics")
+
+		// Create the semantic view with PRIVATE metrics
+		err := client.SemanticViews.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().SemanticView.DropFunc(t, id))
+
+		// Verify the semantic view was created
+		semanticView, err := client.SemanticViews.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		// Check basic properties
+		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasName(id.Name()).
+			HasComment("test private metrics"),
+		)
+
+		// Verify DESCRIBE shows the correct access modifier
+		details, err := client.SemanticViews.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, details)
+
+		// Check that metrics have the correct access modifiers in DESCRIBE output
+		// Note: The access modifier is returned as "metricAccessModifier" property
+		var foundPrivateMetric, foundPublicMetric, foundPrivateWindowMetric bool
+		for _, detail := range details {
+			if detail.Property == "metricAccessModifier" {
+				if detail.ObjectName != nil && *detail.ObjectName == "privateMetric" {
+					require.Equal(t, "PRIVATE", detail.PropertyValue)
+					foundPrivateMetric = true
+				}
+				if detail.ObjectName != nil && *detail.ObjectName == "publicMetric" {
+					require.Equal(t, "PUBLIC", detail.PropertyValue)
+					foundPublicMetric = true
+				}
+				if detail.ObjectName != nil && *detail.ObjectName == "privateWindowMetric" {
+					require.Equal(t, "PRIVATE", detail.PropertyValue)
+					foundPrivateWindowMetric = true
+				}
+			}
+		}
+		require.True(t, foundPrivateMetric, "PRIVATE metric not found in DESCRIBE output")
+		require.True(t, foundPublicMetric, "PUBLIC metric not found in DESCRIBE output")
+		require.True(t, foundPrivateWindowMetric, "PRIVATE window metric not found in DESCRIBE output")
+	})
 }

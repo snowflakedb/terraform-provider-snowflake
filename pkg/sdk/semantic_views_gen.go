@@ -105,6 +105,7 @@ type SemanticSqlExpression struct {
 }
 
 type MetricDefinition struct {
+	private                        *bool                           `ddl:"keyword" sql:"PRIVATE"`
 	semanticExpression             *SemanticExpression             `ddl:"keyword"`
 	windowFunctionMetricDefinition *WindowFunctionMetricDefinition `ddl:"keyword"`
 }

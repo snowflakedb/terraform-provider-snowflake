@@ -286,6 +286,136 @@ func TestSemanticViews_Create(t *testing.T) {
 			"comment",
 		)
 	})
+
+	t.Run("PRIVATE semantic expression metric", func(t *testing.T) {
+		logicalTableId1 := randomSchemaObjectIdentifier()
+		tableAlias1 := "table1"
+		metricExpression := "COUNT(table1.column1)"
+		metricName := `"table1"."privateMetric"`
+
+		tablesObj := []LogicalTable{
+			{
+				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
+				TableName:         logicalTableId1,
+			},
+		}
+
+		metricsObj := []MetricDefinition{
+			{
+				private: Bool(true),
+				semanticExpression: &SemanticExpression{
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
+				},
+			},
+		}
+
+		opts := &CreateSemanticViewOptions{
+			name:                id,
+			logicalTables:       tablesObj,
+			semanticViewMetrics: metricsObj,
+		}
+
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW %s TABLES ("%s" AS %s) METRICS (PRIVATE %s AS %s)`,
+			id.FullyQualifiedName(),
+			tableAlias1,
+			logicalTableId1.FullyQualifiedName(),
+			metricName,
+			metricExpression,
+		)
+	})
+
+	t.Run("PRIVATE window function metric", func(t *testing.T) {
+		logicalTableId1 := randomSchemaObjectIdentifier()
+		tableAlias1 := "table1"
+		metricExpression := "SUM(table1.amount)"
+		metricName := `"table1"."privateWindowMetric"`
+
+		tablesObj := []LogicalTable{
+			{
+				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
+				TableName:         logicalTableId1,
+			},
+		}
+
+		metricsObj := []MetricDefinition{
+			{
+				private: Bool(true),
+				windowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
+					as:                      true,
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
+					OverClause: &WindowFunctionOverClause{
+						PartitionBy: String("table1.category"),
+					},
+				},
+			},
+		}
+
+		opts := &CreateSemanticViewOptions{
+			name:                id,
+			logicalTables:       tablesObj,
+			semanticViewMetrics: metricsObj,
+		}
+
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW %s TABLES ("%s" AS %s) METRICS (PRIVATE %s AS %s OVER (PARTITION BY %s))`,
+			id.FullyQualifiedName(),
+			tableAlias1,
+			logicalTableId1.FullyQualifiedName(),
+			metricName,
+			metricExpression,
+			*metricsObj[0].windowFunctionMetricDefinition.OverClause.PartitionBy,
+		)
+	})
+
+	t.Run("mixed PUBLIC and PRIVATE metrics", func(t *testing.T) {
+		logicalTableId1 := randomSchemaObjectIdentifier()
+		tableAlias1 := "table1"
+		publicMetricName := `"table1"."publicMetric"`
+		publicMetricExpression := "COUNT(table1.column1)"
+		privateMetricName := `"table1"."privateMetric"`
+		privateMetricExpression := "SUM(table1.amount)"
+
+		tablesObj := []LogicalTable{
+			{
+				logicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
+				TableName:         logicalTableId1,
+			},
+		}
+
+		metricsObj := []MetricDefinition{
+			{
+				// PUBLIC (default - no private field set)
+				semanticExpression: &SemanticExpression{
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: publicMetricName},
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: publicMetricExpression},
+				},
+			},
+			{
+				private: Bool(true),
+				semanticExpression: &SemanticExpression{
+					qualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: privateMetricName},
+					sqlExpression:           &SemanticSqlExpression{SqlExpression: privateMetricExpression},
+				},
+			},
+		}
+
+		opts := &CreateSemanticViewOptions{
+			name:                id,
+			logicalTables:       tablesObj,
+			semanticViewMetrics: metricsObj,
+		}
+
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW %s TABLES ("%s" AS %s) METRICS (%s AS %s, PRIVATE %s AS %s)`,
+			id.FullyQualifiedName(),
+			tableAlias1,
+			logicalTableId1.FullyQualifiedName(),
+			publicMetricName,
+			publicMetricExpression,
+			privateMetricName,
+			privateMetricExpression,
+		)
+	})
 }
 
 func TestSemanticViews_Alter(t *testing.T) {

@@ -311,6 +311,11 @@ func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunct
 	return s
 }
 
+func (s *MetricDefinitionRequest) WithPrivate(private bool) *MetricDefinitionRequest {
+	s.private = &private
+	return s
+}
+
 func NewWindowFunctionMetricDefinitionRequest(
 	qualifiedExpressionName *QualifiedExpressionNameRequest,
 	sqlExpression *SemanticSqlExpressionRequest,
