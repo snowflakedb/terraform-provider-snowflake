@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.12.x ➞ v2.13.0
 
+// storage integration new resources
+// deprecate old one
+// breaking changes to data source
+// add missing examples to resources and data source
+// limitation of incorrect provider?
+
 ### *(bugfix)* Fixed `snowflake_tag_association` usage with function or procedure object types
 
 Previously, after creating the `snowflake_tag_association` resource with functions or procedures,
