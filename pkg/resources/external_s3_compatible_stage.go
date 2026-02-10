@@ -95,19 +95,20 @@ var externalS3CompatStageSchema = func() map[string]*schema.Schema {
 	return collections.MergeMaps(stageCommonSchema, s3CompatStage)
 }()
 
-func ExternalS3CompatStage() *schema.Resource {
+func ExternalS3CompatibleStage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingCreateWrapper(resources.ExternalS3CompatStage, CreateExternalS3CompatStage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingReadWrapper(resources.ExternalS3CompatStage, ReadExternalS3CompatStageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingUpdateWrapper(resources.ExternalS3CompatStage, UpdateExternalS3CompatStage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalS3CompatStageResource, resources.ExternalS3CompatStage),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingCreateWrapper(resources.ExternalS3CompatibleStage, CreateExternalS3CompatStage)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingReadWrapper(resources.ExternalS3CompatibleStage, ReadExternalS3CompatStageFunc(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingUpdateWrapper(resources.ExternalS3CompatibleStage, UpdateExternalS3CompatStage)),
+		DeleteContext: DeleteStage(previewfeatures.ExternalS3CompatStageResource, resources.ExternalS3CompatibleStage),
 		Description:   "Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3CompatStage, customdiff.All(
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3CompatibleStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, ShowOutputAttributeName, "name", "comment", "url", "endpoint"),
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
+			ForceNewIfChangeToEmptySlice[any]("credentials"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAws),
@@ -115,7 +116,7 @@ func ExternalS3CompatStage() *schema.Resource {
 
 		Schema: externalS3CompatStageSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.ExternalS3CompatStage, ImportExternalS3CompatStage),
+			StateContext: TrackingImportWrapper(resources.ExternalS3CompatibleStage, ImportExternalS3CompatStage),
 		},
 		Timeouts: defaultTimeouts,
 	}

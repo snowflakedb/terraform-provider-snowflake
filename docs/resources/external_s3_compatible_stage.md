@@ -121,6 +121,7 @@ Optional:
 Read-Only:
 
 - `directory_table` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--directory_table))
+- `file_format` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format))
 
 <a id="nestedobjatt--describe_output--directory_table"></a>
 ### Nested Schema for `describe_output.directory_table`
@@ -129,6 +130,46 @@ Read-Only:
 
 - `auto_refresh` (Boolean)
 - `enable` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format"></a>
+### Nested Schema for `describe_output.file_format`
+
+Read-Only:
+
+- `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
+- `format_name` (String)
+
+<a id="nestedobjatt--describe_output--file_format--csv"></a>
+### Nested Schema for `describe_output.file_format.csv`
+
+Read-Only:
+
+- `binary_format` (String)
+- `compression` (String)
+- `date_format` (String)
+- `empty_field_as_null` (Boolean)
+- `encoding` (String)
+- `error_on_column_count_mismatch` (Boolean)
+- `escape` (String)
+- `escape_unenclosed_field` (String)
+- `field_delimiter` (String)
+- `field_optionally_enclosed_by` (String)
+- `file_extension` (String)
+- `multi_line` (Boolean)
+- `null_if` (List of String)
+- `parse_header` (Boolean)
+- `record_delimiter` (String)
+- `replace_invalid_characters` (Boolean)
+- `skip_blank_lines` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `skip_header` (Number)
+- `time_format` (String)
+- `timestamp_format` (String)
+- `trim_space` (Boolean)
+- `type` (String)
+- `validate_utf8` (Boolean)
+
 
 
 

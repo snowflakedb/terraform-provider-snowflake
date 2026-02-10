@@ -18,7 +18,6 @@ import (
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -70,7 +69,7 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.ExternalS3CompatStage),
+		CheckDestroy: CheckDestroy(t, resources.ExternalS3CompatibleStage),
 		Steps: []resource.TestStep{
 			// Create with basic credentials
 			{
@@ -111,9 +110,9 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasUrlString(s3CompatUrl).
 						HasEndpointString(s3CompatEndpoint).
 						HasCommentString(comment).
-						HasDirectory(resourceassert.ExternalS3CompatStageDirectoryTableAssert{
+						HasDirectory(sdk.StageS3CommonDirectoryTableOptionsRequest{
 							Enable:          true,
-							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
+							AutoRefresh:     sdk.Bool(false),
 							RefreshOnCreate: sdk.Bool(false),
 						}).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -166,9 +165,9 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasUrlString(s3CompatUrl).
 						HasEndpointString(s3CompatEndpoint).
 						HasCommentString(comment).
-						HasDirectory(resourceassert.ExternalS3CompatStageDirectoryTableAssert{
+						HasDirectory(sdk.StageS3CommonDirectoryTableOptionsRequest{
 							Enable:          false,
-							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
+							AutoRefresh:     sdk.Bool(false),
 							RefreshOnCreate: sdk.Bool(false),
 						}).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -202,9 +201,9 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasUrlString(s3CompatUrl).
 						HasEndpointString(s3CompatEndpoint).
 						HasCommentString(comment).
-						HasDirectory(resourceassert.ExternalS3CompatStageDirectoryTableAssert{
+						HasDirectory(sdk.StageS3CommonDirectoryTableOptionsRequest{
 							Enable:          false,
-							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
+							AutoRefresh:     sdk.Bool(false),
 							RefreshOnCreate: sdk.Bool(false),
 						}).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -329,7 +328,7 @@ func TestAcc_ExternalS3CompatStage_CompleteUseCase(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.ExternalS3CompatStage),
+		CheckDestroy: CheckDestroy(t, resources.ExternalS3CompatibleStage),
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
@@ -341,10 +340,10 @@ func TestAcc_ExternalS3CompatStage_CompleteUseCase(t *testing.T) {
 						HasUrlString(s3CompatUrl).
 						HasEndpointString(s3CompatEndpoint).
 						HasCommentString(comment).
-						HasDirectory(resourceassert.ExternalS3CompatStageDirectoryTableAssert{
+						HasDirectory(sdk.StageS3CommonDirectoryTableOptionsRequest{
 							Enable:          true,
 							RefreshOnCreate: sdk.Bool(false),
-							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
+							AutoRefresh:     sdk.Bool(false),
 						}).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCloudEnum(sdk.StageCloudAws).
@@ -407,7 +406,7 @@ func TestAcc_ExternalS3CompatStage_Validations(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.ExternalS3CompatStage),
+		CheckDestroy: CheckDestroy(t, resources.ExternalS3CompatibleStage),
 		Steps: []resource.TestStep{
 			{
 				Config:      accconfig.FromModels(t, modelInvalidAutoRefresh),

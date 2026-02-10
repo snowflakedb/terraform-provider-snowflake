@@ -40,7 +40,7 @@ func ExternalS3CompatStage(
 	endpoint string,
 	url string,
 ) *ExternalS3CompatStageModel {
-	e := &ExternalS3CompatStageModel{ResourceModelMeta: config.Meta(resourceName, resources.ExternalS3CompatStage)}
+	e := &ExternalS3CompatStageModel{ResourceModelMeta: config.Meta(resourceName, resources.ExternalS3CompatibleStage)}
 	e.WithDatabase(database)
 	e.WithSchema(schema)
 	e.WithName(name)
@@ -56,7 +56,7 @@ func ExternalS3CompatStageWithDefaultMeta(
 	endpoint string,
 	url string,
 ) *ExternalS3CompatStageModel {
-	e := &ExternalS3CompatStageModel{ResourceModelMeta: config.DefaultMeta(resources.ExternalS3CompatStage)}
+	e := &ExternalS3CompatStageModel{ResourceModelMeta: config.DefaultMeta(resources.ExternalS3CompatibleStage)}
 	e.WithDatabase(database)
 	e.WithSchema(schema)
 	e.WithName(name)

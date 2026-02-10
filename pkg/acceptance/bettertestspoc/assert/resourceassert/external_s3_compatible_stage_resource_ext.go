@@ -7,20 +7,14 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-type ExternalS3CompatStageDirectoryTableAssert struct {
-	Enable          bool
-	RefreshOnCreate *bool
-	AutoRefresh     *string
-}
-
-func (e *ExternalS3CompatStageResourceAssert) HasDirectory(opts ExternalS3CompatStageDirectoryTableAssert) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatStageResourceAssert) HasDirectory(opts sdk.StageS3CommonDirectoryTableOptionsRequest) *ExternalS3CompatStageResourceAssert {
 	var refreshOnCreate string
 	if opts.RefreshOnCreate != nil {
 		refreshOnCreate = strconv.FormatBool(*opts.RefreshOnCreate)
 	}
 	var autoRefresh string
 	if opts.AutoRefresh != nil {
-		autoRefresh = *opts.AutoRefresh
+		autoRefresh = strconv.FormatBool(*opts.AutoRefresh)
 	}
 	e.AddAssertion(assert.ValueSet("directory.#", "1"))
 	e.AddAssertion(assert.ValueSet("directory.0.enable", strconv.FormatBool(opts.Enable)))

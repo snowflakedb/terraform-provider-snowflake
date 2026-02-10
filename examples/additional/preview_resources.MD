@@ -1,5 +1,5 @@
 <!-- Section of preview resources -->
-### Currently preview resources
+### Currently preview resources 
 
 - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
