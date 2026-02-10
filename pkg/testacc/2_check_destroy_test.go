@@ -373,6 +373,15 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.StorageIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
 	},
+	resources.StorageIntegrationAws: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
+	resources.StorageIntegrationAzure: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
+	resources.StorageIntegrationGcs: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
 	resources.StreamOnDirectoryTable: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Streams.ShowByID)
 	},
