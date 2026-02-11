@@ -13,7 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -38,11 +37,12 @@ var networkRuleSchema = map[string]*schema.Schema{
 		Description: "The database in which to create the network rule.",
 	},
 	"type": {
-		Type:         schema.TypeString,
-		Required:     true,
-		ForceNew:     true,
-		Description:  "Specifies the type of network identifiers being allowed or blocked. A network rule can have only one type. Allowed values are IPV4, AWSVPCEID, AZURELINKID and HOST_PORT; allowed values are determined by the mode of the network rule; see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details.",
-		ValidateFunc: validation.StringInSlice([]string{"IPV4", "AWSVPCEID", "AZURELINKID", "HOST_PORT"}, false),
+		Type:             schema.TypeString,
+		Required:         true,
+		ForceNew:         true,
+		Description:      "Specifies the type of network identifiers being allowed or blocked. A network rule can have only one type. Allowed values are determined by the mode of the network rule; see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details. " + enumValuesDescription(sdk.AllNetworkRuleTypes),
+		ValidateDiagFunc: sdkValidation(sdk.ToNetworkRuleType),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToNetworkRuleType),
 	},
 	"value_list": {
 		Type:        schema.TypeSet,
@@ -51,11 +51,12 @@ var networkRuleSchema = map[string]*schema.Schema{
 		Description: "Specifies the network identifiers that will be allowed or blocked. Valid values in the list are determined by the type of network rule, see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details.",
 	},
 	"mode": {
-		Type:         schema.TypeString,
-		Required:     true,
-		ForceNew:     true,
-		Description:  "Specifies what is restricted by the network rule. Valid values are INGRESS, INTERNAL_STAGE and EGRESS; see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details.",
-		ValidateFunc: validation.StringInSlice([]string{"INGRESS", "INTERNAL_STAGE", "EGRESS"}, false),
+		Type:             schema.TypeString,
+		Required:         true,
+		ForceNew:         true,
+		Description:      "Specifies what is restricted by the network rule, see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details. " + enumValuesDescription(sdk.AllNetworkRuleModes),
+		ValidateDiagFunc: sdkValidation(sdk.ToNetworkRuleMode),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToNetworkRuleMode),
 	},
 	"comment": {
 		Type:        schema.TypeString,
@@ -95,8 +96,14 @@ func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 	schemaName := d.Get("schema").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	ruleType := sdk.NetworkRuleType(d.Get("type").(string))
-	ruleMode := sdk.NetworkRuleMode(d.Get("mode").(string))
+	ruleType, err := sdk.ToNetworkRuleType(d.Get("type").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	ruleMode, err := sdk.ToNetworkRuleMode(d.Get("mode").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	valueList := expandStringList(d.Get("value_list").(*schema.Set).List())
 	networkRuleValues := make([]sdk.NetworkRuleValue, len(valueList))

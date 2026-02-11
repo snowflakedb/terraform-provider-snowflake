@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNetworkRules_Create(t *testing.T) {
@@ -196,4 +198,81 @@ func TestNetworkRules_Describe(t *testing.T) {
 	})
 
 	// all options removed manually
+}
+
+func Test_ToNetworkRuleType(t *testing.T) {
+	type test struct {
+		input string
+		want  NetworkRuleType
+	}
+
+	valid := []test{
+		// case insensitive
+		{input: "ipv4", want: NetworkRuleTypeIpv4},
+
+		// Supported Values
+		{input: "IPV4", want: NetworkRuleTypeIpv4},
+		{input: "AWSVPCEID", want: NetworkRuleTypeAwsVpcEndpointId},
+		{input: "AZURELINKID", want: NetworkRuleTypeAzureLinkId},
+		{input: "GCPPSCID", want: NetworkRuleTypeGcpPscId},
+		{input: "HOST_PORT", want: NetworkRuleTypeHostPort},
+		{input: "PRIVATE_HOST_PORT", want: NetworkRuleTypePrivateHostPort},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToNetworkRuleType(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToNetworkRuleType(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ToNetworkRuleMode(t *testing.T) {
+	type test struct {
+		input string
+		want  NetworkRuleMode
+	}
+
+	valid := []test{
+		// case insensitive
+		{input: "ingress", want: NetworkRuleModeIngress},
+
+		// Supported Values
+		{input: "INGRESS", want: NetworkRuleModeIngress},
+		{input: "INTERNAL_STAGE", want: NetworkRuleModeInternalStage},
+		{input: "EGRESS", want: NetworkRuleModeEgress},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToNetworkRuleMode(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToNetworkRuleMode(tc.input)
+			require.Error(t, err)
+		})
+	}
 }
