@@ -671,6 +671,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_stream_on_table":                                              resources.StreamOnTable(),
 		"snowflake_stream_on_view":                                               resources.StreamOnView(),
 		"snowflake_streamlit":                                                    resources.Streamlit(),
+		"snowflake_hybrid_table":                                                 resources.HybridTable(),
 		"snowflake_table":                                                        resources.Table(),
 		"snowflake_table_column_masking_policy_application":                      resources.TableColumnMaskingPolicyApplication(),
 		"snowflake_table_constraint":                                             resources.TableConstraint(),

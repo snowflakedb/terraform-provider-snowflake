@@ -20,6 +20,7 @@ type Tables interface {
 	CreateUsingTemplate(ctx context.Context, req *CreateTableUsingTemplateRequest) error
 	CreateLike(ctx context.Context, req *CreateTableLikeRequest) error
 	CreateClone(ctx context.Context, req *CreateTableCloneRequest) error
+	CreateHybridTable(ctx context.Context, req *CreateHybridTableRequest) error
 	Alter(ctx context.Context, req *AlterTableRequest) error
 	Drop(ctx context.Context, req *DropTableRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
@@ -28,6 +29,9 @@ type Tables interface {
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error)
 	DescribeColumns(ctx context.Context, req *DescribeTableColumnsRequest) ([]TableColumnDetails, error)
 	DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error)
+	CreateIndex(ctx context.Context, req *CreateIndexRequest) error
+	DropIndex(ctx context.Context, req *DropIndexRequest) error
+	ShowIndexes(ctx context.Context, req *ShowIndexesRequest) ([]Index, error)
 }
 
 // TODO: check if [...] in the docs (like in https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template) mean that we can reuse all parameters from "normal" createTableOptions
@@ -123,6 +127,39 @@ type createTableOptions struct {
 type CreateTableColumnsAndConstraints struct {
 	Columns             []TableColumn         `ddl:"keyword"`
 	OutOfLineConstraint []OutOfLineConstraint `ddl:"list,no_parentheses"`
+}
+
+type createHybridTableOptions struct {
+	create                bool                             `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                            `ddl:"keyword" sql:"OR REPLACE"`
+	hybrid                bool                             `ddl:"static" sql:"HYBRID"`
+	table                 bool                             `ddl:"static" sql:"TABLE"`
+	IfNotExists           *bool                            `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier           `ddl:"identifier"`
+	ColumnsAndConstraints CreateTableColumnsAndConstraints `ddl:"list,parentheses"`
+	Comment               *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type createIndexOptions struct {
+	create  bool                   `ddl:"static" sql:"CREATE"`
+	index   bool                   `ddl:"static" sql:"INDEX"`
+	name    SchemaObjectIdentifier `ddl:"identifier"`
+	on      bool                   `ddl:"static" sql:"ON"`
+	table   SchemaObjectIdentifier `ddl:"identifier"`
+	Columns []string               `ddl:"keyword,parentheses"`
+}
+
+type dropIndexOptions struct {
+	drop     bool                   `ddl:"static" sql:"DROP"`
+	index    bool                   `ddl:"static" sql:"INDEX"`
+	IfExists *bool                  `ddl:"keyword" sql:"IF EXISTS"`
+	name     SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type showIndexesOptions struct {
+	show    bool `ddl:"static" sql:"SHOW"`
+	indexes bool `ddl:"static" sql:"INDEXES"`
+	In      *In  `ddl:"keyword" sql:"IN"`
 }
 
 type TableScope string
@@ -659,6 +696,47 @@ func (v *Table) ID() SchemaObjectIdentifier {
 
 func (v *Table) ObjectType() ObjectType {
 	return ObjectTypeTable
+}
+
+type indexDBRow struct {
+	CreatedOn    string `db:"created_on"`
+	Name         string `db:"name"`
+	DatabaseName string `db:"database_name"`
+	SchemaName   string `db:"schema_name"`
+	TableName    string `db:"table_name"`
+	ColumnNames  string `db:"column_names"`
+}
+
+type Index struct {
+	CreatedOn    string
+	Name         string
+	DatabaseName string
+	SchemaName   string
+	TableName    string
+	Columns      []string
+}
+
+func (row indexDBRow) convert() (*Index, error) {
+	index := &Index{
+		CreatedOn:    row.CreatedOn,
+		Name:         row.Name,
+		DatabaseName: row.DatabaseName,
+		SchemaName:   row.SchemaName,
+		TableName:    row.TableName,
+	}
+	// Parse comma-separated column names
+	if row.ColumnNames != "" {
+		columns := strings.Split(row.ColumnNames, ",")
+		index.Columns = make([]string, len(columns))
+		for i, col := range columns {
+			index.Columns[i] = strings.TrimSpace(col)
+		}
+	}
+	return index, nil
+}
+
+func (v *Index) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
 }
 
 // describeExternalTableColumnsOptions based on https://docs.snowflake.com/en/sql-reference/sql/desc-table

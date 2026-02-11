@@ -1077,3 +1077,55 @@ func TestInt_TablesShowByID(t *testing.T) {
 		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 }
+
+func TestInt_ShowIndexes(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	t.Run("show indexes on hybrid table", func(t *testing.T) {
+		// Create hybrid table
+		tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("name", sdk.DataTypeVARCHAR),
+		}
+
+		primaryKey := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).
+			WithName(sdk.String("pk_" + tableId.Name())).
+			WithColumns([]string{"id"})
+
+		hybridTableRequest := sdk.NewCreateHybridTableRequest(tableId, columns, []sdk.OutOfLineConstraintRequest{*primaryKey})
+		err := client.Tables.CreateHybridTable(ctx, hybridTableRequest)
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(tableId))
+			require.NoError(t, err)
+		})
+
+		// Create index
+		indexId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		indexRequest := sdk.NewCreateIndexRequest(indexId, tableId, []string{"name"})
+		err = client.Tables.CreateIndex(ctx, indexRequest)
+		require.NoError(t, err)
+
+		// Show indexes
+		showRequest := &sdk.ShowIndexesRequest{
+			In: &sdk.In{
+				Table: tableId,
+			},
+		}
+		indexes, err := client.Tables.ShowIndexes(ctx, showRequest)
+		require.NoError(t, err)
+		require.Len(t, indexes, 1)
+
+		// Verify index properties
+		index := indexes[0]
+		assert.Equal(t, indexId.Name(), index.Name)
+		assert.Equal(t, tableId.Name(), index.TableName)
+		assert.Equal(t, testClientHelper().Ids.SchemaId().Name(), index.SchemaName)
+		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), index.DatabaseName)
+		assert.NotEmpty(t, index.CreatedOn)
+		assert.Equal(t, []string{"name"}, index.Columns)
+	})
+}

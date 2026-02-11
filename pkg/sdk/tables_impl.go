@@ -19,6 +19,10 @@ var (
 	_ optionsProvider[createTableUsingTemplateOptions] = new(CreateTableUsingTemplateRequest)
 	_ optionsProvider[createTableLikeOptions]          = new(CreateTableLikeRequest)
 	_ optionsProvider[createTableCloneOptions]         = new(CreateTableCloneRequest)
+	_ optionsProvider[createHybridTableOptions]        = new(CreateHybridTableRequest)
+	_ optionsProvider[createIndexOptions]              = new(CreateIndexRequest)
+	_ optionsProvider[dropIndexOptions]                = new(DropIndexRequest)
+	_ optionsProvider[showIndexesOptions]              = new(ShowIndexesRequest)
 	_ optionsProvider[alterTableOptions]               = new(AlterTableRequest)
 	_ optionsProvider[dropTableOptions]                = new(DropTableRequest)
 	_ optionsProvider[showTableOptions]                = new(ShowTableRequest)
@@ -58,6 +62,30 @@ func (v *tables) CreateLike(ctx context.Context, request *CreateTableLikeRequest
 func (v *tables) CreateClone(ctx context.Context, request *CreateTableCloneRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateHybridTable(ctx context.Context, request *CreateHybridTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateIndex(ctx context.Context, request *CreateIndexRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) DropIndex(ctx context.Context, request *DropIndexRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) ShowIndexes(ctx context.Context, request *ShowIndexesRequest) ([]Index, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[indexDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[indexDBRow, Index](dbRows)
 }
 
 func (v *tables) Alter(ctx context.Context, request *AlterTableRequest) error {

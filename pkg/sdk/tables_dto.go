@@ -80,6 +80,34 @@ func (r *CreateTableRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }
 
+type CreateHybridTableRequest struct {
+	orReplace            *bool
+	ifNotExists          *bool
+	name                 SchemaObjectIdentifier       // required
+	columns              []TableColumnRequest         // required
+	OutOfLineConstraints []OutOfLineConstraintRequest // required
+	Comment              *string
+}
+
+func (r *CreateHybridTableRequest) GetName() SchemaObjectIdentifier {
+	return r.name
+}
+
+type CreateIndexRequest struct {
+	name    SchemaObjectIdentifier // required
+	table   SchemaObjectIdentifier // required
+	Columns []string               // required
+}
+
+type DropIndexRequest struct {
+	ifExists *bool
+	name     SchemaObjectIdentifier // required
+}
+
+type ShowIndexesRequest struct {
+	In *In
+}
+
 type RowAccessPolicyRequest struct {
 	Name SchemaObjectIdentifier // required
 	On   []string               // required
@@ -228,6 +256,12 @@ func (s *ShowTableRequest) toOpts() *showTableOptions {
 		StartsWith: s.StartsWith,
 		LimitFrom:  limitFrom,
 		In:         s.In,
+	}
+}
+
+func (s *ShowIndexesRequest) toOpts() *showIndexesOptions {
+	return &showIndexesOptions{
+		In: s.In,
 	}
 }
 

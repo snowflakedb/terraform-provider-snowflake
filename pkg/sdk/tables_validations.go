@@ -8,6 +8,10 @@ var (
 	_ validatable = new(createTableLikeOptions)
 	_ validatable = new(createTableCloneOptions)
 	_ validatable = new(createTableUsingTemplateOptions)
+	_ validatable = new(createHybridTableOptions)
+	_ validatable = new(createIndexOptions)
+	_ validatable = new(dropIndexOptions)
+	_ validatable = new(showIndexesOptions)
 	_ validatable = new(alterTableOptions)
 	_ validatable = new(dropTableOptions)
 	_ validatable = new(showTableOptions)
@@ -77,6 +81,93 @@ func (opts *createTableOptions) validate() error {
 	}
 
 	return errors.Join(errs...)
+}
+
+func (opts *createHybridTableOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("createHybridTableOptions", "name"))
+	}
+	if len(opts.ColumnsAndConstraints.Columns) == 0 {
+		errs = append(errs, errNotSet("createHybridTableOptions", "Columns"))
+	}
+
+	// Validate that at least one PRIMARY KEY constraint exists
+	hasPrimaryKey := false
+	for _, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
+		if outOfLineConstraint.Type == ColumnConstraintTypePrimaryKey {
+			hasPrimaryKey = true
+		}
+		// Validate constraint
+		if err := outOfLineConstraint.validate(); err != nil {
+			errs = append(errs, err)
+		}
+		// Ensure all constraints are ENFORCED (Enforced must be nil or true, NotEnforced must be nil or false)
+		if valueSet(outOfLineConstraint.NotEnforced) && *outOfLineConstraint.NotEnforced {
+			errs = append(errs, errors.New("hybrid tables require all constraints to be ENFORCED"))
+		}
+	}
+
+	// Check inline constraints for PRIMARY KEY
+	for _, column := range opts.ColumnsAndConstraints.Columns {
+		if column.InlineConstraint != nil {
+			if column.InlineConstraint.Type == ColumnConstraintTypePrimaryKey {
+				hasPrimaryKey = true
+			}
+			if err := column.InlineConstraint.validate(); err != nil {
+				errs = append(errs, err)
+			}
+			// Ensure all inline constraints are ENFORCED
+			if valueSet(column.InlineConstraint.NotEnforced) && *column.InlineConstraint.NotEnforced {
+				errs = append(errs, errors.New("hybrid tables require all constraints to be ENFORCED"))
+			}
+		}
+	}
+
+	if !hasPrimaryKey {
+		errs = append(errs, errors.New("hybrid tables require at least one PRIMARY KEY constraint"))
+	}
+
+	return errors.Join(errs...)
+}
+
+func (opts *createIndexOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("createIndexOptions", "name"))
+	}
+	if !ValidObjectIdentifier(opts.table) {
+		errs = append(errs, errInvalidIdentifier("createIndexOptions", "table"))
+	}
+	if len(opts.Columns) == 0 {
+		errs = append(errs, errNotSet("createIndexOptions", "Columns"))
+	}
+	return errors.Join(errs...)
+}
+
+func (opts *dropIndexOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("dropIndexOptions", "name"))
+	}
+	return errors.Join(errs...)
+}
+
+func (opts *showIndexesOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	// All fields are optional, no additional validation needed
+	return nil
 }
 
 func (opts *createTableAsSelectOptions) validate() error {

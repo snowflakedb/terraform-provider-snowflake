@@ -1523,6 +1523,32 @@ func TestTableShow(t *testing.T) {
 	})
 }
 
+func TestShowIndexes(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+
+	defaultOpts := func() *showIndexesOptions {
+		return &showIndexesOptions{}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *showIndexesOptions = nil
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("show indexes", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES`)
+	})
+
+	t.Run("show indexes with in", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.In = &In{
+			Table: id,
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES IN TABLE %s`, id.FullyQualifiedName())
+	})
+}
+
 func TestTableDescribeColumns(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	defaultOpts := func() *describeTableColumnsOptions {

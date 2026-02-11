@@ -100,6 +100,7 @@ const (
 	StreamOnTable                                          resource = "snowflake_stream_on_table"
 	StreamOnView                                           resource = "snowflake_stream_on_view"
 	Streamlit                                              resource = "snowflake_streamlit"
+	HybridTable                                            resource = "snowflake_hybrid_table"
 	Table                                                  resource = "snowflake_table"
 	TableColumnMaskingPolicyApplication                    resource = "snowflake_table_column_masking_policy_application"
 	TableConstraint                                        resource = "snowflake_table_constraint"
