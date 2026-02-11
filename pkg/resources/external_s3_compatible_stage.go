@@ -105,13 +105,17 @@ func ExternalS3CompatibleStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3CompatibleStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, ShowOutputAttributeName, "name", "comment", "url", "endpoint"),
-			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
+			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "file_format"),
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAws),
+			// This is the same configuration as for external S3 stage, but the additional differences are:
+			// - endpoint is required for S3-compatible stages, but it's null for S3 stages
+			// - url starts with s3compat:// instead of s3://
+			// changes on both of these fields trigger ForceNew.
 		)),
 
 		Schema: externalS3CompatStageSchema,
@@ -164,6 +168,11 @@ func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 			return nil, err
 		}
 	}
+	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
+		if err := d.Set("file_format", fileFormat); err != nil {
+			return nil, err
+		}
+	}
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -188,6 +197,7 @@ func CreateExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseS3StageDirectory),
+		attributeMappedValueCreateBuilderNested(d, "file_format", request.WithFileFormat, parseStageFileFormat),
 	)
 	if err != nil {
 		return diag.FromErr(err)
@@ -257,6 +267,9 @@ func ReadExternalS3CompatStageFunc(withExternalChangesMarking bool) schema.ReadC
 			); err != nil {
 				return diag.FromErr(err)
 			}
+			if err := handleStageFileFormatRead(d, details); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		var cloud string
@@ -313,6 +326,7 @@ func UpdateExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 	set := sdk.NewAlterExternalS3StageStageRequest(id)
 	err = errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
 	)
 	if err != nil {
 		return diag.FromErr(err)

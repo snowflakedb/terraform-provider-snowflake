@@ -19,6 +19,7 @@ type ExternalS3CompatibleStageModel struct {
 	Credentials        tfconfig.Variable `json:"credentials,omitempty"`
 	Directory          tfconfig.Variable `json:"directory,omitempty"`
 	Endpoint           tfconfig.Variable `json:"endpoint,omitempty"`
+	FileFormat         tfconfig.Variable `json:"file_format,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	StageType          tfconfig.Variable `json:"stage_type,omitempty"`
 	Url                tfconfig.Variable `json:"url,omitempty"`
@@ -128,6 +129,8 @@ func (e *ExternalS3CompatibleStageModel) WithEndpoint(endpoint string) *External
 	return e
 }
 
+// file_format attribute type is not yet supported, so WithFileFormat can't be generated
+
 func (e *ExternalS3CompatibleStageModel) WithFullyQualifiedName(fullyQualifiedName string) *ExternalS3CompatibleStageModel {
 	e.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return e
@@ -184,6 +187,11 @@ func (e *ExternalS3CompatibleStageModel) WithDirectoryValue(value tfconfig.Varia
 
 func (e *ExternalS3CompatibleStageModel) WithEndpointValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
 	e.Endpoint = value
+	return e
+}
+
+func (e *ExternalS3CompatibleStageModel) WithFileFormatValue(value tfconfig.Variable) *ExternalS3CompatibleStageModel {
+	e.FileFormat = value
 	return e
 }
 

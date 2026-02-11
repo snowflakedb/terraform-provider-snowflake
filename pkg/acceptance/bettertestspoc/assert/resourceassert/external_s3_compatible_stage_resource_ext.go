@@ -33,6 +33,25 @@ func (e *ExternalS3CompatStageResourceAssert) HasCloudEnum(expected sdk.StageClo
 	return e
 }
 
+func (e *ExternalS3CompatStageResourceAssert) HasFileFormatEmpty() *ExternalS3CompatStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
+	return e
+}
+
+func (e *ExternalS3CompatStageResourceAssert) HasFileFormatFormatName(expected string) *ExternalS3CompatStageResourceAssert {
+	for _, a := range stageHasFileFormatFormatName(expected) {
+		e.AddAssertion(a)
+	}
+	return e
+}
+
+func (e *ExternalS3CompatStageResourceAssert) HasFileFormatCsv() *ExternalS3CompatStageResourceAssert {
+	for _, a := range stageHasFileFormatCsv() {
+		e.AddAssertion(a)
+	}
+	return e
+}
+
 func (e *ExternalS3CompatStageResourceAssert) HasCredentials(awsKeyId string, awsSecretKey string) *ExternalS3CompatStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("credentials.#", "1"))
 	e.AddAssertion(assert.ValueSet("credentials.0.aws_key_id", awsKeyId))
