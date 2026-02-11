@@ -1,21 +1,19 @@
 ---
-page_title: "snowflake_internal_stage Resource - terraform-provider-snowflake"
+page_title: "snowflake_stage_external_s3_compatible Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage internal stages. For more information, check internal stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams.
+  Resource used to manage external S3-compatible stages. For more information, check external stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
--> **Note** External changes detection on the `encryption` field is not supported because Snowflake does not return encryption settings in DESCRIBE or SHOW STAGE output.
+-> **Note** External changes detection on `credentials` field is not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
--> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
+# snowflake_stage_external_s3_compatible (Resource)
 
-# snowflake_internal_stage (Resource)
-
-Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).
+Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
 
 ## Example Usage
 
@@ -23,36 +21,44 @@ Resource used to manage internal stages. For more information, check [internal s
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
-# basic resource
-resource "snowflake_internal_stage" "basic" {
-  name     = "my_internal_stage"
+# Basic resource with credentials
+resource "snowflake_stage_external_s3_compatible" "basic" {
+  name     = "my_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 }
 
-# complete resource
-resource "snowflake_internal_stage" "complete" {
-  name     = "complete_stage"
+# Complete resource with all options
+resource "snowflake_stage_external_s3_compatible" "complete" {
+  name     = "complete_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
-  encryption {
-    snowflake_full {}
+  credentials {
+    aws_key_id     = var.aws_key_id
+    aws_secret_key = var.aws_secret_key
   }
 
   directory {
-    enable       = true
-    auto_refresh = false
+    enable            = true
+    refresh_on_create = true
+    auto_refresh      = false
   }
 
-  comment = "Fully configured internal stage"
+  comment = "Fully configured S3-compatible external stage"
 }
 
-# resource with inline CSV file format
-resource "snowflake_internal_stage" "with_csv_format" {
-  name     = "csv_format_stage"
+# Resource with inline CSV file format
+resource "snowflake_stage_external_s3_compatible" "with_csv_format" {
+  name     = "s3_compat_csv_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     csv {
@@ -81,11 +87,13 @@ resource "snowflake_internal_stage" "with_csv_format" {
   }
 }
 
-# resource with inline JSON file format
-resource "snowflake_internal_stage" "with_json_format" {
-  name     = "json_format_stage"
+# Resource with inline JSON file format
+resource "snowflake_stage_external_s3_compatible" "with_json_format" {
+  name     = "s3_compat_json_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     json {
@@ -108,11 +116,13 @@ resource "snowflake_internal_stage" "with_json_format" {
   }
 }
 
-# resource with inline AVRO file format
-resource "snowflake_internal_stage" "with_avro_format" {
-  name     = "avro_format_stage"
+# Resource with inline AVRO file format
+resource "snowflake_stage_external_s3_compatible" "with_avro_format" {
+  name     = "s3_compat_avro_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     avro {
@@ -124,11 +134,13 @@ resource "snowflake_internal_stage" "with_avro_format" {
   }
 }
 
-# resource with inline ORC file format
-resource "snowflake_internal_stage" "with_orc_format" {
-  name     = "orc_format_stage"
+# Resource with inline ORC file format
+resource "snowflake_stage_external_s3_compatible" "with_orc_format" {
+  name     = "s3_compat_orc_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     orc {
@@ -139,11 +151,13 @@ resource "snowflake_internal_stage" "with_orc_format" {
   }
 }
 
-# resource with inline Parquet file format
-resource "snowflake_internal_stage" "with_parquet_format" {
-  name     = "parquet_format_stage"
+# Resource with inline Parquet file format
+resource "snowflake_stage_external_s3_compatible" "with_parquet_format" {
+  name     = "s3_compat_parquet_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     parquet {
@@ -158,11 +172,13 @@ resource "snowflake_internal_stage" "with_parquet_format" {
   }
 }
 
-# resource with inline XML file format
-resource "snowflake_internal_stage" "with_xml_format" {
-  name     = "xml_format_stage"
+# Resource with inline XML file format
+resource "snowflake_stage_external_s3_compatible" "with_xml_format" {
+  name     = "s3_compat_xml_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     xml {
@@ -176,11 +192,13 @@ resource "snowflake_internal_stage" "with_xml_format" {
   }
 }
 
-# resource with named file format
-resource "snowflake_internal_stage" "with_named_format" {
-  name     = "named_format_stage"
+# Resource with named file format
+resource "snowflake_stage_external_s3_compatible" "with_named_format" {
+  name     = "s3_compat_named_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     format_name = snowflake_file_format.test.fully_qualified_name
@@ -196,52 +214,48 @@ resource "snowflake_internal_stage" "with_named_format" {
 ### Required
 
 - `database` (String) The database in which to create the stage. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `endpoint` (String) Specifies the endpoint for the S3-compatible storage provider.
 - `name` (String) Specifies the identifier for the stage; must be unique for the database and schema in which the stage is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the stage. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `url` (String) Specifies the URL for the S3-compatible storage location (e.g., 's3compat://bucket/path/').
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the stage.
+- `credentials` (Block List, Max: 1) Specifies the AWS credentials for the S3-compatible external stage. (see [below for nested schema](#nestedblock--credentials))
 - `directory` (Block List, Max: 1) Directory tables store a catalog of staged files in cloud storage. (see [below for nested schema](#nestedblock--directory))
-- `encryption` (Block List, Max: 1) Specifies the encryption settings for the internal stage. (see [below for nested schema](#nestedblock--encryption))
 - `file_format` (Block List, Max: 1) Specifies the file format for the stage. (see [below for nested schema](#nestedblock--file_format))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `cloud` (String) Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.
 - `describe_output` (List of Object) Outputs the result of `DESCRIBE STAGE` for the given stage. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW STAGES` for the given stage. (see [below for nested schema](#nestedatt--show_output))
 - `stage_type` (String) Specifies a type for the stage. This field is used for checking external changes and recreating the resources if needed.
 
+<a id="nestedblock--credentials"></a>
+### Nested Schema for `credentials`
+
+Required:
+
+- `aws_key_id` (String, Sensitive) Specifies the AWS access key ID.
+- `aws_secret_key` (String, Sensitive) Specifies the AWS secret access key.
+
+
 <a id="nestedblock--directory"></a>
 ### Nested Schema for `directory`
 
 Required:
 
-- `enable` (Boolean) Specifies whether to enable a directory table on the internal named stage.
+- `enable` (Boolean) Specifies whether to enable a directory table on the external stage.
 
 Optional:
 
-- `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should automatically refresh the directory table metadata when new or updated data files are available on the internal named stage.
-
-
-<a id="nestedblock--encryption"></a>
-### Nested Schema for `encryption`
-
-Optional:
-
-- `snowflake_full` (Block List, Max: 1) Client-side and server-side encryption. (see [below for nested schema](#nestedblock--encryption--snowflake_full))
-- `snowflake_sse` (Block List, Max: 1) Server-side encryption only. (see [below for nested schema](#nestedblock--encryption--snowflake_sse))
-
-<a id="nestedblock--encryption--snowflake_full"></a>
-### Nested Schema for `encryption.snowflake_full`
-
-
-<a id="nestedblock--encryption--snowflake_sse"></a>
-### Nested Schema for `encryption.snowflake_sse`
-
+- `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.
+- `refresh_on_create` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to automatically refresh the directory table metadata once, immediately after the stage is created.This field is used only when creating the object. Changes on this field are ignored after creation.
 
 
 <a id="nestedblock--file_format"></a>
@@ -377,6 +391,8 @@ Read-Only:
 
 - `directory_table` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--directory_table))
 - `file_format` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format))
+- `location` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--location))
+- `privatelink` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--privatelink))
 
 <a id="nestedobjatt--describe_output--directory_table"></a>
 ### Nested Schema for `describe_output.directory_table`
@@ -509,6 +525,23 @@ Read-Only:
 
 
 
+<a id="nestedobjatt--describe_output--location"></a>
+### Nested Schema for `describe_output.location`
+
+Read-Only:
+
+- `aws_access_point_arn` (String)
+- `url` (String)
+
+
+<a id="nestedobjatt--describe_output--privatelink"></a>
+### Nested Schema for `describe_output.privatelink`
+
+Read-Only:
+
+- `use_privatelink_endpoint` (Boolean)
+
+
 
 <a id="nestedatt--show_output"></a>
 ### Nested Schema for `show_output`
@@ -537,5 +570,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_internal_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
+terraform import snowflake_stage_external_s3_compatible.example '"<database_name>"."<schema_name>"."<stage_name>"'
 ```

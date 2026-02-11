@@ -199,7 +199,7 @@ func ExternalS3Stage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3Stage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalS3StageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalS3StageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "aws_access_point_arn"),
+			ComputedIfAnyAttributeChanged(externalS3StageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "aws_access_point_arn", "file_format"),
 			ComputedIfAnyAttributeChanged(externalS3StageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
@@ -209,6 +209,10 @@ func ExternalS3Stage() *schema.Resource {
 			ForceNewIfChangeToEmptyString("aws_access_point_arn"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAws),
+			// This is the same configuration as for external S3 stage, but the additional differences are:
+			// - endpoint is required for S3-compatible stages, but it's null for S3 stages
+			// - url starts with s3compat:// instead of s3://
+			// changes on both of these fields trigger ForceNew.
 			RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage(),
 		)),
 
@@ -249,6 +253,11 @@ func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 				"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
 			},
 		}); err != nil {
+			return nil, err
+		}
+	}
+	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
+		if err := d.Set("file_format", fileFormat); err != nil {
 			return nil, err
 		}
 	}
@@ -301,6 +310,7 @@ func CreateExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseS3StageDirectory),
+		attributeMappedValueCreateBuilderNested(d, "file_format", request.WithFileFormat, parseStageFileFormat),
 	)
 	if err != nil {
 		return diag.FromErr(err)
@@ -380,6 +390,9 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			); err != nil {
 				return diag.FromErr(err)
 			}
+			if err := handleStageFileFormatRead(d, details); err != nil {
+				return diag.FromErr(err)
+			}
 			var usePrivatelinkEndpoint bool
 			if details.PrivateLink != nil {
 				usePrivatelinkEndpoint = details.PrivateLink.UsePrivatelinkEndpoint
@@ -457,6 +470,7 @@ func UpdateExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 
 	err = errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
 	)
 	if err != nil {
 		return diag.FromErr(err)

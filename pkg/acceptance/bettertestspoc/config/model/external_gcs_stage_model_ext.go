@@ -58,6 +58,16 @@ func (e *ExternalGcsStageModel) WithInvalidRefreshOnCreate() *ExternalGcsStageMo
 	return e
 }
 
+// WithFileFormatName sets a named file format reference.
+func (e *ExternalGcsStageModel) WithFileFormatName(formatName string) *ExternalGcsStageModel {
+	return e.WithFileFormatValue(stageFileFormatName(formatName))
+}
+
+// WithFileFormatCsv sets inline CSV file format with the provided options.
+func (e *ExternalGcsStageModel) WithFileFormatCsv(opts sdk.FileFormatCsvOptions) *ExternalGcsStageModel {
+	return e.WithFileFormatValue(stageFileFormatCsv(opts))
+}
+
 func (e *ExternalGcsStageModel) WithEncryptionGcsSseKms(kmsKeyId string) *ExternalGcsStageModel {
 	encryptionMap := map[string]tfconfig.Variable{
 		"gcs_sse_kms": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{

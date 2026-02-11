@@ -18,6 +18,7 @@ type ExternalGcsStageModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	Directory          tfconfig.Variable `json:"directory,omitempty"`
 	Encryption         tfconfig.Variable `json:"encryption,omitempty"`
+	FileFormat         tfconfig.Variable `json:"file_format,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	StageType          tfconfig.Variable `json:"stage_type,omitempty"`
 	StorageIntegration tfconfig.Variable `json:"storage_integration,omitempty"`
@@ -123,6 +124,8 @@ func (e *ExternalGcsStageModel) WithComment(comment string) *ExternalGcsStageMod
 
 // encryption attribute type is not yet supported, so WithEncryption can't be generated
 
+// file_format attribute type is not yet supported, so WithFileFormat can't be generated
+
 func (e *ExternalGcsStageModel) WithFullyQualifiedName(fullyQualifiedName string) *ExternalGcsStageModel {
 	e.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return e
@@ -179,6 +182,11 @@ func (e *ExternalGcsStageModel) WithDirectoryValue(value tfconfig.Variable) *Ext
 
 func (e *ExternalGcsStageModel) WithEncryptionValue(value tfconfig.Variable) *ExternalGcsStageModel {
 	e.Encryption = value
+	return e
+}
+
+func (e *ExternalGcsStageModel) WithFileFormatValue(value tfconfig.Variable) *ExternalGcsStageModel {
+	e.FileFormat = value
 	return e
 }
 

@@ -1,33 +1,41 @@
-# basic resource
-resource "snowflake_internal_stage" "basic" {
-  name     = "my_internal_stage"
+# Basic resource with credentials
+resource "snowflake_stage_external_s3_compatible" "basic" {
+  name     = "my_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 }
 
-# complete resource
-resource "snowflake_internal_stage" "complete" {
-  name     = "complete_stage"
+# Complete resource with all options
+resource "snowflake_stage_external_s3_compatible" "complete" {
+  name     = "complete_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
-  encryption {
-    snowflake_full {}
+  credentials {
+    aws_key_id     = var.aws_key_id
+    aws_secret_key = var.aws_secret_key
   }
 
   directory {
-    enable       = true
-    auto_refresh = false
+    enable            = true
+    refresh_on_create = true
+    auto_refresh      = false
   }
 
-  comment = "Fully configured internal stage"
+  comment = "Fully configured S3-compatible external stage"
 }
 
-# resource with inline CSV file format
-resource "snowflake_internal_stage" "with_csv_format" {
-  name     = "csv_format_stage"
+# Resource with inline CSV file format
+resource "snowflake_stage_external_s3_compatible" "with_csv_format" {
+  name     = "s3_compat_csv_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     csv {
@@ -56,11 +64,13 @@ resource "snowflake_internal_stage" "with_csv_format" {
   }
 }
 
-# resource with inline JSON file format
-resource "snowflake_internal_stage" "with_json_format" {
-  name     = "json_format_stage"
+# Resource with inline JSON file format
+resource "snowflake_stage_external_s3_compatible" "with_json_format" {
+  name     = "s3_compat_json_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     json {
@@ -83,11 +93,13 @@ resource "snowflake_internal_stage" "with_json_format" {
   }
 }
 
-# resource with inline AVRO file format
-resource "snowflake_internal_stage" "with_avro_format" {
-  name     = "avro_format_stage"
+# Resource with inline AVRO file format
+resource "snowflake_stage_external_s3_compatible" "with_avro_format" {
+  name     = "s3_compat_avro_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     avro {
@@ -99,11 +111,13 @@ resource "snowflake_internal_stage" "with_avro_format" {
   }
 }
 
-# resource with inline ORC file format
-resource "snowflake_internal_stage" "with_orc_format" {
-  name     = "orc_format_stage"
+# Resource with inline ORC file format
+resource "snowflake_stage_external_s3_compatible" "with_orc_format" {
+  name     = "s3_compat_orc_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     orc {
@@ -114,11 +128,13 @@ resource "snowflake_internal_stage" "with_orc_format" {
   }
 }
 
-# resource with inline Parquet file format
-resource "snowflake_internal_stage" "with_parquet_format" {
-  name     = "parquet_format_stage"
+# Resource with inline Parquet file format
+resource "snowflake_stage_external_s3_compatible" "with_parquet_format" {
+  name     = "s3_compat_parquet_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     parquet {
@@ -133,11 +149,13 @@ resource "snowflake_internal_stage" "with_parquet_format" {
   }
 }
 
-# resource with inline XML file format
-resource "snowflake_internal_stage" "with_xml_format" {
-  name     = "xml_format_stage"
+# Resource with inline XML file format
+resource "snowflake_stage_external_s3_compatible" "with_xml_format" {
+  name     = "s3_compat_xml_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     xml {
@@ -151,11 +169,13 @@ resource "snowflake_internal_stage" "with_xml_format" {
   }
 }
 
-# resource with named file format
-resource "snowflake_internal_stage" "with_named_format" {
-  name     = "named_format_stage"
+# Resource with named file format
+resource "snowflake_stage_external_s3_compatible" "with_named_format" {
+  name     = "s3_compat_named_format_stage"
   database = "my_database"
   schema   = "my_schema"
+  url      = "s3compat://bucket/path/"
+  endpoint = "s3.my-provider.com"
 
   file_format {
     format_name = snowflake_file_format.test.fully_qualified_name

@@ -126,7 +126,7 @@ func ExternalGcsStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalGcsStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalGcsStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalGcsStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
+			ComputedIfAnyAttributeChanged(externalGcsStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "file_format"),
 			ComputedIfAnyAttributeChanged(externalGcsStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("encryption"),
@@ -175,6 +175,11 @@ func ImportExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 			return nil, err
 		}
 	}
+	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
+		if err := d.Set("file_format", fileFormat); err != nil {
+			return nil, err
+		}
+	}
 	if details.Location != nil {
 		if err := d.Set("url", details.Location.Url); err != nil {
 			return nil, err
@@ -213,6 +218,7 @@ func CreateExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseGcsStageDirectory),
+		attributeMappedValueCreateBuilderNested(d, "file_format", request.WithFileFormat, parseStageFileFormat),
 	)
 	if err != nil {
 		return diag.FromErr(err)
@@ -280,6 +286,9 @@ func ReadExternalGcsStageFunc(withExternalChangesMarking bool) schema.ReadContex
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
 				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
 			); err != nil {
+				return diag.FromErr(err)
+			}
+			if err := handleStageFileFormatRead(d, details); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -355,6 +364,7 @@ func UpdateExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 
 	err = errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
 	)
 	if err != nil {
 		return diag.FromErr(err)

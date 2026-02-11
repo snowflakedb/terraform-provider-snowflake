@@ -19,6 +19,7 @@ type ExternalAzureStageModel struct {
 	Credentials            tfconfig.Variable `json:"credentials,omitempty"`
 	Directory              tfconfig.Variable `json:"directory,omitempty"`
 	Encryption             tfconfig.Variable `json:"encryption,omitempty"`
+	FileFormat             tfconfig.Variable `json:"file_format,omitempty"`
 	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	StageType              tfconfig.Variable `json:"stage_type,omitempty"`
 	StorageIntegration     tfconfig.Variable `json:"storage_integration,omitempty"`
@@ -123,6 +124,8 @@ func (e *ExternalAzureStageModel) WithComment(comment string) *ExternalAzureStag
 
 // encryption attribute type is not yet supported, so WithEncryption can't be generated
 
+// file_format attribute type is not yet supported, so WithFileFormat can't be generated
+
 func (e *ExternalAzureStageModel) WithFullyQualifiedName(fullyQualifiedName string) *ExternalAzureStageModel {
 	e.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return e
@@ -189,6 +192,11 @@ func (e *ExternalAzureStageModel) WithDirectoryValue(value tfconfig.Variable) *E
 
 func (e *ExternalAzureStageModel) WithEncryptionValue(value tfconfig.Variable) *ExternalAzureStageModel {
 	e.Encryption = value
+	return e
+}
+
+func (e *ExternalAzureStageModel) WithFileFormatValue(value tfconfig.Variable) *ExternalAzureStageModel {
+	e.FileFormat = value
 	return e
 }
 

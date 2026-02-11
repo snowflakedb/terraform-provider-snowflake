@@ -138,6 +138,16 @@ func (e *ExternalS3StageModel) WithEncryptionNoneTypeSpecified() *ExternalS3Stag
 	)
 }
 
+// WithFileFormatName sets a named file format reference.
+func (e *ExternalS3StageModel) WithFileFormatName(formatName string) *ExternalS3StageModel {
+	return e.WithFileFormatValue(stageFileFormatName(formatName))
+}
+
+// WithFileFormatCsv sets inline CSV file format with the provided options.
+func (e *ExternalS3StageModel) WithFileFormatCsv(opts sdk.FileFormatCsvOptions) *ExternalS3StageModel {
+	return e.WithFileFormatValue(stageFileFormatCsv(opts))
+}
+
 func (e *ExternalS3StageModel) WithCredentialsAwsKey(keyId, secretKey string) *ExternalS3StageModel {
 	e.Credentials = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{

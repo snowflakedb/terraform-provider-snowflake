@@ -195,7 +195,7 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 				ResourceName:            modelAlter.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"directory", "encryption"},
+				ImportStateVerifyIgnore: []string{"directory", "encryption", "file_format"},
 			},
 			// Set optionals (complete)
 			{
@@ -237,7 +237,7 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"directory", "encryption"},
+				ImportStateVerifyIgnore: []string{"directory", "encryption", "file_format"},
 			},
 			// unset auto_refresh
 			{
@@ -500,7 +500,120 @@ func TestAcc_ExternalGcsStage_CompleteUseCase(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"directory", "encryption"},
+				ImportStateVerifyIgnore: []string{"directory", "encryption", "file_format"},
+			},
+		},
+	})
+}
+
+func TestAcc_ExternalGcsStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	storageIntegrationId := ids.PrecreatedGcpStorageIntegration
+	gcsUrl := testenvs.GetOrSkipTest(t, testenvs.GcsExternalBucketUrl)
+
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	t.Cleanup(fileFormatCleanup)
+
+	modelBasic := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl)
+
+	modelWithCsvFormat := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
+		WithFileFormatCsv(sdk.FileFormatCsvOptions{})
+
+	modelWithNamedFormat := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl).
+		WithFileFormatName(fileFormat.ID().FullyQualifiedName())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalGcsStage),
+		Steps: []resource.TestStep{
+			// Start with inline CSV
+			{
+				Config: accconfig.FromModels(t, modelWithCsvFormat),
+				Check: assertThat(t,
+					resourceassert.ExternalGcsStageResource(t, modelWithCsvFormat.ResourceReference()).
+						HasFileFormatCsv(),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", "")),
+				),
+			},
+			// Switch to named format
+			{
+				Config: accconfig.FromModels(t, modelWithNamedFormat),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalGcsStageResource(t, modelWithNamedFormat.ResourceReference()).
+						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", fileFormat.ID().FullyQualifiedName())),
+				),
+			},
+			// import named format
+			{
+				Config:                  accconfig.FromModels(t, modelWithNamedFormat),
+				ResourceName:            modelWithNamedFormat.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory"},
+			},
+			// Detect external change
+			{
+				Config: accconfig.FromModels(t, modelWithNamedFormat),
+				PreConfig: func() {
+					testClient().Stage.AlterExternalGCSStage(t, sdk.NewAlterExternalGCSStageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalGcsStageResource(t, modelWithNamedFormat.ResourceReference()).
+						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", fileFormat.ID().FullyQualifiedName())),
+				),
+			},
+			// Switch back to inline CSV
+			{
+				Config: accconfig.FromModels(t, modelWithCsvFormat),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithCsvFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalGcsStageResource(t, modelWithCsvFormat.ResourceReference()).
+						HasFileFormatCsv(),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", "")),
+				),
+			},
+			// Switch back to default
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalGcsStageResource(t, modelBasic.ResourceReference()).
+						HasFileFormatEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.0.csv.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.0.format_name", "")),
+				),
 			},
 		},
 	})

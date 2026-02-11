@@ -154,7 +154,7 @@ func ExternalAzureStage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalAzureStage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalAzureStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint"),
+			ComputedIfAnyAttributeChanged(externalAzureStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "file_format"),
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
@@ -217,6 +217,11 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 			return nil, err
 		}
 	}
+	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
+		if err := d.Set("file_format", fileFormat); err != nil {
+			return nil, err
+		}
+	}
 	if stage.StorageIntegration != nil {
 		if err := d.Set("storage_integration", stage.StorageIntegration.Name()); err != nil {
 			return nil, err
@@ -250,6 +255,7 @@ func CreateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseAzureStageDirectory),
+		attributeMappedValueCreateBuilderNested(d, "file_format", request.WithFileFormat, parseStageFileFormat),
 	)
 	if err != nil {
 		return diag.FromErr(err)
@@ -328,6 +334,9 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			); err != nil {
 				return diag.FromErr(err)
 			}
+			if err := handleStageFileFormatRead(d, details); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		var cloud string
@@ -395,6 +404,7 @@ func UpdateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 
 	err = errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
 	)
 	if err != nil {
 		return diag.FromErr(err)

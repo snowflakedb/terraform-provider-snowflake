@@ -105,6 +105,16 @@ func (e *ExternalAzureStageModel) WithEncryptionNoneTypeSpecified() *ExternalAzu
 	)
 }
 
+// WithFileFormatName sets a named file format reference.
+func (e *ExternalAzureStageModel) WithFileFormatName(formatName string) *ExternalAzureStageModel {
+	return e.WithFileFormatValue(stageFileFormatName(formatName))
+}
+
+// WithFileFormatCsv sets inline CSV file format with the provided options.
+func (e *ExternalAzureStageModel) WithFileFormatCsv(opts sdk.FileFormatCsvOptions) *ExternalAzureStageModel {
+	return e.WithFileFormatValue(stageFileFormatCsv(opts))
+}
+
 func (e *ExternalAzureStageModel) WithCredentials(azureSasToken string) *ExternalAzureStageModel {
 	e.Credentials = tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{

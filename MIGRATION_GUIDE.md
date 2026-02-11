@@ -44,24 +44,24 @@ Reference: [#4403](https://github.com/snowflakedb/terraform-provider-snowflake/i
 ### *(new feature)* New stage resources
 
 To enhance clarity and functionality, the new resources
-- [snowflake_internal_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/internal_stage),
-- [snowflake_external_gcs_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_gcs_stage),
-- [snowflake_external_azure_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_azure_stage),
-- [snowflake_external_s3_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_s3_stage),
-- [snowflake_external_s3_compatible_stage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_s3_compatible_stage), and
+- [snowflake_stage_internal](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/internal_stage),
+- [snowflake_stage_external_gcs](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_gcs_stage),
+- [snowflake_stage_external_azure](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_azure_stage),
+- [snowflake_stage_external_s3](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_s3_stage),
+- [snowflake_stage_external_s3_compatible](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_s3_compatible_stage), and
 have been introduced to replace the previous `snowflake_stage` for internal and external stages.
 Recognizing that the old resource carried multiple responsibilities within a single entity, we opted to divide it into more specialized resources.
 The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation, and adhere to our [new conventions](#general-changes).
 
 These features are in preview. To use them, add
-- `snowflake_internal_stage_resource`,
-- `snowflake_external_gcs_stage_resource`,
-- `snowflake_external_azure_stage_resource`,
-- `snowflake_external_s3_stage_resource`, or
-- `snowflake_external_s3_compatible_stage_resource`,
+- `snowflake_stage_internal_resource`,
+- `snowflake_stage_external_gcs_resource`,
+- `snowflake_stage_external_azure_resource`,
+- `snowflake_stage_external_s3_resource`, or
+- `snowflake_stage_external_s3_compatible_resource`,
 to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
 
-The existing `snowflake_stage` resource remains available for both internal and external stages. The new resources are recommended for internal and external stages. See the resource documentation linked above for complete configuration details.
+The existing `snowflake_stage` resource remains available for both internal and external stages, but is now deprecated. The old resource will be removed in v3 version. The new resources are recommended for internal and external stages. See the resource documentation linked above for complete configuration details.
 
 To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
 

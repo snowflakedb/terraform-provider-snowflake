@@ -77,7 +77,7 @@ var internalStageSchema = func() map[string]*schema.Schema {
 			},
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema(schemas.CommonStageDescribeSchema()), internalStage, stageFileFormatSchema)
+	return collections.MergeMaps(stageCommonSchema(schemas.CommonStageDescribeSchema()), internalStage)
 }()
 
 func InternalStage() *schema.Resource {
