@@ -163,7 +163,11 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 			// Set optionals (complete)
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
 				Check: assertThat(t,
 					resourceassert.ExternalAzureStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).

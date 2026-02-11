@@ -250,8 +250,25 @@ Read-Only:
 
 Read-Only:
 
+- `avro` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--avro))
 - `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
 - `format_name` (String)
+- `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
+- `orc` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--orc))
+- `parquet` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--parquet))
+- `xml` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--xml))
+
+<a id="nestedobjatt--describe_output--file_format--avro"></a>
+### Nested Schema for `describe_output.file_format.avro`
+
+Read-Only:
+
+- `compression` (String)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `trim_space` (Boolean)
+- `type` (String)
+
 
 <a id="nestedobjatt--describe_output--file_format--csv"></a>
 ### Nested Schema for `describe_output.file_format.csv`
@@ -282,6 +299,71 @@ Read-Only:
 - `trim_space` (Boolean)
 - `type` (String)
 - `validate_utf8` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format--json"></a>
+### Nested Schema for `describe_output.file_format.json`
+
+Read-Only:
+
+- `allow_duplicate` (Boolean)
+- `binary_format` (String)
+- `compression` (String)
+- `date_format` (String)
+- `enable_octal` (Boolean)
+- `file_extension` (String)
+- `ignore_utf8_errors` (Boolean)
+- `multi_line` (Boolean)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `strip_null_values` (Boolean)
+- `strip_outer_array` (Boolean)
+- `time_format` (String)
+- `timestamp_format` (String)
+- `trim_space` (Boolean)
+- `type` (String)
+
+
+<a id="nestedobjatt--describe_output--file_format--orc"></a>
+### Nested Schema for `describe_output.file_format.orc`
+
+Read-Only:
+
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `trim_space` (Boolean)
+- `type` (String)
+
+
+<a id="nestedobjatt--describe_output--file_format--parquet"></a>
+### Nested Schema for `describe_output.file_format.parquet`
+
+Read-Only:
+
+- `binary_as_text` (Boolean)
+- `compression` (String)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `trim_space` (Boolean)
+- `type` (String)
+- `use_logical_type` (Boolean)
+- `use_vectorized_scanner` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format--xml"></a>
+### Nested Schema for `describe_output.file_format.xml`
+
+Read-Only:
+
+- `compression` (String)
+- `disable_auto_convert` (Boolean)
+- `ignore_utf8_errors` (Boolean)
+- `preserve_space` (Boolean)
+- `replace_invalid_characters` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `strip_outer_element` (Boolean)
+- `type` (String)
 
 
 

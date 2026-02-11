@@ -9,7 +9,7 @@ description: |-
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
--> **Note** External changes detection on `credentials.azure_sas_token`, `use_privatelink_endpoint`, and `encryption` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
+-> **Note** External changes detection on `credentials.azure_sas_token`, `directory.notification_integration`, `use_privatelink_endpoint`, and `encryption` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
 -> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
 

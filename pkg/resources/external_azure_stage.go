@@ -334,6 +334,7 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 		if stage.Cloud != nil {
 			cloud = string(*stage.Cloud)
 		}
+		// credentials, encryption, use_privatelink_endpoint are not set in the describe output
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StageToSchema(stage)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),

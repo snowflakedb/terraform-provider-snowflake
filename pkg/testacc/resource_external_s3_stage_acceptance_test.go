@@ -323,7 +323,12 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Stage.DropStageFunc(t, id)()
-					testClient().Stage.CreateStageOnS3(t, awsUrl)
+					testClient().Stage.CreateStageOnS3WithId(t, id, awsUrl)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
 				},
 				Config: accconfig.FromModels(t, modelUpdated),
 				Check: assertThat(t,
@@ -335,9 +340,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						HasStorageIntegrationString(storageIntegrationId.Name()).
 						HasCommentString(changedComment).
 						HasDirectory(resourceassert.ExternalS3StageDirectoryTableAssert{
-							Enable:          false,
-							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
-							RefreshOnCreate: sdk.Bool(false),
+							Enable:      false,
+							AutoRefresh: sdk.Pointer(r.BooleanFalse),
 						}).
 						HasEncryptionNone().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
