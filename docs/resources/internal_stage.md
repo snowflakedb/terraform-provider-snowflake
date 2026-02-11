@@ -1,5 +1,5 @@
 ---
-page_title: "snowflake_internal_stage Resource - terraform-provider-snowflake"
+page_title: "snowflake_stage_internal Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
   Resource used to manage internal stages. For more information, check internal stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams.
@@ -13,7 +13,7 @@ description: |-
 
 -> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
 
-# snowflake_internal_stage (Resource)
+# snowflake_stage_internal (Resource)
 
 Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).
 
@@ -24,14 +24,14 @@ Resource used to manage internal stages. For more information, check [internal s
 
 ```terraform
 # basic resource
-resource "snowflake_internal_stage" "basic" {
+resource "snowflake_stage_internal" "basic" {
   name     = "my_internal_stage"
   database = "my_database"
   schema   = "my_schema"
 }
 
 # complete resource
-resource "snowflake_internal_stage" "complete" {
+resource "snowflake_stage_internal" "complete" {
   name     = "complete_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -49,7 +49,7 @@ resource "snowflake_internal_stage" "complete" {
 }
 
 # resource with inline CSV file format
-resource "snowflake_internal_stage" "with_csv_format" {
+resource "snowflake_stage_internal" "with_csv_format" {
   name     = "csv_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -82,7 +82,7 @@ resource "snowflake_internal_stage" "with_csv_format" {
 }
 
 # resource with inline JSON file format
-resource "snowflake_internal_stage" "with_json_format" {
+resource "snowflake_stage_internal" "with_json_format" {
   name     = "json_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -109,7 +109,7 @@ resource "snowflake_internal_stage" "with_json_format" {
 }
 
 # resource with inline AVRO file format
-resource "snowflake_internal_stage" "with_avro_format" {
+resource "snowflake_stage_internal" "with_avro_format" {
   name     = "avro_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -125,7 +125,7 @@ resource "snowflake_internal_stage" "with_avro_format" {
 }
 
 # resource with inline ORC file format
-resource "snowflake_internal_stage" "with_orc_format" {
+resource "snowflake_stage_internal" "with_orc_format" {
   name     = "orc_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -140,7 +140,7 @@ resource "snowflake_internal_stage" "with_orc_format" {
 }
 
 # resource with inline Parquet file format
-resource "snowflake_internal_stage" "with_parquet_format" {
+resource "snowflake_stage_internal" "with_parquet_format" {
   name     = "parquet_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -159,7 +159,7 @@ resource "snowflake_internal_stage" "with_parquet_format" {
 }
 
 # resource with inline XML file format
-resource "snowflake_internal_stage" "with_xml_format" {
+resource "snowflake_stage_internal" "with_xml_format" {
   name     = "xml_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -177,7 +177,7 @@ resource "snowflake_internal_stage" "with_xml_format" {
 }
 
 # resource with named file format
-resource "snowflake_internal_stage" "with_named_format" {
+resource "snowflake_stage_internal" "with_named_format" {
   name     = "named_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -537,5 +537,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_internal_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
+terraform import snowflake_stage_internal.example '"<database_name>"."<schema_name>"."<stage_name>"'
 ```

@@ -1,5 +1,5 @@
 ---
-page_title: "snowflake_external_gcs_stage Resource - terraform-provider-snowflake"
+page_title: "snowflake_stage_external_gcs Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
   Resource used to manage external GCS stages. For more information, check external stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams.
@@ -13,7 +13,7 @@ description: |-
 
 -> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
 
-# snowflake_external_gcs_stage (Resource)
+# snowflake_stage_external_gcs (Resource)
 
 Resource used to manage external GCS stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
 
@@ -24,7 +24,7 @@ Resource used to manage external GCS stages. For more information, check [extern
 
 ```terraform
 # Basic resource with storage integration (required for GCS)
-resource "snowflake_external_gcs_stage" "basic" {
+resource "snowflake_stage_external_gcs" "basic" {
   name                = "my_gcs_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -33,7 +33,7 @@ resource "snowflake_external_gcs_stage" "basic" {
 }
 
 # Complete resource with all options
-resource "snowflake_external_gcs_stage" "complete" {
+resource "snowflake_stage_external_gcs" "complete" {
   name                = "complete_gcs_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -56,7 +56,7 @@ resource "snowflake_external_gcs_stage" "complete" {
 }
 
 # Resource with encryption set to none
-resource "snowflake_external_gcs_stage" "no_encryption" {
+resource "snowflake_stage_external_gcs" "no_encryption" {
   name                = "gcs_stage_no_encryption"
   database            = "my_database"
   schema              = "my_schema"
@@ -69,7 +69,7 @@ resource "snowflake_external_gcs_stage" "no_encryption" {
 }
 
 # Resource with GCS SSE KMS encryption without specifying key
-resource "snowflake_external_gcs_stage" "default_kms" {
+resource "snowflake_stage_external_gcs" "default_kms" {
   name                = "gcs_stage_default_kms"
   database            = "my_database"
   schema              = "my_schema"
@@ -82,7 +82,7 @@ resource "snowflake_external_gcs_stage" "default_kms" {
 }
 
 # resource with inline CSV file format
-resource "snowflake_external_gcs_stage" "with_csv_format" {
+resource "snowflake_stage_external_gcs" "with_csv_format" {
   name                = "gcs_csv_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -117,7 +117,7 @@ resource "snowflake_external_gcs_stage" "with_csv_format" {
 }
 
 # resource with inline JSON file format
-resource "snowflake_external_gcs_stage" "with_json_format" {
+resource "snowflake_stage_external_gcs" "with_json_format" {
   name                = "gcs_json_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -146,7 +146,7 @@ resource "snowflake_external_gcs_stage" "with_json_format" {
 }
 
 # resource with inline AVRO file format
-resource "snowflake_external_gcs_stage" "with_avro_format" {
+resource "snowflake_stage_external_gcs" "with_avro_format" {
   name                = "gcs_avro_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -164,7 +164,7 @@ resource "snowflake_external_gcs_stage" "with_avro_format" {
 }
 
 # resource with inline ORC file format
-resource "snowflake_external_gcs_stage" "with_orc_format" {
+resource "snowflake_stage_external_gcs" "with_orc_format" {
   name                = "gcs_orc_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -181,7 +181,7 @@ resource "snowflake_external_gcs_stage" "with_orc_format" {
 }
 
 # resource with inline Parquet file format
-resource "snowflake_external_gcs_stage" "with_parquet_format" {
+resource "snowflake_stage_external_gcs" "with_parquet_format" {
   name                = "gcs_parquet_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -202,7 +202,7 @@ resource "snowflake_external_gcs_stage" "with_parquet_format" {
 }
 
 # resource with inline XML file format
-resource "snowflake_external_gcs_stage" "with_xml_format" {
+resource "snowflake_stage_external_gcs" "with_xml_format" {
   name                = "gcs_xml_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -222,7 +222,7 @@ resource "snowflake_external_gcs_stage" "with_xml_format" {
 }
 
 # resource with named file format
-resource "snowflake_external_gcs_stage" "with_named_format" {
+resource "snowflake_stage_external_gcs" "with_named_format" {
   name                = "gcs_named_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -593,5 +593,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_external_gcs_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
+terraform import snowflake_stage_external_gcs.example '"<database_name>"."<schema_name>"."<stage_name>"'
 ```

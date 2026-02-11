@@ -167,7 +167,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 				ResourceName:            modelAlter.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"credentials", "encryption", "use_privatelink_endpoint", "directory"},
+				ImportStateVerifyIgnore: []string{"credentials", "encryption", "use_privatelink_endpoint", "directory", "file_format"},
 			},
 			// Set optionals (complete)
 			{
@@ -255,7 +255,7 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "use_privatelink_endpoint"},
+				ImportStateVerifyIgnore: []string{"encryption", "use_privatelink_endpoint", "file_format"},
 			},
 			// Alter (update comment, directory.enable, encryption)
 			{
@@ -609,7 +609,7 @@ func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"credentials", "encryption", "use_privatelink_endpoint", "directory"},
+				ImportStateVerifyIgnore: []string{"credentials", "encryption", "use_privatelink_endpoint", "directory", "file_format"},
 			},
 		},
 	})

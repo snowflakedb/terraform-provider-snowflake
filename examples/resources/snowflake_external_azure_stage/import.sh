@@ -1,1 +1,1 @@
-terraform import snowflake_external_azure_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
+terraform import snowflake_stage_external_azure.example '"<database_name>"."<schema_name>"."<stage_name>"'

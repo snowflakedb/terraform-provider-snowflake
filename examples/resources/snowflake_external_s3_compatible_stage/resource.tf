@@ -1,5 +1,5 @@
 # Basic resource with credentials
-resource "snowflake_external_s3_compatible_stage" "basic" {
+resource "snowflake_stage_external_s3_compatible" "basic" {
   name     = "my_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -8,7 +8,7 @@ resource "snowflake_external_s3_compatible_stage" "basic" {
 }
 
 # Complete resource with all options
-resource "snowflake_external_s3_compatible_stage" "complete" {
+resource "snowflake_stage_external_s3_compatible" "complete" {
   name     = "complete_s3_compatible_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -30,7 +30,7 @@ resource "snowflake_external_s3_compatible_stage" "complete" {
 }
 
 # Resource with inline CSV file format
-resource "snowflake_external_s3_compatible_stage" "with_csv_format" {
+resource "snowflake_stage_external_s3_compatible" "with_csv_format" {
   name     = "s3_compat_csv_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -65,7 +65,7 @@ resource "snowflake_external_s3_compatible_stage" "with_csv_format" {
 }
 
 # Resource with inline JSON file format
-resource "snowflake_external_s3_compatible_stage" "with_json_format" {
+resource "snowflake_stage_external_s3_compatible" "with_json_format" {
   name     = "s3_compat_json_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -94,7 +94,7 @@ resource "snowflake_external_s3_compatible_stage" "with_json_format" {
 }
 
 # Resource with inline AVRO file format
-resource "snowflake_external_s3_compatible_stage" "with_avro_format" {
+resource "snowflake_stage_external_s3_compatible" "with_avro_format" {
   name     = "s3_compat_avro_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -112,7 +112,7 @@ resource "snowflake_external_s3_compatible_stage" "with_avro_format" {
 }
 
 # Resource with inline ORC file format
-resource "snowflake_external_s3_compatible_stage" "with_orc_format" {
+resource "snowflake_stage_external_s3_compatible" "with_orc_format" {
   name     = "s3_compat_orc_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -129,7 +129,7 @@ resource "snowflake_external_s3_compatible_stage" "with_orc_format" {
 }
 
 # Resource with inline Parquet file format
-resource "snowflake_external_s3_compatible_stage" "with_parquet_format" {
+resource "snowflake_stage_external_s3_compatible" "with_parquet_format" {
   name     = "s3_compat_parquet_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -150,7 +150,7 @@ resource "snowflake_external_s3_compatible_stage" "with_parquet_format" {
 }
 
 # Resource with inline XML file format
-resource "snowflake_external_s3_compatible_stage" "with_xml_format" {
+resource "snowflake_stage_external_s3_compatible" "with_xml_format" {
   name     = "s3_compat_xml_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -170,7 +170,7 @@ resource "snowflake_external_s3_compatible_stage" "with_xml_format" {
 }
 
 # Resource with named file format
-resource "snowflake_external_s3_compatible_stage" "with_named_format" {
+resource "snowflake_stage_external_s3_compatible" "with_named_format" {
   name     = "s3_compat_named_format_stage"
   database = "my_database"
   schema   = "my_schema"

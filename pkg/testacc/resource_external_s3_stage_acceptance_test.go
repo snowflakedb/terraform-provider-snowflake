@@ -769,7 +769,7 @@ func TestAcc_ExternalS3Stage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 				ResourceName:            modelWithNamedFormat.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"encryption", "directory", "credentials", "use_privatelink_endpoint"},
+				ImportStateVerifyIgnore: []string{"encryption", "directory", "credentials", "use_privatelink_endpoint", "aws_access_point_arn"},
 			},
 			// Detect external change
 			{

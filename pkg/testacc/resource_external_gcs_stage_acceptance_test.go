@@ -195,7 +195,7 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 				ResourceName:            modelAlter.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"directory", "encryption"},
+				ImportStateVerifyIgnore: []string{"directory", "encryption", "file_format"},
 			},
 			// Set optionals (complete)
 			{
@@ -237,7 +237,7 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"directory", "encryption"},
+				ImportStateVerifyIgnore: []string{"directory", "encryption", "file_format"},
 			},
 			// unset auto_refresh
 			{
@@ -500,7 +500,7 @@ func TestAcc_ExternalGcsStage_CompleteUseCase(t *testing.T) {
 				ResourceName:            modelComplete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"directory", "encryption"},
+				ImportStateVerifyIgnore: []string{"directory", "encryption", "file_format"},
 			},
 		},
 	})

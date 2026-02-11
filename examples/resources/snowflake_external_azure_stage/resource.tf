@@ -1,5 +1,5 @@
 # Basic resource with storage integration
-resource "snowflake_external_azure_stage" "basic" {
+resource "snowflake_stage_external_azure" "basic" {
   name                = "my_azure_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -8,7 +8,7 @@ resource "snowflake_external_azure_stage" "basic" {
 }
 
 # Complete resource with all options
-resource "snowflake_external_azure_stage" "complete" {
+resource "snowflake_stage_external_azure" "complete" {
   name                = "complete_azure_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -31,7 +31,7 @@ resource "snowflake_external_azure_stage" "complete" {
 }
 
 # Resource with SAS token credentials instead of storage integration
-resource "snowflake_external_azure_stage" "with_credentials" {
+resource "snowflake_stage_external_azure" "with_credentials" {
   name     = "azure_stage_with_sas"
   database = "my_database"
   schema   = "my_schema"
@@ -43,7 +43,7 @@ resource "snowflake_external_azure_stage" "with_credentials" {
 }
 
 # Resource with encryption set to none
-resource "snowflake_external_azure_stage" "no_encryption" {
+resource "snowflake_stage_external_azure" "no_encryption" {
   name                = "azure_stage_no_encryption"
   database            = "my_database"
   schema              = "my_schema"
@@ -56,7 +56,7 @@ resource "snowflake_external_azure_stage" "no_encryption" {
 }
 
 # resource with inline CSV file format
-resource "snowflake_external_azure_stage" "with_csv_format" {
+resource "snowflake_stage_external_azure" "with_csv_format" {
   name                = "azure_csv_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -91,7 +91,7 @@ resource "snowflake_external_azure_stage" "with_csv_format" {
 }
 
 # resource with inline JSON file format
-resource "snowflake_external_azure_stage" "with_json_format" {
+resource "snowflake_stage_external_azure" "with_json_format" {
   name                = "azure_json_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -120,7 +120,7 @@ resource "snowflake_external_azure_stage" "with_json_format" {
 }
 
 # resource with inline AVRO file format
-resource "snowflake_external_azure_stage" "with_avro_format" {
+resource "snowflake_stage_external_azure" "with_avro_format" {
   name                = "azure_avro_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -138,7 +138,7 @@ resource "snowflake_external_azure_stage" "with_avro_format" {
 }
 
 # resource with inline ORC file format
-resource "snowflake_external_azure_stage" "with_orc_format" {
+resource "snowflake_stage_external_azure" "with_orc_format" {
   name                = "azure_orc_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -155,7 +155,7 @@ resource "snowflake_external_azure_stage" "with_orc_format" {
 }
 
 # resource with inline Parquet file format
-resource "snowflake_external_azure_stage" "with_parquet_format" {
+resource "snowflake_stage_external_azure" "with_parquet_format" {
   name                = "azure_parquet_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -176,7 +176,7 @@ resource "snowflake_external_azure_stage" "with_parquet_format" {
 }
 
 # resource with inline XML file format
-resource "snowflake_external_azure_stage" "with_xml_format" {
+resource "snowflake_stage_external_azure" "with_xml_format" {
   name                = "azure_xml_format_stage"
   database            = "my_database"
   schema              = "my_schema"
@@ -196,7 +196,7 @@ resource "snowflake_external_azure_stage" "with_xml_format" {
 }
 
 # resource with named file format
-resource "snowflake_external_azure_stage" "with_named_format" {
+resource "snowflake_stage_external_azure" "with_named_format" {
   name                = "azure_named_format_stage"
   database            = "my_database"
   schema              = "my_schema"

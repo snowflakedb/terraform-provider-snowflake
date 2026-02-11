@@ -1,5 +1,5 @@
 ---
-page_title: "snowflake_external_s3_stage Resource - terraform-provider-snowflake"
+page_title: "snowflake_stage_external_s3 Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
   Resource used to manage external S3 stages. For more information, check external stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams.
@@ -15,7 +15,7 @@ description: |-
 
 -> **Note** Integration based stages are not allowed to be altered to use privatelink endpoint. You must either alter the storage integration itself, or first unset the storage integration from the stage instead.
 
-# snowflake_external_s3_stage (Resource)
+# snowflake_stage_external_s3 (Resource)
 
 Resource used to manage external S3 stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
 
@@ -25,7 +25,7 @@ Resource used to manage external S3 stages. For more information, check [externa
 
 ```terraform
 # Basic resource with storage integration
-resource "snowflake_external_s3_stage" "basic" {
+resource "snowflake_stage_external_s3" "basic" {
   name     = "my_s3_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -33,7 +33,7 @@ resource "snowflake_external_s3_stage" "basic" {
 }
 
 # Complete resource with all options
-resource "snowflake_external_s3_stage" "complete" {
+resource "snowflake_stage_external_s3" "complete" {
   name                 = "complete_s3_stage"
   database             = "my_database"
   schema               = "my_schema"
@@ -57,7 +57,7 @@ resource "snowflake_external_s3_stage" "complete" {
 }
 
 # Resource with AWS key credentials instead of storage integration
-resource "snowflake_external_s3_stage" "with_key_credentials" {
+resource "snowflake_stage_external_s3" "with_key_credentials" {
   name     = "s3_stage_with_keys"
   database = "my_database"
   schema   = "my_schema"
@@ -71,7 +71,7 @@ resource "snowflake_external_s3_stage" "with_key_credentials" {
 }
 
 # Resource with AWS IAM role credentials
-resource "snowflake_external_s3_stage" "with_role_credentials" {
+resource "snowflake_stage_external_s3" "with_role_credentials" {
   name     = "s3_stage_with_role"
   database = "my_database"
   schema   = "my_schema"
@@ -83,7 +83,7 @@ resource "snowflake_external_s3_stage" "with_role_credentials" {
 }
 
 # Resource with SSE-S3 encryption
-resource "snowflake_external_s3_stage" "sse_s3" {
+resource "snowflake_stage_external_s3" "sse_s3" {
   name                = "s3_stage_sse_s3"
   database            = "my_database"
   schema              = "my_schema"
@@ -96,7 +96,7 @@ resource "snowflake_external_s3_stage" "sse_s3" {
 }
 
 # Resource with SSE-KMS encryption
-resource "snowflake_external_s3_stage" "sse_kms" {
+resource "snowflake_stage_external_s3" "sse_kms" {
   name                = "s3_stage_sse_kms"
   database            = "my_database"
   schema              = "my_schema"
@@ -111,7 +111,7 @@ resource "snowflake_external_s3_stage" "sse_kms" {
 }
 
 # Resource with encryption set to none
-resource "snowflake_external_s3_stage" "no_encryption" {
+resource "snowflake_stage_external_s3" "no_encryption" {
   name                = "s3_stage_no_encryption"
   database            = "my_database"
   schema              = "my_schema"
@@ -124,7 +124,7 @@ resource "snowflake_external_s3_stage" "no_encryption" {
 }
 
 # resource with inline CSV file format
-resource "snowflake_external_s3_stage" "with_csv_format" {
+resource "snowflake_stage_external_s3" "with_csv_format" {
   name     = "s3_csv_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -158,7 +158,7 @@ resource "snowflake_external_s3_stage" "with_csv_format" {
 }
 
 # resource with inline JSON file format
-resource "snowflake_external_s3_stage" "with_json_format" {
+resource "snowflake_stage_external_s3" "with_json_format" {
   name     = "s3_json_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -186,7 +186,7 @@ resource "snowflake_external_s3_stage" "with_json_format" {
 }
 
 # resource with inline AVRO file format
-resource "snowflake_external_s3_stage" "with_avro_format" {
+resource "snowflake_stage_external_s3" "with_avro_format" {
   name     = "s3_avro_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -203,7 +203,7 @@ resource "snowflake_external_s3_stage" "with_avro_format" {
 }
 
 # resource with inline ORC file format
-resource "snowflake_external_s3_stage" "with_orc_format" {
+resource "snowflake_stage_external_s3" "with_orc_format" {
   name     = "s3_orc_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -219,7 +219,7 @@ resource "snowflake_external_s3_stage" "with_orc_format" {
 }
 
 # resource with inline Parquet file format
-resource "snowflake_external_s3_stage" "with_parquet_format" {
+resource "snowflake_stage_external_s3" "with_parquet_format" {
   name     = "s3_parquet_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -239,7 +239,7 @@ resource "snowflake_external_s3_stage" "with_parquet_format" {
 }
 
 # resource with inline XML file format
-resource "snowflake_external_s3_stage" "with_xml_format" {
+resource "snowflake_stage_external_s3" "with_xml_format" {
   name     = "s3_xml_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -258,7 +258,7 @@ resource "snowflake_external_s3_stage" "with_xml_format" {
 }
 
 # resource with named file format
-resource "snowflake_external_s3_stage" "with_named_format" {
+resource "snowflake_stage_external_s3" "with_named_format" {
   name     = "s3_named_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -674,5 +674,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_external_s3_stage.example '"<database_name>"."<schema_name>"."<stage_name>"'
+terraform import snowflake_stage_external_s3.example '"<database_name>"."<schema_name>"."<stage_name>"'
 ```

@@ -1,12 +1,12 @@
 # basic resource
-resource "snowflake_internal_stage" "basic" {
+resource "snowflake_stage_internal" "basic" {
   name     = "my_internal_stage"
   database = "my_database"
   schema   = "my_schema"
 }
 
 # complete resource
-resource "snowflake_internal_stage" "complete" {
+resource "snowflake_stage_internal" "complete" {
   name     = "complete_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -24,7 +24,7 @@ resource "snowflake_internal_stage" "complete" {
 }
 
 # resource with inline CSV file format
-resource "snowflake_internal_stage" "with_csv_format" {
+resource "snowflake_stage_internal" "with_csv_format" {
   name     = "csv_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -57,7 +57,7 @@ resource "snowflake_internal_stage" "with_csv_format" {
 }
 
 # resource with inline JSON file format
-resource "snowflake_internal_stage" "with_json_format" {
+resource "snowflake_stage_internal" "with_json_format" {
   name     = "json_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -84,7 +84,7 @@ resource "snowflake_internal_stage" "with_json_format" {
 }
 
 # resource with inline AVRO file format
-resource "snowflake_internal_stage" "with_avro_format" {
+resource "snowflake_stage_internal" "with_avro_format" {
   name     = "avro_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -100,7 +100,7 @@ resource "snowflake_internal_stage" "with_avro_format" {
 }
 
 # resource with inline ORC file format
-resource "snowflake_internal_stage" "with_orc_format" {
+resource "snowflake_stage_internal" "with_orc_format" {
   name     = "orc_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -115,7 +115,7 @@ resource "snowflake_internal_stage" "with_orc_format" {
 }
 
 # resource with inline Parquet file format
-resource "snowflake_internal_stage" "with_parquet_format" {
+resource "snowflake_stage_internal" "with_parquet_format" {
   name     = "parquet_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -134,7 +134,7 @@ resource "snowflake_internal_stage" "with_parquet_format" {
 }
 
 # resource with inline XML file format
-resource "snowflake_internal_stage" "with_xml_format" {
+resource "snowflake_stage_internal" "with_xml_format" {
   name     = "xml_format_stage"
   database = "my_database"
   schema   = "my_schema"
@@ -152,7 +152,7 @@ resource "snowflake_internal_stage" "with_xml_format" {
 }
 
 # resource with named file format
-resource "snowflake_internal_stage" "with_named_format" {
+resource "snowflake_stage_internal" "with_named_format" {
   name     = "named_format_stage"
   database = "my_database"
   schema   = "my_schema"
