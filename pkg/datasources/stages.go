@@ -18,7 +18,7 @@ var stagesSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Optional:    true,
 		Default:     true,
-		Description: "Runs DESC STAGE for each stage returned by SHOW STAGES. The output of describe is saved to the description field. By default this value is set to true.",
+		Description: "Runs DESC STAGE for each stage returned by SHOW STAGES. The output of describe is saved to the describe_output field. By default this value is set to true.",
 	},
 	"like": likeSchema,
 	"in":   extendedInSchema,

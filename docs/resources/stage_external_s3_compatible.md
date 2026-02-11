@@ -11,6 +11,8 @@ description: |-
 
 -> **Note** External changes detection on `credentials` field is not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
+-> **Note** This resource is meant only for S3-compatible stages, not S3 stages. For S3 stages, use the `snowflake_stage_external_s3` resource instead. Do not use this resource with `s3://` URLs.
+
 # snowflake_stage_external_s3_compatible (Resource)
 
 Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).

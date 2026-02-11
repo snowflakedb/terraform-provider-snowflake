@@ -83,7 +83,7 @@ check "stage_check" {
 
 - `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
-- `with_describe` (Boolean) (Default: `true`) Runs DESC STAGE for each stage returned by SHOW STAGES. The output of describe is saved to the description field. By default this value is set to true.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC STAGE for each stage returned by SHOW STAGES. The output of describe is saved to the describe_output field. By default this value is set to true.
 
 ### Read-Only
 
@@ -117,6 +117,8 @@ Read-Only:
 
 - `directory_table` (List of Object) (see [below for nested schema](#nestedobjatt--stages--describe_output--directory_table))
 - `file_format` (List of Object) (see [below for nested schema](#nestedobjatt--stages--describe_output--file_format))
+- `location` (List of Object) (see [below for nested schema](#nestedobjatt--stages--describe_output--location))
+- `privatelink` (List of Object) (see [below for nested schema](#nestedobjatt--stages--describe_output--privatelink))
 
 <a id="nestedobjatt--stages--describe_output--directory_table"></a>
 ### Nested Schema for `stages.describe_output.directory_table`
@@ -247,6 +249,23 @@ Read-Only:
 - `strip_outer_element` (Boolean)
 - `type` (String)
 
+
+
+<a id="nestedobjatt--stages--describe_output--location"></a>
+### Nested Schema for `stages.describe_output.location`
+
+Read-Only:
+
+- `aws_access_point_arn` (String)
+- `url` (String)
+
+
+<a id="nestedobjatt--stages--describe_output--privatelink"></a>
+### Nested Schema for `stages.describe_output.privatelink`
+
+Read-Only:
+
+- `use_privatelink_endpoint` (Boolean)
 
 
 

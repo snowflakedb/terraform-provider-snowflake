@@ -15,6 +15,8 @@ description: |-
 
 -> **Note** Integration based stages are not allowed to be altered to use privatelink endpoint. You must either alter the storage integration itself, or first unset the storage integration from the stage instead.
 
+-> **Note** This resource is meant only for S3 stages, not S3-compatible stages. For S3-compatible stages, use the `snowflake_stage_external_s3_compatible` resource instead. Do not use this resource with `s3compat://` URLs.
+
 # snowflake_stage_external_s3 (Resource)
 
 Resource used to manage external S3 stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).

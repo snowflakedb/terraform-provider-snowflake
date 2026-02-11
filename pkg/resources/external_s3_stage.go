@@ -210,7 +210,6 @@ func ExternalS3Stage() *schema.Resource {
 			ForceNewIfUrlIsS3Compatible(),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAws),
-			ForceNewIfChangeToEmptyString("aws_access_point_arn"),
 			// This is a similar configuration as for external S3-compatible stage, but the additional differences are:
 			// - endpoint is required for S3-compatible stages, but it's null for S3 stages
 			// - url starts with s3compat:// instead of s3://
