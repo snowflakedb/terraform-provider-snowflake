@@ -61,6 +61,7 @@ type In struct {
 	Account  *bool                    `ddl:"keyword" sql:"ACCOUNT"`
 	Database AccountObjectIdentifier  `ddl:"identifier" sql:"DATABASE"`
 	Schema   DatabaseObjectIdentifier `ddl:"identifier" sql:"SCHEMA"`
+	Table    SchemaObjectIdentifier   `ddl:"identifier" sql:"TABLE"`
 }
 
 type ExtendedIn struct {

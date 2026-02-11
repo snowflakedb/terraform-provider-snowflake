@@ -658,8 +658,88 @@ func (s *CreateTableCloneRequest) toOpts() *createTableCloneOptions {
 	}
 }
 
+func (s *CreateHybridTableRequest) toOpts() *createHybridTableOptions {
+	outOfLineConstraints := make([]OutOfLineConstraint, 0)
+	for _, outOfLineConstraintRequest := range s.OutOfLineConstraints {
+		var foreignKey *OutOfLineForeignKey
+		if outOfLineConstraintRequest.ForeignKey != nil {
+			var foreignKeyOnAction *ForeignKeyOnAction
+			if outOfLineConstraintRequest.ForeignKey.On != nil {
+				foreignKeyOnAction = &ForeignKeyOnAction{
+					OnUpdate: outOfLineConstraintRequest.ForeignKey.On.OnUpdate,
+					OnDelete: outOfLineConstraintRequest.ForeignKey.On.OnDelete,
+				}
+			}
+			foreignKey = &OutOfLineForeignKey{
+				TableName:   outOfLineConstraintRequest.ForeignKey.TableName,
+				ColumnNames: outOfLineConstraintRequest.ForeignKey.ColumnNames,
+				Match:       outOfLineConstraintRequest.ForeignKey.Match,
+				On:          foreignKeyOnAction,
+			}
+		}
+		outOfLineConstraint := OutOfLineConstraint{
+			Name:               outOfLineConstraintRequest.Name,
+			Type:               outOfLineConstraintRequest.Type,
+			Columns:            outOfLineConstraintRequest.Columns,
+			ForeignKey:         foreignKey,
+			Enforced:           outOfLineConstraintRequest.Enforced,
+			NotEnforced:        outOfLineConstraintRequest.NotEnforced,
+			Deferrable:         outOfLineConstraintRequest.Deferrable,
+			NotDeferrable:      outOfLineConstraintRequest.NotDeferrable,
+			InitiallyDeferred:  outOfLineConstraintRequest.InitiallyDeferred,
+			InitiallyImmediate: outOfLineConstraintRequest.InitiallyImmediate,
+			Enable:             outOfLineConstraintRequest.Enable,
+			Disable:            outOfLineConstraintRequest.Disable,
+			Validate:           outOfLineConstraintRequest.Validate,
+			NoValidate:         outOfLineConstraintRequest.NoValidate,
+			Rely:               outOfLineConstraintRequest.Rely,
+			NoRely:             outOfLineConstraintRequest.NoRely,
+		}
+		outOfLineConstraints = append(outOfLineConstraints, outOfLineConstraint)
+	}
+
+	return &createHybridTableOptions{
+		create:                true,
+		OrReplace:             s.orReplace,
+		hybrid:                true,
+		table:                 true,
+		IfNotExists:           s.ifNotExists,
+		name:                  s.name,
+		ColumnsAndConstraints: CreateTableColumnsAndConstraints{convertColumns(s.columns), outOfLineConstraints},
+		Comment:               s.Comment,
+	}
+}
+
+func (s *CreateIndexRequest) toOpts() *createIndexOptions {
+	return &createIndexOptions{
+		create:  true,
+		index:   true,
+		name:    s.name,
+		on:      true,
+		table:   s.table,
+		Columns: s.Columns,
+	}
+}
+
+func (s *DropIndexRequest) toOpts() *dropIndexOptions {
+	return &dropIndexOptions{
+		drop:     true,
+		index:    true,
+		IfExists: s.ifExists,
+		name:     s.name,
+	}
+}
+
 func (v *LegacyFileFormatRequest) toOpts() *LegacyFileFormat {
 	return &LegacyFileFormat{
+		FormatName:     v.FormatName,
+		FileFormatType: v.FileFormatType,
+		Options:        v.Options.toOpts(),
+	}
+}
+
+func (v *StageFileFormatRequest) toOpts() *StageFileFormat {
+	return &StageFileFormat{
 		FormatName:     v.FormatName,
 		FileFormatType: v.FileFormatType,
 		Options:        v.Options.toOpts(),

@@ -1,3 +1,5 @@
+//go:build non_account_level_tests
+
 package sdk
 
 import (
