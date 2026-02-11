@@ -81,3 +81,15 @@ func (e *ExternalS3CompatibleStageModel) WithEmptyCredentials() *ExternalS3Compa
 	))
 	return e
 }
+
+func (e *ExternalS3CompatibleStageModel) WithFileFormatOrc(opts sdk.FileFormatOrcOptions) *ExternalS3CompatibleStageModel {
+	return e.WithFileFormatValue(stageFileFormatOrc(opts))
+}
+
+func (e *ExternalS3CompatibleStageModel) WithFileFormatParquet(opts sdk.FileFormatParquetOptions) *ExternalS3CompatibleStageModel {
+	return e.WithFileFormatValue(stageFileFormatParquet(opts))
+}
+
+func (e *ExternalS3CompatibleStageModel) WithFileFormatAvro(opts sdk.FileFormatAvroOptions) *ExternalS3CompatibleStageModel {
+	return e.WithFileFormatValue(stageFileFormatAvro(opts))
+}

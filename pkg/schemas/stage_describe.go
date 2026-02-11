@@ -39,6 +39,13 @@ func AwsStageDescribeSchema() map[string]*schema.Schema {
 	})
 }
 
+// StageDatasourceDescribeSchema is a helper function used to get the schema for the describe output of the stage data source.
+// It supports all stage types and file format types.
+func StageDatasourceDescribeSchema() map[string]*schema.Schema {
+	// For now, only the aws stage has any additional fields in describe.
+	return AwsStageDescribeSchema()
+}
+
 func CommonStageDescribeSchema() map[string]*schema.Schema {
 	return stageDescribeSchema
 }
@@ -518,6 +525,13 @@ func AwsStageDescribeToSchema(properties sdk.StageDetails) (map[string]any, erro
 		}
 	}
 	return schema, nil
+}
+
+// StageDatasourceToDatasourceSchema is a helper function used to fill the object fields in the data source.
+// It supports all stage types and file format types.
+func StageDatasourceToDatasourceSchema(properties sdk.StageDetails) (map[string]any, error) {
+	// For now, only the aws stage has any additional fields in describe.
+	return AwsStageDescribeToSchema(properties)
 }
 
 func StageFileFormatAvroToSchema(avro *sdk.FileFormatAvro) map[string]any {

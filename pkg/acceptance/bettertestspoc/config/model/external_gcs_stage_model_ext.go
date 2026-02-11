@@ -122,3 +122,7 @@ func (e *ExternalGcsStageModel) WithEncryptionNoneTypeSpecified() *ExternalGcsSt
 		)),
 	)
 }
+
+func (e *ExternalGcsStageModel) WithFileFormatAvro(opts sdk.FileFormatAvroOptions) *ExternalGcsStageModel {
+	return e.WithFileFormatValue(stageFileFormatAvro(opts))
+}
