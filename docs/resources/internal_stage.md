@@ -81,6 +81,101 @@ resource "snowflake_internal_stage" "with_csv_format" {
   }
 }
 
+# resource with inline JSON file format
+resource "snowflake_internal_stage" "with_json_format" {
+  name     = "json_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    json {
+      compression                = "AUTO"
+      date_format                = "AUTO"
+      time_format                = "AUTO"
+      timestamp_format           = "AUTO"
+      binary_format              = "HEX"
+      trim_space                 = "false"
+      multi_line                 = "false"
+      null_if                    = ["NULL", ""]
+      file_extension             = ".json"
+      enable_octal               = "false"
+      allow_duplicate            = "false"
+      strip_outer_array          = "false"
+      strip_null_values          = "false"
+      replace_invalid_characters = "false" # or ignore_utf8_errors = true
+      skip_byte_order_mark       = "false"
+    }
+  }
+}
+
+# resource with inline AVRO file format
+resource "snowflake_internal_stage" "with_avro_format" {
+  name     = "avro_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    avro {
+      compression                = "GZIP"
+      trim_space                 = "false"
+      replace_invalid_characters = "false"
+      null_if                    = ["NULL", ""]
+    }
+  }
+}
+
+# resource with inline ORC file format
+resource "snowflake_internal_stage" "with_orc_format" {
+  name     = "orc_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    orc {
+      trim_space                 = "false"
+      replace_invalid_characters = "false"
+      null_if                    = ["NULL", ""]
+    }
+  }
+}
+
+# resource with inline Parquet file format
+resource "snowflake_internal_stage" "with_parquet_format" {
+  name     = "parquet_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    parquet {
+      compression                = "SNAPPY"
+      binary_as_text             = "true"
+      use_logical_type           = "true"
+      trim_space                 = "false"
+      use_vectorized_scanner     = "false"
+      replace_invalid_characters = "false"
+      null_if                    = ["NULL", ""]
+    }
+  }
+}
+
+# resource with inline XML file format
+resource "snowflake_internal_stage" "with_xml_format" {
+  name     = "xml_format_stage"
+  database = "my_database"
+  schema   = "my_schema"
+
+  file_format {
+    xml {
+      compression                = "AUTO"
+      preserve_space             = "false"
+      strip_outer_element        = "false"
+      disable_auto_convert       = "false"
+      replace_invalid_characters = "false" # or ignore_utf8_errors = true
+      skip_byte_order_mark       = "false"
+    }
+  }
+}
+
 # resource with named file format
 resource "snowflake_internal_stage" "with_named_format" {
   name     = "named_format_stage"
@@ -154,8 +249,24 @@ Optional:
 
 Optional:
 
+- `avro` (Block List, Max: 1) AVRO file format options. (see [below for nested schema](#nestedblock--file_format--avro))
 - `csv` (Block List, Max: 1) CSV file format options. (see [below for nested schema](#nestedblock--file_format--csv))
 - `format_name` (String) Fully qualified name of the file format (e.g., 'database.schema.format_name').
+- `json` (Block List, Max: 1) JSON file format options. (see [below for nested schema](#nestedblock--file_format--json))
+- `orc` (Block List, Max: 1) ORC file format options. (see [below for nested schema](#nestedblock--file_format--orc))
+- `parquet` (Block List, Max: 1) Parquet file format options. (see [below for nested schema](#nestedblock--file_format--parquet))
+- `xml` (Block List, Max: 1) XML file format options. (see [below for nested schema](#nestedblock--file_format--xml))
+
+<a id="nestedblock--file_format--avro"></a>
+### Nested Schema for `file_format.avro`
+
+Optional:
+
+- `compression` (String) Specifies the compression format. Valid values: `AUTO` | `GZIP` | `BROTLI` | `ZSTD` | `DEFLATE` | `RAW_DEFLATE` | `NONE`.
+- `null_if` (List of String) String used to convert to and from SQL NULL.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
 
 <a id="nestedblock--file_format--csv"></a>
 ### Nested Schema for `file_format.csv`
@@ -184,6 +295,67 @@ Optional:
 - `time_format` (String) Defines the format of time values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
 - `timestamp_format` (String) Defines the format of timestamp values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
 - `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
+
+<a id="nestedblock--file_format--json"></a>
+### Nested Schema for `file_format.json`
+
+Optional:
+
+- `allow_duplicate` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to allow duplicate object field names (only the last one will be preserved). Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `binary_format` (String) Defines the encoding format for binary input or output. Valid values: `HEX` | `BASE64` | `UTF8`.
+- `compression` (String) Specifies the compression format. Valid values: `AUTO` | `GZIP` | `BZ2` | `BROTLI` | `ZSTD` | `DEFLATE` | `RAW_DEFLATE` | `NONE`.
+- `date_format` (String) Defines the format of date values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `enable_octal` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that enables parsing of octal numbers. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `file_extension` (String) Specifies the extension for files unloaded to a stage.
+- `ignore_utf8_errors` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether UTF-8 encoding errors produce error conditions. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `multi_line` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to allow multiple records on a single line. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `null_if` (List of String) String used to convert to and from SQL NULL.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `skip_byte_order_mark` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `strip_null_values` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that instructs the JSON parser to remove object fields or array elements containing null values. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `strip_outer_array` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that instructs the JSON parser to remove outer brackets. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `time_format` (String) Defines the format of time values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `timestamp_format` (String) Defines the format of timestamp values in the data files. Use `AUTO` to have Snowflake auto-detect the format.
+- `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
+
+<a id="nestedblock--file_format--orc"></a>
+### Nested Schema for `file_format.orc`
+
+Optional:
+
+- `null_if` (List of String) String used to convert to and from SQL NULL.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
+
+<a id="nestedblock--file_format--parquet"></a>
+### Nested Schema for `file_format.parquet`
+
+Optional:
+
+- `binary_as_text` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to interpret columns with no defined logical data type as UTF-8 text. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `compression` (String) Specifies the compression format. Valid values: `AUTO` | `LZO` | `SNAPPY` | `NONE`.
+- `null_if` (List of String) String used to convert to and from SQL NULL.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `use_logical_type` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to use Parquet logical types when loading data. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `use_vectorized_scanner` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to use a vectorized scanner for loading Parquet files. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+
+
+<a id="nestedblock--file_format--xml"></a>
+### Nested Schema for `file_format.xml`
+
+Optional:
+
+- `compression` (String) Specifies the compression format. Valid values: `AUTO` | `GZIP` | `BZ2` | `BROTLI` | `ZSTD` | `DEFLATE` | `RAW_DEFLATE` | `NONE`.
+- `disable_auto_convert` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser disables automatic conversion of numeric and Boolean values from text to native representation. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `ignore_utf8_errors` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether UTF-8 encoding errors produce error conditions. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `preserve_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser preserves leading and trailing spaces in element content. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `skip_byte_order_mark` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `strip_outer_element` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser strips out the outer XML element, exposing 2nd level elements as separate documents. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 
 
@@ -220,8 +392,25 @@ Read-Only:
 
 Read-Only:
 
+- `avro` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--avro))
 - `csv` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--csv))
 - `format_name` (String)
+- `json` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--json))
+- `orc` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--orc))
+- `parquet` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--parquet))
+- `xml` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format--xml))
+
+<a id="nestedobjatt--describe_output--file_format--avro"></a>
+### Nested Schema for `describe_output.file_format.avro`
+
+Read-Only:
+
+- `compression` (String)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `trim_space` (Boolean)
+- `type` (String)
+
 
 <a id="nestedobjatt--describe_output--file_format--csv"></a>
 ### Nested Schema for `describe_output.file_format.csv`
@@ -252,6 +441,71 @@ Read-Only:
 - `trim_space` (Boolean)
 - `type` (String)
 - `validate_utf8` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format--json"></a>
+### Nested Schema for `describe_output.file_format.json`
+
+Read-Only:
+
+- `allow_duplicate` (Boolean)
+- `binary_format` (String)
+- `compression` (String)
+- `date_format` (String)
+- `enable_octal` (Boolean)
+- `file_extension` (String)
+- `ignore_utf8_errors` (Boolean)
+- `multi_line` (Boolean)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `strip_null_values` (Boolean)
+- `strip_outer_array` (Boolean)
+- `time_format` (String)
+- `timestamp_format` (String)
+- `trim_space` (Boolean)
+- `type` (String)
+
+
+<a id="nestedobjatt--describe_output--file_format--orc"></a>
+### Nested Schema for `describe_output.file_format.orc`
+
+Read-Only:
+
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `trim_space` (Boolean)
+- `type` (String)
+
+
+<a id="nestedobjatt--describe_output--file_format--parquet"></a>
+### Nested Schema for `describe_output.file_format.parquet`
+
+Read-Only:
+
+- `binary_as_text` (Boolean)
+- `compression` (String)
+- `null_if` (List of String)
+- `replace_invalid_characters` (Boolean)
+- `trim_space` (Boolean)
+- `type` (String)
+- `use_logical_type` (Boolean)
+- `use_vectorized_scanner` (Boolean)
+
+
+<a id="nestedobjatt--describe_output--file_format--xml"></a>
+### Nested Schema for `describe_output.file_format.xml`
+
+Read-Only:
+
+- `compression` (String)
+- `disable_auto_convert` (Boolean)
+- `ignore_utf8_errors` (Boolean)
+- `preserve_space` (Boolean)
+- `replace_invalid_characters` (Boolean)
+- `skip_byte_order_mark` (Boolean)
+- `strip_outer_element` (Boolean)
+- `type` (String)
 
 
 

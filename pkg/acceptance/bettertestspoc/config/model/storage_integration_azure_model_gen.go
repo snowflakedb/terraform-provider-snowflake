@@ -13,15 +13,12 @@ import (
 
 type StorageIntegrationAzureModel struct {
 	Name                    tfconfig.Variable `json:"name,omitempty"`
+	AzureTenantId           tfconfig.Variable `json:"azure_tenant_id,omitempty"`
 	Comment                 tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                 tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	StorageAllowedLocations tfconfig.Variable `json:"storage_allowed_locations,omitempty"`
-	StorageAwsExternalId    tfconfig.Variable `json:"storage_aws_external_id,omitempty"`
-	StorageAwsObjectAcl     tfconfig.Variable `json:"storage_aws_object_acl,omitempty"`
-	StorageAwsRoleArn       tfconfig.Variable `json:"storage_aws_role_arn,omitempty"`
 	StorageBlockedLocations tfconfig.Variable `json:"storage_blocked_locations,omitempty"`
-	StorageProvider         tfconfig.Variable `json:"storage_provider,omitempty"`
 	UsePrivatelinkEndpoint  tfconfig.Variable `json:"use_privatelink_endpoint,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
@@ -36,33 +33,29 @@ type StorageIntegrationAzureModel struct {
 func StorageIntegrationAzure(
 	resourceName string,
 	name string,
+	azureTenantId string,
 	enabled bool,
 	storageAllowedLocations []sdk.StorageLocation,
-	storageAwsRoleArn string,
-	storageProvider string,
 ) *StorageIntegrationAzureModel {
 	s := &StorageIntegrationAzureModel{ResourceModelMeta: config.Meta(resourceName, resources.StorageIntegrationAzure)}
 	s.WithName(name)
+	s.WithAzureTenantId(azureTenantId)
 	s.WithEnabled(enabled)
 	s.WithStorageAllowedLocations(storageAllowedLocations)
-	s.WithStorageAwsRoleArn(storageAwsRoleArn)
-	s.WithStorageProvider(storageProvider)
 	return s
 }
 
 func StorageIntegrationAzureWithDefaultMeta(
 	name string,
+	azureTenantId string,
 	enabled bool,
 	storageAllowedLocations []sdk.StorageLocation,
-	storageAwsRoleArn string,
-	storageProvider string,
 ) *StorageIntegrationAzureModel {
 	s := &StorageIntegrationAzureModel{ResourceModelMeta: config.DefaultMeta(resources.StorageIntegrationAzure)}
 	s.WithName(name)
+	s.WithAzureTenantId(azureTenantId)
 	s.WithEnabled(enabled)
 	s.WithStorageAllowedLocations(storageAllowedLocations)
-	s.WithStorageAwsRoleArn(storageAwsRoleArn)
-	s.WithStorageProvider(storageProvider)
 	return s
 }
 
@@ -100,6 +93,11 @@ func (s *StorageIntegrationAzureModel) WithName(name string) *StorageIntegration
 	return s
 }
 
+func (s *StorageIntegrationAzureModel) WithAzureTenantId(azureTenantId string) *StorageIntegrationAzureModel {
+	s.AzureTenantId = tfconfig.StringVariable(azureTenantId)
+	return s
+}
+
 func (s *StorageIntegrationAzureModel) WithComment(comment string) *StorageIntegrationAzureModel {
 	s.Comment = tfconfig.StringVariable(comment)
 	return s
@@ -117,27 +115,7 @@ func (s *StorageIntegrationAzureModel) WithFullyQualifiedName(fullyQualifiedName
 
 // storage_allowed_locations attribute type is not yet supported, so WithStorageAllowedLocations can't be generated
 
-func (s *StorageIntegrationAzureModel) WithStorageAwsExternalId(storageAwsExternalId string) *StorageIntegrationAzureModel {
-	s.StorageAwsExternalId = tfconfig.StringVariable(storageAwsExternalId)
-	return s
-}
-
-func (s *StorageIntegrationAzureModel) WithStorageAwsObjectAcl(storageAwsObjectAcl string) *StorageIntegrationAzureModel {
-	s.StorageAwsObjectAcl = tfconfig.StringVariable(storageAwsObjectAcl)
-	return s
-}
-
-func (s *StorageIntegrationAzureModel) WithStorageAwsRoleArn(storageAwsRoleArn string) *StorageIntegrationAzureModel {
-	s.StorageAwsRoleArn = tfconfig.StringVariable(storageAwsRoleArn)
-	return s
-}
-
 // storage_blocked_locations attribute type is not yet supported, so WithStorageBlockedLocations can't be generated
-
-func (s *StorageIntegrationAzureModel) WithStorageProvider(storageProvider string) *StorageIntegrationAzureModel {
-	s.StorageProvider = tfconfig.StringVariable(storageProvider)
-	return s
-}
 
 func (s *StorageIntegrationAzureModel) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint string) *StorageIntegrationAzureModel {
 	s.UsePrivatelinkEndpoint = tfconfig.StringVariable(usePrivatelinkEndpoint)
@@ -150,6 +128,11 @@ func (s *StorageIntegrationAzureModel) WithUsePrivatelinkEndpoint(usePrivatelink
 
 func (s *StorageIntegrationAzureModel) WithNameValue(value tfconfig.Variable) *StorageIntegrationAzureModel {
 	s.Name = value
+	return s
+}
+
+func (s *StorageIntegrationAzureModel) WithAzureTenantIdValue(value tfconfig.Variable) *StorageIntegrationAzureModel {
+	s.AzureTenantId = value
 	return s
 }
 
@@ -173,28 +156,8 @@ func (s *StorageIntegrationAzureModel) WithStorageAllowedLocationsValue(value tf
 	return s
 }
 
-func (s *StorageIntegrationAzureModel) WithStorageAwsExternalIdValue(value tfconfig.Variable) *StorageIntegrationAzureModel {
-	s.StorageAwsExternalId = value
-	return s
-}
-
-func (s *StorageIntegrationAzureModel) WithStorageAwsObjectAclValue(value tfconfig.Variable) *StorageIntegrationAzureModel {
-	s.StorageAwsObjectAcl = value
-	return s
-}
-
-func (s *StorageIntegrationAzureModel) WithStorageAwsRoleArnValue(value tfconfig.Variable) *StorageIntegrationAzureModel {
-	s.StorageAwsRoleArn = value
-	return s
-}
-
 func (s *StorageIntegrationAzureModel) WithStorageBlockedLocationsValue(value tfconfig.Variable) *StorageIntegrationAzureModel {
 	s.StorageBlockedLocations = value
-	return s
-}
-
-func (s *StorageIntegrationAzureModel) WithStorageProviderValue(value tfconfig.Variable) *StorageIntegrationAzureModel {
-	s.StorageProvider = value
 	return s
 }
 

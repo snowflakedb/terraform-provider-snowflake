@@ -8,7 +8,7 @@ import (
 )
 
 // edited manually
-// DescribeStorageIntegrationGcsDetailsSchema represents output of SHOW query for the single StorageIntegrationGcsDetails.
+// DescribeStorageIntegrationGcsDetailsSchema represents output of DESCRIBE query for the single GCS Storage Integration.
 var DescribeStorageIntegrationGcsDetailsSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,

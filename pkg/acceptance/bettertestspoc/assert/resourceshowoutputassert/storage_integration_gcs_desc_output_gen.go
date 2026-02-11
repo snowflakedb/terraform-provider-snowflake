@@ -9,6 +9,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+// file edited manually; all ShowOutput changed to DescribeOutput
+
 type StorageIntegrationGcsDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -38,32 +40,32 @@ func ImportedStorageIntegrationGcsDescribeOutput(t *testing.T, id string) *Stora
 ////////////////////////////
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasId(expected sdk.AccountObjectIdentifier) *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("id", expected.Name()))
+	s.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("id", expected.Name()))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasEnabled(expected bool) *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("enabled", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("enabled", expected))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasProvider(expected string) *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("provider", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("provider", expected))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasComment(expected string) *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("use_privatelink_endpoint", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("use_privatelink_endpoint", expected))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasServiceAccount(expected string) *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("service_account", expected))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("service_account", expected))
 	return s
 }
 
@@ -72,41 +74,41 @@ func (s *StorageIntegrationGcsDescribeOutputAssert) HasServiceAccount(expected s
 ///////////////////////////////
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasNoId() *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("id"))
+	s.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("id"))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasNoEnabled() *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("enabled"))
+	s.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("enabled"))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasNoProvider() *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("provider"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("provider"))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasNoAllowedLocations() *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("allowed_locations.#", "0"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_locations.#", "0"))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasNoBlockedLocations() *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("blocked_locations.#", "0"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueSet("blocked_locations.#", "0"))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasNoComment() *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasNoUsePrivatelinkEndpoint() *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("use_privatelink_endpoint"))
+	s.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("use_privatelink_endpoint"))
 	return s
 }
 
 func (s *StorageIntegrationGcsDescribeOutputAssert) HasNoServiceAccount() *StorageIntegrationGcsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("service_account"))
+	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("service_account"))
 	return s
 }

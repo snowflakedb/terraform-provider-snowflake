@@ -12,3 +12,9 @@ func (s *StorageIntegrationAzureModel) WithStorageAllowedLocations(allowedLocati
 	s.WithStorageAllowedLocationsValue(tfconfig.ListVariable(allowedLocationsStringVariables...))
 	return s
 }
+
+func (s *StorageIntegrationAzureModel) WithStorageBlockedLocations(blockedLocations []sdk.StorageLocation) *StorageIntegrationAzureModel {
+	blockedLocationsStringVariables := collections.Map(blockedLocations, func(location sdk.StorageLocation) tfconfig.Variable { return tfconfig.StringVariable(location.Path) })
+	s.WithStorageBlockedLocationsValue(tfconfig.ListVariable(blockedLocationsStringVariables...))
+	return s
+}

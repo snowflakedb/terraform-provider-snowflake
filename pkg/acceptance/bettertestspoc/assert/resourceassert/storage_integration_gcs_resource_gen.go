@@ -57,33 +57,8 @@ func (s *StorageIntegrationGcsResourceAssert) HasStorageAllowedLocationsString(e
 	return s
 }
 
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAwsExternalIdString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_external_id", expected))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAwsObjectAclString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_object_acl", expected))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAwsRoleArnString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_role_arn", expected))
-	return s
-}
-
 func (s *StorageIntegrationGcsResourceAssert) HasStorageBlockedLocationsString(expected string) *StorageIntegrationGcsResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_blocked_locations", expected))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageProviderString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_provider", expected))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasUsePrivatelinkEndpointString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("use_privatelink_endpoint", expected))
 	return s
 }
 
@@ -111,31 +86,6 @@ func (s *StorageIntegrationGcsResourceAssert) HasNoFullyQualifiedName() *Storage
 	return s
 }
 
-func (s *StorageIntegrationGcsResourceAssert) HasNoStorageAwsExternalId() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_external_id"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasNoStorageAwsObjectAcl() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_object_acl"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasNoStorageAwsRoleArn() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_aws_role_arn"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasNoStorageProvider() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_provider"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasNoUsePrivatelinkEndpoint() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("use_privatelink_endpoint"))
-	return s
-}
-
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -150,23 +100,8 @@ func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedNameEmpty() *Stor
 	return s
 }
 
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAwsExternalIdEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_external_id", ""))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAwsObjectAclEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_aws_object_acl", ""))
-	return s
-}
-
 func (s *StorageIntegrationGcsResourceAssert) HasStorageBlockedLocationsEmpty() *StorageIntegrationGcsResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_blocked_locations.#", "0"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasUsePrivatelinkEndpointEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("use_privatelink_endpoint", ""))
 	return s
 }
 
@@ -191,30 +126,5 @@ func (s *StorageIntegrationGcsResourceAssert) HasEnabledNotEmpty() *StorageInteg
 
 func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedNameNotEmpty() *StorageIntegrationGcsResourceAssert {
 	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAwsExternalIdNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_external_id"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAwsObjectAclNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_object_acl"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAwsRoleArnNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_aws_role_arn"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageProviderNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_provider"))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasUsePrivatelinkEndpointNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("use_privatelink_endpoint"))
 	return s
 }

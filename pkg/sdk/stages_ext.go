@@ -48,6 +48,68 @@ type FileFormatCsv struct {
 	MultiLine                  bool
 }
 
+// FileFormatJson represents JSON file format properties from DESCRIBE STAGE
+type FileFormatJson struct {
+	Type                     string
+	Compression              string
+	DateFormat               string
+	TimeFormat               string
+	TimestampFormat          string
+	BinaryFormat             string
+	TrimSpace                bool
+	MultiLine                bool
+	NullIf                   []string
+	FileExtension            string
+	EnableOctal              bool
+	AllowDuplicate           bool
+	StripOuterArray          bool
+	StripNullValues          bool
+	ReplaceInvalidCharacters bool
+	IgnoreUtf8Errors         bool
+	SkipByteOrderMark        bool
+}
+
+// FileFormatAvro represents AVRO file format properties from DESCRIBE STAGE
+type FileFormatAvro struct {
+	Type                     string
+	Compression              string
+	TrimSpace                bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
+}
+
+// FileFormatOrc represents ORC file format properties from DESCRIBE STAGE
+type FileFormatOrc struct {
+	Type                     string
+	TrimSpace                bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
+}
+
+// FileFormatParquet represents Parquet file format properties from DESCRIBE STAGE
+type FileFormatParquet struct {
+	Type                     string
+	Compression              string
+	BinaryAsText             bool
+	UseLogicalType           bool
+	TrimSpace                bool
+	UseVectorizedScanner     bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
+}
+
+// FileFormatXml represents XML file format properties from DESCRIBE STAGE
+type FileFormatXml struct {
+	Type                     string
+	Compression              string
+	IgnoreUtf8Errors         bool
+	PreserveSpace            bool
+	StripOuterElement        bool
+	DisableAutoConvert       bool
+	ReplaceInvalidCharacters bool
+	SkipByteOrderMark        bool
+}
+
 // StageDirectoryTable represents directory table properties from DESCRIBE STAGE
 type StageDirectoryTable struct {
 	Enable                       bool
@@ -58,12 +120,17 @@ type StageDirectoryTable struct {
 
 // StageDetails represents the parsed result of DESCRIBE STAGE
 type StageDetails struct {
-	FileFormatName *SchemaObjectIdentifier
-	FileFormatCsv  *FileFormatCsv
-	DirectoryTable *StageDirectoryTable
-	PrivateLink    *StagePrivateLink
-	Location       *StageLocationDetails
-	Credentials    *StageCredentials
+	FileFormatName    *SchemaObjectIdentifier
+	FileFormatCsv     *FileFormatCsv
+	FileFormatJson    *FileFormatJson
+	FileFormatAvro    *FileFormatAvro
+	FileFormatOrc     *FileFormatOrc
+	FileFormatParquet *FileFormatParquet
+	FileFormatXml     *FileFormatXml
+	DirectoryTable    *StageDirectoryTable
+	PrivateLink       *StagePrivateLink
+	Location          *StageLocationDetails
+	Credentials       *StageCredentials
 }
 
 type StagePrivateLink struct {
@@ -105,8 +172,19 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 	if err != nil {
 		return nil, err
 	}
-	if formatType == FileFormatTypeCSV {
+	switch formatType {
+	case FileFormatTypeCSV:
 		details.FileFormatCsv = parseCsvFileFormat(properties)
+	case FileFormatTypeJSON:
+		details.FileFormatJson = parseJsonFileFormat(properties)
+	case FileFormatTypeAvro:
+		details.FileFormatAvro = parseAvroFileFormat(properties)
+	case FileFormatTypeORC:
+		details.FileFormatOrc = parseOrcFileFormat(properties)
+	case FileFormatTypeParquet:
+		details.FileFormatParquet = parseParquetFileFormat(properties)
+	case FileFormatTypeXML:
+		details.FileFormatXml = parseXmlFileFormat(properties)
 	}
 
 	return details, nil
@@ -187,6 +265,155 @@ func parseCsvFileFormat(properties []StageProperty) *FileFormatCsv {
 	}
 
 	return csv
+}
+
+func parseJsonFileFormat(properties []StageProperty) *FileFormatJson {
+	json := &FileFormatJson{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			json.Type = prop.Value
+		case "COMPRESSION":
+			json.Compression = prop.Value
+		case "DATE_FORMAT":
+			json.DateFormat = prop.Value
+		case "TIME_FORMAT":
+			json.TimeFormat = prop.Value
+		case "TIMESTAMP_FORMAT":
+			json.TimestampFormat = prop.Value
+		case "BINARY_FORMAT":
+			json.BinaryFormat = prop.Value
+		case "TRIM_SPACE":
+			json.TrimSpace = prop.Value == "true"
+		case "MULTI_LINE":
+			json.MultiLine = prop.Value == "true"
+		case "NULL_IF":
+			json.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		case "FILE_EXTENSION":
+			json.FileExtension = prop.Value
+		case "ENABLE_OCTAL":
+			json.EnableOctal = prop.Value == "true"
+		case "ALLOW_DUPLICATE":
+			json.AllowDuplicate = prop.Value == "true"
+		case "STRIP_OUTER_ARRAY":
+			json.StripOuterArray = prop.Value == "true"
+		case "STRIP_NULL_VALUES":
+			json.StripNullValues = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			json.ReplaceInvalidCharacters = prop.Value == "true"
+		case "IGNORE_UTF8_ERRORS":
+			json.IgnoreUtf8Errors = prop.Value == "true"
+		case "SKIP_BYTE_ORDER_MARK":
+			json.SkipByteOrderMark = prop.Value == "true"
+		}
+	}
+
+	return json
+}
+
+func parseAvroFileFormat(properties []StageProperty) *FileFormatAvro {
+	avro := &FileFormatAvro{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			avro.Type = prop.Value
+		case "COMPRESSION":
+			avro.Compression = prop.Value
+		case "TRIM_SPACE":
+			avro.TrimSpace = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			avro.ReplaceInvalidCharacters = prop.Value == "true"
+		case "NULL_IF":
+			avro.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		}
+	}
+
+	return avro
+}
+
+func parseOrcFileFormat(properties []StageProperty) *FileFormatOrc {
+	orc := &FileFormatOrc{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			orc.Type = prop.Value
+		case "TRIM_SPACE":
+			orc.TrimSpace = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			orc.ReplaceInvalidCharacters = prop.Value == "true"
+		case "NULL_IF":
+			orc.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		}
+	}
+
+	return orc
+}
+
+func parseParquetFileFormat(properties []StageProperty) *FileFormatParquet {
+	parquet := &FileFormatParquet{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			parquet.Type = prop.Value
+		case "COMPRESSION":
+			parquet.Compression = prop.Value
+		case "BINARY_AS_TEXT":
+			parquet.BinaryAsText = prop.Value == "true"
+		case "USE_LOGICAL_TYPE":
+			parquet.UseLogicalType = prop.Value == "true"
+		case "TRIM_SPACE":
+			parquet.TrimSpace = prop.Value == "true"
+		case "USE_VECTORIZED_SCANNER":
+			parquet.UseVectorizedScanner = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			parquet.ReplaceInvalidCharacters = prop.Value == "true"
+		case "NULL_IF":
+			parquet.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		}
+	}
+
+	return parquet
+}
+
+func parseXmlFileFormat(properties []StageProperty) *FileFormatXml {
+	xml := &FileFormatXml{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			xml.Type = prop.Value
+		case "COMPRESSION":
+			xml.Compression = prop.Value
+		case "IGNORE_UTF8_ERRORS":
+			xml.IgnoreUtf8Errors = prop.Value == "true"
+		case "PRESERVE_SPACE":
+			xml.PreserveSpace = prop.Value == "true"
+		case "STRIP_OUTER_ELEMENT":
+			xml.StripOuterElement = prop.Value == "true"
+		case "DISABLE_AUTO_CONVERT":
+			xml.DisableAutoConvert = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			xml.ReplaceInvalidCharacters = prop.Value == "true"
+		case "SKIP_BYTE_ORDER_MARK":
+			xml.SkipByteOrderMark = prop.Value == "true"
+		}
+	}
+
+	return xml
 }
 
 func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {

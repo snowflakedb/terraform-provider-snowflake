@@ -623,6 +623,9 @@ variable "oauth_redirect_uri" {
 ```
 
 <!-- Section of deprecated resources -->
+ ## Currently deprecated resources 
+
+- [snowflake_storage_integration](./docs/resources/storage_integration)
 
 <!-- Section of deprecated data sources -->
 

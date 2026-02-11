@@ -195,3 +195,170 @@ func Test_FileFormat_ToCsvEncoding(t *testing.T) {
 		})
 	}
 }
+
+func Test_FileFormat_ToJsonCompression(t *testing.T) {
+	type test struct {
+		input string
+		want  JsonCompression
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "gzip", want: JSONCompressionGzip},
+
+		// Supported Values
+		{input: "AUTO", want: JSONCompressionAuto},
+		{input: "GZIP", want: JSONCompressionGzip},
+		{input: "BZ2", want: JSONCompressionBz2},
+		{input: "BROTLI", want: JSONCompressionBrotli},
+		{input: "ZSTD", want: JSONCompressionZstd},
+		{input: "DEFLATE", want: JSONCompressionDeflate},
+		{input: "RAW_DEFLATE", want: JSONCompressionRawDeflate},
+		{input: "NONE", want: JSONCompressionNone},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToJsonCompression(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToJsonCompression(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_FileFormat_ToAvroCompression(t *testing.T) {
+	type test struct {
+		input string
+		want  AvroCompression
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "gzip", want: AvroCompressionGzip},
+
+		// Supported Values
+		{input: "AUTO", want: AvroCompressionAuto},
+		{input: "GZIP", want: AvroCompressionGzip},
+		{input: "BROTLI", want: AvroCompressionBrotli},
+		{input: "ZSTD", want: AvroCompressionZstd},
+		{input: "DEFLATE", want: AvroCompressionDeflate},
+		{input: "RAW_DEFLATE", want: AvroCompressionRawDeflate},
+		{input: "NONE", want: AvroCompressionNone},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToAvroCompression(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToAvroCompression(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_FileFormat_ToParquetCompression(t *testing.T) {
+	type test struct {
+		input string
+		want  ParquetCompression
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "snappy", want: ParquetCompressionSnappy},
+
+		// Supported Values
+		{input: "AUTO", want: ParquetCompressionAuto},
+		{input: "LZO", want: ParquetCompressionLzo},
+		{input: "SNAPPY", want: ParquetCompressionSnappy},
+		{input: "NONE", want: ParquetCompressionNone},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToParquetCompression(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToParquetCompression(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_FileFormat_ToXmlCompression(t *testing.T) {
+	type test struct {
+		input string
+		want  XmlCompression
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "gzip", want: XMLCompressionGzip},
+
+		// Supported Values
+		{input: "AUTO", want: XMLCompressionAuto},
+		{input: "GZIP", want: XMLCompressionGzip},
+		{input: "BZ2", want: XMLCompressionBz2},
+		{input: "BROTLI", want: XMLCompressionBrotli},
+		{input: "ZSTD", want: XMLCompressionZstd},
+		{input: "DEFLATE", want: XMLCompressionDeflate},
+		{input: "RAW_DEFLATE", want: XMLCompressionRawDeflate},
+		{input: "NONE", want: XMLCompressionNone},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToXmlCompression(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToXmlCompression(tc.input)
+			require.Error(t, err)
+		})
+	}
+}

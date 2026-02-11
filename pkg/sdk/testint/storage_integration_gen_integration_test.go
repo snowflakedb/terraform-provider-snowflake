@@ -37,11 +37,7 @@ func TestInt_StorageIntegrations(t *testing.T) {
 	}
 
 	flattenLocations := func(locations []sdk.StorageLocation) []string {
-		flat := make([]string, len(locations))
-		for i, a := range locations {
-			flat[i] = a.Path
-		}
-		return flat
+		return collections.Map(locations, func(l sdk.StorageLocation) string { return l.Path })
 	}
 
 	awsPropertiesAssertions := func(
@@ -492,6 +488,22 @@ func TestInt_StorageIntegrations(t *testing.T) {
 		assertThatObject(t, awsDetailsAssertions(t, id, false, changedS3AllowedLocations, []sdk.StorageLocation{}, "", true).
 			HasObjectAcl("").
 			HasExternalIdNotEqualTo("new-external-id"),
+		)
+	})
+
+	t.Run("alter: s3, set enabled to false", func(t *testing.T) {
+		id := createS3StorageIntegrationBasic(t, sdk.RegularS3Protocol)
+
+		assertThatObject(t, objectassert.StorageIntegrationAwsDetails(t, id).
+			HasEnabled(true),
+		)
+
+		req := sdk.NewAlterStorageIntegrationRequest(id).WithSet(*sdk.NewStorageIntegrationSetRequest().WithEnabled(false))
+		err := client.StorageIntegrations.Alter(ctx, req)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.StorageIntegrationAwsDetails(t, id).
+			HasEnabled(false),
 		)
 	})
 

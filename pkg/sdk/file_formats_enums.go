@@ -183,6 +183,25 @@ var (
 	JSONCompressionNone       JsonCompression = "NONE"
 )
 
+var AllJsonCompressions = []JsonCompression{
+	JSONCompressionAuto,
+	JSONCompressionGzip,
+	JSONCompressionBz2,
+	JSONCompressionBrotli,
+	JSONCompressionZstd,
+	JSONCompressionDeflate,
+	JSONCompressionRawDeflate,
+	JSONCompressionNone,
+}
+
+func ToJsonCompression(s string) (JsonCompression, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllJsonCompressions, JsonCompression(s)) {
+		return "", fmt.Errorf("invalid json compression: %s", s)
+	}
+	return JsonCompression(s), nil
+}
+
 type AvroCompression string
 
 var (
@@ -195,6 +214,24 @@ var (
 	AvroCompressionNone       AvroCompression = "NONE"
 )
 
+var AllAvroCompressions = []AvroCompression{
+	AvroCompressionAuto,
+	AvroCompressionGzip,
+	AvroCompressionBrotli,
+	AvroCompressionZstd,
+	AvroCompressionDeflate,
+	AvroCompressionRawDeflate,
+	AvroCompressionNone,
+}
+
+func ToAvroCompression(s string) (AvroCompression, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllAvroCompressions, AvroCompression(s)) {
+		return "", fmt.Errorf("invalid avro compression: %s", s)
+	}
+	return AvroCompression(s), nil
+}
+
 type ParquetCompression string
 
 var (
@@ -203,6 +240,21 @@ var (
 	ParquetCompressionSnappy ParquetCompression = "SNAPPY"
 	ParquetCompressionNone   ParquetCompression = "NONE"
 )
+
+var AllParquetCompressions = []ParquetCompression{
+	ParquetCompressionAuto,
+	ParquetCompressionLzo,
+	ParquetCompressionSnappy,
+	ParquetCompressionNone,
+}
+
+func ToParquetCompression(s string) (ParquetCompression, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllParquetCompressions, ParquetCompression(s)) {
+		return "", fmt.Errorf("invalid parquet compression: %s", s)
+	}
+	return ParquetCompression(s), nil
+}
 
 type XmlCompression string
 
@@ -216,3 +268,22 @@ var (
 	XMLCompressionRawDeflate XmlCompression = "RAW_DEFLATE"
 	XMLCompressionNone       XmlCompression = "NONE"
 )
+
+var AllXmlCompressions = []XmlCompression{
+	XMLCompressionAuto,
+	XMLCompressionGzip,
+	XMLCompressionBz2,
+	XMLCompressionBrotli,
+	XMLCompressionZstd,
+	XMLCompressionDeflate,
+	XMLCompressionRawDeflate,
+	XMLCompressionNone,
+}
+
+func ToXmlCompression(s string) (XmlCompression, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllXmlCompressions, XmlCompression(s)) {
+		return "", fmt.Errorf("invalid xml compression: %s", s)
+	}
+	return XmlCompression(s), nil
+}

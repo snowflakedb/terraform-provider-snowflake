@@ -69,6 +69,35 @@ func (c *StorageIntegrationClient) CreateS3(t *testing.T, awsBucketUrl, awsRoleA
 	return integration, c.DropFunc(t, id)
 }
 
+func (c *StorageIntegrationClient) CreateAzure(t *testing.T, azureBucketUrl string, azureTenantId string) (*sdk.StorageIntegration, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	allowedLocations := func(prefix string) []sdk.StorageLocation {
+		return []sdk.StorageLocation{
+			{
+				Path: prefix + "/allowed-location",
+			},
+			{
+				Path: prefix + "/allowed-location2",
+			},
+		}
+	}
+	azureAllowedLocations := allowedLocations(azureBucketUrl)
+
+	id := c.ids.RandomAccountObjectIdentifier()
+	req := sdk.NewCreateStorageIntegrationRequest(id, true, azureAllowedLocations).
+		WithAzureStorageProviderParams(*sdk.NewAzureStorageParamsRequest(azureTenantId))
+
+	err := c.client().Create(ctx, req)
+	require.NoError(t, err)
+
+	integration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return integration, c.DropFunc(t, id)
+}
+
 func (c *StorageIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

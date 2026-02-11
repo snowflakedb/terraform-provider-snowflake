@@ -12,3 +12,9 @@ func (s *StorageIntegrationGcsModel) WithStorageAllowedLocations(allowedLocation
 	s.WithStorageAllowedLocationsValue(tfconfig.ListVariable(allowedLocationsStringVariables...))
 	return s
 }
+
+func (s *StorageIntegrationGcsModel) WithStorageBlockedLocations(blockedLocations []sdk.StorageLocation) *StorageIntegrationGcsModel {
+	blockedLocationsStringVariables := collections.Map(blockedLocations, func(location sdk.StorageLocation) tfconfig.Variable { return tfconfig.StringVariable(location.Path) })
+	s.WithStorageBlockedLocationsValue(tfconfig.ListVariable(blockedLocationsStringVariables...))
+	return s
+}

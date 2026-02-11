@@ -8,7 +8,7 @@ import (
 )
 
 // edited manually
-// DescribeStorageIntegrationAwsDetailsSchema represents output of SHOW query for the single StorageIntegrationAwsDetails.
+// DescribeStorageIntegrationAwsDetailsSchema represents output of DESCRIBE query for the single AWS Storage Integration.
 var DescribeStorageIntegrationAwsDetailsSchema = map[string]*schema.Schema{
 	"id": {
 		Type:     schema.TypeString,
