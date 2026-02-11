@@ -20,6 +20,7 @@ type ExternalS3StageModel struct {
 	Credentials            tfconfig.Variable `json:"credentials,omitempty"`
 	Directory              tfconfig.Variable `json:"directory,omitempty"`
 	Encryption             tfconfig.Variable `json:"encryption,omitempty"`
+	FileFormat             tfconfig.Variable `json:"file_format,omitempty"`
 	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	StageType              tfconfig.Variable `json:"stage_type,omitempty"`
 	StorageIntegration     tfconfig.Variable `json:"storage_integration,omitempty"`
@@ -129,6 +130,8 @@ func (e *ExternalS3StageModel) WithComment(comment string) *ExternalS3StageModel
 
 // encryption attribute type is not yet supported, so WithEncryption can't be generated
 
+// file_format attribute type is not yet supported, so WithFileFormat can't be generated
+
 func (e *ExternalS3StageModel) WithFullyQualifiedName(fullyQualifiedName string) *ExternalS3StageModel {
 	e.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return e
@@ -200,6 +203,11 @@ func (e *ExternalS3StageModel) WithDirectoryValue(value tfconfig.Variable) *Exte
 
 func (e *ExternalS3StageModel) WithEncryptionValue(value tfconfig.Variable) *ExternalS3StageModel {
 	e.Encryption = value
+	return e
+}
+
+func (e *ExternalS3StageModel) WithFileFormatValue(value tfconfig.Variable) *ExternalS3StageModel {
+	e.FileFormat = value
 	return e
 }
 

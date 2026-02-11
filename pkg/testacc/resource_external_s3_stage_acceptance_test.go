@@ -714,6 +714,118 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_ExternalS3Stage_FileFormat_SwitchBetweenTypes(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	awsUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	t.Cleanup(fileFormatCleanup)
+
+	modelBasic := model.ExternalS3StageWithId(id, awsUrl)
+
+	modelWithCsvFormat := model.ExternalS3StageWithId(id, awsUrl).
+		WithFileFormatCsv(sdk.FileFormatCsvOptions{})
+
+	modelWithNamedFormat := model.ExternalS3StageWithId(id, awsUrl).
+		WithFileFormatName(fileFormat.ID().FullyQualifiedName())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalS3Stage),
+		Steps: []resource.TestStep{
+			// Start with inline CSV
+			{
+				Config: accconfig.FromModels(t, modelWithCsvFormat),
+				Check: assertThat(t,
+					resourceassert.ExternalS3StageResource(t, modelWithCsvFormat.ResourceReference()).
+						HasFileFormatCsv(),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", "")),
+				),
+			},
+			// Switch to named format
+			{
+				Config: accconfig.FromModels(t, modelWithNamedFormat),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalS3StageResource(t, modelWithNamedFormat.ResourceReference()).
+						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", fileFormat.ID().FullyQualifiedName())),
+				),
+			},
+			// import named format
+			{
+				Config:                  accconfig.FromModels(t, modelWithNamedFormat),
+				ResourceName:            modelWithNamedFormat.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encryption", "directory", "credentials", "use_privatelink_endpoint"},
+			},
+			// Detect external change
+			{
+				Config: accconfig.FromModels(t, modelWithNamedFormat),
+				PreConfig: func() {
+					testClient().Stage.AlterExternalS3Stage(t, sdk.NewAlterExternalS3StageStageRequest(id).WithFileFormat(sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalS3StageResource(t, modelWithNamedFormat.ResourceReference()).
+						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", fileFormat.ID().FullyQualifiedName())),
+				),
+			},
+			// Switch back to inline CSV
+			{
+				Config: accconfig.FromModels(t, modelWithCsvFormat),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelWithCsvFormat.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalS3StageResource(t, modelWithCsvFormat.ResourceReference()).
+						HasFileFormatCsv(),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", "")),
+				),
+			},
+			// Switch back to default
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.ExternalS3StageResource(t, modelBasic.ResourceReference()).
+						HasFileFormatEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.0.csv.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.0.format_name", "")),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_ExternalS3Stage_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 

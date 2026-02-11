@@ -141,7 +141,7 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema(schemas.CommonStageDescribeSchema()), azureStage, stageFileFormatSchema)
+	return collections.MergeMaps(stageCommonSchema(schemas.CommonStageDescribeSchema()), azureStage)
 }()
 
 func ExternalAzureStage() *schema.Resource {

@@ -199,7 +199,7 @@ func ExternalS3Stage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3Stage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalS3StageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalS3StageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "aws_access_point_arn"),
+			ComputedIfAnyAttributeChanged(externalS3StageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "aws_access_point_arn", "file_format"),
 			ComputedIfAnyAttributeChanged(externalS3StageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
@@ -252,6 +252,11 @@ func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 			return nil, err
 		}
 	}
+	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
+		if err := d.Set("file_format", fileFormat); err != nil {
+			return nil, err
+		}
+	}
 	if details.PrivateLink != nil {
 		if err := d.Set("use_privatelink_endpoint", booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)); err != nil {
 			return nil, err
@@ -301,6 +306,7 @@ func CreateExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseS3StageDirectory),
+		attributeMappedValueCreateBuilderNested(d, "file_format", request.WithFileFormat, parseStageFileFormat),
 	)
 	if err != nil {
 		return diag.FromErr(err)
@@ -380,6 +386,9 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			); err != nil {
 				return diag.FromErr(err)
 			}
+			if err := handleStageFileFormatRead(d, details); err != nil {
+				return diag.FromErr(err)
+			}
 			var usePrivatelinkEndpoint bool
 			if details.PrivateLink != nil {
 				usePrivatelinkEndpoint = details.PrivateLink.UsePrivatelinkEndpoint
@@ -457,6 +466,7 @@ func UpdateExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 
 	err = errors.Join(
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		attributeMappedValueUpdateSetOnlyFallbackNested(d, "file_format", &set.FileFormat, parseStageFileFormat, sdk.StageFileFormatRequest{FileFormatOptions: &sdk.FileFormatOptions{CsvOptions: &sdk.FileFormatCsvOptions{}}}),
 	)
 	if err != nil {
 		return diag.FromErr(err)
