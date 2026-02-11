@@ -158,6 +158,69 @@ func (s *TimeTravelRequest) WithStatement(statement *string) *TimeTravelRequest 
 	return s
 }
 
+// Hybrid Table builders
+func NewCreateHybridTableRequest(
+	name SchemaObjectIdentifier,
+	columns []TableColumnRequest,
+	outOfLineConstraints []OutOfLineConstraintRequest,
+) *CreateHybridTableRequest {
+	s := CreateHybridTableRequest{}
+	s.name = name
+	s.columns = columns
+	s.OutOfLineConstraints = outOfLineConstraints
+	return &s
+}
+
+func (s *CreateHybridTableRequest) WithOrReplace(orReplace *bool) *CreateHybridTableRequest {
+	s.orReplace = orReplace
+	return s
+}
+
+func (s *CreateHybridTableRequest) WithIfNotExists(ifNotExists *bool) *CreateHybridTableRequest {
+	s.ifNotExists = ifNotExists
+	return s
+}
+
+func (s *CreateHybridTableRequest) WithComment(comment *string) *CreateHybridTableRequest {
+	s.Comment = comment
+	return s
+}
+
+// Index builders
+func NewCreateIndexRequest(
+	name SchemaObjectIdentifier,
+	table SchemaObjectIdentifier,
+	columns []string,
+) *CreateIndexRequest {
+	s := CreateIndexRequest{}
+	s.name = name
+	s.table = table
+	s.Columns = columns
+	return &s
+}
+
+func NewDropIndexRequest(
+	name SchemaObjectIdentifier,
+) *DropIndexRequest {
+	s := DropIndexRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *DropIndexRequest) WithIfExists(ifExists *bool) *DropIndexRequest {
+	s.ifExists = ifExists
+	return s
+}
+
+func NewShowIndexesRequest() *ShowIndexesRequest {
+	return &ShowIndexesRequest{}
+}
+
+func (s *ShowIndexesRequest) WithIn(in *In) *ShowIndexesRequest {
+	s.In = in
+	return s
+}
+
 func NewCreateTableRequest(
 	name SchemaObjectIdentifier,
 	columns []TableColumnRequest,

@@ -450,7 +450,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		if comment != "" {
 			alterRequest.WithSet(sdk.NewTableSetRequest().WithComment(sdk.String(comment)))
 		} else {
-			alterRequest.WithUnset(sdk.NewTableUnsetRequest().WithComment(sdk.Bool(true)))
+			alterRequest.WithUnset(sdk.NewTableUnsetRequest().WithComment(true))
 		}
 
 		err := client.Tables.Alter(ctx, alterRequest)
