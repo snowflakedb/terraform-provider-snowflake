@@ -394,7 +394,6 @@ Read-Only:
 - `directory_table` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--directory_table))
 - `file_format` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format))
 - `location` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--location))
-- `privatelink` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--privatelink))
 
 <a id="nestedobjatt--describe_output--directory_table"></a>
 ### Nested Schema for `describe_output.directory_table`
@@ -532,16 +531,7 @@ Read-Only:
 
 Read-Only:
 
-- `aws_access_point_arn` (String)
-- `url` (String)
-
-
-<a id="nestedobjatt--describe_output--privatelink"></a>
-### Nested Schema for `describe_output.privatelink`
-
-Read-Only:
-
-- `use_privatelink_endpoint` (Boolean)
+- `url` (List of String)
 
 
 

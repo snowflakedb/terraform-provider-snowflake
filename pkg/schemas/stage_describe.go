@@ -42,6 +42,26 @@ func AwsStageDescribeSchema() map[string]*schema.Schema {
 	})
 }
 
+func AwsCompatibleStageDescribeSchema() map[string]*schema.Schema {
+	return collections.MergeMaps(stageDescribeSchema, map[string]*schema.Schema{
+		"location": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
+	})
+}
+
 // StageDatasourceDescribeSchema is a helper function used to get the schema for the describe output of the stage data source.
 // It supports all stage types and file format types.
 func StageDatasourceDescribeSchema() map[string]*schema.Schema {
@@ -513,11 +533,9 @@ func AwsStageDescribeToSchema(properties sdk.StageDetails) (map[string]any, erro
 	}
 
 	if properties.Location != nil {
-		// TODO(next PR): move to SDK
-		urls := sdk.ParseCommaSeparatedStringArray(properties.Location.Url, true)
 		schema["location"] = []map[string]any{
 			{
-				"url":                  urls,
+				"url":                  properties.Location.Url,
 				"aws_access_point_arn": properties.Location.AwsAccessPointArn,
 			},
 		}
@@ -526,6 +544,22 @@ func AwsStageDescribeToSchema(properties sdk.StageDetails) (map[string]any, erro
 		schema["privatelink"] = []map[string]any{
 			{
 				"use_privatelink_endpoint": properties.PrivateLink.UsePrivatelinkEndpoint,
+			},
+		}
+	}
+	return schema, nil
+}
+
+func AwsCompatibleStageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
+	schema, err := StageDescribeToSchema(properties)
+	if err != nil {
+		return nil, err
+	}
+
+	if properties.Location != nil {
+		schema["location"] = []map[string]any{
+			{
+				"url": properties.Location.Url,
 			},
 		}
 	}

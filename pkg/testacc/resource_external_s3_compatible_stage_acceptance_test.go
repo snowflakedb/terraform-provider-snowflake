@@ -97,6 +97,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.location.0.url.0", s3CompatUrl)),
 				),
 			},
 			// Import - without optionals
@@ -137,6 +139,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.0", s3CompatUrl)),
 				),
 			},
 			// Import - after complete
@@ -192,6 +196,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.url.0", s3CompatUrl)),
 				),
 			},
 			// External change detection
@@ -222,6 +228,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCloudEnum(sdk.StageCloudAws).
 						HasStageTypeEnum(sdk.StageTypeExternal),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.url.0", s3CompatUrl)),
 				),
 			},
 			// ForceNew - unset directory
@@ -253,6 +261,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasDirectoryEnabled(false).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelNoDirectory.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelNoDirectory.ResourceReference(), "describe_output.0.location.0.url.0", s3CompatUrl)),
 				),
 			},
 			// Rename
@@ -284,6 +294,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasDirectoryEnabled(false).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasCreatedOnNotEmpty(),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.location.0.url.0", s3CompatUrl)),
 				),
 			},
 			// Detect changing stage type externally
@@ -312,6 +324,8 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
 						HasCloudEnum(sdk.StageCloudAws).
 						HasStageTypeEnum(sdk.StageTypeExternal),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.location.0.url.0", s3CompatUrl)),
 				),
 			},
 		},
@@ -374,6 +388,8 @@ func TestAcc_ExternalS3CompatStage_CompleteUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.0", s3CompatUrl)),
 				),
 			},
 			{

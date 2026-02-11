@@ -125,6 +125,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// Import - without optionals
@@ -171,6 +173,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelAlter.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelAlter.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelAlter.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelAlter.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelAlter.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// Import - after alter
@@ -224,6 +228,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// External change - disable directory
@@ -269,6 +275,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.aws_access_point_arn", "arn:aws:s3:us-west-2:123456789012:accesspoint/complete")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// Import - complete
@@ -328,6 +336,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.aws_access_point_arn", "arn:aws:s3:us-west-2:123456789012:accesspoint/updated")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// External change detection
@@ -370,6 +380,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelUpdated.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// ForceNew - unset directory
@@ -405,6 +417,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelEncryptionNoneWithComment.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// set credentials
@@ -476,6 +490,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelRenamed.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 
@@ -513,6 +529,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// Detect changing stage type externally
@@ -554,6 +572,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithStorageIntegration.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			{
@@ -593,6 +613,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			// change privatelink endpoint externally
@@ -632,6 +654,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "true")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithUsePrivatelinkEndpoint.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 		},
@@ -695,6 +719,8 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
 				),
 			},
 			{

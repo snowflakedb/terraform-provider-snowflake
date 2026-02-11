@@ -257,7 +257,7 @@ Read-Only:
 Read-Only:
 
 - `aws_access_point_arn` (String)
-- `url` (String)
+- `url` (List of String)
 
 
 <a id="nestedobjatt--stages--describe_output--privatelink"></a>

@@ -267,10 +267,10 @@ func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 			return nil, err
 		}
 	}
+	if err := d.Set("url", stage.Url); err != nil {
+		return nil, err
+	}
 	if details.Location != nil {
-		if err := d.Set("url", details.Location.Url); err != nil {
-			return nil, err
-		}
 		if details.Location.AwsAccessPointArn != "" {
 			if err := d.Set("aws_access_point_arn", details.Location.AwsAccessPointArn); err != nil {
 				return nil, err
