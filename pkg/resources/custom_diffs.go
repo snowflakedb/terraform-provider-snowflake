@@ -99,6 +99,13 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 	})
 }
 
+// ForceNewIfUrlIsS3Compatible sets a ForceNew for a url field which is set to an s3compat:// url.
+func ForceNewIfUrlIsS3Compatible() schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange("url", func(ctx context.Context, oldValue, newValue, meta any) bool {
+		return strings.HasPrefix(oldValue.(string), "s3compat://")
+	})
+}
+
 // ForceNewIfNotDefault sets a ForceNew for a string field which was set to a non-default value.
 func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
 	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {

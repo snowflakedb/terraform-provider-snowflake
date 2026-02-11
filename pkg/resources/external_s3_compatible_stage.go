@@ -112,7 +112,7 @@ func ExternalS3CompatibleStage() *schema.Resource {
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAws),
-			// This is the same configuration as for external S3 stage, but the additional differences are:
+			// This is a similar configuration as for external S3 stage, but the additional differences are:
 			// - endpoint is required for S3-compatible stages, but it's null for S3 stages
 			// - url starts with s3compat:// instead of s3://
 			// changes on both of these fields trigger ForceNew.

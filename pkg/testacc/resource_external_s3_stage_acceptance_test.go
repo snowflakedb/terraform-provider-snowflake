@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -14,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -34,6 +36,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 
 	masterKey := random.AwsCseMasterKey()
 	awsUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	s3CompatUrl := strings.Replace(awsUrl, "s3://", "s3compat://", 1)
 	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
 	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
 
@@ -516,12 +519,13 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Stage.DropStageFunc(t, id)()
-					testClient().Stage.CreateInternalStageWithId(t, id)
+					testClient().Stage.CreateStageOnS3CompatibleWithId(t, id, s3CompatUrl, "s3.us-west-2.amazonaws.com", awsKeyId, awsSecretKey)
 				},
 				Config: accconfig.FromModels(t, modelWithStorageIntegration),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelWithStorageIntegration.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(modelWithStorageIntegration.ResourceReference(), "url", sdk.Pointer(awsUrl), sdk.Pointer(s3CompatUrl)),
 					},
 				},
 				Check: assertThat(t,

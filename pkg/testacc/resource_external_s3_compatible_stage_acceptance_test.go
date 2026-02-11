@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -289,12 +290,14 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Stage.DropStageFunc(t, newId)()
-					testClient().Stage.CreateInternalStageWithId(t, newId)
+					testClient().Stage.CreateStageOnS3WithId(t, newId, awsBucketUrl)
 				},
 				Config: accconfig.FromModels(t, modelRenamed),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(modelRenamed.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(modelRenamed.ResourceReference(), "url", sdk.Pointer(s3CompatUrl), sdk.Pointer(awsBucketUrl)),
+						planchecks.ExpectDrift(modelRenamed.ResourceReference(), "endpoint", sdk.Pointer(s3CompatEndpoint), nil),
 					},
 				},
 				Check: assertThat(t,
