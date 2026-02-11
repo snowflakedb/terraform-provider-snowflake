@@ -1,239 +1,23 @@
 ---
-page_title: "snowflake_stage_external_gcs Resource - terraform-provider-snowflake"
+page_title: "snowflake_stage_internal Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage external GCS stages. For more information, check external stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams.
+  Resource used to manage internal stages. For more information, check internal stage documentation https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
--> **Note** External changes detection on the `encryption` and `directory.notification_integration` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
+-> **Note** External changes detection on the `encryption` field is not supported because Snowflake does not return encryption settings in DESCRIBE or SHOW STAGE output.
 
 -> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
 
-# snowflake_stage_external_gcs (Resource)
+# snowflake_stage_internal (Resource)
 
-Resource used to manage external GCS stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
+Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).
 
-## Example Usage
 
--> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
-<!-- TODO(SNOW-1634854): include an example showing both methods-->
-
-```terraform
-# Basic resource with storage integration (required for GCS)
-resource "snowflake_stage_external_gcs" "basic" {
-  name                = "my_gcs_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-}
-
-# Complete resource with all options
-resource "snowflake_stage_external_gcs" "complete" {
-  name                = "complete_gcs_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  encryption {
-    gcs_sse_kms {
-      kms_key_id = var.gcs_kms_key_id
-    }
-  }
-
-  directory {
-    enable            = true
-    refresh_on_create = true
-    auto_refresh      = false
-  }
-
-  comment = "Fully configured GCS external stage"
-}
-
-# Resource with encryption set to none
-resource "snowflake_stage_external_gcs" "no_encryption" {
-  name                = "gcs_stage_no_encryption"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  encryption {
-    none {}
-  }
-}
-
-# Resource with GCS SSE KMS encryption without specifying key
-resource "snowflake_stage_external_gcs" "default_kms" {
-  name                = "gcs_stage_default_kms"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  encryption {
-    gcs_sse_kms {}
-  }
-}
-
-# resource with inline CSV file format
-resource "snowflake_stage_external_gcs" "with_csv_format" {
-  name                = "gcs_csv_format_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  file_format {
-    csv {
-      compression                    = "GZIP"
-      record_delimiter               = "\n"
-      field_delimiter                = "|"
-      multi_line                     = "false"
-      file_extension                 = ".csv"
-      skip_header                    = 1 # or parse_header = true
-      skip_blank_lines               = "true"
-      date_format                    = "AUTO"
-      time_format                    = "AUTO"
-      timestamp_format               = "AUTO"
-      binary_format                  = "HEX"
-      escape                         = "\\"
-      escape_unenclosed_field        = "\\"
-      trim_space                     = "false"
-      field_optionally_enclosed_by   = "\""
-      null_if                        = ["NULL", ""]
-      error_on_column_count_mismatch = "true"
-      replace_invalid_characters     = "false"
-      empty_field_as_null            = "true"
-      skip_byte_order_mark           = "true"
-      encoding                       = "UTF8"
-    }
-  }
-}
-
-# resource with inline JSON file format
-resource "snowflake_stage_external_gcs" "with_json_format" {
-  name                = "gcs_json_format_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  file_format {
-    json {
-      compression                = "AUTO"
-      date_format                = "AUTO"
-      time_format                = "AUTO"
-      timestamp_format           = "AUTO"
-      binary_format              = "HEX"
-      trim_space                 = "false"
-      multi_line                 = "false"
-      null_if                    = ["NULL", ""]
-      file_extension             = ".json"
-      enable_octal               = "false"
-      allow_duplicate            = "false"
-      strip_outer_array          = "false"
-      strip_null_values          = "false"
-      replace_invalid_characters = "false" # or ignore_utf8_errors = true
-      skip_byte_order_mark       = "false"
-    }
-  }
-}
-
-# resource with inline AVRO file format
-resource "snowflake_stage_external_gcs" "with_avro_format" {
-  name                = "gcs_avro_format_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  file_format {
-    avro {
-      compression                = "GZIP"
-      trim_space                 = "false"
-      replace_invalid_characters = "false"
-      null_if                    = ["NULL", ""]
-    }
-  }
-}
-
-# resource with inline ORC file format
-resource "snowflake_stage_external_gcs" "with_orc_format" {
-  name                = "gcs_orc_format_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  file_format {
-    orc {
-      trim_space                 = "false"
-      replace_invalid_characters = "false"
-      null_if                    = ["NULL", ""]
-    }
-  }
-}
-
-# resource with inline Parquet file format
-resource "snowflake_stage_external_gcs" "with_parquet_format" {
-  name                = "gcs_parquet_format_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  file_format {
-    parquet {
-      compression                = "SNAPPY"
-      binary_as_text             = "true"
-      use_logical_type           = "true"
-      trim_space                 = "false"
-      use_vectorized_scanner     = "false"
-      replace_invalid_characters = "false"
-      null_if                    = ["NULL", ""]
-    }
-  }
-}
-
-# resource with inline XML file format
-resource "snowflake_stage_external_gcs" "with_xml_format" {
-  name                = "gcs_xml_format_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  file_format {
-    xml {
-      compression                = "AUTO"
-      preserve_space             = "false"
-      strip_outer_element        = "false"
-      disable_auto_convert       = "false"
-      replace_invalid_characters = "false" # or ignore_utf8_errors = true
-      skip_byte_order_mark       = "false"
-    }
-  }
-}
-
-# resource with named file format
-resource "snowflake_stage_external_gcs" "with_named_format" {
-  name                = "gcs_named_format_stage"
-  database            = "my_database"
-  schema              = "my_schema"
-  url                 = "gcs://mybucket/mypath/"
-  storage_integration = snowflake_storage_integration.gcs.name
-
-  file_format {
-    format_name = snowflake_file_format.test.fully_qualified_name
-  }
-}
-```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
@@ -245,20 +29,17 @@ resource "snowflake_stage_external_gcs" "with_named_format" {
 - `database` (String) The database in which to create the stage. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the stage; must be unique for the database and schema in which the stage is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the stage. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `storage_integration` (String) Specifies the name of the storage integration used to delegate authentication responsibility to a Snowflake identity. GCS stages require a storage integration. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `url` (String) Specifies the URL for the GCS bucket (e.g., 'gcs://bucket/path/').
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the stage.
 - `directory` (Block List, Max: 1) Directory tables store a catalog of staged files in cloud storage. (see [below for nested schema](#nestedblock--directory))
-- `encryption` (Block List, Max: 1) Specifies the encryption settings for the GCS external stage. (see [below for nested schema](#nestedblock--encryption))
+- `encryption` (Block List, Max: 1) Specifies the encryption settings for the internal stage. (see [below for nested schema](#nestedblock--encryption))
 - `file_format` (Block List, Max: 1) Specifies the file format for the stage. (see [below for nested schema](#nestedblock--file_format))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
-- `cloud` (String) Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.
 - `describe_output` (List of Object) Outputs the result of `DESCRIBE STAGE` for the given stage. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
@@ -270,13 +51,11 @@ resource "snowflake_stage_external_gcs" "with_named_format" {
 
 Required:
 
-- `enable` (Boolean) Specifies whether to enable a directory table on the external stage.
+- `enable` (Boolean) Specifies whether to enable a directory table on the internal named stage.
 
 Optional:
 
-- `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.
-- `notification_integration` (String) Specifies the name of the notification integration used to automatically refresh the directory table metadata. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `refresh_on_create` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to automatically refresh the directory table metadata once, immediately after the stage is created.This field is used only when creating the object. Changes on this field are ignored after creation.
+- `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should automatically refresh the directory table metadata when new or updated data files are available on the internal named stage.
 
 
 <a id="nestedblock--encryption"></a>
@@ -284,19 +63,15 @@ Optional:
 
 Optional:
 
-- `gcs_sse_kms` (Block List, Max: 1) GCS server-side encryption using a KMS key. (see [below for nested schema](#nestedblock--encryption--gcs_sse_kms))
-- `none` (Block List, Max: 1) No encryption. (see [below for nested schema](#nestedblock--encryption--none))
+- `snowflake_full` (Block List, Max: 1) Client-side and server-side encryption. (see [below for nested schema](#nestedblock--encryption--snowflake_full))
+- `snowflake_sse` (Block List, Max: 1) Server-side encryption only. (see [below for nested schema](#nestedblock--encryption--snowflake_sse))
 
-<a id="nestedblock--encryption--gcs_sse_kms"></a>
-### Nested Schema for `encryption.gcs_sse_kms`
-
-Optional:
-
-- `kms_key_id` (String) Specifies the KMS-managed key ID.
+<a id="nestedblock--encryption--snowflake_full"></a>
+### Nested Schema for `encryption.snowflake_full`
 
 
-<a id="nestedblock--encryption--none"></a>
-### Nested Schema for `encryption.none`
+<a id="nestedblock--encryption--snowflake_sse"></a>
+### Nested Schema for `encryption.snowflake_sse`
 
 
 
@@ -587,11 +362,3 @@ Read-Only:
 - `storage_integration` (String)
 - `type` (String)
 - `url` (String)
-
-## Import
-
-Import is supported using the following syntax:
-
-```shell
-terraform import snowflake_stage_external_gcs.example '"<database_name>"."<schema_name>"."<stage_name>"'
-```

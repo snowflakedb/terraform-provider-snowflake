@@ -61,7 +61,7 @@ These features are in preview. To use them, add
 - `snowflake_stage_external_s3_compatible_resource`,
 to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
 
-The existing `snowflake_stage` resource remains available for both internal and external stages. The new resources are recommended for internal and external stages. See the resource documentation linked above for complete configuration details.
+The existing `snowflake_stage` resource remains available for both internal and external stages, but is now deprecated. The old resource will be removed in v3 version. The new resources are recommended for internal and external stages. See the resource documentation linked above for complete configuration details.
 
 To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
 

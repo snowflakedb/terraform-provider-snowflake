@@ -1,5 +1,5 @@
 <!-- Section of preview resources -->
-### Currently preview resources
+### Currently preview resources 
 
 - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
@@ -11,11 +11,7 @@
 - [snowflake_current_organization_account](./docs/resources/current_organization_account)
 - [snowflake_dynamic_table](./docs/resources/dynamic_table)
 - [snowflake_email_notification_integration](./docs/resources/email_notification_integration)
-- [snowflake_stage_external_azure](./docs/resources/external_azure_stage)
 - [snowflake_external_function](./docs/resources/external_function)
-- [snowflake_stage_external_gcs](./docs/resources/external_gcs_stage)
-- [snowflake_stage_external_s3_compatible](./docs/resources/external_s3_compatible_stage)
-- [snowflake_stage_external_s3](./docs/resources/external_s3_stage)
 - [snowflake_external_table](./docs/resources/external_table)
 - [snowflake_external_volume](./docs/resources/external_volume)
 - [snowflake_failover_group](./docs/resources/failover_group)
@@ -25,7 +21,6 @@
 - [snowflake_function_python](./docs/resources/function_python)
 - [snowflake_function_scala](./docs/resources/function_scala)
 - [snowflake_function_sql](./docs/resources/function_sql)
-- [snowflake_stage_internal](./docs/resources/internal_stage)
 - [snowflake_job_service](./docs/resources/job_service)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
@@ -45,6 +40,11 @@
 - [snowflake_sequence](./docs/resources/sequence)
 - [snowflake_share](./docs/resources/share)
 - [snowflake_stage](./docs/resources/stage)
+- [snowflake_stage_external_azure](./docs/resources/stage_external_azure)
+- [snowflake_stage_external_gcs](./docs/resources/stage_external_gcs)
+- [snowflake_stage_external_s3](./docs/resources/stage_external_s3)
+- [snowflake_stage_external_s3_compatible](./docs/resources/stage_external_s3_compatible)
+- [snowflake_stage_internal](./docs/resources/stage_internal)
 - [snowflake_storage_integration](./docs/resources/storage_integration)
 - [snowflake_storage_integration_aws](./docs/resources/storage_integration_aws)
 - [snowflake_storage_integration_azure](./docs/resources/storage_integration_azure)

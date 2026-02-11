@@ -623,8 +623,9 @@ variable "oauth_redirect_uri" {
 ```
 
 <!-- Section of deprecated resources -->
- ## Currently deprecated resources
+ ## Currently deprecated resources 
 
+- [snowflake_stage](./docs/resources/stage)
 - [snowflake_storage_integration](./docs/resources/storage_integration)
 
 <!-- Section of deprecated data sources -->
@@ -719,7 +720,7 @@ Preview features are disabled by default and should be used with caution.
 To use them, add the relevant feature name to the `preview_features_enabled` field in the [provider configuration](#preview_features_enabled-1).
 
 <!-- Section of stable resources -->
-### Currently stable resources
+### Currently stable resources 
 
 - [snowflake_account](./docs/resources/account)
 - [snowflake_account_parameter](./docs/resources/account_parameter)
@@ -776,7 +777,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_warehouse](./docs/resources/warehouse)
 
 <!-- Section of stable data sources -->
-### Currently stable data sources
+### Currently stable data sources 
 
 - [snowflake_account_roles](./docs/data-sources/account_roles)
 - [snowflake_accounts](./docs/data-sources/accounts)
@@ -805,7 +806,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_warehouses](./docs/data-sources/warehouses)
 
 <!-- Section of preview resources -->
-### Currently preview resources
+### Currently preview resources 
 
 - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
@@ -817,11 +818,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_current_organization_account](./docs/resources/current_organization_account)
 - [snowflake_dynamic_table](./docs/resources/dynamic_table)
 - [snowflake_email_notification_integration](./docs/resources/email_notification_integration)
-- [snowflake_stage_external_azure](./docs/resources/external_azure_stage)
 - [snowflake_external_function](./docs/resources/external_function)
-- [snowflake_stage_external_gcs](./docs/resources/external_gcs_stage)
-- [snowflake_stage_external_s3_compatible](./docs/resources/external_s3_compatible_stage)
-- [snowflake_stage_external_s3](./docs/resources/external_s3_stage)
 - [snowflake_external_table](./docs/resources/external_table)
 - [snowflake_external_volume](./docs/resources/external_volume)
 - [snowflake_failover_group](./docs/resources/failover_group)
@@ -831,7 +828,6 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_function_python](./docs/resources/function_python)
 - [snowflake_function_scala](./docs/resources/function_scala)
 - [snowflake_function_sql](./docs/resources/function_sql)
-- [snowflake_stage_internal](./docs/resources/internal_stage)
 - [snowflake_job_service](./docs/resources/job_service)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
@@ -851,6 +847,11 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_sequence](./docs/resources/sequence)
 - [snowflake_share](./docs/resources/share)
 - [snowflake_stage](./docs/resources/stage)
+- [snowflake_stage_external_azure](./docs/resources/stage_external_azure)
+- [snowflake_stage_external_gcs](./docs/resources/stage_external_gcs)
+- [snowflake_stage_external_s3](./docs/resources/stage_external_s3)
+- [snowflake_stage_external_s3_compatible](./docs/resources/stage_external_s3_compatible)
+- [snowflake_stage_internal](./docs/resources/stage_internal)
 - [snowflake_storage_integration](./docs/resources/storage_integration)
 - [snowflake_storage_integration_aws](./docs/resources/storage_integration_aws)
 - [snowflake_storage_integration_azure](./docs/resources/storage_integration_azure)
@@ -863,7 +864,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_user_public_keys](./docs/resources/user_public_keys)
 
 <!-- Section of preview data sources -->
-### Currently preview data sources
+### Currently preview data sources 
 
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_authentication_policies](./docs/data-sources/authentication_policies)
