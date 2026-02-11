@@ -384,6 +384,14 @@ func (c *StageClient) AlterExternalS3Stage(t *testing.T, req *sdk.AlterExternalS
 	require.NoError(t, err)
 }
 
+func (c *StageClient) AlterExternalGCSStage(t *testing.T, req *sdk.AlterExternalGCSStageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterExternalGCSStage(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *StageClient) AlterDirectoryTable(t *testing.T, req *sdk.AlterDirectoryTableStageRequest) {
 	t.Helper()
 	ctx := context.Background()

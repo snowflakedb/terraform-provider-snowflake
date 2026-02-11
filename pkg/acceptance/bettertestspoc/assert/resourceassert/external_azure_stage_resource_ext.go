@@ -59,6 +59,35 @@ func (e *ExternalAzureStageResourceAssert) HasCloudEnum(expected sdk.StageCloud)
 	return e
 }
 
+func (e *ExternalAzureStageResourceAssert) HasFileFormatEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasFileFormatFormatName(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "1"))
+	e.AddAssertion(assert.ValueSet("file_format.0.format_name", expected))
+	e.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasFileFormatCsv() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "1"))
+	e.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
+	e.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
+	e.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
+	return e
+}
+
 func (e *ExternalAzureStageResourceAssert) HasCredentials(token string) *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("credentials.#", "1"))
 	e.AddAssertion(assert.ValueSet("credentials.0.azure_sas_token", token))

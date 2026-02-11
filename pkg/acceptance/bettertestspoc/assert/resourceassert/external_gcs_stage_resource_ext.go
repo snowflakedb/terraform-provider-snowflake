@@ -51,3 +51,32 @@ func (e *ExternalGcsStageResourceAssert) HasCloudEnum(expected sdk.StageCloud) *
 	e.AddAssertion(assert.ValueSet("cloud", string(expected)))
 	return e
 }
+
+func (e *ExternalGcsStageResourceAssert) HasFileFormatEmpty() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasFileFormatFormatName(expected string) *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "1"))
+	e.AddAssertion(assert.ValueSet("file_format.0.format_name", expected))
+	e.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasFileFormatCsv() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "1"))
+	e.AddAssertion(assert.ValueSet("file_format.0.csv.#", "1"))
+	e.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
+	e.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	e.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
+	return e
+}
