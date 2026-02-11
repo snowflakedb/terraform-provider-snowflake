@@ -175,6 +175,29 @@ func (c *StageClient) CreateStageOnAzureWithId(t *testing.T, id sdk.SchemaObject
 	return stage, c.DropStageFunc(t, id)
 }
 
+func (c *StageClient) CreateStageOnS3Compatible(t *testing.T, url string, endpoint string, awsKeyId string, awsSecretKey string) (*sdk.Stage, func()) {
+	t.Helper()
+	id := c.ids.RandomSchemaObjectIdentifier()
+	return c.CreateStageOnS3CompatibleWithId(t, id, url, endpoint, awsKeyId, awsSecretKey)
+}
+
+func (c *StageClient) CreateStageOnS3CompatibleWithId(t *testing.T, id sdk.SchemaObjectIdentifier, url string, endpoint string, awsKeyId string, awsSecretKey string) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	s3CompatReq := sdk.NewExternalS3CompatibleStageParamsRequest(url, endpoint).
+		WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
+	request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq)
+
+	err := c.client().CreateOnS3Compatible(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, id)
+}
+
 func (c *StageClient) DropStageFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

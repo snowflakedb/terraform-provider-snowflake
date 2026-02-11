@@ -14,6 +14,7 @@
 - [snowflake_external_azure_stage](./docs/resources/external_azure_stage)
 - [snowflake_external_function](./docs/resources/external_function)
 - [snowflake_external_gcs_stage](./docs/resources/external_gcs_stage)
+- [snowflake_external_s3_compatible_stage](./docs/resources/external_s3_compatible_stage)
 - [snowflake_external_s3_stage](./docs/resources/external_s3_stage)
 - [snowflake_external_table](./docs/resources/external_table)
 - [snowflake_external_volume](./docs/resources/external_volume)

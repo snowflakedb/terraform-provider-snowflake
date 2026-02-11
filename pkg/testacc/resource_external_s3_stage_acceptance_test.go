@@ -124,6 +124,14 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 				),
 			},
+			// Import - without optionals
+			{
+				Config:                  accconfig.FromModels(t, modelBasic),
+				ResourceName:            modelBasic.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"directory", "file_format", "use_privatelink_endpoint"},
+			},
 			// alter
 			{
 				Config: accconfig.FromModels(t, modelAlter),

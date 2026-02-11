@@ -86,6 +86,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ExternalS3Stage().Schema,
 	},
 	{
+		name:   "ExternalS3CompatibleStage",
+		schema: resources.ExternalS3CompatibleStage().Schema,
+	},
+	{
 		name:   "ExternalVolume",
 		schema: resources.ExternalVolume().Schema,
 	},
