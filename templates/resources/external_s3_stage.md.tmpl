@@ -13,9 +13,11 @@ description: |-
 
 -> **Note** Temporary stages are not supported because they result in per-session objects.
 
--> **Note** External changes detection on `credentials.azure_sas_token`, `directory.notification_integration`, `use_privatelink_endpoint`, and `encryption` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
+-> **Note** External changes detection on `credentials`, and `encryption` fields are not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
 -> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
+
+-> **Note** Integration based stages are not allowed to be altered to use privatelink endpoint. You must either alter the storage integration itself, or first unset the storage integration from the stage instead.
 
 # {{.Name}} ({{.Type}})
 
@@ -25,7 +27,6 @@ description: |-
 ## Example Usage
 
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
-<!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 {{ tffile .ExampleFile }}
 

@@ -47,23 +47,28 @@ func (e *ExternalAzureStageResourceAssert) HasNameString(expected string) *Exter
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasUrlString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("url", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasStorageIntegrationString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("storage_integration", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasUsePrivatelinkEndpointString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("use_privatelink_endpoint", expected))
+func (e *ExternalAzureStageResourceAssert) HasCloudString(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("cloud", expected))
 	return e
 }
 
 func (e *ExternalAzureStageResourceAssert) HasCommentString(expected string) *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", expected))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasCredentialsString(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("credentials", expected))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasDirectoryString(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("directory", expected))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasEncryptionString(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("encryption", expected))
 	return e
 }
 
@@ -74,6 +79,21 @@ func (e *ExternalAzureStageResourceAssert) HasFullyQualifiedNameString(expected 
 
 func (e *ExternalAzureStageResourceAssert) HasStageTypeString(expected string) *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("stage_type", expected))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasStorageIntegrationString(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("storage_integration", expected))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasUrlString(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("url", expected))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasUsePrivatelinkEndpointString(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("use_privatelink_endpoint", expected))
 	return e
 }
 
@@ -96,13 +116,8 @@ func (e *ExternalAzureStageResourceAssert) HasNoName() *ExternalAzureStageResour
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasNoUrl() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("url"))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasNoStorageIntegration() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("storage_integration"))
+func (e *ExternalAzureStageResourceAssert) HasNoCloud() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueNotSet("cloud"))
 	return e
 }
 
@@ -121,22 +136,42 @@ func (e *ExternalAzureStageResourceAssert) HasNoStageType() *ExternalAzureStageR
 	return e
 }
 
+func (e *ExternalAzureStageResourceAssert) HasNoStorageIntegration() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueNotSet("storage_integration"))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasNoUrl() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueNotSet("url"))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasNoUsePrivatelinkEndpoint() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueNotSet("use_privatelink_endpoint"))
+	return e
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (e *ExternalAzureStageResourceAssert) HasCloudEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("cloud", ""))
+	return e
+}
 
 func (e *ExternalAzureStageResourceAssert) HasCommentEmpty() *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", ""))
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasDirectoryEmpty() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory.#", "0"))
+func (e *ExternalAzureStageResourceAssert) HasCredentialsEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("credentials.#", "0"))
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasCredentialsEmpty() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("credentials.#", "0"))
+func (e *ExternalAzureStageResourceAssert) HasDirectoryEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("directory.#", "0"))
 	return e
 }
 
@@ -152,6 +187,16 @@ func (e *ExternalAzureStageResourceAssert) HasFullyQualifiedNameEmpty() *Externa
 
 func (e *ExternalAzureStageResourceAssert) HasStageTypeEmpty() *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("stage_type", ""))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasStorageIntegrationEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("storage_integration", ""))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasUsePrivatelinkEndpointEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("use_privatelink_endpoint", ""))
 	return e
 }
 
@@ -174,13 +219,8 @@ func (e *ExternalAzureStageResourceAssert) HasNameNotEmpty() *ExternalAzureStage
 	return e
 }
 
-func (e *ExternalAzureStageResourceAssert) HasUrlNotEmpty() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("url"))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasStorageIntegrationNotEmpty() *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("storage_integration"))
+func (e *ExternalAzureStageResourceAssert) HasCloudNotEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValuePresent("cloud"))
 	return e
 }
 
@@ -196,5 +236,20 @@ func (e *ExternalAzureStageResourceAssert) HasFullyQualifiedNameNotEmpty() *Exte
 
 func (e *ExternalAzureStageResourceAssert) HasStageTypeNotEmpty() *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("stage_type"))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasStorageIntegrationNotEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValuePresent("storage_integration"))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasUrlNotEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValuePresent("url"))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasUsePrivatelinkEndpointNotEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValuePresent("use_privatelink_endpoint"))
 	return e
 }

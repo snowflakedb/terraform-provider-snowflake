@@ -113,7 +113,7 @@ var externalGcsStageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema, gcsStage)
+	return collections.MergeMaps(stageCommonSchema(schemas.CommonStageDescribeSchema()), gcsStage)
 }()
 
 func ExternalGcsStage() *schema.Resource {

@@ -6,7 +6,44 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var StageDescribeSchema = map[string]*schema.Schema{
+func AwsStageDescribeSchema() map[string]*schema.Schema {
+	return collections.MergeMaps(stageDescribeSchema, map[string]*schema.Schema{
+		"privatelink": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"use_privatelink_endpoint": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"location": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"url": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"aws_access_point_arn": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+	})
+}
+
+func CommonStageDescribeSchema() map[string]*schema.Schema {
+	return stageDescribeSchema
+}
+
+var stageDescribeSchema = map[string]*schema.Schema{
 	"directory_table": {
 		Type: schema.TypeList,
 		Elem: &schema.Resource{
@@ -457,6 +494,30 @@ func StageFileFormatCsvToSchema(csv *sdk.FileFormatCsv) map[string]any {
 		"encoding":                       csv.Encoding,
 		"multi_line":                     csv.MultiLine,
 	}
+}
+
+func AwsStageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) {
+	schema, err := StageDescribeToSchema(properties)
+	if err != nil {
+		return nil, err
+	}
+
+	if properties.Location != nil {
+		schema["location"] = []map[string]any{
+			{
+				"url":                  properties.Location.Url,
+				"aws_access_point_arn": properties.Location.AwsAccessPointArn,
+			},
+		}
+	}
+	if properties.PrivateLink != nil {
+		schema["privatelink"] = []map[string]any{
+			{
+				"use_privatelink_endpoint": properties.PrivateLink.UsePrivatelinkEndpoint,
+			},
+		}
+	}
+	return schema, nil
 }
 
 func StageFileFormatAvroToSchema(avro *sdk.FileFormatAvro) map[string]any {

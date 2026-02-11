@@ -47,18 +47,23 @@ func (e *ExternalGcsStageResourceAssert) HasNameString(expected string) *Externa
 	return e
 }
 
-func (e *ExternalGcsStageResourceAssert) HasUrlString(expected string) *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("url", expected))
-	return e
-}
-
-func (e *ExternalGcsStageResourceAssert) HasStorageIntegrationString(expected string) *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("storage_integration", expected))
+func (e *ExternalGcsStageResourceAssert) HasCloudString(expected string) *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("cloud", expected))
 	return e
 }
 
 func (e *ExternalGcsStageResourceAssert) HasCommentString(expected string) *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", expected))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasDirectoryString(expected string) *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("directory", expected))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasEncryptionString(expected string) *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("encryption", expected))
 	return e
 }
 
@@ -69,6 +74,16 @@ func (e *ExternalGcsStageResourceAssert) HasFullyQualifiedNameString(expected st
 
 func (e *ExternalGcsStageResourceAssert) HasStageTypeString(expected string) *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("stage_type", expected))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasStorageIntegrationString(expected string) *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("storage_integration", expected))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasUrlString(expected string) *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("url", expected))
 	return e
 }
 
@@ -91,13 +106,8 @@ func (e *ExternalGcsStageResourceAssert) HasNoName() *ExternalGcsStageResourceAs
 	return e
 }
 
-func (e *ExternalGcsStageResourceAssert) HasNoUrl() *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("url"))
-	return e
-}
-
-func (e *ExternalGcsStageResourceAssert) HasNoStorageIntegration() *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("storage_integration"))
+func (e *ExternalGcsStageResourceAssert) HasNoCloud() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueNotSet("cloud"))
 	return e
 }
 
@@ -116,9 +126,24 @@ func (e *ExternalGcsStageResourceAssert) HasNoStageType() *ExternalGcsStageResou
 	return e
 }
 
+func (e *ExternalGcsStageResourceAssert) HasNoStorageIntegration() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueNotSet("storage_integration"))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasNoUrl() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueNotSet("url"))
+	return e
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (e *ExternalGcsStageResourceAssert) HasCloudEmpty() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("cloud", ""))
+	return e
+}
 
 func (e *ExternalGcsStageResourceAssert) HasCommentEmpty() *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", ""))
@@ -164,13 +189,8 @@ func (e *ExternalGcsStageResourceAssert) HasNameNotEmpty() *ExternalGcsStageReso
 	return e
 }
 
-func (e *ExternalGcsStageResourceAssert) HasUrlNotEmpty() *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("url"))
-	return e
-}
-
-func (e *ExternalGcsStageResourceAssert) HasStorageIntegrationNotEmpty() *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValuePresent("storage_integration"))
+func (e *ExternalGcsStageResourceAssert) HasCloudNotEmpty() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValuePresent("cloud"))
 	return e
 }
 
@@ -186,5 +206,15 @@ func (e *ExternalGcsStageResourceAssert) HasFullyQualifiedNameNotEmpty() *Extern
 
 func (e *ExternalGcsStageResourceAssert) HasStageTypeNotEmpty() *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("stage_type"))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasStorageIntegrationNotEmpty() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValuePresent("storage_integration"))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasUrlNotEmpty() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValuePresent("url"))
 	return e
 }

@@ -90,6 +90,12 @@ func (c *StageClient) CreateStageOnS3(t *testing.T, awsBucketUrl string) (*sdk.S
 
 	id := c.ids.RandomSchemaObjectIdentifier()
 
+	return c.CreateStageOnS3WithId(t, id, awsBucketUrl)
+}
+
+func (c *StageClient) CreateStageOnS3WithId(t *testing.T, id sdk.SchemaObjectIdentifier, awsBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
+
 	s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 		WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
 	request := sdk.NewCreateOnS3StageRequest(id, *s3Req)
@@ -344,6 +350,14 @@ func (c *StageClient) AlterExternalAzureStage(t *testing.T, req *sdk.AlterExtern
 	ctx := context.Background()
 
 	err := c.client().AlterExternalAzureStage(ctx, req)
+	require.NoError(t, err)
+}
+
+func (c *StageClient) AlterExternalS3Stage(t *testing.T, req *sdk.AlterExternalS3StageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterExternalS3Stage(ctx, req)
 	require.NoError(t, err)
 }
 

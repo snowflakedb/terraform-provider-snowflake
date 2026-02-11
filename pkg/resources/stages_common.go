@@ -13,54 +13,59 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var stageCommonSchema = map[string]*schema.Schema{
-	"name": {
-		Type:             schema.TypeString,
-		Required:         true,
-		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the stage; must be unique for the database and schema in which the stage is created."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"database": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("The database in which to create the stage."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"schema": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ForceNew:         true,
-		Description:      blocklistedCharactersFieldDescription("The schema in which to create the stage."),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-	},
-	"stage_type": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "Specifies a type for the stage. This field is used for checking external changes and recreating the resources if needed.",
-	},
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the stage.",
-	},
-	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	ShowOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `SHOW STAGES` for the given stage.",
-		Elem: &schema.Resource{
-			Schema: schemas.ShowStageSchema,
+func stageCommonSchema(
+	describeSchema map[string]*schema.Schema,
+) map[string]*schema.Schema {
+	stageCommonSchema := map[string]*schema.Schema{
+		"name": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the stage; must be unique for the database and schema in which the stage is created."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
-	},
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE STAGE` for the given stage.",
-		Elem: &schema.Resource{
-			Schema: schemas.StageDescribeSchema,
+		"database": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      blocklistedCharactersFieldDescription("The database in which to create the stage."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
-	},
+		"schema": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      blocklistedCharactersFieldDescription("The schema in which to create the stage."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+		"stage_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Specifies a type for the stage. This field is used for checking external changes and recreating the resources if needed.",
+		},
+		"comment": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Specifies a comment for the stage.",
+		},
+		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
+		ShowOutputAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW STAGES` for the given stage.",
+			Elem: &schema.Resource{
+				Schema: schemas.ShowStageSchema,
+			},
+		},
+		DescribeOutputAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE STAGE` for the given stage.",
+			Elem: &schema.Resource{
+				Schema: describeSchema,
+			},
+		},
+	}
+	return stageCommonSchema
 }
 
 func handleStageRename(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (sdk.SchemaObjectIdentifier, error) {
