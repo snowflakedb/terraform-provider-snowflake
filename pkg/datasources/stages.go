@@ -75,7 +75,6 @@ func ReadStages(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 
 	flattenedStages := make([]map[string]any, len(stages))
 	for i, stage := range stages {
-		stage := stage
 		var stageDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			properties, err := client.Stages.Describe(ctx, stage.ID())

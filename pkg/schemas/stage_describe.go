@@ -26,8 +26,11 @@ func AwsStageDescribeSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"url": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeList,
 						Computed: true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
 					},
 					"aws_access_point_arn": {
 						Type:     schema.TypeString,
@@ -510,9 +513,11 @@ func AwsStageDescribeToSchema(properties sdk.StageDetails) (map[string]any, erro
 	}
 
 	if properties.Location != nil {
+		// TODO(next PR): move to SDK
+		urls := sdk.ParseCommaSeparatedStringArray(properties.Location.Url, true)
 		schema["location"] = []map[string]any{
 			{
-				"url":                  properties.Location.Url,
+				"url":                  urls,
 				"aws_access_point_arn": properties.Location.AwsAccessPointArn,
 			},
 		}
