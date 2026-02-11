@@ -36,10 +36,9 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 	s3CompatUrl := strings.Replace(awsBucketUrl, "s3://", "s3compat://", 1)
 	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
 
-	modelBasic := model.ExternalS3CompatStageWithId(id, s3CompatUrl, s3CompatEndpoint).
-		WithCredentials(awsKeyId, awsSecretKey)
+	modelBasic := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint)
 
-	modelComplete := model.ExternalS3CompatStageWithId(id, s3CompatUrl, s3CompatEndpoint).
+	modelComplete := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithComment(comment).
 		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
@@ -48,7 +47,7 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 			AutoRefresh:     sdk.Bool(false),
 		})
 
-	modelUpdated := model.ExternalS3CompatStageWithId(id, s3CompatUrl, s3CompatEndpoint).
+	modelUpdated := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithComment(comment).
 		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
@@ -57,11 +56,11 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 			AutoRefresh:     sdk.Bool(false),
 		})
 
-	modelNoDirectory := model.ExternalS3CompatStageWithId(id, s3CompatUrl, s3CompatEndpoint).
+	modelNoDirectory := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithComment(comment)
 
-	modelRenamed := model.ExternalS3CompatStageWithId(newId, s3CompatUrl, s3CompatEndpoint).
+	modelRenamed := model.ExternalS3CompatibleStageWithId(newId, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey)
 
 	resource.Test(t, resource.TestCase{
@@ -98,6 +97,14 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.enable", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
+			},
+			// Import - without optionals
+			{
+				Config:                  accconfig.FromModels(t, modelBasic),
+				ResourceName:            modelBasic.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"directory", "file_format"},
 			},
 			// Set complete options
 			{
@@ -193,6 +200,11 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 					testClient().Stage.CreateStageOnS3CompatibleWithId(t, id, s3CompatUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
 				},
 				Config: accconfig.FromModels(t, modelUpdated),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: assertThat(t,
 					resourceassert.ExternalS3CompatStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
@@ -314,7 +326,7 @@ func TestAcc_ExternalS3CompatStage_CompleteUseCase(t *testing.T) {
 	s3CompatUrl := strings.Replace(awsBucketUrl, "s3://", "s3compat://", 1)
 	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
 
-	modelComplete := model.ExternalS3CompatStageWithId(id, s3CompatUrl, s3CompatEndpoint).
+	modelComplete := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithComment(comment).
 		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
@@ -391,14 +403,14 @@ func TestAcc_ExternalS3CompatStage_Validations(t *testing.T) {
 	s3CompatUrl := strings.Replace(awsBucketUrl, "s3://", "s3compat://", 1)
 	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
 
-	modelInvalidAutoRefresh := model.ExternalS3CompatStageWithId(id, s3CompatUrl, s3CompatEndpoint).
+	modelInvalidAutoRefresh := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithInvalidAutoRefresh()
 
-	modelInvalidRefreshOnCreate := model.ExternalS3CompatStageWithId(id, s3CompatUrl, s3CompatEndpoint).
+	modelInvalidRefreshOnCreate := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithInvalidRefreshOnCreate()
-	modelInvalidWithEmptyCredentials := model.ExternalS3CompatStageWithId(id, s3CompatUrl, s3CompatEndpoint).
+	modelInvalidWithEmptyCredentials := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithEmptyCredentials()
 
 	resource.Test(t, resource.TestCase{

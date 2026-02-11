@@ -110,6 +110,14 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
 				),
 			},
+			// Import - without optionals
+			{
+				Config:                  accconfig.FromModels(t, modelBasic),
+				ResourceName:            modelBasic.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"directory", "file_format"},
+			},
 			// Alter - rename
 			{
 				Config: accconfig.FromModels(t, modelRenamed),
