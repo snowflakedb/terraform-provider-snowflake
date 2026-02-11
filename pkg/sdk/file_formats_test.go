@@ -319,3 +319,46 @@ func Test_FileFormat_ToParquetCompression(t *testing.T) {
 		})
 	}
 }
+
+func Test_FileFormat_ToXmlCompression(t *testing.T) {
+	type test struct {
+		input string
+		want  XmlCompression
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "gzip", want: XMLCompressionGzip},
+
+		// Supported Values
+		{input: "AUTO", want: XMLCompressionAuto},
+		{input: "GZIP", want: XMLCompressionGzip},
+		{input: "BZ2", want: XMLCompressionBz2},
+		{input: "BROTLI", want: XMLCompressionBrotli},
+		{input: "ZSTD", want: XMLCompressionZstd},
+		{input: "DEFLATE", want: XMLCompressionDeflate},
+		{input: "RAW_DEFLATE", want: XMLCompressionRawDeflate},
+		{input: "NONE", want: XMLCompressionNone},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToXmlCompression(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToXmlCompression(tc.input)
+			require.Error(t, err)
+		})
+	}
+}

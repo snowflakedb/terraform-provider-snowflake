@@ -58,6 +58,7 @@ func (i *InternalStageResourceAssert) HasFileFormatFormatName(expected string) *
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
 	return i
 }
 
@@ -69,6 +70,7 @@ func (i *InternalStageResourceAssert) HasFileFormatCsv() *InternalStageResourceA
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
 	return i
 }
 
@@ -190,6 +192,7 @@ func (i *InternalStageResourceAssert) HasFileFormatJson() *InternalStageResource
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
 	return i
 }
 
@@ -286,6 +289,7 @@ func (i *InternalStageResourceAssert) HasFileFormatAvro() *InternalStageResource
 	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
 	return i
 }
 
@@ -327,6 +331,7 @@ func (i *InternalStageResourceAssert) HasFileFormatOrc() *InternalStageResourceA
 	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
 	return i
 }
 
@@ -363,6 +368,7 @@ func (i *InternalStageResourceAssert) HasFileFormatParquet() *InternalStageResou
 	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
 	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.#", "0"))
 	return i
 }
 
@@ -423,5 +429,57 @@ func (i *InternalStageResourceAssert) HasFileFormatParquetUseVectorizedScannerSt
 
 func (i *InternalStageResourceAssert) HasFileFormatParquetNullIfCount(expected int) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("file_format.0.parquet.0.null_if.#", strconv.Itoa(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXml() *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.#", "1"))
+	i.AddAssertion(assert.ValueSet("file_format.0.format_name", ""))
+	i.AddAssertion(assert.ValueSet("file_format.0.csv.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.json.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.avro.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.orc.#", "0"))
+	i.AddAssertion(assert.ValueSet("file_format.0.parquet.#", "0"))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlCompression(expected sdk.XmlCompression) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.0.compression", string(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlIgnoreUtf8Errors(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.0.ignore_utf8_errors", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlPreserveSpace(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.0.preserve_space", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlStripOuterElement(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.0.strip_outer_element", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlDisableAutoConvert(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.0.disable_auto_convert", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlReplaceInvalidCharacters(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.0.replace_invalid_characters", strconv.FormatBool(expected)))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlReplaceInvalidCharactersString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.0.replace_invalid_characters", expected))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatXmlSkipByteOrderMark(expected bool) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.0.xml.0.skip_byte_order_mark", strconv.FormatBool(expected)))
 	return i
 }

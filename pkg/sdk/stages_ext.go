@@ -98,6 +98,18 @@ type FileFormatParquet struct {
 	NullIf                   []string
 }
 
+// FileFormatXml represents XML file format properties from DESCRIBE STAGE
+type FileFormatXml struct {
+	Type                     string
+	Compression              string
+	IgnoreUtf8Errors         bool
+	PreserveSpace            bool
+	StripOuterElement        bool
+	DisableAutoConvert       bool
+	ReplaceInvalidCharacters bool
+	SkipByteOrderMark        bool
+}
+
 // StageDirectoryTable represents directory table properties from DESCRIBE STAGE
 type StageDirectoryTable struct {
 	Enable                       bool
@@ -114,6 +126,7 @@ type StageDetails struct {
 	FileFormatAvro    *FileFormatAvro
 	FileFormatOrc     *FileFormatOrc
 	FileFormatParquet *FileFormatParquet
+	FileFormatXml     *FileFormatXml
 	DirectoryTable    *StageDirectoryTable
 	PrivateLink       *StagePrivateLink
 	Location          *StageLocationDetails
@@ -170,6 +183,8 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 		details.FileFormatOrc = parseOrcFileFormat(properties)
 	case FileFormatTypeParquet:
 		details.FileFormatParquet = parseParquetFileFormat(properties)
+	case FileFormatTypeXML:
+		details.FileFormatXml = parseXmlFileFormat(properties)
 	}
 
 	return details, nil
@@ -370,6 +385,35 @@ func parseParquetFileFormat(properties []StageProperty) *FileFormatParquet {
 	}
 
 	return parquet
+}
+
+func parseXmlFileFormat(properties []StageProperty) *FileFormatXml {
+	xml := &FileFormatXml{}
+	filtered := collections.Filter(properties, func(prop StageProperty) bool {
+		return prop.Parent == "STAGE_FILE_FORMAT"
+	})
+	for _, prop := range filtered {
+		switch prop.Name {
+		case "TYPE":
+			xml.Type = prop.Value
+		case "COMPRESSION":
+			xml.Compression = prop.Value
+		case "IGNORE_UTF8_ERRORS":
+			xml.IgnoreUtf8Errors = prop.Value == "true"
+		case "PRESERVE_SPACE":
+			xml.PreserveSpace = prop.Value == "true"
+		case "STRIP_OUTER_ELEMENT":
+			xml.StripOuterElement = prop.Value == "true"
+		case "DISABLE_AUTO_CONVERT":
+			xml.DisableAutoConvert = prop.Value == "true"
+		case "REPLACE_INVALID_CHARACTERS":
+			xml.ReplaceInvalidCharacters = prop.Value == "true"
+		case "SKIP_BYTE_ORDER_MARK":
+			xml.SkipByteOrderMark = prop.Value == "true"
+		}
+	}
+
+	return xml
 }
 
 func parseDirectoryTable(properties []StageProperty) (*StageDirectoryTable, error) {

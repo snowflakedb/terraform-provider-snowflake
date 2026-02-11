@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var stageFileFormatExactlyOneOf = []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro", "file_format.0.orc", "file_format.0.parquet"}
+var stageFileFormatExactlyOneOf = []string{"file_format.0.format_name", "file_format.0.csv", "file_format.0.json", "file_format.0.avro", "file_format.0.orc", "file_format.0.parquet", "file_format.0.xml"}
 
 var stageFileFormatSchema = map[string]*schema.Schema{
 	"file_format": {
@@ -78,6 +78,16 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					Description:  "Parquet file format options.",
 					Elem: &schema.Resource{
 						Schema: parquetFileFormatSchema,
+					},
+				},
+				"xml": {
+					Type:         schema.TypeList,
+					Optional:     true,
+					MaxItems:     1,
+					ExactlyOneOf: stageFileFormatExactlyOneOf,
+					Description:  "XML file format options.",
+					Elem: &schema.Resource{
+						Schema: xmlFileFormatSchema,
 					},
 				},
 			},
@@ -437,6 +447,60 @@ var parquetFileFormatSchema = map[string]*schema.Schema{
 	},
 }
 
+var xmlFileFormatSchema = map[string]*schema.Schema{
+	"compression": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllXmlCompressions)),
+		ValidateDiagFunc: sdkValidation(sdk.ToXmlCompression),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToXmlCompression),
+	},
+	"ignore_utf8_errors": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether UTF-8 encoding errors produce error conditions."),
+		ConflictsWith:    []string{"file_format.0.xml.0.replace_invalid_characters"},
+	},
+	"preserve_space": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser preserves leading and trailing spaces in element content."),
+	},
+	"strip_outer_element": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser strips out the outer XML element, exposing 2nd level elements as separate documents."),
+	},
+	"disable_auto_convert": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser disables automatic conversion of numeric and Boolean values from text to native representation."),
+	},
+	"replace_invalid_characters": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+		ConflictsWith:    []string{"file_format.0.xml.0.ignore_utf8_errors"},
+	},
+	"skip_byte_order_mark": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file."),
+	},
+}
+
 // parseStageFileFormat parses the stage file format from the resource data to an SDK object.
 func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, error) {
 	if len(d.Get("file_format").([]any)) == 0 {
@@ -472,6 +536,11 @@ func parseStageFileFormat(d *schema.ResourceData) (sdk.StageFileFormatRequest, e
 				ParquetOptions: fileFormatOptions,
 			})
 		}, parseParquetFileFormatOptions),
+		attributeMappedValueCreateBuilderNested(d, prefix+"xml", func(fileFormatOptions *sdk.FileFormatXmlOptions) *sdk.StageFileFormatRequest {
+			return fileFormatReq.WithFileFormatOptions(sdk.FileFormatOptions{
+				XmlOptions: fileFormatOptions,
+			})
+		}, parseXmlFileFormatOptions),
 	)
 	if err != nil {
 		return sdk.StageFileFormatRequest{}, err
@@ -676,6 +745,30 @@ func parseParquetFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatParqu
 	return parquetOptions, nil
 }
 
+// parseXmlFileFormatOptions parses the XML file format options from the resource data to an SDK object.
+func parseXmlFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatXmlOptions, error) {
+	xmlOptions := &sdk.FileFormatXmlOptions{}
+	prefix := "file_format.0.xml.0."
+
+	err := errors.Join(
+		attributeMappedValueCreate(d, prefix+"compression", &xmlOptions.Compression, func(v any) (*sdk.XmlCompression, error) {
+			c, err := sdk.ToXmlCompression(v.(string))
+			return &c, err
+		}),
+		booleanStringAttributeCreate(d, prefix+"ignore_utf8_errors", &xmlOptions.IgnoreUtf8Errors),
+		booleanStringAttributeCreate(d, prefix+"preserve_space", &xmlOptions.PreserveSpace),
+		booleanStringAttributeCreate(d, prefix+"strip_outer_element", &xmlOptions.StripOuterElement),
+		booleanStringAttributeCreate(d, prefix+"disable_auto_convert", &xmlOptions.DisableAutoConvert),
+		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &xmlOptions.ReplaceInvalidCharacters),
+		booleanStringAttributeCreate(d, prefix+"skip_byte_order_mark", &xmlOptions.SkipByteOrderMark),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return xmlOptions, nil
+}
+
 func parseStageFileFormatStringOrNone(v string) *sdk.StageFileFormatStringOrNone {
 	if strings.ToUpper(v) == "NONE" {
 		return &sdk.StageFileFormatStringOrNone{None: sdk.Bool(true)}
@@ -745,6 +838,15 @@ func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 		return []map[string]any{
 			{
 				"parquet": []map[string]any{parquetSchema},
+			},
+		}
+	}
+
+	if details.FileFormatXml != nil {
+		xmlSchema := stageXmlFileFormatToSchema(details.FileFormatXml)
+		return []map[string]any{
+			{
+				"xml": []map[string]any{xmlSchema},
 			},
 		}
 	}
@@ -831,6 +933,19 @@ func stageParquetFileFormatToSchema(parquet *sdk.FileFormatParquet) map[string]a
 		"use_vectorized_scanner":     booleanStringFromBool(parquet.UseVectorizedScanner),
 		"replace_invalid_characters": booleanStringFromBool(parquet.ReplaceInvalidCharacters),
 		"null_if":                    collections.Map(parquet.NullIf, func(v string) any { return v }),
+	}
+}
+
+// stageXmlFileFormatToSchema converts the SDK details for an XML file format to a Terraform schema.
+func stageXmlFileFormatToSchema(xml *sdk.FileFormatXml) map[string]any {
+	return map[string]any{
+		"compression":                xml.Compression,
+		"ignore_utf8_errors":         booleanStringFromBool(xml.IgnoreUtf8Errors),
+		"preserve_space":             booleanStringFromBool(xml.PreserveSpace),
+		"strip_outer_element":        booleanStringFromBool(xml.StripOuterElement),
+		"disable_auto_convert":       booleanStringFromBool(xml.DisableAutoConvert),
+		"replace_invalid_characters": booleanStringFromBool(xml.ReplaceInvalidCharacters),
+		"skip_byte_order_mark":       booleanStringFromBool(xml.SkipByteOrderMark),
 	}
 }
 
