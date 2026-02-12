@@ -212,10 +212,8 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 	// If PrivateLink is nil, let the schema default (BooleanDefault) apply
-	if details.Location != nil {
-		if err := d.Set("url", details.Location.Url); err != nil {
-			return nil, err
-		}
+	if err := d.Set("url", stage.Url); err != nil {
+		return nil, err
 	}
 	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
 		if err := d.Set("file_format", fileFormat); err != nil {

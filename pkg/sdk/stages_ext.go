@@ -139,7 +139,7 @@ type StagePrivateLink struct {
 
 // StageLocationDetails represents location properties from DESCRIBE STAGE
 type StageLocationDetails struct {
-	Url               string
+	Url               []string
 	AwsAccessPointArn string
 }
 
@@ -470,7 +470,7 @@ func parseStageLocationDetails(properties []StageProperty) *StageLocationDetails
 	for _, prop := range filtered {
 		switch prop.Name {
 		case "URL":
-			loc.Url = prop.Value
+			loc.Url = ParseCommaSeparatedStringArray(prop.Value, true)
 		case "AWS_ACCESS_POINT_ARN":
 			loc.AwsAccessPointArn = prop.Value
 		}

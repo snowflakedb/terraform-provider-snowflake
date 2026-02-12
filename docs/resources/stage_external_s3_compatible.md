@@ -11,6 +11,10 @@ description: |-
 
 -> **Note** External changes detection on `credentials` field is not supported because Snowflake does not return such settings in DESCRIBE or SHOW STAGE output.
 
+-> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
+
+-> **Note** This resource is meant only for S3-compatible stages, not S3 stages. For S3 stages, use the `snowflake_stage_external_s3` resource instead. Do not use this resource with `s3://` URLs.
+
 # snowflake_stage_external_s3_compatible (Resource)
 
 Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).
@@ -392,7 +396,6 @@ Read-Only:
 - `directory_table` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--directory_table))
 - `file_format` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--file_format))
 - `location` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--location))
-- `privatelink` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--privatelink))
 
 <a id="nestedobjatt--describe_output--directory_table"></a>
 ### Nested Schema for `describe_output.directory_table`
@@ -530,16 +533,7 @@ Read-Only:
 
 Read-Only:
 
-- `aws_access_point_arn` (String)
-- `url` (String)
-
-
-<a id="nestedobjatt--describe_output--privatelink"></a>
-### Nested Schema for `describe_output.privatelink`
-
-Read-Only:
-
-- `use_privatelink_endpoint` (Boolean)
+- `url` (List of String)
 
 
 
