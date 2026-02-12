@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -116,22 +119,19 @@ var hybridTableSchema = map[string]*schema.Schema{
 							"match": {
 								Type:         schema.TypeString,
 								Optional:     true,
-								Default:      "SIMPLE",
-								Description:  "The match type for the foreign key: FULL, SIMPLE, or PARTIAL",
+								Description:  "The match type for the foreign key: FULL, SIMPLE, or PARTIAL. Note: MATCH is not supported for hybrid tables and will be ignored.",
 								ValidateFunc: validation.StringInSlice([]string{"FULL", "SIMPLE", "PARTIAL"}, true),
 							},
 							"on_update": {
 								Type:         schema.TypeString,
 								Optional:     true,
-								Default:      "NO ACTION",
-								Description:  "Action to perform when the primary/unique key is updated: CASCADE, SET NULL, SET DEFAULT, RESTRICT, or NO ACTION",
+								Description:  "Action to perform when the primary/unique key is updated: CASCADE, SET NULL, SET DEFAULT, RESTRICT, or NO ACTION. Note: not supported for hybrid tables and will be ignored.",
 								ValidateFunc: validation.StringInSlice([]string{"CASCADE", "SET NULL", "SET DEFAULT", "RESTRICT", "NO ACTION"}, true),
 							},
 							"on_delete": {
 								Type:         schema.TypeString,
 								Optional:     true,
-								Default:      "NO ACTION",
-								Description:  "Action to perform when the primary/unique key is deleted: CASCADE, SET NULL, SET DEFAULT, RESTRICT, or NO ACTION",
+								Description:  "Action to perform when the primary/unique key is deleted: CASCADE, SET NULL, SET DEFAULT, RESTRICT, or NO ACTION. Note: not supported for hybrid tables and will be ignored.",
 								ValidateFunc: validation.StringInSlice([]string{"CASCADE", "SET NULL", "SET DEFAULT", "RESTRICT", "NO ACTION"}, true),
 							},
 						},
@@ -147,9 +147,10 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Name of the index",
+					Type:             schema.TypeString,
+					Required:         true,
+					Description:      "Name of the index",
+					DiffSuppressFunc: suppressIdentifierQuoting,
 				},
 				"columns": {
 					Type:        schema.TypeList,
@@ -166,6 +167,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the hybrid table",
 	},
+	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
 func HybridTable() *schema.Resource {
@@ -180,8 +182,13 @@ func HybridTable() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
+		Timeouts: defaultTimeouts,
+
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(hybridTableSchema, ShowOutputAttributeName, "comment"),
+			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
+			validateHybridTableConstraintColumns,
+			validateHybridTableIndexColumns,
 		),
 	}
 }
@@ -219,18 +226,28 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		return diag.FromErr(fmt.Errorf("error creating hybrid table %v: %w", name, err))
 	}
 
-	// Create indexes
+	// Create indexes (retry logic for "Another index is being built" is handled in SDK)
 	if v, ok := d.GetOk("index"); ok {
 		indexes := v.([]interface{})
 		for _, idx := range indexes {
-			indexMap := idx.(map[string]interface{})
-			indexName := indexMap["name"].(string)
-			indexColumns := expandStringList(indexMap["columns"].([]interface{}))
+			indexMap, ok := idx.(map[string]interface{})
+			if !ok {
+				return diag.Errorf("unexpected type for index configuration")
+			}
+			indexName, ok := indexMap["name"].(string)
+			if !ok {
+				return diag.Errorf("index name must be a string")
+			}
+			rawIndexColumns := expandStringList(indexMap["columns"].([]interface{}))
 
+			// Quote column names to match the quoted names in column definitions
+			indexColumns := quoteColumnNames(rawIndexColumns)
+
+			// Create index identifier (SDK will use only the name part in SQL)
 			indexId := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, indexName)
 			indexRequest := sdk.NewCreateIndexRequest(indexId, id, indexColumns)
 
-			err = client.Tables.CreateIndex(ctx, indexRequest)
+			err := client.Tables.CreateIndex(ctx, indexRequest)
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error creating index %v on hybrid table %v: %w", indexName, name, err))
 			}
@@ -243,13 +260,26 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 }
 
 func getHybridTableColumnRequests(from interface{}) ([]sdk.TableColumnRequest, error) {
-	cols := from.([]interface{})
+	cols, ok := from.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unexpected type for columns configuration")
+	}
 	requests := make([]sdk.TableColumnRequest, len(cols))
 
 	for i, c := range cols {
-		colMap := c.(map[string]interface{})
-		columnName := fmt.Sprintf(`"%v"`, colMap["name"].(string))
-		columnType := colMap["type"].(string)
+		colMap, ok := c.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("column[%d]: unexpected type for column configuration", i)
+		}
+		colName, ok := colMap["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("column[%d]: name must be a string", i)
+		}
+		columnName := fmt.Sprintf(`"%v"`, colName)
+		columnType, ok := colMap["type"].(string)
+		if !ok {
+			return nil, fmt.Errorf("column[%d]: type must be a string", i)
+		}
 
 		request := sdk.NewTableColumnRequest(columnName, sdk.DataType(columnType))
 
@@ -270,14 +300,28 @@ func getHybridTableColumnRequests(from interface{}) ([]sdk.TableColumnRequest, e
 }
 
 func getHybridTableConstraintRequests(from interface{}) ([]sdk.OutOfLineConstraintRequest, error) {
-	constraints := from.([]interface{})
+	constraints, ok := from.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unexpected type for constraints configuration")
+	}
 	requests := make([]sdk.OutOfLineConstraintRequest, len(constraints))
 
 	for i, c := range constraints {
-		constraintMap := c.(map[string]interface{})
-		constraintName := constraintMap["name"].(string)
-		constraintType := constraintMap["type"].(string)
-		columns := expandStringList(constraintMap["columns"].([]interface{}))
+		constraintMap, ok := c.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("constraint[%d]: unexpected type for constraint configuration", i)
+		}
+		constraintName, ok := constraintMap["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("constraint[%d]: name must be a string", i)
+		}
+		constraintType, ok := constraintMap["type"].(string)
+		if !ok {
+			return nil, fmt.Errorf("constraint[%d]: type must be a string", i)
+		}
+		rawColumns := expandStringList(constraintMap["columns"].([]interface{}))
+		// Quote column names to match the quoted names in column definitions
+		columns := quoteColumnNames(rawColumns)
 
 		var sdkConstraintType sdk.ColumnConstraintType
 		switch constraintType {
@@ -298,36 +342,22 @@ func getHybridTableConstraintRequests(from interface{}) ([]sdk.OutOfLineConstrai
 		// Handle foreign key
 		if constraintType == "FOREIGN KEY" {
 			if fk, ok := constraintMap["foreign_key"].([]interface{}); ok && len(fk) > 0 {
-				fkMap := fk[0].(map[string]interface{})
-				tableId := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(fkMap["table_id"].(string))
-				fkColumns := expandStringList(fkMap["columns"].([]interface{}))
+				fkMap, ok := fk[0].(map[string]interface{})
+				if !ok {
+					return nil, fmt.Errorf("constraint[%d]: unexpected type for foreign_key configuration", i)
+				}
+				tableIdStr, ok := fkMap["table_id"].(string)
+				if !ok {
+					return nil, fmt.Errorf("constraint[%d]: foreign_key.table_id must be a string", i)
+				}
+				tableId := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(tableIdStr)
+				rawFkColumns := expandStringList(fkMap["columns"].([]interface{}))
+				// Quote column names to match the quoted names in column definitions
+				fkColumns := quoteColumnNames(rawFkColumns)
 
 				fkRequest := sdk.NewOutOfLineForeignKeyRequest(tableId, fkColumns)
 
-				if match, ok := fkMap["match"].(string); ok && match != "" {
-					matchType, err := sdk.ToMatchType(match)
-					if err != nil {
-						return nil, fmt.Errorf("invalid match type: %w", err)
-					}
-					fkRequest.WithMatch(&matchType)
-				}
-
-				if onUpdate, ok := fkMap["on_update"].(string); ok && onUpdate != "" {
-					onUpdateAction, err := sdk.ToForeignKeyAction(onUpdate)
-					if err != nil {
-						return nil, fmt.Errorf("invalid on_update action: %w", err)
-					}
-
-					onDelete := fkMap["on_delete"].(string)
-					onDeleteAction, err := sdk.ToForeignKeyAction(onDelete)
-					if err != nil {
-						return nil, fmt.Errorf("invalid on_delete action: %w", err)
-					}
-
-					fkRequest.WithOn(sdk.NewForeignKeyOnAction().
-						WithOnUpdate(&onUpdateAction).
-						WithOnDelete(&onDeleteAction))
-				}
+				// Note: MATCH clause and ON UPDATE/ON DELETE actions are not supported for hybrid tables
 
 				request.WithForeignKey(fkRequest)
 			}
@@ -360,29 +390,33 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 		return diag.FromErr(err)
 	}
 
-	// Verify it's a hybrid table
-	if table.Kind != "HYBRID TABLE" {
-		return diag.FromErr(fmt.Errorf("expected HYBRID TABLE but got %s", table.Kind))
+	// Verify it's a table (Snowflake returns "TABLE" for both regular and hybrid tables)
+	// We rely on the fact that only hybrid tables can have certain constraints/properties
+	if table.Kind != "TABLE" {
+		return diag.FromErr(fmt.Errorf("expected TABLE but got %s", table.Kind))
 	}
 
 	// Set basic attributes
 	if err := d.Set("name", table.Name); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to set name for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 	if err := d.Set("database", table.DatabaseName); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to set database for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 	if err := d.Set("schema", table.SchemaName); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to set schema for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 	if err := d.Set("comment", table.Comment); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to set comment for hybrid table %s: %w", id.FullyQualifiedName(), err))
+	}
+	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set fully_qualified_name for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 
 	// Get column details
 	columnDetails, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(id))
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to describe columns for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 
 	// Set columns
@@ -392,9 +426,23 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 			continue
 		}
 
+		// Normalize the data type to match input format
+		dataType, err := datatypes.ParseDataType(string(col.Type))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error parsing data type %s: %w", col.Type, err))
+		}
+		// Remove spaces after commas to match input format (e.g., "NUMBER(38,0)" not "NUMBER(38, 0)")
+		normalizedType := strings.ReplaceAll(dataType.ToSql(), ", ", ",")
+
+		// Strip default precision from TIMESTAMP types to match user input
+		// e.g., "TIMESTAMP_NTZ(9)" -> "TIMESTAMP_NTZ" if user didn't specify precision
+		if strings.HasPrefix(normalizedType, "TIMESTAMP_") && strings.Contains(normalizedType, "(9)") {
+			normalizedType = strings.Replace(normalizedType, "(9)", "", 1)
+		}
+
 		column := map[string]interface{}{
 			"name":     col.Name,
-			"type":     string(col.Type),
+			"type":     normalizedType,
 			"nullable": col.IsNullable,
 		}
 
@@ -405,7 +453,7 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 		columns = append(columns, column)
 	}
 	if err := d.Set("column", columns); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to set column for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 
 	// Note: Constraints are ForceNew, so we don't need to read them back
@@ -419,20 +467,62 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 	}
 	indexes, err := client.Tables.ShowIndexes(ctx, showIndexesRequest)
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to list indexes for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 
-	// Set indexes
-	indexList := make([]map[string]interface{}, 0, len(indexes))
-	for _, idx := range indexes {
-		index := map[string]interface{}{
-			"name":    idx.Name,
-			"columns": idx.Columns,
-		}
-		indexList = append(indexList, index)
+	// Set indexes - only include explicitly user-defined indexes, in the same order as config
+	// Snowflake auto-creates indexes for PRIMARY KEY and UNIQUE constraints, which we should exclude
+	configIndexes := d.Get("index").([]interface{})
+	configIndexNames := make(map[string]int) // map name to order
+	for i, idx := range configIndexes {
+		indexMap := idx.(map[string]interface{})
+		indexName := indexMap["name"].(string)
+		configIndexNames[strings.ToUpper(indexName)] = i
 	}
+
+	// Create a map of indexes from Snowflake
+	snowflakeIndexes := make(map[string]*sdk.Index)
+	for i := range indexes {
+		snowflakeIndexes[strings.ToUpper(indexes[i].Name)] = &indexes[i]
+	}
+
+	// Build index list in config order
+	indexList := make([]map[string]interface{}, len(configIndexes))
+	for name, order := range configIndexNames {
+		idx, ok := snowflakeIndexes[name]
+		if !ok {
+			// Index not found in Snowflake - use config values
+			indexList[order] = configIndexes[order].(map[string]interface{})
+			continue
+		}
+
+		// Unquote column names to match input format
+		var columns []string
+		if len(idx.Columns) > 0 {
+			columns = make([]string, len(idx.Columns))
+			for i, col := range idx.Columns {
+				columns[i] = strings.Trim(col, `"`)
+			}
+		} else {
+			// SHOW INDEXES may not return columns for hybrid tables - use config values
+			configIdx := configIndexes[order].(map[string]interface{})
+			configColumns := configIdx["columns"].([]interface{})
+			columns = make([]string, len(configColumns))
+			for i, col := range configColumns {
+				columns[i] = col.(string)
+			}
+		}
+
+		// Use config name to preserve user's specified case
+		configIdx := configIndexes[order].(map[string]interface{})
+		indexList[order] = map[string]interface{}{
+			"name":    configIdx["name"].(string),
+			"columns": columns,
+		}
+	}
+
 	if err := d.Set("index", indexList); err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to set index for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 
 	return nil
@@ -521,4 +611,117 @@ func DeleteHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	d.SetId("")
 	return nil
+}
+
+// validateHybridTableConstraintColumns validates that all columns referenced in constraints exist in the column list.
+func validateHybridTableConstraintColumns(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	columns := d.Get("column").([]interface{})
+	constraints := d.Get("constraint").([]interface{})
+
+	// Build a set of valid column names
+	validColumns := make(map[string]bool)
+	for _, c := range columns {
+		colMap, ok := c.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if name, ok := colMap["name"].(string); ok {
+			validColumns[strings.ToUpper(name)] = true
+		}
+	}
+
+	// Check each constraint's columns
+	for i, constraint := range constraints {
+		constraintMap, ok := constraint.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		constraintName := ""
+		if name, ok := constraintMap["name"].(string); ok {
+			constraintName = name
+		}
+
+		constraintColumns, ok := constraintMap["columns"].([]interface{})
+		if !ok {
+			continue
+		}
+
+		for _, col := range constraintColumns {
+			colName, ok := col.(string)
+			if !ok {
+				continue
+			}
+			if !validColumns[strings.ToUpper(colName)] {
+				return fmt.Errorf("constraint[%d] (%s) references non-existent column %q; valid columns are: %v",
+					i, constraintName, colName, getColumnNames(columns))
+			}
+		}
+	}
+
+	return nil
+}
+
+// validateHybridTableIndexColumns validates that all columns referenced in indexes exist in the column list.
+func validateHybridTableIndexColumns(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	columns := d.Get("column").([]interface{})
+	indexes := d.Get("index").([]interface{})
+
+	// Build a set of valid column names
+	validColumns := make(map[string]bool)
+	for _, c := range columns {
+		colMap, ok := c.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if name, ok := colMap["name"].(string); ok {
+			validColumns[strings.ToUpper(name)] = true
+		}
+	}
+
+	// Check each index's columns
+	for i, idx := range indexes {
+		indexMap, ok := idx.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		indexName := ""
+		if name, ok := indexMap["name"].(string); ok {
+			indexName = name
+		}
+
+		indexColumns, ok := indexMap["columns"].([]interface{})
+		if !ok {
+			continue
+		}
+
+		for _, col := range indexColumns {
+			colName, ok := col.(string)
+			if !ok {
+				continue
+			}
+			if !validColumns[strings.ToUpper(colName)] {
+				return fmt.Errorf("index[%d] (%s) references non-existent column %q; valid columns are: %v",
+					i, indexName, colName, getColumnNames(columns))
+			}
+		}
+	}
+
+	return nil
+}
+
+// getColumnNames extracts column names from the column list for error messages.
+func getColumnNames(columns []interface{}) []string {
+	names := make([]string, 0, len(columns))
+	for _, c := range columns {
+		colMap, ok := c.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if name, ok := colMap["name"].(string); ok {
+			names = append(names, name)
+		}
+	}
+	return names
 }

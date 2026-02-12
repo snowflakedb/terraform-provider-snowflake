@@ -128,7 +128,7 @@ func (opts *createHybridTableOptions) validate() error {
 	}
 
 	if !hasPrimaryKey {
-		errs = append(errs, errors.New("hybrid tables require at least one PRIMARY KEY constraint"))
+		errs = append(errs, errors.New("primary key is required for hybrid tables"))
 	}
 
 	return errors.Join(errs...)
@@ -139,7 +139,7 @@ func (opts *createIndexOptions) validate() error {
 		return errors.Join(ErrNilOptions)
 	}
 	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
+	if !ValidObjectName(opts.name) {
 		errs = append(errs, errInvalidIdentifier("createIndexOptions", "name"))
 	}
 	if !ValidObjectIdentifier(opts.table) {
@@ -166,8 +166,19 @@ func (opts *showIndexesOptions) validate() error {
 	if opts == nil {
 		return errors.Join(ErrNilOptions)
 	}
-	// All fields are optional, no additional validation needed
-	return nil
+	var errs []error
+	if opts.In != nil {
+		// Validate that at least one of the In fields is set with a valid identifier
+		tableSet := ValidObjectIdentifier(opts.In.Table)
+		schemaSet := ValidObjectIdentifier(opts.In.Schema)
+		databaseSet := ValidObjectIdentifier(opts.In.Database)
+
+		// If In is provided but none of the fields have valid identifiers, that's an error
+		if !tableSet && !schemaSet && !databaseSet && opts.In.Account == nil {
+			errs = append(errs, errNotSet("showIndexesOptions", "In (Table, Schema, Database, or Account must be set)"))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 func (opts *createTableAsSelectOptions) validate() error {

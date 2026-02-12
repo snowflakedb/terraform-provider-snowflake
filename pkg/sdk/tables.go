@@ -143,7 +143,7 @@ type createHybridTableOptions struct {
 type createIndexOptions struct {
 	create  bool                   `ddl:"static" sql:"CREATE"`
 	index   bool                   `ddl:"static" sql:"INDEX"`
-	name    SchemaObjectIdentifier `ddl:"identifier"`
+	name    string                 `ddl:"keyword"`
 	on      bool                   `ddl:"static" sql:"ON"`
 	table   SchemaObjectIdentifier `ddl:"identifier"`
 	Columns []string               `ddl:"keyword,parentheses"`

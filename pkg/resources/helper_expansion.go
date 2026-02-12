@@ -94,6 +94,15 @@ func ADiffB(setA []interface{}, setB []interface{}) []string {
 	return res
 }
 
+// quoteColumnNames wraps each column name in double quotes for SQL compatibility.
+func quoteColumnNames(columns []string) []string {
+	quoted := make([]string, len(columns))
+	for i, col := range columns {
+		quoted[i] = fmt.Sprintf(`"%s"`, col)
+	}
+	return quoted
+}
+
 func reorderStringList(configured []string, actual []string) []string {
 	// Reorder the actual list to match the configured list
 	// This is necessary because the actual list may not be saved in the same order as the configured list
