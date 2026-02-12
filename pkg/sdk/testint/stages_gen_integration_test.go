@@ -3,7 +3,6 @@
 package testint
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -59,7 +58,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.StageDetails(t, id).
 			HasStageLocation(sdk.StageLocationDetails{
-				Url: "",
+				Url: []string{},
 			}).
 			HasDirectoryTableEnable(false).
 			HasDirectoryTableAutoRefresh(false).
@@ -977,7 +976,7 @@ func TestInt_Stages(t *testing.T) {
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
 			HasDirectoryTableEnable(false).
 			HasDirectoryTableAutoRefresh(false).
-			HasStageLocationUrl(""))
+			HasStageLocationUrl([]string{}))
 	})
 
 	t.Run("Describe external s3", func(t *testing.T) {
@@ -985,7 +984,7 @@ func TestInt_Stages(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
-			HasStageLocationUrl(fmt.Sprintf("[\"%s\"]", awsBucketUrl)))
+			HasStageLocationUrl([]string{awsBucketUrl}))
 	})
 
 	t.Run("Describe external gcs", func(t *testing.T) {
@@ -993,7 +992,7 @@ func TestInt_Stages(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
-			HasStageLocationUrl(fmt.Sprintf("[\"%s\"]", gcsBucketUrl)))
+			HasStageLocationUrl([]string{gcsBucketUrl}))
 	})
 
 	t.Run("Describe external azure", func(t *testing.T) {
@@ -1002,7 +1001,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
 			HasDirectoryTableEnable(false).
-			HasStageLocationUrl(fmt.Sprintf("[\"%s\"]", azureBucketUrl)))
+			HasStageLocationUrl([]string{azureBucketUrl}))
 	})
 
 	t.Run("Show internal", func(t *testing.T) {
