@@ -106,6 +106,7 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.ExternalTable,
 		resources.FailoverGroup,
 		resources.FileFormat,
+		resources.HybridTable,
 		resources.ManagedAccount,
 		resources.MaterializedView,
 		resources.NetworkRule,
@@ -258,6 +259,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.GitRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.GitRepositories.ShowByID)
+	},
+	resources.HybridTable: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Tables.ShowByID)
 	},
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ImageRepositories.ShowByID)

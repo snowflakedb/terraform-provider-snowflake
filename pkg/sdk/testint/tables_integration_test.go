@@ -1110,11 +1110,7 @@ func TestInt_ShowIndexes(t *testing.T) {
 		require.NoError(t, err)
 
 		// Show indexes
-		showRequest := &sdk.ShowIndexesRequest{
-			In: &sdk.In{
-				Table: tableId,
-			},
-		}
+		showRequest := sdk.NewShowIndexesRequest().WithIn(&sdk.In{Table: tableId})
 		indexes, err := client.Tables.ShowIndexes(ctx, showRequest)
 		require.NoError(t, err)
 		require.Len(t, indexes, 1)

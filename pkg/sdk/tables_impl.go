@@ -2,6 +2,8 @@ package sdk
 
 import (
 	"context"
+	"strings"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -71,7 +73,28 @@ func (v *tables) CreateHybridTable(ctx context.Context, request *CreateHybridTab
 
 func (v *tables) CreateIndex(ctx context.Context, request *CreateIndexRequest) error {
 	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
+
+	// Retry logic for "Another index is being built" error
+	// This can occur when creating multiple indexes on a hybrid table,
+	// as the primary key index may still be building.
+	const maxRetries = 5
+	var lastErr error
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		lastErr = validateAndExec(v.client, ctx, opts)
+		if lastErr == nil {
+			return nil
+		}
+		// Check if error is about another index being built
+		if strings.Contains(lastErr.Error(), "Another index is being built") {
+			if attempt < maxRetries-1 {
+				// Exponential backoff: 2s, 4s, 6s, 8s
+				time.Sleep(time.Duration(attempt+1) * 2 * time.Second)
+				continue
+			}
+		}
+		break
+	}
+	return lastErr
 }
 
 func (v *tables) DropIndex(ctx context.Context, request *DropIndexRequest) error {
@@ -515,6 +538,49 @@ func (r *TableColumnActionRequest) toOpts() *TableColumnAction {
 	return nil
 }
 
+// convertOutOfLineConstraints converts OutOfLineConstraintRequest slice to OutOfLineConstraint slice.
+// This is used by both CreateTableRequest and CreateHybridTableRequest.
+func convertOutOfLineConstraints(requests []OutOfLineConstraintRequest) []OutOfLineConstraint {
+	constraints := make([]OutOfLineConstraint, 0, len(requests))
+	for _, req := range requests {
+		var foreignKey *OutOfLineForeignKey
+		if req.ForeignKey != nil {
+			var foreignKeyOnAction *ForeignKeyOnAction
+			if req.ForeignKey.On != nil {
+				foreignKeyOnAction = &ForeignKeyOnAction{
+					OnUpdate: req.ForeignKey.On.OnUpdate,
+					OnDelete: req.ForeignKey.On.OnDelete,
+				}
+			}
+			foreignKey = &OutOfLineForeignKey{
+				TableName:   req.ForeignKey.TableName,
+				ColumnNames: req.ForeignKey.ColumnNames,
+				Match:       req.ForeignKey.Match,
+				On:          foreignKeyOnAction,
+			}
+		}
+		constraints = append(constraints, OutOfLineConstraint{
+			Name:               req.Name,
+			Type:               req.Type,
+			Columns:            req.Columns,
+			ForeignKey:         foreignKey,
+			Enforced:           req.Enforced,
+			NotEnforced:        req.NotEnforced,
+			Deferrable:         req.Deferrable,
+			NotDeferrable:      req.NotDeferrable,
+			InitiallyDeferred:  req.InitiallyDeferred,
+			InitiallyImmediate: req.InitiallyImmediate,
+			Enable:             req.Enable,
+			Disable:            req.Disable,
+			Validate:           req.Validate,
+			NoValidate:         req.NoValidate,
+			Rely:               req.Rely,
+			NoRely:             req.NoRely,
+		})
+	}
+	return constraints
+}
+
 func (s *CreateTableRequest) toOpts() *createTableOptions {
 	tagAssociations := make([]TagAssociation, 0, len(s.Tags))
 	for _, tagRequest := range s.Tags {
@@ -527,44 +593,6 @@ func (s *CreateTableRequest) toOpts() *createTableOptions {
 			On:   s.RowAccessPolicy.On,
 		}
 	}
-	outOfLineConstraints := make([]OutOfLineConstraint, 0)
-	for _, outOfLineConstraintRequest := range s.OutOfLineConstraints {
-		var foreignKey *OutOfLineForeignKey
-		if outOfLineConstraintRequest.ForeignKey != nil {
-			var foreignKeyOnAction *ForeignKeyOnAction
-			if outOfLineConstraintRequest.ForeignKey.On != nil {
-				foreignKeyOnAction = &ForeignKeyOnAction{
-					OnUpdate: outOfLineConstraintRequest.ForeignKey.On.OnUpdate,
-					OnDelete: outOfLineConstraintRequest.ForeignKey.On.OnDelete,
-				}
-			}
-			foreignKey = &OutOfLineForeignKey{
-				TableName:   outOfLineConstraintRequest.ForeignKey.TableName,
-				ColumnNames: outOfLineConstraintRequest.ForeignKey.ColumnNames,
-				Match:       outOfLineConstraintRequest.ForeignKey.Match,
-				On:          foreignKeyOnAction,
-			}
-		}
-		outOfLineConstraint := OutOfLineConstraint{
-			Name:               outOfLineConstraintRequest.Name,
-			Type:               outOfLineConstraintRequest.Type,
-			Columns:            outOfLineConstraintRequest.Columns,
-			ForeignKey:         foreignKey,
-			Enforced:           outOfLineConstraintRequest.Enforced,
-			NotEnforced:        outOfLineConstraintRequest.NotEnforced,
-			Deferrable:         outOfLineConstraintRequest.Deferrable,
-			NotDeferrable:      outOfLineConstraintRequest.NotDeferrable,
-			InitiallyDeferred:  outOfLineConstraintRequest.InitiallyDeferred,
-			InitiallyImmediate: outOfLineConstraintRequest.InitiallyImmediate,
-			Enable:             outOfLineConstraintRequest.Enable,
-			Disable:            outOfLineConstraintRequest.Disable,
-			Validate:           outOfLineConstraintRequest.Validate,
-			NoValidate:         outOfLineConstraintRequest.NoValidate,
-			Rely:               outOfLineConstraintRequest.Rely,
-			NoRely:             outOfLineConstraintRequest.NoRely,
-		}
-		outOfLineConstraints = append(outOfLineConstraints, outOfLineConstraint)
-	}
 
 	opts := &createTableOptions{
 		OrReplace:                  s.orReplace,
@@ -572,7 +600,7 @@ func (s *CreateTableRequest) toOpts() *createTableOptions {
 		Scope:                      s.scope,
 		Kind:                       s.kind,
 		name:                       s.name,
-		ColumnsAndConstraints:      CreateTableColumnsAndConstraints{convertColumns(s.columns), outOfLineConstraints},
+		ColumnsAndConstraints:      CreateTableColumnsAndConstraints{convertColumns(s.columns), convertOutOfLineConstraints(s.OutOfLineConstraints)},
 		ClusterBy:                  s.clusterBy,
 		EnableSchemaEvolution:      s.enableSchemaEvolution,
 		DataRetentionTimeInDays:    s.DataRetentionTimeInDays,
@@ -659,45 +687,6 @@ func (s *CreateTableCloneRequest) toOpts() *createTableCloneOptions {
 }
 
 func (s *CreateHybridTableRequest) toOpts() *createHybridTableOptions {
-	outOfLineConstraints := make([]OutOfLineConstraint, 0)
-	for _, outOfLineConstraintRequest := range s.OutOfLineConstraints {
-		var foreignKey *OutOfLineForeignKey
-		if outOfLineConstraintRequest.ForeignKey != nil {
-			var foreignKeyOnAction *ForeignKeyOnAction
-			if outOfLineConstraintRequest.ForeignKey.On != nil {
-				foreignKeyOnAction = &ForeignKeyOnAction{
-					OnUpdate: outOfLineConstraintRequest.ForeignKey.On.OnUpdate,
-					OnDelete: outOfLineConstraintRequest.ForeignKey.On.OnDelete,
-				}
-			}
-			foreignKey = &OutOfLineForeignKey{
-				TableName:   outOfLineConstraintRequest.ForeignKey.TableName,
-				ColumnNames: outOfLineConstraintRequest.ForeignKey.ColumnNames,
-				Match:       outOfLineConstraintRequest.ForeignKey.Match,
-				On:          foreignKeyOnAction,
-			}
-		}
-		outOfLineConstraint := OutOfLineConstraint{
-			Name:               outOfLineConstraintRequest.Name,
-			Type:               outOfLineConstraintRequest.Type,
-			Columns:            outOfLineConstraintRequest.Columns,
-			ForeignKey:         foreignKey,
-			Enforced:           outOfLineConstraintRequest.Enforced,
-			NotEnforced:        outOfLineConstraintRequest.NotEnforced,
-			Deferrable:         outOfLineConstraintRequest.Deferrable,
-			NotDeferrable:      outOfLineConstraintRequest.NotDeferrable,
-			InitiallyDeferred:  outOfLineConstraintRequest.InitiallyDeferred,
-			InitiallyImmediate: outOfLineConstraintRequest.InitiallyImmediate,
-			Enable:             outOfLineConstraintRequest.Enable,
-			Disable:            outOfLineConstraintRequest.Disable,
-			Validate:           outOfLineConstraintRequest.Validate,
-			NoValidate:         outOfLineConstraintRequest.NoValidate,
-			Rely:               outOfLineConstraintRequest.Rely,
-			NoRely:             outOfLineConstraintRequest.NoRely,
-		}
-		outOfLineConstraints = append(outOfLineConstraints, outOfLineConstraint)
-	}
-
 	return &createHybridTableOptions{
 		create:                true,
 		OrReplace:             s.orReplace,
@@ -705,7 +694,7 @@ func (s *CreateHybridTableRequest) toOpts() *createHybridTableOptions {
 		table:                 true,
 		IfNotExists:           s.ifNotExists,
 		name:                  s.name,
-		ColumnsAndConstraints: CreateTableColumnsAndConstraints{convertColumns(s.columns), outOfLineConstraints},
+		ColumnsAndConstraints: CreateTableColumnsAndConstraints{convertColumns(s.columns), convertOutOfLineConstraints(s.OutOfLineConstraints)},
 		Comment:               s.Comment,
 	}
 }
@@ -714,7 +703,7 @@ func (s *CreateIndexRequest) toOpts() *createIndexOptions {
 	return &createIndexOptions{
 		create:  true,
 		index:   true,
-		name:    s.name,
+		name:    s.name.Name(), // Use only the name part, not fully qualified
 		on:      true,
 		table:   s.table,
 		Columns: s.Columns,
