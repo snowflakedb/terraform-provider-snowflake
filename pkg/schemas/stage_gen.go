@@ -96,7 +96,8 @@ func StageToSchema(stage *sdk.Stage) map[string]any {
 		stageSchema["cloud"] = stage.Cloud
 	}
 	if stage.StorageIntegration != nil {
-		stageSchema["storage_integration"] = stage.StorageIntegration
+		// adjusted manually
+		stageSchema["storage_integration"] = stage.StorageIntegration.Name()
 	}
 	if stage.Endpoint != nil {
 		stageSchema["endpoint"] = stage.Endpoint

@@ -1,5 +1,5 @@
 <!-- Section of stable resources -->
-## Currently stable resources 
+### Currently stable resources 
 
 - [snowflake_account](./docs/resources/account)
 - [snowflake_account_parameter](./docs/resources/account_parameter)

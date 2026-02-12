@@ -1,5 +1,6 @@
-//go:build non_account_level_tests
+//go:build account_level_tests
 
+// These are account-level tests because of errors like "Integration of this type already exists in the account".
 package testacc
 
 import (

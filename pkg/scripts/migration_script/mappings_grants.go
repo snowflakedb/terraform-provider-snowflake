@@ -88,9 +88,9 @@ func MapGrantToModel(grantGroup []sdk.Grant) (accconfig.ResourceModel, *ImportMo
 		(grant.GrantedTo == sdk.ObjectTypeDatabaseRole || grant.GrantedTo == sdk.ObjectTypeRole):
 		return MapToGrantDatabaseRole(grant)
 	case grant.GrantedTo == sdk.ObjectTypeRole:
-		return MapToGrantPrivilegesToAccountRole(grant, privileges)
+		return MapToGrantPrivilegesToAccountRole(grant, privileges...)
 	case grant.GrantedTo == sdk.ObjectTypeDatabaseRole:
-		return MapToGrantPrivilegesToDatabaseRole(grant, privileges)
+		return MapToGrantPrivilegesToDatabaseRole(grant, privileges...)
 	default:
 		return nil, nil, fmt.Errorf("unsupported grant mapping")
 	}
@@ -147,7 +147,7 @@ func MapToGrantDatabaseRole(grant sdk.Grant) (accconfig.ResourceModel, *ImportMo
 	return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId.String()), nil
 }
 
-func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (accconfig.ResourceModel, *ImportModel, error) {
+func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges ...string) (accconfig.ResourceModel, *ImportModel, error) {
 	var resourceModel accconfig.ResourceModel
 	var stateResourceId resources.GrantPrivilegesToAccountRoleId
 
@@ -156,7 +156,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnAccount(grant)
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
-			WithPrivileges(privileges).
+			WithPrivileges(privileges...).
 			WithOnAccount(true).
 			WithWithGrantOption(grant.GrantOption)
 
@@ -171,7 +171,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnAccountObject(grant)
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
-			WithPrivileges(privileges).
+			WithPrivileges(privileges...).
 			WithOnAccountObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
 				"object_name": tfconfig.StringVariable(grant.Name.Name()),
@@ -191,7 +191,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnSchema(grant)
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
-			WithPrivileges(privileges).
+			WithPrivileges(privileges...).
 			WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
 			})).
@@ -209,7 +209,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 		resourceId := CreateGrantPrivilegesToAccountRoleResourceIdOnSchemaObject(grant)
 
 		resourceModel = model.GrantPrivilegesToAccountRole(resourceId, grant.GranteeName.Name()).
-			WithPrivileges(privileges).
+			WithPrivileges(privileges...).
 			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
 				"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
@@ -232,7 +232,7 @@ func MapToGrantPrivilegesToAccountRole(grant sdk.Grant, privileges []string) (ac
 	return resourceModel, NewImportModel(resourceModel.ResourceReference(), stateResourceId.String()), nil
 }
 
-func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges []string) (accconfig.ResourceModel, *ImportModel, error) {
+func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges ...string) (accconfig.ResourceModel, *ImportModel, error) {
 	var resourceModel accconfig.ResourceModel
 	var stateResourceId resources.GrantPrivilegesToDatabaseRoleId
 

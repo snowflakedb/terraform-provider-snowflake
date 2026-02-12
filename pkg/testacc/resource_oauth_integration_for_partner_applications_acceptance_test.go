@@ -8,11 +8,11 @@ package testacc
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -50,15 +50,12 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesImplicit)).
 		WithComment(comment)
 
-	enabledSnowflakeDefault := testClient().SnowflakeDefaults.EnabledForSnowflakeOauthSecurityIntegration(t)
-	enabledSnowflakeDefaultString := strconv.FormatBool(enabledSnowflakeDefault)
-
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.SecurityIntegration(t, id).
 			HasName(id.Name()).
 			HasIntegrationType("OAUTH - LOOKER").
 			HasCategory("SECURITY").
-			HasEnabled(enabledSnowflakeDefault).
+			HasEnabled(false).
 			HasComment(""),
 
 		resourceassert.OauthIntegrationForPartnerApplicationsResource(t, basic.ResourceReference()).
@@ -78,13 +75,13 @@ func TestAcc_OauthIntegrationForPartnerApplications_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasIntegrationType("OAUTH - LOOKER").
 			HasCategory("SECURITY").
-			HasEnabled(enabledSnowflakeDefault).
+			HasEnabled(false).
 			HasComment(""),
 
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
 		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", enabledSnowflakeDefaultString)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "false")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", r.BooleanTrue)),
@@ -695,6 +692,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_Invalid(t *testing.T) {
 func TestAcc_OauthIntegrationForPartnerApplications_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	validUrl := "https://example.com"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	basicModel := model.OauthIntegrationForPartnerApplications("test", id.Name(), string(sdk.OauthSecurityIntegrationClientLooker)).
 		WithOauthRedirectUri(validUrl).
@@ -707,9 +705,9 @@ func TestAcc_OauthIntegrationForPartnerApplications_migrateFromV0941_ensureSmoot
 		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, basicModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),
 				),
@@ -730,6 +728,7 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithQuotedName(t *testing.T)
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`"%s"`, id.Name())
 	validUrl := "https://example.com"
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	basicModel := model.OauthIntegrationForPartnerApplications("test", quotedId, string(sdk.OauthSecurityIntegrationClientLooker)).
 		WithOauthRedirectUri(validUrl).
@@ -742,10 +741,10 @@ func TestAcc_OauthIntegrationForPartnerApplications_WithQuotedName(t *testing.T)
 		CheckDestroy: CheckDestroy(t, resources.OauthIntegrationForPartnerApplications),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, basicModel),
+				Config:             providerConfig + accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),

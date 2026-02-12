@@ -35,7 +35,7 @@ type GCSStorageParamsRequest struct {
 }
 
 type AzureStorageParamsRequest struct {
-	AzureTenantId          *string // required
+	AzureTenantId          string // required
 	UsePrivatelinkEndpoint *bool
 }
 
@@ -58,24 +58,33 @@ type StorageIntegrationSetRequest struct {
 }
 
 type SetS3StorageParamsRequest struct {
-	StorageAwsRoleArn      string // required
+	StorageAwsRoleArn      *string
 	StorageAwsExternalId   *string
 	StorageAwsObjectAcl    *string
 	UsePrivatelinkEndpoint *bool
 }
 
 type SetAzureStorageParamsRequest struct {
-	AzureTenantId          string // required
+	AzureTenantId          *string
 	UsePrivatelinkEndpoint *bool
 }
 
 type StorageIntegrationUnsetRequest struct {
-	StorageAwsExternalId    *bool
-	StorageAwsObjectAcl     *bool
+	S3Params                *UnsetS3StorageParamsRequest
+	AzureParams             *UnsetAzureStorageParamsRequest
 	Enabled                 *bool
 	StorageBlockedLocations *bool
 	Comment                 *bool
-	UsePrivatelinkEndpoint  *bool
+}
+
+type UnsetS3StorageParamsRequest struct {
+	StorageAwsExternalId   *bool
+	StorageAwsObjectAcl    *bool
+	UsePrivatelinkEndpoint *bool
+}
+
+type UnsetAzureStorageParamsRequest struct {
+	UsePrivatelinkEndpoint *bool
 }
 
 type DropStorageIntegrationRequest struct {

@@ -71,6 +71,9 @@ The motivation behind this was consistency with other resources. Other resources
 Additionally, having such a destructive default could lead to some unexpected grants being revoked if someone forgets to set the flag.
 Right now, there’s no alternative to the behavior **enable_multiple_grants** set to false, but we’re considering a flag for that case ([see future topics section](#future-topics)).
 
+**Update(v2.13.0)**: We've added a new flag that mimics the old **enable_multiple_grants** set to `false` behavior (removing external privileges).
+Read our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more details.
+
 ### Workaround for on_all and all_privileges (the always_apply parameter)
 As with the **on_future** field, granting **all_privileges** or granting **on_all** also raised a few questions about tracking granted objects.
 Mostly, it boiled down to running the GRANT statement whenever something changes in the Snowflake infrastructure in the case of **on_all** or whenever a privilege was added to/removed from Snowflake in the case of **all_privileges**.
@@ -261,8 +264,10 @@ There may be some unusual cases where the current version of grant resources may
 With a more stable project, we will be able to do more work dedicated to discovering such edge cases.
 For now, we’re relying on you to report such cases that we later analyze, prioritize, fix, and release as soon as possible.
 As for the list of things yet to be discussed, we have:
-- Right now, there's no way to "have **enable_multiple_grants** turned off" in the new grant resources, but we are considering adding an **authoritative** flag (the name is not chosen yet) that would work oppositely to the **enable_multiple_grants**.
-  By enabling the **authoritative** flag, any other privileges granted to the target object will be revoked, making the granting resource the only source of privileges on this object.
+- Missing [enable_multiple_grants](#implicit-enable_multiple_grants-enabled-by-default) in new grant resources.
+  **Update(v2.13.0)**: We've added a new flag that mimics the old **enable_multiple_grants** set to `false` behavior (removing external privileges).
+  Read our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more details.
+  Currently, it's an experimental feature and is only supported by the [snowflake_grant_privileges_to_account_role](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource.
 - Discussion on granting **all_privileges** and **on_all** where we’ll decide how and if we would like to track changes of:
   - Added or removed privileges by Snowflake in the case of all_privileges
   - Added or removed objects by the user in Snowflake in the case of on_all

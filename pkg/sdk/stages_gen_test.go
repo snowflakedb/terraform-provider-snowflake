@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestStages_CreateInternal(t *testing.T) {
@@ -27,36 +29,32 @@ func TestStages_CreateInternal(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateInternalStageOptions", "OrReplace", "IfNotExists"))
 	})
 
+	// added manually
+	t.Run("validation: exactly one field from [opts.Encryption.SnowflakeFull opts.Encryption.SnowflakeSse] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Encryption = &InternalStageEncryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s", id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.Temporary = Bool(true)
 		opts.IfNotExists = Bool(true)
 		opts.Encryption = &InternalStageEncryption{
-			EncryptionType: InternalStageEncryptionFull,
+			SnowflakeFull: &InternalStageEncryptionSnowflakeFull{},
 		}
 		opts.DirectoryTableOptions = &InternalDirectoryTableOptions{
 			Enable:      true,
 			AutoRefresh: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
-			FormatName: String("format name"),
-		}
-		opts.CopyOptions = &StageCopyOptions{
-			OnError: &StageCopyOnErrorOptions{
-				Continue_: Bool(true),
-			},
-			SizeLimit:         Int(123),
-			Purge:             Bool(true),
-			ReturnFailedOnly:  Bool(true),
-			MatchByColumnName: &StageCopyColumnMapCaseNone,
-			EnforceLength:     Bool(true),
-			Truncatecolumns:   Bool(true),
-			Force:             Bool(true),
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
 		opts.Tag = []TagAssociation{
@@ -65,7 +63,16 @@ func TestStages_CreateInternal(t *testing.T) {
 				Value: "tag-value",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = 'format name') COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: SnowflakeSse", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Encryption = &InternalStageEncryption{
+			SnowflakeSse: &InternalStageEncryptionSnowflakeSse{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE')`, id.FullyQualifiedName())
 	})
 }
 
@@ -105,6 +112,16 @@ func TestStages_CreateOnS3(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.UsePrivatelinkEndpoint]", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = ExternalS3StageParams{
+			StorageIntegration:     &integrationId,
+			UsePrivatelinkEndpoint: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+	})
+
 	t.Run("validation: conflicting fields for [opts.ExternalStageParams.Credentials.AwsKeyId opts.ExternalStageParams.Credentials.AwsRole]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ExternalStageParams = ExternalS3StageParams{
@@ -138,6 +155,13 @@ func TestStages_CreateOnS3(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
 	})
 
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnS3StageOptions.ExternalStageParams.Encryption", "AwsCse", "AwsSseS3", "AwsSseKms", "None"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s URL = 's3://example.com'", id.FullyQualifiedName())
@@ -145,6 +169,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 
 	// variants added manually
 	t.Run("all options - storage integration", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
@@ -154,16 +179,16 @@ func TestStages_CreateOnS3(t *testing.T) {
 			AwsAccessPointArn:  String("aws-access-point-arn"),
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageS3Encryption{
-				EncryptionType: &ExternalStageS3EncryptionCSE,
-				MasterKey:      String("master-key"),
+				AwsCse: &ExternalStageS3EncryptionAwsCse{
+					MasterKey: "master-key",
+				},
 			},
-			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	t.Run("all options - directory table and credentials", func(t *testing.T) {
@@ -179,17 +204,45 @@ func TestStages_CreateOnS3(t *testing.T) {
 				AwsToken:     String("aws-token"),
 			},
 			Encryption: &ExternalStageS3Encryption{
-				EncryptionType: &ExternalStageS3EncryptionSSEKMS,
-				KmsKeyId:       String("kms-key-id"),
+				AwsSseKms: &ExternalStageS3EncryptionAwsSseKms{
+					KmsKeyId: String("kms-key-id"),
+				},
 			},
 			UsePrivatelinkEndpoint: Bool(true),
 		}
-		opts.DirectoryTableOptions = &ExternalS3DirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
 			Enable:          true,
 			RefreshOnCreate: Bool(true),
 			AutoRefresh:     Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true)`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: AwsSseS3", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
+			AwsSseS3: &ExternalStageS3EncryptionAwsSseS3{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENCRYPTION = (TYPE = 'AWS_SSE_S3')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: None", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
+			None: &ExternalStageS3EncryptionNone{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("credentials: AwsRole", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Credentials = &ExternalStageS3Credentials{
+			AwsRole: String("arn:aws:iam::123456789012:role/MyRole"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 's3://example.com' CREDENTIALS = (AWS_ROLE = 'arn:aws:iam::123456789012:role/MyRole')`, id.FullyQualifiedName())
 	})
 }
 
@@ -217,6 +270,13 @@ func TestStages_CreateOnGCS(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnGCSStageOptions", "OrReplace", "IfNotExists"))
 	})
 
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnGCSStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
+	})
+
 	// adjusted manually
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
@@ -224,16 +284,18 @@ func TestStages_CreateOnGCS(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
 		opts.ExternalStageParams = ExternalGCSStageParams{
 			Url:                "some url",
-			StorageIntegration: &integrationId,
+			StorageIntegration: integrationId,
 			Encryption: &ExternalStageGCSEncryption{
-				EncryptionType: &ExternalStageGCSEncryptionSSEKMS,
-				KmsKeyId:       String("kms-key-id"),
+				GcsSseKms: &ExternalStageGCSEncryptionGcsSseKms{
+					KmsKeyId: String("kms-key-id"),
+				},
 			},
 		}
 		opts.DirectoryTableOptions = &ExternalGCSDirectoryTableOptions{
@@ -243,10 +305,19 @@ func TestStages_CreateOnGCS(t *testing.T) {
 			NotificationIntegration: String("notification-integration"),
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: None", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{
+			None: &ExternalStageGCSEncryptionNone{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'gcs://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
 	})
 }
 
@@ -286,6 +357,23 @@ func TestStages_CreateOnAzure(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.UsePrivatelinkEndpoint]", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = ExternalAzureStageParams{
+			StorageIntegration:     &integrationId,
+			UsePrivatelinkEndpoint: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnAzureStageOptions.ExternalStageParams.Encryption", "AzureCse", "None"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE STAGE %s URL = 'azure://example.com'", id.FullyQualifiedName())
@@ -293,6 +381,7 @@ func TestStages_CreateOnAzure(t *testing.T) {
 
 	// variants added manually
 	t.Run("all options - storage integration", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Temporary = Bool(true)
@@ -301,16 +390,16 @@ func TestStages_CreateOnAzure(t *testing.T) {
 			Url:                "some url",
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageAzureEncryption{
-				EncryptionType: &ExternalStageAzureEncryptionCSE,
-				MasterKey:      String("master-key"),
+				AzureCse: &ExternalStageAzureEncryptionAzureCse{
+					MasterKey: "master-key",
+				},
 			},
-			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 
 	t.Run("all options - directory table and credentials", func(t *testing.T) {
@@ -328,12 +417,22 @@ func TestStages_CreateOnAzure(t *testing.T) {
 				AzureSasToken: "azure-sas-token",
 			},
 			Encryption: &ExternalStageAzureEncryption{
-				EncryptionType: &ExternalStageAzureEncryptionCSE,
-				MasterKey:      String("master-key"),
+				AzureCse: &ExternalStageAzureEncryptionAzureCse{
+					MasterKey: "master-key",
+				},
 			},
 			UsePrivatelinkEndpoint: Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE IF NOT EXISTS %s URL = 'some url' CREDENTIALS = (AZURE_SAS_TOKEN = 'azure-sas-token') ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: None", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{
+			None: &ExternalStageAzureEncryptionNone{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s URL = 'azure://example.com' ENCRYPTION = (TYPE = 'NONE')`, id.FullyQualifiedName())
 	})
 }
 
@@ -369,6 +468,7 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.Temporary = Bool(true)
 		opts.IfNotExists = Bool(true)
@@ -381,10 +481,724 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') FILE_FORMAT = (TYPE = CSV) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
+			Enable:          true,
+			RefreshOnCreate: Bool(true),
+			AutoRefresh:     Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+}
+
+// added manually
+func TestStages_CreateInternal_FileFormat(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	defaultOpts := func() *CreateInternalStageOptions {
+		return &CreateInternalStageOptions{
+			name: id,
+		}
+	}
+
+	// Stage-level FileFormat validation tests
+	t.Run("validation: exactly one field from [opts.FileFormat.FormatName opts.FileFormat.FileFormatOptions] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+	})
+
+	t.Run("validation: exactly one field from [opts.FileFormat.FormatName opts.FileFormat.FileFormatOptions] should be present - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		ffId := randomSchemaObjectIdentifier()
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        Pointer(ffId),
+			FileFormatOptions: &FileFormatOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+	})
+
+	// FileFormatOptions-level validation tests
+	t.Run("validation: exactly one format type should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	t.Run("validation: exactly one format type should be present - multiple set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions:  &FileFormatCsvOptions{},
+				JsonOptions: &FileFormatJsonOptions{},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat", "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions"))
+	})
+
+	// CSV options validation tests
+	t.Run("validation: CSV - exactly one of SkipHeader and ParseHeader should be present - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					SkipHeader:  Pointer(1),
+					ParseHeader: Bool(true),
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CsvOptions", "SkipHeader", "ParseHeader"))
+	})
+
+	t.Run("validation: CSV RecordDelimiter - exactly one of Value and None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					RecordDelimiter: &StageFileFormatStringOrNone{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+	})
+
+	t.Run("validation: CSV RecordDelimiter - exactly one of Value and None - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					RecordDelimiter: &StageFileFormatStringOrNone{
+						Value: String("\\n"),
+						None:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.RecordDelimiter", "Value", "None"))
+	})
+
+	t.Run("validation: CSV FieldDelimiter - exactly one of Value and None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					FieldDelimiter: &StageFileFormatStringOrNone{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+	})
+
+	t.Run("validation: CSV FieldDelimiter - exactly one of Value and None - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					FieldDelimiter: &StageFileFormatStringOrNone{
+						Value: String(","),
+						None:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.FieldDelimiter", "Value", "None"))
+	})
+
+	t.Run("validation: CSV DateFormat - exactly one of Value and Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					DateFormat: &StageFileFormatStringOrAuto{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: CSV DateFormat - exactly one of Value and Auto - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					DateFormat: &StageFileFormatStringOrAuto{
+						Value: String("YYYY-MM-DD"),
+						Auto:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.DateFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: CSV TimeFormat - exactly one of Value and Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					TimeFormat: &StageFileFormatStringOrAuto{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: CSV TimeFormat - exactly one of Value and Auto - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					TimeFormat: &StageFileFormatStringOrAuto{
+						Value: String("HH24:MI:SS"),
+						Auto:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.TimeFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: CSV TimestampFormat - exactly one of Value and Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					TimestampFormat: &StageFileFormatStringOrAuto{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: CSV TimestampFormat - exactly one of Value and Auto - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					TimestampFormat: &StageFileFormatStringOrAuto{
+						Value: String("YYYY-MM-DD HH24:MI:SS"),
+						Auto:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.TimestampFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: CSV Escape - exactly one of Value and None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					Escape: &StageFileFormatStringOrNone{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.Escape", "Value", "None"))
+	})
+
+	t.Run("validation: CSV Escape - exactly one of Value and None - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					Escape: &StageFileFormatStringOrNone{
+						Value: String("\\"),
+						None:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.Escape", "Value", "None"))
+	})
+
+	t.Run("validation: CSV EscapeUnenclosedField - exactly one of Value and None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					EscapeUnenclosedField: &StageFileFormatStringOrNone{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+	})
+
+	t.Run("validation: CSV EscapeUnenclosedField - exactly one of Value and None - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					EscapeUnenclosedField: &StageFileFormatStringOrNone{
+						Value: String("\\"),
+						None:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.EscapeUnenclosedField", "Value", "None"))
+	})
+
+	t.Run("validation: CSV FieldOptionallyEnclosedBy - exactly one of Value and None - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+	})
+
+	t.Run("validation: CSV FieldOptionallyEnclosedBy - exactly one of Value and None - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{
+						Value: String("\""),
+						None:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.CsvOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+	})
+
+	// JSON options validation tests
+	t.Run("validation: JSON - exactly one of IgnoreUtf8Errors and ReplaceInvalidCharacters should be present - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					IgnoreUtf8Errors:         Bool(true),
+					ReplaceInvalidCharacters: Bool(true),
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("JsonOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+	})
+
+	t.Run("validation: JSON DateFormat - exactly one of Value and Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					DateFormat: &StageFileFormatStringOrAuto{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: JSON DateFormat - exactly one of Value and Auto - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					DateFormat: &StageFileFormatStringOrAuto{
+						Value: String("YYYY-MM-DD"),
+						Auto:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.JsonOptions.DateFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: JSON TimeFormat - exactly one of Value and Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					TimeFormat: &StageFileFormatStringOrAuto{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: JSON TimeFormat - exactly one of Value and Auto - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					TimeFormat: &StageFileFormatStringOrAuto{
+						Value: String("HH24:MI:SS"),
+						Auto:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.JsonOptions.TimeFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: JSON TimestampFormat - exactly one of Value and Auto - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					TimestampFormat: &StageFileFormatStringOrAuto{},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: JSON TimestampFormat - exactly one of Value and Auto - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					TimestampFormat: &StageFileFormatStringOrAuto{
+						Value: String("YYYY-MM-DD HH24:MI:SS"),
+						Auto:  Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("FileFormat.JsonOptions.TimestampFormat", "Value", "Auto"))
+	})
+
+	// Parquet options validation tests
+	t.Run("validation: Parquet - exactly one of Compression and SnappyCompression should be present - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				ParquetOptions: &FileFormatParquetOptions{
+					Compression:       Pointer(ParquetCompressionSnappy),
+					SnappyCompression: Bool(true),
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("ParquetOptions", "Compression", "SnappyCompression"))
+	})
+
+	// XML options validation tests
+	t.Run("validation: XML - exactly one of IgnoreUtf8Errors and ReplaceInvalidCharacters should be present - both set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				XmlOptions: &FileFormatXmlOptions{
+					IgnoreUtf8Errors:         Bool(true),
+					ReplaceInvalidCharacters: Bool(true),
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("XmlOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+	})
+
+	// Valid variant tests
+	t.Run("with format_name", func(t *testing.T) {
+		opts := defaultOpts()
+		ffId := randomSchemaObjectIdentifier()
+		opts.FileFormat = &StageFileFormat{
+			FormatName: Pointer(ffId),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (FORMAT_NAME = %s)`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+
+	t.Run("with CSV options - basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = CSV)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with CSV options - all fields with SkipHeader", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					Compression: Pointer(CSVCompressionGzip),
+					RecordDelimiter: &StageFileFormatStringOrNone{
+						Value: String("\\n"),
+					},
+					FieldDelimiter: &StageFileFormatStringOrNone{
+						Value: String(","),
+					},
+					MultiLine:      Bool(true),
+					FileExtension:  String(".csv"),
+					SkipHeader:     Pointer(2),
+					SkipBlankLines: Bool(true),
+					DateFormat: &StageFileFormatStringOrAuto{
+						Value: String("YYYY-MM-DD"),
+					},
+					TimeFormat: &StageFileFormatStringOrAuto{
+						Value: String("HH24:MI:SS"),
+					},
+					TimestampFormat: &StageFileFormatStringOrAuto{
+						Value: String("YYYY-MM-DD HH24:MI:SS"),
+					},
+					BinaryFormat: Pointer(BinaryFormatHex),
+					Escape: &StageFileFormatStringOrNone{
+						Value: String("\\"),
+					},
+					EscapeUnenclosedField: &StageFileFormatStringOrNone{
+						Value: String("\\"),
+					},
+					TrimSpace: Bool(true),
+					FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{
+						Value: String("\""),
+					},
+					NullIf:                     []NullString{{S: "NULL"}, {S: ""}},
+					ErrorOnColumnCountMismatch: Bool(true),
+					ReplaceInvalidCharacters:   Bool(true),
+					EmptyFieldAsNull:           Bool(true),
+					SkipByteOrderMark:          Bool(true),
+					Encoding:                   Pointer(CSVEncodingUTF8),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP RECORD_DELIMITER = '\\n' FIELD_DELIMITER = ',' MULTI_LINE = true FILE_EXTENSION = '.csv' SKIP_HEADER = 2 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = UTF8)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with CSV options - StringOrNone with None value", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					SkipHeader: Pointer(1),
+					RecordDelimiter: &StageFileFormatStringOrNone{
+						None: Bool(true),
+					},
+					FieldDelimiter: &StageFileFormatStringOrNone{
+						None: Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = CSV RECORD_DELIMITER = NONE FIELD_DELIMITER = NONE SKIP_HEADER = 1)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with CSV options - StringOrAuto with Auto value", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				CsvOptions: &FileFormatCsvOptions{
+					SkipHeader: Pointer(1),
+					DateFormat: &StageFileFormatStringOrAuto{
+						Auto: Bool(true),
+					},
+					TimeFormat: &StageFileFormatStringOrAuto{
+						Auto: Bool(true),
+					},
+					TimestampFormat: &StageFileFormatStringOrAuto{
+						Auto: Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = CSV SKIP_HEADER = 1 DATE_FORMAT = AUTO TIME_FORMAT = AUTO TIMESTAMP_FORMAT = AUTO)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with JSON options - basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with JSON options - all fields with IgnoreUtf8Errors", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					Compression: Pointer(JSONCompressionGzip),
+					DateFormat: &StageFileFormatStringOrAuto{
+						Value: String("YYYY-MM-DD"),
+					},
+					TimeFormat: &StageFileFormatStringOrAuto{
+						Value: String("HH24:MI:SS"),
+					},
+					TimestampFormat: &StageFileFormatStringOrAuto{
+						Value: String("YYYY-MM-DD HH24:MI:SS"),
+					},
+					BinaryFormat:      Pointer(BinaryFormatBase64),
+					TrimSpace:         Bool(true),
+					MultiLine:         Bool(true),
+					NullIf:            []NullString{{S: "NULL"}},
+					FileExtension:     String(".json"),
+					EnableOctal:       Bool(true),
+					AllowDuplicate:    Bool(true),
+					StripOuterArray:   Bool(true),
+					StripNullValues:   Bool(true),
+					IgnoreUtf8Errors:  Bool(true),
+					SkipByteOrderMark: Bool(true),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = JSON COMPRESSION = GZIP DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with JSON options - all fields with ReplaceInvalidCharacters", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				JsonOptions: &FileFormatJsonOptions{
+					Compression: Pointer(JSONCompressionBrotli),
+					DateFormat: &StageFileFormatStringOrAuto{
+						Auto: Bool(true),
+					},
+					TimeFormat: &StageFileFormatStringOrAuto{
+						Auto: Bool(true),
+					},
+					TimestampFormat: &StageFileFormatStringOrAuto{
+						Auto: Bool(true),
+					},
+					BinaryFormat:             Pointer(BinaryFormatUTF8),
+					TrimSpace:                Bool(false),
+					MultiLine:                Bool(false),
+					NullIf:                   []NullString{{S: ""}},
+					FileExtension:            String(".jsonl"),
+					EnableOctal:              Bool(false),
+					AllowDuplicate:           Bool(false),
+					StripOuterArray:          Bool(false),
+					StripNullValues:          Bool(false),
+					ReplaceInvalidCharacters: Bool(true),
+					SkipByteOrderMark:        Bool(false),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = JSON COMPRESSION = BROTLI DATE_FORMAT = AUTO TIME_FORMAT = AUTO TIMESTAMP_FORMAT = AUTO BINARY_FORMAT = UTF8 TRIM_SPACE = false MULTI_LINE = false NULL_IF = ('') FILE_EXTENSION = '.jsonl' ENABLE_OCTAL = false ALLOW_DUPLICATE = false STRIP_OUTER_ARRAY = false STRIP_NULL_VALUES = false REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = false)`, id.FullyQualifiedName())
+	})
+	t.Run("with Avro options - basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				AvroOptions: &FileFormatAvroOptions{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = AVRO)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with Avro options - all fields", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				AvroOptions: &FileFormatAvroOptions{
+					Compression:              Pointer(AvroCompressionGzip),
+					TrimSpace:                Bool(true),
+					ReplaceInvalidCharacters: Bool(true),
+					NullIf:                   []NullString{{S: "NULL"}, {S: ""}},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = AVRO COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', ''))`, id.FullyQualifiedName())
+	})
+
+	t.Run("with ORC options - basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				OrcOptions: &FileFormatOrcOptions{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = ORC)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with ORC options - all fields", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				OrcOptions: &FileFormatOrcOptions{
+					TrimSpace:                Bool(true),
+					ReplaceInvalidCharacters: Bool(true),
+					NullIf:                   []NullString{{S: "NULL"}},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL'))`, id.FullyQualifiedName())
+	})
+
+	t.Run("with Parquet options - all fields with Compression", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				ParquetOptions: &FileFormatParquetOptions{
+					Compression:              Pointer(ParquetCompressionSnappy),
+					BinaryAsText:             Bool(true),
+					UseLogicalType:           Bool(true),
+					TrimSpace:                Bool(true),
+					UseVectorizedScanner:     Bool(true),
+					ReplaceInvalidCharacters: Bool(true),
+					NullIf:                   []NullString{{S: "NULL"}},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = PARQUET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL'))`, id.FullyQualifiedName())
+	})
+
+	t.Run("with Parquet options - all fields with SnappyCompression", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				ParquetOptions: &FileFormatParquetOptions{
+					SnappyCompression:        Bool(true),
+					BinaryAsText:             Bool(false),
+					UseLogicalType:           Bool(false),
+					TrimSpace:                Bool(false),
+					UseVectorizedScanner:     Bool(false),
+					ReplaceInvalidCharacters: Bool(false),
+					NullIf:                   []NullString{{S: ""}},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = PARQUET SNAPPY_COMPRESSION = true BINARY_AS_TEXT = false USE_LOGICAL_TYPE = false TRIM_SPACE = false USE_VECTORIZED_SCANNER = false REPLACE_INVALID_CHARACTERS = false NULL_IF = (''))`, id.FullyQualifiedName())
+	})
+
+	t.Run("with XML options - basic", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				XmlOptions: &FileFormatXmlOptions{},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = XML)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with XML options - all fields with IgnoreUtf8Errors", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				XmlOptions: &FileFormatXmlOptions{
+					Compression:        Pointer(XMLCompressionGzip),
+					IgnoreUtf8Errors:   Bool(true),
+					PreserveSpace:      Bool(true),
+					StripOuterElement:  Bool(true),
+					DisableAutoConvert: Bool(true),
+					SkipByteOrderMark:  Bool(true),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = XML COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true)`, id.FullyQualifiedName())
+	})
+
+	t.Run("with XML options - all fields with ReplaceInvalidCharacters", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FileFormat = &StageFileFormat{
+			FileFormatOptions: &FileFormatOptions{
+				XmlOptions: &FileFormatXmlOptions{
+					Compression:              Pointer(XMLCompressionBz2),
+					PreserveSpace:            Bool(false),
+					StripOuterElement:        Bool(false),
+					DisableAutoConvert:       Bool(false),
+					ReplaceInvalidCharacters: Bool(true),
+					SkipByteOrderMark:        Bool(false),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE STAGE %s FILE_FORMAT = (TYPE = XML COMPRESSION = BZ2 PRESERVE_SPACE = false STRIP_OUTER_ELEMENT = false DISABLE_AUTO_CONVERT = false REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = false)`, id.FullyQualifiedName())
 	})
 }
 
@@ -418,15 +1232,6 @@ func TestStages_Alter(t *testing.T) {
 		opts.RenameTo = new(SchemaObjectIdentifier)
 		opts.SetTags = []TagAssociation{}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStageOptions", "RenameTo", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfExists opts.UnsetTags]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("id"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterStageOptions", "IfExists", "UnsetTags"))
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
@@ -493,25 +1298,14 @@ func TestStages_AlterInternalStage(t *testing.T) {
 	// basic removed manually
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeCSV,
+			FormatName: Pointer(ffId),
 		}
-		opts.CopyOptions = &StageCopyOptions{
-			OnError: &StageCopyOnErrorOptions{
-				AbortStatement: Bool(true),
-			},
-			SizeLimit:         Int(123),
-			Purge:             Bool(true),
-			ReturnFailedOnly:  Bool(true),
-			MatchByColumnName: &StageCopyColumnMapCaseNone,
-			EnforceLength:     Bool(true),
-			Truncatecolumns:   Bool(true),
-			Force:             Bool(true),
-		}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (TYPE = CSV) COPY_OPTIONS = (ON_ERROR = ABORT_STATEMENT SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'", id.FullyQualifiedName())
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'", id.FullyQualifiedName(), ffId.FullyQualifiedName())
 	})
 }
 
@@ -580,6 +1374,26 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.UsePrivatelinkEndpoint]", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			StorageIntegration:     &integrationId,
+			UsePrivatelinkEndpoint: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url:        "s3://example.com",
+			Encryption: &ExternalStageS3Encryption{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Encryption", "AwsCse", "AwsSseS3", "AwsSseKms", "None"))
+	})
+
 	// basic removed manually
 
 	// added manually
@@ -596,6 +1410,7 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
@@ -605,27 +1420,52 @@ func TestStages_AlterExternalS3Stage(t *testing.T) {
 			AwsAccessPointArn:  String("aws-access-point-arn"),
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageS3Encryption{
-				EncryptionType: &ExternalStageS3EncryptionNone,
+				None: &ExternalStageS3EncryptionNone{},
 			},
-			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+			FormatName: Pointer(ffId),
 		}
-		opts.CopyOptions = &StageCopyOptions{
-			OnError: &StageCopyOnErrorOptions{
-				Continue_: Bool(true),
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: AwsSseS3", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url: "s3://example.com",
+			Encryption: &ExternalStageS3Encryption{
+				AwsSseS3: &ExternalStageS3EncryptionAwsSseS3{},
 			},
-			SizeLimit:         Int(123),
-			Purge:             Bool(true),
-			ReturnFailedOnly:  Bool(true),
-			MatchByColumnName: &StageCopyColumnMapCaseNone,
-			EnforceLength:     Bool(true),
-			Truncatecolumns:   Bool(true),
-			Force:             Bool(true),
 		}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') USE_PRIVATELINK_ENDPOINT = true FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 's3://example.com' ENCRYPTION = (TYPE = 'AWS_SSE_S3')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: AwsSseKms", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url: "s3://example.com",
+			Encryption: &ExternalStageS3Encryption{
+				AwsSseKms: &ExternalStageS3EncryptionAwsSseKms{
+					KmsKeyId: String("kms-key-id"),
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 's3://example.com' ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id')`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("credentials: AwsRole", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalS3StageParams{
+			Url: "s3://example.com",
+			Credentials: &ExternalStageS3Credentials{
+				AwsRole: String("arn:aws:iam::123456789012:role/MyRole"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 's3://example.com' CREDENTIALS = (AWS_ROLE = 'arn:aws:iam::123456789012:role/MyRole')`, id.FullyQualifiedName())
 	})
 }
 
@@ -649,36 +1489,53 @@ func TestStages_AlterExternalGCSStage(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = &ExternalGCSStageParams{
+			Url:                "gcs://example.com",
+			StorageIntegration: integrationId,
+			Encryption:         &ExternalStageGCSEncryption{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalGCSStageStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
+	})
+
 	// basic removed manually
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
 		opts.ExternalStageParams = &ExternalGCSStageParams{
 			Url:                "some url",
-			StorageIntegration: &integrationId,
+			StorageIntegration: integrationId,
 			Encryption: &ExternalStageGCSEncryption{
-				EncryptionType: &ExternalStageGCSEncryptionNone,
+				None: &ExternalStageGCSEncryptionNone{},
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+			FormatName: Pointer(ffId),
 		}
-		opts.CopyOptions = &StageCopyOptions{
-			OnError: &StageCopyOnErrorOptions{
-				Continue_: Bool(true),
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: GcsSseKms", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = &ExternalGCSStageParams{
+			Url:                "gcs://example.com",
+			StorageIntegration: integrationId,
+			Encryption: &ExternalStageGCSEncryption{
+				GcsSseKms: &ExternalStageGCSEncryptionGcsSseKms{
+					KmsKeyId: String("kms-key-id"),
+				},
 			},
-			SizeLimit:         Int(123),
-			Purge:             Bool(true),
-			ReturnFailedOnly:  Bool(true),
-			MatchByColumnName: &StageCopyColumnMapCaseNone,
-			EnforceLength:     Bool(true),
-			Truncatecolumns:   Bool(true),
-			Force:             Bool(true),
 		}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 'gcs://example.com' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id')`, id.FullyQualifiedName())
 	})
 }
 
@@ -712,6 +1569,26 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.ExternalStageParams.StorageIntegration opts.ExternalStageParams.UsePrivatelinkEndpoint]", func(t *testing.T) {
+		opts := defaultOpts()
+		integrationId := NewAccountObjectIdentifier("integration")
+		opts.ExternalStageParams = &ExternalAzureStageParams{
+			StorageIntegration:     &integrationId,
+			UsePrivatelinkEndpoint: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+	})
+
+	// added manually
+	t.Run("validation: exactly one field from [opts.ExternalStageParams.Encryption...] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalAzureStageParams{
+			Url:        "azure://example.com",
+			Encryption: &ExternalStageAzureEncryption{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams.Encryption", "AzureCse", "None"))
+	})
+
 	// basic removed manually
 
 	// added manually
@@ -727,6 +1604,7 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		ffId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		integrationId := NewAccountObjectIdentifier("integration")
@@ -734,26 +1612,28 @@ func TestStages_AlterExternalAzureStage(t *testing.T) {
 			Url:                "some url",
 			StorageIntegration: &integrationId,
 			Encryption: &ExternalStageAzureEncryption{
-				EncryptionType: &ExternalStageAzureEncryptionNone,
+				None: &ExternalStageAzureEncryptionNone{},
 			},
 		}
 		opts.FileFormat = &StageFileFormat{
-			FileFormatType: &FileFormatTypeJSON,
+			FormatName: Pointer(ffId),
 		}
-		opts.CopyOptions = &StageCopyOptions{
-			OnError: &StageCopyOnErrorOptions{
-				Continue_: Bool(true),
+		opts.Comment = &StringAllowEmpty{Value: "some comment"}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`, id.FullyQualifiedName(), ffId.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("encryption: AzureCse", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalStageParams = &ExternalAzureStageParams{
+			Url: "azure://example.com",
+			Encryption: &ExternalStageAzureEncryption{
+				AzureCse: &ExternalStageAzureEncryptionAzureCse{
+					MasterKey: "master-key",
+				},
 			},
-			SizeLimit:         Int(123),
-			Purge:             Bool(true),
-			ReturnFailedOnly:  Bool(true),
-			MatchByColumnName: &StageCopyColumnMapCaseNone,
-			EnforceLength:     Bool(true),
-			Truncatecolumns:   Bool(true),
-			Force:             Bool(true),
 		}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = "integration" ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (TYPE = JSON) COPY_OPTIONS = (ON_ERROR = CONTINUE SIZE_LIMIT = 123 PURGE = true RETURN_FAILED_ONLY = true MATCH_BY_COLUMN_NAME = NONE ENFORCE_LENGTH = true TRUNCATECOLUMNS = true FORCE = true) COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STAGE %s SET URL = 'azure://example.com' ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key')`, id.FullyQualifiedName())
 	})
 }
 
@@ -902,4 +1782,93 @@ func TestStages_Show(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES LIKE 'some pattern' IN SCHEMA %s`, schemaId.FullyQualifiedName())
 	})
+
+	// added manually
+	t.Run("with Like only", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Like = &Like{
+			Pattern: String("stage_pattern"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES LIKE 'stage_pattern'`)
+	})
+
+	// added manually
+	t.Run("with In only", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.In = &ExtendedIn{
+			In: In{
+				Schema: schemaId,
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW STAGES IN SCHEMA %s`, schemaId.FullyQualifiedName())
+	})
+}
+
+func TestStages_ToStageType(t *testing.T) {
+	valid := []struct {
+		input string
+		want  StageType
+	}{
+		{input: "INTERNAL", want: StageTypeInternal},
+		{input: "INTERNAL NO CSE", want: StageTypeInternalNoCse},
+		{input: "INTERNAL TEMPORARY", want: StageTypeInternalTemporary},
+		{input: "EXTERNAL", want: StageTypeExternal},
+		{input: "EXTERNAL TEMPORARY", want: StageTypeExternalTemporary},
+		// case insensitive
+		{input: "internal", want: StageTypeInternal},
+	}
+
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToStageType(tt.input)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+
+	invalid := []struct {
+		input   string
+		wantErr string
+	}{
+		{input: "invalid", wantErr: "invalid stage type: INVALID"},
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToStageType(tt.input)
+			require.ErrorContains(t, err, tt.wantErr)
+		})
+	}
+}
+
+func TestStages_ToStageCloud(t *testing.T) {
+	valid := []struct {
+		input string
+		want  StageCloud
+	}{
+		{input: "AZURE", want: StageCloudAzure},
+		{input: "AWS", want: StageCloudAws},
+		{input: "GCP", want: StageCloudGcp},
+		// case insensitive
+		{input: "azure", want: StageCloudAzure},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToStageCloud(tt.input)
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+
+	invalid := []struct {
+		input   string
+		wantErr string
+	}{
+		{input: "invalid", wantErr: "invalid stage cloud: INVALID"},
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToStageCloud(tt.input)
+			require.ErrorContains(t, err, tt.wantErr)
+		})
+	}
 }

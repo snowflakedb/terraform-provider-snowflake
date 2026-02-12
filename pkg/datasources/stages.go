@@ -2,57 +2,47 @@ package datasources
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var stagesSchema = map[string]*schema.Schema{
-	"database": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The database from which to return the schemas from.",
+	"with_describe": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: "Runs DESC STAGE for each stage returned by SHOW STAGES. The output of describe is saved to the describe_output field. By default this value is set to true.",
 	},
-	"schema": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "The schema from which to return the stages from.",
-	},
+	"like": likeSchema,
+	"in":   extendedInSchema,
 	"stages": {
 		Type:        schema.TypeList,
 		Computed:    true,
-		Description: "The stages in the schema",
+		Description: "Holds the aggregated output of all stages details queries.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"name": {
-					Type:     schema.TypeString,
-					Computed: true,
+				resources.ShowOutputAttributeName: {
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "Holds the output of SHOW STAGES.",
+					Elem: &schema.Resource{
+						Schema: schemas.ShowStageSchema,
+					},
 				},
-				"database": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"schema": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"comment": {
-					Type:     schema.TypeString,
-					Optional: true,
-					Computed: true,
-				},
-				"storage_integration": {
-					Type:     schema.TypeString,
-					Optional: true,
-					Computed: true,
+				resources.DescribeOutputAttributeName: {
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "Holds the output of DESCRIBE STAGE.",
+					Elem: &schema.Resource{
+						Schema: schemas.StageDatasourceDescribeSchema(),
+					},
 				},
 			},
 		},
@@ -63,55 +53,51 @@ func Stages() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.StagesDatasource), TrackingReadWrapper(datasources.Stages, ReadStages)),
 		Schema:      stagesSchema,
+		Description: "Data source used to get details of filtered stages. Filtering is aligned with the current possibilities for [SHOW STAGES](https://docs.snowflake.com/en/sql-reference/sql/show-stages) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `stages`.",
 	}
 }
 
 func ReadStages(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
+	req := sdk.ShowStageRequest{}
 
-	databaseName := d.Get("database").(string)
-	schemaName := d.Get("schema").(string)
-
-	stages, err := client.Stages.Show(ctx, sdk.NewShowStageRequest().WithIn(
-		sdk.ExtendedIn{
-			In: sdk.In{
-				Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName),
-			},
-		},
-	))
+	handleLike(d, &req.Like)
+	err := handleExtendedIn(d, &req.In)
 	if err != nil {
-		d.SetId("")
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  "Failed to query stages",
-				Detail:   fmt.Sprintf("DatabaseName: %s, SchemaName: %s, Err: %s", databaseName, schemaName, err),
-			},
-		}
+		return diag.FromErr(err)
 	}
 
-	stagesList := make([]map[string]any, len(stages))
+	stages, err := client.Stages.Show(ctx, &req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.SetId("stages_read")
+
+	flattenedStages := make([]map[string]any, len(stages))
 	for i, stage := range stages {
-		stagesList[i] = map[string]any{
-			"name":                stage.Name,
-			"database":            stage.DatabaseName,
-			"schema":              stage.SchemaName,
-			"comment":             stage.Comment,
-			"storage_integration": stage.StorageIntegration,
+		var stageDescriptions []map[string]any
+		if d.Get("with_describe").(bool) {
+			properties, err := client.Stages.Describe(ctx, stage.ID())
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			details, err := sdk.ParseStageDetails(properties)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			describeSchema, err := schemas.StageDatasourceToDatasourceSchema(*details)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			stageDescriptions = []map[string]any{describeSchema}
+		}
+		flattenedStages[i] = map[string]any{
+			resources.ShowOutputAttributeName:     []map[string]any{schemas.StageToSchema(&stage)},
+			resources.DescribeOutputAttributeName: stageDescriptions,
 		}
 	}
-
-	if err := d.Set("stages", stagesList); err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Failed to set stages",
-				Detail:   fmt.Sprintf("Err: %s", err),
-			},
-		}
+	if err := d.Set("stages", flattenedStages); err != nil {
+		return diag.FromErr(err)
 	}
-
-	d.SetId(helpers.EncodeSnowflakeID(databaseName, schemaName))
-
 	return nil
 }

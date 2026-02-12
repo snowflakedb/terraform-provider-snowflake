@@ -1,5 +1,5 @@
 <!-- Section of preview resources -->
-## Currently preview resources 
+### Currently preview resources 
 
 - [snowflake_account_authentication_policy_attachment](./docs/resources/account_authentication_policy_attachment)
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
@@ -40,7 +40,15 @@
 - [snowflake_sequence](./docs/resources/sequence)
 - [snowflake_share](./docs/resources/share)
 - [snowflake_stage](./docs/resources/stage)
+- [snowflake_stage_external_azure](./docs/resources/stage_external_azure)
+- [snowflake_stage_external_gcs](./docs/resources/stage_external_gcs)
+- [snowflake_stage_external_s3](./docs/resources/stage_external_s3)
+- [snowflake_stage_external_s3_compatible](./docs/resources/stage_external_s3_compatible)
+- [snowflake_stage_internal](./docs/resources/stage_internal)
 - [snowflake_storage_integration](./docs/resources/storage_integration)
+- [snowflake_storage_integration_aws](./docs/resources/storage_integration_aws)
+- [snowflake_storage_integration_azure](./docs/resources/storage_integration_azure)
+- [snowflake_storage_integration_gcs](./docs/resources/storage_integration_gcs)
 - [snowflake_table](./docs/resources/table)
 - [snowflake_table_column_masking_policy_application](./docs/resources/table_column_masking_policy_application)
 - [snowflake_table_constraint](./docs/resources/table_constraint)

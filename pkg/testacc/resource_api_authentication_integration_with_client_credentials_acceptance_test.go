@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
@@ -26,7 +27,7 @@ import (
 )
 
 func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *testing.T) {
-	testenvs.SkipTestIfSetTo(t, testenvs.SnowflakeTestingEnvironment, string(testenvs.SnowflakeNonProdEnvironment), "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
+	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{string(testenvs.SnowflakeNonProdEnvironment), string(testenvs.SnowflakePreProdGovEnvironment)}, "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
@@ -337,6 +338,7 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_invalidIncomplete
 
 func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -345,9 +347,9 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_migrateFromV0941_
 		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithClientCredentials),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            apiAuthenticationIntegrationWithClientCredentialsBasicConfig(id.Name()),
+				Config:            providerConfig + apiAuthenticationIntegrationWithClientCredentialsBasicConfig(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "id", id.Name()),
 				),
@@ -367,6 +369,7 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_migrateFromV0941_
 func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_WithQuotedName(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`\"%s\"`, id.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -375,10 +378,10 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_WithQuotedName(t 
 		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithClientCredentials),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             apiAuthenticationIntegrationWithClientCredentialsBasicConfig(quotedId),
+				Config:             providerConfig + apiAuthenticationIntegrationWithClientCredentialsBasicConfig(quotedId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "id", id.Name()),
