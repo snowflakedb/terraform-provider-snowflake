@@ -49,3 +49,9 @@ func (c *HybridTableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier
 		require.NoError(t, err)
 	}
 }
+
+func (c *HybridTableClient) UpdateComment(t *testing.T, id sdk.SchemaObjectIdentifier, comment string) {
+	t.Helper()
+	err := c.exec(fmt.Sprintf(`alter table %s set comment = '%s'`, id.FullyQualifiedName(), comment))
+	require.NoError(t, err)
+}
