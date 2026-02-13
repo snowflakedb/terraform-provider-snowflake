@@ -53,7 +53,7 @@ func (t *TaskShowOutputAssert) HasLastSuspendedOnNotEmpty() *TaskShowOutputAsser
 func (t *TaskShowOutputAssert) HasPredecessors(predecessors ...sdk.SchemaObjectIdentifier) *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("predecessors.#", strconv.Itoa(len(predecessors))))
 	for _, predecessor := range predecessors {
-		t.AddAssertion(assert.ResourceShowOutputSetElem("predecessors.*", predecessor.FullyQualifiedName()))
+		t.AddAssertion(assert.ResourceShowOutputSetElem("predecessors", predecessor.FullyQualifiedName()))
 	}
 	return t
 }

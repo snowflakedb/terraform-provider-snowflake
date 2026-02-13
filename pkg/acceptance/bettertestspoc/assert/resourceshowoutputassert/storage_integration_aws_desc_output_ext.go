@@ -20,7 +20,7 @@ func (s *StorageIntegrationAwsDescribeOutputAssert) HasExternalIdSet() *StorageI
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasAllowedLocations(expected ...sdk.StorageLocation) *StorageIntegrationAwsDescribeOutputAssert {
 	s.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_locations.#", strconv.FormatInt(int64(len(expected)), 10)))
 	for _, v := range expected {
-		s.AddAssertion(assert.ResourceDescribeOutputSetElem("allowed_locations.*", v.Path))
+		s.AddAssertion(assert.ResourceDescribeOutputSetElem("allowed_locations", v.Path))
 	}
 	return s
 }
@@ -28,7 +28,7 @@ func (s *StorageIntegrationAwsDescribeOutputAssert) HasAllowedLocations(expected
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasBlockedLocations(expected ...sdk.StorageLocation) *StorageIntegrationAwsDescribeOutputAssert {
 	s.AddAssertion(assert.ResourceDescribeOutputValueSet("blocked_locations.#", strconv.FormatInt(int64(len(expected)), 10)))
 	for _, v := range expected {
-		s.AddAssertion(assert.ResourceDescribeOutputSetElem("blocked_locations.*", v.Path))
+		s.AddAssertion(assert.ResourceDescribeOutputSetElem("blocked_locations", v.Path))
 	}
 	return s
 }

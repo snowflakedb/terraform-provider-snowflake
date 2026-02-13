@@ -67,5 +67,5 @@ func ResourceShowOutputValuePresent(fieldName string) ResourceAssertion {
 }
 
 func ResourceShowOutputSetElem(fieldName string, expected string) ResourceAssertion {
-	return ResourceAssertion{fieldName: showOutputPrefix + fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
+	return SetElem(showOutputPrefix+fieldName, expected)
 }
