@@ -30,8 +30,12 @@ const (
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
 	DynamicTablesDatasource                       feature = "snowflake_dynamic_tables_datasource"
 	EmailNotificationIntegrationResource          feature = "snowflake_email_notification_integration_resource"
+	ExternalAzureStageResource                    feature = "snowflake_stage_external_azure_resource"
 	ExternalFunctionResource                      feature = "snowflake_external_function_resource"
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
+	ExternalGcsStageResource                      feature = "snowflake_stage_external_gcs_resource"
+	ExternalS3StageResource                       feature = "snowflake_stage_external_s3_resource"
+	ExternalS3CompatStageResource                 feature = "snowflake_stage_external_s3_compatible_resource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
 	ExternalTablesDatasource                      feature = "snowflake_external_tables_datasource"
 	ExternalVolumeResource                        feature = "snowflake_external_volume_resource"
@@ -49,6 +53,7 @@ const (
 	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
+	InternalStageResource                         feature = "snowflake_stage_internal_resource"
 	JobServiceResource                            feature = "snowflake_job_service_resource"
 	ListingResource                               feature = "snowflake_listing_resource"
 	ListingsDatasource                            feature = "snowflake_listings_datasource"
@@ -83,6 +88,9 @@ const (
 	StageResource                                 feature = "snowflake_stage_resource"
 	StagesDatasource                              feature = "snowflake_stages_datasource"
 	StorageIntegrationResource                    feature = "snowflake_storage_integration_resource"
+	StorageIntegrationAwsResource                 feature = "snowflake_storage_integration_aws_resource"
+	StorageIntegrationAzureResource               feature = "snowflake_storage_integration_azure_resource"
+	StorageIntegrationGcsResource                 feature = "snowflake_storage_integration_gcs_resource"
 	StorageIntegrationsDatasource                 feature = "snowflake_storage_integrations_datasource"
 	SystemGenerateSCIMAccessTokenDatasource       feature = "snowflake_system_generate_scim_access_token_datasource"
 	SystemGetAWSSNSIAMPolicyDatasource            feature = "snowflake_system_get_aws_sns_iam_policy_datasource"
@@ -116,8 +124,12 @@ var allPreviewFeatures = []feature{
 	DatabaseRoleDatasource,
 	DynamicTableResource,
 	DynamicTablesDatasource,
+	ExternalAzureStageResource,
 	ExternalFunctionResource,
 	ExternalFunctionsDatasource,
+	ExternalGcsStageResource,
+	ExternalS3StageResource,
+	ExternalS3CompatStageResource,
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	ExternalVolumeResource,
@@ -131,6 +143,7 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
+	InternalStageResource,
 	JobServiceResource,
 	ListingsDatasource,
 	ManagedAccountResource,
@@ -163,6 +176,9 @@ var allPreviewFeatures = []feature{
 	StageResource,
 	StagesDatasource,
 	StorageIntegrationResource,
+	StorageIntegrationAwsResource,
+	StorageIntegrationAzureResource,
+	StorageIntegrationGcsResource,
 	StorageIntegrationsDatasource,
 	SystemGenerateSCIMAccessTokenDatasource,
 	SystemGetAWSSNSIAMPolicyDatasource,
@@ -229,4 +245,15 @@ func IsPromotedFeature(rawFeature string) bool {
 	return slices.ContainsFunc(PromotedFeatures, func(s string) bool {
 		return strings.EqualFold(rawFeature, s)
 	})
+}
+
+type PreviewFeature interface {
+	xxxProtected()
+	String() string
+}
+
+func (f feature) xxxProtected() {}
+
+func (f feature) String() string {
+	return string(f)
 }

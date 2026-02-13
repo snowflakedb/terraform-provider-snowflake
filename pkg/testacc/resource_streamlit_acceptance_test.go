@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
@@ -272,6 +273,7 @@ func TestAcc_Streamlit_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *
 	t.Cleanup(stageCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	streamlitModel := model.StreamlitWithIds("test", id, "main_file", stage.ID())
 
@@ -282,9 +284,9 @@ func TestAcc_Streamlit_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *
 		CheckDestroy: CheckDestroy(t, resources.Streamlit),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, streamlitModel),
+				Config:            providerConfig + accconfig.FromModels(t, streamlitModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(id)),
 				),
@@ -309,6 +311,7 @@ func TestAcc_Streamlit_IdentifierQuotingDiffSuppression(t *testing.T) {
 	quotedDatabaseName := fmt.Sprintf(`"%s"`, id.DatabaseName())
 	quotedSchemaName := fmt.Sprintf(`"%s"`, id.SchemaName())
 	quotedName := fmt.Sprintf(`"%s"`, id.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	streamlitModel := model.Streamlit("test", quotedDatabaseName, quotedSchemaName, quotedName, "main_file", stage.ID().FullyQualifiedName())
 
@@ -319,10 +322,10 @@ func TestAcc_Streamlit_IdentifierQuotingDiffSuppression(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Streamlit),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, streamlitModel),
+				Config:             providerConfig + accconfig.FromModels(t, streamlitModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "database", fmt.Sprintf("\"%s\"", id.DatabaseName())),
 					resource.TestCheckResourceAttr(streamlitModel.ResourceReference(), "schema", id.SchemaName()),

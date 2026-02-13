@@ -17,6 +17,9 @@ description: |-
 
 -> **Note** External changes to `days_to_expiry` and `mins_to_unlock` are not currently handled by the provider (because the value changes continuously on Snowflake side after setting it).
 
+<!-- TODO(SNOW-3003261): Remove this note.-->
+-> **Note** External changes to `default_workload_identity.aws`, including setting AWS type externally, are not currently handled by the provider because of lack of certain data in Snowflake API.
+
 # snowflake_legacy_service_user (Resource)
 
 Resource used to manage legacy service user objects. For more information, check [user documentation](https://docs.snowflake.com/en/sql-reference/commands-user-role#user-management).
@@ -131,6 +134,53 @@ variable "password" {
   type      = string
   sensitive = true
 }
+
+# with AWS workload identity
+resource "snowflake_legacy_service_user" "with_aws_wif" {
+  name = "legacy_service_user_aws"
+
+  default_workload_identity {
+    aws {
+      arn = "arn:aws:iam::123456789012:role/snowflake-service-role"
+    }
+  }
+}
+
+# with GCP workload identity
+resource "snowflake_legacy_service_user" "with_gcp_wif" {
+  name = "legacy_service_user_gcp"
+
+  default_workload_identity {
+    gcp {
+      subject = "1122334455"
+    }
+  }
+}
+
+# with Azure workload identity
+resource "snowflake_legacy_service_user" "with_azure_wif" {
+  name = "legacy_service_user_azure"
+
+  default_workload_identity {
+    azure {
+      issuer  = "https://login.microsoftonline.com/tenant-id/v2.0"
+      subject = "application-id"
+    }
+  }
+}
+
+# with OIDC workload identity
+resource "snowflake_legacy_service_user" "with_oidc_wif" {
+  name = "legacy_service_user_oidc"
+
+  default_workload_identity {
+    oidc {
+      issuer             = "https://oidc.example.com"
+      subject            = "service-principal"
+      oidc_audience_list = ["snowflake"]
+    }
+  }
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
@@ -166,6 +216,7 @@ variable "password" {
 - `default_role` (String) Specifies the role that is active by default for the user’s session upon login. Note that specifying a default role for a user does **not** grant the role to the user. The role must be granted explicitly to the user using the [GRANT ROLE](https://docs.snowflake.com/en/sql-reference/sql/grant-role) command. In addition, the CREATE USER operation does not verify that the role exists. For more information about this resource, see [docs](./account_role).
 - `default_secondary_roles_option` (String) (Default: `DEFAULT`) Specifies the secondary roles that are active for the user’s session upon login. Valid values are (case-insensitive): `DEFAULT` | `NONE` | `ALL`. More information can be found in [doc](https://docs.snowflake.com/en/sql-reference/sql/create-user#optional-object-properties-objectproperties).
 - `default_warehouse` (String) Specifies the virtual warehouse that is active by default for the user’s session upon login. Note that the CREATE USER operation does not verify that the warehouse exists. For more information about this resource, see [docs](./warehouse).
+- `default_workload_identity` (Block List, Max: 1) Configures the default workload identity for the user. This is used for workload identity federation to allow third-party services to authenticate as this user. Only applicable for service users and legacy service users. This field can be only used when `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field. If this feature is not enabled, attempting to set this field will result in an error. The provider will not get WIF information from Snowflake. (see [below for nested schema](#nestedblock--default_workload_identity))
 - `disabled` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the user is disabled, which prevents logging in and aborts all the currently-running queries for the user. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `display_name` (String) Name displayed for the user in the Snowflake web interface.
 - `email` (String, Sensitive) Email address for the user.
@@ -227,6 +278,55 @@ variable "password" {
 - `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN USER` for the given user. (see [below for nested schema](#nestedatt--parameters))
 - `show_output` (List of Object) Outputs the result of `SHOW USER` for the given user. (see [below for nested schema](#nestedatt--show_output))
 - `user_type` (String) Specifies a type for the user.
+
+<a id="nestedblock--default_workload_identity"></a>
+### Nested Schema for `default_workload_identity`
+
+Optional:
+
+- `aws` (Block List, Max: 1) AWS workload identity configuration. (see [below for nested schema](#nestedblock--default_workload_identity--aws))
+- `azure` (Block List, Max: 1) Azure workload identity configuration. (see [below for nested schema](#nestedblock--default_workload_identity--azure))
+- `gcp` (Block List, Max: 1) GCP workload identity configuration. (see [below for nested schema](#nestedblock--default_workload_identity--gcp))
+- `oidc` (Block List, Max: 1) Generic OIDC workload identity configuration. (see [below for nested schema](#nestedblock--default_workload_identity--oidc))
+
+<a id="nestedblock--default_workload_identity--aws"></a>
+### Nested Schema for `default_workload_identity.aws`
+
+Required:
+
+- `arn` (String) The ARN of the AWS IAM role to use for workload identity federation.
+
+
+<a id="nestedblock--default_workload_identity--azure"></a>
+### Nested Schema for `default_workload_identity.azure`
+
+Required:
+
+- `issuer` (String) The Azure issuer URL.
+- `subject` (String) The Azure subject identifier.
+
+
+<a id="nestedblock--default_workload_identity--gcp"></a>
+### Nested Schema for `default_workload_identity.gcp`
+
+Required:
+
+- `subject` (String) The GCP service account subject identifier.
+
+
+<a id="nestedblock--default_workload_identity--oidc"></a>
+### Nested Schema for `default_workload_identity.oidc`
+
+Required:
+
+- `issuer` (String) The OIDC issuer URL.
+- `subject` (String) The OIDC subject identifier.
+
+Optional:
+
+- `oidc_audience_list` (List of String) List of allowed OIDC audiences.
+
+
 
 <a id="nestedatt--parameters"></a>
 ### Nested Schema for `parameters`

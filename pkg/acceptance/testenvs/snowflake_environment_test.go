@@ -32,6 +32,14 @@ func TestParseSnowflakeEnvironment(t *testing.T) {
 				input:    "PrOd",
 				expected: SnowflakeProdEnvironment,
 			},
+			"exact PRE_PROD_GOV": {
+				input:    string(SnowflakePreProdGovEnvironment),
+				expected: SnowflakePreProdGovEnvironment,
+			},
+			"lowercase pre_prod_gov": {
+				input:    "pre_prod_gov",
+				expected: SnowflakePreProdGovEnvironment,
+			},
 		}
 
 		for name, tc := range testCases {

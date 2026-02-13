@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -305,7 +306,11 @@ func GetImportUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 
 func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
+		if _, ok := d.GetOk("default_workload_identity"); ok && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) {
+			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
+		}
 
 		opts := &sdk.CreateUserOptions{
 			ObjectProperties:  &sdk.UserObjectProperties{},
@@ -370,9 +375,25 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 			userTypeSpecificFieldsErrs = errors.Join(
 				stringAttributeCreate(d, "password", &opts.ObjectProperties.Password),
 				booleanStringAttributeCreate(d, "must_change_password", &opts.ObjectProperties.MustChangePassword),
+				attributeMappedValueCreate(d, "default_workload_identity", &opts.ObjectProperties.WorkloadIdentity, func(v any) (*sdk.UserObjectWorkloadIdentityProperties, error) {
+					wif, err := parseWorkloadIdentityConfig(v)
+					if err != nil {
+						return nil, err
+					}
+					return &wif, nil
+				}),
 			)
 			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeLegacyService)
 		case sdk.UserTypeService:
+			userTypeSpecificFieldsErrs = errors.Join(
+				attributeMappedValueCreate(d, "default_workload_identity", &opts.ObjectProperties.WorkloadIdentity, func(v any) (*sdk.UserObjectWorkloadIdentityProperties, error) {
+					wif, err := parseWorkloadIdentityConfig(v)
+					if err != nil {
+						return nil, err
+					}
+					return &wif, nil
+				}),
+			)
 			opts.ObjectProperties.Type = sdk.Pointer(sdk.UserTypeService)
 		}
 		if userTypeSpecificFieldsErrs != nil {
@@ -417,7 +438,8 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 
 func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -511,6 +533,7 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			setFromStringProperty(d, "comment", userDetails.Comment),
 			// can't read disable_mfa
 			d.Set("user_type", u.Type),
+			// default_workload_identity handled separately for proper user types,
 
 			func(rd *schema.ResourceData, ud *sdk.UserDetails) error {
 				var errs error
@@ -521,13 +544,35 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 						setFromStringProperty(rd, "last_name", ud.LastName),
 					)
 				}
+				providerCtx := meta.(*provider.Context)
+				if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) &&
+					(userType == sdk.UserTypeService || userType == sdk.UserTypeLegacyService) {
+					wifMethods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+					if err != nil {
+						return err
+					}
+
+					defaultWIF, err := collections.FindFirst(wifMethods, func(m sdk.UserWorkloadIdentityAuthenticationMethod) bool {
+						return m.Name == "DEFAULT"
+					})
+					switch {
+					case errors.Is(err, collections.ErrObjectNotFound):
+						errs = errors.Join(errs, d.Set("default_workload_identity", nil))
+					// TODO(SNOW-3003261): Handle AWS type externally
+					case err == nil && defaultWIF.Type != sdk.WIFTypeAWS:
+						errs = errors.Join(errs, d.Set("default_workload_identity", flattenWorkloadIdentityMethod(defaultWIF)))
+					default:
+						errs = errors.Join(errs, err)
+					}
+				}
+
 				return errs
 			}(d, userDetails),
 
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			handleUserParameterRead(d, userParameters),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.UserToSchema(u)}),
-			d.Set(ParametersAttributeName, []map[string]any{schemas.UserParametersToSchema(userParameters)}),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.UserParametersToSchema(userParameters, providerCtx)}),
 		)
 		if errs != nil {
 			return diag.FromErr(err)
@@ -539,7 +584,11 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 
 func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
+		if ok := d.HasChange("default_workload_identity"); ok && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity, providerCtx.EnabledExperiments) {
+			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
+		}
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -617,6 +666,11 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		case sdk.UserTypeLegacyService:
 			userTypeSpecificFieldsErrs = errors.Join(
 				booleanStringAttributeUpdate(d, "must_change_password", &setObjectProperties.MustChangePassword, &unsetObjectProperties.MustChangePassword),
+				attributeMappedValueUpdate(d, "default_workload_identity", &setObjectProperties.WorkloadIdentity, &unsetObjectProperties.WorkloadIdentity, parseWorkloadIdentityConfig),
+			)
+		case sdk.UserTypeService:
+			userTypeSpecificFieldsErrs = errors.Join(
+				attributeMappedValueUpdate(d, "default_workload_identity", &setObjectProperties.WorkloadIdentity, &unsetObjectProperties.WorkloadIdentity, parseWorkloadIdentityConfig),
 			)
 		}
 		if userTypeSpecificFieldsErrs != nil {
@@ -717,3 +771,110 @@ var DeleteUser = ResourceDeleteContextFunc(
 	sdk.ParseAccountObjectIdentifier,
 	func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] { return client.Users.DropSafely },
 )
+
+// parseWorkloadIdentityConfig parses the default_workload_identity block from ResourceData
+// and returns the SDK representation for use in Create/Update operations.
+// Note: The error return is required to match the signature expected by attributeMappedValueCreate/Update,
+// but this function never returns an error because schema validation ensures the correct structure.
+func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityProperties, error) {
+	wifConfig := v.([]any)
+	if len(wifConfig) == 0 {
+		return sdk.UserObjectWorkloadIdentityProperties{}, nil
+	}
+	config := wifConfig[0].(map[string]any)
+	wif := sdk.UserObjectWorkloadIdentityProperties{}
+
+	if awsConfig, ok := config["aws"].([]any); ok && len(awsConfig) > 0 {
+		aws := awsConfig[0].(map[string]any)
+		wif.AwsType = &sdk.UserObjectWorkloadIdentityAws{
+			Arn: sdk.String(aws["arn"].(string)),
+		}
+	}
+
+	if gcpConfig, ok := config["gcp"].([]any); ok && len(gcpConfig) > 0 {
+		gcp := gcpConfig[0].(map[string]any)
+		wif.GcpType = &sdk.UserObjectWorkloadIdentityGcp{
+			Subject: sdk.String(gcp["subject"].(string)),
+		}
+	}
+
+	if azureConfig, ok := config["azure"].([]any); ok && len(azureConfig) > 0 {
+		azure := azureConfig[0].(map[string]any)
+		wif.AzureType = &sdk.UserObjectWorkloadIdentityAzure{
+			Issuer:  sdk.String(azure["issuer"].(string)),
+			Subject: sdk.String(azure["subject"].(string)),
+		}
+	}
+
+	if oidcConfig, ok := config["oidc"].([]any); ok && len(oidcConfig) > 0 {
+		oidc := oidcConfig[0].(map[string]any)
+		var audiences []sdk.StringListItemWrapper
+		if oidc["oidc_audience_list"] != nil {
+			audienceList := oidc["oidc_audience_list"].([]any)
+			audiences = make([]sdk.StringListItemWrapper, len(audienceList))
+			for i, v := range audienceList {
+				audiences[i] = sdk.StringListItemWrapper{Value: v.(string)}
+			}
+		}
+		wif.OidcType = &sdk.UserObjectWorkloadIdentityOidc{
+			Issuer:           sdk.String(oidc["issuer"].(string)),
+			Subject:          sdk.String(oidc["subject"].(string)),
+			OidcAudienceList: audiences,
+		}
+	}
+
+	return wif, nil
+}
+
+// flattenWorkloadIdentityMethod converts an SDK UserWorkloadIdentityAuthenticationMethod
+// to a map suitable for setting in Terraform state.
+func flattenWorkloadIdentityMethod(wif *sdk.UserWorkloadIdentityAuthenticationMethod) []any {
+	if wif == nil {
+		return nil
+	}
+
+	result := make(map[string]any)
+
+	switch wif.Type {
+	case sdk.WIFTypeAWS:
+		if wif.AwsAdditionalInfo != nil {
+			result["aws"] = []any{
+				// TODO(SNOW-3003261): Read or construct the ARN from the additional info
+				map[string]any{},
+			}
+		}
+	case sdk.WIFTypeGCP:
+		if wif.GcpAdditionalInfo != nil {
+			result["gcp"] = []any{
+				map[string]any{
+					"subject": wif.GcpAdditionalInfo.Subject,
+				},
+			}
+		}
+	case sdk.WIFTypeAzure:
+		if wif.AzureAdditionalInfo != nil {
+			result["azure"] = []any{
+				map[string]any{
+					"issuer":  wif.AzureAdditionalInfo.Issuer,
+					"subject": wif.AzureAdditionalInfo.Subject,
+				},
+			}
+		}
+	case sdk.WIFTypeOIDC:
+		if wif.OidcAdditionalInfo != nil {
+			result["oidc"] = []any{
+				map[string]any{
+					"issuer":             wif.OidcAdditionalInfo.Issuer,
+					"subject":            wif.OidcAdditionalInfo.Subject,
+					"oidc_audience_list": wif.OidcAdditionalInfo.AudienceList,
+				},
+			}
+		}
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+
+	return []any{result}
+}

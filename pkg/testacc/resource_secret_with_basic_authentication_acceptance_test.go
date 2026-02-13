@@ -22,7 +22,7 @@ import (
 )
 
 func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
-	testenvs.SkipTestIfSetTo(t, testenvs.SnowflakeTestingEnvironment, string(testenvs.SnowflakeNonProdEnvironment), "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
+	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{string(testenvs.SnowflakeNonProdEnvironment), string(testenvs.SnowflakePreProdGovEnvironment)}, "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()

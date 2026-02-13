@@ -94,9 +94,6 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 			{Method: AuthenticationMethodsSaml},
 			{Method: AuthenticationMethodsPassword},
 		}
-		opts.MfaAuthenticationMethods = []MfaAuthenticationMethods{
-			{Method: MfaAuthenticationMethodsPassword},
-		}
 		opts.MfaEnrollment = Pointer(MfaEnrollmentOptional)
 		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
 			EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationAll),
@@ -126,7 +123,7 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 		}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE AUTHENTICATION POLICY %s AUTHENTICATION_METHODS = ('SAML', 'PASSWORD')"+
-			" MFA_AUTHENTICATION_METHODS = ('PASSWORD') MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY'))"+
+			" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY'))"+
 			" CLIENT_TYPES = ('DRIVERS', 'SNOWSQL') SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)"+
 			" WORKLOAD_IDENTITY_POLICY = (ALLOWED_PROVIDERS = ('ALL') ALLOWED_AWS_ACCOUNTS = ('1234567890') ALLOWED_AZURE_ISSUERS = ('https://login.microsoftonline.com/1234567890/v2.0')"+
 			" ALLOWED_OIDC_ISSUERS = ('https://oidc.example.com')) COMMENT = 'some comment'", id.FullyQualifiedName())
@@ -171,10 +168,10 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.AuthenticationMethods opts.Set.MfaAuthenticationMethods opts.Set.MfaEnrollment opts.Set.ClientTypes opts.Set.SecurityIntegrations opts.Set.Comment opts.Set.MfaPolicy opts.Set.PatPolicy opts.Set.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.AuthenticationMethods opts.Set.MfaEnrollment opts.Set.ClientTypes opts.Set.SecurityIntegrations opts.Set.Comment opts.Set.MfaPolicy opts.Set.PatPolicy opts.Set.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AuthenticationPolicySet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaAuthenticationMethods", "MfaEnrollment", "ClientTypes", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaEnrollment", "ClientTypes", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.MfaPolicy.EnforceMfaOnExternalAuthentication opts.Set.MfaPolicy.AllowedMethods] should be set", func(t *testing.T) {
@@ -220,10 +217,10 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.ClientTypes opts.Unset.AuthenticationMethods opts.Unset.Comment opts.Unset.SecurityIntegrations opts.Unset.MfaAuthenticationMethods opts.Unset.MfaEnrollment opts.Unset.MfaPolicy opts.Unset.PatPolicy opts.Unset.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Unset.ClientTypes opts.Unset.AuthenticationMethods opts.Unset.Comment opts.Unset.SecurityIntegrations opts.Unset.MfaEnrollment opts.Unset.MfaPolicy opts.Unset.PatPolicy opts.Unset.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &AuthenticationPolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaAuthenticationMethods", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
 	})
 
 	// all variants added manually
@@ -243,9 +240,6 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		opts.Set = &AuthenticationPolicySet{
 			AuthenticationMethods: []AuthenticationMethods{
 				{Method: AuthenticationMethodsSaml},
-			},
-			MfaAuthenticationMethods: []MfaAuthenticationMethods{
-				{Method: MfaAuthenticationMethodsPassword},
 			},
 			MfaEnrollment: Pointer(MfaEnrollmentOptional),
 			MfaPolicy: &AuthenticationPolicyMfaPolicy{
@@ -276,7 +270,7 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 			},
 			Comment: String("some comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s SET AUTHENTICATION_METHODS = ('SAML') MFA_AUTHENTICATION_METHODS = ('PASSWORD')"+
+		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s SET AUTHENTICATION_METHODS = ('SAML')"+
 			" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY')) CLIENT_TYPES = ('DRIVERS', 'SNOWSQL')"+
 			" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)"+
 			" WORKLOAD_IDENTITY_POLICY = (ALLOWED_PROVIDERS = ('ALL') ALLOWED_AWS_ACCOUNTS = ('1234567890') ALLOWED_AZURE_ISSUERS = ('https://login.microsoftonline.com/1234567890/v2.0')"+
@@ -295,17 +289,16 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.Unset = &AuthenticationPolicyUnset{
-			ClientTypes:              Bool(true),
-			AuthenticationMethods:    Bool(true),
-			SecurityIntegrations:     Bool(true),
-			MfaAuthenticationMethods: Bool(true),
-			MfaEnrollment:            Bool(true),
-			MfaPolicy:                Bool(true),
-			PatPolicy:                Bool(true),
-			WorkloadIdentityPolicy:   Bool(true),
-			Comment:                  Bool(true),
+			ClientTypes:            Bool(true),
+			AuthenticationMethods:  Bool(true),
+			SecurityIntegrations:   Bool(true),
+			MfaEnrollment:          Bool(true),
+			MfaPolicy:              Bool(true),
+			PatPolicy:              Bool(true),
+			WorkloadIdentityPolicy: Bool(true),
+			Comment:                Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s UNSET CLIENT_TYPES, AUTHENTICATION_METHODS, SECURITY_INTEGRATIONS, MFA_AUTHENTICATION_METHODS, MFA_ENROLLMENT, MFA_POLICY, PAT_POLICY, WORKLOAD_IDENTITY_POLICY, COMMENT", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s UNSET CLIENT_TYPES, AUTHENTICATION_METHODS, SECURITY_INTEGRATIONS, MFA_ENROLLMENT, MFA_POLICY, PAT_POLICY, WORKLOAD_IDENTITY_POLICY, COMMENT", id.FullyQualifiedName())
 	})
 
 	t.Run("alter: renameTo", func(t *testing.T) {

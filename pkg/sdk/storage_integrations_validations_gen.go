@@ -41,6 +41,42 @@ func (opts *AlterStorageIntegrationOptions) validate() error {
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterStorageIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
+	if valueSet(opts.Set) {
+		if everyValueSet(opts.Set.S3Params, opts.Set.AzureParams) {
+			errs = append(errs, errOneOf("AlterStorageIntegrationOptions.Set", "S3Params", "AzureParams"))
+		}
+		if !anyValueSet(opts.Set.S3Params, opts.Set.AzureParams, opts.Set.Enabled, opts.Set.StorageAllowedLocations, opts.Set.StorageBlockedLocations, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterStorageIntegrationOptions.Set", "S3Params", "AzureParams", "Enabled", "StorageAllowedLocations", "StorageBlockedLocations", "Comment"))
+		}
+		if valueSet(opts.Set.S3Params) {
+			if !anyValueSet(opts.Set.S3Params.StorageAwsRoleArn, opts.Set.S3Params.StorageAwsExternalId, opts.Set.S3Params.StorageAwsObjectAcl, opts.Set.S3Params.UsePrivatelinkEndpoint) {
+				errs = append(errs, errAtLeastOneOf("AlterStorageIntegrationOptions.Set.S3Params", "StorageAwsRoleArn", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"))
+			}
+		}
+		if valueSet(opts.Set.AzureParams) {
+			if !anyValueSet(opts.Set.AzureParams.AzureTenantId, opts.Set.AzureParams.UsePrivatelinkEndpoint) {
+				errs = append(errs, errAtLeastOneOf("AlterStorageIntegrationOptions.Set.AzureParams", "AzureTenantId", "UsePrivatelinkEndpoint"))
+			}
+		}
+	}
+	if valueSet(opts.Unset) {
+		if everyValueSet(opts.Unset.S3Params, opts.Unset.AzureParams) {
+			errs = append(errs, errOneOf("AlterStorageIntegrationOptions.Unset", "S3Params", "AzureParams"))
+		}
+		if !anyValueSet(opts.Unset.S3Params, opts.Unset.AzureParams, opts.Unset.Enabled, opts.Unset.StorageBlockedLocations, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset", "S3Params", "AzureParams", "Enabled", "StorageBlockedLocations", "Comment"))
+		}
+		if valueSet(opts.Unset.S3Params) {
+			if !anyValueSet(opts.Unset.S3Params.StorageAwsExternalId, opts.Unset.S3Params.StorageAwsObjectAcl, opts.Unset.S3Params.UsePrivatelinkEndpoint) {
+				errs = append(errs, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.S3Params", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"))
+			}
+		}
+		if valueSet(opts.Unset.AzureParams) {
+			if !anyValueSet(opts.Unset.AzureParams.UsePrivatelinkEndpoint) {
+				errs = append(errs, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.AzureParams", "UsePrivatelinkEndpoint"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 

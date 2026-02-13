@@ -19,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -1207,6 +1208,7 @@ func TestAcc_User_migrateFromVersion094_defaultSecondaryRolesSet(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModelWithOptionAll := model.UserWithDefaultMeta(id.Name()).WithDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1215,9 +1217,9 @@ func TestAcc_User_migrateFromVersion094_defaultSecondaryRolesSet(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config: fmt.Sprintf(`
+				Config: providerConfig + fmt.Sprintf(`
 resource "snowflake_user" "test" {
 	name = "%s"
 	default_secondary_roles = ["ALL"]
@@ -1499,6 +1501,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModel := model.User("w", userId.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1508,8 +1511,8 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
-				Config:            config.FromModels(t, userModel),
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
+				Config:            providerConfig + config.FromModels(t, userModel),
 				ExpectError:       regexp.MustCompile("\"default_namespace\": converting NULL to string is unsupported"),
 			},
 			{

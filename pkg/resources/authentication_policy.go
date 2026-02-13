@@ -58,9 +58,9 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 			ValidateDiagFunc: sdkValidation(sdk.ToMfaAuthenticationMethodsOption),
 		},
 		Optional:         true,
-		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("mfa_authentication_methods", sdk.ToMfaAuthenticationMethodsOption),
+		DiffSuppressFunc: ignoreAlwaysSuppressFunc,
 		Description:      fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethods)),
-		Deprecated:       "This field is deprecated and will be removed in the future. The new field `ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION` will be added in the next versions of the provider. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
+		Deprecated:       "This field is deprecated and will be removed in the future. Currently, it has no effect. Use the new `enforce_mfa_on_external_authentication` field instead. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
 	},
 	"mfa_enrollment": {
 		Type:     schema.TypeString,
@@ -346,20 +346,6 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		req.WithAuthenticationMethods(authenticationMethods)
 	}
 
-	// TODO(SNOW-2454947): Remove this once the 2025_06 is generally enabled.
-	if v, ok := d.GetOk("mfa_authentication_methods"); ok {
-		mfaAuthenticationMethodsRawList := expandStringList(v.(*schema.Set).List())
-		mfaAuthenticationMethods := make([]sdk.MfaAuthenticationMethods, len(mfaAuthenticationMethodsRawList))
-		for i, v := range mfaAuthenticationMethodsRawList {
-			option, err := sdk.ToMfaAuthenticationMethodsOption(v)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			mfaAuthenticationMethods[i] = sdk.MfaAuthenticationMethods{Method: option}
-		}
-		req.WithMfaAuthenticationMethods(mfaAuthenticationMethods)
-	}
-
 	if v, ok := d.GetOk("client_types"); ok {
 		clientTypesRawList := expandStringList(v.(*schema.Set).List())
 		clientTypes := make([]sdk.ClientTypes, len(clientTypesRawList))
@@ -641,26 +627,6 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 			set.WithAuthenticationMethods(authenticationMethodsValues)
 		} else {
 			unset.WithAuthenticationMethods(true)
-		}
-	}
-
-	// TODO(SNOW-2454947): Remove this once the 2025_06 is generally enabled.
-	// change to mfa authentication methods
-	if d.HasChange("mfa_authentication_methods") {
-		if v, ok := d.GetOk("mfa_authentication_methods"); ok {
-			mfaAuthenticationMethods := expandStringList(v.(*schema.Set).List())
-			mfaAuthenticationMethodsValues := make([]sdk.MfaAuthenticationMethods, len(mfaAuthenticationMethods))
-			for i, v := range mfaAuthenticationMethods {
-				option, err := sdk.ToMfaAuthenticationMethodsOption(v)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				mfaAuthenticationMethodsValues[i] = sdk.MfaAuthenticationMethods{Method: option}
-			}
-
-			set.WithMfaAuthenticationMethods(mfaAuthenticationMethodsValues)
-		} else {
-			unset.WithMfaAuthenticationMethods(true)
 		}
 	}
 

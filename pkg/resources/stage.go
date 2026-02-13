@@ -108,6 +108,8 @@ func Stage() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		DeprecationMessage: deprecatedResourceDescription(string(resources.InternalStage), string(resources.ExternalS3Stage), string(resources.ExternalS3CompatibleStage), string(resources.ExternalGcsStage), string(resources.ExternalAzureStage)),
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StageResource), TrackingCreateWrapper(resources.Stage, CreateStage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StageResource), TrackingReadWrapper(resources.Stage, ReadStage)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StageResource), TrackingUpdateWrapper(resources.Stage, UpdateStage)),
@@ -252,8 +254,14 @@ func ReadStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("storage_integration", stage.StorageIntegration); err != nil {
-		return diag.FromErr(err)
+	if stage.StorageIntegration != nil {
+		if err := d.Set("storage_integration", stage.StorageIntegration.Name()); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		if err := d.Set("storage_integration", ""); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if err := d.Set("comment", stage.Comment); err != nil {

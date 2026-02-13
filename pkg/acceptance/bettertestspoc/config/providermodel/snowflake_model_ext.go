@@ -2,6 +2,7 @@ package providermodel
 
 import (
 	"encoding/json"
+	"testing"
 
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
@@ -169,4 +170,32 @@ func PatConfig(h helpers.TmpServiceUserWithPat) *SnowflakeModel {
 		WithOrganizationName(h.AccountId.OrganizationName()).
 		WithAccountName(h.AccountId.AccountName()).
 		WithWarehouseId(h.WarehouseId)
+}
+
+// V097CompatibleProviderConfig returns a provider config for testing
+// migration from v0.97 compatible provider configurations.
+func V097CompatibleProviderConfig(t *testing.T) string {
+	t.Helper()
+	providerModel, privateKeyVar, passphraseVar := V097CompatibleProviderModels()
+	return config.FromModels(t, providerModel, privateKeyVar, passphraseVar)
+}
+
+// V097CompatibleProviderModels returns a provider model and variable models for testing.
+// The variable names are uppercase because GitHub forces all env variables to be uppercase.
+// Values are provided via TF_VAR_* environment variables, not ConfigVariables.
+func V097CompatibleProviderModels() (*SnowflakeModel, *config.VariableModel, *config.VariableModel) {
+	const (
+		privateKeyVarName = "V097_COMPATIBLE_PRIVATE_KEY"
+		passphraseVarName = "V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE"
+	)
+
+	providerModel := SnowflakeProvider().
+		WithAuthenticatorType("JWT").
+		WithPrivateKeyValue(config.VariableReference(privateKeyVarName)).
+		WithPrivateKeyPassphraseValue(config.VariableReference(passphraseVarName))
+
+	privateKeyVar := config.StringVariable(privateKeyVarName).WithSensitive(true)
+	passphraseVar := config.StringVariable(passphraseVarName).WithSensitive(true)
+
+	return providerModel, privateKeyVar, passphraseVar
 }

@@ -32,6 +32,7 @@ type LegacyServiceUserModel struct {
 	DefaultRole                              tfconfig.Variable `json:"default_role,omitempty"`
 	DefaultSecondaryRolesOption              tfconfig.Variable `json:"default_secondary_roles_option,omitempty"`
 	DefaultWarehouse                         tfconfig.Variable `json:"default_warehouse,omitempty"`
+	DefaultWorkloadIdentity                  tfconfig.Variable `json:"default_workload_identity,omitempty"`
 	Disabled                                 tfconfig.Variable `json:"disabled,omitempty"`
 	DisplayName                              tfconfig.Variable `json:"display_name,omitempty"`
 	Email                                    tfconfig.Variable `json:"email,omitempty"`
@@ -247,6 +248,8 @@ func (l *LegacyServiceUserModel) WithDefaultWarehouse(defaultWarehouse string) *
 	l.DefaultWarehouse = tfconfig.StringVariable(defaultWarehouse)
 	return l
 }
+
+// default_workload_identity attribute type is not yet supported, so WithDefaultWorkloadIdentity can't be generated
 
 func (l *LegacyServiceUserModel) WithDisabled(disabled string) *LegacyServiceUserModel {
 	l.Disabled = tfconfig.StringVariable(disabled)
@@ -629,6 +632,11 @@ func (l *LegacyServiceUserModel) WithDefaultSecondaryRolesOptionValue(value tfco
 
 func (l *LegacyServiceUserModel) WithDefaultWarehouseValue(value tfconfig.Variable) *LegacyServiceUserModel {
 	l.DefaultWarehouse = value
+	return l
+}
+
+func (l *LegacyServiceUserModel) WithDefaultWorkloadIdentityValue(value tfconfig.Variable) *LegacyServiceUserModel {
+	l.DefaultWorkloadIdentity = value
 	return l
 }
 

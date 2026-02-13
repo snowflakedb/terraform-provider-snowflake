@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -26,7 +27,7 @@ import (
 )
 
 func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
-	testenvs.SkipTestIfSetTo(t, testenvs.SnowflakeTestingEnvironment, string(testenvs.SnowflakeNonProdEnvironment), "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
+	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{string(testenvs.SnowflakeNonProdEnvironment), string(testenvs.SnowflakePreProdGovEnvironment)}, "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
@@ -338,6 +339,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_invalidIncom
 
 func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -346,9 +348,9 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_migrateFromV
 		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            apiAuthenticationIntegrationWithAuthorizationCodeGrantBasicConfig(id.Name()),
+				Config:            providerConfig + apiAuthenticationIntegrationWithAuthorizationCodeGrantBasicConfig(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_authorization_code_grant.test", "id", id.Name()),
 				),
@@ -368,6 +370,7 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_migrateFromV
 func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_WithQuotedName(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`\"%s\"`, id.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -376,10 +379,10 @@ func TestAcc_ApiAuthenticationIntegrationWithAuthorizationCodeGrant_WithQuotedNa
 		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             apiAuthenticationIntegrationWithAuthorizationCodeGrantBasicConfig(quotedId),
+				Config:             providerConfig + apiAuthenticationIntegrationWithAuthorizationCodeGrantBasicConfig(quotedId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_authorization_code_grant.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_authorization_code_grant.test", "id", id.Name()),

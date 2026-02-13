@@ -27,6 +27,20 @@ func (opts *CreateInternalStageOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateInternalStageOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.Encryption) {
+		if !exactlyOneValueSet(opts.Encryption.SnowflakeFull, opts.Encryption.SnowflakeSse) {
+			errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateInternalStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -42,6 +56,9 @@ func (opts *CreateOnS3StageOptions) validate() error {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
 			errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 		}
+		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.UsePrivatelinkEndpoint) {
+			errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+		}
 		if valueSet(opts.ExternalStageParams.Credentials) {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsKeyId, opts.ExternalStageParams.Credentials.AwsRole) {
 				errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
@@ -52,6 +69,20 @@ func (opts *CreateOnS3StageOptions) validate() error {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsToken, opts.ExternalStageParams.Credentials.AwsRole) {
 				errs = append(errs, errOneOf("CreateOnS3StageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
 			}
+		}
+		if valueSet(opts.ExternalStageParams.Encryption) {
+			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.AwsCse, opts.ExternalStageParams.Encryption.AwsSseS3, opts.ExternalStageParams.Encryption.AwsSseKms, opts.ExternalStageParams.Encryption.None) {
+				errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.ExternalStageParams.Encryption", "AwsCse", "AwsSseS3", "AwsSseKms", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnS3StageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
 		}
 	}
 	return JoinErrors(errs...)
@@ -64,6 +95,22 @@ func (opts *CreateOnGCSStageOptions) validate() error {
 	var errs []error
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOnGCSStageOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.ExternalStageParams) {
+		if valueSet(opts.ExternalStageParams.Encryption) {
+			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.GcsSseKms, opts.ExternalStageParams.Encryption.None) {
+				errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnGCSStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -80,6 +127,23 @@ func (opts *CreateOnAzureStageOptions) validate() error {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
 			errs = append(errs, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 		}
+		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.UsePrivatelinkEndpoint) {
+			errs = append(errs, errOneOf("CreateOnAzureStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+		}
+		if valueSet(opts.ExternalStageParams.Encryption) {
+			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.AzureCse, opts.ExternalStageParams.Encryption.None) {
+				errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.ExternalStageParams.Encryption", "AzureCse", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnAzureStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -91,6 +155,15 @@ func (opts *CreateOnS3CompatibleStageOptions) validate() error {
 	var errs []error
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOnS3CompatibleStageOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("CreateOnS3CompatibleStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -106,9 +179,6 @@ func (opts *AlterStageOptions) validate() error {
 	if !exactlyOneValueSet(opts.RenameTo, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterStageOptions", "RenameTo", "SetTags", "UnsetTags"))
 	}
-	if everyValueSet(opts.IfExists, opts.UnsetTags) {
-		errs = append(errs, errOneOf("AlterStageOptions", "IfExists", "UnsetTags"))
-	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
@@ -122,6 +192,15 @@ func (opts *AlterInternalStageStageOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -138,6 +217,9 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
 			errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
 		}
+		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.UsePrivatelinkEndpoint) {
+			errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+		}
 		if valueSet(opts.ExternalStageParams.Credentials) {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsKeyId, opts.ExternalStageParams.Credentials.AwsRole) {
 				errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsKeyId", "AwsRole"))
@@ -148,6 +230,20 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 			if everyValueSet(opts.ExternalStageParams.Credentials.AwsToken, opts.ExternalStageParams.Credentials.AwsRole) {
 				errs = append(errs, errOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Credentials", "AwsToken", "AwsRole"))
 			}
+		}
+		if valueSet(opts.ExternalStageParams.Encryption) {
+			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.AwsCse, opts.ExternalStageParams.Encryption.AwsSseS3, opts.ExternalStageParams.Encryption.AwsSseKms, opts.ExternalStageParams.Encryption.None) {
+				errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.ExternalStageParams.Encryption", "AwsCse", "AwsSseS3", "AwsSseKms", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalS3StageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
 		}
 	}
 	return JoinErrors(errs...)
@@ -160,6 +256,22 @@ func (opts *AlterExternalGCSStageStageOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.ExternalStageParams) {
+		if valueSet(opts.ExternalStageParams.Encryption) {
+			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.GcsSseKms, opts.ExternalStageParams.Encryption.None) {
+				errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.ExternalStageParams.Encryption", "GcsSseKms", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalGCSStageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -175,6 +287,23 @@ func (opts *AlterExternalAzureStageStageOptions) validate() error {
 	if valueSet(opts.ExternalStageParams) {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
 			errs = append(errs, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "Credentials"))
+		}
+		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.UsePrivatelinkEndpoint) {
+			errs = append(errs, errOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams", "StorageIntegration", "UsePrivatelinkEndpoint"))
+		}
+		if valueSet(opts.ExternalStageParams.Encryption) {
+			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.AzureCse, opts.ExternalStageParams.Encryption.None) {
+				errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.ExternalStageParams.Encryption", "AzureCse", "None"))
+			}
+		}
+	}
+	if valueSet(opts.FileFormat) {
+		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, errExactlyOneOf("AlterExternalAzureStageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
+		}
+		// adjusted manually
+		if valueSet(opts.FileFormat.FileFormatOptions) {
+			errs = append(errs, opts.FileFormat.FileFormatOptions.validate())
 		}
 	}
 	return JoinErrors(errs...)
