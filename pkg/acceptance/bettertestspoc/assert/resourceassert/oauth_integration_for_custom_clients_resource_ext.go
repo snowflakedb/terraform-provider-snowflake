@@ -8,8 +8,8 @@ import (
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesList(values ...string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueSet("pre_authorized_roles_list.#", fmt.Sprintf("%d", len(values))))
-	for i, value := range values {
-		o.AddAssertion(assert.ValueSet(fmt.Sprintf("pre_authorized_roles_list.%d", i), value))
+	for _, value := range values {
+		o.AddAssertion(assert.SetElem("pre_authorized_roles_list.*", value))
 	}
 	return o
 }

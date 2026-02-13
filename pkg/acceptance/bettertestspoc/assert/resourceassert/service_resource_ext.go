@@ -10,8 +10,8 @@ import (
 
 func (s *ServiceResourceAssert) HasExternalAccessIntegrations(expected ...sdk.AccountObjectIdentifier) *ServiceResourceAssert {
 	s.AddAssertion(assert.ValueSet("external_access_integrations.#", fmt.Sprintf("%d", len(expected))))
-	for i, v := range expected {
-		s.AddAssertion(assert.ValueSet(fmt.Sprintf("external_access_integrations.%d", i), v.FullyQualifiedName()))
+	for _, v := range expected {
+		s.AddAssertion(assert.SetElem("external_access_integrations.*", v.FullyQualifiedName()))
 	}
 	return s
 }

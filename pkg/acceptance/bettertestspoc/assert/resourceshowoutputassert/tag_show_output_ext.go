@@ -1,7 +1,6 @@
 package resourceshowoutputassert
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -26,8 +25,8 @@ func (s *TagShowOutputAssert) HasCreatedOnNotEmpty() *TagShowOutputAssert {
 
 func (s *TagShowOutputAssert) HasAllowedValues(expected ...string) *TagShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("allowed_values.#", strconv.FormatInt(int64(len(expected)), 10)))
-	for i := range expected {
-		s.AddAssertion(assert.ResourceShowOutputValueSet(fmt.Sprintf("allowed_values.%d", i), expected[i]))
+	for _, v := range expected {
+		s.AddAssertion(assert.ResourceShowOutputSetElem("allowed_values.*", v))
 	}
 	return s
 }

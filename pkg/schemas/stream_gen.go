@@ -44,6 +44,7 @@ var ShowStreamSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// TODO [this PR]: should it be list?
 	"base_tables": {
 		// adjusted manually
 		Type: schema.TypeList,

@@ -42,6 +42,7 @@ var DescribeStreamSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// TODO [this PR]: should it be list? what with other similar situations?
 	"base_tables": {
 		Type: schema.TypeList,
 		Elem: &schema.Schema{

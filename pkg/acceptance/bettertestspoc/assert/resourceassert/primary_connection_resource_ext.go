@@ -7,6 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+// TODO [this PR]: generate assertion InOrder
 func (c *PrimaryConnectionResourceAssert) HasExactlyFailoverToAccountsInOrder(expected ...sdk.AccountIdentifier) *PrimaryConnectionResourceAssert {
 	c.AddAssertion(assert.ValueSet("enable_failover_to_accounts.#", fmt.Sprintf("%d", len(expected))))
 	for i, v := range expected {
