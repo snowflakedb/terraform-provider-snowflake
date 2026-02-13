@@ -22,6 +22,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
 		Required:         true,
+		ForceNew:         true,
 		Description:      "Specifies the identifier for the hybrid table; must be unique for the database and schema in which the table is created.",
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -40,8 +41,9 @@ var hybridTableSchema = map[string]*schema.Schema{
 	"column": {
 		Type:        schema.TypeList,
 		Required:    true,
+		ForceNew:    true,
 		MinItems:    1,
-		Description: "Definitions of columns to create in the hybrid table. Minimum one required.",
+		Description: "Definitions of columns to create in the hybrid table. Minimum one required. Any column changes will force table recreation.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
@@ -256,8 +258,8 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			}
 			rawIndexColumns := expandStringList(indexMap["columns"].([]interface{}))
 
-			// Quote column names to match the quoted names in column definitions
-			indexColumns := quoteColumnNames(rawIndexColumns)
+			// Don't quote column names - SDK will handle identifier formatting
+			indexColumns := rawIndexColumns
 
 			// Create index identifier (SDK will use only the name part in SQL)
 			indexId := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, indexName)
@@ -291,7 +293,8 @@ func getHybridTableColumnRequests(from interface{}) ([]sdk.TableColumnRequest, e
 		if !ok {
 			return nil, fmt.Errorf("column[%d]: name must be a string", i)
 		}
-		columnName := fmt.Sprintf(`"%v"`, colName)
+		// Don't quote column names - let SDK handle identifier formatting
+		columnName := colName
 		columnType, ok := colMap["type"].(string)
 		if !ok {
 			return nil, fmt.Errorf("column[%d]: type must be a string", i)
@@ -336,8 +339,8 @@ func getHybridTableConstraintRequests(from interface{}) ([]sdk.OutOfLineConstrai
 			return nil, fmt.Errorf("constraint[%d]: type must be a string", i)
 		}
 		rawColumns := expandStringList(constraintMap["columns"].([]interface{}))
-		// Quote column names to match the quoted names in column definitions
-		columns := quoteColumnNames(rawColumns)
+		// Don't quote column names - SDK will handle identifier formatting
+		columns := rawColumns
 
 		var sdkConstraintType sdk.ColumnConstraintType
 		switch constraintType {
@@ -368,8 +371,8 @@ func getHybridTableConstraintRequests(from interface{}) ([]sdk.OutOfLineConstrai
 				}
 				tableId := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(tableIdStr)
 				rawFkColumns := expandStringList(fkMap["columns"].([]interface{}))
-				// Quote column names to match the quoted names in column definitions
-				fkColumns := quoteColumnNames(rawFkColumns)
+				// Don't quote column names - SDK will handle identifier formatting
+				fkColumns := rawFkColumns
 
 				fkRequest := sdk.NewOutOfLineForeignKeyRequest(tableId, fkColumns)
 
