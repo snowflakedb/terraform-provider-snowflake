@@ -68,6 +68,14 @@ func (c *TagClient) Set(t *testing.T, objectType sdk.ObjectType, id sdk.ObjectId
 	require.NoError(t, err)
 }
 
+// TrySetOnObject attempts to set a tag on an object and returns the error (if any) instead of failing the test.
+// Useful for verifying whether a tag value assignment is allowed or rejected by Snowflake.
+func (c *TagClient) TrySetOnObject(t *testing.T, objectType sdk.ObjectType, id sdk.ObjectIdentifier, setTags []sdk.TagAssociation) error {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().Set(ctx, sdk.NewSetTagRequest(objectType, id).WithSetTags(setTags))
+}
+
 func (c *TagClient) Alter(t *testing.T, req *sdk.AlterTagRequest) {
 	t.Helper()
 	ctx := context.Background()

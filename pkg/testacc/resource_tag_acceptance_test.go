@@ -20,6 +20,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -292,6 +293,148 @@ func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(tagModel.ResourceReference(), "allowed_values.#", "2")),
 					assert.Check(resource.TestCheckTypeSetElemAttr(tagModel.ResourceReference(), "allowed_values.*", "foo")),
 					assert.Check(resource.TestCheckTypeSetElemAttr(tagModel.ResourceReference(), "allowed_values.*", "bar")),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_Tag_NullableAllowedValues tests the distinction between null (field not specified)
+// and empty set (allowed_values = []) using d.GetRawConfig() in the tag resource.
+//
+// Snowflake semantics:
+// - UNSET ALLOWED_VALUES: any string value is allowed on the tag (permissive, no constraint).
+// - DROP all ALLOWED_VALUES (resulting in zero allowed values): no value can be set on the tag (restrictive).
+//
+// Terraform config mapping:
+// - allowed_values not specified (null) → calls UNSET ALLOWED_VALUES → permissive
+// - allowed_values = [] (empty set)    → calls DROP on all existing values → restrictive
+// - allowed_values = ["v1", "v2"]      → calls ADD/DROP to reach desired set
+//
+// The test verifies this by attempting to set the tag on a table after each state change.
+func TestAcc_Tag_NullableAllowedValues(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	// Create a table to use as a target for tag value assignment verification.
+	table, tableCleanup := testClient().Table.Create(t)
+	t.Cleanup(tableCleanup)
+
+	basic := model.TagBase("test", id)
+	withValues := model.TagBase("test", id).WithAllowedValues("value1", "value2")
+	withEmpty := model.TagBase("test", id).WithAllowedValuesEmpty()
+
+	// trySetTagOnTable attempts to set the tag with a given value on the test table.
+	// Returns nil on success, error on failure.
+	trySetTagOnTable := func(tagValue string) error {
+		return testClient().Tag.TrySetOnObject(t, sdk.ObjectTypeTable, table.ID(), []sdk.TagAssociation{
+			{Name: id, Value: tagValue},
+		})
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Step 1: Create with allowed_values = ["value1", "value2"]
+			// Only "value1" and "value2" should be assignable.
+			{
+				Config: config.FromModels(t, withValues),
+				Check: resource.ComposeTestCheckFunc(
+					assertThat(t,
+						objectassert.Tag(t, id).
+							HasAllowedValuesUnordered("value1", "value2"),
+						resourceassert.TagResource(t, withValues.ResourceReference()).
+							HasAllowedValues("value1", "value2"),
+					),
+					func(_ *terraform.State) error {
+						// Allowed value should succeed
+						if err := trySetTagOnTable("value1"); err != nil {
+							return fmt.Errorf("expected setting tag to allowed value 'value1' to succeed, got: %w", err)
+						}
+						// Non-allowed value should fail
+						if err := trySetTagOnTable("other_value"); err == nil {
+							return fmt.Errorf("expected setting tag to non-allowed value 'other_value' to fail, but it succeeded")
+						}
+						return nil
+					},
+				),
+			},
+			// Step 2: Update to allowed_values = [] (empty set, not null)
+			// Uses DROP to remove all values → restrictive: no value can be assigned.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withEmpty.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withEmpty),
+				Check: resource.ComposeTestCheckFunc(
+					assertThat(t,
+						objectassert.Tag(t, id).
+							HasAllowedValues(),
+						resourceassert.TagResource(t, withEmpty.ResourceReference()).
+							HasAllowedValuesEmpty(),
+						resourceshowoutputassert.TagShowOutput(t, withEmpty.ResourceReference()).
+							HasNoAllowedValues(),
+					),
+					func(_ *terraform.State) error {
+						// After DROP all allowed values, no value should be assignable.
+						if err := trySetTagOnTable("value1"); err == nil {
+							return fmt.Errorf("expected setting tag value to fail after DROP all allowed values (restrictive), but it succeeded")
+						}
+						if err := trySetTagOnTable("any_value"); err == nil {
+							return fmt.Errorf("expected setting tag value to fail after DROP all allowed values (restrictive), but it succeeded")
+						}
+						return nil
+					},
+				),
+			},
+			// Step 3: Set allowed_values again to prepare for the null transition.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withValues.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withValues),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasAllowedValuesUnordered("value1", "value2"),
+					resourceassert.TagResource(t, withValues.ResourceReference()).
+						HasAllowedValues("value1", "value2"),
+				),
+			},
+			// Step 4: Remove allowed_values from config entirely (null)
+			// Uses UNSET ALLOWED_VALUES → permissive: any value can be assigned.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: resource.ComposeTestCheckFunc(
+					assertThat(t,
+						objectassert.Tag(t, id).
+							HasAllowedValues(),
+						resourceassert.TagResource(t, basic.ResourceReference()).
+							HasAllowedValuesEmpty(),
+						resourceshowoutputassert.TagShowOutput(t, basic.ResourceReference()).
+							HasNoAllowedValues(),
+					),
+					func(_ *terraform.State) error {
+						// After UNSET ALLOWED_VALUES, any value should be assignable.
+						if err := trySetTagOnTable("value1"); err != nil {
+							return fmt.Errorf("expected setting tag to 'value1' to succeed after UNSET (permissive), got: %w", err)
+						}
+						if err := trySetTagOnTable("any_arbitrary_value"); err != nil {
+							return fmt.Errorf("expected setting tag to 'any_arbitrary_value' to succeed after UNSET (permissive), got: %w", err)
+						}
+						return nil
+					},
 				),
 			},
 		},

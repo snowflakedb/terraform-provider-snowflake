@@ -146,7 +146,11 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if v, ok := d.GetOk("comment"); ok {
 		request.WithComment(sdk.String(v.(string)))
 	}
-	if v, ok := d.GetOk("allowed_values"); ok {
+	// Using d.GetRawConfig instead of d.GetOk to distinguish between null (field not specified)
+	// and empty set (allowed_values = []). d.GetOk returns ok=false for both null and empty,
+	// while d.GetRawConfig().IsNull() returns true only for null.
+	if !d.GetRawConfig().AsValueMap()["allowed_values"].IsNull() {
+		v := d.Get("allowed_values")
 		request.WithAllowedValues(expandStringListAllowEmpty(v.(*schema.Set).List()))
 	}
 	if err := client.Tags.Create(ctx, request); err != nil {
@@ -244,21 +248,38 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 	if d.HasChange("allowed_values") {
-		o, n := d.GetChange("allowed_values")
-		oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
-		newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
-
-		addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
-
-		if len(addedItems) > 0 {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(addedItems)); err != nil {
+		// Using d.GetRawConfig to distinguish null (field removed from config)
+		// from empty set (allowed_values = []).
+		// This distinction matters because of Snowflake's behavior:
+		// - UNSET ALLOWED_VALUES: any value is allowed (permissive, no constraint)
+		// - DROP all ALLOWED_VALUES: no value is allowed (restrictive)
+		if d.GetRawConfig().AsValueMap()["allowed_values"].IsNull() {
+			// Field was removed from config entirely (null) - the user wants no constraint
+			// on the tag values. Use UNSET ALLOWED_VALUES to make all values permissible.
+			unset := sdk.NewTagUnsetRequest().WithAllowedValues(true)
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(unset)); err != nil {
 				return diag.FromErr(err)
 			}
-		}
+		} else {
+			// Field is present in config (empty or filled) - compute diff and apply
+			// using ADD/DROP. When the result is an empty set, Snowflake treats the tag
+			// as having no allowed values (no value can be assigned).
+			o, n := d.GetChange("allowed_values")
+			oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
+			newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
 
-		if len(removedItems) > 0 {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
-				return diag.FromErr(err)
+			addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
+
+			if len(addedItems) > 0 {
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(addedItems)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
+			if len(removedItems) > 0 {
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
