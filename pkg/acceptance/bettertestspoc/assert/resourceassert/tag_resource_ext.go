@@ -10,7 +10,7 @@ import (
 func (t *TagResourceAssert) HasAllowedValues(expected ...string) *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("allowed_values.#", strconv.FormatInt(int64(len(expected)), 10)))
 	for _, val := range expected {
-		t.AddAssertion(assert.SetElem("allowed_values.*", val))
+		t.AddAssertion(assert.SetElem("allowed_values", val))
 	}
 	return t
 }
@@ -19,7 +19,7 @@ func (t *TagResourceAssert) HasAllowedValues(expected ...string) *TagResourceAss
 func (t *TagResourceAssert) HasMaskingPolicies(expected ...string) *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("masking_policies.#", strconv.FormatInt(int64(len(expected)), 10)))
 	for _, val := range expected {
-		t.AddAssertion(assert.SetElem("masking_policies.*", val))
+		t.AddAssertion(assert.SetElem("masking_policies", val))
 	}
 	return t
 }

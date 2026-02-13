@@ -11,7 +11,7 @@ import (
 func (s *JobServiceResourceAssert) HasExternalAccessIntegrations(expected ...sdk.AccountObjectIdentifier) *JobServiceResourceAssert {
 	s.AddAssertion(assert.ValueSet("external_access_integrations.#", fmt.Sprintf("%d", len(expected))))
 	for _, v := range expected {
-		s.AddAssertion(assert.SetElem("external_access_integrations.*", v.FullyQualifiedName()))
+		s.AddAssertion(assert.SetElem("external_access_integrations", v.FullyQualifiedName()))
 	}
 	return s
 }

@@ -9,7 +9,7 @@ import (
 func (s *StreamlitResourceAssert) HasExternalAccessIntegrations(expected []string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("external_access_integrations.#", strconv.FormatInt(int64(len(expected)), 10)))
 	for _, val := range expected {
-		s.AddAssertion(assert.SetElem("external_access_integrations.*", val))
+		s.AddAssertion(assert.SetElem("external_access_integrations", val))
 	}
 	return s
 }

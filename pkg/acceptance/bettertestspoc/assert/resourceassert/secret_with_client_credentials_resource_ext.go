@@ -9,7 +9,7 @@ import (
 func (s *SecretWithClientCredentialsResourceAssert) HasOauthScopes(expected ...string) *SecretWithClientCredentialsResourceAssert {
 	s.AddAssertion(assert.ValueSet("oauth_scopes.#", fmt.Sprintf("%d", len(expected))))
 	for _, val := range expected {
-		s.AddAssertion(assert.SetElem("oauth_scopes.*", val))
+		s.AddAssertion(assert.SetElem("oauth_scopes", val))
 	}
 	return s
 }
