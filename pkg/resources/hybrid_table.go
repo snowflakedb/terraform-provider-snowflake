@@ -41,15 +41,15 @@ var hybridTableSchema = map[string]*schema.Schema{
 	"column": {
 		Type:        schema.TypeList,
 		Required:    true,
-		ForceNew:    true,
 		MinItems:    1,
-		Description: "Definitions of columns to create in the hybrid table. Minimum one required. Any column changes will force table recreation.",
+		Description: "Definitions of columns to create in the hybrid table. Minimum one required. Column structure changes (add/remove/rename columns) require table recreation, but comment changes can be updated in-place.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Column name",
+					Type:             schema.TypeString,
+					Required:         true,
+					Description:      "Column name",
+					DiffSuppressFunc: suppressColumnNameDiff,
 				},
 				"type": {
 					Type:             schema.TypeString,
@@ -207,6 +207,7 @@ func HybridTable() *schema.Resource {
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
 			validateHybridTableConstraintColumns,
 			validateHybridTableIndexColumns,
+			forceNewOnColumnStructureChange,
 		),
 	}
 }
@@ -258,8 +259,8 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			}
 			rawIndexColumns := expandStringList(indexMap["columns"].([]interface{}))
 
-			// Don't quote column names - SDK will handle identifier formatting
-			indexColumns := rawIndexColumns
+			// Use selective quoting - must match how columns were defined
+			indexColumns := quoteColumnNamesSelectively(rawIndexColumns)
 
 			// Create index identifier (SDK will use only the name part in SQL)
 			indexId := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, indexName)
@@ -293,8 +294,8 @@ func getHybridTableColumnRequests(from interface{}) ([]sdk.TableColumnRequest, e
 		if !ok {
 			return nil, fmt.Errorf("column[%d]: name must be a string", i)
 		}
-		// Don't quote column names - let SDK handle identifier formatting
-		columnName := colName
+		// Use selective quoting - only quote when necessary
+		columnName := quoteIdentifierIfNeeded(colName)
 		columnType, ok := colMap["type"].(string)
 		if !ok {
 			return nil, fmt.Errorf("column[%d]: type must be a string", i)
@@ -339,8 +340,8 @@ func getHybridTableConstraintRequests(from interface{}) ([]sdk.OutOfLineConstrai
 			return nil, fmt.Errorf("constraint[%d]: type must be a string", i)
 		}
 		rawColumns := expandStringList(constraintMap["columns"].([]interface{}))
-		// Don't quote column names - SDK will handle identifier formatting
-		columns := rawColumns
+		// Use selective quoting - must match how columns were defined
+		columns := quoteColumnNamesSelectively(rawColumns)
 
 		var sdkConstraintType sdk.ColumnConstraintType
 		switch constraintType {
@@ -371,8 +372,8 @@ func getHybridTableConstraintRequests(from interface{}) ([]sdk.OutOfLineConstrai
 				}
 				tableId := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(tableIdStr)
 				rawFkColumns := expandStringList(fkMap["columns"].([]interface{}))
-				// Don't quote column names - SDK will handle identifier formatting
-				fkColumns := rawFkColumns
+				// Use selective quoting - must match how columns were defined
+				fkColumns := quoteColumnNamesSelectively(rawFkColumns)
 
 				fkRequest := sdk.NewOutOfLineForeignKeyRequest(tableId, fkColumns)
 
@@ -432,6 +433,20 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 		return diag.FromErr(fmt.Errorf("failed to set fully_qualified_name for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 
+	// Build a map of configured column names (preserve user's casing)
+	// This is important because Snowflake may return names in normalized form
+	configColumns := d.Get("column").([]interface{})
+	configColumnNames := make(map[string]string) // map normalized name to original casing
+	for _, c := range configColumns {
+		colMap := c.(map[string]interface{})
+		colName := colMap["name"].(string)
+		// Map the normalized form to the original name
+		normalizedName := NormalizeIdentifier(colName)
+		configColumnNames[normalizedName] = colName
+		// Also map the exact name
+		configColumnNames[colName] = colName
+	}
+
 	// Get column details
 	columnDetails, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(id))
 	if err != nil {
@@ -459,8 +474,39 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 			normalizedType = strings.Replace(normalizedType, "(9)", "", 1)
 		}
 
+		// Determine the column name to store in state
+		// Priority: 1) Use configured name if available, 2) Infer from Snowflake's name
+		columnName := col.Name
+		if len(configColumnNames) > 0 {
+			// During normal read/refresh: use configured name
+			if configName, ok := configColumnNames[col.Name]; ok {
+				columnName = configName
+			} else if configName, ok := configColumnNames[strings.ToUpper(col.Name)]; ok {
+				columnName = configName
+			}
+		} else {
+			// During import (config is empty): infer original name
+			// If the returned name is all uppercase and contains only alphanumeric + underscore,
+			// it was likely a simple unquoted identifier - convert to lowercase for user-friendliness
+			isSimpleUppercase := true
+			for _, r := range col.Name {
+				if r == '_' || (r >= '0' && r <= '9') {
+					continue
+				}
+				if r < 'A' || r > 'Z' {
+					isSimpleUppercase = false
+					break
+				}
+			}
+			if isSimpleUppercase && len(col.Name) > 0 {
+				// Likely was a simple identifier - use lowercase
+				columnName = strings.ToLower(col.Name)
+			}
+			// Otherwise keep the name as Snowflake returned it (mixed case, special chars were quoted)
+		}
+
 		column := map[string]interface{}{
-			"name":     col.Name,
+			"name":     columnName,
 			"type":     normalizedType,
 			"nullable": col.IsNullable,
 		}
@@ -578,6 +624,54 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		}
 	}
 
+	// Handle column comment changes (only comments can be updated, not structure)
+	if d.HasChange("column") {
+		oldCols, newCols := d.GetChange("column")
+		oldColsList := oldCols.([]interface{})
+		newColsList := newCols.([]interface{})
+
+		// If the number of columns changed, this should force recreation
+		// But comment-only changes can be handled
+		if len(oldColsList) == len(newColsList) {
+			for i := range newColsList {
+				oldColMap := oldColsList[i].(map[string]interface{})
+				newColMap := newColsList[i].(map[string]interface{})
+
+				oldName := oldColMap["name"].(string)
+				newName := newColMap["name"].(string)
+
+				// Only handle comment changes for the same column
+				if oldName == newName {
+					oldComment, oldCommentOk := oldColMap["comment"].(string)
+					newComment, newCommentOk := newColMap["comment"].(string)
+
+					if oldCommentOk || newCommentOk {
+						if oldComment != newComment {
+							// Update column comment via ALTER TABLE
+							columnName := quoteIdentifierIfNeeded(newName)
+
+							if newComment != "" {
+								// Set comment
+								alterSQL := fmt.Sprintf("ALTER COLUMN %s COMMENT '%s'", columnName, strings.ReplaceAll(newComment, "'", "''"))
+								_, err := client.ExecForTests(ctx, fmt.Sprintf("ALTER TABLE %s %s", id.FullyQualifiedName(), alterSQL))
+								if err != nil {
+									return diag.FromErr(fmt.Errorf("error updating column comment for %s: %w", columnName, err))
+								}
+							} else {
+								// Unset comment
+								alterSQL := fmt.Sprintf("ALTER COLUMN %s UNSET COMMENT", columnName)
+								_, err := client.ExecForTests(ctx, fmt.Sprintf("ALTER TABLE %s %s", id.FullyQualifiedName(), alterSQL))
+								if err != nil {
+									return diag.FromErr(fmt.Errorf("error unsetting column comment for %s: %w", columnName, err))
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// Handle index changes
 	if d.HasChange("index") {
 		oldIndexes, newIndexes := d.GetChange("index")
@@ -603,9 +697,15 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		for indexName := range oldIndexMap {
 			if _, exists := newIndexMap[indexName]; !exists {
 				indexId := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), id.SchemaName(), indexName)
-				dropRequest := sdk.NewDropIndexRequest(indexId)
+				dropRequest := sdk.NewDropIndexRequest(indexId).WithIfExists(sdk.Bool(true))
 				err := client.Tables.DropIndex(ctx, dropRequest)
 				if err != nil {
+					// If the error is about table not existing, it might be during table recreation
+					// or an SDK issue with identifier formatting - skip if IF EXISTS is set
+					if strings.Contains(err.Error(), "does not exist") {
+						// Index already gone, continue
+						continue
+					}
 					return diag.FromErr(fmt.Errorf("error dropping index %v: %w", indexName, err))
 				}
 			}
@@ -614,8 +714,10 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		// Create new indexes
 		for indexName, columns := range newIndexMap {
 			if _, exists := oldIndexMap[indexName]; !exists {
+				// Apply selective quoting to match column definitions
+				quotedColumns := quoteColumnNamesSelectively(columns)
 				indexId := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), id.SchemaName(), indexName)
-				createRequest := sdk.NewCreateIndexRequest(indexId, id, columns)
+				createRequest := sdk.NewCreateIndexRequest(indexId, id, quotedColumns)
 				err := client.Tables.CreateIndex(ctx, createRequest)
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error creating index %v: %w", indexName, err))
@@ -753,4 +855,78 @@ func getColumnNames(columns []interface{}) []string {
 		}
 	}
 	return names
+}
+
+// suppressColumnNameDiff suppresses differences in column name casing
+// Snowflake uppercases unquoted identifiers but preserves casing for quoted identifiers
+func suppressColumnNameDiff(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	if oldValue == "" || newValue == "" {
+		return false
+	}
+
+	// Use the normalization logic: simple identifiers compare as uppercase, complex ones as-is
+	normalizedOld := NormalizeIdentifier(oldValue)
+	normalizedNew := NormalizeIdentifier(newValue)
+
+	return normalizedOld == normalizedNew
+}
+
+// forceNewOnColumnStructureChange forces recreation when column structure changes
+// but allows comment-only changes to be updated in-place
+func forceNewOnColumnStructureChange(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	if !d.HasChange("column") {
+		return nil
+	}
+
+	oldCols, newCols := d.GetChange("column")
+	oldColsList, ok1 := oldCols.([]interface{})
+	newColsList, ok2 := newCols.([]interface{})
+
+	if !ok1 || !ok2 {
+		return nil
+	}
+
+	// If column count changed, force recreation
+	if len(oldColsList) != len(newColsList) {
+		return d.ForceNew("column")
+	}
+
+	// Check if any column names or types changed
+	for i := range newColsList {
+		if i >= len(oldColsList) {
+			break
+		}
+
+		oldColMap, ok1 := oldColsList[i].(map[string]interface{})
+		newColMap, ok2 := newColsList[i].(map[string]interface{})
+
+		if !ok1 || !ok2 {
+			continue
+		}
+
+		// Check if name changed (force recreation)
+		oldName, _ := oldColMap["name"].(string)
+		newName, _ := newColMap["name"].(string)
+		if oldName != newName {
+			return d.ForceNew("column")
+		}
+
+		// Check if type changed (force recreation)
+		oldType, _ := oldColMap["type"].(string)
+		newType, _ := newColMap["type"].(string)
+		if oldType != newType {
+			return d.ForceNew("column")
+		}
+
+		// Check if nullable changed (force recreation)
+		oldNullable, oldHasNullable := oldColMap["nullable"].(bool)
+		newNullable, newHasNullable := newColMap["nullable"].(bool)
+		if oldHasNullable && newHasNullable && oldNullable != newNullable {
+			return d.ForceNew("column")
+		}
+
+		// Comment changes are allowed - don't force recreation
+	}
+
+	return nil
 }

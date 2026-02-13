@@ -12,7 +12,7 @@ resource "snowflake_hybrid_table" "test" {
 
   column {
     name = "col_int"
-    type = "INT"
+    type = "NUMBER(38,0)"
   }
 
   column {
@@ -22,7 +22,7 @@ resource "snowflake_hybrid_table" "test" {
 
   column {
     name = "col_decimal"
-    type = "DECIMAL(10,2)"
+    type = "NUMBER(10,2)"
   }
 
   # String types
@@ -33,7 +33,7 @@ resource "snowflake_hybrid_table" "test" {
 
   column {
     name = "col_char"
-    type = "CHAR(10)"
+    type = "VARCHAR(10)"
   }
 
   column {
@@ -49,7 +49,7 @@ resource "snowflake_hybrid_table" "test" {
 
   column {
     name = "col_time"
-    type = "TIME"
+    type = "TIME(9)"
   }
 
   column {
