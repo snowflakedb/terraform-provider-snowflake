@@ -168,6 +168,22 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Description: "Specifies a comment for the hybrid table",
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
+	ShowOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `SHOW TABLES` for the given hybrid table.",
+		Elem: &schema.Resource{
+			Schema: schemas.ShowTableSchema,
+		},
+	},
+	DescribeOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `DESCRIBE TABLE COLUMNS` for the given hybrid table.",
+		Elem: &schema.Resource{
+			Schema: schemas.TableDescribeSchema,
+		},
+	},
 }
 
 func HybridTable() *schema.Resource {
@@ -523,6 +539,16 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 	if err := d.Set("index", indexList); err != nil {
 		return diag.FromErr(fmt.Errorf("failed to set index for hybrid table %s: %w", id.FullyQualifiedName(), err))
+	}
+
+	// Set show_output
+	if err := d.Set(ShowOutputAttributeName, []map[string]any{schemas.TableToSchema(table)}); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set show_output for hybrid table %s: %w", id.FullyQualifiedName(), err))
+	}
+
+	// Set describe_output
+	if err := d.Set(DescribeOutputAttributeName, schemas.TableDescriptionToSchema(columnDetails)); err != nil {
+		return diag.FromErr(fmt.Errorf("failed to set describe_output for hybrid table %s: %w", id.FullyQualifiedName(), err))
 	}
 
 	return nil
