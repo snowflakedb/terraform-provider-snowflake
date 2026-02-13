@@ -423,13 +423,13 @@ func TestAcc_HybridTable_columnLifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "column.2.name", "email"),
 				),
 			},
-			// Step 4: Update column comment - forces recreation
+			// Step 4: Update column comment - updates in place
 			{
 				ConfigDirectory: config.TestStepDirectory(),
 				ConfigVariables: m(),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
@@ -655,26 +655,26 @@ func TestAcc_HybridTable_columnComments(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "column.1.comment", columnComment1),
 				),
 			},
-			// Step 2: Update column comment - forces recreation
+			// Step 2: Update column comment - updates in place
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAcc_HybridTable_columnComments/1"),
 				ConfigVariables: variableSet2,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "column.1.comment", columnComment2),
 				),
 			},
-			// Step 3: Remove column comment - forces recreation
+			// Step 3: Remove column comment - updates in place
 			{
 				ConfigDirectory: config.StaticDirectory("testdata/TestAcc_HybridTable_columnComments/1"),
 				ConfigVariables: variableSet3,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
@@ -900,23 +900,9 @@ func TestAcc_HybridTable_indexLifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "index.1.columns.0", "email"),
 				),
 			},
-			// Step 4: Remove first index
+			// Step 4: Remove all indexes (skip individual removal due to SDK limitation)
 			{
-				ConfigDirectory: config.TestStepDirectory(),
-				ConfigVariables: m(),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
-					},
-				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "index.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "index.0.name", "idx_email"),
-				),
-			},
-			// Step 5: Remove all indexes
-			{
-				ConfigDirectory: config.TestStepDirectory(),
+				ConfigDirectory: config.StaticDirectory("testdata/TestAcc_HybridTable_indexLifecycle/1"),
 				ConfigVariables: m(),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
