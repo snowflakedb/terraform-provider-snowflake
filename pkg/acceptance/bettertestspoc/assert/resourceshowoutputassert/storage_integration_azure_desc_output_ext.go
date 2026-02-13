@@ -19,18 +19,16 @@ func (s *StorageIntegrationAzureDescribeOutputAssert) HasMultiTenantAppNameSet()
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasAllowedLocations(expected ...sdk.StorageLocation) *StorageIntegrationAzureDescribeOutputAssert {
 	s.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_locations.#", strconv.FormatInt(int64(len(expected)), 10)))
-	// TODO [next PRs]: these are sets so the order varies
-	// for i, v := range expected {
-	// 	s.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("allowed_locations.%d", i), v.Path))
-	// }
+	for _, v := range expected {
+		s.AddAssertion(assert.ResourceDescribeOutputSetElem("allowed_locations.*", v.Path))
+	}
 	return s
 }
 
 func (s *StorageIntegrationAzureDescribeOutputAssert) HasBlockedLocations(expected ...sdk.StorageLocation) *StorageIntegrationAzureDescribeOutputAssert {
 	s.AddAssertion(assert.ResourceDescribeOutputValueSet("blocked_locations.#", strconv.FormatInt(int64(len(expected)), 10)))
-	// TODO [next PRs]: these are sets so the order varies
-	// for i, v := range expected {
-	// 	s.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("blocked_locations.%d", i), v.Path))
-	// }
+	for _, v := range expected {
+		s.AddAssertion(assert.ResourceDescribeOutputSetElem("blocked_locations.*", v.Path))
+	}
 	return s
 }

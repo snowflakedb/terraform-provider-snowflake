@@ -77,6 +77,7 @@ func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
 	r.assertions = append(r.assertions, assertion)
 }
 
+// TODO [this PR]: add '*' to field name inside this method
 func SetElem(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
 }

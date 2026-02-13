@@ -65,3 +65,7 @@ func ResourceShowOutputValueNotSet(fieldName string) ResourceAssertion {
 func ResourceShowOutputValuePresent(fieldName string) ResourceAssertion {
 	return ResourceAssertion{fieldName: showOutputPrefix + fieldName, resourceAssertionType: resourceAssertionTypeValuePresent}
 }
+
+func ResourceShowOutputSetElem(fieldName string, expected string) ResourceAssertion {
+	return ResourceAssertion{fieldName: showOutputPrefix + fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
+}

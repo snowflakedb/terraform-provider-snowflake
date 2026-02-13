@@ -66,3 +66,7 @@ func ResourceDescribeOutputValueNotSet(fieldName string) ResourceAssertion {
 func ResourceDescribeOutputValuePresent(fieldName string) ResourceAssertion {
 	return ResourceAssertion{fieldName: describeOutputPrefix + fieldName, resourceAssertionType: resourceAssertionTypeValuePresent}
 }
+
+func ResourceDescribeOutputSetElem(fieldName string, expected string) ResourceAssertion {
+	return ResourceAssertion{fieldName: describeOutputPrefix + fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
+}
