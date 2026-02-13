@@ -37,15 +37,19 @@ func ToNetworkRuleType(s string) (NetworkRuleType, error) {
 type NetworkRuleMode string
 
 const (
-	NetworkRuleModeIngress       NetworkRuleMode = "INGRESS"
-	NetworkRuleModeInternalStage NetworkRuleMode = "INTERNAL_STAGE"
-	NetworkRuleModeEgress        NetworkRuleMode = "EGRESS"
+	NetworkRuleModeIngress         NetworkRuleMode = "INGRESS"
+	NetworkRuleModeInternalStage   NetworkRuleMode = "INTERNAL_STAGE"
+	NetworkRuleModeEgress          NetworkRuleMode = "EGRESS"
+	NetworkRuleModePostgresIngress NetworkRuleMode = "POSTGRES_INGRESS"
+	NetworkRuleModePostgresEgress  NetworkRuleMode = "POSTGRES_EGRESS"
 )
 
 var AllNetworkRuleModes = []NetworkRuleMode{
 	NetworkRuleModeIngress,
 	NetworkRuleModeInternalStage,
 	NetworkRuleModeEgress,
+	NetworkRuleModePostgresIngress,
+	NetworkRuleModePostgresEgress,
 }
 
 func ToNetworkRuleMode(s string) (NetworkRuleMode, error) {

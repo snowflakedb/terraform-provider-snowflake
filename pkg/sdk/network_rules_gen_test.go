@@ -254,6 +254,8 @@ func Test_ToNetworkRuleMode(t *testing.T) {
 		{input: "INGRESS", want: NetworkRuleModeIngress},
 		{input: "INTERNAL_STAGE", want: NetworkRuleModeInternalStage},
 		{input: "EGRESS", want: NetworkRuleModeEgress},
+		{input: "POSTGRES_INGRESS", want: NetworkRuleModePostgresIngress},
+		{input: "POSTGRES_EGRESS", want: NetworkRuleModePostgresEgress},
 	}
 
 	invalid := []test{

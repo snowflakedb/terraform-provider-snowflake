@@ -35,7 +35,13 @@ Additionally, two new `type` values are now supported:
 - `GCPPSCID` - for GCP Private Service Connect endpoint identifiers
 - `PRIVATE_HOST_PORT` - for private host port identifiers
 
+Two new `mode` values are now supported:
+- `POSTGRES_INGRESS` - for incoming traffic to Snowflake Postgres instances
+- `POSTGRES_EGRESS` - for outgoing traffic from Snowflake Postgres instances
+
 No configuration changes are required. Existing configurations will continue to work as before. If you were using workarounds to force uppercase values, those can be removed.
+
+Reference: [#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956), [#4437](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4437)
 
 ## v2.12.x ➞ v2.13.0
 
