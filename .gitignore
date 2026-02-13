@@ -33,3 +33,21 @@ test.env
 
 # Test sensitive values
 *.tfvars
+
+# Snowflake connection configuration
+.snowflake/
+
+# Development SQL scripts
+grant_commands.sql
+
+# Personal documentation and notes
+.ai-knowledge-base.md
+.implementation-strategy.md
+ACCEPTANCE_TESTS_COMPLETE.md
+CHANGES_VALIDATION_REPORT.md
+HYBRID_TABLES_COMPLETE.md
+HYBRID_TABLES_IMPLEMENTATION_COMPLETE.md
+HYBRID_TABLE_TESTS_REVIEW.md
+HYBRID_TABLE_TEST_STATUS.md
+LOCAL_CHANGES.md
+PROPER_SOLUTION_SUMMARY.md

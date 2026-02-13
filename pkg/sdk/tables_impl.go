@@ -729,9 +729,8 @@ func (v *LegacyFileFormatRequest) toOpts() *LegacyFileFormat {
 
 func (v *StageFileFormatRequest) toOpts() *StageFileFormat {
 	return &StageFileFormat{
-		FormatName:     v.FormatName,
-		FileFormatType: v.FileFormatType,
-		Options:        v.Options.toOpts(),
+		FormatName:        v.FormatName,
+		FileFormatOptions: v.FileFormatOptions,
 	}
 }
 
