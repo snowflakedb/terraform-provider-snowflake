@@ -612,7 +612,9 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		for indexName, columns := range newIndexMap {
 			if _, exists := oldIndexMap[indexName]; !exists {
 				indexId := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), id.SchemaName(), indexName)
-				createRequest := sdk.NewCreateIndexRequest(indexId, id, columns)
+				// Quote column names to match the quoted names in column definitions
+				quotedColumns := quoteColumnNames(columns)
+				createRequest := sdk.NewCreateIndexRequest(indexId, id, quotedColumns)
 				err := client.Tables.CreateIndex(ctx, createRequest)
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error creating index %v: %w", indexName, err))
