@@ -10,11 +10,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	tfjson "github.com/hashicorp/terraform-json"
 )
 
 func TestAcc_HybridTable_basic(t *testing.T) {
@@ -623,11 +623,11 @@ func TestAcc_HybridTable_columnComments(t *testing.T) {
 
 	m := func() map[string]config.Variable {
 		return map[string]config.Variable{
-			"name":            config.StringVariable(id.Name()),
-			"database":        config.StringVariable(TestDatabaseName),
-			"schema":          config.StringVariable(TestSchemaName),
-			"comment":         config.StringVariable(comment),
-			"column_comment":  config.StringVariable(columnComment1),
+			"name":           config.StringVariable(id.Name()),
+			"database":       config.StringVariable(TestDatabaseName),
+			"schema":         config.StringVariable(TestSchemaName),
+			"comment":        config.StringVariable(comment),
+			"column_comment": config.StringVariable(columnComment1),
 		}
 	}
 
