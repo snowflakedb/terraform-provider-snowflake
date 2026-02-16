@@ -193,6 +193,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
 	},
+	resources.CatalogIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
 	resources.ComputePool: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ComputePools.ShowByID)
 	},

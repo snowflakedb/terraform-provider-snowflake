@@ -662,6 +662,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_share":                                                        resources.Share(),
 		"snowflake_shared_database":                                              resources.SharedDatabase(),
 		"snowflake_stage":                                                        resources.Stage(),
+		"snowflake_catalog_integration":                                          resources.CatalogIntegration(),
 		"snowflake_storage_integration":                                          resources.StorageIntegration(),
 		"snowflake_storage_integration_aws":                                      resources.StorageIntegrationAws(),
 		"snowflake_storage_integration_azure":                                    resources.StorageIntegrationAzure(),
