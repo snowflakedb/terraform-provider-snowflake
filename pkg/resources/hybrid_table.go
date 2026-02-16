@@ -203,7 +203,6 @@ func HybridTable() *schema.Resource {
 		Timeouts: defaultTimeouts,
 
 		CustomizeDiff: customdiff.All(
-			ComputedIfAnyAttributeChanged(hybridTableSchema, ShowOutputAttributeName, "comment"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
 			validateHybridTableConstraintColumns,
 			validateHybridTableIndexColumns,
@@ -538,12 +537,6 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 	// Set indexes - only include explicitly user-defined indexes, in the same order as config
 	// Snowflake auto-creates indexes for PRIMARY KEY and UNIQUE constraints, which we should exclude
 	configIndexes := d.Get("index").([]interface{})
-	configIndexNames := make(map[string]int) // map name to order
-	for i, idx := range configIndexes {
-		indexMap := idx.(map[string]interface{})
-		indexName := indexMap["name"].(string)
-		configIndexNames[strings.ToUpper(indexName)] = i
-	}
 
 	// Create a map of indexes from Snowflake
 	snowflakeIndexes := make(map[string]*sdk.Index)
@@ -551,10 +544,13 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 		snowflakeIndexes[strings.ToUpper(indexes[i].Name)] = &indexes[i]
 	}
 
-	// Build index list with only indexes that exist in Snowflake, maintaining config order
+	// Build index list maintaining config order by iterating over configIndexes directly
 	indexList := make([]map[string]interface{}, 0, len(configIndexes))
-	for name, order := range configIndexNames {
-		idx, ok := snowflakeIndexes[name]
+	for _, cfgIdx := range configIndexes {
+		indexMap := cfgIdx.(map[string]interface{})
+		indexName := indexMap["name"].(string)
+
+		sfIdx, ok := snowflakeIndexes[strings.ToUpper(indexName)]
 		if !ok {
 			// Index not found in Snowflake - skip it to allow drift detection
 			continue
@@ -562,15 +558,14 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 		// Unquote column names to match input format
 		var columns []string
-		if len(idx.Columns) > 0 {
-			columns = make([]string, len(idx.Columns))
-			for i, col := range idx.Columns {
+		if len(sfIdx.Columns) > 0 {
+			columns = make([]string, len(sfIdx.Columns))
+			for i, col := range sfIdx.Columns {
 				columns[i] = strings.Trim(col, `"`)
 			}
 		} else {
 			// SHOW INDEXES may not return columns for hybrid tables - use config values
-			configIdx := configIndexes[order].(map[string]interface{})
-			configColumns := configIdx["columns"].([]interface{})
+			configColumns := indexMap["columns"].([]interface{})
 			columns = make([]string, len(configColumns))
 			for i, col := range configColumns {
 				columns[i] = col.(string)
@@ -578,9 +573,8 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 		}
 
 		// Use config name to preserve user's specified case
-		configIdx := configIndexes[order].(map[string]interface{})
 		indexList = append(indexList, map[string]interface{}{
-			"name":    configIdx["name"].(string),
+			"name":    indexName,
 			"columns": columns,
 		})
 	}
