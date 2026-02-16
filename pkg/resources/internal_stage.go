@@ -245,20 +245,8 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 		}
 
 		if withExternalChangesMarking {
-			directoryTable := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": details.DirectoryTable.AutoRefresh,
-				},
-			}
-			directoryTableToSet := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-				},
-			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+				directoryTableOutputMapping(*details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)
 			}
