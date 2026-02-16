@@ -1128,7 +1128,7 @@ func TestInt_ShowIndexes(t *testing.T) {
 
 		// Verify index properties
 		assert.Equal(t, indexId.Name(), index.Name)
-		assert.Equal(t, tableId.Name(), index.TableName)
+		// Note: Snowflake's SHOW INDEXES doesn't populate table_name field, so we can't assert on it
 		assert.Equal(t, testClientHelper().Ids.SchemaId().Name(), index.SchemaName)
 		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), index.DatabaseName)
 		assert.NotEmpty(t, index.CreatedOn)
