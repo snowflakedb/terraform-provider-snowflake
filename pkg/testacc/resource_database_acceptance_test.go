@@ -88,7 +88,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(2).
 		WithMaxDataExtensionTimeInDays(15).
 		WithExternalVolume(externalVolumeId.Name()).
-		WithCatalog(catalogId.Name()).
+		WithCatalog(catalogId.ID().Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
@@ -117,7 +117,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDays(2).
 			HasMaxDataExtensionTimeInDays(15).
 			HasExternalVolume(externalVolumeId.Name()).
-			HasCatalog(catalogId.Name()).
+			HasCatalog(catalogId.ID().Name()).
 			HasReplaceInvalidCharacters(true).
 			HasDefaultDdlCollation("en_US").
 			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
@@ -138,7 +138,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDaysString("2").
 			HasMaxDataExtensionTimeInDaysString("15").
 			HasExternalVolumeString(externalVolumeId.Name()).
-			HasCatalogString(catalogId.Name()).
+			HasCatalogString(catalogId.ID().Name()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
@@ -225,7 +225,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 							DataRetentionTimeInDays:                 sdk.Int(2),
 							MaxDataExtensionTimeInDays:              sdk.Int(15),
 							ExternalVolume:                          sdk.Pointer(externalVolumeId),
-							Catalog:                                 sdk.Pointer(catalogId),
+							Catalog:                                 sdk.Pointer(catalogId.ID()),
 							ReplaceInvalidCharacters:                sdk.Bool(true),
 							DefaultDDLCollation:                     sdk.String("en_US"),
 							StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
@@ -322,7 +322,7 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 		"data_retention_time_in_days":              config.IntegerVariable(20),
 		"max_data_extension_time_in_days":          config.IntegerVariable(30),
 		"external_volume":                          config.StringVariable(externalVolumeId.Name()),
-		"catalog":                                  config.StringVariable(catalogId.Name()),
+		"catalog":                                  config.StringVariable(catalogId.ID().Name()),
 		"replace_invalid_characters":               config.BoolVariable(true),
 		"default_ddl_collation":                    config.StringVariable("en_US"),
 		"storage_serialization_policy":             config.StringVariable(string(sdk.StorageSerializationPolicyCompatible)),
@@ -400,7 +400,7 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "20"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "max_data_extension_time_in_days", "30"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.ID().Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "replace_invalid_characters", "true"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
 					resource.TestCheckResourceAttr("snowflake_database.test", "log_level", string(sdk.LogLevelInfo)),
@@ -472,7 +472,7 @@ func TestAcc_Database_Update(t *testing.T) {
 		"data_retention_time_in_days":              config.IntegerVariable(20),
 		"max_data_extension_time_in_days":          config.IntegerVariable(30),
 		"external_volume":                          config.StringVariable(externalVolumeId.Name()),
-		"catalog":                                  config.StringVariable(catalogId.Name()),
+		"catalog":                                  config.StringVariable(catalogId.ID().Name()),
 		"replace_invalid_characters":               config.BoolVariable(true),
 		"default_ddl_collation":                    config.StringVariable("en_US"),
 		"storage_serialization_policy":             config.StringVariable(string(sdk.StorageSerializationPolicyCompatible)),
@@ -513,7 +513,7 @@ func TestAcc_Database_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_database.test", "data_retention_time_in_days", "20"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "max_data_extension_time_in_days", "30"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.ID().Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "replace_invalid_characters", "true"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "default_ddl_collation", "en_US"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
@@ -957,7 +957,7 @@ func TestAcc_Database_StringValueSetOnDifferentParameterLevelWithSameValue(t *te
 
 	configVariables := config.Variables{
 		"name":    config.StringVariable(id.Name()),
-		"catalog": config.StringVariable(catalogId.Name()),
+		"catalog": config.StringVariable(catalogId.ID().Name()),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -972,19 +972,19 @@ func TestAcc_Database_StringValueSetOnDifferentParameterLevelWithSameValue(t *te
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.ID().Name()),
 				),
 			},
 			{
 				PreConfig: func() {
 					require.Empty(t, testClient().Parameter.ShowAccountParameter(t, sdk.AccountParameterCatalog).Level)
 					testClient().Database.UnsetCatalog(t, id)
-					t.Cleanup(testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterCatalog, catalogId.Name()))
+					t.Cleanup(testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterCatalog, catalogId.ID().Name()))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails("snowflake_database.test", "catalog"),
-						planchecks.ExpectChange("snowflake_database.test", "catalog", tfjson.ActionUpdate, sdk.String(catalogId.Name()), nil),
+						planchecks.ExpectChange("snowflake_database.test", "catalog", tfjson.ActionUpdate, sdk.String(catalogId.ID().Name()), nil),
 						planchecks.ExpectComputed("snowflake_database.test", "catalog", true),
 					},
 				},
@@ -992,7 +992,7 @@ func TestAcc_Database_StringValueSetOnDifferentParameterLevelWithSameValue(t *te
 				ConfigVariables: configVariables,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.ID().Name()),
 				),
 			},
 		},
@@ -1272,7 +1272,7 @@ func TestAcc_Database_IdentifierQuotingDiffSuppression(t *testing.T) {
 
 	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
-	quotedCatalogId := fmt.Sprintf(`\"%s\"`, catalogId.Name())
+	quotedCatalogId := fmt.Sprintf(`\"%s\"`, catalogId.ID().Name())
 
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
@@ -1290,7 +1290,7 @@ func TestAcc_Database_IdentifierQuotingDiffSuppression(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.ID().Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 				),
 			},
@@ -1309,7 +1309,7 @@ func TestAcc_Database_IdentifierQuotingDiffSuppression(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.ID().Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 				),
 			},

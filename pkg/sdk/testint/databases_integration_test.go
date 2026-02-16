@@ -81,7 +81,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 			DataRetentionTimeInDays:                 sdk.Int(0),
 			MaxDataExtensionTimeInDays:              sdk.Int(10),
 			ExternalVolume:                          &externalVolume,
-			Catalog:                                 &catalog,
+			Catalog:                                 sdk.Pointer(catalog.ID()),
 			ReplaceInvalidCharacters:                sdk.Bool(true),
 			DefaultDDLCollation:                     sdk.String("en_US"),
 			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
@@ -125,7 +125,7 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
 		assertParameterEquals(t, sdk.AccountParameterDefaultDDLCollation, "en_US")
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
-		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
+		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.ID().Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
 		assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelPropagate))
 		assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
@@ -197,7 +197,7 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 		Transient:                               sdk.Bool(true),
 		IfNotExists:                             sdk.Bool(true),
 		ExternalVolume:                          &externalVolume,
-		Catalog:                                 &catalog,
+		Catalog:                                 sdk.Pointer(catalog.ID()),
 		LogLevel:                                sdk.Pointer(sdk.LogLevelDebug),
 		TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
 		ReplaceInvalidCharacters:                sdk.Bool(true),
@@ -236,7 +236,7 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 
 	assertParameterEquals(t, sdk.AccountParameterDefaultDDLCollation, "en_US")
 	assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
-	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
+	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.ID().Name())
 	assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelDebug))
 	assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelAlways))
 	assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
@@ -288,7 +288,7 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 		DataRetentionTimeInDays:                 sdk.Int(10),
 		MaxDataExtensionTimeInDays:              sdk.Int(10),
 		ExternalVolume:                          &externalVolume,
-		Catalog:                                 &catalog,
+		Catalog:                                 sdk.Pointer(catalog.ID()),
 		ReplaceInvalidCharacters:                sdk.Bool(true),
 		DefaultDDLCollation:                     sdk.String("en_US"),
 		StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyOptimized),
@@ -323,7 +323,7 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
 	assertParameterEquals(t, sdk.AccountParameterDefaultDDLCollation, "en_US")
 	assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
-	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
+	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.ID().Name())
 	assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelDebug))
 	assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelAlways))
 	assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
@@ -414,7 +414,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					DataRetentionTimeInDays:                 sdk.Int(42),
 					MaxDataExtensionTimeInDays:              sdk.Int(42),
 					ExternalVolume:                          &externalVolumeTest,
-					Catalog:                                 &catalogIntegrationTest,
+					Catalog:                                 sdk.Pointer(catalogIntegrationTest.ID()),
 					ReplaceInvalidCharacters:                sdk.Bool(true),
 					DefaultDDLCollation:                     sdk.String("en_US"),
 					StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
@@ -436,7 +436,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDataRetentionTimeInDays, "42")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterMaxDataExtensionTimeInDays, "42")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterExternalVolume, externalVolumeTest.Name())
-			assertDatabaseParameterEquals(t, params, sdk.AccountParameterCatalog, catalogIntegrationTest.Name())
+			assertDatabaseParameterEquals(t, params, sdk.AccountParameterCatalog, catalogIntegrationTest.ID().Name())
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterReplaceInvalidCharacters, "true")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDefaultDDLCollation, "en_US")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
@@ -593,7 +593,7 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 			DataRetentionTimeInDays:    sdk.Int(1),
 			MaxDataExtensionTimeInDays: sdk.Int(10),
 			ExternalVolume:             &externalVolume,
-			Catalog:                    &catalog,
+			Catalog:                    sdk.Pointer(catalog.ID()),
 			DefaultDDLCollation:        sdk.String("en_US"),
 			LogLevel:                   sdk.Pointer(sdk.LogLevelDebug),
 			TraceLevel:                 sdk.Pointer(sdk.TraceLevelAlways),

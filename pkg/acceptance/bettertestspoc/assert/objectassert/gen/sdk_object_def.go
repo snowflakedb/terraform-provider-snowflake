@@ -26,6 +26,10 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.CatalogIntegration{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.Connection{},
 	},
 	{

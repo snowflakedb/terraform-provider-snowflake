@@ -187,7 +187,7 @@ func TestInt_Schemas(t *testing.T) {
 			DataRetentionTimeInDays:                 sdk.Int(0),
 			MaxDataExtensionTimeInDays:              sdk.Int(10),
 			ExternalVolume:                          &externalVolume,
-			Catalog:                                 &catalog,
+			Catalog:                                 sdk.Pointer(catalog.ID()),
 			ReplaceInvalidCharacters:                sdk.Bool(true),
 			DefaultDDLCollation:                     sdk.Pointer(sdk.StringAllowEmpty{Value: "en_US"}),
 			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
@@ -232,7 +232,7 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
 		assertParameterEquals(t, sdk.AccountParameterDefaultDDLCollation, "en_US")
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
-		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
+		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.ID().Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
 		assertParameterEquals(t, sdk.AccountParameterTraceLevel, string(sdk.TraceLevelPropagate))
 		assertParameterEquals(t, sdk.AccountParameterReplaceInvalidCharacters, "true")
@@ -318,7 +318,7 @@ func TestInt_Schemas(t *testing.T) {
 				DataRetentionTimeInDays:                 sdk.Int(42),
 				MaxDataExtensionTimeInDays:              sdk.Int(42),
 				ExternalVolume:                          &externalVolumeTest,
-				Catalog:                                 &catalogIntegrationTest,
+				Catalog:                                 sdk.Pointer(catalogIntegrationTest.ID()),
 				ReplaceInvalidCharacters:                sdk.Bool(true),
 				DefaultDDLCollation:                     sdk.Pointer(sdk.StringAllowEmpty{Value: "en_US"}),
 				StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
@@ -341,7 +341,7 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, params, sdk.AccountParameterDataRetentionTimeInDays, "42")
 		assertParameterEquals(t, params, sdk.AccountParameterMaxDataExtensionTimeInDays, "42")
 		assertParameterEquals(t, params, sdk.AccountParameterExternalVolume, externalVolumeTest.Name())
-		assertParameterEquals(t, params, sdk.AccountParameterCatalog, catalogIntegrationTest.Name())
+		assertParameterEquals(t, params, sdk.AccountParameterCatalog, catalogIntegrationTest.ID().Name())
 		assertParameterEquals(t, params, sdk.AccountParameterReplaceInvalidCharacters, "true")
 		assertParameterEquals(t, params, sdk.AccountParameterDefaultDDLCollation, "en_US")
 		assertParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))

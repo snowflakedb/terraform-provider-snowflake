@@ -82,7 +82,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(20).
 		WithMaxDataExtensionTimeInDays(25).
 		WithExternalVolume(externalVolumeId.Name()).
-		WithCatalog(catalogId.Name()).
+		WithCatalog(catalogId.ID().Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
@@ -107,7 +107,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDays(20).
 			HasMaxDataExtensionTimeInDays(25).
 			HasExternalVolume(externalVolumeId.Name()).
-			HasCatalog(catalogId.Name()).
+			HasCatalog(catalogId.ID().Name()).
 			HasReplaceInvalidCharacters(true).
 			HasDefaultDdlCollation("en_US").
 			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
@@ -129,7 +129,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDaysString("20").
 			HasMaxDataExtensionTimeInDaysString("25").
 			HasExternalVolumeString(externalVolumeId.Name()).
-			HasCatalogString(catalogId.Name()).
+			HasCatalogString(catalogId.ID().Name()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
@@ -198,7 +198,7 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 							DataRetentionTimeInDays:                 sdk.Int(2),
 							MaxDataExtensionTimeInDays:              sdk.Int(15),
 							ExternalVolume:                          sdk.Pointer(externalVolumeId),
-							Catalog:                                 sdk.Pointer(catalogId),
+							Catalog:                                 sdk.Pointer(catalogId.ID()),
 							ReplaceInvalidCharacters:                sdk.Bool(true),
 							DefaultDDLCollation:                     sdk.String("en_US"),
 							StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
@@ -267,7 +267,7 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 		WithComment(comment).
 		WithMaxDataExtensionTimeInDays(25).
 		WithExternalVolume(externalVolumeId.Name()).
-		WithCatalog(catalogId.Name()).
+		WithCatalog(catalogId.ID().Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
@@ -300,7 +300,7 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 					objectparametersassert.DatabaseParameters(t, id).
 						HasMaxDataExtensionTimeInDays(25).
 						HasExternalVolume(externalVolumeId.Name()).
-						HasCatalog(catalogId.Name()).
+						HasCatalog(catalogId.ID().Name()).
 						HasReplaceInvalidCharacters(true).
 						HasDefaultDdlCollation("en_US").
 						HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
@@ -322,7 +322,7 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 						HasCommentString(comment).
 						HasMaxDataExtensionTimeInDaysString("25").
 						HasExternalVolumeString(externalVolumeId.Name()).
-						HasCatalogString(catalogId.Name()).
+						HasCatalogString(catalogId.ID().Name()).
 						HasReplaceInvalidCharactersString("true").
 						HasDefaultDdlCollationString("en_US").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
@@ -372,7 +372,7 @@ func TestAcc_CreateSecondaryDatabase_DataRetentionTimeInDays(t *testing.T) {
 		secondaryDatabaseModel := model.SecondaryDatabase("test", id.Name(), externalPrimaryId.FullyQualifiedName()).
 			WithMaxDataExtensionTimeInDays(10).
 			WithExternalVolume(externalVolumeId.Name()).
-			WithCatalog(catalogId.Name()).
+			WithCatalog(catalogId.ID().Name()).
 			WithReplaceInvalidCharacters(true).
 			WithDefaultDdlCollation("en_US").
 			WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).

@@ -154,7 +154,7 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 	sharedDatabaseModelComplete := model.SharedDatabase("test", id.Name(), externalShareId.FullyQualifiedName()).
 		WithComment(comment).
 		WithExternalVolume(externalVolumeId.Name()).
-		WithCatalog(catalogId.Name()).
+		WithCatalog(catalogId.ID().Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
@@ -184,7 +184,7 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "comment", comment),
 
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "external_volume", externalVolumeId.Name()),
-					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "catalog", catalogId.Name()),
+					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "catalog", catalogId.ID().Name()),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "replace_invalid_characters", "true"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "default_ddl_collation", "en_US"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "storage_serialization_policy", string(sdk.StorageSerializationPolicyOptimized)),

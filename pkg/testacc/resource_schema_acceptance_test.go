@@ -91,7 +91,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(15).
 		WithMaxDataExtensionTimeInDays(3).
 		WithExternalVolume(externalVolumeId.Name()).
-		WithCatalog(catalogId.Name()).
+		WithCatalog(catalogId.ID().Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
@@ -132,7 +132,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDaysString("15").
 			HasMaxDataExtensionTimeInDaysString("3").
 			HasExternalVolumeString(externalVolumeId.Name()).
-			HasCatalogString(catalogId.Name()).
+			HasCatalogString(catalogId.ID().Name()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
@@ -224,7 +224,7 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 							DataRetentionTimeInDays:                 sdk.Int(2),
 							MaxDataExtensionTimeInDays:              sdk.Int(15),
 							ExternalVolume:                          sdk.Pointer(externalVolumeId),
-							Catalog:                                 sdk.Pointer(catalogId),
+							Catalog:                                 sdk.Pointer(catalogId.ID()),
 							ReplaceInvalidCharacters:                sdk.Bool(true),
 							DefaultDDLCollation:                     &sdk.StringAllowEmpty{Value: "en_US"},
 							StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
@@ -291,7 +291,7 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(1).
 		WithMaxDataExtensionTimeInDays(3).
 		WithExternalVolume(externalVolumeId.Name()).
-		WithCatalog(catalogId.Name()).
+		WithCatalog(catalogId.ID().Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
@@ -338,7 +338,7 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 						HasDataRetentionTimeInDaysString("1").
 						HasMaxDataExtensionTimeInDaysString("3").
 						HasExternalVolumeString(externalVolumeId.Name()).
-						HasCatalogString(catalogId.Name()).
+						HasCatalogString(catalogId.ID().Name()).
 						HasReplaceInvalidCharactersString("true").
 						HasDefaultDdlCollationString("en_US").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).

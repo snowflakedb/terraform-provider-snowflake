@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -21,32 +20,48 @@ func NewCatalogIntegrationClient(context *TestClientContext, idsGenerator *IdsGe
 	}
 }
 
-func (c *CatalogIntegrationClient) exec(sql string) error {
-	ctx := context.Background()
-	_, err := c.context.client.ExecForTests(ctx, sql)
-	return err
+func (c *CatalogIntegrationClient) client() sdk.CatalogIntegrations {
+	return c.context.client.CatalogIntegrations
 }
 
-// TODO(SNOW-999142): Use SDK implementation for Catalog once it's available
-func (c *CatalogIntegrationClient) Create(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
+func (c *CatalogIntegrationClient) Create(t *testing.T) (*sdk.CatalogIntegration, func()) {
 	t.Helper()
-	id := c.ids.RandomAccountObjectIdentifier()
-	err := c.exec(fmt.Sprintf(`
-create catalog integration %s
-  catalog_source=object_store
-  table_format=iceberg
-  enabled=true
-`, id.FullyQualifiedName()))
+	return c.CreateObjectStore(t)
+}
+
+func (c *CatalogIntegrationClient) CreateObjectStore(t *testing.T) (*sdk.CatalogIntegration, func()) {
+	t.Helper()
+	return c.CreateWithRequest(t, sdk.NewCreateCatalogIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
+		WithObjectStoreParams(*sdk.NewObjectStoreParamsRequest(sdk.TableFormatIceberg)),
+	)
+}
+
+func (c *CatalogIntegrationClient) CreateGlue(t *testing.T, glueAwsRoleArn string, glueCatalogId string) (*sdk.CatalogIntegration, func()) {
+	t.Helper()
+	return c.CreateWithRequest(t, sdk.NewCreateCatalogIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
+		WithGlueParams(*sdk.NewGlueParamsRequest(sdk.TableFormatIceberg, glueAwsRoleArn, glueCatalogId)),
+	)
+}
+
+func (c *CatalogIntegrationClient) CreateWithRequest(t *testing.T, request *sdk.CreateCatalogIntegrationRequest) (*sdk.CatalogIntegration, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Create(ctx, request)
 	require.NoError(t, err)
 
-	return id, c.DropFunc(t, id)
+	integration, err := c.client().ShowByID(ctx, request.GetName())
+	require.NoError(t, err)
+
+	return integration, c.DropFunc(t, request.GetName())
 }
 
 func (c *CatalogIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
+	ctx := context.Background()
 
 	return func() {
-		err := c.exec(fmt.Sprintf(`drop catalog integration if exists %s`, id.FullyQualifiedName()))
+		err := c.client().Drop(ctx, sdk.NewDropCatalogIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }
