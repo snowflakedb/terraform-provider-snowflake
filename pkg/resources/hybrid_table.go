@@ -241,6 +241,9 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 		return diag.FromErr(fmt.Errorf("error creating hybrid table %v: %w", name, err))
 	}
 
+	// Set ID immediately so Terraform tracks the resource even if index creation fails
+	d.SetId(helpers.EncodeSnowflakeID(id))
+
 	// Create indexes (retry logic for "Another index is being built" is handled in SDK)
 	if v, ok := d.GetOk("index"); ok {
 		indexes := v.([]interface{})
@@ -268,8 +271,6 @@ func CreateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			}
 		}
 	}
-
-	d.SetId(helpers.EncodeSnowflakeID(id))
 
 	return ReadHybridTable(ctx, d, meta)
 }
