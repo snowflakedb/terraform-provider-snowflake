@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -146,6 +147,8 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 
 func ExternalAzureStage() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingCreateWrapper(resources.ExternalAzureStage, CreateExternalAzureStage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingReadWrapper(resources.ExternalAzureStage, ReadExternalAzureStageFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingUpdateWrapper(resources.ExternalAzureStage, UpdateExternalAzureStage)),
@@ -171,6 +174,13 @@ func ExternalAzureStage() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.ExternalAzureStage, ImportExternalAzureStage),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_ExternalAzureStageStateUpgrader,
+			},
+		},
 	}
 }
 

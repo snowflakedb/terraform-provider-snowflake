@@ -60,7 +60,7 @@ func TestAcc_ExternalS3Stage_DirectoryTableTimestampParsing(t *testing.T) {
 				Config: accconfig.FromModels(t, providerModel, stageModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						// This happens because the resource is marked as tained. Unfortunately, in the testing framework we cannot assert this.
+						// This happens because the resource is marked as tainted. Unfortunately, in the testing framework we cannot assert this.
 						plancheck.ExpectResourceAction(stageModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},

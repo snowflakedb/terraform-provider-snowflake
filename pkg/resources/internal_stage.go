@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -82,6 +83,8 @@ var internalStageSchema = func() map[string]*schema.Schema {
 
 func InternalStage() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.InternalStageResource), TrackingCreateWrapper(resources.InternalStage, CreateInternalStage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.InternalStageResource), TrackingReadWrapper(resources.InternalStage, ReadInternalStageFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.InternalStageResource), TrackingUpdateWrapper(resources.InternalStage, UpdateInternalStage)),
@@ -102,6 +105,13 @@ func InternalStage() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.InternalStage, ImportInternalStage),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_InternalStageStateUpgrader,
+			},
+		},
 	}
 }
 
