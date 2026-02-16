@@ -502,13 +502,12 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 		snowflakeIndexes[strings.ToUpper(indexes[i].Name)] = &indexes[i]
 	}
 
-	// Build index list in config order
-	indexList := make([]map[string]interface{}, len(configIndexes))
+	// Build index list with only indexes that exist in Snowflake, maintaining config order
+	indexList := make([]map[string]interface{}, 0, len(configIndexes))
 	for name, order := range configIndexNames {
 		idx, ok := snowflakeIndexes[name]
 		if !ok {
-			// Index not found in Snowflake - use config values
-			indexList[order] = configIndexes[order].(map[string]interface{})
+			// Index not found in Snowflake - skip it to allow drift detection
 			continue
 		}
 
@@ -531,10 +530,10 @@ func ReadHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 		// Use config name to preserve user's specified case
 		configIdx := configIndexes[order].(map[string]interface{})
-		indexList[order] = map[string]interface{}{
+		indexList = append(indexList, map[string]interface{}{
 			"name":    configIdx["name"].(string),
 			"columns": columns,
-		}
+		})
 	}
 
 	if err := d.Set("index", indexList); err != nil {
