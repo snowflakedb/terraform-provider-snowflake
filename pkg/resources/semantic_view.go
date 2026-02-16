@@ -183,10 +183,11 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"is_private": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Default:     false,
-					Description: "Specifies whether the fact is private.",
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          BooleanDefault,
+					ValidateDiagFunc: validateBooleanString,
+					Description:      "Specifies whether the fact is private.",
 				},
 				"qualified_expression_name": {
 					Type:     schema.TypeString,
@@ -268,10 +269,11 @@ var semanticViewsSchema = map[string]*schema.Schema{
 				// TODO [SNOW-2398097]: add table_alias
 				// TODO [SNOW-2398097]: add fact_or_metric
 				"is_private": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Default:     false,
-					Description: "Specifies whether the metric is private.",
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          BooleanDefault,
+					ValidateDiagFunc: validateBooleanString,
+					Description:      "Specifies whether the metric is private.",
 				},
 				"semantic_expression": {
 					Type:     schema.TypeList,
@@ -631,8 +633,15 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				semExpRequest = semExpRequest.WithSynonyms(sRequest)
 			}
 		}
-		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest).
-			WithIsPrivate(c["is_private"].(bool)), nil
+		if v := c["is_private"]; v != nil {
+			isPrivate, err := booleanStringToBool(c["is_private"].(string))
+			if err != nil {
+				return nil, err
+			}
+			return metricDefinitionRequest.WithSemanticExpression(*semExpRequest).
+				WithIsPrivate(isPrivate), nil
+		}
+		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
 	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
@@ -656,8 +665,15 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				windowFuncRequest = windowFuncRequest.WithOverClause(*overClauseRequest)
 			}
 		}
-		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest).
-			WithIsPrivate(c["is_private"].(bool)), nil
+		if v := c["is_private"]; v != nil {
+			isPrivate, err := booleanStringToBool(c["is_private"].(string))
+			if err != nil {
+				return nil, err
+			}
+			return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest).
+				WithIsPrivate(isPrivate), nil
+		}
+		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest), nil
 	default:
 		return nil, fmt.Errorf("either semantic expression or window function is required in metric definition")
 	}
@@ -665,77 +681,33 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 
 func getFactDefinitionRequest(from any) (*sdk.FactDefinitionRequest, error) {
 	c := from.(map[string]any)
-	factDefinitionRequest := sdk.NewFactDefinitionRequest()
 
-	qualifiedExpressionName := c["qualified_expression_name"].(string)
-	if qualifiedExpressionName == "" {
-		return nil, fmt.Errorf("qualified_expression_name is required")
-	}
-	qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
-		WithQualifiedExpressionName(qualifiedExpressionName)
-
-	sqlExpression := c["sql_expression"].(string)
-	if sqlExpression == "" {
-		return nil, fmt.Errorf("sql_expression is required")
-	}
-	sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
-		WithSqlExpression(sqlExpression)
-	semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
-
-	if c["comment"] != nil && c["comment"].(string) != "" {
-		semExpRequest = semExpRequest.WithComment(c["comment"].(string))
+	semExpRequest, err := getSemanticExpressionRequest(from)
+	if err != nil {
+		return nil, err
 	}
 
-	if c["synonym"] != nil {
-		if synonyms, ok := c["synonym"].(*schema.Set); ok && synonyms.Len() > 0 {
-			var syns []sdk.Synonym
-			for _, s := range synonyms.List() {
-				syns = append(syns, sdk.Synonym{Synonym: s.(string)})
-			}
-			sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
-			semExpRequest = semExpRequest.WithSynonyms(sRequest)
+	factDefinitionRequest := sdk.NewFactDefinitionRequest().
+		WithSemanticExpression(*semExpRequest)
+
+	if v := c["is_private"]; v != nil {
+		isPrivate, err := booleanStringToBool(c["is_private"].(string))
+		if err != nil {
+			return nil, err
 		}
+		return factDefinitionRequest.WithIsPrivate(isPrivate), nil
 	}
-	factDefinitionRequest.WithSemanticExpression(*semExpRequest).
-		WithIsPrivate(c["is_private"].(bool))
 	return factDefinitionRequest, nil
 }
 
 func getDimensionDefinitionRequest(from any) (*sdk.DimensionDefinitionRequest, error) {
-	c := from.(map[string]any)
-	dimensionDefinitionRequest := sdk.NewDimensionDefinitionRequest()
-
-	qualifiedExpressionName := c["qualified_expression_name"].(string)
-	if qualifiedExpressionName == "" {
-		return nil, fmt.Errorf("qualified_expression_name is required")
-	}
-	qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
-		WithQualifiedExpressionName(qualifiedExpressionName)
-
-	sqlExpression := c["sql_expression"].(string)
-	if sqlExpression == "" {
-		return nil, fmt.Errorf("sql_expression is required")
-	}
-	sqlExpRequest := sdk.NewSemanticSqlExpressionRequest().
-		WithSqlExpression(sqlExpression)
-	semExpRequest := sdk.NewSemanticExpressionRequest(qualifiedExpNameRequest, sqlExpRequest)
-
-	if c["comment"] != nil && c["comment"].(string) != "" {
-		semExpRequest = semExpRequest.WithComment(c["comment"].(string))
+	semExpRequest, err := getSemanticExpressionRequest(from)
+	if err != nil {
+		return nil, err
 	}
 
-	if c["synonym"] != nil {
-		if synonyms, ok := c["synonym"].(*schema.Set); ok && synonyms.Len() > 0 {
-			var syns []sdk.Synonym
-			for _, s := range synonyms.List() {
-				syns = append(syns, sdk.Synonym{Synonym: s.(string)})
-			}
-			sRequest := sdk.SynonymsRequest{WithSynonyms: syns}
-			semExpRequest = semExpRequest.WithSynonyms(sRequest)
-		}
-	}
-	dimensionDefinitionRequest.WithSemanticExpression(*semExpRequest)
-	return dimensionDefinitionRequest, nil
+	return sdk.NewDimensionDefinitionRequest().
+		WithSemanticExpression(*semExpRequest), nil
 }
 
 func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, error) {

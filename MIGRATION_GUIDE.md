@@ -362,6 +362,12 @@ No changes in configuration are required.
 
 References: [#1630](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1630)
 
+### *(new feature)* Private Facts and Metrics support in Semantic Views
+
+In this release, we have added support for Private Facts and Metrics in the Semantic Views resource.
+
+Facts and Metrics in semantic views are created as Public by default.
+
 ### *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
 Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.
 
