@@ -86,6 +86,20 @@ To achieve zero-downtime migration, please follow our [Resource migration guide]
 
 References: [GitHub issues](https://github.com/snowflakedb/terraform-provider-snowflake/issues?q=is%3Aissue%20state%3Aopen%20label%3Aresource%3Astage).
 
+#### *(breaking change)* Stages data source
+
+Note: this data source was in preview allowing us to make breaking changes without bumping the major version (following [our docs](https://docs.snowflake.com/en/user-guide/terraform#preview-features)).
+
+Reworked existing datasource enabling querying and filtering all types of stages. Notes:
+- all results are stored in `stages` field.
+- `like` field enables stages filtering.
+- `SHOW STAGES` output is enclosed in `show_output` field inside `stages`.
+- Output from `DESC STAGE` (which can be turned off by declaring `with_describe = false`, **it's turned on by default**) is enclosed in `describe_output` field inside `stages`.
+  `DESC STAGE` returns different properties based on the stage and file format type. Consult the documentation to check which ones will be filled for which integration.
+  It's important to limit the records and calls to Snowflake to the minimum. That's why we recommend assessing which information you need from the data source and then providing strong filters and turning off additional fields for better plan performance.
+
+The data source is still in preview. To use it, add `snowflake_stages_datasource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
+
 ### *(new feature)* Storage integrations reworked
 
 #### *(new feature/deprecation)* Storage integration resources

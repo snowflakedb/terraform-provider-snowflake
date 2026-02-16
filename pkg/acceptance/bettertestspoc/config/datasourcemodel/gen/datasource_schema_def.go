@@ -123,6 +123,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.StorageIntegrations().Schema,
 	},
 	{
+		name:   "Stages",
+		schema: datasources.Stages().Schema,
+	},
+	{
 		name:   "Streamlits",
 		schema: datasources.Streamlits().Schema,
 	},

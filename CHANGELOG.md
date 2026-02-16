@@ -1,5 +1,74 @@
 # Changelog
 
+## [2.13.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.12.0...v2.13.0) (2026-02-12)
+
+
+### 🎉 **What's new:**
+
+* Add AVRO file format to internal stage ([#4422](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4422)) ([df76a7b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/df76a7b3305105224e7867d7edf64e8871f81cbd))
+* Add future grants support with strict privilege management ([#4296](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4296)) ([9d209f1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9d209f162224a3c8c629603b878475df6fd83871))
+* Add JSON file format to internal stage ([#4420](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4420)) ([86ce3c6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/86ce3c6af0a1bda2cee0fdc449950c1479db23a6))
+* Add named and CSV file format to internal stage ([#4418](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4418)) ([030acbb](https://github.com/snowflakedb/terraform-provider-snowflake/commit/030acbbaf16c73b343383a792b7dc555c5517195))
+* Add ORC file format to internal stage ([#4423](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4423)) ([1001b63](https://github.com/snowflakedb/terraform-provider-snowflake/commit/1001b63f8c1b2d829e35c3d4f7dc96bd2efb56dc))
+* Add Parquet file format to internal stage ([#4424](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4424)) ([129e6b0](https://github.com/snowflakedb/terraform-provider-snowflake/commit/129e6b0a363d18b9c27134b3ed54315933bb3fca))
+* Add storage integration migration guide entry and improve docs ([#4430](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4430)) ([d180262](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d180262de73daa3d7ffd23a286c83760d6d17ec7))
+* Add strict privilege management behavior to grant privileges to account role ([#4280](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4280)) ([977a5eb](https://github.com/snowflakedb/terraform-provider-snowflake/commit/977a5eb3dd2497182e5db6d7661a44f50bdaffa6))
+* Add the external_azure_stage resource ([#4407](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4407)) ([511cca6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/511cca60216a14b10ca65d6286191f74d23d1247))
+* Add the internal_stage resource ([#4404](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4404)) ([c0b6da3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c0b6da386df9302edfbb77e4c7a1aacd43cad8f5))
+* Add the new external_gcs_stage resource ([#4409](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4409)) ([9931193](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9931193c8ca38ba3145c0ea433b2f2c0d1c8a21d))
+* Add the new external_s3_compatible_stage resource ([#4411](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4411)) ([aea0b94](https://github.com/snowflakedb/terraform-provider-snowflake/commit/aea0b940f401194dde3153380aa168a571afda57))
+* Add the new external_s3_stage resource ([#4410](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4410)) ([cc15db6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/cc15db6e3e5be0b812452effa383fb63cef6b419))
+* Add XML file format to internal stage ([#4425](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4425)) ([af5de04](https://github.com/snowflakedb/terraform-provider-snowflake/commit/af5de04a2d1bbebcf64d6e7c448c71ea58111767))
+* Enhance region mappings in `current_account` datasource ([#4376](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4376)) ([91a20c7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/91a20c79770250c87ca116f0352d9065ecbfc633))
+* Final changes in stage resources ([#4431](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4431)) ([35e82e5](https://github.com/snowflakedb/terraform-provider-snowflake/commit/35e82e5501b7a40d5b375d0dd6d594059aaae22e))
+* Implement AWS storage integration resource ([#4426](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4426)) ([928e938](https://github.com/snowflakedb/terraform-provider-snowflake/commit/928e938391af30747e39b656597c5c9ac9338ff7))
+* Implement Azure storage integration resource ([#4427](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4427)) ([f403753](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f403753e891c819c7b29e1f5f212efbbce4a6e19))
+* Implement GCS storage integration resource ([#4428](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4428)) ([b09e6a6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b09e6a6fd44c89e7cc15788741a877d99346d1a2))
+* Prepare new storage integration resources ([#4421](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4421)) ([38e0bb2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/38e0bb21bf897b44d5994eb836f2e84855db72fe))
+* Rework stages data source ([#4432](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4432)) ([d23ac94](https://github.com/snowflakedb/terraform-provider-snowflake/commit/d23ac947a54970856431992d31d607dc08d75dff))
+* Rework storage integrations data source ([#4429](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4429)) ([c43e50a](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c43e50a9087afc74614bce71d25cada5f7237d29))
+* WIF support for legacy service and service users ([#4367](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4367)) ([7b43646](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7b43646285d3666ac7eb36bc9d2fbec58134d6d3))
+
+
+### 🔧 **Misc**
+
+* Add documentation for new strict privilege management behavior ([#4282](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4282)) ([73b0e27](https://github.com/snowflakedb/terraform-provider-snowflake/commit/73b0e2732e90d69e4d0526227f879e09bc92ba83))
+* Add experimental features to contributing ([#4386](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4386)) ([788852b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/788852b6b30cb514bbc93f18facf2381c883fc2b))
+* Add experimental features with descriptions to the registry documentation ([#4350](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4350)) ([b5cbeba](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b5cbebae6caf173b1dd4588585fd4f19e6fd071b))
+* Add holiday note to README ([#4321](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4321)) ([b91c1b2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b91c1b29cd2a777e8ac988b9faab313bca045b99))
+* Add missing WIF integration tests ([#4381](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4381)) ([bf3658f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/bf3658f2ac3a4d6ba0ee4d99813d7328c62f40a7))
+* Add new workflow for new go driver versions ([#4402](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4402)) ([8112e7e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8112e7e8e70fdf1cf3fe06aacccb1aa921e7ebc9))
+* Add proxy acceptance test to the provider. ([#4310](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4310)) ([a3ac354](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a3ac35471d4178133e1bb008d744b8d50165c4e5))
+* Add proxy section to the registry documentation ([#4320](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4320)) ([2c13628](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2c136289467bdb90a4fbb01e22f081121b8024eb))
+* Adjust authentication policies due to 2025_06 general enablement ([#4375](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4375)) ([2156beb](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2156beb4d6b2f1f7d9ecb1554beb690013b46f2a))
+* Adjust authentication policy snowflake output handling ([#4261](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4261)) ([31ec0a6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/31ec0a65244d9e5249d1384c36809b2951d8485a))
+* Adjustments before strict privilege management behavior change in grants ([#4281](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4281)) ([0d0291f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0d0291fc4eb269dd4827a1a4882e77aadc3e0726))
+* Extract storage integration details for describe outputs ([#4419](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4419)) ([5219f53](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5219f53717cc2363ef2a019968bbd05298282ec9))
+* Fix a warehouse integration test ([#4394](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4394)) ([91be3f6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/91be3f6c2dfe6801e31af1b6e7074ecf44cc21b1))
+* Fix failing test ([#4408](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4408)) ([16d2e5e](https://github.com/snowflakedb/terraform-provider-snowflake/commit/16d2e5edb54b3b9c3c9f9cdea007c5505953a87f))
+* Fix tests ([#4435](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4435)) ([dcbbb5c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/dcbbb5cab75333f4823bb2aa1b24d2b4aaf7f5da))
+* Gov adjustments ([#4391](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4391)) ([f09dddb](https://github.com/snowflakedb/terraform-provider-snowflake/commit/f09dddb3614e1b6cc0c8aa8d2c101f01c63516ae))
+* Make the parameters output conditional - other resources ([#4388](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4388)) ([e1ba9ee](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e1ba9eee4694c9e4beab6ed23a8c6cb01934764a))
+* Make the parameters output conditional - user resources and data source ([#4387](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4387)) ([5e8d47d](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5e8d47d3d8499a92fad4201c614ca0593e580a59)), closes [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)
+* Move security integration ds tests to account-level ([#4373](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4373)) ([0788865](https://github.com/snowflakedb/terraform-provider-snowflake/commit/078886597430b77a77c8c3cde1fd92e65b6eb31c))
+* Propose usage of service users in migration tests ([#4368](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4368)) ([4050a29](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4050a29f0618482efed8acc84eef2d653115e687))
+* Refactor stage file format and copy options in SDK ([#4377](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4377)) ([3717053](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3717053844f44315e55af0f9cb0bd3e33630bf40))
+* Remove mkowalski from protected users ([#4363](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4363)) ([b797314](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b797314a3d0facdf5da5bc648ed6799a7c0af8ae))
+* Small fixes in the migration script's manual tests ([#4313](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4313)) ([8b070d7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8b070d74c410339670ce5a1e05540533b9c6a8ee))
+* Stage integration tests ([#4389](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4389)) ([35b3909](https://github.com/snowflakedb/terraform-provider-snowflake/commit/35b3909693df21df75e09bb26b3ee10c6a829bff))
+* Stages SDK continued ([#4366](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4366)) ([ec80d34](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ec80d34652a70313231eef013c3f2d3d2b75452e))
+* Update storage integrations SDK - part1 ([#4395](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4395)) ([e80c3a2](https://github.com/snowflakedb/terraform-provider-snowflake/commit/e80c3a2b518faf29f8c8a8ee80f6b7c3507dcdb3))
+* Use a new file format in stages SDK ([#4378](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4378)) ([5ec27a7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/5ec27a7fac41edfee0c95c9d031d06a6ca0d3838))
+* Use service users in migration tests ([#4393](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4393)) ([c6d1593](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c6d1593e2cc4ff2cb7e612901de6f2580cf40d1b)), closes [#4368](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4368)
+* Use UNSET for certain fields in warehouses ([#4343](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4343)) ([2c844b7](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2c844b79ff039fa470fc36945cf73e28ee976cc2))
+
+
+### 🐛 **Bug fixes:**
+
+* Make policy and privatelink compatible with quoted identifiers ([#4390](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4390)) ([b023918](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b023918cf4b7b60fa778a62b17dae9ea6b1ac393))
+* Preserve state after failed schema updates due to insufficient privileges ([#4340](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4340)) ([c47d310](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c47d3105dd4e72806509f9ed028f7509ef4d4626))
+* tag association identifier parsing during update ([#4412](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4412)) ([14c2d39](https://github.com/snowflakedb/terraform-provider-snowflake/commit/14c2d395d60cc44c963960fcb9fff27c3fdd0f9d)), closes [#4403](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4403)
+
 ## [2.12.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.11.0...v2.12.0) (2025-12-18)
 
 

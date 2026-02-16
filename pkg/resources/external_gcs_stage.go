@@ -180,10 +180,8 @@ func ImportExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 			return nil, err
 		}
 	}
-	if details.Location != nil {
-		if err := d.Set("url", details.Location.Url); err != nil {
-			return nil, err
-		}
+	if err := d.Set("url", stage.Url); err != nil {
+		return nil, err
 	}
 	if stage.StorageIntegration != nil {
 		if err := d.Set("storage_integration", stage.StorageIntegration.Name()); err != nil {

@@ -144,87 +144,16 @@ func (i *InternalStageModel) WithFileFormatMultipleFormats() *InternalStageModel
 	)
 }
 
-// WithFileFormatJson sets inline JSON file format with the provided options.
+func (i *InternalStageModel) WithFileFormatAvro(opts sdk.FileFormatAvroOptions) *InternalStageModel {
+	return i.WithFileFormatValue(stageFileFormatAvro(opts))
+}
+
+func (i *InternalStageModel) WithFileFormatOrc(opts sdk.FileFormatOrcOptions) *InternalStageModel {
+	return i.WithFileFormatValue(stageFileFormatOrc(opts))
+}
+
 func (i *InternalStageModel) WithFileFormatJson(opts sdk.FileFormatJsonOptions) *InternalStageModel {
-	jsonMap := make(map[string]tfconfig.Variable)
-
-	if opts.Compression != nil {
-		jsonMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
-	}
-	if opts.DateFormat != nil {
-		if opts.DateFormat.Auto != nil && *opts.DateFormat.Auto {
-			jsonMap["date_format"] = tfconfig.StringVariable("AUTO")
-		} else if opts.DateFormat.Value != nil {
-			jsonMap["date_format"] = tfconfig.StringVariable(*opts.DateFormat.Value)
-		}
-	}
-	if opts.TimeFormat != nil {
-		if opts.TimeFormat.Auto != nil && *opts.TimeFormat.Auto {
-			jsonMap["time_format"] = tfconfig.StringVariable("AUTO")
-		} else if opts.TimeFormat.Value != nil {
-			jsonMap["time_format"] = tfconfig.StringVariable(*opts.TimeFormat.Value)
-		}
-	}
-	if opts.TimestampFormat != nil {
-		if opts.TimestampFormat.Auto != nil && *opts.TimestampFormat.Auto {
-			jsonMap["timestamp_format"] = tfconfig.StringVariable("AUTO")
-		} else if opts.TimestampFormat.Value != nil {
-			jsonMap["timestamp_format"] = tfconfig.StringVariable(*opts.TimestampFormat.Value)
-		}
-	}
-	if opts.BinaryFormat != nil {
-		jsonMap["binary_format"] = tfconfig.StringVariable(string(*opts.BinaryFormat))
-	}
-	if opts.TrimSpace != nil {
-		jsonMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
-	}
-	if opts.MultiLine != nil {
-		jsonMap["multi_line"] = tfconfig.BoolVariable(*opts.MultiLine)
-	}
-	if len(opts.NullIf) > 0 {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
-		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v.S)
-		}
-		jsonMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
-	}
-	if opts.FileExtension != nil {
-		jsonMap["file_extension"] = tfconfig.StringVariable(*opts.FileExtension)
-	}
-	if opts.EnableOctal != nil {
-		jsonMap["enable_octal"] = tfconfig.BoolVariable(*opts.EnableOctal)
-	}
-	if opts.AllowDuplicate != nil {
-		jsonMap["allow_duplicate"] = tfconfig.BoolVariable(*opts.AllowDuplicate)
-	}
-	if opts.StripOuterArray != nil {
-		jsonMap["strip_outer_array"] = tfconfig.BoolVariable(*opts.StripOuterArray)
-	}
-	if opts.StripNullValues != nil {
-		jsonMap["strip_null_values"] = tfconfig.BoolVariable(*opts.StripNullValues)
-	}
-	if opts.ReplaceInvalidCharacters != nil {
-		jsonMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
-	}
-	if opts.IgnoreUtf8Errors != nil {
-		jsonMap["ignore_utf8_errors"] = tfconfig.BoolVariable(*opts.IgnoreUtf8Errors)
-	}
-	if opts.SkipByteOrderMark != nil {
-		jsonMap["skip_byte_order_mark"] = tfconfig.BoolVariable(*opts.SkipByteOrderMark)
-	}
-
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(jsonMap) == 0 {
-		jsonMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
-	return i.WithFileFormatValue(
-		tfconfig.ListVariable(tfconfig.ObjectVariable(
-			map[string]tfconfig.Variable{
-				"json": tfconfig.ListVariable(tfconfig.ObjectVariable(jsonMap)),
-			},
-		)),
-	)
+	return i.WithFileFormatValue(stageFileFormatJson(opts))
 }
 
 func (i *InternalStageModel) WithFileFormatJsonInvalidCompression() *InternalStageModel {
@@ -258,115 +187,8 @@ func (i *InternalStageModel) WithFileFormatJsonConflictingOptions() *InternalSta
 	})
 }
 
-// WithFileFormatAvro sets inline AVRO file format with the provided options.
-func (i *InternalStageModel) WithFileFormatAvro(opts sdk.FileFormatAvroOptions) *InternalStageModel {
-	avroMap := make(map[string]tfconfig.Variable)
-
-	if opts.Compression != nil {
-		avroMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
-	}
-	if opts.TrimSpace != nil {
-		avroMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
-	}
-	if opts.ReplaceInvalidCharacters != nil {
-		avroMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
-	}
-	if len(opts.NullIf) > 0 {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
-		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v.S)
-		}
-		avroMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
-	}
-
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(avroMap) == 0 {
-		avroMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
-	return i.WithFileFormatValue(
-		tfconfig.ListVariable(tfconfig.ObjectVariable(
-			map[string]tfconfig.Variable{
-				"avro": tfconfig.ListVariable(tfconfig.ObjectVariable(avroMap)),
-			},
-		)),
-	)
-}
-
-// WithFileFormatOrc sets inline ORC file format with the provided options.
-func (i *InternalStageModel) WithFileFormatOrc(opts sdk.FileFormatOrcOptions) *InternalStageModel {
-	orcMap := make(map[string]tfconfig.Variable)
-
-	if opts.TrimSpace != nil {
-		orcMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
-	}
-	if opts.ReplaceInvalidCharacters != nil {
-		orcMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
-	}
-	if len(opts.NullIf) > 0 {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
-		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v.S)
-		}
-		orcMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
-	}
-
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(orcMap) == 0 {
-		orcMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
-	return i.WithFileFormatValue(
-		tfconfig.ListVariable(tfconfig.ObjectVariable(
-			map[string]tfconfig.Variable{
-				"orc": tfconfig.ListVariable(tfconfig.ObjectVariable(orcMap)),
-			},
-		)),
-	)
-}
-
-// WithFileFormatParquet sets inline Parquet file format with the provided options.
 func (i *InternalStageModel) WithFileFormatParquet(opts sdk.FileFormatParquetOptions) *InternalStageModel {
-	parquetMap := make(map[string]tfconfig.Variable)
-
-	if opts.Compression != nil {
-		parquetMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
-	}
-	if opts.BinaryAsText != nil {
-		parquetMap["binary_as_text"] = tfconfig.BoolVariable(*opts.BinaryAsText)
-	}
-	if opts.UseLogicalType != nil {
-		parquetMap["use_logical_type"] = tfconfig.BoolVariable(*opts.UseLogicalType)
-	}
-	if opts.TrimSpace != nil {
-		parquetMap["trim_space"] = tfconfig.BoolVariable(*opts.TrimSpace)
-	}
-	if opts.UseVectorizedScanner != nil {
-		parquetMap["use_vectorized_scanner"] = tfconfig.BoolVariable(*opts.UseVectorizedScanner)
-	}
-	if opts.ReplaceInvalidCharacters != nil {
-		parquetMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
-	}
-	if len(opts.NullIf) > 0 {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
-		for idx, v := range opts.NullIf {
-			nullIfVars[idx] = tfconfig.StringVariable(v.S)
-		}
-		parquetMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
-	}
-
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(parquetMap) == 0 {
-		parquetMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
-	return i.WithFileFormatValue(
-		tfconfig.ListVariable(tfconfig.ObjectVariable(
-			map[string]tfconfig.Variable{
-				"parquet": tfconfig.ListVariable(tfconfig.ObjectVariable(parquetMap)),
-			},
-		)),
-	)
+	return i.WithFileFormatValue(stageFileFormatParquet(opts))
 }
 
 func (i *InternalStageModel) WithFileFormatParquetInvalidCompression() *InternalStageModel {
@@ -393,44 +215,8 @@ func (i *InternalStageModel) WithFileFormatParquetInvalidBooleanString() *Intern
 	)
 }
 
-// WithFileFormatXml sets inline XML file format with the provided options.
 func (i *InternalStageModel) WithFileFormatXml(opts sdk.FileFormatXmlOptions) *InternalStageModel {
-	xmlMap := make(map[string]tfconfig.Variable)
-
-	if opts.Compression != nil {
-		xmlMap["compression"] = tfconfig.StringVariable(string(*opts.Compression))
-	}
-	if opts.IgnoreUtf8Errors != nil {
-		xmlMap["ignore_utf8_errors"] = tfconfig.BoolVariable(*opts.IgnoreUtf8Errors)
-	}
-	if opts.PreserveSpace != nil {
-		xmlMap["preserve_space"] = tfconfig.BoolVariable(*opts.PreserveSpace)
-	}
-	if opts.StripOuterElement != nil {
-		xmlMap["strip_outer_element"] = tfconfig.BoolVariable(*opts.StripOuterElement)
-	}
-	if opts.DisableAutoConvert != nil {
-		xmlMap["disable_auto_convert"] = tfconfig.BoolVariable(*opts.DisableAutoConvert)
-	}
-	if opts.ReplaceInvalidCharacters != nil {
-		xmlMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
-	}
-	if opts.SkipByteOrderMark != nil {
-		xmlMap["skip_byte_order_mark"] = tfconfig.BoolVariable(*opts.SkipByteOrderMark)
-	}
-
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(xmlMap) == 0 {
-		xmlMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
-	return i.WithFileFormatValue(
-		tfconfig.ListVariable(tfconfig.ObjectVariable(
-			map[string]tfconfig.Variable{
-				"xml": tfconfig.ListVariable(tfconfig.ObjectVariable(xmlMap)),
-			},
-		)),
-	)
+	return i.WithFileFormatValue(stageFileFormatXml(opts))
 }
 
 func (i *InternalStageModel) WithFileFormatXmlConflictingOptions() *InternalStageModel {

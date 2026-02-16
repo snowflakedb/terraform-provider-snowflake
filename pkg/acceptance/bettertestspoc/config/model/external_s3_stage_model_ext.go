@@ -177,3 +177,11 @@ func (e *ExternalS3StageModel) WithCredentialsAwsRole(roleArn string) *ExternalS
 	))
 	return e
 }
+
+func (e *ExternalS3StageModel) WithFileFormatOrc(opts sdk.FileFormatOrcOptions) *ExternalS3StageModel {
+	return e.WithFileFormatValue(stageFileFormatOrc(opts))
+}
+
+func (e *ExternalS3StageModel) WithFileFormatJson(opts sdk.FileFormatJsonOptions) *ExternalS3StageModel {
+	return e.WithFileFormatValue(stageFileFormatJson(opts))
+}

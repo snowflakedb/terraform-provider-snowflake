@@ -185,14 +185,14 @@ func (s *StageDetailsAssert) HasStageLocation(expected sdk.StageLocationDetails)
 	return s
 }
 
-func (s *StageDetailsAssert) HasStageLocationUrl(expected string) *StageDetailsAssert {
+func (s *StageDetailsAssert) HasStageLocationUrl(expected []string) *StageDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
 		t.Helper()
 		if o.Location == nil {
 			return fmt.Errorf("expected stage location to have value; got: nil")
 		}
-		if o.Location.Url != expected {
-			return fmt.Errorf("expected stage location url: %v; got: %v", expected, o.Location.Url)
+		if !reflect.DeepEqual(o.Location.Url, expected) {
+			return fmt.Errorf("expected stage location url:\n%+v\ngot:\n%+v", expected, o.Location.Url)
 		}
 		return nil
 	})

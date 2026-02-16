@@ -92,7 +92,7 @@ var externalS3CompatStageSchema = func() map[string]*schema.Schema {
 			Description: "Specifies a cloud provider for the stage. This field is used for checking external changes and recreating the resources if needed.",
 		},
 	}
-	return collections.MergeMaps(stageCommonSchema(schemas.AwsStageDescribeSchema()), s3CompatStage)
+	return collections.MergeMaps(stageCommonSchema(schemas.AwsCompatibleStageDescribeSchema()), s3CompatStage)
 }()
 
 func ExternalS3CompatibleStage() *schema.Resource {
@@ -112,7 +112,7 @@ func ExternalS3CompatibleStage() *schema.Resource {
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeExternal),
 			RecreateWhenStageCloudChangedExternally(sdk.StageCloudAws),
-			// This is the same configuration as for external S3 stage, but the additional differences are:
+			// This is a similar configuration as for external S3 stage, but the additional differences are:
 			// - endpoint is required for S3-compatible stages, but it's null for S3 stages
 			// - url starts with s3compat:// instead of s3://
 			// changes on both of these fields trigger ForceNew.
@@ -158,10 +158,8 @@ func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 			return nil, err
 		}
 	}
-	if details.Location != nil {
-		if err := d.Set("url", details.Location.Url); err != nil {
-			return nil, err
-		}
+	if err := d.Set("url", stage.Url); err != nil {
+		return nil, err
 	}
 	if stage.Endpoint != nil {
 		if err := d.Set("endpoint", *stage.Endpoint); err != nil {
@@ -244,7 +242,7 @@ func ReadExternalS3CompatStageFunc(withExternalChangesMarking bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		detailsSchema, err := schemas.StageDescribeToSchema(*details)
+		detailsSchema, err := schemas.AwsCompatibleStageDescribeToSchema(*details)
 		if err != nil {
 			return diag.FromErr(err)
 		}
