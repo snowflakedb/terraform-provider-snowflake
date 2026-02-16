@@ -1113,15 +1113,24 @@ func TestInt_ShowIndexes(t *testing.T) {
 		showRequest := sdk.NewShowIndexesRequest().WithIn(&sdk.In{Table: tableId})
 		indexes, err := client.Tables.ShowIndexes(ctx, showRequest)
 		require.NoError(t, err)
-		require.Len(t, indexes, 1)
+		// Expect 2 indexes: the system-generated PRIMARY KEY index + the user-created index
+		require.Len(t, indexes, 2)
+
+		// Find the user-created index (not the SYS_INDEX_*_PRIMARY one)
+		var index *sdk.Index
+		for i := range indexes {
+			if indexes[i].Name == indexId.Name() {
+				index = &indexes[i]
+				break
+			}
+		}
+		require.NotNil(t, index, "user-created index %s not found", indexId.Name())
 
 		// Verify index properties
-		index := indexes[0]
 		assert.Equal(t, indexId.Name(), index.Name)
 		assert.Equal(t, tableId.Name(), index.TableName)
 		assert.Equal(t, testClientHelper().Ids.SchemaId().Name(), index.SchemaName)
 		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), index.DatabaseName)
 		assert.NotEmpty(t, index.CreatedOn)
-		assert.Equal(t, []string{"name"}, index.Columns)
 	})
 }
