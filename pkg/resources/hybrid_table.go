@@ -704,12 +704,25 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			}
 		}
 
-		// Create new indexes
-		for indexName, columns := range newIndexMap {
-			if _, exists := oldIndexMap[indexName]; !exists {
-				// Apply selective quoting to match column definitions
-				quotedColumns := quoteColumnNamesSelectively(columns)
+		// Create new indexes or update indexes with changed columns
+		for indexName, newColumns := range newIndexMap {
+			oldColumns, exists := oldIndexMap[indexName]
+
+			// Check if index doesn't exist OR columns changed
+			if !exists || !stringSlicesEqual(oldColumns, newColumns) {
+				if exists {
+					// Drop old index first if columns changed
+					indexId := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), id.SchemaName(), indexName)
+					dropRequest := sdk.NewDropIndexRequest(indexId).WithIfExists(sdk.Bool(true))
+					err := client.Tables.DropIndex(ctx, dropRequest)
+					if err != nil {
+						return diag.FromErr(fmt.Errorf("error dropping index %v: %w", indexName, err))
+					}
+				}
+
+				// Create index with new/updated columns
 				indexId := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), id.SchemaName(), indexName)
+				quotedColumns := quoteColumnNamesSelectively(newColumns)
 				createRequest := sdk.NewCreateIndexRequest(indexId, id, quotedColumns)
 				err := client.Tables.CreateIndex(ctx, createRequest)
 				if err != nil {
@@ -922,4 +935,17 @@ func forceNewOnColumnStructureChange(_ context.Context, d *schema.ResourceDiff, 
 	}
 
 	return nil
+}
+
+// stringSlicesEqual compares two string slices for equality.
+func stringSlicesEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
