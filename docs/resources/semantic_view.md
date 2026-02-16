@@ -204,7 +204,7 @@ Required:
 Optional:
 
 - `comment` (String) Specifies a comment for the fact.
-- `is_private` (Boolean) (Default: `false`) Specifies whether the fact is private.
+- `is_private` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the fact is private.
 - `synonym` (Set of String) List of synonyms for the fact.
 
 
@@ -213,7 +213,7 @@ Optional:
 
 Optional:
 
-- `is_private` (Boolean) (Default: `false`) Specifies whether the metric is private.
+- `is_private` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the metric is private.
 - `semantic_expression` (Block List, Max: 1) Specifies a semantic expression for a metric definition. Cannot be used in combination with a window function. (see [below for nested schema](#nestedblock--metrics--semantic_expression))
 - `window_function` (Block List, Max: 1) Specifies a window function for a metric definition. Cannot be used in combination with a semantic expression. (see [below for nested schema](#nestedblock--metrics--window_function))
 
