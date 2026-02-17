@@ -20,7 +20,7 @@ type CreateHybridTableRequest struct {
 }
 
 type AlterHybridTableRequest struct {
-	IfNotExists       *bool
+	IfExists          *bool
 	name              SchemaObjectIdentifier // required
 	ConstraintAction  *HybridTableConstraintActionRequest
 	AlterColumnAction *HybridTableAlterColumnActionRequest
@@ -42,7 +42,7 @@ type HybridTableConstraintActionAddRequest struct {
 }
 
 type HybridTableConstraintActionDropRequest struct {
-	ConstraintName       *string
+	Constraintname       *string
 	ColumnConstraintType *ColumnConstraintType
 	Columns              []string
 }

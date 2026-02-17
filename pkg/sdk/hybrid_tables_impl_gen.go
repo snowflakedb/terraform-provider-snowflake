@@ -85,8 +85,8 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 
 func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 	opts := &AlterHybridTableOptions{
-		IfNotExists: r.IfNotExists,
-		name:        r.name,
+		IfExists: r.IfExists,
+		name:     r.name,
 	}
 	if r.ConstraintAction != nil {
 		opts.ConstraintAction = &HybridTableConstraintAction{}
@@ -97,7 +97,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		}
 		if r.ConstraintAction.Drop != nil {
 			opts.ConstraintAction.Drop = &HybridTableConstraintActionDrop{
-				ConstraintName:       r.ConstraintAction.Drop.ConstraintName,
+				Constraintname:       r.ConstraintAction.Drop.Constraintname,
 				ColumnConstraintType: r.ConstraintAction.Drop.ColumnConstraintType,
 				Columns:              r.ConstraintAction.Drop.Columns,
 			}
@@ -169,24 +169,8 @@ func (r *ShowHybridTableRequest) toOpts() *ShowHybridTableOptions {
 }
 
 func (r hybridTableRow) convert() (*HybridTable, error) {
-	ht := &HybridTable{
-		CreatedOn:    r.CreatedOn,
-		Name:         r.Name,
-		DatabaseName: r.DatabaseName,
-		SchemaName:   r.SchemaName,
-		Rows:         r.Rows,
-		Bytes:        r.Bytes,
-	}
-	if r.Owner.Valid {
-		ht.Owner = r.Owner.String
-	}
-	if r.Comment.Valid {
-		ht.Comment = r.Comment.String
-	}
-	if r.OwnerRoleType.Valid {
-		ht.OwnerRoleType = r.OwnerRoleType.String
-	}
-	return ht, nil
+	// TODO: Mapping
+	return &HybridTable{}, nil
 }
 
 func (r *DescribeHybridTableRequest) toOpts() *DescribeHybridTableOptions {
@@ -197,34 +181,6 @@ func (r *DescribeHybridTableRequest) toOpts() *DescribeHybridTableOptions {
 }
 
 func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
-	d := &HybridTableDetails{
-		Name:       r.Name,
-		Type:       r.Type,
-		Kind:       r.Kind,
-		IsNullable: r.Null,
-		PrimaryKey: r.PrimaryKey,
-		UniqueKey:  r.UniqueKey,
-	}
-	if r.Default.Valid {
-		d.Default = r.Default.String
-	}
-	if r.Check.Valid {
-		d.Check = r.Check.String
-	}
-	if r.Expression.Valid {
-		d.Expression = r.Expression.String
-	}
-	if r.Comment.Valid {
-		d.Comment = r.Comment.String
-	}
-	if r.PolicyName.Valid {
-		d.PolicyName = r.PolicyName.String
-	}
-	if r.PrivacyDomain.Valid {
-		d.PrivacyDomain = r.PrivacyDomain.String
-	}
-	if r.SchemaEvolutionRecord.Valid {
-		d.SchemaEvolutionRecord = r.SchemaEvolutionRecord.String
-	}
-	return d, nil
+	// TODO: Mapping
+	return &HybridTableDetails{}, nil
 }
