@@ -22,6 +22,7 @@ func init() {
 		eventTablesDef,
 		hybridTablesDef,
 		externalFunctionsDef,
+		fileFormatsDef,
 		functionsDef,
 		gitRepositoriesDef,
 		imageRepositoriesDef,

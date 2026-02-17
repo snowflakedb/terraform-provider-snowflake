@@ -1,5 +1,3 @@
-> ⚠️ **Incoming holidays**: The whole team will be absent from the 23rd of December to the 7th of January. Our involvement in GitHub issues during this time will be limited. We will look out for the critical issues, though. Merry Christmas and a Happy New Year!
-
 ## Support
 
 For official support and urgent, production-impacting issues, please [contact Snowflake Support](https://community.snowflake.com/s/article/How-To-Submit-a-Support-Case-in-Snowflake-Lodge).

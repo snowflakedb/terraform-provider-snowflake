@@ -74,12 +74,24 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Execute().Schema,
 	},
 	{
-		name:   "ExternalVolume",
-		schema: resources.ExternalVolume().Schema,
+		name:   "ExternalAzureStage",
+		schema: resources.ExternalAzureStage().Schema,
 	},
 	{
-		name:   "ImageRepository",
-		schema: resources.ImageRepository().Schema,
+		name:   "ExternalGcsStage",
+		schema: resources.ExternalGcsStage().Schema,
+	},
+	{
+		name:   "ExternalS3Stage",
+		schema: resources.ExternalS3Stage().Schema,
+	},
+	{
+		name:   "ExternalS3CompatibleStage",
+		schema: resources.ExternalS3CompatibleStage().Schema,
+	},
+	{
+		name:   "ExternalVolume",
+		schema: resources.ExternalVolume().Schema,
 	},
 	{
 		name:   "ExternalOauthSecurityIntegration",
@@ -108,6 +120,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "GitRepository",
 		schema: resources.GitRepository().Schema,
+	},
+	{
+		name:   "ImageRepository",
+		schema: resources.ImageRepository().Schema,
+	},
+	{
+		name:   "InternalStage",
+		schema: resources.InternalStage().Schema,
 	},
 	{
 		name:   "JobService",
@@ -237,6 +257,18 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "Streamlit",
 		schema: resources.Streamlit().Schema,
+	},
+	{
+		name:   "StorageIntegrationAws",
+		schema: resources.StorageIntegrationAws().Schema,
+	},
+	{
+		name:   "StorageIntegrationAzure",
+		schema: resources.StorageIntegrationAzure().Schema,
+	},
+	{
+		name:   "StorageIntegrationGcs",
+		schema: resources.StorageIntegrationGcs().Schema,
 	},
 	{
 		name:   "StreamOnDirectoryTable",

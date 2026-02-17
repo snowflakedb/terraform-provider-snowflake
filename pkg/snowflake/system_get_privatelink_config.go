@@ -7,11 +7,11 @@ import (
 )
 
 func SystemGetPrivateLinkConfigQuery() string {
-	return `SELECT SYSTEM$GET_PRIVATELINK_CONFIG() AS "config"`
+	return `SELECT SYSTEM$GET_PRIVATELINK_CONFIG() AS "CONFIG"`
 }
 
 type RawPrivateLinkConfig struct {
-	Config string `db:"config"`
+	Config string `db:"CONFIG"`
 }
 
 type privateLinkConfigInternal struct {

@@ -24,6 +24,16 @@ func Map[T any, R any](collection []T, mapper func(T) R) []R {
 	return result
 }
 
+func Filter[T any](collection []T, condition func(T) bool) []T {
+	result := make([]T, 0)
+	for _, o := range collection {
+		if condition(o) {
+			result = append(result, o)
+		}
+	}
+	return result
+}
+
 func MapErr[T any, R any](collection []T, mapper func(T) (R, error)) ([]R, error) {
 	result := make([]R, len(collection))
 	errs := make([]error, 0)

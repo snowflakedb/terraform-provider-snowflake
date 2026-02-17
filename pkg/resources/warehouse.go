@@ -118,16 +118,20 @@ var warehouseSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseResourceConstraintWithoutGeneration),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseResourceConstraintWithoutGeneration), IgnoreChangeToCurrentSnowflakeValueInShow("resource_constraint")),
-		Description:      fmt.Sprintf("Specifies the resource constraint for the warehouse. Only available for snowpark-optimized warehouses. For setting generation please use the `generation` field. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraintsWithoutGenerations)),
-		ConflictsWith:    []string{"generation"},
+		Description: joinWithSpace("Specifies the resource constraint for the warehouse. Only available for snowpark-optimized warehouses. For setting generation please use the `generation` field.",
+			"Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint.",
+			fmt.Sprintf("Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseResourceConstraintsWithoutGenerations)),
+			"Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration."),
+		ConflictsWith: []string{"generation"},
 	},
 	"generation": {
 		Type:             schema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseGeneration),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseGeneration), IgnoreChangeToCurrentSnowflakeValueInShow("generation")),
-		Description:      fmt.Sprintf("Specifies the generation for the warehouse. Only available for standard warehouses. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseGenerations)),
-		ConflictsWith:    []string{"resource_constraint"},
+		Description: joinWithSpace(fmt.Sprintf("Specifies the generation for the warehouse. Only available for standard warehouses. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllWarehouseGenerations)),
+			"Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration."),
+		ConflictsWith: []string{"resource_constraint"},
 	},
 	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
 		Type:             schema.TypeInt,
@@ -520,7 +524,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseParametersToSchema(warehouseParameters)}); err != nil {
+		if err = d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseParametersToSchema(warehouseParameters, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -562,9 +566,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			set.WarehouseType = &warehouseType
 		} else {
-			// TODO [SNOW-1473453]: UNSET of type does not work
-			// unset.WarehouseType = sdk.Bool(true)
-			set.WarehouseType = sdk.Pointer(sdk.WarehouseTypeStandard)
+			unset.WarehouseType = sdk.Bool(true)
 		}
 	}
 	if d.HasChange("warehouse_size") {
@@ -599,9 +601,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			set.ScalingPolicy = &scalingPolicy
 		} else {
-			// TODO [SNOW-1473453]: UNSET of scaling policy does not work
-			// unset.ScalingPolicy = sdk.Bool(true)
-			set.ScalingPolicy = sdk.Pointer(sdk.ScalingPolicyStandard)
+			unset.ScalingPolicy = sdk.Bool(true)
 		}
 	}
 	if d.HasChange("auto_suspend") {
@@ -621,9 +621,7 @@ func UpdateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 			}
 			set.AutoResume = sdk.Bool(parsed)
 		} else {
-			// TODO [SNOW-1473453]: UNSET of auto resume works incorrectly
-			// unset.AutoResume = sdk.Bool(true)
-			set.AutoResume = sdk.Bool(true)
+			unset.AutoResume = sdk.Bool(true)
 		}
 	}
 	if d.HasChange("resource_monitor") {

@@ -1,0 +1,43 @@
+name: Notify about new driver version
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  jira-new-driver-version:
+    environment: jira
+    runs-on: ubuntu-latest
+    name: Create an issue
+    permissions: {}
+    if: >
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      contains(github.event.pull_request.title, 'github.com/snowflakedb/gosnowflake')
+    steps:
+      - name: Extract version
+        id: extract_version
+        run: |
+          # Extract the target version from the PR title using regex.
+          # Example: "chore(deps): bump github.com/snowflakedb/gosnowflake from 0.45.0 to 0.47.0" will match and extract "0.47.0".
+          version=$(echo "${{ github.event.pull_request.title }}" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+$' || echo "")
+          if [ -z "$version" ]; then
+            echo "Error: Could not extract version from PR title"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Curl to webhook
+        run: |
+          curl --fail --location --request POST '${{ secrets.JIRA_WEBHOOK_URL }}' \
+          --header 'X-Automation-Webhook-Token: ${{ secrets.JIRA_WEBHOOK_TOKEN }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+            "issues": [
+              "${{ secrets.JIRA_PROJECT_NEW_DRIVER_VERSIONS }}"
+            ],
+            "data": {
+              "summary": "${{ format('Go Driver Upgrade: {0}', steps.extract_version.outputs.version) }}",
+              "description": "*URL*\n${{ github.event.pull_request.html_url }}",
+              "parent": "${{ secrets.JIRA_PROJECT_NEW_DRIVER_VERSIONS }}"
+            }
+          }'

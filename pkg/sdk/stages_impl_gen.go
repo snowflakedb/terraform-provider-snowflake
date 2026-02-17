@@ -4,14 +4,17 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ Stages = (*stages)(nil)
 
-var _ convertibleRow[StageProperty] = new(stageDescRow)
-var _ convertibleRow[Stage] = new(stageShowRow)
+var (
+	_ convertibleRow[StageProperty] = new(stageDescRow)
+	_ convertibleRow[Stage]         = new(stageShowRow)
+)
 
 type stages struct {
 	client *Client
@@ -126,8 +129,12 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 		Tag:         r.Tag,
 	}
 	if r.Encryption != nil {
-		opts.Encryption = &InternalStageEncryption{
-			EncryptionType: r.Encryption.EncryptionType,
+		opts.Encryption = &InternalStageEncryption{}
+		if r.Encryption.SnowflakeFull != nil {
+			opts.Encryption.SnowflakeFull = &InternalStageEncryptionSnowflakeFull{}
+		}
+		if r.Encryption.SnowflakeSse != nil {
+			opts.Encryption.SnowflakeSse = &InternalStageEncryptionSnowflakeSse{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -137,25 +144,9 @@ func (r *CreateInternalStageRequest) toOpts() *CreateInternalStageOptions {
 		}
 	}
 	if r.FileFormat != nil {
-		// adjusted manually
-		opts.FileFormat = r.FileFormat.toOpts()
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+		opts.FileFormat = &StageFileFormat{
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -185,14 +176,26 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 		}
 	}
 	if r.ExternalStageParams.Encryption != nil {
-		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
-			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-			MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
-			KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
+		opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{}
+		if r.ExternalStageParams.Encryption.AwsCse != nil {
+			opts.ExternalStageParams.Encryption.AwsCse = &ExternalStageS3EncryptionAwsCse{
+				MasterKey: r.ExternalStageParams.Encryption.AwsCse.MasterKey,
+			}
+		}
+		if r.ExternalStageParams.Encryption.AwsSseS3 != nil {
+			opts.ExternalStageParams.Encryption.AwsSseS3 = &ExternalStageS3EncryptionAwsSseS3{}
+		}
+		if r.ExternalStageParams.Encryption.AwsSseKms != nil {
+			opts.ExternalStageParams.Encryption.AwsSseKms = &ExternalStageS3EncryptionAwsSseKms{
+				KmsKeyId: r.ExternalStageParams.Encryption.AwsSseKms.KmsKeyId,
+			}
+		}
+		if r.ExternalStageParams.Encryption.None != nil {
+			opts.ExternalStageParams.Encryption.None = &ExternalStageS3EncryptionNone{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
-		opts.DirectoryTableOptions = &ExternalS3DirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
 			Enable:          r.DirectoryTableOptions.Enable,
 			RefreshOnCreate: r.DirectoryTableOptions.RefreshOnCreate,
 			AutoRefresh:     r.DirectoryTableOptions.AutoRefresh,
@@ -200,28 +203,8 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 	}
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
-			FormatName:     r.FileFormat.FormatName,
-			FileFormatType: r.FileFormat.FileFormatType,
-			// adjusted manually
-			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -241,9 +224,14 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 		StorageIntegration: r.ExternalStageParams.StorageIntegration,
 	}
 	if r.ExternalStageParams.Encryption != nil {
-		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{
-			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-			KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
+		opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{}
+		if r.ExternalStageParams.Encryption.GcsSseKms != nil {
+			opts.ExternalStageParams.Encryption.GcsSseKms = &ExternalStageGCSEncryptionGcsSseKms{
+				KmsKeyId: r.ExternalStageParams.Encryption.GcsSseKms.KmsKeyId,
+			}
+		}
+		if r.ExternalStageParams.Encryption.None != nil {
+			opts.ExternalStageParams.Encryption.None = &ExternalStageGCSEncryptionNone{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -256,28 +244,8 @@ func (r *CreateOnGCSStageRequest) toOpts() *CreateOnGCSStageOptions {
 	}
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
-			FormatName:     r.FileFormat.FormatName,
-			FileFormatType: r.FileFormat.FileFormatType,
-			// adjusted manually
-			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -303,9 +271,14 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 		}
 	}
 	if r.ExternalStageParams.Encryption != nil {
-		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{
-			EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-			MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
+		opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{}
+		if r.ExternalStageParams.Encryption.AzureCse != nil {
+			opts.ExternalStageParams.Encryption.AzureCse = &ExternalStageAzureEncryptionAzureCse{
+				MasterKey: r.ExternalStageParams.Encryption.AzureCse.MasterKey,
+			}
+		}
+		if r.ExternalStageParams.Encryption.None != nil {
+			opts.ExternalStageParams.Encryption.None = &ExternalStageAzureEncryptionNone{}
 		}
 	}
 	if r.DirectoryTableOptions != nil {
@@ -318,28 +291,8 @@ func (r *CreateOnAzureStageRequest) toOpts() *CreateOnAzureStageOptions {
 	}
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
-			FormatName:     r.FileFormat.FormatName,
-			FileFormatType: r.FileFormat.FileFormatType,
-			// adjusted manually
-			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -365,7 +318,7 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 		}
 	}
 	if r.DirectoryTableOptions != nil {
-		opts.DirectoryTableOptions = &ExternalS3DirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
 			Enable:          r.DirectoryTableOptions.Enable,
 			RefreshOnCreate: r.DirectoryTableOptions.RefreshOnCreate,
 			AutoRefresh:     r.DirectoryTableOptions.AutoRefresh,
@@ -373,28 +326,8 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 	}
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
-			FormatName:     r.FileFormat.FormatName,
-			FileFormatType: r.FileFormat.FileFormatType,
-			// adjusted manually
-			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -419,28 +352,8 @@ func (r *AlterInternalStageStageRequest) toOpts() *AlterInternalStageStageOption
 	}
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
-			FormatName:     r.FileFormat.FormatName,
-			FileFormatType: r.FileFormat.FileFormatType,
-			// adjusted manually
-			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -468,37 +381,29 @@ func (r *AlterExternalS3StageStageRequest) toOpts() *AlterExternalS3StageStageOp
 			}
 		}
 		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
-				KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
+			opts.ExternalStageParams.Encryption = &ExternalStageS3Encryption{}
+			if r.ExternalStageParams.Encryption.AwsCse != nil {
+				opts.ExternalStageParams.Encryption.AwsCse = &ExternalStageS3EncryptionAwsCse{
+					MasterKey: r.ExternalStageParams.Encryption.AwsCse.MasterKey,
+				}
+			}
+			if r.ExternalStageParams.Encryption.AwsSseS3 != nil {
+				opts.ExternalStageParams.Encryption.AwsSseS3 = &ExternalStageS3EncryptionAwsSseS3{}
+			}
+			if r.ExternalStageParams.Encryption.AwsSseKms != nil {
+				opts.ExternalStageParams.Encryption.AwsSseKms = &ExternalStageS3EncryptionAwsSseKms{
+					KmsKeyId: r.ExternalStageParams.Encryption.AwsSseKms.KmsKeyId,
+				}
+			}
+			if r.ExternalStageParams.Encryption.None != nil {
+				opts.ExternalStageParams.Encryption.None = &ExternalStageS3EncryptionNone{}
 			}
 		}
 	}
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
-			FormatName:     r.FileFormat.FormatName,
-			FileFormatType: r.FileFormat.FileFormatType,
-			// adjusted manually
-			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -516,36 +421,21 @@ func (r *AlterExternalGCSStageStageRequest) toOpts() *AlterExternalGCSStageStage
 			StorageIntegration: r.ExternalStageParams.StorageIntegration,
 		}
 		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				KmsKeyId:       r.ExternalStageParams.Encryption.KmsKeyId,
+			opts.ExternalStageParams.Encryption = &ExternalStageGCSEncryption{}
+			if r.ExternalStageParams.Encryption.GcsSseKms != nil {
+				opts.ExternalStageParams.Encryption.GcsSseKms = &ExternalStageGCSEncryptionGcsSseKms{
+					KmsKeyId: r.ExternalStageParams.Encryption.GcsSseKms.KmsKeyId,
+				}
+			}
+			if r.ExternalStageParams.Encryption.None != nil {
+				opts.ExternalStageParams.Encryption.None = &ExternalStageGCSEncryptionNone{}
 			}
 		}
 	}
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
-			FormatName:     r.FileFormat.FormatName,
-			FileFormatType: r.FileFormat.FileFormatType,
-			// adjusted manually
-			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -569,36 +459,21 @@ func (r *AlterExternalAzureStageStageRequest) toOpts() *AlterExternalAzureStageS
 			}
 		}
 		if r.ExternalStageParams.Encryption != nil {
-			opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{
-				EncryptionType: r.ExternalStageParams.Encryption.EncryptionType,
-				MasterKey:      r.ExternalStageParams.Encryption.MasterKey,
+			opts.ExternalStageParams.Encryption = &ExternalStageAzureEncryption{}
+			if r.ExternalStageParams.Encryption.AzureCse != nil {
+				opts.ExternalStageParams.Encryption.AzureCse = &ExternalStageAzureEncryptionAzureCse{
+					MasterKey: r.ExternalStageParams.Encryption.AzureCse.MasterKey,
+				}
+			}
+			if r.ExternalStageParams.Encryption.None != nil {
+				opts.ExternalStageParams.Encryption.None = &ExternalStageAzureEncryptionNone{}
 			}
 		}
 	}
 	if r.FileFormat != nil {
 		opts.FileFormat = &StageFileFormat{
-			FormatName:     r.FileFormat.FormatName,
-			FileFormatType: r.FileFormat.FileFormatType,
-			// adjusted manually
-			Options: r.FileFormat.Options.toOpts(),
-		}
-	}
-	if r.CopyOptions != nil {
-		opts.CopyOptions = &StageCopyOptions{
-			SizeLimit:         r.CopyOptions.SizeLimit,
-			Purge:             r.CopyOptions.Purge,
-			ReturnFailedOnly:  r.CopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.CopyOptions.MatchByColumnName,
-			EnforceLength:     r.CopyOptions.EnforceLength,
-			Truncatecolumns:   r.CopyOptions.Truncatecolumns,
-			Force:             r.CopyOptions.Force,
-		}
-		if r.CopyOptions.OnError != nil {
-			opts.CopyOptions.OnError = &StageCopyOnErrorOptions{
-				Continue_:      r.CopyOptions.OnError.Continue_,
-				SkipFile:       r.CopyOptions.OnError.SkipFile,
-				AbortStatement: r.CopyOptions.OnError.AbortStatement,
-			}
+			FormatName:        r.FileFormat.FormatName,
+			FileFormatOptions: r.FileFormat.FileFormatOptions,
 		}
 	}
 	return opts
@@ -669,17 +544,29 @@ func (r stageShowRow) convert() (*Stage, error) {
 		HasEncryptionKey: r.HasEncryptionKey == "Y",
 		Owner:            r.Owner,
 		Comment:          r.Comment,
-		Type:             r.Type,
 		DirectoryEnabled: r.DirectoryEnabled == "Y",
 	}
+	stageType, err := ToStageType(r.Type)
+	if err != nil {
+		return nil, err
+	}
+	stage.Type = stageType
 	if r.Region.Valid {
 		stage.Region = &r.Region.String
 	}
 	if r.Cloud.Valid {
-		stage.Cloud = &r.Cloud.String
+		cloud, err := ToStageCloud(r.Cloud.String)
+		if err != nil {
+			return nil, err
+		}
+		stage.Cloud = &cloud
 	}
 	if r.StorageIntegration.Valid {
-		stage.StorageIntegration = &r.StorageIntegration.String
+		id, err := ParseAccountObjectIdentifier(r.StorageIntegration.String)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse storage integration: %w", err)
+		}
+		stage.StorageIntegration = &id
 	}
 	if r.Endpoint.Valid {
 		stage.Endpoint = &r.Endpoint.String

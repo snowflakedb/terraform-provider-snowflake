@@ -5,8 +5,25 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
+
+func UserWorkloadIdentityAuthenticationMethods(t *testing.T, userId sdk.AccountObjectIdentifier, name string) *UserWorkloadIdentityAuthenticationMethodsAssert {
+	t.Helper()
+	wifId := helpers.NewUserWorkloadIdentityAuthenticationMethodsObjectIdentifier(userId, name)
+	return &UserWorkloadIdentityAuthenticationMethodsAssert{
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeUserWorkloadIdentityAuthenticationMethod, wifId, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.UserWorkloadIdentityAuthenticationMethod, helpers.UserWorkloadIdentityAuthenticationMethodsObjectIdentifier] {
+			return testClient.User.ShowUserWorkloadIdentityAuthenticationMethodOptions
+		}),
+	}
+}
+
+func UserDefaultWorkloadIdentityAuthenticationMethods(t *testing.T, userId sdk.AccountObjectIdentifier) *UserWorkloadIdentityAuthenticationMethodsAssert {
+	t.Helper()
+	return UserWorkloadIdentityAuthenticationMethods(t, userId, "DEFAULT")
+}
 
 func (u *UserWorkloadIdentityAuthenticationMethodsAssert) HasLastUsedNotEmpty() *UserWorkloadIdentityAuthenticationMethodsAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {

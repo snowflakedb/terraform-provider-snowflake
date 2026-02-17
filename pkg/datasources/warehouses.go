@@ -75,7 +75,8 @@ func Warehouses() *schema.Resource {
 }
 
 func ReadWarehouses(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	var opts sdk.ShowWarehouseOptions
 
 	if likePattern, ok := d.GetOk("like"); ok {
@@ -109,7 +110,7 @@ func ReadWarehouses(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			warehouseParameters = []map[string]any{schemas.WarehouseParametersToSchema(parameters)}
+			warehouseParameters = []map[string]any{schemas.WarehouseParametersToSchema(parameters, providerCtx)}
 		}
 
 		flattenedWarehouses[i] = map[string]any{
