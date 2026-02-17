@@ -64,7 +64,7 @@ resource "snowflake_semantic_view" "complete" {
   }
 
   facts {
-    is_private                = true
+    is_private                = "true"
     comment                   = "fact comment"
     qualified_expression_name = "\"lt1\".\"f2\""
     sql_expression            = "\"lt1\".\"a1\""
@@ -72,7 +72,7 @@ resource "snowflake_semantic_view" "complete" {
   }
 
   metrics {
-    is_private = true
+    is_private = "true"
     semantic_expression {
       comment                   = "semantic expression comment"
       qualified_expression_name = "\"lt1\".\"m1\""
@@ -82,7 +82,7 @@ resource "snowflake_semantic_view" "complete" {
   }
 
   metrics {
-    is_private = false
+    is_private = "false"
     window_function {
       over_clause {
         partition_by = "\"lt1\".\"d2\""
