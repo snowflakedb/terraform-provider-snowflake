@@ -109,7 +109,7 @@ var hybridTablesDef = g.NewInterface(
 	g.NewQueryStruct("AlterHybridTable").
 		Alter().
 		SQL("TABLE").
-		IfNotExists().
+		IfExists().
 		Name().
 		OptionalQueryStructField(
 			"ConstraintAction",

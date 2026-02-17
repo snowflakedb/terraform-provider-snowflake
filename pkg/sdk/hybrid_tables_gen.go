@@ -17,10 +17,6 @@ type HybridTables interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]HybridTableDetails, error)
-	// Standalone index commands (not part of ALTER TABLE)
-	CreateIndex(ctx context.Context, request *CreateHybridTableIndexRequest) error
-	DropIndex(ctx context.Context, request *DropHybridTableIndexRequest) error
-	ShowIndexes(ctx context.Context, request *ShowHybridTableIndexesRequest) ([]HybridTableIndex, error)
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.
@@ -39,7 +35,7 @@ type CreateHybridTableOptions struct {
 type AlterHybridTableOptions struct {
 	alter             bool                          `ddl:"static" sql:"ALTER"`
 	table             bool                          `ddl:"static" sql:"TABLE"`
-	IfNotExists       *bool                         `ddl:"keyword" sql:"IF NOT EXISTS"`
+	IfExists          *bool                         `ddl:"keyword" sql:"IF EXISTS"`
 	name              SchemaObjectIdentifier        `ddl:"identifier"`
 	ConstraintAction  *HybridTableConstraintAction  `ddl:"keyword"`
 	AlterColumnAction *HybridTableAlterColumnAction `ddl:"keyword"`
@@ -62,10 +58,8 @@ type HybridTableConstraintActionAdd struct {
 }
 
 type HybridTableConstraintActionDrop struct {
-	drop bool `ddl:"static" sql:"DROP"`
-	// Rule 13: manual fix — generator produces "Constraintname" and sql:"ConstraintName";
-	// correct field name is ConstraintName and SQL keyword is CONSTRAINT.
-	ConstraintName       *string               `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
+	drop                 bool                  `ddl:"static" sql:"DROP"`
+	Constraintname       *string               `ddl:"parameter,no_equals" sql:"ConstraintName"`
 	ColumnConstraintType *ColumnConstraintType `ddl:"keyword"`
 	Columns              []string              `ddl:"keyword,parentheses"`
 }
@@ -73,10 +67,7 @@ type HybridTableConstraintActionDrop struct {
 type HybridTableConstraintActionRename struct {
 	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
 	OldName          string `ddl:"keyword"`
-	// Rule 13: manual fix — ddl:"keyword" sql:"TO" on a string field does not emit the TO prefix.
-	// Adding a static bool field to produce the TO keyword before NewName.
-	to      bool   `ddl:"static" sql:"TO"`
-	NewName string `ddl:"keyword"`
+	NewName          string `ddl:"keyword" sql:"TO"`
 }
 
 type HybridTableAlterColumnAction struct {
@@ -173,11 +164,10 @@ type DescribeHybridTableOptions struct {
 }
 
 type hybridTableDetailsRow struct {
-	Name string `db:"name"`
-	Type string `db:"type"`
-	Kind string `db:"kind"`
-	// Rule 13: manual fix — Snowflake DESCRIBE TABLE column header is "null?" not "null".
-	Null                  string         `db:"null?"`
+	Name                  string         `db:"name"`
+	Type                  string         `db:"type"`
+	Kind                  string         `db:"kind"`
+	Null                  string         `db:"null"`
 	Default               sql.NullString `db:"default"`
 	PrimaryKey            string         `db:"primary key"`
 	UniqueKey             string         `db:"unique key"`
