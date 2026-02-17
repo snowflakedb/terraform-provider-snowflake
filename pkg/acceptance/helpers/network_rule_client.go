@@ -72,6 +72,14 @@ func (c *NetworkRuleClient) CreateWithRequest(t *testing.T, request *sdk.CreateN
 	return networkRule, c.DropFunc(t, request.GetName())
 }
 
+func (c *NetworkRuleClient) Alter(t *testing.T, req *sdk.AlterNetworkRuleRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *NetworkRuleClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.NetworkRule, error) {
 	t.Helper()
 	ctx := context.Background()

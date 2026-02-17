@@ -134,7 +134,7 @@ func (r ShowNetworkRulesRow) convert() (*NetworkRule, error) {
 		Comment:            r.Comment,
 		Type:               NetworkRuleType(r.Type),
 		Mode:               NetworkRuleMode(r.Mode),
-		EntriesInValueList: r.EntriesInValueList,
+		EntriesInValueList: r.EntriesInValuelist,
 		OwnerRoleType:      r.OwnerRoleType,
 	}, nil
 }

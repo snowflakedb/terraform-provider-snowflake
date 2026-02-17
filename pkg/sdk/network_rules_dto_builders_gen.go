@@ -49,12 +49,14 @@ func (s *AlterNetworkRuleRequest) WithUnset(unset NetworkRuleUnsetRequest) *Alte
 	return s
 }
 
-func NewNetworkRuleSetRequest(
-	valueList []NetworkRuleValue,
-) *NetworkRuleSetRequest {
+func NewNetworkRuleSetRequest() *NetworkRuleSetRequest {
 	s := NetworkRuleSetRequest{}
-	s.ValueList = valueList
 	return &s
+}
+
+func (s *NetworkRuleSetRequest) WithValueList(valueList []NetworkRuleValue) *NetworkRuleSetRequest {
+	s.ValueList = valueList
+	return s
 }
 
 func (s *NetworkRuleSetRequest) WithComment(comment string) *NetworkRuleSetRequest {
