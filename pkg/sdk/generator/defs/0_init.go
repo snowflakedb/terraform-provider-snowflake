@@ -20,6 +20,7 @@ func init() {
 		cortexSearchServicesDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
+		hybridTablesDef,
 		externalFunctionsDef,
 		functionsDef,
 		gitRepositoriesDef,

@@ -43,6 +43,7 @@ type Client struct {
 	ExternalTables               ExternalTables
 	EventTables                  EventTables
 	FailoverGroups               FailoverGroups
+	HybridTables                 HybridTables
 	FileFormats                  FileFormats
 	Functions                    Functions
 	GitRepositories              GitRepositories
@@ -174,6 +175,7 @@ func (c *Client) initialize() {
 	c.ExternalVolumes = &externalVolumes{client: c}
 	c.ExternalTables = &externalTables{client: c}
 	c.EventTables = &eventTables{client: c}
+	c.HybridTables = &hybridTables{client: c}
 	c.FailoverGroups = &failoverGroups{client: c}
 	c.FileFormats = &fileFormats{client: c}
 	c.Functions = &functions{client: c}
