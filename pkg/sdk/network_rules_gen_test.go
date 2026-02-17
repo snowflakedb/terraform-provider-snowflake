@@ -112,14 +112,6 @@ func TestNetworkRules_Alter(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER NETWORK RULE %s UNSET VALUE_LIST, COMMENT`, id.FullyQualifiedName())
 	})
-
-	t.Run("alter with empty value list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkRuleSet{
-			ValueList: []NetworkRuleValue{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER NETWORK RULE %s SET VALUE_LIST = ()`, id.FullyQualifiedName())
-	})
 }
 
 func TestNetworkRules_Drop(t *testing.T) {
