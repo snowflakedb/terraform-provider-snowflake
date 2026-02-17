@@ -49,6 +49,9 @@ terraform import snowflake_network_rule.example '"<database_name>"."<schema_name
 
 No change is required, the state will be migrated automatically.
 
+#### `value_list` type change
+The `value_list` attribute was changed from `TypeSet` to `TypeList`. This means the order of elements is now preserved and they are accessed by index (e.g. `value_list.0`) instead of by hash. If you reference individual `value_list` elements in your configuration, you may need to update those references. This change was done to follow Snowflake behavior - in Snowflake, the order of the values matters.
+
 #### New `show_output` and `describe_output` attributes
 New computed attributes `show_output` and `describe_output` were added to the `snowflake_network_rule` resource. They contain the output of `SHOW NETWORK RULES` and `DESCRIBE NETWORK RULE` queries, respectively. They can be used to reference network rule properties in other parts of the configuration.
 
