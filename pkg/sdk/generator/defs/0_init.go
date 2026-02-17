@@ -21,6 +21,7 @@ func init() {
 		cortexSearchServicesDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
+		hybridTablesDef,
 		externalFunctionsDef,
 		externalVolumesDef,
 		fileFormatsDef,
