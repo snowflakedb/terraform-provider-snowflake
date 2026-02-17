@@ -81,6 +81,101 @@ Reworked existing datasource enabling querying and filtering all types of stages
 
 The data source is still in preview. To use it, add `snowflake_stages_datasource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
 
+### *(new feature)* Hybrid table resource and data source
+
+New resource [`snowflake_hybrid_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/hybrid_table) and data source [`snowflake_hybrid_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/hybrid_tables) have been introduced to support Snowflake's hybrid tables feature.
+
+Hybrid tables provide low-latency row-level operations with ACID guarantees, combining transactional and analytical workloads in a single table. They are ideal for use cases requiring real-time data access, such as:
+- Application state management
+- Real-time inventory tracking
+- Session management
+- Low-latency lookups with analytical queries
+
+**Key features:**
+- **Resource** (`snowflake_hybrid_table`):
+  - Primary key enforcement (required for all hybrid tables)
+  - Column definitions with constraints (nullable, unique, primary key, foreign key)
+  - Identity/autoincrement columns
+  - Default value expressions
+  - Indexes for optimized queries
+  - Unique and foreign key constraints (inline and out-of-line)
+  - Collation support for string columns
+  - Data retention configuration (0-90 days)
+  - Computed outputs: `show_output`, `describe_output`, `fully_qualified_name`
+- **Data source** (`snowflake_hybrid_tables`):
+  - Query existing hybrid tables in your account
+  - Filter by pattern (`like`), scope (`in`), or prefix (`starts_with`)
+  - Pagination support with `limit`
+  - Returns metadata: name, database, schema, owner, rows, bytes, comment
+
+**Preview feature enablement:**
+
+These features are in preview. To use them, add the following to your provider configuration:
+```hcl
+provider "snowflake" {
+  preview_features_enabled = [
+    "snowflake_hybrid_table_resource",        # For resource
+    "snowflake_hybrid_tables_datasource"      # For data source
+  ]
+}
+```
+
+**Important notes:**
+1. **Primary key required**: Every hybrid table must have a primary key. This can be defined either:
+   - Inline on a column: `column { primary_key = true }`
+   - Out-of-line in a `primary_key` block for single or composite keys
+2. **Cloud availability**: Hybrid tables are generally available on AWS and Azure, but not currently supported on GCP.
+3. **Trial accounts**: May require additional feature enablement. Contact Snowflake support if you encounter permission errors.
+4. **Constraints validation**: The resource validates constraint definitions at plan time, ensuring:
+   - At least one primary key is defined
+   - No conflicting inline/out-of-line constraint definitions
+   - No multiple inline primary keys (use `primary_key` block for composite keys)
+   - Column `default` and `identity` are mutually exclusive
+
+**Basic example:**
+```hcl
+resource "snowflake_hybrid_table" "orders" {
+  database = "MY_DATABASE"
+  schema   = "MY_SCHEMA"
+  name     = "ORDERS"
+  comment  = "Orders table"
+
+  column {
+    name        = "order_id"
+    type        = "NUMBER(38,0)"
+    nullable    = false
+    primary_key = true
+  }
+
+  column {
+    name = "customer_name"
+    type = "VARCHAR(100)"
+  }
+
+  column {
+    name = "order_date"
+    type = "DATE"
+  }
+
+  data_retention_time_in_days = 7
+}
+
+data "snowflake_hybrid_tables" "all_tables" {
+  like = "ORDERS%"
+  in {
+    database = "MY_DATABASE"
+  }
+}
+```
+
+For more examples, see:
+- [Basic example](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/examples/resources/snowflake_hybrid_table/basic.tf)
+- [Complete example with all features](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/examples/resources/snowflake_hybrid_table/complete.tf)
+- [Foreign key relationships](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/examples/resources/snowflake_hybrid_table/foreign_keys.tf)
+- [Import example](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/examples/resources/snowflake_hybrid_table/import.sh)
+
+**References:** [Snowflake Hybrid Tables Documentation](https://docs.snowflake.com/en/user-guide/tables-hybrid)
+
 ### *(new feature)* Storage integrations reworked
 
 #### *(new feature/deprecation)* Storage integration resources

@@ -711,6 +711,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_functions":                          datasources.Functions(),
 		"snowflake_git_repositories":                   datasources.GitRepositories(),
 		"snowflake_grants":                             datasources.Grants(),
+		"snowflake_hybrid_tables":                      datasources.HybridTables(),
 		"snowflake_image_repositories":                 datasources.ImageRepositories(),
 		"snowflake_listings":                           datasources.Listings(),
 		"snowflake_masking_policies":                   datasources.MaskingPolicies(),
