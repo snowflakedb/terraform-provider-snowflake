@@ -46,6 +46,12 @@ func TestNetworkRules_Create(t *testing.T) {
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE NETWORK RULE %s TYPE = IPV4 VALUE_LIST = ('0.0.0.0', '1.1.1.1') MODE = INGRESS COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
+
+	t.Run("create with empty value list", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ValueList = []NetworkRuleValue{}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE NETWORK RULE %s TYPE = IPV4 MODE = INGRESS`, id.FullyQualifiedName())
+	})
 }
 
 func TestNetworkRules_Alter(t *testing.T) {
@@ -105,6 +111,14 @@ func TestNetworkRules_Alter(t *testing.T) {
 			Comment:   Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER NETWORK RULE %s UNSET VALUE_LIST, COMMENT`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter with empty value list", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &NetworkRuleSet{
+			ValueList: []NetworkRuleValue{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER NETWORK RULE %s SET VALUE_LIST = ()`, id.FullyQualifiedName())
 	})
 }
 
