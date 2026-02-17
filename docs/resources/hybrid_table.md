@@ -11,222 +11,9 @@ description: |-
 
 Resource used to manage hybrid table objects. For more information, check [hybrid table documentation](https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table).
 
-## Example Usage
 
-```terraform
-## Minimal - Single column with primary key
-resource "snowflake_hybrid_table" "basic" {
-  database = "database_name"
-  schema   = "schema_name"
-  name     = "hybrid_table_name"
 
-  column {
-    name        = "id"
-    type        = "NUMBER(38,0)"
-    nullable    = false
-    primary_key = true
-  }
-}
-
-## With multiple columns and inline constraints
-resource "snowflake_hybrid_table" "with_constraints" {
-  database = "database_name"
-  schema   = "schema_name"
-  name     = "users"
-
-  column {
-    name        = "id"
-    type        = "NUMBER(38,0)"
-    nullable    = false
-    primary_key = true
-    comment     = "User ID"
-  }
-
-  column {
-    name     = "email"
-    type     = "VARCHAR(255)"
-    nullable = false
-    unique   = true
-    comment  = "User email address"
-  }
-
-  column {
-    name = "name"
-    type = "VARCHAR(100)"
-  }
-
-  column {
-    name = "created_at"
-    type = "TIMESTAMP_NTZ"
-    default {
-      expression = "CURRENT_TIMESTAMP()"
-    }
-  }
-
-  comment = "User data hybrid table"
-}
-
-## With composite primary key and indexes
-resource "snowflake_hybrid_table" "with_composite_key" {
-  database = "database_name"
-  schema   = "schema_name"
-  name     = "order_items"
-
-  column {
-    name     = "order_id"
-    type     = "NUMBER(38,0)"
-    nullable = false
-  }
-
-  column {
-    name     = "item_id"
-    type     = "NUMBER(38,0)"
-    nullable = false
-  }
-
-  column {
-    name = "quantity"
-    type = "NUMBER(10,0)"
-  }
-
-  column {
-    name = "price"
-    type = "NUMBER(10,2)"
-  }
-
-  # Out-of-line primary key constraint
-  primary_key {
-    name    = "pk_order_items"
-    columns = ["order_id", "item_id"]
-  }
-
-  # Secondary index for faster queries
-  index {
-    name    = "idx_order_id"
-    columns = ["order_id"]
-  }
-
-  data_retention_time_in_days = 7
-  comment                     = "Order items with composite primary key"
-}
-
-## With foreign key constraint
-resource "snowflake_hybrid_table" "orders" {
-  database = "database_name"
-  schema   = "schema_name"
-  name     = "orders"
-
-  column {
-    name        = "id"
-    type        = "NUMBER(38,0)"
-    nullable    = false
-    primary_key = true
-  }
-
-  column {
-    name = "customer_id"
-    type = "NUMBER(38,0)"
-    foreign_key {
-      table_name  = "${var.database}.${var.schema}.customers"
-      column_name = "id"
-    }
-  }
-
-  column {
-    name = "order_date"
-    type = "DATE"
-  }
-
-  comment = "Orders table with foreign key to customers"
-}
-
-## With identity column (auto-increment)
-resource "snowflake_hybrid_table" "with_identity" {
-  database = "database_name"
-  schema   = "schema_name"
-  name     = "products"
-
-  column {
-    name     = "id"
-    type     = "NUMBER(38,0)"
-    nullable = false
-    identity {
-      start_num = 1
-      step_num  = 1
-    }
-    primary_key = true
-  }
-
-  column {
-    name = "product_name"
-    type = "VARCHAR(200)"
-  }
-
-  column {
-    name = "price"
-    type = "NUMBER(10,2)"
-  }
-}
-
-## Complete example with all features
-resource "snowflake_hybrid_table" "complete" {
-  database  = "database_name"
-  schema    = "schema_name"
-  name      = "complete_example"
-  or_replace = false
-
-  column {
-    name        = "id"
-    type        = "NUMBER(38,0)"
-    nullable    = false
-    comment     = "Primary identifier"
-  }
-
-  column {
-    name     = "code"
-    type     = "VARCHAR(50)"
-    nullable = false
-    collate  = "en-ci"
-  }
-
-  column {
-    name = "data"
-    type = "VARIANT"
-  }
-
-  column {
-    name = "updated_at"
-    type = "TIMESTAMP_NTZ"
-    default {
-      expression = "CURRENT_TIMESTAMP()"
-    }
-  }
-
-  primary_key {
-    name    = "pk_complete"
-    columns = ["id"]
-  }
-
-  unique_constraint {
-    name    = "uq_code"
-    columns = ["code"]
-  }
-
-  index {
-    name    = "idx_updated_at"
-    columns = ["updated_at"]
-  }
-
-  data_retention_time_in_days = 30
-  comment                     = "Complete hybrid table example"
-}
-```
-
--> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
-
--> **Note** Hybrid tables require at least one column with a primary key constraint. This can be specified either as an inline constraint on a column or as an out-of-line primary key constraint.
-
--> **Note** Changes to column definitions (name, type, constraints) typically require table recreation. Plan carefully when defining your hybrid table schema.
+-> **Note** If a field has a default value, it is shown next to the type in the schema.
 
 <!-- schema generated by tfplugindocs -->
 ## Schema
@@ -234,17 +21,17 @@ resource "snowflake_hybrid_table" "complete" {
 ### Required
 
 - `column` (Block List, Min: 1) Definitions of columns for the hybrid table. (see [below for nested schema](#nestedblock--column))
-- `database` (String) The database in which to create the hybrid table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `name` (String) Specifies the identifier for the hybrid table; must be unique for the schema in which the hybrid table is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `schema` (String) The schema in which to create the hybrid table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `database` (String) The database in which to create the hybrid table.
+- `name` (String) Specifies the identifier for the hybrid table; must be unique for the schema in which the hybrid table is created.
+- `schema` (String) The schema in which to create the hybrid table.
 
 ### Optional
 
 - `comment` (String) Specifies a comment for the hybrid table.
-- `data_retention_time_in_days` (Number) Specifies the retention period for the table in days. Valid values are between 0 and 90.
+- `data_retention_time_in_days` (Number) Specifies the retention period for the table in days.
 - `foreign_key` (Block Set) Out-of-line foreign key constraint definitions. (see [below for nested schema](#nestedblock--foreign_key))
 - `index` (Block Set) Definitions of indexes for the hybrid table. (see [below for nested schema](#nestedblock--index))
-- `or_replace` (Boolean) Specifies whether to replace the hybrid table if it already exists. Default: `false`.
+- `or_replace` (Boolean) (Default: `false`) Specifies whether to replace the hybrid table if it already exists.
 - `primary_key` (Block List, Max: 1) Out-of-line primary key constraint definition. (see [below for nested schema](#nestedblock--primary_key))
 - `unique_constraint` (Block Set) Out-of-line unique constraint definitions. (see [below for nested schema](#nestedblock--unique_constraint))
 
@@ -270,9 +57,9 @@ Optional:
 - `default` (Block List, Max: 1) Defines the default value for the column. (see [below for nested schema](#nestedblock--column--default))
 - `foreign_key` (Block List, Max: 1) Inline foreign key constraint for the column. (see [below for nested schema](#nestedblock--column--foreign_key))
 - `identity` (Block List, Max: 1) Defines the identity/autoincrement configuration for the column. (see [below for nested schema](#nestedblock--column--identity))
-- `nullable` (Boolean) Specifies whether the column can contain NULL values. Default is true (nullable). Default: `true`.
-- `primary_key` (Boolean) Specifies whether the column is a primary key (inline constraint). Default: `false`.
-- `unique` (Boolean) Specifies whether the column has a unique constraint (inline constraint). Default: `false`.
+- `nullable` (Boolean) (Default: `true`) Specifies whether the column can contain NULL values. Default is true (nullable).
+- `primary_key` (Boolean) (Default: `false`) Specifies whether the column is a primary key (inline constraint).
+- `unique` (Boolean) (Default: `false`) Specifies whether the column has a unique constraint (inline constraint).
 
 <a id="nestedblock--column--default"></a>
 ### Nested Schema for `column.default`
@@ -297,8 +84,8 @@ Required:
 
 Optional:
 
-- `start_num` (Number) Starting value for the identity column. Default: `1`.
-- `step_num` (Number) Step/increment value for the identity column. Default: `1`.
+- `start_num` (Number) (Default: `1`) Starting value for the identity column.
+- `step_num` (Number) (Default: `1`) Step/increment value for the identity column.
 
 
 
@@ -383,11 +170,3 @@ Read-Only:
 - `owner_role_type` (String)
 - `rows` (Number)
 - `schema_name` (String)
-
-## Import
-
-Import is supported using the following syntax:
-
-```shell
-terraform import snowflake_hybrid_table.example '"<database_name>"."<schema_name>"."<hybrid_table_name>"'
-```
