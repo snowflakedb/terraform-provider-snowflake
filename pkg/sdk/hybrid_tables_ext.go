@@ -325,6 +325,71 @@ func (v *hybridTables) ShowIndexes(ctx context.Context, request *ShowHybridTable
 	return convertRows[hybridTableIndexRow, HybridTableIndex](dbRows)
 }
 
+// --- convert() implementations for generated row structs (rule 13) ---
+// These convert() functions map database row structs to public domain objects.
+// They are manually implemented here instead of in generated files to allow
+// customization without being overwritten by the generator.
+
+// convert maps hybridTableRow (SHOW HYBRID TABLES result) to HybridTable.
+func (r hybridTableRow) convert() (*HybridTable, error) {
+	ht := &HybridTable{
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+	}
+	if r.Rows.Valid {
+		ht.Rows = int(r.Rows.Int64)
+	}
+	if r.Bytes.Valid {
+		ht.Bytes = int(r.Bytes.Int64)
+	}
+	if r.Owner.Valid {
+		ht.Owner = r.Owner.String
+	}
+	if r.Comment.Valid {
+		ht.Comment = r.Comment.String
+	}
+	if r.OwnerRoleType.Valid {
+		ht.OwnerRoleType = r.OwnerRoleType.String
+	}
+	return ht, nil
+}
+
+// convert maps hybridTableDetailsRow (DESCRIBE TABLE result) to HybridTableDetails.
+func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
+	details := &HybridTableDetails{
+		Name:       r.Name,
+		Type:       r.Type,
+		Kind:       r.Kind,
+		IsNullable: r.Null,
+		PrimaryKey: r.PrimaryKey,
+		UniqueKey:  r.UniqueKey,
+	}
+	if r.Default.Valid {
+		details.Default = r.Default.String
+	}
+	if r.Check.Valid {
+		details.Check = r.Check.String
+	}
+	if r.Expression.Valid {
+		details.Expression = r.Expression.String
+	}
+	if r.Comment.Valid {
+		details.Comment = r.Comment.String
+	}
+	if r.PolicyName.Valid {
+		details.PolicyName = r.PolicyName.String
+	}
+	if r.PrivacyDomain.Valid {
+		details.PrivacyDomain = r.PrivacyDomain.String
+	}
+	if r.SchemaEvolutionRecord.Valid {
+		details.SchemaEvolutionRecord = r.SchemaEvolutionRecord.String
+	}
+	return details, nil
+}
+
 // --- Rule 9 documentation: Discrepancies between Snowflake docs and actual behavior ---
 //
 // 1. DROP HYBRID TABLE vs DROP TABLE:

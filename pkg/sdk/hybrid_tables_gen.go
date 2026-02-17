@@ -17,6 +17,11 @@ type HybridTables interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]HybridTableDetails, error)
+	// Manually added index operations (rule 13) - these are standalone SQL commands
+	// implemented in hybrid_tables_ext.go, not part of the generator output
+	CreateIndex(ctx context.Context, request *CreateHybridTableIndexRequest) error
+	DropIndex(ctx context.Context, request *DropHybridTableIndexRequest) error
+	ShowIndexes(ctx context.Context, request *ShowHybridTableIndexesRequest) ([]HybridTableIndex, error)
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.
@@ -71,9 +76,12 @@ type HybridTableConstraintActionRename struct {
 }
 
 type HybridTableAlterColumnAction struct {
-	alterColumn  bool    `ddl:"static" sql:"ALTER COLUMN"`
-	ColumnName   string  `ddl:"keyword"`
-	Comment      *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	alterColumn bool   `ddl:"static" sql:"ALTER COLUMN"`
+	ColumnName  string `ddl:"keyword"`
+	// Manually adjusted from ddl:"parameter,single_quotes" to ddl:"parameter,no_equals,single_quotes" per rule 13
+	// ALTER COLUMN syntax requires "COMMENT 'value'" not "COMMENT = 'value'"
+	// See: https://docs.snowflake.com/en/sql-reference/sql/alter-table
+	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
 	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
 }
 
@@ -130,8 +138,10 @@ type hybridTableRow struct {
 	DatabaseName  string         `db:"database_name"`
 	SchemaName    string         `db:"schema_name"`
 	Owner         sql.NullString `db:"owner"`
-	Rows          int            `db:"rows"`
-	Bytes         int            `db:"bytes"`
+	// Manually adjusted: rows and bytes can be NULL for newly created tables
+	// Changed from int to sql.NullInt64 to handle NULL values (rule 13)
+	Rows          sql.NullInt64  `db:"rows"`
+	Bytes         sql.NullInt64  `db:"bytes"`
 	Comment       sql.NullString `db:"comment"`
 	OwnerRoleType sql.NullString `db:"owner_role_type"`
 }
@@ -164,10 +174,14 @@ type DescribeHybridTableOptions struct {
 }
 
 type hybridTableDetailsRow struct {
-	Name                  string         `db:"name"`
-	Type                  string         `db:"type"`
-	Kind                  string         `db:"kind"`
-	Null                  string         `db:"null"`
+	Name string `db:"name"`
+	Type string `db:"type"`
+	Kind string `db:"kind"`
+	// Manually adjusted from db:"null" to db:"null?" per rule 13.
+	// Snowflake DESCRIBE TABLE returns column named "null?" with question mark.
+	// The generator cannot produce "?" in tag names, so this requires manual adjustment.
+	// See: pkg/sdk/generator/defs/hybrid_tables_def.go lines 203-205.
+	Null                  string         `db:"null?"`
 	Default               sql.NullString `db:"default"`
 	PrimaryKey            string         `db:"primary key"`
 	UniqueKey             string         `db:"unique key"`
