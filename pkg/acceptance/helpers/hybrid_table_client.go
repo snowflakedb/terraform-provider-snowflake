@@ -49,3 +49,24 @@ func (c *HybridTableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier
 		require.NoError(t, err)
 	}
 }
+
+func (c *HybridTableClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.HybridTable, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.context.client.HybridTables.ShowByID(ctx, id)
+}
+
+func (c *HybridTableClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) ([]sdk.HybridTableDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.context.client.HybridTables.Describe(ctx, id)
+}
+
+func (c *HybridTableClient) DescribeDetails(t *testing.T, id sdk.SchemaObjectIdentifier) (*[]sdk.HybridTableDetails, error) {
+	t.Helper()
+	details, err := c.Describe(t, id)
+	if err != nil {
+		return nil, err
+	}
+	return &details, nil
+}
