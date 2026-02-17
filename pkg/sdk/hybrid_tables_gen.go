@@ -133,11 +133,11 @@ type ShowHybridTableOptions struct {
 }
 
 type hybridTableRow struct {
-	CreatedOn     time.Time      `db:"created_on"`
-	Name          string         `db:"name"`
-	DatabaseName  string         `db:"database_name"`
-	SchemaName    string         `db:"schema_name"`
-	Owner         sql.NullString `db:"owner"`
+	CreatedOn    time.Time      `db:"created_on"`
+	Name         string         `db:"name"`
+	DatabaseName string         `db:"database_name"`
+	SchemaName   string         `db:"schema_name"`
+	Owner        sql.NullString `db:"owner"`
 	// Manually adjusted: rows and bytes can be NULL for newly created tables
 	// Changed from int to sql.NullInt64 to handle NULL values (rule 13)
 	Rows          sql.NullInt64  `db:"rows"`
