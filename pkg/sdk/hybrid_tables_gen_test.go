@@ -22,26 +22,30 @@ func TestHybridTables_Create(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.OrReplace = Bool(true)
+		opts.IfNotExists = Bool(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateHybridTableOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.OrReplace = Bool(true)
+		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
+		opts.DataRetentionTimeInDays = Int(7)
+		opts.Comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s DATA_RETENTION_TIME_IN_DAYS = 7 COMMENT = 'test comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -61,26 +65,31 @@ func TestHybridTables_Alter(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: exactly one field from [opts.ConstraintAction opts.AlterColumnAction opts.DropColumnAction opts.DropIndexAction opts.BuildIndexAction opts.Set opts.Unset] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "BuildIndexAction", "Set", "Unset"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Set = &HybridTableSetProperties{
+			Comment: String("new comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s SET COMMENT = 'new comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.IfExists = Bool(true)
+		opts.Set = &HybridTableSetProperties{
+			DataRetentionTimeInDays: Int(14),
+			Comment:                 String("updated comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 14 COMMENT = 'updated comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -100,20 +109,20 @@ func TestHybridTables_Drop(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.IfExists = Bool(true)
+		opts.Restrict = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE IF EXISTS %s RESTRICT`, id.FullyQualifiedName())
 	})
 }
 
@@ -130,14 +139,17 @@ func TestHybridTables_Show(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES`)
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		opts.Terse = Bool(true)
+		opts.Like = &Like{Pattern: String("some_pattern")}
+		opts.In = &In{Schema: NewDatabaseObjectIdentifier("db", "schema")}
+		opts.StartsWith = String("prefix")
+		opts.Limit = &LimitFrom{Rows: Int(10)}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE HYBRID TABLES LIKE 'some_pattern' IN SCHEMA "db"."schema" STARTS WITH 'prefix' LIMIT 10`)
 	})
 }
 
@@ -157,19 +169,17 @@ func TestHybridTables_Describe(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
+		opts.name = emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE TABLE %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		// TODO: fill me
-		assertOptsValidAndSQLEquals(t, opts, "TODO: fill me")
+		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE TABLE %s`, id.FullyQualifiedName())
 	})
 }
