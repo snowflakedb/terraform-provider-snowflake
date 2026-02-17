@@ -39,7 +39,7 @@ var DescribeNetworkRuleSchema = map[string]*schema.Schema{
 		Computed: true,
 	},
 	"value_list": {
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},

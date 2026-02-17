@@ -1,6 +1,7 @@
 package resourceshowoutputassert
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -79,8 +80,8 @@ func (n *NetworkRuleDescOutputAssert) HasMode(expected sdk.NetworkRuleMode) *Net
 
 func (n *NetworkRuleDescOutputAssert) HasValueList(expected []string) *NetworkRuleDescOutputAssert {
 	n.AddAssertion(assert.ResourceDescribeOutputValueSet("value_list.#", strconv.FormatInt(int64(len(expected)), 10)))
-	for _, v := range expected {
-		n.AddAssertion(assert.ResourceDescribeOutputValueSetElem("value_list.*", v))
+	for i, v := range expected {
+		n.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("value_list.%d", i), v))
 	}
 	return n
 }

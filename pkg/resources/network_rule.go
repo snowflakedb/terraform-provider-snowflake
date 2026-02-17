@@ -46,7 +46,7 @@ var networkRuleSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToNetworkRuleType),
 	},
 	"value_list": {
-		Type:        schema.TypeSet,
+		Type:        schema.TypeList,
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Required:    true,
 		Description: "Specifies the network identifiers that will be allowed or blocked. Valid values in the list are determined by the type of network rule, see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details.",
@@ -137,7 +137,7 @@ func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	valueList := expandStringList(d.Get("value_list").(*schema.Set).List())
+	valueList := expandStringList(d.Get("value_list").([]any))
 	networkRuleValues := make([]sdk.NetworkRuleValue, len(valueList))
 	for i, v := range valueList {
 		networkRuleValues[i] = sdk.NetworkRuleValue{Value: v}
@@ -228,7 +228,7 @@ func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 
 	errs := errors.Join(
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-		setValueUpdate(d, "value_list", &set.ValueList, &unset.ValueList, func(v any) (sdk.NetworkRuleValue, error) {
+		listValueUpdate(d, "value_list", &set.ValueList, &unset.ValueList, func(v any) (sdk.NetworkRuleValue, error) {
 			return sdk.NetworkRuleValue{Value: v.(string)}, nil
 		}),
 	)

@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -32,7 +33,6 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 
 	modelBasic := model.NetworkRuleFromId(id, sdk.NetworkRuleModeIngress, sdk.NetworkRuleTypeIpv4, values)
 	modelAfterUnset := model.NetworkRuleFromId(id, sdk.NetworkRuleModeIngress, sdk.NetworkRuleTypeIpv4, []string{})
-	modelWithAlteredValueOrder := model.NetworkRuleFromId(id, sdk.NetworkRuleModeIngress, sdk.NetworkRuleTypeIpv4, []string{values[1], values[0]})
 
 	modelComplete := model.NetworkRuleFromId(id, sdk.NetworkRuleModeIngress, sdk.NetworkRuleTypeIpv4, values).
 		WithComment(changedComment)
@@ -224,16 +224,6 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Changed value order is a noop
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
-					},
-				},
-				Config: accconfig.FromModels(t, modelWithAlteredValueOrder),
-				Check:  assertThat(t, basicAssertions...),
-			},
 			// Complete
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -351,6 +341,33 @@ func TestAcc_NetworkRule_CompleteUseCase(t *testing.T) {
 				ResourceName:      modelComplete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcc_NetworkRule_Validations(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	modelInvalidType := model.NetworkRule("test", id.DatabaseName(), id.SchemaName(), id.Name(), string(sdk.NetworkRuleModeIngress), "invalid", []string{})
+	modelInvalidMode := model.NetworkRule("test", id.DatabaseName(), id.SchemaName(), id.Name(), "invalid", string(sdk.NetworkRuleTypeIpv4), []string{})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.NetworkRule),
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, modelInvalidType),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid network rule type: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidMode),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid network rule mode: INVALID`),
 			},
 		},
 	})

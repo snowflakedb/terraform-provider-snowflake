@@ -26,7 +26,7 @@ func NetworkRuleFromId(
 
 func (n *NetworkRuleModel) WithValueList(valueList []string) *NetworkRuleModel {
 	return n.WithValueListValue(
-		tfconfig.SetVariable(
+		tfconfig.ListVariable(
 			collections.Map(valueList, func(v string) tfconfig.Variable { return tfconfig.StringVariable(v) })...,
 		),
 	)
