@@ -168,19 +168,12 @@ func (r *ShowHybridTableRequest) toOpts() *ShowHybridTableOptions {
 	return opts
 }
 
-func (r hybridTableRow) convert() (*HybridTable, error) {
-	// TODO: Mapping
-	return &HybridTable{}, nil
-}
+// Note: convert() methods for hybridTableRow and hybridTableDetailsRow are implemented
+// in hybrid_tables_ext.go to allow customization without being overwritten by the generator.
 
 func (r *DescribeHybridTableRequest) toOpts() *DescribeHybridTableOptions {
 	opts := &DescribeHybridTableOptions{
 		name: r.name,
 	}
 	return opts
-}
-
-func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
-	// TODO: Mapping
-	return &HybridTableDetails{}, nil
 }
