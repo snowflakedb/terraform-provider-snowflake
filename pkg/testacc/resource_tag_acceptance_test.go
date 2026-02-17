@@ -257,6 +257,7 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 }
 
 func TestAcc_Tag_migrateFromVersion_0_98_0(t *testing.T) {
+	// Run the tests
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	tagModel := model.TagBase("test", id).
