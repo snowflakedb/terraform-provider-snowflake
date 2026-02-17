@@ -14,7 +14,7 @@ import (
 // HybridTableColumnsConstraintsAndIndexes is the parenthesized body of CREATE HYBRID TABLE,
 // containing column definitions, out-of-line constraints, and out-of-line indexes.
 type HybridTableColumnsConstraintsAndIndexes struct {
-	Columns             []HybridTableColumn             `ddl:"keyword"`
+	Columns             []HybridTableColumn              `ddl:"keyword"`
 	OutOfLineConstraint []HybridTableOutOfLineConstraint `ddl:"keyword"`
 	OutOfLineIndex      []HybridTableOutOfLineIndex      `ddl:"keyword"`
 }
@@ -22,13 +22,13 @@ type HybridTableColumnsConstraintsAndIndexes struct {
 // HybridTableColumn defines a single column in a hybrid table.
 // Based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table
 type HybridTableColumn struct {
-	Name             string                              `ddl:"keyword"`
-	Type             DataType                            `ddl:"keyword"`
-	InlineConstraint *HybridTableColumnInlineConstraint  `ddl:"keyword"`
-	NotNull          *bool                               `ddl:"keyword" sql:"NOT NULL"`
-	DefaultValue     *ColumnDefaultValue                 `ddl:"keyword"`
-	Collate          *string                             `ddl:"parameter,no_equals,single_quotes" sql:"COLLATE"`
-	Comment          *string                             `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
+	Name             string                             `ddl:"keyword"`
+	Type             DataType                           `ddl:"keyword"`
+	InlineConstraint *HybridTableColumnInlineConstraint `ddl:"keyword"`
+	NotNull          *bool                              `ddl:"keyword" sql:"NOT NULL"`
+	DefaultValue     *ColumnDefaultValue                `ddl:"keyword"`
+	Collate          *string                            `ddl:"parameter,no_equals,single_quotes" sql:"COLLATE"`
+	Comment          *string                            `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
 }
 
 // HybridTableColumnInlineConstraint defines inline PRIMARY KEY, UNIQUE, or FOREIGN KEY on a column.

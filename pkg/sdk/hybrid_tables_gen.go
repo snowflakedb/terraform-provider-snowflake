@@ -62,7 +62,7 @@ type HybridTableConstraintActionAdd struct {
 }
 
 type HybridTableConstraintActionDrop struct {
-	drop                 bool                  `ddl:"static" sql:"DROP"`
+	drop bool `ddl:"static" sql:"DROP"`
 	// Rule 13: manual fix — generator produces "Constraintname" and sql:"ConstraintName";
 	// correct field name is ConstraintName and SQL keyword is CONSTRAINT.
 	ConstraintName       *string               `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
@@ -75,8 +75,8 @@ type HybridTableConstraintActionRename struct {
 	OldName          string `ddl:"keyword"`
 	// Rule 13: manual fix — ddl:"keyword" sql:"TO" on a string field does not emit the TO prefix.
 	// Adding a static bool field to produce the TO keyword before NewName.
-	to               bool   `ddl:"static" sql:"TO"`
-	NewName          string `ddl:"keyword"`
+	to      bool   `ddl:"static" sql:"TO"`
+	NewName string `ddl:"keyword"`
 }
 
 type HybridTableAlterColumnAction struct {
@@ -173,9 +173,9 @@ type DescribeHybridTableOptions struct {
 }
 
 type hybridTableDetailsRow struct {
-	Name                  string         `db:"name"`
-	Type                  string         `db:"type"`
-	Kind                  string         `db:"kind"`
+	Name string `db:"name"`
+	Type string `db:"type"`
+	Kind string `db:"kind"`
 	// Rule 13: manual fix — Snowflake DESCRIBE TABLE column header is "null?" not "null".
 	Null                  string         `db:"null?"`
 	Default               sql.NullString `db:"default"`
