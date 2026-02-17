@@ -31,7 +31,7 @@ func mapNullBool(boolField **bool, sqlValue sql.NullBool) {
 
 // mapStringWithMapping maps a string to a type T using a provided mapper function.
 // Be careful with the sensitive values as the mapper function can return an error, which is then logged by this function.
-// TODO [this PR]: return error?
+// TODO [SNOW-3108659]: return error?
 func mapStringWithMapping[T any](stringField *T, sqlValue string, mapper func(string) (T, error)) {
 	if mappedValue, err := mapper(sqlValue); err == nil {
 		*stringField = mappedValue

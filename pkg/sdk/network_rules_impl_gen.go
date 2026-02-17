@@ -132,7 +132,7 @@ func (r ShowNetworkRulesRow) convert() (*NetworkRule, error) {
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
 		Comment:      r.Comment,
-		// TODO [this PR]: use enum mapping instead
+		// TODO [SNOW-3108659]: use enum mapping instead
 		Type:               NetworkRuleType(r.Type),
 		Mode:               NetworkRuleMode(r.Mode),
 		EntriesInValueList: r.EntriesInValueList,

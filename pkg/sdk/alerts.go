@@ -268,7 +268,7 @@ func (row alertDBRow) convert() (*Alert, error) {
 		Comment:      row.Comment,
 		Warehouse:    row.Warehouse,
 		Schedule:     row.Schedule,
-		// TODO [this PR]: use enum mapping instead
+		// TODO [SNOW-3108659]: use enum mapping instead
 		State:     AlertState(row.State),
 		Condition: row.Condition,
 		Action:    row.Action,

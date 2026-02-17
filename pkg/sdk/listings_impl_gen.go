@@ -176,7 +176,7 @@ func (r listingDBRow) convert() (*Listing, error) {
 		IsApplication:  r.IsApplication,
 		IsTargeted:     r.IsTargeted,
 	}
-	// TODO [this PR]: else return err?
+	// TODO [SNOW-3108659]: else return err?
 	if state, err := ToListingState(r.State); err == nil {
 		l.State = state
 	}
