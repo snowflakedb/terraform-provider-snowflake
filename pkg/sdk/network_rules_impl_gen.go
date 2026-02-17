@@ -126,12 +126,13 @@ func (r *ShowNetworkRuleRequest) toOpts() *ShowNetworkRuleOptions {
 func (r ShowNetworkRulesRow) convert() (*NetworkRule, error) {
 	// adjusted manually
 	return &NetworkRule{
-		CreatedOn:          r.CreatedOn,
-		Name:               r.Name,
-		DatabaseName:       r.DatabaseName,
-		SchemaName:         r.SchemaName,
-		Owner:              r.Owner,
-		Comment:            r.Comment,
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+		Owner:        r.Owner,
+		Comment:      r.Comment,
+		// TODO [this PR]: use enum mapping instead
 		Type:               NetworkRuleType(r.Type),
 		Mode:               NetworkRuleMode(r.Mode),
 		EntriesInValueList: r.EntriesInValueList,

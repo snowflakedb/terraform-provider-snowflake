@@ -268,9 +268,10 @@ func (row alertDBRow) convert() (*Alert, error) {
 		Comment:      row.Comment,
 		Warehouse:    row.Warehouse,
 		Schedule:     row.Schedule,
-		State:        AlertState(row.State),
-		Condition:    row.Condition,
-		Action:       row.Action,
+		// TODO [this PR]: use enum mapping instead
+		State:     AlertState(row.State),
+		Condition: row.Condition,
+		Action:    row.Action,
 	}
 	if row.OwnerRoleType.Valid {
 		alert.OwnerRoleType = row.OwnerRoleType.String
