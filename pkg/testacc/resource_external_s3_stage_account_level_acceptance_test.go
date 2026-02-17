@@ -32,7 +32,10 @@ func TestAcc_ExternalS3Stage_DirectoryTableTimestampParsing(t *testing.T) {
 	awsUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 	storageIntegrationId := ids.PrecreatedS3StorageIntegration
 
-	revertParameter := secondaryTestClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterTimestampOutputFormat, "YYYY-MM-DD HH24:MI:SS")
+	incompatibleFormat := "YYYY-MM-DD HH24:MI:SS"
+	compatibleFormat := "YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM"
+
+	revertParameter := secondaryTestClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterTimestampOutputFormat, incompatibleFormat)
 	t.Cleanup(revertParameter)
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
@@ -50,18 +53,36 @@ func TestAcc_ExternalS3Stage_DirectoryTableTimestampParsing(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
+			// Create with incompatible format
 			{
 				Config:            accconfig.FromModels(t, providerModel, stageModel),
 				ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
 				// Not matching the whole error message because in the issue the UTC time was used.
 				ExpectError: regexp.MustCompile("Error: parsing time"),
 			},
+			// Change back to compatible format and recreate resource (caused by the tainted state).
 			{
+				PreConfig: func() {
+					secondaryTestClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterTimestampOutputFormat, compatibleFormat)
+				},
 				Config: accconfig.FromModels(t, providerModel, stageModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						// This happens because the resource is marked as tainted. Unfortunately, in the testing framework we cannot assert this.
 						plancheck.ExpectResourceAction(stageModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
+			},
+			// Set back to incompatible format and upgrade. This step shows that the format is handled correctly (no error), and the upgrade does not cause a non-empty plan.
+			{
+				Config: accconfig.FromModels(t, providerModel, stageModel),
+				PreConfig: func() {
+					secondaryTestClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterTimestampOutputFormat, incompatibleFormat)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(stageModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				ProtoV6ProviderFactories: s3StageProviderFactory,
