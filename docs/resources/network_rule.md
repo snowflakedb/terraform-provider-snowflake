@@ -41,7 +41,7 @@ resource "snowflake_network_rule" "rule" {
 - `name` (String) Specifies the identifier for the network rule; must be unique for the database and schema in which the network rule is created.
 - `schema` (String) The schema in which to create the network rule.
 - `type` (String) Specifies the type of network identifiers being allowed or blocked. A network rule can have only one type. Allowed values are determined by the mode of the network rule; see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details. Valid values are (case-insensitive): `IPV4` | `AWSVPCEID` | `AZURELINKID` | `GCPPSCID` | `HOST_PORT` | `PRIVATE_HOST_PORT`.
-- `value_list` (Set of String) Specifies the network identifiers that will be allowed or blocked. Valid values in the list are determined by the type of network rule, see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details.
+- `value_list` (List of String) Specifies the network identifiers that will be allowed or blocked. Valid values in the list are determined by the type of network rule, see https://docs.snowflake.com/en/sql-reference/sql/create-network-rule#required-parameters for details.
 
 ### Optional
 
@@ -79,7 +79,7 @@ Read-Only:
 - `owner` (String)
 - `schema_name` (String)
 - `type` (String)
-- `value_list` (Set of String)
+- `value_list` (List of String)
 
 
 <a id="nestedatt--show_output"></a>
