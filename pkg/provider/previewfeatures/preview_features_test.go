@@ -69,6 +69,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_materialized_views_datasource", want: MaterializedViewsDatasource},
 		{input: "snowflake_network_policy_attachment_resource", want: NetworkPolicyAttachmentResource},
 		{input: "snowflake_network_rule_resource", want: NetworkRuleResource},
+		{input: "snowflake_network_rules_datasource", want: NetworkRulesDatasource},
 		{input: "snowflake_notebook_resource", want: NotebookResource},
 		{input: "snowflake_notebooks_datasource", want: NotebooksDatasource},
 		{input: "snowflake_notification_integration_resource", want: NotificationIntegrationResource},

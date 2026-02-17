@@ -62,6 +62,7 @@ const (
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
+	NetworkRulesDatasource                        feature = "snowflake_network_rules_datasource"
 	NotebookResource                              feature = "snowflake_notebook_resource"
 	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
@@ -151,6 +152,7 @@ var allPreviewFeatures = []feature{
 	MaterializedViewsDatasource,
 	NetworkPolicyAttachmentResource,
 	NetworkRuleResource,
+	NetworkRulesDatasource,
 	NotebookResource,
 	NotebooksDatasource,
 	EmailNotificationIntegrationResource,
