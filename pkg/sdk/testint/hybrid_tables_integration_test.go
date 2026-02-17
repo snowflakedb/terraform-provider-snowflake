@@ -343,7 +343,7 @@ func TestInt_HybridTables(t *testing.T) {
 						Type:    sdk.ColumnConstraintTypeForeignKey,
 						Columns: []string{"parent_id"},
 						ForeignKey: &sdk.OutOfLineForeignKey{
-							TableName: parentId,
+							TableName:   parentId,
 							ColumnNames: []string{"id"},
 						},
 					},
@@ -390,7 +390,7 @@ func TestInt_HybridTables(t *testing.T) {
 			columnComment := "Name column comment"
 			alterReq := sdk.NewAlterHybridTableRequest(id).
 				WithAlterColumnAction(*sdk.NewHybridTableAlterColumnActionRequest("NAME"). // Snowflake uses uppercase
-					WithComment(columnComment))
+														WithComment(columnComment))
 
 			err = client.HybridTables.Alter(ctx, alterReq)
 			require.NoError(t, err)
