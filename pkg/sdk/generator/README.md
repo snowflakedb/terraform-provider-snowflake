@@ -131,6 +131,10 @@ This section aims mostly at reducing the manual labor when using the generator i
     - warehouse generation custom logic
     - task predecessors custom logic
 
+[//]: # (TODO [next PRs]: update next sections)
+
+> ⚠️ **Disclaimer**: The following sections may contain the deprecated information. They will be cleaned up shortly.
+
 ##### Old High-priority improvements/changes
 
 - Improve lists handling
