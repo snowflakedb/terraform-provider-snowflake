@@ -248,24 +248,6 @@ body:
       description: What solutions would you prefer?
       placeholder: Description of proposed solutions.
 
-  - id: impact
-    type: dropdown
-    attributes:
-      label: How much impact is this issue causing?
-      description: |
-        Please choose the appropriate impact for the issue keeping in mind that:
-        - **High** - completely not able to use the provider or unexpected destruction of data/infrastructure.
-        - **Medium** - unable to upgrade provider version or an issue with potential workaround.
-        - **Low** - minor provider code or configuration issues.
-      options:
-        - High
-        - Medium
-        - Low
-      default:
-        2 # Low
-    validations:
-      required: true
-
   - id: additional-information
     type: textarea
     attributes:
