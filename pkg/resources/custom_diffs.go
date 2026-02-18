@@ -300,6 +300,27 @@ func RecreateWhenResourceBoolFieldChangedExternally(boolField string, wantValue 
 	}
 }
 
+// NullableListCustomDiff detects transitions between null (not in config) and
+// configured (empty or filled) states for a TypeSet/TypeList field. It uses a
+// companion boolean tracking field to create a diff that triggers Update, since
+// SDKv2 cannot distinguish null from empty for TypeSet in the plan.
+func NullableListCustomDiff(fieldKey, trackingKey string) schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+		if diff.Id() == "" {
+			return nil // skip on create
+		}
+		configIsNull := diff.GetRawConfig().AsValueMap()[fieldKey].IsNull()
+		wasConfigured := diff.Get(trackingKey).(bool)
+		if configIsNull && wasConfigured {
+			return diff.SetNew(trackingKey, false)
+		}
+		if !configIsNull && !wasConfigured {
+			return diff.SetNew(trackingKey, true)
+		}
+		return nil
+	}
+}
+
 // RecreateWhenResourceStringFieldChangedExternally recreates a resource when wantValue is different from value in field.
 // TODO [SNOW-1850370]: merge with above? test.
 func RecreateWhenResourceStringFieldChangedExternally(field string, expectedValue string) schema.CustomizeDiffFunc {
