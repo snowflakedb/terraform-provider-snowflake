@@ -176,6 +176,10 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Stage{},
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.NetworkRule{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
