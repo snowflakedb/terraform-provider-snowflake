@@ -123,7 +123,7 @@ provider "snowflake" {
 - `disable_telemetry` (Boolean) Disables telemetry in the driver. Can also be sourced from the `DISABLE_TELEMETRY` environment variable.
 - `driver_tracing` (String) Specifies the logging level to be used by the driver. Valid options are: `trace` | `debug` | `info` | `print` | `warning` | `error` | `fatal` | `panic`. Can also be sourced from the `SNOWFLAKE_DRIVER_TRACING` environment variable.
 - `enable_single_use_refresh_tokens` (Boolean) Enables single use refresh tokens for Snowflake IdP. Can also be sourced from the `SNOWFLAKE_ENABLE_SINGLE_USE_REFRESH_TOKENS` environment variable.
-- `experimental_features_enabled` (Set of String) A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `PARAMETERS_REDUCED_OUTPUT` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY`.
+- `experimental_features_enabled` (Set of String) A list of experimental features. Similarly to preview features, they are not yet stable features of the provider. Enabling given experiment is still considered a preview feature, even when applied to the stable resource. These switches offer experiments altering the provider behavior. If the given experiment is successful, it can be considered an addition in the future provider versions. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Active experiments are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `PARAMETERS_REDUCED_OUTPUT` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` | `GRANTS_IMPORT_VALIDATION`.
 - `external_browser_timeout` (Number) The timeout in seconds for the external browser to complete the authentication. Can also be sourced from the `SNOWFLAKE_EXTERNAL_BROWSER_TIMEOUT` environment variable.
 - `host` (String) Specifies a custom host value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_HOST` environment variable.
 - `include_retry_reason` (String) Should retried request contain retry reason. Can also be sourced from the `SNOWFLAKE_INCLUDE_RETRY_REASON` environment variable.
@@ -923,6 +923,8 @@ It has similar behavior to the `enable_multiple_grants` flag present in the old 
 
 Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
 
+This feature works independently of the `GRANTS_IMPORT_VALIDATION` flag.
+
 #### PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL
 Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).
 
@@ -939,3 +941,10 @@ We considered the option to remove the `parameters` output completely, however, 
 The new `default_workload_identity_federation` field was added to the `snowflake_legacy_service_user` and `snowflake_service_user` resources. This field allows for managing WIFs. Due to feature complexity, it requires enabling this experiment.
 
 Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).
+
+#### GRANTS_IMPORT_VALIDATION
+Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.
+
+When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
+
+This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.

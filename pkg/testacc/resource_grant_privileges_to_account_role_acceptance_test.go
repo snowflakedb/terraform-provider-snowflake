@@ -3297,14 +3297,17 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Disabled(t *testing.T
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
 				ConfigVariables: configVariables,
+				// We expect a non-empty plan because the privilege is not granted with the correct grant option.
+				ExpectNonEmptyPlan: true,
 			},
 			// Import without experiment enabled - should succeed (default behavior preserved)
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
-				ConfigVariables:   configVariables,
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ConfigDirectory:         ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
+				ConfigVariables:         configVariables,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"privileges"},
 			},
 		},
 	})
@@ -3383,7 +3386,7 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManage
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManagement"),
+		ProtoV6ProviderFactories: grantsImportValidationProviderFactory,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			// Create with correct settings
@@ -3414,7 +3417,7 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManage
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name", "strict_privilege_management"},
 			},
-			// Prepare for destroy check - revoke the privlege granted in the previous step.
+			// Prepare for destroy check - revoke the privilege granted in the previous step.
 			{
 				Config: accconfig.FromModels(t, providerModel, resourceModel),
 				Check: assertThat(t,

@@ -470,11 +470,9 @@ func validateGrantPrivilegesToAccountRoleImport(ctx context.Context, m any, id G
 	}
 
 	// We don't need to pass strict validation here, because we are validating the privileges against the actual privileges in Snowflake.
-	actualPrivileges, expectedPrivileges, err := computePrivileges(id, grants, grantedOn, opts, false)
-	if err != nil {
-		return fmt.Errorf("computing privileges: %w", err)
-	}
+	actualPrivileges := computePrivileges(id, grants, grantedOn, opts, false)
 
+	expectedPrivileges := slices.Clone(id.Privileges)
 	slices.Sort(actualPrivileges)
 	slices.Sort(expectedPrivileges)
 	if !slices.Equal(actualPrivileges, expectedPrivileges) {
@@ -898,23 +896,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 			},
 		}
 	}
-	actualPrivileges, expectedPrivileges, err := computePrivileges(id, grants, grantedOn, opts, strictPrivilegeManagement)
-	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Failed to compute privileges",
-				Detail:   fmt.Sprintf("Id: %s\nError: %s", d.Id(), err),
-			},
-		}
-	}
-
-	usageIndex := slices.IndexFunc(actualPrivileges, func(s string) bool { return strings.ToUpper(s) == sdk.AccountObjectPrivilegeUsage.String() })
-	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
-		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
-	}) && usageIndex >= 0 {
-		actualPrivileges[usageIndex] = sdk.AccountObjectPrivilegeImportedPrivileges.String()
-	}
+	actualPrivileges := computePrivileges(id, grants, grantedOn, opts, strictPrivilegeManagement)
 
 	if err := d.Set("privileges", actualPrivileges); err != nil {
 		return diag.Diagnostics{
@@ -929,8 +911,8 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, grantedOn sdk.ObjectType, opts *sdk.ShowGrantOptions, strictPrivilegeManagement bool) (actualPrivileges []string, expectedPrivileges []string, err error) {
-	expectedPrivileges = slices.Clone(id.Privileges)
+func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, grantedOn sdk.ObjectType, opts *sdk.ShowGrantOptions, strictPrivilegeManagement bool) (actualPrivileges []string) {
+	expectedPrivileges := slices.Clone(id.Privileges)
 
 	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
 		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
@@ -979,7 +961,15 @@ func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, gr
 		}
 	}
 
-	return actualPrivileges, expectedPrivileges, nil
+	// Remap USAGE back to IMPORTED_PRIVILEGES (Snowflake returns USAGE for IMPORTED_PRIVILEGES grants)
+	usageIndex := slices.IndexFunc(actualPrivileges, func(s string) bool { return strings.ToUpper(s) == sdk.AccountObjectPrivilegeUsage.String() })
+	if slices.ContainsFunc(id.Privileges, func(s string) bool {
+		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
+	}) && usageIndex >= 0 {
+		actualPrivileges[usageIndex] = sdk.AccountObjectPrivilegeImportedPrivileges.String()
+	}
+
+	return actualPrivileges
 }
 
 func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, sdk.ObjectType) {

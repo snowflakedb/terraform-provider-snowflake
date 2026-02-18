@@ -59,7 +59,7 @@ var allExperiments = []Experiment{
 			"The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.",
 			"It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.",
 			"Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.",
-			fmt.Sprintf("This feature is works independently of the `%s` flag.", GrantsImportValidation),
+			fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsImportValidation),
 		),
 	},
 	{
@@ -93,7 +93,7 @@ var allExperiments = []Experiment{
 		joinWithDoubleNewline(
 			"Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.",
 			"When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.",
-			fmt.Sprintf("This feature is works independently of the `%s` flag.", GrantsStrictPrivilegeManagement),
+			fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsStrictPrivilegeManagement),
 		),
 	},
 }

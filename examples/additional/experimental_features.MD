@@ -18,7 +18,7 @@ It has similar behavior to the `enable_multiple_grants` flag present in the old 
 
 Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
 
-This feature is works independently of the `GRANTS_IMPORT_VALIDATION` flag.
+This feature works independently of the `GRANTS_IMPORT_VALIDATION` flag.
 
 #### PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL
 Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).
@@ -42,6 +42,6 @@ Enables import validation for the `snowflake_grant_privileges_to_account_role` r
 
 When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
 
-This feature is works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
+This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
 
 
