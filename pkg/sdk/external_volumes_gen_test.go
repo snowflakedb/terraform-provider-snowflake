@@ -10,142 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Storage location structs for testing
-
-// Basic variants (required fields only)
-var s3StorageLocationParamsBasic = &S3StorageLocationParams{
-	Name:              "s3_basic",
-	StorageProvider:   S3StorageProviderS3,
-	StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole",
-	StorageBaseUrl:    "s3://my-bucket/path",
-}
-
-var gcsStorageLocationParamsBasic = &GCSStorageLocationParams{
-	Name:           "gcs_basic",
-	StorageBaseUrl: "gcs://my-bucket/path",
-}
-
-var azureStorageLocationParamsBasic = &AzureStorageLocationParams{
-	Name:           "azure_basic",
-	AzureTenantId:  "a123b4cd-1abc-12ab-12ab-1a2b34c5d678",
-	StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path",
-}
-
-var s3CompatStorageLocationParamsBasic = &S3CompatStorageLocationParams{
-	Name:            "s3compat_basic",
-	StorageBaseUrl:  "s3compat://my-bucket/path",
-	StorageEndpoint: "https://s3-compatible.example.com",
-}
-
-// Complete variants (all optional fields)
-var s3StorageLocationParamsComplete = &S3StorageLocationParams{
-	Name:                     "s3_complete",
-	StorageProvider:          S3StorageProviderS3,
-	StorageAwsRoleArn:        "arn:aws:iam::123456789012:role/myrole",
-	StorageBaseUrl:           "s3://my-bucket/path",
-	StorageAwsExternalId:     String("external_id_123"),
-	StorageAwsAccessPointArn: String("arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"),
-	UsePrivatelinkEndpoint:   Bool(true),
-	Encryption: &ExternalVolumeS3Encryption{
-		EncryptionType: S3EncryptionTypeSseKms,
-		KmsKeyId:       String("1234abcd-12ab-34cd-56ef-1234567890ab"),
-	},
-}
-
-var gcsStorageLocationParamsComplete = &GCSStorageLocationParams{
-	Name:           "gcs_complete",
-	StorageBaseUrl: "gcs://my-bucket/path",
-	Encryption: &ExternalVolumeGCSEncryption{
-		EncryptionType: GCSEncryptionTypeSseKms,
-		KmsKeyId:       String("1234abcd-12ab-34cd-56ef-1234567890ab"),
-	},
-}
-
-var azureStorageLocationParamsComplete = &AzureStorageLocationParams{
-	Name:                   "azure_complete",
-	AzureTenantId:          "a123b4cd-1abc-12ab-12ab-1a2b34c5d678",
-	StorageBaseUrl:         "azure://myaccount.blob.core.windows.net/mycontainer/path",
-	UsePrivatelinkEndpoint: Bool(true),
-}
-
-var s3CompatStorageLocationParamsComplete = &S3CompatStorageLocationParams{
-	Name:            "s3compat_complete",
-	StorageBaseUrl:  "s3compat://my-bucket/path",
-	StorageEndpoint: "https://s3-compatible.example.com",
-	Credentials: &ExternalVolumeS3CompatCredentials{
-		AwsKeyId:     "AKIAIOSFODNN7EXAMPLE",
-		AwsSecretKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-	},
-}
-
-// Helper variables for Alter ADD tests
-
-// Basic variants for Alter (required fields only)
-var s3StorageLocationParamsAlterBasic = &S3StorageLocationParams{
-	Name:              "s3_alter_basic",
-	StorageProvider:   S3StorageProviderS3,
-	StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole",
-	StorageBaseUrl:    "s3://my-bucket/alter-path",
-}
-
-var gcsStorageLocationParamsAlterBasic = &GCSStorageLocationParams{
-	Name:           "gcs_alter_basic",
-	StorageBaseUrl: "gcs://my-bucket/alter-path",
-}
-
-var azureStorageLocationParamsAlterBasic = &AzureStorageLocationParams{
-	Name:           "azure_alter_basic",
-	AzureTenantId:  "a123b4cd-1abc-12ab-12ab-1a2b34c5d678",
-	StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/alter-path",
-}
-
-var s3CompatStorageLocationParamsAlterBasic = &S3CompatStorageLocationParams{
-	Name:            "s3compat_alter_basic",
-	StorageBaseUrl:  "s3compat://my-bucket/alter-path",
-	StorageEndpoint: "https://s3-compatible.example.com",
-}
-
-// Complete variants for Alter (all optional fields)
-var s3StorageLocationParamsAlterComplete = &S3StorageLocationParams{
-	Name:                     "s3_alter_complete",
-	StorageProvider:          S3StorageProviderS3,
-	StorageAwsRoleArn:        "arn:aws:iam::123456789012:role/myrole",
-	StorageBaseUrl:           "s3://my-bucket/alter-path",
-	StorageAwsExternalId:     String("external_id_alter"),
-	StorageAwsAccessPointArn: String("arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"),
-	UsePrivatelinkEndpoint:   Bool(true),
-	Encryption: &ExternalVolumeS3Encryption{
-		EncryptionType: S3EncryptionTypeSseKms,
-		KmsKeyId:       String("1234abcd-alter-kms-key"),
-	},
-}
-
-var gcsStorageLocationParamsAlterComplete = &GCSStorageLocationParams{
-	Name:           "gcs_alter_complete",
-	StorageBaseUrl: "gcs://my-bucket/alter-path",
-	Encryption: &ExternalVolumeGCSEncryption{
-		EncryptionType: GCSEncryptionTypeSseKms,
-		KmsKeyId:       String("1234abcd-alter-kms-key"),
-	},
-}
-
-var azureStorageLocationParamsAlterComplete = &AzureStorageLocationParams{
-	Name:                   "azure_alter_complete",
-	AzureTenantId:          "a123b4cd-1abc-12ab-12ab-1a2b34c5d678",
-	StorageBaseUrl:         "azure://myaccount.blob.core.windows.net/mycontainer/alter-path",
-	UsePrivatelinkEndpoint: Bool(true),
-}
-
-var s3CompatStorageLocationParamsAlterComplete = &S3CompatStorageLocationParams{
-	Name:            "s3compat_alter_complete",
-	StorageBaseUrl:  "s3compat://my-bucket/alter-path",
-	StorageEndpoint: "https://s3-compatible.example.com",
-	Credentials: &ExternalVolumeS3CompatCredentials{
-		AwsKeyId:     "AKIAIOSFODNN7EXAMPLE",
-		AwsSecretKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-	},
-}
-
 func TestExternalVolumes_Create(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	// Minimal valid CreateExternalVolumeOptions
@@ -176,12 +40,12 @@ func TestExternalVolumes_Create(t *testing.T) {
 	t.Run("validation: exactly one field from [opts.StorageLocations[i].S3StorageLocationParams opts.StorageLocations[i].GCSStorageLocationParams opts.StorageLocations[i].AzureStorageLocationParams opts.StorageLocations[i].S3CompatStorageLocationParams] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.StorageLocations = []ExternalVolumeStorageLocation{
-			{S3StorageLocationParams: s3StorageLocationParamsBasic},
+			{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_basic", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path"}},
 			{},
 			{
-				S3StorageLocationParams:    s3StorageLocationParamsBasic,
-				GCSStorageLocationParams:   gcsStorageLocationParamsBasic,
-				AzureStorageLocationParams: azureStorageLocationParamsBasic,
+				S3StorageLocationParams:    &S3StorageLocationParams{Name: "s3_basic", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path"},
+				GCSStorageLocationParams:   &GCSStorageLocationParams{Name: "gcs_basic", StorageBaseUrl: "gcs://my-bucket/path"},
+				AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_basic", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path"},
 			},
 		}
 		assertOptsInvalidJoinedErrors(
@@ -200,49 +64,49 @@ func TestExternalVolumes_Create(t *testing.T) {
 
 	t.Run("basic - s3", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StorageLocations = []ExternalVolumeStorageLocation{{S3StorageLocationParams: s3StorageLocationParamsBasic}}
+		opts.StorageLocations = []ExternalVolumeStorageLocation{{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_basic", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path"}}}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 's3_basic' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/path'))`, id.FullyQualifiedName())
 	})
 
 	t.Run("basic - gcs", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StorageLocations = []ExternalVolumeStorageLocation{{GCSStorageLocationParams: gcsStorageLocationParamsBasic}}
+		opts.StorageLocations = []ExternalVolumeStorageLocation{{GCSStorageLocationParams: &GCSStorageLocationParams{Name: "gcs_basic", StorageBaseUrl: "gcs://my-bucket/path"}}}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 'gcs_basic' STORAGE_PROVIDER = 'GCS' STORAGE_BASE_URL = 'gcs://my-bucket/path'))`, id.FullyQualifiedName())
 	})
 
 	t.Run("basic - azure", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StorageLocations = []ExternalVolumeStorageLocation{{AzureStorageLocationParams: azureStorageLocationParamsBasic}}
+		opts.StorageLocations = []ExternalVolumeStorageLocation{{AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_basic", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path"}}}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 'azure_basic' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/path'))`, id.FullyQualifiedName())
 	})
 
 	t.Run("basic - s3compat", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StorageLocations = []ExternalVolumeStorageLocation{{S3CompatStorageLocationParams: s3CompatStorageLocationParamsBasic}}
+		opts.StorageLocations = []ExternalVolumeStorageLocation{{S3CompatStorageLocationParams: &S3CompatStorageLocationParams{Name: "s3compat_basic", StorageBaseUrl: "s3compat://my-bucket/path", StorageEndpoint: "https://s3-compatible.example.com"}}}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 's3compat_basic' STORAGE_PROVIDER = 'S3COMPAT' STORAGE_BASE_URL = 's3compat://my-bucket/path' STORAGE_ENDPOINT = 'https://s3-compatible.example.com'))`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - s3", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StorageLocations = []ExternalVolumeStorageLocation{{S3StorageLocationParams: s3StorageLocationParamsComplete}}
+		opts.StorageLocations = []ExternalVolumeStorageLocation{{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_complete", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path", StorageAwsExternalId: String("external_id_123"), StorageAwsAccessPointArn: String("arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"), UsePrivatelinkEndpoint: Bool(true), Encryption: &ExternalVolumeS3Encryption{EncryptionType: S3EncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}}}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 's3_complete' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/path' STORAGE_AWS_EXTERNAL_ID = 'external_id_123' STORAGE_AWS_ACCESS_POINT_ARN = 'arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point' USE_PRIVATELINK_ENDPOINT = true ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = '1234abcd-12ab-34cd-56ef-1234567890ab')))`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - gcs", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StorageLocations = []ExternalVolumeStorageLocation{{GCSStorageLocationParams: gcsStorageLocationParamsComplete}}
+		opts.StorageLocations = []ExternalVolumeStorageLocation{{GCSStorageLocationParams: &GCSStorageLocationParams{Name: "gcs_complete", StorageBaseUrl: "gcs://my-bucket/path", Encryption: &ExternalVolumeGCSEncryption{EncryptionType: GCSEncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}}}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 'gcs_complete' STORAGE_PROVIDER = 'GCS' STORAGE_BASE_URL = 'gcs://my-bucket/path' ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = '1234abcd-12ab-34cd-56ef-1234567890ab')))`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - azure", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StorageLocations = []ExternalVolumeStorageLocation{{AzureStorageLocationParams: azureStorageLocationParamsComplete}}
+		opts.StorageLocations = []ExternalVolumeStorageLocation{{AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_complete", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path", UsePrivatelinkEndpoint: Bool(true)}}}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 'azure_complete' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/path' USE_PRIVATELINK_ENDPOINT = true))`, id.FullyQualifiedName())
 	})
 
 	t.Run("all options - s3compat", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StorageLocations = []ExternalVolumeStorageLocation{{S3CompatStorageLocationParams: s3CompatStorageLocationParamsComplete}}
+		opts.StorageLocations = []ExternalVolumeStorageLocation{{S3CompatStorageLocationParams: &S3CompatStorageLocationParams{Name: "s3compat_complete", StorageBaseUrl: "s3compat://my-bucket/path", StorageEndpoint: "https://s3-compatible.example.com", Credentials: &ExternalVolumeS3CompatCredentials{AwsKeyId: "AKIAIOSFODNN7EXAMPLE", AwsSecretKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"}}}}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL VOLUME %s STORAGE_LOCATIONS = ((NAME = 's3compat_complete' STORAGE_PROVIDER = 'S3COMPAT' STORAGE_BASE_URL = 's3compat://my-bucket/path' STORAGE_ENDPOINT = 'https://s3-compatible.example.com' CREDENTIALS = (AWS_KEY_ID = 'AKIAIOSFODNN7EXAMPLE' AWS_SECRET_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY')))`, id.FullyQualifiedName())
 	})
 
@@ -250,10 +114,10 @@ func TestExternalVolumes_Create(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.StorageLocations = []ExternalVolumeStorageLocation{
-			{S3StorageLocationParams: s3StorageLocationParamsComplete},
-			{GCSStorageLocationParams: gcsStorageLocationParamsComplete},
-			{AzureStorageLocationParams: azureStorageLocationParamsComplete},
-			{S3CompatStorageLocationParams: s3CompatStorageLocationParamsComplete},
+			{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_complete", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path", StorageAwsExternalId: String("external_id_123"), StorageAwsAccessPointArn: String("arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"), UsePrivatelinkEndpoint: Bool(true), Encryption: &ExternalVolumeS3Encryption{EncryptionType: S3EncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}},
+			{GCSStorageLocationParams: &GCSStorageLocationParams{Name: "gcs_complete", StorageBaseUrl: "gcs://my-bucket/path", Encryption: &ExternalVolumeGCSEncryption{EncryptionType: GCSEncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}},
+			{AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_complete", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path", UsePrivatelinkEndpoint: Bool(true)}},
+			{S3CompatStorageLocationParams: &S3CompatStorageLocationParams{Name: "s3compat_complete", StorageBaseUrl: "s3compat://my-bucket/path", StorageEndpoint: "https://s3-compatible.example.com", Credentials: &ExternalVolumeS3CompatCredentials{AwsKeyId: "AKIAIOSFODNN7EXAMPLE", AwsSecretKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"}}},
 		}
 		opts.AllowWrites = Bool(true)
 		opts.Comment = String("some comment")
@@ -290,10 +154,10 @@ func TestExternalVolumes_Alter(t *testing.T) {
 		removeAndSetOpts.Set = &AlterExternalVolumeSet{AllowWrites: Bool(true)}
 
 		removeAndAddOpts.RemoveStorageLocation = String("some storage location")
-		removeAndAddOpts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: s3StorageLocationParamsComplete}
+		removeAndAddOpts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_complete", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path", StorageAwsExternalId: String("external_id_123"), StorageAwsAccessPointArn: String("arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"), UsePrivatelinkEndpoint: Bool(true), Encryption: &ExternalVolumeS3Encryption{EncryptionType: S3EncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}}
 
 		setAndAddOpts.Set = &AlterExternalVolumeSet{AllowWrites: Bool(true)}
-		setAndAddOpts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: s3StorageLocationParamsComplete}
+		setAndAddOpts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_complete", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path", StorageAwsExternalId: String("external_id_123"), StorageAwsAccessPointArn: String("arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"), UsePrivatelinkEndpoint: Bool(true), Encryption: &ExternalVolumeS3Encryption{EncryptionType: S3EncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}}
 
 		assertOptsInvalidJoinedErrors(t, removeAndSetOpts, errExactlyOneOf("AlterExternalVolumeOptions", "RemoveStorageLocation", "Set", "AddStorageLocation"))
 		assertOptsInvalidJoinedErrors(t, removeAndAddOpts, errExactlyOneOf("AlterExternalVolumeOptions", "RemoveStorageLocation", "Set", "AddStorageLocation"))
@@ -304,7 +168,7 @@ func TestExternalVolumes_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.RemoveStorageLocation = String("some storage location")
 		opts.Set = &AlterExternalVolumeSet{AllowWrites: Bool(true)}
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: s3StorageLocationParamsComplete}
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_complete", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path", StorageAwsExternalId: String("external_id_123"), StorageAwsAccessPointArn: String("arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"), UsePrivatelinkEndpoint: Bool(true), Encryption: &ExternalVolumeS3Encryption{EncryptionType: S3EncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalVolumeOptions", "RemoveStorageLocation", "Set", "AddStorageLocation"))
 	})
 
@@ -325,16 +189,16 @@ func TestExternalVolumes_Alter(t *testing.T) {
 		s3AndAzureOpts := defaultOpts()
 		gcsAndAzureOpts := defaultOpts()
 		s3AndGcsOpts.AddStorageLocation = &ExternalVolumeStorageLocation{
-			S3StorageLocationParams:  s3StorageLocationParamsBasic,
-			GCSStorageLocationParams: gcsStorageLocationParamsBasic,
+			S3StorageLocationParams:  &S3StorageLocationParams{Name: "s3_basic", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path"},
+			GCSStorageLocationParams: &GCSStorageLocationParams{Name: "gcs_basic", StorageBaseUrl: "gcs://my-bucket/path"},
 		}
 		s3AndAzureOpts.AddStorageLocation = &ExternalVolumeStorageLocation{
-			S3StorageLocationParams:    s3StorageLocationParamsBasic,
-			AzureStorageLocationParams: azureStorageLocationParamsBasic,
+			S3StorageLocationParams:    &S3StorageLocationParams{Name: "s3_basic", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path"},
+			AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_basic", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path"},
 		}
 		gcsAndAzureOpts.AddStorageLocation = &ExternalVolumeStorageLocation{
-			GCSStorageLocationParams:   gcsStorageLocationParamsBasic,
-			AzureStorageLocationParams: azureStorageLocationParamsBasic,
+			GCSStorageLocationParams:   &GCSStorageLocationParams{Name: "gcs_basic", StorageBaseUrl: "gcs://my-bucket/path"},
+			AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_basic", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path"},
 		}
 		assertOptsInvalidJoinedErrors(t, s3AndGcsOpts, errExactlyOneOf("AlterExternalVolumeOptions.AddStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
 		assertOptsInvalidJoinedErrors(t, s3AndAzureOpts, errExactlyOneOf("AlterExternalVolumeOptions.AddStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
@@ -344,9 +208,9 @@ func TestExternalVolumes_Alter(t *testing.T) {
 	t.Run("validation: exactly one field from [opts.AddStorageLocation.S3StorageLocationParams opts.AddStorageLocation.GCSStorageLocationParams opts.AddStorageLocation.AzureStorageLocationParams opts.AddStorageLocation.S3CompatStorageLocationParams] should be present - three set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AddStorageLocation = &ExternalVolumeStorageLocation{
-			S3StorageLocationParams:    s3StorageLocationParamsBasic,
-			GCSStorageLocationParams:   gcsStorageLocationParamsBasic,
-			AzureStorageLocationParams: azureStorageLocationParamsBasic,
+			S3StorageLocationParams:    &S3StorageLocationParams{Name: "s3_basic", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path"},
+			GCSStorageLocationParams:   &GCSStorageLocationParams{Name: "gcs_basic", StorageBaseUrl: "gcs://my-bucket/path"},
+			AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_basic", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path"},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalVolumeOptions.AddStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
 	})
@@ -365,50 +229,50 @@ func TestExternalVolumes_Alter(t *testing.T) {
 
 	t.Run("add storage location - basic - s3", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: s3StorageLocationParamsAlterBasic}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 's3_alter_basic' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/alter-path')`, id.FullyQualifiedName())
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_basic", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path"}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 's3_basic' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/path')`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage location - basic - gcs", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{GCSStorageLocationParams: gcsStorageLocationParamsAlterBasic}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 'gcs_alter_basic' STORAGE_PROVIDER = 'GCS' STORAGE_BASE_URL = 'gcs://my-bucket/alter-path')`, id.FullyQualifiedName())
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{GCSStorageLocationParams: &GCSStorageLocationParams{Name: "gcs_basic", StorageBaseUrl: "gcs://my-bucket/path"}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 'gcs_basic' STORAGE_PROVIDER = 'GCS' STORAGE_BASE_URL = 'gcs://my-bucket/path')`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage location - basic - azure", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{AzureStorageLocationParams: azureStorageLocationParamsAlterBasic}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 'azure_alter_basic' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/alter-path')`, id.FullyQualifiedName())
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_basic", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path"}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 'azure_basic' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/path')`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage location - basic - s3compat", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3CompatStorageLocationParams: s3CompatStorageLocationParamsAlterBasic}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 's3compat_alter_basic' STORAGE_PROVIDER = 'S3COMPAT' STORAGE_BASE_URL = 's3compat://my-bucket/alter-path' STORAGE_ENDPOINT = 'https://s3-compatible.example.com')`, id.FullyQualifiedName())
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3CompatStorageLocationParams: &S3CompatStorageLocationParams{Name: "s3compat_basic", StorageBaseUrl: "s3compat://my-bucket/path", StorageEndpoint: "https://s3-compatible.example.com"}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 's3compat_basic' STORAGE_PROVIDER = 'S3COMPAT' STORAGE_BASE_URL = 's3compat://my-bucket/path' STORAGE_ENDPOINT = 'https://s3-compatible.example.com')`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage location - all options - s3", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: s3StorageLocationParamsAlterComplete}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 's3_alter_complete' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/alter-path' STORAGE_AWS_EXTERNAL_ID = 'external_id_alter' STORAGE_AWS_ACCESS_POINT_ARN = 'arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point' USE_PRIVATELINK_ENDPOINT = true ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = '1234abcd-alter-kms-key'))`, id.FullyQualifiedName())
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3StorageLocationParams: &S3StorageLocationParams{Name: "s3_complete", StorageProvider: S3StorageProviderS3, StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole", StorageBaseUrl: "s3://my-bucket/path", StorageAwsExternalId: String("external_id_123"), StorageAwsAccessPointArn: String("arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"), UsePrivatelinkEndpoint: Bool(true), Encryption: &ExternalVolumeS3Encryption{EncryptionType: S3EncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 's3_complete' STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/myrole' STORAGE_BASE_URL = 's3://my-bucket/path' STORAGE_AWS_EXTERNAL_ID = 'external_id_123' STORAGE_AWS_ACCESS_POINT_ARN = 'arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point' USE_PRIVATELINK_ENDPOINT = true ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = '1234abcd-12ab-34cd-56ef-1234567890ab'))`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage location - all options - gcs", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{GCSStorageLocationParams: gcsStorageLocationParamsAlterComplete}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 'gcs_alter_complete' STORAGE_PROVIDER = 'GCS' STORAGE_BASE_URL = 'gcs://my-bucket/alter-path' ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = '1234abcd-alter-kms-key'))`, id.FullyQualifiedName())
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{GCSStorageLocationParams: &GCSStorageLocationParams{Name: "gcs_complete", StorageBaseUrl: "gcs://my-bucket/path", Encryption: &ExternalVolumeGCSEncryption{EncryptionType: GCSEncryptionTypeSseKms, KmsKeyId: String("1234abcd-12ab-34cd-56ef-1234567890ab")}}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 'gcs_complete' STORAGE_PROVIDER = 'GCS' STORAGE_BASE_URL = 'gcs://my-bucket/path' ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = '1234abcd-12ab-34cd-56ef-1234567890ab'))`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage location - all options - azure", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{AzureStorageLocationParams: azureStorageLocationParamsAlterComplete}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 'azure_alter_complete' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/alter-path' USE_PRIVATELINK_ENDPOINT = true)`, id.FullyQualifiedName())
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{AzureStorageLocationParams: &AzureStorageLocationParams{Name: "azure_complete", AzureTenantId: "a123b4cd-1abc-12ab-12ab-1a2b34c5d678", StorageBaseUrl: "azure://myaccount.blob.core.windows.net/mycontainer/path", UsePrivatelinkEndpoint: Bool(true)}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 'azure_complete' STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'a123b4cd-1abc-12ab-12ab-1a2b34c5d678' STORAGE_BASE_URL = 'azure://myaccount.blob.core.windows.net/mycontainer/path' USE_PRIVATELINK_ENDPOINT = true)`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage location - all options - s3compat", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3CompatStorageLocationParams: s3CompatStorageLocationParamsAlterComplete}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 's3compat_alter_complete' STORAGE_PROVIDER = 'S3COMPAT' STORAGE_BASE_URL = 's3compat://my-bucket/alter-path' STORAGE_ENDPOINT = 'https://s3-compatible.example.com' CREDENTIALS = (AWS_KEY_ID = 'AKIAIOSFODNN7EXAMPLE' AWS_SECRET_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'))`, id.FullyQualifiedName())
+		opts.AddStorageLocation = &ExternalVolumeStorageLocation{S3CompatStorageLocationParams: &S3CompatStorageLocationParams{Name: "s3compat_complete", StorageBaseUrl: "s3compat://my-bucket/path", StorageEndpoint: "https://s3-compatible.example.com", Credentials: &ExternalVolumeS3CompatCredentials{AwsKeyId: "AKIAIOSFODNN7EXAMPLE", AwsSecretKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"}}}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL VOLUME %s ADD STORAGE_LOCATION = (NAME = 's3compat_complete' STORAGE_PROVIDER = 'S3COMPAT' STORAGE_BASE_URL = 's3compat://my-bucket/path' STORAGE_ENDPOINT = 'https://s3-compatible.example.com' CREDENTIALS = (AWS_KEY_ID = 'AKIAIOSFODNN7EXAMPLE' AWS_SECRET_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'))`, id.FullyQualifiedName())
 	})
 }
 

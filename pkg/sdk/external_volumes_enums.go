@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -28,6 +29,15 @@ var (
 )
 
 var AllStorageProviderValues = []StorageProvider{
+	StorageProviderGCS,
+	StorageProviderAzure,
+	StorageProviderS3,
+	StorageProviderS3GOV,
+}
+
+// This is a temporary variable to be used in the describe function to avoid errors when the storage provider is S3Compatible.
+// S3compatible is not supported in the resource yet.
+var AllStorageProviderValuesInDescribe = []StorageProvider{
 	StorageProviderGCS,
 	StorageProviderAzure,
 	StorageProviderS3,
@@ -60,35 +70,21 @@ func ToGCSEncryptionType(s string) (GCSEncryptionType, error) {
 }
 
 func ToStorageProvider(s string) (StorageProvider, error) {
-	switch strings.ToUpper(s) {
-	case string(StorageProviderGCS):
-		return StorageProviderGCS, nil
-	case string(StorageProviderAzure):
-		return StorageProviderAzure, nil
-	case string(StorageProviderS3):
-		return StorageProviderS3, nil
-	case string(StorageProviderS3GOV):
-		return StorageProviderS3GOV, nil
-	default:
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllStorageProviderValues, StorageProvider(s)) {
 		return "", fmt.Errorf("invalid storage provider: %s", s)
 	}
+	return StorageProvider(s), nil
 }
 
+// This is a temporary function to be used in the describe function to avoid errors when the storage provider is S3Compatible.
+// S3compatible is not supported in the resource yet.
 func ToStorageProviderInDescribe(s string) (StorageProvider, error) {
-	switch strings.ToUpper(s) {
-	case string(StorageProviderGCS):
-		return StorageProviderGCS, nil
-	case string(StorageProviderAzure):
-		return StorageProviderAzure, nil
-	case string(StorageProviderS3):
-		return StorageProviderS3, nil
-	case string(StorageProviderS3GOV):
-		return StorageProviderS3GOV, nil
-	case string(StorageProviderS3Compatible):
-		return StorageProviderS3Compatible, nil
-	default:
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllStorageProviderValuesInDescribe, StorageProvider(s)) {
 		return "", fmt.Errorf("invalid storage provider: %s", s)
 	}
+	return StorageProvider(s), nil
 }
 
 func ToS3StorageProvider(s string) (S3StorageProvider, error) {

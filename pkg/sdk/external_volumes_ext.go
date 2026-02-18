@@ -200,7 +200,7 @@ func validateParsedExternalVolumeDescribed(p ParsedExternalVolumeDescribed) erro
 		if len(s.Name) == 0 {
 			return fmt.Errorf("A storage location's Name in this volume could not be parsed.")
 		}
-		if !slices.Contains(AsStringList(AllStorageProviderValues), s.StorageProvider) {
+		if !slices.Contains(AsStringList(AllStorageProviderValuesInDescribe), s.StorageProvider) {
 			return fmt.Errorf("invalid storage provider parsed: %s", s)
 		}
 		if len(s.StorageBaseUrl) == 0 {
