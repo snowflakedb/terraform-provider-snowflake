@@ -3279,14 +3279,11 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Disabled(t *testing.T
 	// Grant with with_grant_option=true
 	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeMonitor}, true)
 
-	configVariables := config.Variables{
-		"name":              config.StringVariable(role.ID().FullyQualifiedName()),
-		"privileges":        config.ListVariable(config.StringVariable(string(sdk.AccountObjectPrivilegeMonitor))),
-		"database":          config.StringVariable(database.ID().FullyQualifiedName()),
-		"with_grant_option": config.BoolVariable(false),
-	}
+	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
+		WithWithGrantOption(false)
 
-	resourceName := "snowflake_grant_privileges_to_account_role.test"
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -3295,19 +3292,17 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Disabled(t *testing.T
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
-				ConfigVariables: configVariables,
+				Config: accconfig.FromModels(t, resourceModel),
 				// We expect a non-empty plan because the privilege is not granted with the correct grant option.
 				ExpectNonEmptyPlan: true,
 			},
 			// Import without experiment enabled - should succeed (default behavior preserved)
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
-				ConfigVariables:         configVariables,
-				ResourceName:            resourceName,
+				Config:                  accconfig.FromModels(t, resourceModel),
+				ResourceName:            resourceModel.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"privileges"},
+				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name", "privileges"},
 			},
 		},
 	})
