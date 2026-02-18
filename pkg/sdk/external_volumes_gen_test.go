@@ -544,12 +544,13 @@ func Test_ExternalVolumes_ToStorageProvider(t *testing.T) {
 		{input: "GCS", want: StorageProviderGCS},
 		{input: "azure", want: StorageProviderAzure},
 		{input: "AZURE", want: StorageProviderAzure},
-		{input: "s3compat", want: StorageProviderS3Compatible},
 	}
 
 	invalid := []test{
 		{input: ""},
 		{input: "foo"},
+		// TODO(next PRs): make this supported in the resource
+		{input: "s3compat", want: StorageProviderS3Compatible},
 	}
 
 	for _, tc := range valid {

@@ -207,7 +207,7 @@ func validateParsedExternalVolumeDescribed(p ParsedExternalVolumeDescribed) erro
 			return fmt.Errorf("A storage location's StorageBaseUrl in this volume could not be parsed.")
 		}
 
-		storageProvider, err := ToStorageProvider(s.StorageProvider)
+		storageProvider, err := ToStorageProviderInDescribe(s.StorageProvider)
 		if err != nil {
 			return err
 		}

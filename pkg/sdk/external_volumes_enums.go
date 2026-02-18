@@ -69,6 +69,21 @@ func ToStorageProvider(s string) (StorageProvider, error) {
 		return StorageProviderS3, nil
 	case string(StorageProviderS3GOV):
 		return StorageProviderS3GOV, nil
+	default:
+		return "", fmt.Errorf("invalid storage provider: %s", s)
+	}
+}
+
+func ToStorageProviderInDescribe(s string) (StorageProvider, error) {
+	switch strings.ToUpper(s) {
+	case string(StorageProviderGCS):
+		return StorageProviderGCS, nil
+	case string(StorageProviderAzure):
+		return StorageProviderAzure, nil
+	case string(StorageProviderS3):
+		return StorageProviderS3, nil
+	case string(StorageProviderS3GOV):
+		return StorageProviderS3GOV, nil
 	case string(StorageProviderS3Compatible):
 		return StorageProviderS3Compatible, nil
 	default:
