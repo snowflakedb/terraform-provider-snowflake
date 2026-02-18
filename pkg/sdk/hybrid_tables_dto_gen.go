@@ -42,7 +42,7 @@ type HybridTableConstraintActionAddRequest struct {
 }
 
 type HybridTableConstraintActionDropRequest struct {
-	Constraintname       *string
+	ConstraintName       *string
 	ColumnConstraintType *ColumnConstraintType
 	Columns              []string
 }

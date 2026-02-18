@@ -231,11 +231,10 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &HybridTableConstraintAction{
 			Drop: &HybridTableConstraintActionDrop{
-				Constraintname: String("constraint_name"),
+				ConstraintName: String("constraint_name"),
 			},
 		}
-		// Note: Generator uses "ConstraintName" not "CONSTRAINT" keyword
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP ConstraintName constraint_name`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP CONSTRAINT constraint_name`, id.FullyQualifiedName())
 	})
 
 	t.Run("DROP CONSTRAINT by type", func(t *testing.T) {

@@ -64,7 +64,7 @@ type HybridTableConstraintActionAdd struct {
 
 type HybridTableConstraintActionDrop struct {
 	drop                 bool                  `ddl:"static" sql:"DROP"`
-	Constraintname       *string               `ddl:"parameter,no_equals" sql:"ConstraintName"`
+	ConstraintName       *string               `ddl:"keyword" sql:"CONSTRAINT"`
 	ColumnConstraintType *ColumnConstraintType `ddl:"keyword"`
 	Columns              []string              `ddl:"keyword,parentheses"`
 }

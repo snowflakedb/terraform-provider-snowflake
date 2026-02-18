@@ -113,8 +113,8 @@ func NewHybridTableConstraintActionDropRequest() *HybridTableConstraintActionDro
 	return &s
 }
 
-func (s *HybridTableConstraintActionDropRequest) WithConstraintname(constraintname string) *HybridTableConstraintActionDropRequest {
-	s.Constraintname = &constraintname
+func (s *HybridTableConstraintActionDropRequest) WithConstraintName(constraintName string) *HybridTableConstraintActionDropRequest {
+	s.ConstraintName = &constraintName
 	return s
 }
 
