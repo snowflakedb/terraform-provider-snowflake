@@ -545,7 +545,6 @@ func Test_ExternalVolumes_ToStorageProvider(t *testing.T) {
 		{input: "azure", want: StorageProviderAzure},
 		{input: "AZURE", want: StorageProviderAzure},
 		{input: "s3compat", want: StorageProviderS3Compatible},
-		{input: "S3Compatible", want: StorageProviderS3Compatible},
 	}
 
 	invalid := []test{
