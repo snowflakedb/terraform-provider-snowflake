@@ -23,12 +23,14 @@ func CopySentinelStorageLocation(
 	case StorageProviderS3, StorageProviderS3GOV:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
 			S3StorageLocationParams: &S3StorageLocationParams{
-				Name:                 newName,
-				StorageProvider:      storageLocation.S3StorageLocationParams.StorageProvider,
-				StorageBaseUrl:       storageLocation.S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    storageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId: storageLocation.S3StorageLocationParams.StorageAwsExternalId,
-				Encryption:           storageLocation.S3StorageLocationParams.Encryption,
+				Name:                     newName,
+				StorageProvider:          storageLocation.S3StorageLocationParams.StorageProvider,
+				StorageBaseUrl:           storageLocation.S3StorageLocationParams.StorageBaseUrl,
+				StorageAwsRoleArn:        storageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+				StorageAwsExternalId:     storageLocation.S3StorageLocationParams.StorageAwsExternalId,
+				StorageAwsAccessPointArn: storageLocation.S3StorageLocationParams.StorageAwsAccessPointArn,
+				UsePrivatelinkEndpoint:   storageLocation.S3StorageLocationParams.UsePrivatelinkEndpoint,
+				Encryption:               storageLocation.S3StorageLocationParams.Encryption,
 			},
 		}
 	case StorageProviderGCS:
@@ -42,9 +44,10 @@ func CopySentinelStorageLocation(
 	case StorageProviderAzure:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
 			AzureStorageLocationParams: &AzureStorageLocationParams{
-				Name:           newName,
-				StorageBaseUrl: storageLocation.AzureStorageLocationParams.StorageBaseUrl,
-				AzureTenantId:  storageLocation.AzureStorageLocationParams.AzureTenantId,
+				Name:                   newName,
+				StorageBaseUrl:         storageLocation.AzureStorageLocationParams.StorageBaseUrl,
+				AzureTenantId:          storageLocation.AzureStorageLocationParams.AzureTenantId,
+				UsePrivatelinkEndpoint: storageLocation.AzureStorageLocationParams.UsePrivatelinkEndpoint,
 			},
 		}
 	case StorageProviderS3Compatible:

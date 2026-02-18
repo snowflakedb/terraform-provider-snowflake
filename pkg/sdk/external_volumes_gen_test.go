@@ -765,6 +765,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 	s3StorageBaseUrl := "s3://my_example_bucket"
 	s3StorageAwsRoleArn := "arn:aws:iam::123456789012:role/myrole"
 	s3EncryptionKmsKeyId := "123456789"
+	s3StorageAwsAccessPointArn := "arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"
 
 	gcsStorageLocationName := "gcsTest"
 	gcsStorageBaseUrl := "gcs://my_example_bucket"
@@ -775,11 +776,13 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 	azureTenantId := "123456789"
 
 	s3StorageLocationA := S3StorageLocationParams{
-		Name:                 s3StorageLocationName,
-		StorageProvider:      S3StorageProviderS3,
-		StorageBaseUrl:       s3StorageBaseUrl,
-		StorageAwsRoleArn:    s3StorageAwsRoleArn,
-		StorageAwsExternalId: &s3StorageAwsExternalId,
+		Name:                     s3StorageLocationName,
+		StorageProvider:          S3StorageProviderS3,
+		StorageBaseUrl:           s3StorageBaseUrl,
+		StorageAwsRoleArn:        s3StorageAwsRoleArn,
+		StorageAwsExternalId:     &s3StorageAwsExternalId,
+		StorageAwsAccessPointArn: &s3StorageAwsAccessPointArn,
+		UsePrivatelinkEndpoint:   Bool(true),
 		Encryption: &ExternalVolumeS3Encryption{
 			EncryptionType: S3EncryptionTypeSseKms,
 			KmsKeyId:       &s3EncryptionKmsKeyId,
@@ -787,9 +790,10 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 	}
 
 	azureStorageLocationA := AzureStorageLocationParams{
-		Name:           azureStorageLocationName,
-		StorageBaseUrl: azureStorageBaseUrl,
-		AzureTenantId:  azureTenantId,
+		Name:                   azureStorageLocationName,
+		StorageBaseUrl:         azureStorageBaseUrl,
+		AzureTenantId:          azureTenantId,
+		UsePrivatelinkEndpoint: Bool(true),
 	}
 
 	gcsStorageLocationA := GCSStorageLocationParams{
@@ -810,6 +814,8 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 		assert.Equal(t, copiedStorageLocation.S3StorageLocationParams.StorageBaseUrl, s3StorageLocationA.StorageBaseUrl)
 		assert.Equal(t, copiedStorageLocation.S3StorageLocationParams.StorageAwsRoleArn, s3StorageLocationA.StorageAwsRoleArn)
 		assert.Equal(t, copiedStorageLocation.S3StorageLocationParams.StorageAwsExternalId, s3StorageLocationA.StorageAwsExternalId)
+		assert.Equal(t, copiedStorageLocation.S3StorageLocationParams.StorageAwsAccessPointArn, s3StorageLocationA.StorageAwsAccessPointArn)
+		assert.Equal(t, copiedStorageLocation.S3StorageLocationParams.UsePrivatelinkEndpoint, s3StorageLocationA.UsePrivatelinkEndpoint)
 		assert.Equal(t, copiedStorageLocation.S3StorageLocationParams.Encryption.EncryptionType, s3StorageLocationA.Encryption.EncryptionType)
 		assert.Equal(t, *copiedStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId, *s3StorageLocationA.Encryption.KmsKeyId)
 	})
@@ -831,6 +837,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 		assert.Equal(t, copiedStorageLocation.AzureStorageLocationParams.Name, tempStorageLocationName)
 		assert.Equal(t, copiedStorageLocation.AzureStorageLocationParams.StorageBaseUrl, azureStorageLocationA.StorageBaseUrl)
 		assert.Equal(t, copiedStorageLocation.AzureStorageLocationParams.AzureTenantId, azureStorageLocationA.AzureTenantId)
+		assert.Equal(t, copiedStorageLocation.AzureStorageLocationParams.UsePrivatelinkEndpoint, azureStorageLocationA.UsePrivatelinkEndpoint)
 	})
 
 	s3CompatStorageLocationA := S3CompatStorageLocationParams{
@@ -1277,6 +1284,26 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		s3StorageAwsExternalId,
 		s3EncryptionTypeNone,
 	)
+
+	s3CompatStorageLocationName := "s3compatTest"
+	s3CompatStorageProvider := "S3COMPAT"
+	s3CompatStorageBaseUrl := "s3compat://my_example_bucket"
+	s3CompatStorageEndpoint := "https://s3-compatible.example.com"
+	s3CompatStorageLocationStandard := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ENDPOINT":"%s","ENCRYPTION_TYPE":"NONE","ENCRYPTION_KMS_KEY_ID":""}`,
+		s3CompatStorageLocationName,
+		s3CompatStorageProvider,
+		s3CompatStorageBaseUrl,
+		s3CompatStorageEndpoint,
+	)
+
+	s3CompatStorageLocationMissingEndpoint := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","ENCRYPTION_TYPE":"NONE","ENCRYPTION_KMS_KEY_ID":""}`,
+		s3CompatStorageLocationName,
+		s3CompatStorageProvider,
+		s3CompatStorageBaseUrl,
+	)
+
 	allowWritesTrue := "true"
 	allowWritesFalse := "false"
 	comment := "some comment"
@@ -1563,6 +1590,24 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 				AllowWrites: allowWritesTrue,
 			},
 		},
+		{
+			Name:           "Volume with s3compat storage location",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3CompatStorageLocationStandard}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:            s3CompatStorageLocationName,
+						StorageProvider: s3CompatStorageProvider,
+						StorageBaseUrl:  s3CompatStorageBaseUrl,
+						StorageEndpoint: s3CompatStorageEndpoint,
+						EncryptionType:  "NONE",
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
 	}
 
 	invalidCases := []struct {
@@ -1580,6 +1625,10 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with gcs storage location, missing STORAGE_BASE_URL",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{gcsStorageLocationMissingBaseUrl}, ""),
+		},
+		{
+			Name:           "Volume with s3compat storage location, missing STORAGE_ENDPOINT",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3CompatStorageLocationMissingEndpoint}, ""),
 		},
 		{
 			Name:           "Volume with no storage locations",
