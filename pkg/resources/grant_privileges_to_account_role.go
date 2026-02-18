@@ -316,7 +316,7 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 
 		Schema: grantPrivilegesToAccountRoleSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole()),
+			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole),
 		},
 		Timeouts: defaultTimeouts,
 		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
@@ -347,105 +347,141 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 	}
 }
 
-func ImportGrantPrivilegesToAccountRole() func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	return func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-		id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
-		if err != nil {
-			return nil, err
-		}
-		if err := d.Set("account_role_name", id.RoleName.FullyQualifiedName()); err != nil {
-			return nil, err
-		}
-		if err := d.Set("with_grant_option", id.WithGrantOption); err != nil {
-			return nil, err
-		}
-		if err := d.Set("always_apply", id.AlwaysApply); err != nil {
-			return nil, err
-		}
-		if err := d.Set("all_privileges", id.AllPrivileges); err != nil {
-			return nil, err
-		}
-		if err := d.Set("privileges", id.Privileges); err != nil {
-			return nil, err
-		}
-		if err := d.Set("on_account", false); err != nil {
-			return nil, err
-		}
-		if err := d.Set("strict_privilege_management", false); err != nil {
-			return nil, err
-		}
-
-		switch id.Kind {
-		case OnAccountAccountRoleGrantKind:
-			if err := d.Set("on_account", true); err != nil {
-				return nil, err
-			}
-		case OnAccountObjectAccountRoleGrantKind:
-			data := id.Data.(*OnAccountObjectGrantData)
-			onAccountObject := make(map[string]any)
-			onAccountObject["object_type"] = data.ObjectType.String()
-			onAccountObject["object_name"] = data.ObjectName.FullyQualifiedName()
-
-			if err := d.Set("on_account_object", []any{onAccountObject}); err != nil {
-				return nil, err
-			}
-		case OnSchemaAccountRoleGrantKind:
-			data := id.Data.(*OnSchemaGrantData)
-			onSchema := make(map[string]any)
-
-			switch data.Kind {
-			case OnSchemaSchemaGrantKind:
-				onSchema["schema_name"] = data.SchemaName.FullyQualifiedName()
-			case OnAllSchemasInDatabaseSchemaGrantKind:
-				onSchema["all_schemas_in_database"] = data.DatabaseName.FullyQualifiedName()
-			case OnFutureSchemasInDatabaseSchemaGrantKind:
-				onSchema["future_schemas_in_database"] = data.DatabaseName.FullyQualifiedName()
-			}
-
-			if err := d.Set("on_schema", []any{onSchema}); err != nil {
-				return nil, err
-			}
-		case OnSchemaObjectAccountRoleGrantKind:
-			data := id.Data.(*OnSchemaObjectGrantData)
-			onSchemaObject := make(map[string]any)
-
-			switch data.Kind {
-			case OnObjectSchemaObjectGrantKind:
-				onSchemaObject["object_type"] = data.Object.ObjectType.String()
-				onSchemaObject["object_name"] = data.Object.Name.FullyQualifiedName()
-			case OnAllSchemaObjectGrantKind:
-				onAll := make(map[string]any)
-
-				onAll["object_type_plural"] = data.OnAllOrFuture.ObjectNamePlural.String()
-				switch data.OnAllOrFuture.Kind {
-				case InDatabaseBulkOperationGrantKind:
-					onAll["in_database"] = data.OnAllOrFuture.Database.FullyQualifiedName()
-				case InSchemaBulkOperationGrantKind:
-					onAll["in_schema"] = data.OnAllOrFuture.Schema.FullyQualifiedName()
-				}
-
-				onSchemaObject["all"] = []any{onAll}
-			case OnFutureSchemaObjectGrantKind:
-				onFuture := make(map[string]any)
-
-				onFuture["object_type_plural"] = data.OnAllOrFuture.ObjectNamePlural.String()
-				switch data.OnAllOrFuture.Kind {
-				case InDatabaseBulkOperationGrantKind:
-					onFuture["in_database"] = data.OnAllOrFuture.Database.FullyQualifiedName()
-				case InSchemaBulkOperationGrantKind:
-					onFuture["in_schema"] = data.OnAllOrFuture.Schema.FullyQualifiedName()
-				}
-
-				onSchemaObject["future"] = []any{onFuture}
-			}
-
-			if err := d.Set("on_schema_object", []any{onSchemaObject}); err != nil {
-				return nil, err
-			}
-		}
-
-		return []*schema.ResourceData{d}, nil
+func ImportGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
+	if err != nil {
+		return nil, err
 	}
+	if err := d.Set("account_role_name", id.RoleName.FullyQualifiedName()); err != nil {
+		return nil, err
+	}
+	if err := d.Set("with_grant_option", id.WithGrantOption); err != nil {
+		return nil, err
+	}
+	if err := d.Set("always_apply", id.AlwaysApply); err != nil {
+		return nil, err
+	}
+	if err := d.Set("all_privileges", id.AllPrivileges); err != nil {
+		return nil, err
+	}
+	if err := d.Set("privileges", id.Privileges); err != nil {
+		return nil, err
+	}
+	if err := d.Set("on_account", false); err != nil {
+		return nil, err
+	}
+	if err := d.Set("strict_privilege_management", false); err != nil {
+		return nil, err
+	}
+
+	switch id.Kind {
+	case OnAccountAccountRoleGrantKind:
+		if err := d.Set("on_account", true); err != nil {
+			return nil, err
+		}
+	case OnAccountObjectAccountRoleGrantKind:
+		data := id.Data.(*OnAccountObjectGrantData)
+		onAccountObject := make(map[string]any)
+		onAccountObject["object_type"] = data.ObjectType.String()
+		onAccountObject["object_name"] = data.ObjectName.FullyQualifiedName()
+
+		if err := d.Set("on_account_object", []any{onAccountObject}); err != nil {
+			return nil, err
+		}
+	case OnSchemaAccountRoleGrantKind:
+		data := id.Data.(*OnSchemaGrantData)
+		onSchema := make(map[string]any)
+
+		switch data.Kind {
+		case OnSchemaSchemaGrantKind:
+			onSchema["schema_name"] = data.SchemaName.FullyQualifiedName()
+		case OnAllSchemasInDatabaseSchemaGrantKind:
+			onSchema["all_schemas_in_database"] = data.DatabaseName.FullyQualifiedName()
+		case OnFutureSchemasInDatabaseSchemaGrantKind:
+			onSchema["future_schemas_in_database"] = data.DatabaseName.FullyQualifiedName()
+		}
+
+		if err := d.Set("on_schema", []any{onSchema}); err != nil {
+			return nil, err
+		}
+	case OnSchemaObjectAccountRoleGrantKind:
+		data := id.Data.(*OnSchemaObjectGrantData)
+		onSchemaObject := make(map[string]any)
+
+		switch data.Kind {
+		case OnObjectSchemaObjectGrantKind:
+			onSchemaObject["object_type"] = data.Object.ObjectType.String()
+			onSchemaObject["object_name"] = data.Object.Name.FullyQualifiedName()
+		case OnAllSchemaObjectGrantKind:
+			onAll := make(map[string]any)
+
+			onAll["object_type_plural"] = data.OnAllOrFuture.ObjectNamePlural.String()
+			switch data.OnAllOrFuture.Kind {
+			case InDatabaseBulkOperationGrantKind:
+				onAll["in_database"] = data.OnAllOrFuture.Database.FullyQualifiedName()
+			case InSchemaBulkOperationGrantKind:
+				onAll["in_schema"] = data.OnAllOrFuture.Schema.FullyQualifiedName()
+			}
+
+			onSchemaObject["all"] = []any{onAll}
+		case OnFutureSchemaObjectGrantKind:
+			onFuture := make(map[string]any)
+
+			onFuture["object_type_plural"] = data.OnAllOrFuture.ObjectNamePlural.String()
+			switch data.OnAllOrFuture.Kind {
+			case InDatabaseBulkOperationGrantKind:
+				onFuture["in_database"] = data.OnAllOrFuture.Database.FullyQualifiedName()
+			case InSchemaBulkOperationGrantKind:
+				onFuture["in_schema"] = data.OnAllOrFuture.Schema.FullyQualifiedName()
+			}
+
+			onSchemaObject["future"] = []any{onFuture}
+		}
+
+		if err := d.Set("on_schema_object", []any{onSchemaObject}); err != nil {
+			return nil, err
+		}
+	}
+
+	providerCtx := m.(*provider.Context)
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsImportValidation, providerCtx.EnabledExperiments) {
+		if err := validateGrantPrivilegesToAccountRoleImport(ctx, m, id); err != nil {
+			return nil, fmt.Errorf("grant import validation: %w", err)
+		}
+	}
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func validateGrantPrivilegesToAccountRoleImport(ctx context.Context, m any, id GrantPrivilegesToAccountRoleId) error {
+	providerCtx := m.(*provider.Context)
+	if len(id.Privileges) == 0 {
+		return nil
+	}
+
+	opts, grantedOn := prepareShowGrantsRequestForAccountRole(id)
+	if opts == nil {
+		return nil
+	}
+
+	grants, err := providerCtx.Client.Grants.Show(ctx, opts)
+	if err != nil {
+		return fmt.Errorf("show grants: %w", err)
+	}
+
+	// We don't need to pass strict validation here, because we are validating the privileges against the actual privileges in Snowflake.
+	actualPrivileges, expectedPrivileges, err := computePrivileges(id, grants, grantedOn, opts, false)
+	if err != nil {
+		return fmt.Errorf("computing privileges: %w", err)
+	}
+
+	slices.Sort(actualPrivileges)
+	slices.Sort(expectedPrivileges)
+	if !slices.Equal(actualPrivileges, expectedPrivileges) {
+		return fmt.Errorf("privileges granted in Snowflake do not match the expected privileges: actual=%+v, expected=%+v", actualPrivileges, expectedPrivileges)
+	}
+
+	return nil
 }
 
 func CreateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -862,10 +898,39 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 			},
 		}
 	}
+	actualPrivileges, expectedPrivileges, err := computePrivileges(id, grants, grantedOn, opts, strictPrivilegeManagement)
+	if err != nil {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Failed to compute privileges",
+				Detail:   fmt.Sprintf("Id: %s\nError: %s", d.Id(), err),
+			},
+		}
+	}
 
-	actualPrivileges := make([]string, 0)
-	expectedPrivileges := make([]string, 0)
-	expectedPrivileges = append(expectedPrivileges, id.Privileges...)
+	usageIndex := slices.IndexFunc(actualPrivileges, func(s string) bool { return strings.ToUpper(s) == sdk.AccountObjectPrivilegeUsage.String() })
+	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
+		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
+	}) && usageIndex >= 0 {
+		actualPrivileges[usageIndex] = sdk.AccountObjectPrivilegeImportedPrivileges.String()
+	}
+
+	if err := d.Set("privileges", actualPrivileges); err != nil {
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Error setting privileges for account role",
+				Detail:   fmt.Sprintf("Id: %s\nPrivileges: %v\nError: %s", d.Id(), actualPrivileges, err),
+			},
+		}
+	}
+
+	return nil
+}
+
+func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, grantedOn sdk.ObjectType, opts *sdk.ShowGrantOptions, strictPrivilegeManagement bool) (actualPrivileges []string, expectedPrivileges []string, err error) {
+	expectedPrivileges = slices.Clone(id.Privileges)
 
 	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
 		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
@@ -914,24 +979,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	usageIndex := slices.IndexFunc(actualPrivileges, func(s string) bool { return strings.ToUpper(s) == sdk.AccountObjectPrivilegeUsage.String() })
-	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
-		return strings.ToUpper(s) == sdk.AccountObjectPrivilegeImportedPrivileges.String()
-	}) && usageIndex >= 0 {
-		actualPrivileges[usageIndex] = sdk.AccountObjectPrivilegeImportedPrivileges.String()
-	}
-
-	if err := d.Set("privileges", actualPrivileges); err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error setting privileges for account role",
-				Detail:   fmt.Sprintf("Id: %s\nPrivileges: %v\nError: %s", d.Id(), actualPrivileges, err),
-			},
-		}
-	}
-
-	return nil
+	return actualPrivileges, expectedPrivileges, nil
 }
 
 func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, sdk.ObjectType) {

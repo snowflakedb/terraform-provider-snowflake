@@ -48,6 +48,7 @@ var (
 	userAuthenticationPoliciesProviderFactory        = providerFactoryUsingCache("UserAuthenticationPolicies")
 	explicitAccountAdminRoleProviderFactory          = providerFactoryUsingCache("ExplicitAccountAdminRole")
 	strictPrivilegeManagementGrantProviderFactory    = providerFactoryUsingCache("StrictPrivilegeManagementGrantProvider")
+	grantsImportValidationProviderFactory            = providerFactoryUsingCache("GrantsImportValidationProvider")
 	userEnableDefaultWorkloadIdentityProviderFactory = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
 	s3StageProviderFactory                           = providerFactoryUsingCache("StageExternalS3")
 )

@@ -3220,3 +3220,209 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictPrivilegeManagement_OnFuture_Non
 		},
 	})
 }
+
+func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_MismatchedPrivilege(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	// Grant MONITOR only
+	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeMonitor}, false)
+
+	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsImportValidation)
+	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeUsage)).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
+		WithWithGrantOption(false)
+
+	// Import ID with USAGE privilege that doesn't exist on the database for this role
+	importId := fmt.Sprintf("%s|false|false|%s|OnAccountObject|DATABASE|%s", role.ID().Name(), sdk.AccountObjectPrivilegeUsage, database.ID().Name())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: grantsImportValidationProviderFactory,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config:        accconfig.FromModels(t, providerModel, resourceModel),
+				ResourceName:  "snowflake_grant_privileges_to_account_role.test",
+				ImportState:   true,
+				ImportStateId: importId,
+				ExpectError:   regexp.MustCompile("privileges granted in Snowflake do not match the expected privileges"),
+			},
+			// grant the privilege, but with incorrect grant option
+			{
+				PreConfig: func() {
+					testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, true)
+				},
+				Config:        accconfig.FromModels(t, providerModel, resourceModel),
+				ResourceName:  "snowflake_grant_privileges_to_account_role.test",
+				ImportState:   true,
+				ImportStateId: importId,
+				ExpectError:   regexp.MustCompile("privileges granted in Snowflake do not match the expected privileges"),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Disabled(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	// Grant with with_grant_option=true
+	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeMonitor}, true)
+
+	configVariables := config.Variables{
+		"name":              config.StringVariable(role.ID().FullyQualifiedName()),
+		"privileges":        config.ListVariable(config.StringVariable(string(sdk.AccountObjectPrivilegeMonitor))),
+		"database":          config.StringVariable(database.ID().FullyQualifiedName()),
+		"with_grant_option": config.BoolVariable(false),
+	}
+
+	resourceName := "snowflake_grant_privileges_to_account_role.test"
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
+				ConfigVariables: configVariables,
+			},
+			// Import without experiment enabled - should succeed (default behavior preserved)
+			{
+				ConfigDirectory:   ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnAccountObject"),
+				ConfigVariables:   configVariables,
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Valid(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsImportValidation)
+	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor), string(sdk.AccountObjectPrivilegeUsage)).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
+		WithWithGrantOption(false)
+
+	resourceModelWithDifferentPrivilegeOrder := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeUsage), string(sdk.AccountObjectPrivilegeMonitor)).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
+		WithWithGrantOption(false)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: grantsImportValidationProviderFactory,
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			// Create with correct settings
+			{
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor), string(sdk.AccountObjectPrivilegeUsage)),
+				),
+			},
+			// Import with matching ID should succeed with experiment enabled
+			{
+				Config:                  accconfig.FromModels(t, providerModel, resourceModel),
+				ResourceName:            resourceModel.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name"},
+			},
+			// Import with different privilege order
+			{
+				Config:                  accconfig.FromModels(t, providerModel, resourceModelWithDifferentPrivilegeOrder),
+				ResourceName:            resourceModelWithDifferentPrivilegeOrder.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name"},
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManagement(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsImportValidation, experimentalfeatures.GrantsStrictPrivilegeManagement)
+	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
+		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
+		WithStrictPrivilegeManagement(true).
+		WithWithGrantOption(false)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManagement"),
+		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			// Create with correct settings
+			{
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasStrictPrivilegeManagementString("true").
+						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
+				),
+			},
+			// Import with matching ID should succeed with experiment enabled
+			{
+				Config:                  accconfig.FromModels(t, providerModel, resourceModel),
+				ResourceName:            resourceModel.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name", "strict_privilege_management"},
+			},
+			// Import with matching ID should succeed with experiment enabled
+			{
+				PreConfig: func() {
+					testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
+				},
+				Config:                  accconfig.FromModels(t, providerModel, resourceModel),
+				ResourceName:            resourceModel.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name", "strict_privilege_management"},
+			},
+			// Prepare for destroy check - revoke the privlege granted in the previous step.
+			{
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
+						HasStrictPrivilegeManagementString("true").
+						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
+				),
+			},
+		},
+	})
+}
