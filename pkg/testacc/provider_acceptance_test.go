@@ -5,10 +5,16 @@ package testacc
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"regexp"
+	"strconv"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -314,6 +320,19 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.True(t, config.EnableSingleUseRefreshTokens)
 					assert.True(t, config.LogQueryText)
 					assert.True(t, config.LogQueryParameters)
+					assert.Equal(t, "", config.ProxyHost)
+					assert.Equal(t, 443, config.ProxyPort)
+					assert.Equal(t, "proxy_user", config.ProxyUser)
+					assert.Equal(t, "proxy_password", config.ProxyPassword)
+					assert.Equal(t, "https", config.ProxyProtocol)
+					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
+					assert.False(t, config.DisableOCSPChecks)
+					assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
+					assert.False(t, config.CrlInMemoryCacheDisabled)
+					assert.True(t, config.CrlOnDiskCacheDisabled)
+					assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
 					return nil
 				},
 			},
@@ -511,6 +530,19 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "true")
 					t.Setenv(snowflakeenvs.LogQueryText, "true")
 					t.Setenv(snowflakeenvs.LogQueryParameters, "true")
+					t.Setenv(snowflakeenvs.ProxyHost, "")
+					t.Setenv(snowflakeenvs.ProxyPort, "443")
+					t.Setenv(snowflakeenvs.ProxyUser, "proxy_user")
+					t.Setenv(snowflakeenvs.ProxyPassword, "proxy_password")
+					t.Setenv(snowflakeenvs.ProxyProtocol, "https")
+					t.Setenv(snowflakeenvs.NoProxy, "localhost,snowflake.computing.com")
+					t.Setenv(snowflakeenvs.DisableOCSPChecks, "true")
+					t.Setenv(snowflakeenvs.CertRevocationCheckMode, "ENABLED")
+					t.Setenv(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, "true")
+					t.Setenv(snowflakeenvs.CrlInMemoryCacheDisabled, "true")
+					t.Setenv(snowflakeenvs.CrlOnDiskCacheDisabled, "true")
+					t.Setenv(snowflakeenvs.CrlHTTPClientTimeout, "10")
+					t.Setenv(snowflakeenvs.DisableSamlURLCheck, "true")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -563,6 +595,19 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.True(t, config.EnableSingleUseRefreshTokens)
 					assert.True(t, config.LogQueryText)
 					assert.True(t, config.LogQueryParameters)
+					assert.Equal(t, "", config.ProxyHost)
+					assert.Equal(t, 443, config.ProxyPort)
+					assert.Equal(t, "proxy_user", config.ProxyUser)
+					assert.Equal(t, "proxy_password", config.ProxyPassword)
+					assert.Equal(t, "https", config.ProxyProtocol)
+					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
+					assert.True(t, config.DisableOCSPChecks)
+					assert.Equal(t, gosnowflake.CertRevocationCheckEnabled, config.CertRevocationCheckMode)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
+					assert.True(t, config.CrlInMemoryCacheDisabled)
+					assert.True(t, config.CrlOnDiskCacheDisabled)
+					assert.Equal(t, 10*time.Second, config.CrlHTTPClientTimeout)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
 					return nil
 				},
 			},
@@ -638,6 +683,19 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.EnableSingleUseRefreshTokens, "false")
 					t.Setenv(snowflakeenvs.LogQueryText, "false")
 					t.Setenv(snowflakeenvs.LogQueryParameters, "false")
+					t.Setenv(snowflakeenvs.ProxyHost, "")
+					t.Setenv(snowflakeenvs.ProxyPort, "443")
+					t.Setenv(snowflakeenvs.ProxyUser, "overridden")
+					t.Setenv(snowflakeenvs.ProxyPassword, "overridden")
+					t.Setenv(snowflakeenvs.ProxyProtocol, "overridden")
+					t.Setenv(snowflakeenvs.NoProxy, "overridden")
+					t.Setenv(snowflakeenvs.DisableOCSPChecks, "true")
+					t.Setenv(snowflakeenvs.CertRevocationCheckMode, "overridden")
+					t.Setenv(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, "false")
+					t.Setenv(snowflakeenvs.CrlInMemoryCacheDisabled, "false")
+					t.Setenv(snowflakeenvs.CrlOnDiskCacheDisabled, "false")
+					t.Setenv(snowflakeenvs.CrlHTTPClientTimeout, "10")
+					t.Setenv(snowflakeenvs.DisableSamlURLCheck, "false")
 				},
 				Config: config.FromModels(t, providermodel.SnowflakeProvider().AllFields(tmpServiceUserConfig, tmpServiceUser), datasourceModel()),
 				Check: func(s *terraform.State) error {
@@ -690,6 +748,19 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.True(t, config.EnableSingleUseRefreshTokens)
 					assert.True(t, config.LogQueryText)
 					assert.True(t, config.LogQueryParameters)
+					assert.Equal(t, "", config.ProxyHost)
+					assert.Equal(t, 443, config.ProxyPort)
+					assert.Equal(t, "proxy_user", config.ProxyUser)
+					assert.Equal(t, "proxy_password", config.ProxyPassword)
+					assert.Equal(t, "https", config.ProxyProtocol)
+					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
+					assert.False(t, config.DisableOCSPChecks)
+					assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
+					assert.False(t, config.CrlInMemoryCacheDisabled)
+					assert.True(t, config.CrlOnDiskCacheDisabled)
+					assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
+					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
 					return nil
 				},
 			},
@@ -771,6 +842,8 @@ func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 func TestAcc_Provider_triValueBoolean(t *testing.T) {
 	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	v097ProviderModel, privateKeyVar, passphraseVar := providermodel.V097CompatibleProviderModels()
+	v097ProviderModel = v097ProviderModel.WithClientStoreTemporaryCredentialBool(true)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -782,9 +855,9 @@ func TestAcc_Provider_triValueBoolean(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
-				Config:            config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(testprofiles.Default).WithClientStoreTemporaryCredentialBool(true), datasourceModel()),
+				Config:            config.FromModels(t, v097ProviderModel, privateKeyVar, passphraseVar, datasourceModel()),
 			},
 			{
 				PreConfig: func() {
@@ -1207,6 +1280,72 @@ func TestAcc_Provider_HandlingPromotedFeatures(t *testing.T) {
 				Config: config.FromModels(t, providerModel, gitRepositoriesModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(gitRepositoriesModel.DatasourceReference(), "git_repositories.#"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_Proxy(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+
+	var proxyUsed atomic.Bool
+
+	proxyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxyUsed.Store(true)
+
+		// 1. Establish TCP connection to the target server
+		destConn, err := net.Dial("tcp", r.Host)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		defer destConn.Close()
+
+		// 2. Hijack the client connection to get raw TCP access
+		clientConn, _, err := w.(http.Hijacker).Hijack()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer clientConn.Close()
+
+		// 3. Send "200 Connection Established" directly to the hijacked connection
+		_, err = clientConn.Write([]byte("HTTP/1.1 200 Connection Established\r\n\r\n"))
+		if err != nil {
+			return
+		}
+
+		// 4. Bidirectional copy: tunnel bytes between client and destination
+		go io.Copy(destConn, clientConn)
+		io.Copy(clientConn, destConn)
+	}))
+	t.Cleanup(proxyServer.Close)
+
+	proxyURL, err := url.Parse(proxyServer.URL)
+	require.NoError(t, err)
+	proxyHost := proxyURL.Hostname()
+	proxyPort, err := strconv.Atoi(proxyURL.Port())
+	require.NoError(t, err)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithProxyHost(proxyHost).WithProxyPort(proxyPort).WithProxyProtocol("http").WithNoProxy(""), datasourceModel()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(datasourceModel().DatasourceReference(), "name"),
+					func(state *terraform.State) error {
+						assert.True(t, proxyUsed.Load(), "expected requests to go through proxy")
+						return nil
+					},
 				),
 			},
 		},

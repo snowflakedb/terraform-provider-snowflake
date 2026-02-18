@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	providerresources "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
@@ -71,4 +72,16 @@ func joinWithSpace(parts ...string) string {
 
 func exampleSchemaObjectIdentifier(schemaObjectName string) string {
 	return fmt.Sprintf("Example: `\"\\\"<db_name>\\\".\\\"<schema_name>\\\".\\\"<%s_name>\\\"\"`.", schemaObjectName)
+}
+
+func experimentalFeatureDescription(feature experimentalfeatures.ExperimentalFeature) string {
+	return fmt.Sprintf("This field can be only used when `%s` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field.", feature)
+}
+
+func ignoredAfterCreationDescription() string {
+	return "This field is used only when creating the object. Changes on this field are ignored after creation."
+}
+
+func enumValuesDescription[T ~string](values []T) string {
+	return fmt.Sprintf("Valid values are (case-insensitive): %s.", possibleValuesListed(values))
 }

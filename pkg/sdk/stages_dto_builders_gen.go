@@ -40,11 +40,6 @@ func (s *CreateInternalStageRequest) WithFileFormat(fileFormat StageFileFormatRe
 	return s
 }
 
-func (s *CreateInternalStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateInternalStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
 func (s *CreateInternalStageRequest) WithComment(comment string) *CreateInternalStageRequest {
 	s.Comment = &comment
 	return s
@@ -55,11 +50,28 @@ func (s *CreateInternalStageRequest) WithTag(tag []TagAssociation) *CreateIntern
 	return s
 }
 
-func NewInternalStageEncryptionRequest(
-	encryptionType *InternalStageEncryptionOption,
-) *InternalStageEncryptionRequest {
+func NewInternalStageEncryptionRequest() *InternalStageEncryptionRequest {
 	s := InternalStageEncryptionRequest{}
-	s.EncryptionType = encryptionType
+	return &s
+}
+
+func (s *InternalStageEncryptionRequest) WithSnowflakeFull(snowflakeFull InternalStageEncryptionSnowflakeFullRequest) *InternalStageEncryptionRequest {
+	s.SnowflakeFull = &snowflakeFull
+	return s
+}
+
+func (s *InternalStageEncryptionRequest) WithSnowflakeSse(snowflakeSse InternalStageEncryptionSnowflakeSseRequest) *InternalStageEncryptionRequest {
+	s.SnowflakeSse = &snowflakeSse
+	return s
+}
+
+func NewInternalStageEncryptionSnowflakeFullRequest() *InternalStageEncryptionSnowflakeFullRequest {
+	s := InternalStageEncryptionSnowflakeFullRequest{}
+	return &s
+}
+
+func NewInternalStageEncryptionSnowflakeSseRequest() *InternalStageEncryptionSnowflakeSseRequest {
+	s := InternalStageEncryptionSnowflakeSseRequest{}
 	return &s
 }
 
@@ -69,12 +81,12 @@ func NewInternalDirectoryTableOptionsRequest() *InternalDirectoryTableOptionsReq
 }
 
 func (s *InternalDirectoryTableOptionsRequest) WithEnable(enable bool) *InternalDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
-func (s *InternalDirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *InternalDirectoryTableOptionsRequest {
-	s.RefreshOnCreate = &refreshOnCreate
+func (s *InternalDirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *InternalDirectoryTableOptionsRequest {
+	s.AutoRefresh = &autoRefresh
 	return s
 }
 
@@ -83,89 +95,23 @@ func NewStageFileFormatRequest() *StageFileFormatRequest {
 	return &s
 }
 
-func (s *StageFileFormatRequest) WithFormatName(formatName string) *StageFileFormatRequest {
+func (s *StageFileFormatRequest) WithFormatName(formatName SchemaObjectIdentifier) *StageFileFormatRequest {
 	s.FormatName = &formatName
 	return s
 }
 
-func (s *StageFileFormatRequest) WithFileFormatType(fileFormatType FileFormatType) *StageFileFormatRequest {
-	s.FileFormatType = &fileFormatType
-	return s
-}
-
-// adjusted manually
-func (s *StageFileFormatRequest) WithOptions(options FileFormatTypeOptionsRequest) *StageFileFormatRequest {
-	s.Options = &options
-	return s
-}
-
-func NewStageCopyOptionsRequest() *StageCopyOptionsRequest {
-	s := StageCopyOptionsRequest{}
-	return &s
-}
-
-func (s *StageCopyOptionsRequest) WithOnError(onError StageCopyOnErrorOptionsRequest) *StageCopyOptionsRequest {
-	s.OnError = &onError
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithSizeLimit(sizeLimit int) *StageCopyOptionsRequest {
-	s.SizeLimit = &sizeLimit
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithPurge(purge bool) *StageCopyOptionsRequest {
-	s.Purge = &purge
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *StageCopyOptionsRequest {
-	s.ReturnFailedOnly = &returnFailedOnly
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *StageCopyOptionsRequest {
-	s.MatchByColumnName = &matchByColumnName
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithEnforceLength(enforceLength bool) *StageCopyOptionsRequest {
-	s.EnforceLength = &enforceLength
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *StageCopyOptionsRequest {
-	s.Truncatecolumns = &truncatecolumns
-	return s
-}
-
-func (s *StageCopyOptionsRequest) WithForce(force bool) *StageCopyOptionsRequest {
-	s.Force = &force
-	return s
-}
-
-func NewStageCopyOnErrorOptionsRequest() *StageCopyOnErrorOptionsRequest {
-	s := StageCopyOnErrorOptionsRequest{}
-	return &s
-}
-
-func (s *StageCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *StageCopyOnErrorOptionsRequest {
-	s.Continue_ = &continue_
-	return s
-}
-
-// WithSkipFile removed manually
-
-func (s *StageCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *StageCopyOnErrorOptionsRequest {
-	s.AbortStatement = &abortStatement
+func (s *StageFileFormatRequest) WithFileFormatOptions(fileFormatOptions FileFormatOptions) *StageFileFormatRequest {
+	s.FileFormatOptions = &fileFormatOptions
 	return s
 }
 
 func NewCreateOnS3StageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalS3StageParamsRequest,
 ) *CreateOnS3StageRequest {
 	s := CreateOnS3StageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -184,23 +130,13 @@ func (s *CreateOnS3StageRequest) WithIfNotExists(ifNotExists bool) *CreateOnS3St
 	return s
 }
 
-func (s *CreateOnS3StageRequest) WithExternalStageParams(externalStageParams ExternalS3StageParamsRequest) *CreateOnS3StageRequest {
-	s.ExternalStageParams = &externalStageParams
-	return s
-}
-
-func (s *CreateOnS3StageRequest) WithDirectoryTableOptions(directoryTableOptions ExternalS3DirectoryTableOptionsRequest) *CreateOnS3StageRequest {
+func (s *CreateOnS3StageRequest) WithDirectoryTableOptions(directoryTableOptions StageS3CommonDirectoryTableOptionsRequest) *CreateOnS3StageRequest {
 	s.DirectoryTableOptions = &directoryTableOptions
 	return s
 }
 
 func (s *CreateOnS3StageRequest) WithFileFormat(fileFormat StageFileFormatRequest) *CreateOnS3StageRequest {
 	s.FileFormat = &fileFormat
-	return s
-}
-
-func (s *CreateOnS3StageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateOnS3StageRequest {
-	s.CopyOptions = &copyOptions
 	return s
 }
 
@@ -222,6 +158,11 @@ func NewExternalS3StageParamsRequest(
 	return &s
 }
 
+func (s *ExternalS3StageParamsRequest) WithAwsAccessPointArn(awsAccessPointArn string) *ExternalS3StageParamsRequest {
+	s.AwsAccessPointArn = &awsAccessPointArn
+	return s
+}
+
 func (s *ExternalS3StageParamsRequest) WithStorageIntegration(storageIntegration AccountObjectIdentifier) *ExternalS3StageParamsRequest {
 	s.StorageIntegration = &storageIntegration
 	return s
@@ -234,6 +175,11 @@ func (s *ExternalS3StageParamsRequest) WithCredentials(credentials ExternalStage
 
 func (s *ExternalS3StageParamsRequest) WithEncryption(encryption ExternalStageS3EncryptionRequest) *ExternalS3StageParamsRequest {
 	s.Encryption = &encryption
+	return s
+}
+
+func (s *ExternalS3StageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ExternalS3StageParamsRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
 }
 
@@ -262,49 +208,86 @@ func (s *ExternalStageS3CredentialsRequest) WithAwsRole(awsRole string) *Externa
 	return s
 }
 
-func NewExternalStageS3EncryptionRequest(
-	encryptionType *ExternalStageS3EncryptionOption,
-) *ExternalStageS3EncryptionRequest {
+func NewExternalStageS3EncryptionRequest() *ExternalStageS3EncryptionRequest {
 	s := ExternalStageS3EncryptionRequest{}
-	s.EncryptionType = encryptionType
 	return &s
 }
 
-func (s *ExternalStageS3EncryptionRequest) WithMasterKey(masterKey string) *ExternalStageS3EncryptionRequest {
-	s.MasterKey = &masterKey
+func (s *ExternalStageS3EncryptionRequest) WithAwsCse(awsCse ExternalStageS3EncryptionAwsCseRequest) *ExternalStageS3EncryptionRequest {
+	s.AwsCse = &awsCse
 	return s
 }
 
-func (s *ExternalStageS3EncryptionRequest) WithKmsKeyId(kmsKeyId string) *ExternalStageS3EncryptionRequest {
+func (s *ExternalStageS3EncryptionRequest) WithAwsSseS3(awsSseS3 ExternalStageS3EncryptionAwsSseS3Request) *ExternalStageS3EncryptionRequest {
+	s.AwsSseS3 = &awsSseS3
+	return s
+}
+
+func (s *ExternalStageS3EncryptionRequest) WithAwsSseKms(awsSseKms ExternalStageS3EncryptionAwsSseKmsRequest) *ExternalStageS3EncryptionRequest {
+	s.AwsSseKms = &awsSseKms
+	return s
+}
+
+func (s *ExternalStageS3EncryptionRequest) WithNone(none ExternalStageS3EncryptionNoneRequest) *ExternalStageS3EncryptionRequest {
+	s.None = &none
+	return s
+}
+
+func NewExternalStageS3EncryptionAwsCseRequest(
+	masterKey string,
+) *ExternalStageS3EncryptionAwsCseRequest {
+	s := ExternalStageS3EncryptionAwsCseRequest{}
+	s.MasterKey = masterKey
+	return &s
+}
+
+func NewExternalStageS3EncryptionAwsSseS3Request() *ExternalStageS3EncryptionAwsSseS3Request {
+	s := ExternalStageS3EncryptionAwsSseS3Request{}
+	return &s
+}
+
+func NewExternalStageS3EncryptionAwsSseKmsRequest() *ExternalStageS3EncryptionAwsSseKmsRequest {
+	s := ExternalStageS3EncryptionAwsSseKmsRequest{}
+	return &s
+}
+
+func (s *ExternalStageS3EncryptionAwsSseKmsRequest) WithKmsKeyId(kmsKeyId string) *ExternalStageS3EncryptionAwsSseKmsRequest {
 	s.KmsKeyId = &kmsKeyId
 	return s
 }
 
-func NewExternalS3DirectoryTableOptionsRequest() *ExternalS3DirectoryTableOptionsRequest {
-	s := ExternalS3DirectoryTableOptionsRequest{}
+func NewExternalStageS3EncryptionNoneRequest() *ExternalStageS3EncryptionNoneRequest {
+	s := ExternalStageS3EncryptionNoneRequest{}
 	return &s
 }
 
-func (s *ExternalS3DirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalS3DirectoryTableOptionsRequest {
-	s.Enable = &enable
+func NewStageS3CommonDirectoryTableOptionsRequest() *StageS3CommonDirectoryTableOptionsRequest {
+	s := StageS3CommonDirectoryTableOptionsRequest{}
+	return &s
+}
+
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithEnable(enable bool) *StageS3CommonDirectoryTableOptionsRequest {
+	s.Enable = enable
 	return s
 }
 
-func (s *ExternalS3DirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *ExternalS3DirectoryTableOptionsRequest {
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *StageS3CommonDirectoryTableOptionsRequest {
 	s.RefreshOnCreate = &refreshOnCreate
 	return s
 }
 
-func (s *ExternalS3DirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *ExternalS3DirectoryTableOptionsRequest {
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *StageS3CommonDirectoryTableOptionsRequest {
 	s.AutoRefresh = &autoRefresh
 	return s
 }
 
 func NewCreateOnGCSStageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalGCSStageParamsRequest,
 ) *CreateOnGCSStageRequest {
 	s := CreateOnGCSStageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -323,11 +306,6 @@ func (s *CreateOnGCSStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnGCS
 	return s
 }
 
-func (s *CreateOnGCSStageRequest) WithExternalStageParams(externalStageParams ExternalGCSStageParamsRequest) *CreateOnGCSStageRequest {
-	s.ExternalStageParams = &externalStageParams
-	return s
-}
-
 func (s *CreateOnGCSStageRequest) WithDirectoryTableOptions(directoryTableOptions ExternalGCSDirectoryTableOptionsRequest) *CreateOnGCSStageRequest {
 	s.DirectoryTableOptions = &directoryTableOptions
 	return s
@@ -335,11 +313,6 @@ func (s *CreateOnGCSStageRequest) WithDirectoryTableOptions(directoryTableOption
 
 func (s *CreateOnGCSStageRequest) WithFileFormat(fileFormat StageFileFormatRequest) *CreateOnGCSStageRequest {
 	s.FileFormat = &fileFormat
-	return s
-}
-
-func (s *CreateOnGCSStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateOnGCSStageRequest {
-	s.CopyOptions = &copyOptions
 	return s
 }
 
@@ -362,7 +335,7 @@ func NewExternalGCSStageParamsRequest(
 }
 
 func (s *ExternalGCSStageParamsRequest) WithStorageIntegration(storageIntegration AccountObjectIdentifier) *ExternalGCSStageParamsRequest {
-	s.StorageIntegration = &storageIntegration
+	s.StorageIntegration = storageIntegration
 	return s
 }
 
@@ -371,17 +344,34 @@ func (s *ExternalGCSStageParamsRequest) WithEncryption(encryption ExternalStageG
 	return s
 }
 
-func NewExternalStageGCSEncryptionRequest(
-	encryptionType *ExternalStageGCSEncryptionOption,
-) *ExternalStageGCSEncryptionRequest {
+func NewExternalStageGCSEncryptionRequest() *ExternalStageGCSEncryptionRequest {
 	s := ExternalStageGCSEncryptionRequest{}
-	s.EncryptionType = encryptionType
 	return &s
 }
 
-func (s *ExternalStageGCSEncryptionRequest) WithKmsKeyId(kmsKeyId string) *ExternalStageGCSEncryptionRequest {
+func (s *ExternalStageGCSEncryptionRequest) WithGcsSseKms(gcsSseKms ExternalStageGCSEncryptionGcsSseKmsRequest) *ExternalStageGCSEncryptionRequest {
+	s.GcsSseKms = &gcsSseKms
+	return s
+}
+
+func (s *ExternalStageGCSEncryptionRequest) WithNone(none ExternalStageGCSEncryptionNoneRequest) *ExternalStageGCSEncryptionRequest {
+	s.None = &none
+	return s
+}
+
+func NewExternalStageGCSEncryptionGcsSseKmsRequest() *ExternalStageGCSEncryptionGcsSseKmsRequest {
+	s := ExternalStageGCSEncryptionGcsSseKmsRequest{}
+	return &s
+}
+
+func (s *ExternalStageGCSEncryptionGcsSseKmsRequest) WithKmsKeyId(kmsKeyId string) *ExternalStageGCSEncryptionGcsSseKmsRequest {
 	s.KmsKeyId = &kmsKeyId
 	return s
+}
+
+func NewExternalStageGCSEncryptionNoneRequest() *ExternalStageGCSEncryptionNoneRequest {
+	s := ExternalStageGCSEncryptionNoneRequest{}
+	return &s
 }
 
 func NewExternalGCSDirectoryTableOptionsRequest() *ExternalGCSDirectoryTableOptionsRequest {
@@ -390,7 +380,7 @@ func NewExternalGCSDirectoryTableOptionsRequest() *ExternalGCSDirectoryTableOpti
 }
 
 func (s *ExternalGCSDirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalGCSDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -411,9 +401,11 @@ func (s *ExternalGCSDirectoryTableOptionsRequest) WithNotificationIntegration(no
 
 func NewCreateOnAzureStageRequest(
 	name SchemaObjectIdentifier,
+	externalStageParams ExternalAzureStageParamsRequest,
 ) *CreateOnAzureStageRequest {
 	s := CreateOnAzureStageRequest{}
 	s.name = name
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -432,11 +424,6 @@ func (s *CreateOnAzureStageRequest) WithIfNotExists(ifNotExists bool) *CreateOnA
 	return s
 }
 
-func (s *CreateOnAzureStageRequest) WithExternalStageParams(externalStageParams ExternalAzureStageParamsRequest) *CreateOnAzureStageRequest {
-	s.ExternalStageParams = &externalStageParams
-	return s
-}
-
 func (s *CreateOnAzureStageRequest) WithDirectoryTableOptions(directoryTableOptions ExternalAzureDirectoryTableOptionsRequest) *CreateOnAzureStageRequest {
 	s.DirectoryTableOptions = &directoryTableOptions
 	return s
@@ -444,11 +431,6 @@ func (s *CreateOnAzureStageRequest) WithDirectoryTableOptions(directoryTableOpti
 
 func (s *CreateOnAzureStageRequest) WithFileFormat(fileFormat StageFileFormatRequest) *CreateOnAzureStageRequest {
 	s.FileFormat = &fileFormat
-	return s
-}
-
-func (s *CreateOnAzureStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateOnAzureStageRequest {
-	s.CopyOptions = &copyOptions
 	return s
 }
 
@@ -485,6 +467,11 @@ func (s *ExternalAzureStageParamsRequest) WithEncryption(encryption ExternalStag
 	return s
 }
 
+func (s *ExternalAzureStageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *ExternalAzureStageParamsRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
+	return s
+}
+
 func NewExternalStageAzureCredentialsRequest(
 	azureSasToken string,
 ) *ExternalStageAzureCredentialsRequest {
@@ -493,17 +480,32 @@ func NewExternalStageAzureCredentialsRequest(
 	return &s
 }
 
-func NewExternalStageAzureEncryptionRequest(
-	encryptionType *ExternalStageAzureEncryptionOption,
-) *ExternalStageAzureEncryptionRequest {
+func NewExternalStageAzureEncryptionRequest() *ExternalStageAzureEncryptionRequest {
 	s := ExternalStageAzureEncryptionRequest{}
-	s.EncryptionType = encryptionType
 	return &s
 }
 
-func (s *ExternalStageAzureEncryptionRequest) WithMasterKey(masterKey string) *ExternalStageAzureEncryptionRequest {
-	s.MasterKey = &masterKey
+func (s *ExternalStageAzureEncryptionRequest) WithAzureCse(azureCse ExternalStageAzureEncryptionAzureCseRequest) *ExternalStageAzureEncryptionRequest {
+	s.AzureCse = &azureCse
 	return s
+}
+
+func (s *ExternalStageAzureEncryptionRequest) WithNone(none ExternalStageAzureEncryptionNoneRequest) *ExternalStageAzureEncryptionRequest {
+	s.None = &none
+	return s
+}
+
+func NewExternalStageAzureEncryptionAzureCseRequest(
+	masterKey string,
+) *ExternalStageAzureEncryptionAzureCseRequest {
+	s := ExternalStageAzureEncryptionAzureCseRequest{}
+	s.MasterKey = masterKey
+	return &s
+}
+
+func NewExternalStageAzureEncryptionNoneRequest() *ExternalStageAzureEncryptionNoneRequest {
+	s := ExternalStageAzureEncryptionNoneRequest{}
+	return &s
 }
 
 func NewExternalAzureDirectoryTableOptionsRequest() *ExternalAzureDirectoryTableOptionsRequest {
@@ -512,7 +514,7 @@ func NewExternalAzureDirectoryTableOptionsRequest() *ExternalAzureDirectoryTable
 }
 
 func (s *ExternalAzureDirectoryTableOptionsRequest) WithEnable(enable bool) *ExternalAzureDirectoryTableOptionsRequest {
-	s.Enable = &enable
+	s.Enable = enable
 	return s
 }
 
@@ -533,13 +535,11 @@ func (s *ExternalAzureDirectoryTableOptionsRequest) WithNotificationIntegration(
 
 func NewCreateOnS3CompatibleStageRequest(
 	name SchemaObjectIdentifier,
-	url string,
-	endpoint string,
+	externalStageParams ExternalS3CompatibleStageParamsRequest,
 ) *CreateOnS3CompatibleStageRequest {
 	s := CreateOnS3CompatibleStageRequest{}
 	s.name = name
-	s.Url = url
-	s.Endpoint = endpoint
+	s.ExternalStageParams = externalStageParams
 	return &s
 }
 
@@ -558,23 +558,13 @@ func (s *CreateOnS3CompatibleStageRequest) WithIfNotExists(ifNotExists bool) *Cr
 	return s
 }
 
-func (s *CreateOnS3CompatibleStageRequest) WithCredentials(credentials ExternalStageS3CompatibleCredentialsRequest) *CreateOnS3CompatibleStageRequest {
-	s.Credentials = &credentials
-	return s
-}
-
-func (s *CreateOnS3CompatibleStageRequest) WithDirectoryTableOptions(directoryTableOptions ExternalS3DirectoryTableOptionsRequest) *CreateOnS3CompatibleStageRequest {
+func (s *CreateOnS3CompatibleStageRequest) WithDirectoryTableOptions(directoryTableOptions StageS3CommonDirectoryTableOptionsRequest) *CreateOnS3CompatibleStageRequest {
 	s.DirectoryTableOptions = &directoryTableOptions
 	return s
 }
 
 func (s *CreateOnS3CompatibleStageRequest) WithFileFormat(fileFormat StageFileFormatRequest) *CreateOnS3CompatibleStageRequest {
 	s.FileFormat = &fileFormat
-	return s
-}
-
-func (s *CreateOnS3CompatibleStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *CreateOnS3CompatibleStageRequest {
-	s.CopyOptions = &copyOptions
 	return s
 }
 
@@ -588,9 +578,24 @@ func (s *CreateOnS3CompatibleStageRequest) WithTag(tag []TagAssociation) *Create
 	return s
 }
 
+func NewExternalS3CompatibleStageParamsRequest(
+	url string,
+	endpoint string,
+) *ExternalS3CompatibleStageParamsRequest {
+	s := ExternalS3CompatibleStageParamsRequest{}
+	s.Url = url
+	s.Endpoint = endpoint
+	return &s
+}
+
+func (s *ExternalS3CompatibleStageParamsRequest) WithCredentials(credentials ExternalStageS3CompatibleCredentialsRequest) *ExternalS3CompatibleStageParamsRequest {
+	s.Credentials = &credentials
+	return s
+}
+
 func NewExternalStageS3CompatibleCredentialsRequest(
-	awsKeyId *string,
-	awsSecretKey *string,
+	awsKeyId string,
+	awsSecretKey string,
 ) *ExternalStageS3CompatibleCredentialsRequest {
 	s := ExternalStageS3CompatibleCredentialsRequest{}
 	s.AwsKeyId = awsKeyId
@@ -644,12 +649,7 @@ func (s *AlterInternalStageStageRequest) WithFileFormat(fileFormat StageFileForm
 	return s
 }
 
-func (s *AlterInternalStageStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *AlterInternalStageStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
-func (s *AlterInternalStageStageRequest) WithComment(comment string) *AlterInternalStageStageRequest {
+func (s *AlterInternalStageStageRequest) WithComment(comment StringAllowEmpty) *AlterInternalStageStageRequest {
 	s.Comment = &comment
 	return s
 }
@@ -677,12 +677,7 @@ func (s *AlterExternalS3StageStageRequest) WithFileFormat(fileFormat StageFileFo
 	return s
 }
 
-func (s *AlterExternalS3StageStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *AlterExternalS3StageStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
-func (s *AlterExternalS3StageStageRequest) WithComment(comment string) *AlterExternalS3StageStageRequest {
+func (s *AlterExternalS3StageStageRequest) WithComment(comment StringAllowEmpty) *AlterExternalS3StageStageRequest {
 	s.Comment = &comment
 	return s
 }
@@ -710,12 +705,7 @@ func (s *AlterExternalGCSStageStageRequest) WithFileFormat(fileFormat StageFileF
 	return s
 }
 
-func (s *AlterExternalGCSStageStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *AlterExternalGCSStageStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
-func (s *AlterExternalGCSStageStageRequest) WithComment(comment string) *AlterExternalGCSStageStageRequest {
+func (s *AlterExternalGCSStageStageRequest) WithComment(comment StringAllowEmpty) *AlterExternalGCSStageStageRequest {
 	s.Comment = &comment
 	return s
 }
@@ -743,12 +733,7 @@ func (s *AlterExternalAzureStageStageRequest) WithFileFormat(fileFormat StageFil
 	return s
 }
 
-func (s *AlterExternalAzureStageStageRequest) WithCopyOptions(copyOptions StageCopyOptionsRequest) *AlterExternalAzureStageStageRequest {
-	s.CopyOptions = &copyOptions
-	return s
-}
-
-func (s *AlterExternalAzureStageStageRequest) WithComment(comment string) *AlterExternalAzureStageStageRequest {
+func (s *AlterExternalAzureStageStageRequest) WithComment(comment StringAllowEmpty) *AlterExternalAzureStageStageRequest {
 	s.Comment = &comment
 	return s
 }
@@ -825,7 +810,7 @@ func (s *ShowStageRequest) WithLike(like Like) *ShowStageRequest {
 	return s
 }
 
-func (s *ShowStageRequest) WithIn(in In) *ShowStageRequest {
+func (s *ShowStageRequest) WithIn(in ExtendedIn) *ShowStageRequest {
 	s.In = &in
 	return s
 }

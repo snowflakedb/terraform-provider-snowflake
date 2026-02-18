@@ -73,7 +73,7 @@ test-acceptance: ## run acceptance tests
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=150m ./pkg/testacc
 
 test-account-level-features: ## run integration and acceptance test modifying account
-	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=45m ./pkg/testacc ./pkg/sdk/testint
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=60m ./pkg/testacc ./pkg/sdk/testint
 
 test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint
@@ -93,6 +93,10 @@ test-main-terraform-use-cases: ## run test for main terraform use cases
 test-main-terraform-use-cases-docker-compose: ## run main terraform use cases tests within docker environment
 	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
 	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm test-main-terraform-use-cases
+
+test-main-terraform-use-cases-docker-compose-pre-prod-gov: ## run main terraform use cases tests within docker environment for pre-prod gov environment
+	docker compose -f ./packaging/docker-compose.yml build --quiet 1>&2
+	TEST_SF_TF_SNOWFLAKE_TESTING_ENVIRONMENT=PRE_PROD_GOV docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm test-main-terraform-use-cases
 
 process-test-output-docker-compose: ## run test output processor within docker environment
 	docker compose -f ./packaging/docker-compose.yml run --quiet-pull --rm process-test-output

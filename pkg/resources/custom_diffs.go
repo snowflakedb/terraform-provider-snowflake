@@ -18,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// TODO(SNOW-3043057): Refactor custom diffs. Now, code is duplicated for other resources and fields.
+
 func StringParameterValueComputedIf[T ~string](key string, params []*sdk.Parameter, parameterLevel sdk.ParameterType, parameterName T) schema.CustomizeDiffFunc {
 	return ParameterValueComputedIf(key, params, parameterLevel, parameterName, func(value any) string { return value.(string) })
 }
@@ -94,6 +96,20 @@ func ForceNewIfChangeToEmptyString(key string) schema.CustomizeDiffFunc {
 	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
 		oldString, newString := oldValue.(string), newValue.(string)
 		return len(oldString) > 0 && len(newString) == 0
+	})
+}
+
+// ForceNewIfUrlIsS3Compatible sets a ForceNew for a url field which is set to an s3compat:// url.
+func ForceNewIfUrlIsS3Compatible() schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange("url", func(ctx context.Context, oldValue, newValue, meta any) bool {
+		return strings.HasPrefix(oldValue.(string), "s3compat://")
+	})
+}
+
+// ForceNewIfNotDefault sets a ForceNew for a string field which was set to a non-default value.
+func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
+	return customdiff.ForceNewIfChange(key, func(ctx context.Context, oldValue, newValue, meta any) bool {
+		return newValue.(string) != BooleanDefault
 	})
 }
 
@@ -249,6 +265,20 @@ func RecreateWhenUserTypeChangedExternally(userType sdk.UserType) schema.Customi
 	}
 }
 
+func RecreateWhenStageTypeChangedExternally(stageType sdk.StageType) schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		if n := diff.Get("stage_type"); n != nil {
+			log.Printf("[DEBUG] new external value for stage type: %s", n.(string))
+
+			diffStageType, _ := sdk.ToStageType(n.(string))
+			if acceptableStageTypes, ok := sdk.AcceptableStageTypes[stageType]; ok && !slices.Contains(acceptableStageTypes, diffStageType) {
+				return errors.Join(diff.SetNew("stage_type", "<changed externally>"), diff.ForceNew("stage_type"))
+			}
+		}
+		return nil
+	}
+}
+
 func RecreateWhenSecretTypeChangedExternally(secretType sdk.SecretType) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get("secret_type"); n != nil {
@@ -291,6 +321,11 @@ func RecreateWhenStreamTypeChangedExternally(streamType sdk.StreamSourceType) sc
 	return RecreateWhenResourceTypeChangedExternally("stream_type", streamType, sdk.ToStreamSourceType)
 }
 
+// RecreateWhenStageCloudChangedExternally recreates a stage when argument stageCloud is different than in the state.
+func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.CustomizeDiffFunc {
+	return RecreateWhenResourceTypeChangedExternally("cloud", stageCloud, sdk.ToStageCloud)
+}
+
 // RecreateWhenResourceTypeChangedExternally recreates a resource when argument wantType is different than the value in typeField.
 func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, wantType T, toType func(string) (T, error)) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
@@ -325,6 +360,29 @@ func RecreateWhenStreamIsStale() schema.CustomizeDiffFunc {
 		if old, _ := diff.GetChange("stale"); old.(bool) {
 			return diff.SetNew("stale", false)
 		}
+		return nil
+	}
+}
+
+// RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage forces recreation when switching
+// between credentials-based authentication and storage integration-based authentication on external stages.
+// This is necessary because Snowflake doesn't allow updating between these two authentication methods in-place.
+// Handles both directions:
+// - From storage_integration to credentials: ForceNew on credentials
+// - From credentials to storage_integration: ForceNew on storage_integration
+func RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage() schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		credentialsOld, credentialsNew := diff.GetChange("credentials")
+		storageIntegrationOld, storageIntegrationNew := diff.GetChange("storage_integration")
+		// Change from storage_integration to credentials requires recreation
+		if diff.HasChange("credentials") && storageIntegrationOld.(string) != "" && len(credentialsNew.([]any)) > 0 {
+			return diff.ForceNew("credentials")
+		}
+		// Change from credentials to storage_integration requires recreation
+		if diff.HasChange("storage_integration") && len(credentialsOld.([]any)) > 0 && storageIntegrationNew.(string) != "" {
+			return diff.ForceNew("storage_integration")
+		}
+
 		return nil
 	}
 }

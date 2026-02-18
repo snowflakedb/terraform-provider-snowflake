@@ -104,3 +104,17 @@ func AlphaUpperN(num int) string {
 func Bytes() []byte {
 	return []byte(AlphaN(10))
 }
+
+func NumericN(num int) string {
+	return gofakeit.Password(false, false, true, false, false, num)
+}
+
+// It must be either 128 bits, 192 bits, or 256 bits long
+func AwsCseMasterKey() string {
+	return AlphaN(256 / 8)
+}
+
+// It must be either 128 bits, 192 bits, or 256 bits long
+func AzureCseMasterKey() string {
+	return AlphaN(256 / 8)
+}

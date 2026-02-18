@@ -43,7 +43,6 @@ func setAndUnsetAccountParametersTest(
 		// - EnableInternalStagesPrivatelink
 		// - PythonProfilerModules
 		// - S3StageVpceDnsName
-		// - SamlIdentityProvider
 		// - SimulatedDataSharingConsumer
 		err := setParameters(context.Background(), sdk.AccountParameters{
 			AbortDetachedQuery:                               sdk.Bool(true),

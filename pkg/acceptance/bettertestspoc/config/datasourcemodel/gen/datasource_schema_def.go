@@ -71,6 +71,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.ImageRepositories().Schema,
 	},
 	{
+		name:   "Listings",
+		schema: datasources.Listings().Schema,
+	},
+	{
 		name:   "MaskingPolicies",
 		schema: datasources.MaskingPolicies().Schema,
 	},
@@ -113,6 +117,14 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Services",
 		schema: datasources.Services().Schema,
+	},
+	{
+		name:   "StorageIntegrations",
+		schema: datasources.StorageIntegrations().Schema,
+	},
+	{
+		name:   "Stages",
+		schema: datasources.Stages().Schema,
 	},
 	{
 		name:   "Streamlits",

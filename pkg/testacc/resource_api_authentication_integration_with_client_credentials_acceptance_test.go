@@ -6,10 +6,18 @@ import (
 	"fmt"
 	"testing"
 
-	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -18,25 +26,107 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_basic(t *testing.T) {
+func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *testing.T) {
+	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{string(testenvs.SnowflakeNonProdEnvironment), string(testenvs.SnowflakePreProdGovEnvironment)}, "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
+
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	m := func(complete bool) map[string]config.Variable {
-		c := map[string]config.Variable{
-			"enabled":             config.BoolVariable(true),
-			"name":                config.StringVariable(id.Name()),
-			"oauth_client_id":     config.StringVariable("foo"),
-			"oauth_client_secret": config.StringVariable("foo"),
-		}
-		if complete {
-			c["comment"] = config.StringVariable("foo")
-			c["oauth_access_token_validity"] = config.IntegerVariable(42)
-			c["oauth_client_auth_method"] = config.StringVariable(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost))
-			c["oauth_refresh_token_validity"] = config.IntegerVariable(12345)
-			c["oauth_token_endpoint"] = config.StringVariable("https://example.com")
-			c["oauth_allowed_scopes"] = config.SetVariable(config.StringVariable("foo"))
-		}
-		return c
+	comment := random.Comment()
+
+	basic := model.ApiAuthenticationIntegrationWithClientCredentials("test", id.Name(), true, "test_client_id", "test_client_secret")
+
+	complete := model.ApiAuthenticationIntegrationWithClientCredentials("test", id.Name(), true, "test_client_id", "test_client_secret").
+		WithComment(comment).
+		WithOauthAccessTokenValidity(42).
+		WithOauthRefreshTokenValidity(12345)
+
+	assertBasic := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("API_AUTHENTICATION").
+			HasCategory("SECURITY").
+			HasEnabled(true).
+			HasComment("").
+			HasCreatedOnNotEmpty(),
+
+		resourceassert.ApiAuthenticationIntegrationWithClientCredentialsResource(t, basic.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasEnabledString("true").
+			HasOauthClientIdString("test_client_id").
+			HasOauthClientSecretString("test_client_secret").
+			HasCommentString("").
+			HasOauthAccessTokenValidityString("-1").
+			HasNoOauthClientAuthMethod().
+			// TODO(SNOW-2457144): HasNoOauthRefreshTokenValidity().
+			HasNoOauthTokenEndpoint().
+			HasOauthAllowedScopes(),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("API_AUTHENTICATION").
+			HasCategory("SECURITY").
+			HasEnabled(true).
+			HasComment("").
+			HasCreatedOnNotEmpty(),
+
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_access_token_validity.0.value", "0")),
+		assert.Check(resource.TestCheckResourceAttrSet(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value")),
+		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.parent_integration.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.auth_type.0.value", "OAUTH2")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.comment.0.value", "")),
 	}
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.SecurityIntegration(t, id).
+			HasName(id.Name()).
+			HasIntegrationType("API_AUTHENTICATION").
+			HasCategory("SECURITY").
+			HasEnabled(true).
+			HasComment(comment).
+			HasCreatedOnNotEmpty(),
+
+		resourceassert.ApiAuthenticationIntegrationWithClientCredentialsResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasEnabledString("true").
+			HasOauthClientIdString("test_client_id").
+			HasOauthClientSecretString("test_client_secret").
+			HasCommentString(comment).
+			HasOauthAccessTokenValidityString("42").
+			HasNoOauthClientAuthMethod().
+			HasOauthRefreshTokenValidityString("12345").
+			HasNoOauthTokenEndpoint().
+			HasOauthAllowedScopes(),
+
+		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+			HasName(id.Name()).
+			HasIntegrationType("API_AUTHENTICATION").
+			HasCategory("SECURITY").
+			HasEnabled(true).
+			HasComment(comment).
+			HasCreatedOnNotEmpty(),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_validity.0.value", "42")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "12345")),
+		assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.parent_integration.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.auth_type.0.value", "OAUTH2")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -44,149 +134,111 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_basic(t *testing.
 		},
 		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithClientCredentials),
 		Steps: []resource.TestStep{
+			// Create - without optionals
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ApiAuthenticationIntegrationWithClientCredentials/basic"),
-				ConfigVariables: m(false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_id", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_secret", "foo"),
-
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.integration_type", "API_AUTHENTICATION"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.comment", ""),
-					resource.TestCheckResourceAttrSet("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.created_on"),
-
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_access_token_validity.0.value", "0"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_refresh_token_validity.0.value", "0"),
-					resource.TestCheckNoResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_client_id.0.value"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_client_auth_method.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_token_endpoint.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_allowed_scopes.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.parent_integration.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.auth_type.0.value", "OAUTH2"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.comment.0.value", ""),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Import - without optionals
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"oauth_access_token_validity",
+					"oauth_client_auth_method",
+					"oauth_client_secret",
+					"oauth_refresh_token_validity",
+					"oauth_token_endpoint",
+				},
+			},
+			// Update - set optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"oauth_access_token_validity",
+					"oauth_client_auth_method",
+					"oauth_client_secret",
+					"oauth_refresh_token_validity",
+					"oauth_token_endpoint",
+				},
+			},
+			// Update - unset optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Update - detect external changes
+			{
+				PreConfig: func() {
+					testClient().SecurityIntegration.AlterApiAuthenticationWithClientCredentialsFlow(t, sdk.NewAlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(id).
+						WithSet(*sdk.NewApiAuthenticationWithClientCredentialsFlowIntegrationSetRequest().
+							WithComment(comment),
+						),
+					)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, assertBasic...),
+			},
+			// Destroy - ensure api integration is destroyed before the next step
+			{
+				RefreshState: false,
+				Destroy:      true,
+				Config:       accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					invokeactionassert.ApiIntegrationDoesNotExist(t, id),
 				),
 			},
+			// Create - with optionals
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ApiAuthenticationIntegrationWithClientCredentials/basic"),
-				ConfigVariables: m(false),
-				ResourceName:    "snowflake_api_authentication_integration_with_client_credentials.test",
-				ImportState:     true,
-				ImportStateCheck: importchecks.ComposeImportStateCheck(
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "enabled", "true"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "oauth_client_id", "foo"),
-
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "show_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "show_output.0.name", id.Name()),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "show_output.0.integration_type", "API_AUTHENTICATION"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "show_output.0.category", "SECURITY"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "show_output.0.enabled", "true"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "show_output.0.comment", ""),
-
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.#", "1"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.enabled.0.value", "true"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.oauth_access_token_validity.0.value", "0"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.oauth_refresh_token_validity.0.value", "0"),
-					importchecks.TestCheckResourceAttrNotInInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.oauth_client_id.0.value"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.oauth_client_auth_method.0.value", ""),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.oauth_token_endpoint.0.value", ""),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.oauth_allowed_scopes.0.value", ""),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.parent_integration.0.value", ""),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.auth_type.0.value", "OAUTH2"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "describe_output.0.comment.0.value", ""),
-				),
-			},
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ApiAuthenticationIntegrationWithClientCredentials/complete"),
-				ConfigVariables: m(true),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "comment", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_access_token_validity", "42"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_auth_method", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_id", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_secret", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_refresh_token_validity", "12345"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_token_endpoint", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_allowed_scopes.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_allowed_scopes.0", "foo"),
-
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.integration_type", "API_AUTHENTICATION"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.comment", "foo"),
-					resource.TestCheckResourceAttrSet("snowflake_api_authentication_integration_with_client_credentials.test", "show_output.0.created_on"),
-
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.enabled.0.value", "true"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_access_token_validity.0.value", "42"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_refresh_token_validity.0.value", "12345"),
-					resource.TestCheckNoResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_client_id.0.value"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_token_endpoint.0.value", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_allowed_scopes.0.value", "[foo]"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.parent_integration.0.value", ""),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.auth_type.0.value", "OAUTH2"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.comment.0.value", "foo")),
-			},
-			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ApiAuthenticationIntegrationWithClientCredentials/basic"),
-				ConfigVariables:         m(true),
-				ResourceName:            "snowflake_api_authentication_integration_with_client_credentials.test",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"oauth_client_secret"},
-			},
-			// unset
-			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ApiAuthenticationIntegrationWithClientCredentials/basic"),
-				ConfigVariables: m(false),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "comment", ""),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_access_token_validity", "-1"),
-					resource.TestCheckNoResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_auth_method"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_id", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_secret", "foo"),
-					resource.TestCheckNoResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_refresh_token_validity"),
-					resource.TestCheckNoResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_token_endpoint"),
-				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
 			},
 		},
 	})
 }
 
-func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_complete(t *testing.T) {
+func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"comment":                      config.StringVariable("foo"),
-			"enabled":                      config.BoolVariable(true),
-			"name":                         config.StringVariable(id.Name()),
-			"oauth_access_token_validity":  config.IntegerVariable(42),
-			"oauth_client_auth_method":     config.StringVariable(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)),
-			"oauth_client_id":              config.StringVariable("foo"),
-			"oauth_client_secret":          config.StringVariable("foo"),
-			"oauth_refresh_token_validity": config.IntegerVariable(12345),
-			"oauth_token_endpoint":         config.StringVariable("https://example.com"),
-			"oauth_allowed_scopes":         config.SetVariable(config.StringVariable("foo")),
-		}
-	}
+	comment := random.Comment()
+
+	complete := model.ApiAuthenticationIntegrationWithClientCredentials("test", id.Name(), true, "test_client_id", "test_client_secret").
+		WithComment(comment).
+		WithOauthAccessTokenValidity(42).
+		WithOauthClientAuthMethod(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+		WithOauthRefreshTokenValidity(12345).
+		WithOauthTokenEndpoint("https://example.com").
+		WithOauthAllowedScopesValue(config.SetVariable(config.StringVariable("foo")))
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -194,32 +246,66 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_complete(t *testi
 		},
 		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithClientCredentials),
 		Steps: []resource.TestStep{
+			// Create - with all optionals (including force-new fields)
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ApiAuthenticationIntegrationWithClientCredentials/complete"),
-				ConfigVariables: m(),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "comment", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "enabled", "true"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_access_token_validity", "42"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_auth_method", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_id", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_client_secret", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_refresh_token_validity", "12345"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_token_endpoint", "https://example.com"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_allowed_scopes.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "oauth_allowed_scopes.0", "foo"),
-					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "describe_output.0.oauth_allowed_scopes.0.value", "[foo]"),
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(t,
+					objectassert.SecurityIntegration(t, id).
+						HasName(id.Name()).
+						HasIntegrationType("API_AUTHENTICATION").
+						HasCategory("SECURITY").
+						HasEnabled(true).
+						HasComment(comment).
+						HasCreatedOnNotEmpty(),
+
+					resourceassert.ApiAuthenticationIntegrationWithClientCredentialsResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasEnabledString("true").
+						HasOauthClientIdString("test_client_id").
+						HasOauthClientSecretString("test_client_secret").
+						HasCommentString(comment).
+						HasOauthAccessTokenValidityString("42").
+						HasOauthClientAuthMethodString(string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost)).
+						HasOauthRefreshTokenValidityString("12345").
+						HasOauthTokenEndpointString("https://example.com").
+						HasOauthAllowedScopes("foo"),
+
+					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
+						HasName(id.Name()).
+						HasIntegrationType("API_AUTHENTICATION").
+						HasCategory("SECURITY").
+						HasEnabled(true).
+						HasComment(comment).
+						HasCreatedOnNotEmpty(),
+
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_validity.0.value", "42")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "12345")),
+					assert.Check(resource.TestCheckNoResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_id.0.value")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_client_auth_method.0.value", string(sdk.ApiAuthenticationSecurityIntegrationOauthClientAuthMethodClientSecretPost))),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_token_endpoint.0.value", "https://example.com")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allowed_scopes.0.value", "[foo]")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_grant.0.value", sdk.ApiAuthenticationSecurityIntegrationOauthGrantClientCredentials)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.parent_integration.0.value", "")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.auth_type.0.value", "OAUTH2")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
 				),
 			},
+			// Import - with all optionals
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ApiAuthenticationIntegrationWithClientCredentials/complete"),
-				ConfigVariables:         m(),
-				ResourceName:            "snowflake_api_authentication_integration_with_client_credentials.test",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"oauth_client_secret"},
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"oauth_access_token_validity",
+					"oauth_client_auth_method",
+					"oauth_client_secret",
+					"oauth_refresh_token_validity",
+					"oauth_token_endpoint",
+				},
 			},
 		},
 	})
@@ -252,6 +338,7 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_invalidIncomplete
 
 func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -260,9 +347,9 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_migrateFromV0941_
 		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithClientCredentials),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            apiAuthenticationIntegrationWithClientCredentialsBasicConfig(id.Name()),
+				Config:            providerConfig + apiAuthenticationIntegrationWithClientCredentialsBasicConfig(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "id", id.Name()),
 				),
@@ -282,6 +369,7 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_migrateFromV0941_
 func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_WithQuotedName(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	quotedId := fmt.Sprintf(`\"%s\"`, id.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -290,10 +378,10 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_WithQuotedName(t 
 		CheckDestroy: CheckDestroy(t, resources.ApiAuthenticationIntegrationWithClientCredentials),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             apiAuthenticationIntegrationWithClientCredentialsBasicConfig(quotedId),
+				Config:             providerConfig + apiAuthenticationIntegrationWithClientCredentialsBasicConfig(quotedId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_api_authentication_integration_with_client_credentials.test", "id", id.Name()),

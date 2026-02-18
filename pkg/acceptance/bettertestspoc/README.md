@@ -21,7 +21,7 @@ It contains the following packages:
   - Snowflake object parameters assertions (generated in subpackage `objectparametersassert`)
   - resource assertions (generated in subpackage `resourceassert`)
   - resource parameters assertions (generated in subpackage `resourceparametersassert`)
-  - show output assertions (generated in subpackage `resourceshowoutputassert`)
+  - describe / show output assertions (generated in subpackage `resourceshowoutputassert`)
 
 - `config` - the new model abstractions (`ResourceModel`, `DatasourceModel`, and `ProviderModel`) reside here. They provide models for objects and the builder methods allowing better config preparation in the acceptance tests.
 It aims to be more readable than using `Config:` with hardcoded string or `ConfigFile:` for file that is not directly reachable from the test body. Also, it should be easier to reuse the models and prepare convenience extension methods. The models are already generated.
@@ -49,8 +49,21 @@ Here's a short description of every generated assertion:
 
 ### Adding new resource show output assertions
 Resource show output assertions can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allResourceSchemaDefs` slice in the `assert/objectassert/gen/sdk_object_def.go`
+- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
 - to add custom (not generated assertions) create file `abc_show_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
+```go
+func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOutputAssert {
+	return u.
+		HasName(expected).
+		HasLoginName(expected)
+}
+```
+
+### Adding new resource describe output assertions
+Resource describe output assertions can be generated automatically. For object `abc` do the following:
+- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go`
+  - remember to mark the struct with `IsDescribeOutput: true` in the `sdkObjectDef` definition
+- to add custom (not generated assertions) create file `abc_desc_output_ext.go` in the `assert/resourceshowoutputassert` package. Example would be:
 ```go
 func (u *UserShowOutputAssert) HasNameAndLoginName(expected string) *UserShowOutputAssert {
 	return u.
@@ -88,9 +101,26 @@ func (w *WarehouseAssert) HasStateOneOf(expected ...sdk.WarehouseState) *Warehou
 }
 ```
 
+### Adding new Snowflake object assertions based on the describe output
+Usually the Snowflake object assertions are based on Show command output. If you would like to introduce a similar assertion for Describe command output, for an object named `abc`, do the following:
+- add object you want to generate to `allStructs` slice in the `assert/objectassert/gen/sdk_object_def.go` (remember to fill `IsDescribeOutput` field in the struct definition)
+- to add custom (not generated assertions) create file `abc_desc_snowflake_ext.go` in the `objectassert` package. Example would be:
+```go
+func (w *WarehouseDescribeAssert) HasStateOneOf(expected ...sdk.WarehouseState) *WarehouseDescribeAssert {
+    w.assertions = append(w.assertions, func(t *testing.T, o *sdk.WarehouseDetails) error {
+        t.Helper()
+        if !slices.Contains(expected, o.State) {
+            return fmt.Errorf("expected state one of: %v; got: %v", expected, string(o.State))
+        }
+        return nil
+    })
+    return w
+}
+```
+
 ### Adding new Snowflake object parameters assertions
 Snowflake object parameters assertions can be generated automatically. For object `abc` do the following:
-- add object you want to generate to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/main/main.go`
+- add object you want to generate to `allObjectsParameters` slice in the `assert/objectparametersassert/gen/object_parameters_def.go`
 - make sure that test helper method `acc.TestClient().Parameter.ShowAbcParameters` exists in `/pkg/acceptance/helpers/parameter_client.go`
 - to add custom (not generated) assertions create file `abc_parameters_snowflake_ext.go` in the `objectparametersassert` package. Example would be:
 ```go
@@ -375,6 +405,7 @@ it will result in:
 - Add assertions for
   - The `describe_output` and handle describe objects too.
   - Custom objects: functions using `NewSnowflakeObjectAssertWithTestClientObjectProvider` can handle only objects that have proper identifiers. Not all of them have such IDs (check user PAT), so this function can't be used.
+  - Custom assertions in `ToTerraformTestCheckFunc`, e.g. value range.
 - Add support for datasource tests (assertions and config builders).
 - Consider overriding the assertions when invoking same check multiple times with different params (e.g. `Warehouse(...).HasType(X).HasType(Y)`; it could use the last-check-wins approach, to more easily reuse complex checks between the test steps).
 - Consider not adding the check for `show_output` presence on creation (same with `parameters`). The majority of the use cases need it to be present but there are a few others (like conditional presence in the datasources). Currently, it seems that they should be always present in the resources, so no change is made. Later, with adding the support for the datasource tests, consider simple destructive implementation like:

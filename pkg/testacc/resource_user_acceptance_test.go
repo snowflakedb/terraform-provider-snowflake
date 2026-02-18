@@ -19,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -110,22 +111,22 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 						HasNoPassword().
 						HasNoLoginName().
 						HasNoDisplayName().
-						HasNoFirstName().
-						HasNoMiddleName().
-						HasNoLastName().
-						HasNoEmail().
+						HasFirstNameEmpty().
+						HasMiddleNameEmpty().
+						HasLastNameEmpty().
+						HasEmailEmpty().
 						HasMustChangePasswordString(r.BooleanDefault).
 						HasDisabledString(r.BooleanDefault).
 						HasNoDaysToExpiry().
 						HasMinsToUnlockString(r.IntDefaultString).
-						HasNoDefaultWarehouse().
+						HasDefaultWarehouseEmpty().
 						HasNoDefaultNamespace().
-						HasNoDefaultRole().
+						HasDefaultRoleEmpty().
 						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
 						HasMinsToBypassMfaString(r.IntDefaultString).
-						HasNoRsaPublicKey().
-						HasNoRsaPublicKey2().
-						HasNoComment().
+						HasRsaPublicKeyEmpty().
+						HasRsaPublicKey2Empty().
+						HasCommentEmpty().
 						HasDisableMfaString(r.BooleanDefault).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.UserShowOutput(t, userModelNoAttributes.ResourceReference()).
@@ -148,10 +149,21 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:            userModelNoAttributesRenamed.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password", "disable_mfa", "days_to_expiry", "mins_to_unlock", "mins_to_bypass_mfa", "login_name", "display_name", "disabled", "must_change_password", "default_secondary_roles_option"},
+				ResourceName:      userModelNoAttributesRenamed.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"password",
+					"disable_mfa",
+					"days_to_expiry",
+					"mins_to_unlock",
+					"mins_to_bypass_mfa",
+					"login_name",
+					"display_name",
+					"disabled",
+					"must_change_password",
+					"default_secondary_roles_option",
+				},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedUserResource(t, id2.Name()).
 						HasLoginNameString(strings.ToUpper(id.Name())).
@@ -226,10 +238,19 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:            userModelAllAttributesChanged(newLoginName).ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password", "disable_mfa", "days_to_expiry", "mins_to_unlock", "mins_to_bypass_mfa", "default_namespace", "login_name", "show_output.0.days_to_expiry"},
+				ResourceName:      userModelAllAttributesChanged(newLoginName).ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"password",
+					"disable_mfa",
+					"days_to_expiry",
+					"mins_to_unlock",
+					"mins_to_bypass_mfa",
+					"default_namespace",
+					"login_name",
+					"show_output.0.days_to_expiry",
+				},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedUserResource(t, id.Name()).
 						HasDefaultNamespaceString("ONE_PART_NAMESPACE").
@@ -1187,6 +1208,7 @@ func TestAcc_User_migrateFromVersion094_defaultSecondaryRolesSet(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModelWithOptionAll := model.UserWithDefaultMeta(id.Name()).WithDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1195,9 +1217,9 @@ func TestAcc_User_migrateFromVersion094_defaultSecondaryRolesSet(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.User),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config: fmt.Sprintf(`
+				Config: providerConfig + fmt.Sprintf(`
 resource "snowflake_user" "test" {
 	name = "%s"
 	default_secondary_roles = ["ALL"]
@@ -1432,7 +1454,28 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 				Config:            config.FromModels(t, userModel),
 				Check: assertThat(t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
-						HasAllDefaults(userId, sdk.SecondaryRolesOptionDefault),
+						HasNameString(userId.Name()).
+						HasNoPassword().
+						HasNoLoginName().
+						HasNoDisplayName().
+						HasNoFirstName().
+						HasNoMiddleName().
+						HasNoLastName().
+						HasNoEmail().
+						HasMustChangePasswordString(r.BooleanDefault).
+						HasDisabledString(r.BooleanDefault).
+						HasNoDaysToExpiry().
+						HasMinsToUnlockString(r.IntDefaultString).
+						HasNoDefaultWarehouse().
+						HasNoDefaultNamespace().
+						HasNoDefaultRole().
+						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
+						HasMinsToBypassMfaString(r.IntDefaultString).
+						HasNoRsaPublicKey().
+						HasNoRsaPublicKey2().
+						HasNoComment().
+						HasDisableMfaString(r.BooleanDefault).
+						HasFullyQualifiedNameString(userId.FullyQualifiedName()),
 				),
 			},
 			{
@@ -1458,6 +1501,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 	userId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	userModel := model.User("w", userId.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1467,8 +1511,8 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
-				Config:            config.FromModels(t, userModel),
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
+				Config:            providerConfig + config.FromModels(t, userModel),
 				ExpectError:       regexp.MustCompile("\"default_namespace\": converting NULL to string is unsupported"),
 			},
 			{
@@ -1603,7 +1647,7 @@ func TestAcc_User_gh3522_fix(t *testing.T) {
 			{
 				Config: gh3522ConfigFirstStep(userId),
 				Check: assertThat(t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
-					HasNoComment(),
+					HasCommentEmpty(),
 				),
 			},
 			{
@@ -1706,6 +1750,129 @@ func TestAcc_User_migrateFromV2_11_0(t *testing.T) {
 						HasNameString(userId.Name()),
 					resourceshowoutputassert.UserShowOutput(t, basicModel.ResourceReference()).
 						HasHasWorkloadIdentity(false),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_User_DetectingExternalChangesToStringValues_NotHandledWithShowOutput(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	comment := random.Comment()
+	key1, _ := random.GenerateRSAPublicKey(t)
+	key2, _ := random.GenerateRSAPublicKey(t)
+
+	userModel := model.User("w", id.Name()).
+		WithFirstName("Jan").
+		WithMiddleName("Jakub").
+		WithLastName("Testowski").
+		WithEmail("fake@email.com").
+		WithDefaultWarehouse("some_warehouse").
+		WithDefaultRole("some_role").
+		WithMinsToBypassMfa(10).
+		WithRsaPublicKey(key1).
+		WithRsaPublicKey2(key2).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.User),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
+				Config:            config.FromModels(t, userModel),
+				Check: assertThat(t,
+					resourceassert.UserResource(t, userModel.ResourceReference()).
+						HasFirstNameString("Jan").
+						HasMiddleNameString("Jakub").
+						HasLastNameString("Testowski").
+						HasEmailString("fake@email.com").
+						HasDefaultWarehouseString("some_warehouse").
+						HasDefaultRoleString("some_role").
+						HasRsaPublicKeyString(key1).
+						HasRsaPublicKey2String(key2).
+						HasCommentString(comment),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
+						Unset: &sdk.UserUnset{
+							ObjectProperties: &sdk.UserObjectPropertiesUnset{
+								FirstName:        sdk.Bool(true),
+								MiddleName:       sdk.Bool(true),
+								LastName:         sdk.Bool(true),
+								Email:            sdk.Bool(true),
+								DefaultWarehouse: sdk.Bool(true),
+								DefaultRole:      sdk.Bool(true),
+								RSAPublicKey:     sdk.Bool(true),
+								RSAPublicKey2:    sdk.Bool(true),
+								Comment:          sdk.Bool(true),
+							},
+						},
+					})
+				},
+				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
+				Config:            config.FromModels(t, userModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserResource(t, userModel.ResourceReference()).
+						HasFirstNameString("Jan").
+						HasMiddleNameString("Jakub").
+						HasLastNameString("Testowski").
+						HasEmailString("fake@email.com").
+						HasDefaultWarehouseString("some_warehouse").
+						HasDefaultRoleString("some_role").
+						HasRsaPublicKeyString(key1).
+						HasRsaPublicKey2String(key2).
+						HasCommentString(comment),
+					objectassert.User(t, id).
+						HasFirstName("").
+						HasLastName("").
+						HasEmail("").
+						HasDefaultWarehouse("").
+						HasDefaultRole("").
+						HasComment(""),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionUpdate),
+
+						// checks for fields that are missing from user's objectassert
+						planchecks.ExpectChange(userModel.ResourceReference(), "middle_name", tfjson.ActionUpdate, sdk.String(""), sdk.String("Jakub")),
+						planchecks.ExpectChange(userModel.ResourceReference(), "rsa_public_key", tfjson.ActionUpdate, sdk.String(""), sdk.String(key1)),
+						planchecks.ExpectChange(userModel.ResourceReference(), "rsa_public_key_2", tfjson.ActionUpdate, sdk.String(""), sdk.String(key2)),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.UserResource(t, userModel.ResourceReference()).
+						HasFirstNameString("Jan").
+						HasMiddleNameString("Jakub").
+						HasLastNameString("Testowski").
+						HasEmailString("fake@email.com").
+						HasDefaultWarehouseString("some_warehouse").
+						HasDefaultRoleString("some_role").
+						HasRsaPublicKeyString(key1).
+						HasRsaPublicKey2String(key2).
+						HasCommentString(comment),
+					objectassert.User(t, id).
+						HasFirstName("Jan").
+						HasLastName("Testowski").
+						HasEmail("fake@email.com").
+						HasDefaultWarehouse("some_warehouse").
+						HasDefaultRole("some_role").
+						HasComment(comment),
 				),
 			},
 		},

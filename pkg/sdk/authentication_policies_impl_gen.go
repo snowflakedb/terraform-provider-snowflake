@@ -4,6 +4,9 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -42,6 +45,9 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
+	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool {
+		return !row.DatabaseName.Valid || !row.SchemaName.Valid
+	})
 	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
@@ -73,14 +79,13 @@ func (v *authenticationPolicies) Describe(ctx context.Context, id SchemaObjectId
 
 func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicyOptions {
 	opts := &CreateAuthenticationPolicyOptions{
-		OrReplace:                r.OrReplace,
-		IfNotExists:              r.IfNotExists,
-		name:                     r.name,
-		AuthenticationMethods:    r.AuthenticationMethods,
-		MfaAuthenticationMethods: r.MfaAuthenticationMethods,
-		MfaEnrollment:            r.MfaEnrollment,
-		ClientTypes:              r.ClientTypes,
-		Comment:                  r.Comment,
+		OrReplace:             r.OrReplace,
+		IfNotExists:           r.IfNotExists,
+		name:                  r.name,
+		AuthenticationMethods: r.AuthenticationMethods,
+		MfaEnrollment:         r.MfaEnrollment,
+		ClientTypes:           r.ClientTypes,
+		Comment:               r.Comment,
 	}
 	if r.MfaPolicy != nil {
 		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
@@ -120,11 +125,10 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 	}
 	if r.Set != nil {
 		opts.Set = &AuthenticationPolicySet{
-			AuthenticationMethods:    r.Set.AuthenticationMethods,
-			MfaAuthenticationMethods: r.Set.MfaAuthenticationMethods,
-			MfaEnrollment:            r.Set.MfaEnrollment,
-			ClientTypes:              r.Set.ClientTypes,
-			Comment:                  r.Set.Comment,
+			AuthenticationMethods: r.Set.AuthenticationMethods,
+			MfaEnrollment:         r.Set.MfaEnrollment,
+			ClientTypes:           r.Set.ClientTypes,
+			Comment:               r.Set.Comment,
 		}
 		if r.Set.MfaPolicy != nil {
 			opts.Set.MfaPolicy = &AuthenticationPolicyMfaPolicy{
@@ -156,15 +160,14 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 	}
 	if r.Unset != nil {
 		opts.Unset = &AuthenticationPolicyUnset{
-			ClientTypes:              r.Unset.ClientTypes,
-			AuthenticationMethods:    r.Unset.AuthenticationMethods,
-			SecurityIntegrations:     r.Unset.SecurityIntegrations,
-			MfaAuthenticationMethods: r.Unset.MfaAuthenticationMethods,
-			MfaEnrollment:            r.Unset.MfaEnrollment,
-			MfaPolicy:                r.Unset.MfaPolicy,
-			PatPolicy:                r.Unset.PatPolicy,
-			WorkloadIdentityPolicy:   r.Unset.WorkloadIdentityPolicy,
-			Comment:                  r.Unset.Comment,
+			ClientTypes:            r.Unset.ClientTypes,
+			AuthenticationMethods:  r.Unset.AuthenticationMethods,
+			SecurityIntegrations:   r.Unset.SecurityIntegrations,
+			MfaEnrollment:          r.Unset.MfaEnrollment,
+			MfaPolicy:              r.Unset.MfaPolicy,
+			PatPolicy:              r.Unset.PatPolicy,
+			WorkloadIdentityPolicy: r.Unset.WorkloadIdentityPolicy,
+			Comment:                r.Unset.Comment,
 		}
 	}
 	return opts
@@ -191,17 +194,38 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 
 func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
 	// adjusted manually
-	return &AuthenticationPolicy{
-		CreatedOn:     r.CreatedOn,
-		Name:          r.Name,
-		DatabaseName:  r.DatabaseName,
-		SchemaName:    r.SchemaName,
-		Kind:          r.Kind,
-		Owner:         r.Owner,
-		OwnerRoleType: r.OwnerRoleType,
-		Options:       r.Options,
-		Comment:       r.Comment,
-	}, nil
+	policy := &AuthenticationPolicy{
+		Name:    r.Name,
+		Kind:    r.Kind,
+		Options: r.Options,
+		Comment: r.Comment,
+	}
+	var errs []error
+	if r.DatabaseName.Valid {
+		policy.DatabaseName = r.DatabaseName.String
+	} else {
+		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
+	}
+	if r.SchemaName.Valid {
+		policy.SchemaName = r.SchemaName.String
+	} else {
+		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
+	}
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
+	}
+
+	if r.CreatedOn.Valid {
+		policy.CreatedOn = r.CreatedOn.Time
+	}
+	if r.Owner.Valid {
+		policy.Owner = r.Owner.String
+	}
+	if r.OwnerRoleType.Valid {
+		policy.OwnerRoleType = r.OwnerRoleType.String
+	}
+
+	return policy, nil
 }
 
 func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPolicyOptions {

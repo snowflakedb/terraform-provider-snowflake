@@ -6,6 +6,7 @@ services:
     environment:
       TEST_SF_TF_GENERATED_RANDOM_VALUE: ${TEST_SF_TF_GENERATED_RANDOM_VALUE}
       TEST_SF_TF_TEST_OBJECT_SUFFIX: ${TEST_SF_TF_TEST_OBJECT_SUFFIX}
+      TEST_SF_TF_SNOWFLAKE_TESTING_ENVIRONMENT: ${TEST_SF_TF_SNOWFLAKE_TESTING_ENVIRONMENT:-NON_PROD}
     volumes:
       - ./../:/terraform-provider-snowflake
       - ${SNOWFLAKE_CONFIG_PATH}:/root/.snowflake/config

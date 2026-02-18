@@ -80,7 +80,7 @@ func NewGCSStorageParamsRequest() *GCSStorageParamsRequest {
 }
 
 func NewAzureStorageParamsRequest(
-	azureTenantId *string,
+	azureTenantId string,
 ) *AzureStorageParamsRequest {
 	s := AzureStorageParamsRequest{}
 	s.AzureTenantId = azureTenantId
@@ -160,12 +160,14 @@ func (s *StorageIntegrationSetRequest) WithComment(comment string) *StorageInteg
 	return s
 }
 
-func NewSetS3StorageParamsRequest(
-	storageAwsRoleArn string,
-) *SetS3StorageParamsRequest {
+func NewSetS3StorageParamsRequest() *SetS3StorageParamsRequest {
 	s := SetS3StorageParamsRequest{}
-	s.StorageAwsRoleArn = storageAwsRoleArn
 	return &s
+}
+
+func (s *SetS3StorageParamsRequest) WithStorageAwsRoleArn(storageAwsRoleArn string) *SetS3StorageParamsRequest {
+	s.StorageAwsRoleArn = &storageAwsRoleArn
+	return s
 }
 
 func (s *SetS3StorageParamsRequest) WithStorageAwsExternalId(storageAwsExternalId string) *SetS3StorageParamsRequest {
@@ -183,12 +185,14 @@ func (s *SetS3StorageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEnd
 	return s
 }
 
-func NewSetAzureStorageParamsRequest(
-	azureTenantId string,
-) *SetAzureStorageParamsRequest {
+func NewSetAzureStorageParamsRequest() *SetAzureStorageParamsRequest {
 	s := SetAzureStorageParamsRequest{}
-	s.AzureTenantId = azureTenantId
 	return &s
+}
+
+func (s *SetAzureStorageParamsRequest) WithAzureTenantId(azureTenantId string) *SetAzureStorageParamsRequest {
+	s.AzureTenantId = &azureTenantId
+	return s
 }
 
 func (s *SetAzureStorageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *SetAzureStorageParamsRequest {
@@ -201,13 +205,13 @@ func NewStorageIntegrationUnsetRequest() *StorageIntegrationUnsetRequest {
 	return &s
 }
 
-func (s *StorageIntegrationUnsetRequest) WithStorageAwsExternalId(storageAwsExternalId bool) *StorageIntegrationUnsetRequest {
-	s.StorageAwsExternalId = &storageAwsExternalId
+func (s *StorageIntegrationUnsetRequest) WithS3Params(s3Params UnsetS3StorageParamsRequest) *StorageIntegrationUnsetRequest {
+	s.S3Params = &s3Params
 	return s
 }
 
-func (s *StorageIntegrationUnsetRequest) WithStorageAwsObjectAcl(storageAwsObjectAcl bool) *StorageIntegrationUnsetRequest {
-	s.StorageAwsObjectAcl = &storageAwsObjectAcl
+func (s *StorageIntegrationUnsetRequest) WithAzureParams(azureParams UnsetAzureStorageParamsRequest) *StorageIntegrationUnsetRequest {
+	s.AzureParams = &azureParams
 	return s
 }
 
@@ -226,7 +230,32 @@ func (s *StorageIntegrationUnsetRequest) WithComment(comment bool) *StorageInteg
 	return s
 }
 
-func (s *StorageIntegrationUnsetRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *StorageIntegrationUnsetRequest {
+func NewUnsetS3StorageParamsRequest() *UnsetS3StorageParamsRequest {
+	s := UnsetS3StorageParamsRequest{}
+	return &s
+}
+
+func (s *UnsetS3StorageParamsRequest) WithStorageAwsExternalId(storageAwsExternalId bool) *UnsetS3StorageParamsRequest {
+	s.StorageAwsExternalId = &storageAwsExternalId
+	return s
+}
+
+func (s *UnsetS3StorageParamsRequest) WithStorageAwsObjectAcl(storageAwsObjectAcl bool) *UnsetS3StorageParamsRequest {
+	s.StorageAwsObjectAcl = &storageAwsObjectAcl
+	return s
+}
+
+func (s *UnsetS3StorageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *UnsetS3StorageParamsRequest {
+	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
+	return s
+}
+
+func NewUnsetAzureStorageParamsRequest() *UnsetAzureStorageParamsRequest {
+	s := UnsetAzureStorageParamsRequest{}
+	return &s
+}
+
+func (s *UnsetAzureStorageParamsRequest) WithUsePrivatelinkEndpoint(usePrivatelinkEndpoint bool) *UnsetAzureStorageParamsRequest {
 	s.UsePrivatelinkEndpoint = &usePrivatelinkEndpoint
 	return s
 }

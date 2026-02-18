@@ -18,15 +18,23 @@ import (
 type ObjectType string
 
 const (
-	ObjectTypeGrants    ObjectType = "grants"
-	ObjectTypeSchemas   ObjectType = "schemas"
-	ObjectTypeDatabases ObjectType = "databases"
+	ObjectTypeGrants        ObjectType = "grants"
+	ObjectTypeSchemas       ObjectType = "schemas"
+	ObjectTypeDatabases     ObjectType = "databases"
+	ObjectTypeWarehouses    ObjectType = "warehouses"
+	ObjectTypeAccountRoles  ObjectType = "account_roles"
+	ObjectTypeDatabaseRoles ObjectType = "database_roles"
+	ObjectTypeUsers         ObjectType = "users"
 )
 
 var AllObjectTypes = []ObjectType{
 	ObjectTypeGrants,
 	ObjectTypeSchemas,
 	ObjectTypeDatabases,
+	ObjectTypeWarehouses,
+	ObjectTypeAccountRoles,
+	ObjectTypeDatabaseRoles,
+	ObjectTypeUsers,
 }
 
 func ToObjectType(s string) (ObjectType, error) {
@@ -130,6 +138,10 @@ import optional flag determines the output format for import statements. The pos
 	- "statement" will print appropriate terraform import command at the end of generated content (default) (see https://developer.hashicorp.com/terraform/cli/commands/import)
 	- "block" will generate import block at the end of generated content (see https://developer.hashicorp.com/terraform/language/import)
 
+Important: The behavior between import blocks embedded into hcl and the terraform import command differs.
+- Import Blocks (see https://developer.hashicorp.com/terraform/language/block/import): When using embedded import blocks, the 'terraform apply' command performs two actions: it imports the resource into the state and immediately applies any configuration changes. Consequently, this method should be avoided if your primary goal is to preview changes before they are committed. Furthermore, 'terraform plan' may not provide comprehensive insights at first, as the resources have not yet been formally ingested into the state file during the planning phase.
+- Import Command (see https://developer.hashicorp.com/terraform/cli/commands/import): When using the 'terraform import' command, the import process is decoupled from the plan/apply cycle. Once the command is executed, the resource is immediately added to the state. Subsequent runs of 'terraform plan' will accurately reflect the delta between your configuration and the existing infrastructure. In this workflow, 'terraform apply' does not handle the ingestion; the 'terraform import' command must be executed successfully beforehand.
+
 object_type represents the type of Snowflake object you want to generate terraform resources for.
 	It is a required positional argument and possible values are listed below.
 	A given object_type corresponds to a specific Snowflake output expected as input to the script.
@@ -161,6 +173,30 @@ object_type represents the type of Snowflake object you want to generate terrafo
 			Warning: currently secondary databases and shared databases are treated as plain databases.
 			Supported resources:
 				- snowflake_database
+		- "warehouses" which expects a converted CSV output from the snowflake_warehouses data source
+			To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW WAREHOUSES output, so the CSV header looks like "comment","created_on",...,"max_cluster_count","min_cluster_count","name","other",...
+			When the additional columns are present, the resulting resource will have the parameters values, if the parameter level is set to "WAREHOUSE".
+			The script always outputs fields that have non-empty default values in Snowflake (they can be removed from the output)
+			Caution: Some of the fields are not supported (actives, pendings, failed, suspended, uuid, initially_suspended)
+			For more details about using multiple sources, visit https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/scripts/migration_script/README.md#multiple-sources
+			Supported resources:
+				- snowflake_warehouse
+		- "account_roles" which expects input in the form of [SHOW ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-roles) output. Can also be obtained as a converted CSV output from the snowflake_account_roles data source.
+			Supported resources:
+				- snowflake_account_role
+		- "database_roles" which expects input in the form of [SHOW DATABASE ROLES](https://docs.snowflake.com/en/sql-reference/sql/show-database-roles) output. Can also be obtained as a converted CSV output from the snowflake_database_roles data source.
+			Supported resources:
+				- snowflake_database_role
+		- "users" which expects a converted CSV output from the snowflake_users data source.
+      		To support object parameters, one should use the SHOW PARAMETERS output, and combine it with the SHOW USERS output, so the CSV header looks like "comment","created_on",...,"abort_detached_query_value","abort_detached_query_level","timezone_value","timezone_level",...
+			Different user types (PERSON, SERVICE, LEGACY_SERVICE) are mapped to their respective terraform resources:
+				- PERSON (or empty) -> snowflake_user
+				- SERVICE -> snowflake_service_user
+				- LEGACY_SERVICE -> snowflake_legacy_service_user
+			Supported resources:
+				- snowflake_user
+				- snowflake_service_user
+				- snowflake_legacy_service_user
 
 example usage:
 	migration_script -import=block grants < show_grants_output.csv > generated_output.tf
@@ -219,6 +255,14 @@ func (p *Program) generateOutput(input [][]string) (string, error) {
 		return HandleSchemas(p.Config, input)
 	case ObjectTypeDatabases:
 		return HandleDatabases(p.Config, input)
+	case ObjectTypeWarehouses:
+		return HandleWarehouses(p.Config, input)
+	case ObjectTypeAccountRoles:
+		return HandleAccountRoles(p.Config, input)
+	case ObjectTypeDatabaseRoles:
+		return HandleDatabaseRoles(p.Config, input)
+	case ObjectTypeUsers:
+		return HandleUsers(p.Config, input)
 	default:
 		return "", fmt.Errorf("unsupported object type: %s, run -h to get more information on allowed object types", p.Config.ObjectType)
 	}

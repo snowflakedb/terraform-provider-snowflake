@@ -20,3 +20,31 @@ func (u *LegacyServiceUserResourceAssert) HasMustChangePassword(expected bool) *
 func (u *LegacyServiceUserResourceAssert) HasDefaultSecondaryRolesOption(expected sdk.SecondaryRolesOption) *LegacyServiceUserResourceAssert {
 	return u.HasDefaultSecondaryRolesOptionString(string(expected))
 }
+
+func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityOidc(issuer, subject string, audienceList ...string) *LegacyServiceUserResourceAssert {
+	for _, assertion := range UserHasDefaultWorkloadIdentityOidcAssertions(issuer, subject, audienceList...) {
+		u.AddAssertion(assertion)
+	}
+	return u
+}
+
+func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityAws(arn string) *LegacyServiceUserResourceAssert {
+	for _, assertion := range UserHasDefaultWorkloadIdentityAwsAssertions(arn) {
+		u.AddAssertion(assertion)
+	}
+	return u
+}
+
+func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityAzure(issuer, subject string) *LegacyServiceUserResourceAssert {
+	for _, assertion := range UserHasDefaultWorkloadIdentityAzureAssertions(issuer, subject) {
+		u.AddAssertion(assertion)
+	}
+	return u
+}
+
+func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityGcp(subject string) *LegacyServiceUserResourceAssert {
+	for _, assertion := range UserHasDefaultWorkloadIdentityGcpAssertions(subject) {
+		u.AddAssertion(assertion)
+	}
+	return u
+}

@@ -144,3 +144,23 @@ func handleBooleanStringAttribute(d *schema.ResourceData, key string, field *gos
 	}
 	return nil
 }
+
+func handleFieldWithMappingIfSet[T any](d *schema.ResourceData, key string, field *T, converter func(string) (T, error)) error {
+	if v, ok := d.GetOk(key); ok && v.(string) != "" {
+		converted, err := converter(v.(string))
+		if err != nil {
+			return err
+		}
+		*field = converted
+	}
+	return nil
+}
+
+func handleFieldWithMapping[T any](d *schema.ResourceData, key string, field *T, converter func(string) (T, error)) error {
+	converted, err := converter(d.Get(key).(string))
+	if err != nil {
+		return err
+	}
+	*field = converted
+	return nil
+}

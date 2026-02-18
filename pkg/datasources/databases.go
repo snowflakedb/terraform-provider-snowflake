@@ -101,7 +101,8 @@ func Databases() *schema.Resource {
 
 // ReadDatabases read the current snowflake account information.
 func ReadDatabases(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	var opts sdk.ShowDatabasesOptions
 
 	if likePattern, ok := d.GetOk("like"); ok {
@@ -152,7 +153,7 @@ func ReadDatabases(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			databaseParameters = []map[string]any{schemas.DatabaseParametersToSchema(parameters)}
+			databaseParameters = []map[string]any{schemas.DatabaseParametersToSchema(parameters, providerCtx)}
 		}
 
 		flattenedDatabases[i] = map[string]any{

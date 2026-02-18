@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -511,6 +512,7 @@ func TestAcc_ResourceMonitor_issue2167(t *testing.T) {
 func TestAcc_ResourceMonitor_Issue1990_RemovingResourceMonitorOutsideOfTerraform(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	configModel := model.ResourceMonitor("test", id.Name())
+	providerConfigModel := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -520,23 +522,23 @@ func TestAcc_ResourceMonitor_Issue1990_RemovingResourceMonitorOutsideOfTerraform
 		Steps: []resource.TestStep{
 			// Create resource monitor
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
-				ExternalProviders: ExternalProviderWithExactVersion("0.69.0"),
-				Config:            config.FromModels(t, configModel),
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
+				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
+				Config:            providerConfigModel + config.FromModels(t, configModel),
 			},
 			// Same configuration, but we drop resource monitor externally
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("0.69.0"),
+				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
 				PreConfig: func() {
 					testClient().ResourceMonitor.DropResourceMonitorFunc(t, id)()
 				},
-				Config:      config.FromModels(t, configModel),
+				Config:      providerConfigModel + config.FromModels(t, configModel),
 				ExpectError: regexp.MustCompile("object does not exist or not authorized"),
 			},
 			// Same configuration, but it's the last version where it's still not working
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
-				Config:            config.FromModels(t, configModel),
+				Config:            providerConfigModel + config.FromModels(t, configModel),
 				ExpectError:       regexp.MustCompile("object does not exist or not authorized"),
 			},
 			// Same configuration, but it's the latest version of the provider (0.96.0 and above)
@@ -567,6 +569,7 @@ func TestAcc_ResourceMonitor_Issue_TimestampInfinitePlan(t *testing.T) {
 		WithFrequency(string(sdk.FrequencyWeekly)).
 		WithStartTimestamp(time.Now().Add(time.Hour * 24 * 30).Format("2006-01-02 15:04")).
 		WithEndTimestamp(time.Now().Add(time.Hour * 24 * 60).Format("2006-01-02 15:04"))
+	providerConfigModel := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -576,25 +579,25 @@ func TestAcc_ResourceMonitor_Issue_TimestampInfinitePlan(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create resource monitor without the timestamps
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModel),
+				Config:            providerConfigModel + config.FromModels(t, configModel),
 			},
 			// Alter resource timestamps to have the following format: 2006-01-02 (produces a plan because of the format difference)
 			{
 				ExternalProviders:  ExternalProviderWithExactVersion("0.90.0"),
-				Config:             config.FromModels(t, configModelWithDateStartTimestamp),
+				Config:             providerConfigModel + config.FromModels(t, configModelWithDateStartTimestamp),
 				ExpectNonEmptyPlan: true,
 			},
 			// Alter resource timestamps to have the following format: 2006-01-02 15:04 (won't produce plan because of the internal format mapping to this exact format)
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithDateTimeFormat),
+				Config:            providerConfigModel + config.FromModels(t, configModelWithDateTimeFormat),
 			},
 			// Destroy the resource
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithDateTimeFormat),
+				Config:            providerConfigModel + config.FromModels(t, configModelWithDateTimeFormat),
 				Destroy:           true,
 			},
 			// Create resource monitor without the timestamps
@@ -627,6 +630,7 @@ func TestAcc_ResourceMonitor_Issue1500_CreatingWithOnlyTriggers(t *testing.T) {
 		)).
 		WithSuspendTrigger(120).
 		WithSuspendImmediateTrigger(150)
+	providerConfigModel := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -636,9 +640,9 @@ func TestAcc_ResourceMonitor_Issue1500_CreatingWithOnlyTriggers(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create resource monitor with only triggers (old version)
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModel),
+				Config:            providerConfigModel + config.FromModels(t, configModel),
 				ExpectError:       regexp.MustCompile("SQL compilation error"),
 			},
 			// Create resource monitor with only triggers (the latest version)
@@ -676,6 +680,7 @@ func TestAcc_ResourceMonitor_Issue1500_AlteringWithOnlyTriggers(t *testing.T) {
 
 	configModelWithoutTriggers := model.ResourceMonitor("test", id.Name()).
 		WithCreditQuota(100)
+	providerConfigModel := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -684,20 +689,20 @@ func TestAcc_ResourceMonitor_Issue1500_AlteringWithOnlyTriggers(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithCreditQuota),
+				Config:            providerConfigModel + config.FromModels(t, configModelWithCreditQuota),
 			},
 			// Update only triggers (not allowed in Snowflake)
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithUpdatedTriggers),
+				Config:            providerConfigModel + config.FromModels(t, configModelWithUpdatedTriggers),
 				// For some reason, not returning error (SQL compilation error should be returned in this case; most likely update was handled incorrectly, or it was handled similarly as in the current version)
 			},
 			// Remove all triggers (not allowed in Snowflake)
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config:            config.FromModels(t, configModelWithoutTriggers),
+				Config:            providerConfigModel + config.FromModels(t, configModelWithoutTriggers),
 				// For some reason, not returning the correct error (SQL compilation error should be returned in this case; most likely update was processed incorrectly)
 				ExpectError: regexp.MustCompile(`at least one of AlterResourceMonitorOptions fields \[Set Triggers] must be set`),
 			},
@@ -833,6 +838,7 @@ func TestAcc_ResourceMonitor_SetForWarehouse(t *testing.T) {
 	newVersionModel := model.ResourceMonitor("test", id.Name()).
 		WithCreditQuota(100).
 		WithSuspendTrigger(100)
+	providerConfigModel := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -841,9 +847,9 @@ func TestAcc_ResourceMonitor_SetForWarehouse(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.90.0"),
-				Config: fmt.Sprintf(`
+				Config: providerConfigModel + fmt.Sprintf(`
 resource "snowflake_resource_monitor" "test" {
 	name = "%[1]s"
 	credit_quota = 100
@@ -862,6 +868,49 @@ resource "snowflake_resource_monitor" "test" {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(newVersionModel.ResourceReference(), "warehouses"),
 					resource.TestCheckNoResourceAttr(newVersionModel.ResourceReference(), "warehouses.#"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_ResourceMonitor_StartTimestampImmediately(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	configModel := model.ResourceMonitor("test", id.Name()).
+		WithFrequency(string(sdk.FrequencyWeekly)).
+		WithStartTimestamp("IMMEDIATELY")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ResourceMonitor),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, configModel),
+				Check: assertThat(t,
+					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasFrequencyString(string(sdk.FrequencyWeekly)).
+						HasStartTimestampString("IMMEDIATELY"),
+					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
+						HasName(id.Name()).
+						HasFrequency(sdk.FrequencyWeekly).
+						HasStartTimeNotEmpty(),
+				),
+			},
+			{
+				ResourceName: "snowflake_resource_monitor.test",
+				ImportState:  true,
+				Config:       config.FromModels(t, configModel),
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasFrequencyString(string(sdk.FrequencyWeekly)).
+						HasStartTimestampNotEmpty(),
 				),
 			},
 		},

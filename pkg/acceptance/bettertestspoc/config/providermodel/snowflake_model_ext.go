@@ -2,6 +2,7 @@ package providermodel
 
 import (
 	"encoding/json"
+	"testing"
 
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
@@ -40,6 +41,10 @@ func (m *SnowflakeModel) WithWarehouseId(warehouseId sdk.AccountObjectIdentifier
 
 func (m *SnowflakeModel) WithAuthenticatorType(authenticationType sdk.AuthenticationType) *SnowflakeModel {
 	return m.WithAuthenticator(string(authenticationType))
+}
+
+func (m *SnowflakeModel) WithCertRevocationCheckModeType(certRevocationCheckMode sdk.CertRevocationCheckMode) *SnowflakeModel {
+	return m.WithCertRevocationCheckMode(string(certRevocationCheckMode))
 }
 
 func (m *SnowflakeModel) WithPrivateKeyMultiline(privateKey string) *SnowflakeModel {
@@ -140,7 +145,20 @@ func (m *SnowflakeModel) AllFields(tmpConfig *helpers.TmpTomlConfig, tmpUser *he
 		WithWorkloadIdentityProvider("workload_identity_provider").
 		WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
 		WithLogQueryText(true).
-		WithLogQueryParameters(true)
+		WithLogQueryParameters(true).
+		WithProxyHost("").
+		WithProxyPort(443).
+		WithProxyUser("proxy_user").
+		WithProxyPassword("proxy_password").
+		WithProxyProtocol("https").
+		WithNoProxy("localhost,snowflake.computing.com").
+		WithDisableOcspChecks(false).
+		WithCertRevocationCheckModeType(sdk.CertRevocationCheckModeAdvisory).
+		WithCrlAllowCertificatesWithoutCrlUrl("true").
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(true).
+		WithCrlHttpClientTimeout(30).
+		WithDisableSamlUrlCheck("true")
 }
 
 func PatConfig(h helpers.TmpServiceUserWithPat) *SnowflakeModel {
@@ -152,4 +170,32 @@ func PatConfig(h helpers.TmpServiceUserWithPat) *SnowflakeModel {
 		WithOrganizationName(h.AccountId.OrganizationName()).
 		WithAccountName(h.AccountId.AccountName()).
 		WithWarehouseId(h.WarehouseId)
+}
+
+// V097CompatibleProviderConfig returns a provider config for testing
+// migration from v0.97 compatible provider configurations.
+func V097CompatibleProviderConfig(t *testing.T) string {
+	t.Helper()
+	providerModel, privateKeyVar, passphraseVar := V097CompatibleProviderModels()
+	return config.FromModels(t, providerModel, privateKeyVar, passphraseVar)
+}
+
+// V097CompatibleProviderModels returns a provider model and variable models for testing.
+// The variable names are uppercase because GitHub forces all env variables to be uppercase.
+// Values are provided via TF_VAR_* environment variables, not ConfigVariables.
+func V097CompatibleProviderModels() (*SnowflakeModel, *config.VariableModel, *config.VariableModel) {
+	const (
+		privateKeyVarName = "V097_COMPATIBLE_PRIVATE_KEY"
+		passphraseVarName = "V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE"
+	)
+
+	providerModel := SnowflakeProvider().
+		WithAuthenticatorType("JWT").
+		WithPrivateKeyValue(config.VariableReference(privateKeyVarName)).
+		WithPrivateKeyPassphraseValue(config.VariableReference(passphraseVarName))
+
+	privateKeyVar := config.StringVariable(privateKeyVarName).WithSensitive(true)
+	passphraseVar := config.StringVariable(passphraseVarName).WithSensitive(true)
+
+	return providerModel, privateKeyVar, passphraseVar
 }

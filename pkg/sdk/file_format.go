@@ -22,7 +22,7 @@ var (
 	_ convertibleRow[FileFormat] = new(FileFormatRow)
 )
 
-type FileFormats interface {
+type LegacyFileFormats interface {
 	Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptions) error
 	Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptions) error
 	Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptions) error
@@ -33,9 +33,9 @@ type FileFormats interface {
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error)
 }
 
-var _ FileFormats = (*fileFormats)(nil)
+var _ LegacyFileFormats = (*legacyFileFormats)(nil)
 
-type fileFormats struct {
+type legacyFileFormats struct {
 	client *Client
 }
 
@@ -46,7 +46,7 @@ type FileFormat struct {
 	Owner         string
 	Comment       string
 	OwnerRoleType string
-	Options       FileFormatTypeOptions
+	Options       LegacyFileFormatTypeOptions
 }
 
 func (v *FileFormat) ID() SchemaObjectIdentifier {
@@ -126,7 +126,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		Owner:         row.Owner,
 		Comment:       row.Comment,
 		OwnerRoleType: row.OwnerRoleType,
-		Options:       FileFormatTypeOptions{},
+		Options:       LegacyFileFormatTypeOptions{},
 	}
 
 	newNullIf := make([]NullString, len(inputOptions.NullIf))
@@ -136,7 +136,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 
 	switch ff.Type {
 	case FileFormatTypeCSV:
-		ff.Options.CSVCompression = (*CSVCompression)(&inputOptions.Compression)
+		ff.Options.CSVCompression = (*CsvCompression)(&inputOptions.Compression)
 		ff.Options.CSVRecordDelimiter = &inputOptions.RecordDelimiter
 		ff.Options.CSVFieldDelimiter = &inputOptions.FieldDelimiter
 		ff.Options.CSVFileExtension = &inputOptions.FileExtension
@@ -156,9 +156,9 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		ff.Options.CSVReplaceInvalidCharacters = &inputOptions.ReplaceInvalidCharacters
 		ff.Options.CSVEmptyFieldAsNull = &inputOptions.EmptyFieldAsNull
 		ff.Options.CSVSkipByteOrderMark = &inputOptions.SkipByteOrderMark
-		ff.Options.CSVEncoding = (*CSVEncoding)(&inputOptions.Encoding)
+		ff.Options.CSVEncoding = (*CsvEncoding)(&inputOptions.Encoding)
 	case FileFormatTypeJSON:
-		ff.Options.JSONCompression = (*JSONCompression)(&inputOptions.Compression)
+		ff.Options.JSONCompression = (*JsonCompression)(&inputOptions.Compression)
 		ff.Options.JSONDateFormat = &inputOptions.DateFormat
 		ff.Options.JSONTimeFormat = &inputOptions.TimeFormat
 		ff.Options.JSONTimestampFormat = &inputOptions.TimestampFormat
@@ -189,7 +189,7 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 		ff.Options.ParquetBinaryAsText = &inputOptions.BinaryAsText
 		ff.Options.ParquetReplaceInvalidCharacters = &inputOptions.ReplaceInvalidCharacters
 	case FileFormatTypeXML:
-		ff.Options.XMLCompression = (*XMLCompression)(&inputOptions.Compression)
+		ff.Options.XMLCompression = (*XmlCompression)(&inputOptions.Compression)
 		ff.Options.XMLIgnoreUTF8Errors = &inputOptions.IgnoreUTF8Errors
 		ff.Options.XMLPreserveSpace = &inputOptions.PreserveSpace
 		ff.Options.XMLStripOuterElement = &inputOptions.StripOuterElement
@@ -201,123 +201,6 @@ func (row FileFormatRow) convert() (*FileFormat, error) {
 
 	return ff, nil
 }
-
-type FileFormatType string
-
-var (
-	FileFormatTypeCSV     FileFormatType = "CSV"
-	FileFormatTypeJSON    FileFormatType = "JSON"
-	FileFormatTypeAvro    FileFormatType = "AVRO"
-	FileFormatTypeORC     FileFormatType = "ORC"
-	FileFormatTypeParquet FileFormatType = "PARQUET"
-	FileFormatTypeXML     FileFormatType = "XML"
-)
-
-type BinaryFormat string
-
-var (
-	BinaryFormatHex    BinaryFormat = "HEX"
-	BinaryFormatBase64 BinaryFormat = "BASE64"
-	BinaryFormatUTF8   BinaryFormat = "UTF8"
-)
-
-type CSVCompression string
-
-var (
-	CSVCompressionAuto       CSVCompression = "AUTO"
-	CSVCompressionGzip       CSVCompression = "GZIP"
-	CSVCompressionBz2        CSVCompression = "BZ2"
-	CSVCompressionBrotli     CSVCompression = "BROTLI"
-	CSVCompressionZstd       CSVCompression = "ZSTD"
-	CSVCompressionDeflate    CSVCompression = "DEFLATE"
-	CSVCompressionRawDeflate CSVCompression = "RAW_DEFLATE"
-	CSVCompressionNone       CSVCompression = "NONE"
-)
-
-type CSVEncoding string
-
-var (
-	CSVEncodingBIG5        CSVEncoding = "BIG5"
-	CSVEncodingEUCJP       CSVEncoding = "EUCJP"
-	CSVEncodingEUCKR       CSVEncoding = "EUCKR"
-	CSVEncodingGB18030     CSVEncoding = "GB18030"
-	CSVEncodingIBM420      CSVEncoding = "IBM420"
-	CSVEncodingIBM424      CSVEncoding = "IBM424"
-	CSVEncodingISO2022CN   CSVEncoding = "ISO2022CN"
-	CSVEncodingISO2022JP   CSVEncoding = "ISO2022JP"
-	CSVEncodingISO2022KR   CSVEncoding = "ISO2022KR"
-	CSVEncodingISO88591    CSVEncoding = "ISO88591"
-	CSVEncodingISO88592    CSVEncoding = "ISO88592"
-	CSVEncodingISO88595    CSVEncoding = "ISO88595"
-	CSVEncodingISO88596    CSVEncoding = "ISO88596"
-	CSVEncodingISO88597    CSVEncoding = "ISO88597"
-	CSVEncodingISO88598    CSVEncoding = "ISO88598"
-	CSVEncodingISO88599    CSVEncoding = "ISO88599"
-	CSVEncodingISO885915   CSVEncoding = "ISO885915"
-	CSVEncodingKOI8R       CSVEncoding = "KOI8R"
-	CSVEncodingSHIFTJIS    CSVEncoding = "SHIFTJIS"
-	CSVEncodingUTF8        CSVEncoding = "UTF8"
-	CSVEncodingUTF16       CSVEncoding = "UTF16"
-	CSVEncodingUTF16BE     CSVEncoding = "UTF16BE"
-	CSVEncodingUTF16LE     CSVEncoding = "UTF16LE"
-	CSVEncodingUTF32       CSVEncoding = "UTF32"
-	CSVEncodingUTF32BE     CSVEncoding = "UTF32BE"
-	CSVEncodingUTF32LE     CSVEncoding = "UTF32LE"
-	CSVEncodingWINDOWS1250 CSVEncoding = "WINDOWS1250"
-	CSVEncodingWINDOWS1251 CSVEncoding = "WINDOWS1251"
-	CSVEncodingWINDOWS1252 CSVEncoding = "WINDOWS1252"
-	CSVEncodingWINDOWS1253 CSVEncoding = "WINDOWS1253"
-	CSVEncodingWINDOWS1254 CSVEncoding = "WINDOWS1254"
-	CSVEncodingWINDOWS1255 CSVEncoding = "WINDOWS1255"
-	CSVEncodingWINDOWS1256 CSVEncoding = "WINDOWS1256"
-)
-
-type JSONCompression string
-
-var (
-	JSONCompressionAuto       JSONCompression = "AUTO"
-	JSONCompressionGzip       JSONCompression = "GZIP"
-	JSONCompressionBz2        JSONCompression = "BZ2"
-	JSONCompressionBrotli     JSONCompression = "BROTLI"
-	JSONCompressionZstd       JSONCompression = "ZSTD"
-	JSONCompressionDeflate    JSONCompression = "DEFLATE"
-	JSONCompressionRawDeflate JSONCompression = "RAW_DEFLATE"
-	JSONCompressionNone       JSONCompression = "NONE"
-)
-
-type AvroCompression string
-
-var (
-	AvroCompressionAuto       AvroCompression = "AUTO"
-	AvroCompressionGzip       AvroCompression = "GZIP"
-	AvroCompressionBrotli     AvroCompression = "BROTLI"
-	AvroCompressionZstd       AvroCompression = "ZSTD"
-	AvroCompressionDeflate    AvroCompression = "DEFLATE"
-	AvroCompressionRawDeflate AvroCompression = "RAW_DEFLATE"
-	AvroCompressionNone       AvroCompression = "NONE"
-)
-
-type ParquetCompression string
-
-var (
-	ParquetCompressionAuto   ParquetCompression = "AUTO"
-	ParquetCompressionLzo    ParquetCompression = "LZO"
-	ParquetCompressionSnappy ParquetCompression = "SNAPPY"
-	ParquetCompressionNone   ParquetCompression = "NONE"
-)
-
-type XMLCompression string
-
-var (
-	XMLCompressionAuto       XMLCompression = "AUTO"
-	XMLCompressionGzip       XMLCompression = "GZIP"
-	XMLCompressionBz2        XMLCompression = "BZ2"
-	XMLCompressionBrotli     XMLCompression = "BROTLI"
-	XMLCompressionZstd       XMLCompression = "ZSTD"
-	XMLCompressionDeflate    XMLCompression = "DEFLATE"
-	XMLCompressionRawDeflate XMLCompression = "RAW_DEFLATE"
-	XMLCompressionNone       XMLCompression = "NONE"
-)
 
 type NullString struct {
 	S string `ddl:"parameter,no_equals,single_quotes"`
@@ -332,12 +215,12 @@ type CreateFileFormatOptions struct {
 	IfNotExists *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name        SchemaObjectIdentifier `ddl:"identifier"`
 	Type        FileFormatType         `ddl:"parameter" sql:"TYPE"`
-	FileFormatTypeOptions
+	LegacyFileFormatTypeOptions
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 func (opts *CreateFileFormatOptions) validate() error {
-	fields := opts.FileFormatTypeOptions.fieldsByType()
+	fields := opts.LegacyFileFormatTypeOptions.fieldsByType()
 
 	for formatType := range fields {
 		if opts.Type == formatType {
@@ -348,7 +231,7 @@ func (opts *CreateFileFormatOptions) validate() error {
 		}
 	}
 
-	err := opts.FileFormatTypeOptions.validate()
+	err := opts.LegacyFileFormatTypeOptions.validate()
 	if err != nil {
 		return err
 	}
@@ -356,7 +239,7 @@ func (opts *CreateFileFormatOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptions) error {
+func (v *legacyFileFormats) Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptions) error {
 	if opts == nil {
 		opts = &CreateFileFormatOptions{}
 	}
@@ -380,7 +263,7 @@ type AlterFileFormatOptions struct {
 	name       SchemaObjectIdentifier `ddl:"identifier"`
 
 	Rename *AlterFileFormatRenameOptions
-	Set    *FileFormatTypeOptions `ddl:"list,no_comma" sql:"SET"`
+	Set    *LegacyFileFormatTypeOptions `ddl:"list,no_comma" sql:"SET"`
 }
 
 func (opts *AlterFileFormatOptions) validate() error {
@@ -400,11 +283,11 @@ type AlterFileFormatRenameOptions struct {
 	NewName SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 }
 
-type FileFormatTypeOptions struct {
+type LegacyFileFormatTypeOptions struct {
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 
 	// CSV type options
-	CSVCompression                *CSVCompression `ddl:"parameter" sql:"COMPRESSION"`
+	CSVCompression                *CsvCompression `ddl:"parameter" sql:"COMPRESSION"`
 	CSVRecordDelimiter            *string         `ddl:"parameter,single_quotes" sql:"RECORD_DELIMITER"`
 	CSVFieldDelimiter             *string         `ddl:"parameter,single_quotes" sql:"FIELD_DELIMITER"`
 	CSVFileExtension              *string         `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
@@ -424,10 +307,10 @@ type FileFormatTypeOptions struct {
 	CSVReplaceInvalidCharacters   *bool           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	CSVEmptyFieldAsNull           *bool           `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
 	CSVSkipByteOrderMark          *bool           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
-	CSVEncoding                   *CSVEncoding    `ddl:"parameter,single_quotes" sql:"ENCODING"`
+	CSVEncoding                   *CsvEncoding    `ddl:"parameter,single_quotes" sql:"ENCODING"`
 
 	// JSON type options
-	JSONCompression              *JSONCompression `ddl:"parameter" sql:"COMPRESSION"`
+	JSONCompression              *JsonCompression `ddl:"parameter" sql:"COMPRESSION"`
 	JSONDateFormat               *string          `ddl:"parameter,single_quotes" sql:"DATE_FORMAT"`
 	JSONTimeFormat               *string          `ddl:"parameter,single_quotes" sql:"TIME_FORMAT"`
 	JSONTimestampFormat          *string          `ddl:"parameter,single_quotes" sql:"TIMESTAMP_FORMAT"`
@@ -463,7 +346,7 @@ type FileFormatTypeOptions struct {
 	ParquetNullIf                   *[]NullString       `ddl:"parameter,parentheses" sql:"NULL_IF"`
 
 	// XML type options
-	XMLCompression              *XMLCompression `ddl:"parameter" sql:"COMPRESSION"`
+	XMLCompression              *XmlCompression `ddl:"parameter" sql:"COMPRESSION"`
 	XMLIgnoreUTF8Errors         *bool           `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
 	XMLPreserveSpace            *bool           `ddl:"parameter" sql:"PRESERVE_SPACE"`
 	XMLStripOuterElement        *bool           `ddl:"parameter" sql:"STRIP_OUTER_ELEMENT"`
@@ -473,7 +356,7 @@ type FileFormatTypeOptions struct {
 	XMLSkipByteOrderMark        *bool           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 }
 
-func (opts *FileFormatTypeOptions) fieldsByType() map[FileFormatType][]any {
+func (opts *LegacyFileFormatTypeOptions) fieldsByType() map[FileFormatType][]any {
 	return map[FileFormatType][]any{
 		FileFormatTypeCSV: {
 			opts.CSVCompression,
@@ -547,7 +430,7 @@ func (opts *FileFormatTypeOptions) fieldsByType() map[FileFormatType][]any {
 	}
 }
 
-func (opts *FileFormatTypeOptions) validate() error {
+func (opts *LegacyFileFormatTypeOptions) validate() error {
 	fields := opts.fieldsByType()
 	count := 0
 
@@ -583,7 +466,7 @@ func (opts *FileFormatTypeOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptions) error {
+func (v *legacyFileFormats) Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptions) error {
 	if opts == nil {
 		opts = &AlterFileFormatOptions{}
 	}
@@ -611,7 +494,7 @@ func (opts *DropFileFormatOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptions) error {
+func (v *legacyFileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptions) error {
 	if opts == nil {
 		opts = &DropFileFormatOptions{}
 	}
@@ -627,7 +510,7 @@ func (v *fileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier, opts 
 	return err
 }
 
-func (v *fileFormats) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
+func (v *legacyFileFormats) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFileFormatOptions{IfExists: Bool(true)}) }, ctx, id)
 }
 
@@ -643,7 +526,7 @@ func (opts *ShowFileFormatsOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([]FileFormat, error) {
+func (v *legacyFileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([]FileFormat, error) {
 	opts = createIfNil(opts)
 	dbRows, err := validateAndQuery[FileFormatRow](v.client, ctx, opts)
 	if err != nil {
@@ -652,7 +535,7 @@ func (v *fileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([
 	return convertRows[FileFormatRow, FileFormat](dbRows)
 }
 
-func (v *fileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
+func (v *legacyFileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
 	fileFormats, err := v.client.FileFormats.Show(ctx, &ShowFileFormatsOptions{
 		Like: &Like{
 			Pattern: String(id.Name()),
@@ -669,13 +552,13 @@ func (v *fileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (
 	})
 }
 
-func (v *fileFormats) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
+func (v *legacyFileFormats) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
 type FileFormatDetails struct {
 	Type    FileFormatType
-	Options FileFormatTypeOptions
+	Options LegacyFileFormatTypeOptions
 }
 
 type FileFormatDetailsRow struct {
@@ -696,7 +579,7 @@ func (opts *describeFileFormatOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error) {
+func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error) {
 	opts := &describeFileFormatOptions{
 		name: id,
 	}
@@ -775,7 +658,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				}
 				details.Options.CSVNullIf = &newNullIf
 			case "COMPRESSION":
-				comp := CSVCompression(v)
+				comp := CsvCompression(v)
 				details.Options.CSVCompression = &comp
 			case "ERROR_ON_COLUMN_COUNT_MISMATCH":
 				b, err := strconv.ParseBool(v)
@@ -810,7 +693,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				}
 				details.Options.CSVSkipByteOrderMark = &b
 			case "ENCODING":
-				enc := CSVEncoding(v)
+				enc := CsvEncoding(v)
 				details.Options.CSVEncoding = &enc
 			}
 		}
@@ -845,7 +728,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 				}
 				details.Options.JSONNullIf = newNullIf
 			case "COMPRESSION":
-				comp := JSONCompression(v)
+				comp := JsonCompression(v)
 				details.Options.JSONCompression = &comp
 			case "ENABLE_OCTAL":
 				b, err := strconv.ParseBool(v)
@@ -992,7 +875,7 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 			v := row.Property_Value
 			switch row.Property {
 			case "COMPRESSION":
-				comp := XMLCompression(v)
+				comp := XmlCompression(v)
 				details.Options.XMLCompression = &comp
 			case "IGNORE_UTF8_ERRORS":
 				b, err := strconv.ParseBool(v)

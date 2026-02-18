@@ -356,15 +356,10 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 
 func nukeUsers(client *sdk.Client, suffix string) func() error {
 	protectedUsers := []string{
-		"SNOWFLAKE",
 		"ARTUR_SAWICKI",
-		"ARTUR_SAWICKI_LEGACY",
 		"JAKUB_MICHALAK",
-		"JAKUB_MICHALAK_LEGACY",
 		"JAN_CIESLAK",
-		"JAN_CIESLAK_LEGACY",
-		"MATEUSZ_KOWALSKI",
-		"TERRAFORM_SVC_ACCOUNT",
+		"KAMIL_WASILEWSKI",
 		"TEST_CI_SERVICE_USER",
 		"PENTESTING_USER_1",
 		"PENTESTING_USER_2",

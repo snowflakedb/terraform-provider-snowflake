@@ -11,12 +11,19 @@ import (
 type pluginFrameworkPocProviderModelV0 struct {
 	AccountName                        types.String `tfsdk:"account_name"`
 	Authenticator                      types.String `tfsdk:"authenticator"`
+	CertRevocationCheckMode            types.String `tfsdk:"cert_revocation_check_mode"`
 	ClientIp                           types.String `tfsdk:"client_ip"`
 	ClientRequestMfaToken              types.String `tfsdk:"client_request_mfa_token"`
 	ClientStoreTemporaryCredential     types.String `tfsdk:"client_store_temporary_credential"`
 	ClientTimeout                      types.Int64  `tfsdk:"client_timeout"`
+	CrlAllowCertificatesWithoutCrlUrl  types.String `tfsdk:"crl_allow_certificates_without_crl_url"`
+	CrlHttpClientTimeout               types.Int64  `tfsdk:"crl_http_client_timeout"`
+	CrlInMemoryCacheDisabled           types.Bool   `tfsdk:"crl_in_memory_cache_disabled"`
+	CrlOnDiskCacheDisabled             types.Bool   `tfsdk:"crl_on_disk_cache_disabled"`
 	DisableConsoleLogin                types.String `tfsdk:"disable_console_login"`
+	DisableOcspChecks                  types.Bool   `tfsdk:"disable_ocsp_checks"`
 	DisableQueryContextCache           types.Bool   `tfsdk:"disable_query_context_cache"`
+	DisableSamlUrlCheck                types.String `tfsdk:"disable_saml_url_check"`
 	DisableTelemetry                   types.Bool   `tfsdk:"disable_telemetry"`
 	DriverTracing                      types.String `tfsdk:"driver_tracing"`
 	EnableSingleUseRefreshTokens       types.Bool   `tfsdk:"enable_single_use_refresh_tokens"`
@@ -32,6 +39,7 @@ type pluginFrameworkPocProviderModelV0 struct {
 	LogQueryText                       types.Bool   `tfsdk:"log_query_text"`
 	LoginTimeout                       types.Int64  `tfsdk:"login_timeout"`
 	MaxRetryCount                      types.Int64  `tfsdk:"max_retry_count"`
+	NoProxy                            types.String `tfsdk:"no_proxy"`
 	OauthAuthorizationUrl              types.String `tfsdk:"oauth_authorization_url"`
 	OauthClientId                      types.String `tfsdk:"oauth_client_id"`
 	OauthClientSecret                  types.String `tfsdk:"oauth_client_secret"`
@@ -51,6 +59,11 @@ type pluginFrameworkPocProviderModelV0 struct {
 	PrivateKeyPassphrase               types.String `tfsdk:"private_key_passphrase"`
 	Profile                            types.String `tfsdk:"profile"`
 	Protocol                           types.String `tfsdk:"protocol"`
+	ProxyHost                          types.String `tfsdk:"proxy_host"`
+	ProxyPassword                      types.String `tfsdk:"proxy_password"`
+	ProxyPort                          types.Int64  `tfsdk:"proxy_port"`
+	ProxyProtocol                      types.String `tfsdk:"proxy_protocol"`
+	ProxyUser                          types.String `tfsdk:"proxy_user"`
 	RequestTimeout                     types.Int64  `tfsdk:"request_timeout"`
 	Role                               types.String `tfsdk:"role"`
 	SkipTomlFilePermissionVerification types.Bool   `tfsdk:"skip_toml_file_permission_verification"`
@@ -78,6 +91,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   false,
 	},
+	"cert_revocation_check_mode": schema.StringAttribute{
+		Description: existingSchema["cert_revocation_check_mode"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"client_ip": schema.StringAttribute{
 		Description: existingSchema["client_ip"].Description,
 		Optional:    true,
@@ -98,13 +116,43 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   false,
 	},
+	"crl_allow_certificates_without_crl_url": schema.StringAttribute{
+		Description: existingSchema["crl_allow_certificates_without_crl_url"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"crl_http_client_timeout": schema.Int64Attribute{
+		Description: existingSchema["crl_http_client_timeout"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"crl_in_memory_cache_disabled": schema.BoolAttribute{
+		Description: existingSchema["crl_in_memory_cache_disabled"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"crl_on_disk_cache_disabled": schema.BoolAttribute{
+		Description: existingSchema["crl_on_disk_cache_disabled"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"disable_console_login": schema.StringAttribute{
 		Description: existingSchema["disable_console_login"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
+	"disable_ocsp_checks": schema.BoolAttribute{
+		Description: existingSchema["disable_ocsp_checks"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"disable_query_context_cache": schema.BoolAttribute{
 		Description: existingSchema["disable_query_context_cache"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"disable_saml_url_check": schema.StringAttribute{
+		Description: existingSchema["disable_saml_url_check"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
@@ -145,9 +193,10 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Sensitive:   false,
 	},
 	"insecure_mode": schema.BoolAttribute{
-		Description: existingSchema["insecure_mode"].Description,
-		Optional:    true,
-		Sensitive:   false,
+		Description:        existingSchema["insecure_mode"].Description,
+		DeprecationMessage: "This field is deprecated. Use `disable_ocsp_checks` instead.", // edited manually
+		Optional:           true,
+		Sensitive:          false,
 	},
 	"jwt_client_timeout": schema.Int64Attribute{
 		Description: existingSchema["jwt_client_timeout"].Description,
@@ -181,6 +230,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	},
 	"max_retry_count": schema.Int64Attribute{
 		Description: existingSchema["max_retry_count"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"no_proxy": schema.StringAttribute{
+		Description: existingSchema["no_proxy"].Description,
 		Optional:    true,
 		Sensitive:   false,
 	},
@@ -281,6 +335,31 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Optional:    true,
 		Sensitive:   false,
 	},
+	"proxy_host": schema.StringAttribute{
+		Description: existingSchema["proxy_host"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"proxy_password": schema.StringAttribute{
+		Description: existingSchema["proxy_password"].Description,
+		Optional:    true,
+		Sensitive:   true,
+	},
+	"proxy_port": schema.Int64Attribute{
+		Description: existingSchema["proxy_port"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"proxy_protocol": schema.StringAttribute{
+		Description: existingSchema["proxy_protocol"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
+	"proxy_user": schema.StringAttribute{
+		Description: existingSchema["proxy_user"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"request_timeout": schema.Int64Attribute{
 		Description: existingSchema["request_timeout"].Description,
 		Optional:    true,
@@ -307,11 +386,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Sensitive:   true,
 	},
 	// commented out manually
-	//"token_accessor": schema.ListAttribute{
-	//	Description: existingSchema["token_accessor"].Description,
-	//	Optional:    true,
-	//	Sensitive:   false,
-	//},
+	// "token_accessor": schema.ListAttribute{
+	// 	Description: existingSchema["token_accessor"].Description,
+	// 	Optional:    true,
+	// 	Sensitive:   false,
+	// },
 	"use_legacy_toml_file": schema.BoolAttribute{
 		Description: existingSchema["use_legacy_toml_file"].Description,
 		Optional:    true,
