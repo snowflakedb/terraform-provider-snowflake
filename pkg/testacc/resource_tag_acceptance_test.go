@@ -337,6 +337,13 @@ func TestAcc_Tag_NullableAllowedValues(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.Tag),
+		// Transitions
+		// Step 1: values -> empty
+		// Step 2: empty -> values
+		// Step 3: values -> null
+		// Step 4: null -> empty
+		// Step 5: empty -> null
+		// Step 6: null -> values
 		Steps: []resource.TestStep{
 			// Step 1: Create with allowed_values = ["value1", "value2"]
 			// Only "value1" and "value2" should be assignable.
@@ -432,6 +439,92 @@ func TestAcc_Tag_NullableAllowedValues(t *testing.T) {
 						}
 						if err := trySetTagOnTable("any_arbitrary_value"); err != nil {
 							return fmt.Errorf("expected setting tag to 'any_arbitrary_value' to succeed after UNSET (permissive), got: %w", err)
+						}
+						return nil
+					},
+				),
+			},
+			// Step 4: null → empty (Noop)
+			// Known SDKv2 limitation: after Read, both null and empty configs produce an empty set in state.
+			// Terraform sees state=[] and config=[] → no diff → Noop.
+			// The tag remains in its previous UNSET/permissive state.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withEmpty.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, withEmpty),
+				Check: resource.ComposeTestCheckFunc(
+					assertThat(t,
+						objectassert.Tag(t, id).
+							HasAllowedValues(),
+						resourceassert.TagResource(t, withEmpty.ResourceReference()).
+							HasAllowedValuesEmpty(),
+					),
+					func(_ *terraform.State) error {
+						// Tag remains permissive (UNSET was not overridden), so any value is still assignable.
+						if err := trySetTagOnTable("value1"); err != nil {
+							return fmt.Errorf("expected tag to remain permissive after null→empty noop, got: %w", err)
+						}
+						if err := trySetTagOnTable("any_value"); err != nil {
+							return fmt.Errorf("expected tag to remain permissive after null→empty noop, got: %w", err)
+						}
+						return nil
+					},
+				),
+			},
+			// Step 5: empty → null (Noop)
+			// Same SDKv2 limitation: state=[] and null config plans as [] → no diff → Noop.
+			// The tag remains in the same permissive state as before.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: resource.ComposeTestCheckFunc(
+					assertThat(t,
+						objectassert.Tag(t, id).
+							HasAllowedValues(),
+						resourceassert.TagResource(t, basic.ResourceReference()).
+							HasAllowedValuesEmpty(),
+					),
+					func(_ *terraform.State) error {
+						// Tag is still permissive (unchanged from the UNSET in step 3).
+						if err := trySetTagOnTable("value1"); err != nil {
+							return fmt.Errorf("expected tag to remain permissive after empty→null noop, got: %w", err)
+						}
+						if err := trySetTagOnTable("any_arbitrary_value"); err != nil {
+							return fmt.Errorf("expected tag to remain permissive after empty→null noop, got: %w", err)
+						}
+						return nil
+					},
+				),
+			},
+			// Step 6: null → values (Update)
+			// This transition works because state=[] differs from config=["value1","value2"].
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withValues.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withValues),
+				Check: resource.ComposeTestCheckFunc(
+					assertThat(t,
+						objectassert.Tag(t, id).
+							HasAllowedValuesUnordered("value1", "value2"),
+						resourceassert.TagResource(t, withValues.ResourceReference()).
+							HasAllowedValues("value1", "value2"),
+					),
+					func(_ *terraform.State) error {
+						if err := trySetTagOnTable("value1"); err != nil {
+							return fmt.Errorf("expected setting tag to allowed value 'value1' to succeed, got: %w", err)
+						}
+						if err := trySetTagOnTable("other_value"); err == nil {
+							return fmt.Errorf("expected setting tag to non-allowed value 'other_value' to fail, but it succeeded")
 						}
 						return nil
 					},
