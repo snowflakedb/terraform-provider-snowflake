@@ -133,7 +133,7 @@ func (s *StageDetailsAssert) HasDirectoryTableLastRefreshedOnNotEmpty() *StageDe
 		if o.DirectoryTable == nil {
 			return fmt.Errorf("expected directory table to have value; got: nil")
 		}
-		if o.DirectoryTable.LastRefreshedOn == nil || o.DirectoryTable.LastRefreshedOn.IsZero() {
+		if o.DirectoryTable.LastRefreshedOn == nil || *o.DirectoryTable.LastRefreshedOn == "" {
 			return fmt.Errorf("expected directory table last refreshed on to not be empty")
 		}
 		return nil
