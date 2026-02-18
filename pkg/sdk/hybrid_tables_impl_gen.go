@@ -97,7 +97,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		}
 		if r.ConstraintAction.Drop != nil {
 			opts.ConstraintAction.Drop = &HybridTableConstraintActionDrop{
-				Constraintname:       r.ConstraintAction.Drop.Constraintname,
+				ConstraintName:       r.ConstraintAction.Drop.ConstraintName,
 				ColumnConstraintType: r.ConstraintAction.Drop.ColumnConstraintType,
 				Columns:              r.ConstraintAction.Drop.Columns,
 			}

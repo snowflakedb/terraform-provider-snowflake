@@ -21,7 +21,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 		"Drop",
 		g.NewQueryStruct("HybridTableConstraintActionDrop").
 			SQL("DROP").
-			OptionalTextAssignment("ConstraintName", g.ParameterOptions().NoEquals().SQL("CONSTRAINT")).
+			OptionalText("ConstraintName", g.KeywordOptions().SQL("CONSTRAINT")).
 			PredefinedQueryStructField("ColumnConstraintType", "*ColumnConstraintType", g.KeywordOptions()).
 			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()),
 		g.KeywordOptions(),
