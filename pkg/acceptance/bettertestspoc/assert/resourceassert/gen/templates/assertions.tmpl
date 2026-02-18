@@ -7,7 +7,6 @@
 // Attribute value string checks //
 ///////////////////////////////////
 
-// TODO [this PR]: use .IsCollection logic here
 {{ range .Attributes }}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}String(expected string) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", expected))
