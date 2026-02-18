@@ -24,6 +24,7 @@ var (
 	StorageProviderAzure    StorageProvider   = "AZURE"
 	StorageProviderS3       StorageProvider   = "S3"
 	StorageProviderS3GOV    StorageProvider   = "S3GOV"
+	StorageProviderS3COMPAT StorageProvider   = "S3COMPAT"
 )
 
 var AllStorageProviderValues = []StorageProvider{
@@ -31,6 +32,7 @@ var AllStorageProviderValues = []StorageProvider{
 	StorageProviderAzure,
 	StorageProviderS3,
 	StorageProviderS3GOV,
+	StorageProviderS3COMPAT,
 }
 
 func ToS3EncryptionType(s string) (S3EncryptionType, error) {
@@ -67,6 +69,8 @@ func ToStorageProvider(s string) (StorageProvider, error) {
 		return StorageProviderS3, nil
 	case string(StorageProviderS3GOV):
 		return StorageProviderS3GOV, nil
+	case string(StorageProviderS3COMPAT):
+		return StorageProviderS3COMPAT, nil
 	default:
 		return "", fmt.Errorf("invalid storage provider: %s", s)
 	}
