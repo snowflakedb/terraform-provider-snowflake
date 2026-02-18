@@ -13,18 +13,18 @@ type (
 )
 
 var (
-	S3EncryptionTypeSseS3   S3EncryptionType  = "AWS_SSE_S3"
-	S3EncryptionTypeSseKms  S3EncryptionType  = "AWS_SSE_KMS"
-	S3EncryptionNone        S3EncryptionType  = "NONE"
-	GCSEncryptionTypeSseKms GCSEncryptionType = "GCS_SSE_KMS"
-	GCSEncryptionTypeNone   GCSEncryptionType = "NONE"
-	S3StorageProviderS3     S3StorageProvider = "S3"
-	S3StorageProviderS3GOV  S3StorageProvider = "S3GOV"
-	StorageProviderGCS      StorageProvider   = "GCS"
-	StorageProviderAzure    StorageProvider   = "AZURE"
-	StorageProviderS3       StorageProvider   = "S3"
-	StorageProviderS3GOV    StorageProvider   = "S3GOV"
-	StorageProviderS3COMPAT StorageProvider   = "S3COMPAT"
+	S3EncryptionTypeSseS3       S3EncryptionType  = "AWS_SSE_S3"
+	S3EncryptionTypeSseKms      S3EncryptionType  = "AWS_SSE_KMS"
+	S3EncryptionNone            S3EncryptionType  = "NONE"
+	GCSEncryptionTypeSseKms     GCSEncryptionType = "GCS_SSE_KMS"
+	GCSEncryptionTypeNone       GCSEncryptionType = "NONE"
+	S3StorageProviderS3         S3StorageProvider = "S3"
+	S3StorageProviderS3GOV      S3StorageProvider = "S3GOV"
+	StorageProviderGCS          StorageProvider   = "GCS"
+	StorageProviderAzure        StorageProvider   = "AZURE"
+	StorageProviderS3           StorageProvider   = "S3"
+	StorageProviderS3GOV        StorageProvider   = "S3GOV"
+	StorageProviderS3Compatible StorageProvider   = "S3COMPAT"
 )
 
 var AllStorageProviderValues = []StorageProvider{
@@ -32,7 +32,7 @@ var AllStorageProviderValues = []StorageProvider{
 	StorageProviderAzure,
 	StorageProviderS3,
 	StorageProviderS3GOV,
-	StorageProviderS3COMPAT,
+	StorageProviderS3Compatible,
 }
 
 func ToS3EncryptionType(s string) (S3EncryptionType, error) {
@@ -69,8 +69,8 @@ func ToStorageProvider(s string) (StorageProvider, error) {
 		return StorageProviderS3, nil
 	case string(StorageProviderS3GOV):
 		return StorageProviderS3GOV, nil
-	case string(StorageProviderS3COMPAT):
-		return StorageProviderS3COMPAT, nil
+	case string(StorageProviderS3Compatible):
+		return StorageProviderS3Compatible, nil
 	default:
 		return "", fmt.Errorf("invalid storage provider: %s", s)
 	}

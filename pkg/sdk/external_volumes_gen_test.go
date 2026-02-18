@@ -1,6 +1,9 @@
 package sdk
 
 import (
+	"fmt"
+	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -541,8 +544,8 @@ func Test_ExternalVolumes_ToStorageProvider(t *testing.T) {
 		{input: "GCS", want: StorageProviderGCS},
 		{input: "azure", want: StorageProviderAzure},
 		{input: "AZURE", want: StorageProviderAzure},
-		{input: "s3compat", want: StorageProviderS3COMPAT},
-		{input: "S3COMPAT", want: StorageProviderS3COMPAT},
+		{input: "s3compat", want: StorageProviderS3Compatible},
+		{input: "S3Compatible", want: StorageProviderS3Compatible},
 	}
 
 	invalid := []test{
@@ -716,7 +719,7 @@ func Test_GetStorageLocationName(t *testing.T) {
 			ExpectedName:    azureStorageLocationA.Name,
 		},
 		{
-			Name:            "S3COMPAT storage location name successfully read",
+			Name:            "S3Compatible storage location name successfully read",
 			StorageLocation: ExternalVolumeStorageLocation{S3CompatStorageLocationParams: &s3CompatStorageLocationA},
 			ExpectedName:    s3CompatStorageLocationA.Name,
 		},
@@ -739,7 +742,7 @@ func Test_GetStorageLocationName(t *testing.T) {
 			StorageLocation: ExternalVolumeStorageLocation{AzureStorageLocationParams: &AzureStorageLocationParams{}},
 		},
 		{
-			Name:            "Empty S3COMPAT storage location",
+			Name:            "Empty S3Compatible storage location",
 			StorageLocation: ExternalVolumeStorageLocation{S3CompatStorageLocationParams: &S3CompatStorageLocationParams{}},
 		},
 		{
@@ -843,9 +846,9 @@ func Test_GetStorageLocationStorageProvider(t *testing.T) {
 			ExpectedStorageProvider: StorageProviderAzure,
 		},
 		{
-			Name:                    "S3COMPAT storage provider",
+			Name:                    "S3Compatible storage provider",
 			StorageLocation:         ExternalVolumeStorageLocation{S3CompatStorageLocationParams: &s3CompatStorageLocationA},
-			ExpectedStorageProvider: StorageProviderS3COMPAT,
+			ExpectedStorageProvider: StorageProviderS3Compatible,
 		},
 	}
 
@@ -866,7 +869,7 @@ func Test_GetStorageLocationStorageProvider(t *testing.T) {
 			StorageLocation: ExternalVolumeStorageLocation{AzureStorageLocationParams: &AzureStorageLocationParams{}},
 		},
 		{
-			Name:            "Empty S3COMPAT storage location",
+			Name:            "Empty S3Compatible storage location",
 			StorageLocation: ExternalVolumeStorageLocation{S3CompatStorageLocationParams: &S3CompatStorageLocationParams{}},
 		},
 		{
@@ -976,7 +979,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 		},
 	}
 
-	t.Run("S3COMPAT storage location", func(t *testing.T) {
+	t.Run("S3Compatible storage location", func(t *testing.T) {
 		storageLocationInput := ExternalVolumeStorageLocation{S3CompatStorageLocationParams: &s3CompatStorageLocationA}
 		copiedStorageLocation, err := CopySentinelStorageLocation(storageLocationInput)
 		require.NoError(t, err)
@@ -1004,7 +1007,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 			StorageLocation: ExternalVolumeStorageLocation{AzureStorageLocationParams: &AzureStorageLocationParams{}},
 		},
 		{
-			Name:            "Empty S3COMPAT storage location",
+			Name:            "Empty S3Compatible storage location",
 			StorageLocation: ExternalVolumeStorageLocation{S3CompatStorageLocationParams: &S3CompatStorageLocationParams{}},
 		},
 		{
@@ -1279,6 +1282,681 @@ func Test_CommonPrefixLastIndex(t *testing.T) {
 			commonPrefixLastIndex, err := CommonPrefixLastIndex(tc.ListA, tc.ListB)
 			require.NoError(t, err)
 			assert.Equal(t, tc.ExpectedOutput, commonPrefixLastIndex)
+		})
+	}
+}
+
+func Test_ParseExternalVolumeDescribed(t *testing.T) {
+	azureStorageLocationName := "azureTest"
+	azureStorageProvider := "AZURE"
+	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container"
+	azureTenantId := "123456789"
+	azureEncryptionTypeNone := "NONE"
+	azureStorageLocationStandard := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["azure://123456789.blob.core.windows.net/my_example_container"],"AZURE_TENANT_ID":"%s","AZURE_MULTI_TENANT_APP_NAME":"test12","AZURE_CONSENT_URL":"https://login.microsoftonline.com/123456789/oauth2/authorize?client_id=test&response_type=test","ENCRYPTION_TYPE":"NONE","ENCRYPTION_KMS_KEY_ID":""}`,
+		azureStorageLocationName,
+		azureStorageProvider,
+		azureStorageBaseUrl,
+		azureTenantId,
+	)
+
+	azureStorageLocationWithExtraFields := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["azure://123456789.blob.core.windows.net/my_example_container"],"AZURE_TENANT_ID":"%s","AZURE_MULTI_TENANT_APP_NAME":"test12","AZURE_CONSENT_URL":"https://login.microsoftonline.com/123456789/oauth2/authorize?client_id=test&response_type=test","ENCRYPTION_TYPE":"NONE","ENCRYPTION_KMS_KEY_ID":"","EXTRA_FIELD_ONE":"testing","EXTRA_FIELD_TWO":"123456"}`,
+		azureStorageLocationName,
+		azureStorageProvider,
+		azureStorageBaseUrl,
+		azureTenantId,
+	)
+
+	azureStorageLocationMissingTenantId := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["azure://123456789.blob.core.windows.net/my_example_container"],"AZURE_MULTI_TENANT_APP_NAME":"test12","AZURE_CONSENT_URL":"https://login.microsoftonline.com/123456789/oauth2/authorize?client_id=test&response_type=test","ENCRYPTION_TYPE":"NONE","ENCRYPTION_KMS_KEY_ID":""}`,
+		azureStorageLocationName,
+		azureStorageProvider,
+		azureStorageBaseUrl,
+	)
+
+	gcsStorageLocationName := "gcsTest"
+	gcsStorageProvider := "GCS"
+	gcsStorageBaseUrl := "gcs://my_example_bucket"
+	gcsEncryptionTypeNone := "NONE"
+	gcsEncryptionTypeSseKms := "GCS_SSE_KMS"
+	gcsEncryptionKmsKeyId := "123456789"
+	gcsStorageLocationStandard := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["gcs://my_example_bucket/*"],"STORAGE_GCP_SERVICE_ACCOUNT":"test@test.iam.test.com","ENCRYPTION_TYPE":"%s","ENCRYPTION_KMS_KEY_ID":""}`,
+		gcsStorageLocationName,
+		gcsStorageProvider,
+		gcsStorageBaseUrl,
+		gcsEncryptionTypeNone,
+	)
+
+	gcsStorageLocationWithExtraFields := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["gcs://my_example_bucket/*"],"STORAGE_GCP_SERVICE_ACCOUNT":"test@test.iam.test.com","ENCRYPTION_TYPE":"%s","ENCRYPTION_KMS_KEY_ID":"","EXTRA_FIELD_ONE":"testing","EXTRA_FIELD_TWO":"123456"}`,
+		gcsStorageLocationName,
+		gcsStorageProvider,
+		gcsStorageBaseUrl,
+		gcsEncryptionTypeNone,
+	)
+
+	gcsStorageLocationKmsEncryption := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["gcs://my_example_bucket/*"],"STORAGE_GCP_SERVICE_ACCOUNT":"test@test.iam.test.com","ENCRYPTION_TYPE":"%s","ENCRYPTION_KMS_KEY_ID":"%s"}`,
+		gcsStorageLocationName,
+		gcsStorageProvider,
+		gcsStorageBaseUrl,
+		gcsEncryptionTypeSseKms,
+		gcsEncryptionKmsKeyId,
+	)
+
+	gcsStorageLocationMissingBaseUrl := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_ALLOWED_LOCATIONS":["gcs://my_example_bucket/*"],"STORAGE_GCP_SERVICE_ACCOUNT":"test@test.iam.test.com","ENCRYPTION_TYPE":"%s","ENCRYPTION_KMS_KEY_ID":""}`,
+		gcsStorageLocationName,
+		gcsStorageProvider,
+		gcsEncryptionTypeNone,
+	)
+
+	s3StorageLocationName := "s3Test"
+	s3StorageProvider := "S3"
+	s3StorageBaseUrl := "s3://my_example_bucket"
+	s3StorageAwsRoleArn := "arn:aws:iam::123456789012:role/myrole"
+	s3StorageAwsExternalId := "123456789"
+	s3EncryptionTypeNone := "NONE"
+	s3EncryptionTypeSseS3 := "AWS_SSE_S3"
+	s3EncryptionTypeSseKms := "AWS_SSE_KMS"
+	s3EncryptionKmsKeyId := "123456789"
+
+	s3StorageLocationStandard := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["s3://my_example_bucket/*"],"STORAGE_AWS_ROLE_ARN":"%s","STORAGE_AWS_IAM_USER_ARN":"arn:aws:iam::123456789:user/a11b0000-s","STORAGE_AWS_EXTERNAL_ID":"%s","ENCRYPTION_TYPE":"%s"}`,
+		s3StorageLocationName,
+		s3StorageProvider,
+		s3StorageBaseUrl,
+		s3StorageAwsRoleArn,
+		s3StorageAwsExternalId,
+		s3EncryptionTypeNone,
+	)
+
+	s3StorageLocationWithExtraFields := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["s3://my_example_bucket/*"],"STORAGE_AWS_ROLE_ARN":"%s","STORAGE_AWS_IAM_USER_ARN":"arn:aws:iam::123456789:user/a11b0000-s","STORAGE_AWS_EXTERNAL_ID":"%s","ENCRYPTION_TYPE":"%s","ENCRYPTION_KMS_KEY_ID":"%s","EXTRA_FIELD_ONE":"testing","EXTRA_FIELD_TWO":"123456"}`,
+		s3StorageLocationName,
+		s3StorageProvider,
+		s3StorageBaseUrl,
+		s3StorageAwsRoleArn,
+		s3StorageAwsExternalId,
+		s3EncryptionTypeSseKms,
+		s3EncryptionKmsKeyId,
+	)
+
+	s3StorageLocationSseS3Encryption := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["s3://my_example_bucket/*"],"STORAGE_AWS_ROLE_ARN":"%s","STORAGE_AWS_IAM_USER_ARN":"arn:aws:iam::123456789:user/a11b0000-s","STORAGE_AWS_EXTERNAL_ID":"%s","ENCRYPTION_TYPE":"%s"}`,
+		s3StorageLocationName,
+		s3StorageProvider,
+		s3StorageBaseUrl,
+		s3StorageAwsRoleArn,
+		s3StorageAwsExternalId,
+		s3EncryptionTypeSseS3,
+	)
+
+	s3StorageLocationSseKmsEncryption := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["s3://my_example_bucket/*"],"STORAGE_AWS_ROLE_ARN":"%s","STORAGE_AWS_IAM_USER_ARN":"arn:aws:iam::123456789:user/a11b0000-s","STORAGE_AWS_EXTERNAL_ID":"%s","ENCRYPTION_TYPE":"%s", "ENCRYPTION_KMS_KEY_ID":"%s"}`,
+		s3StorageLocationName,
+		s3StorageProvider,
+		s3StorageBaseUrl,
+		s3StorageAwsRoleArn,
+		s3StorageAwsExternalId,
+		s3EncryptionTypeSseKms,
+		s3EncryptionKmsKeyId,
+	)
+
+	s3StorageLocationMissingRoleArn := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["s3://my_example_bucket/*"],"STORAGE_AWS_IAM_USER_ARN":"arn:aws:iam::123456789:user/a11b0000-s","STORAGE_AWS_EXTERNAL_ID":"%s","ENCRYPTION_TYPE":"%s"}`,
+		s3StorageLocationName,
+		s3StorageProvider,
+		s3StorageBaseUrl,
+		s3StorageAwsExternalId,
+		s3EncryptionTypeNone,
+	)
+	allowWritesTrue := "true"
+	allowWritesFalse := "false"
+	comment := "some comment"
+	validCases := []struct {
+		Name                 string
+		DescribeOutput       []ExternalVolumeProperty
+		ParsedDescribeOutput ParsedExternalVolumeDescribed
+	}{
+		{
+			Name:           "Volume with azure storage location",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesFalse, []string{azureStorageLocationStandard}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 azureStorageLocationName,
+						StorageProvider:      azureStorageProvider,
+						StorageBaseUrl:       azureStorageBaseUrl,
+						StorageAwsRoleArn:    "",
+						StorageAwsExternalId: "",
+						EncryptionType:       azureEncryptionTypeNone,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        azureTenantId,
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesFalse,
+			},
+		},
+		{
+			Name:           "Volume with azure storage location, with extra fields",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesFalse, []string{azureStorageLocationWithExtraFields}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 azureStorageLocationName,
+						StorageProvider:      azureStorageProvider,
+						StorageBaseUrl:       azureStorageBaseUrl,
+						StorageAwsRoleArn:    "",
+						StorageAwsExternalId: "",
+						EncryptionType:       azureEncryptionTypeNone,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        azureTenantId,
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesFalse,
+			},
+		},
+		{
+			Name:           "Volume with gcs storage location",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{gcsStorageLocationStandard}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 gcsStorageLocationName,
+						StorageProvider:      gcsStorageProvider,
+						StorageBaseUrl:       gcsStorageBaseUrl,
+						StorageAwsRoleArn:    "",
+						StorageAwsExternalId: "",
+						EncryptionType:       gcsEncryptionTypeNone,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        "",
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
+		{
+			Name:           "Volume with gcs storage location, with extra fields",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{gcsStorageLocationWithExtraFields}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 gcsStorageLocationName,
+						StorageProvider:      gcsStorageProvider,
+						StorageBaseUrl:       gcsStorageBaseUrl,
+						StorageAwsRoleArn:    "",
+						StorageAwsExternalId: "",
+						EncryptionType:       gcsEncryptionTypeNone,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        "",
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
+		{
+			Name:           "Volume with gcs storage location, sse kms encryption",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{gcsStorageLocationKmsEncryption}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 gcsStorageLocationName,
+						StorageProvider:      gcsStorageProvider,
+						StorageBaseUrl:       gcsStorageBaseUrl,
+						StorageAwsRoleArn:    "",
+						StorageAwsExternalId: "",
+						EncryptionType:       gcsEncryptionTypeSseKms,
+						EncryptionKmsKeyId:   gcsEncryptionKmsKeyId,
+						AzureTenantId:        "",
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
+		{
+			Name:           "Volume with s3 storage location",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationStandard}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 s3StorageLocationName,
+						StorageProvider:      s3StorageProvider,
+						StorageBaseUrl:       s3StorageBaseUrl,
+						StorageAwsRoleArn:    s3StorageAwsRoleArn,
+						StorageAwsExternalId: s3StorageAwsExternalId,
+						EncryptionType:       s3EncryptionTypeNone,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        "",
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
+		{
+			Name:           "Volume with s3 storage location, with extra fields",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationWithExtraFields}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 s3StorageLocationName,
+						StorageProvider:      s3StorageProvider,
+						StorageBaseUrl:       s3StorageBaseUrl,
+						StorageAwsRoleArn:    s3StorageAwsRoleArn,
+						StorageAwsExternalId: s3StorageAwsExternalId,
+						EncryptionType:       s3EncryptionTypeSseKms,
+						EncryptionKmsKeyId:   s3EncryptionKmsKeyId,
+						AzureTenantId:        "",
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
+		{
+			Name:           "Volume with s3 storage location, sse s3 encryption",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationSseS3Encryption}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 s3StorageLocationName,
+						StorageProvider:      s3StorageProvider,
+						StorageBaseUrl:       s3StorageBaseUrl,
+						StorageAwsRoleArn:    s3StorageAwsRoleArn,
+						StorageAwsExternalId: s3StorageAwsExternalId,
+						EncryptionType:       s3EncryptionTypeSseS3,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        "",
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
+		{
+			Name:           "Volume with s3 storage location, sse kms encryption",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationSseKmsEncryption}, ""),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 s3StorageLocationName,
+						StorageProvider:      s3StorageProvider,
+						StorageBaseUrl:       s3StorageBaseUrl,
+						StorageAwsRoleArn:    s3StorageAwsRoleArn,
+						StorageAwsExternalId: s3StorageAwsExternalId,
+						EncryptionType:       s3EncryptionTypeSseKms,
+						EncryptionKmsKeyId:   s3EncryptionKmsKeyId,
+						AzureTenantId:        "",
+					},
+				},
+				Active:      "",
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
+		{
+			Name: "Volume with multiple storage locations and active set",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(
+				comment,
+				allowWritesTrue,
+				[]string{s3StorageLocationStandard, gcsStorageLocationStandard, azureStorageLocationStandard},
+				s3StorageLocationName,
+			),
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 s3StorageLocationName,
+						StorageProvider:      s3StorageProvider,
+						StorageBaseUrl:       s3StorageBaseUrl,
+						StorageAwsRoleArn:    s3StorageAwsRoleArn,
+						StorageAwsExternalId: s3StorageAwsExternalId,
+						EncryptionType:       s3EncryptionTypeNone,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        "",
+					},
+					{
+						Name:                 gcsStorageLocationName,
+						StorageProvider:      gcsStorageProvider,
+						StorageBaseUrl:       gcsStorageBaseUrl,
+						StorageAwsRoleArn:    "",
+						StorageAwsExternalId: "",
+						EncryptionType:       gcsEncryptionTypeNone,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        "",
+					},
+					{
+						Name:                 azureStorageLocationName,
+						StorageProvider:      azureStorageProvider,
+						StorageBaseUrl:       azureStorageBaseUrl,
+						StorageAwsRoleArn:    "",
+						StorageAwsExternalId: "",
+						EncryptionType:       azureEncryptionTypeNone,
+						EncryptionKmsKeyId:   "",
+						AzureTenantId:        azureTenantId,
+					},
+				},
+				Active:      s3StorageLocationName,
+				Comment:     comment,
+				AllowWrites: allowWritesTrue,
+			},
+		},
+		{
+			Name: "Volume with s3 storage location that has no comment set (in this case describe doesn't contain a comment property)",
+			DescribeOutput: []ExternalVolumeProperty{
+				{
+					Parent:  "",
+					Name:    "ALLOW_WRITES",
+					Type:    "Boolean",
+					Value:   allowWritesTrue,
+					Default: "true",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "STORAGE_LOCATION_1",
+					Type:    "String",
+					Value:   s3StorageLocationSseKmsEncryption,
+					Default: "",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "ACTIVE",
+					Type:    "String",
+					Value:   s3StorageLocationName,
+					Default: "",
+				},
+			},
+			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
+				StorageLocations: []ExternalVolumeStorageLocationJson{
+					{
+						Name:                 s3StorageLocationName,
+						StorageProvider:      s3StorageProvider,
+						StorageBaseUrl:       s3StorageBaseUrl,
+						StorageAwsRoleArn:    s3StorageAwsRoleArn,
+						StorageAwsExternalId: s3StorageAwsExternalId,
+						EncryptionType:       s3EncryptionTypeSseKms,
+						EncryptionKmsKeyId:   s3EncryptionKmsKeyId,
+						AzureTenantId:        "",
+					},
+				},
+				Active:      s3StorageLocationName,
+				Comment:     "",
+				AllowWrites: allowWritesTrue,
+			},
+		},
+	}
+
+	invalidCases := []struct {
+		Name           string
+		DescribeOutput []ExternalVolumeProperty
+	}{
+		{
+			Name:           "Volume with s3 storage location, missing STORAGE_AWS_ROLE_ARN",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationMissingRoleArn}, ""),
+		},
+		{
+			Name:           "Volume with azure storage location, missing AZURE_TENANT_ID",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{azureStorageLocationMissingTenantId}, ""),
+		},
+		{
+			Name:           "Volume with gcs storage location, missing STORAGE_BASE_URL",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{gcsStorageLocationMissingBaseUrl}, ""),
+		},
+		{
+			Name:           "Volume with no storage locations",
+			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{}, ""),
+		},
+		{
+			Name: "Volume with no allow writes",
+			DescribeOutput: []ExternalVolumeProperty{
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "STORAGE_LOCATION_1",
+					Type:    "String",
+					Value:   s3StorageLocationSseKmsEncryption,
+					Default: "",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "ACTIVE",
+					Type:    "String",
+					Value:   s3StorageLocationName,
+					Default: "",
+				},
+			},
+		},
+	}
+
+	for _, tc := range validCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			parsed, err := ParseExternalVolumeDescribed(tc.DescribeOutput)
+			require.NoError(t, err)
+			assert.True(t, reflect.DeepEqual(tc.ParsedDescribeOutput, parsed))
+		})
+	}
+
+	for _, tc := range invalidCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			_, err := ParseExternalVolumeDescribed(tc.DescribeOutput)
+			require.Error(t, err)
+		})
+	}
+}
+
+// Generate input to the ParseExternalVolumeDescribedInput, useful for testing purposes
+func GenerateParseExternalVolumeDescribedInput(comment string, allowWrites string, storageLocations []string, active string) []ExternalVolumeProperty {
+	storageLocationProperties := make([]ExternalVolumeProperty, len(storageLocations))
+	allowWritesProperty := ExternalVolumeProperty{
+		Parent:  "",
+		Name:    "ALLOW_WRITES",
+		Type:    "Boolean",
+		Value:   allowWrites,
+		Default: "true",
+	}
+
+	commentProperty := ExternalVolumeProperty{
+		Parent:  "",
+		Name:    "COMMENT",
+		Type:    "String",
+		Value:   comment,
+		Default: "",
+	}
+
+	activeProperty := ExternalVolumeProperty{
+		Parent:  "STORAGE_LOCATIONS",
+		Name:    "ACTIVE",
+		Type:    "String",
+		Value:   active,
+		Default: "",
+	}
+
+	for i, property := range storageLocations {
+		storageLocationProperties[i] = ExternalVolumeProperty{
+			Parent:  "STORAGE_LOCATIONS",
+			Name:    fmt.Sprintf("STORAGE_LOCATION_%s", strconv.Itoa(i+1)),
+			Type:    "String",
+			Value:   property,
+			Default: "",
+		}
+	}
+
+	return append(append([]ExternalVolumeProperty{allowWritesProperty, commentProperty}, storageLocationProperties...), activeProperty)
+}
+
+func Test_GenerateParseExternalVolumeDescribedInput(t *testing.T) {
+	azureStorageLocationName := "azureTest"
+	azureStorageProvider := "AZURE"
+	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container"
+	azureTenantId := "123456789"
+	azureStorageLocationStandard := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["azure://123456789.blob.core.windows.net/my_example_container"],"AZURE_TENANT_ID":"%s","AZURE_MULTI_TENANT_APP_NAME":"test12","AZURE_CONSENT_URL":"https://login.microsoftonline.com/123456789/oauth2/authorize?client_id=test&response_type=test","ENCRYPTION_TYPE":"NONE","ENCRYPTION_KMS_KEY_ID":""}`,
+		azureStorageLocationName,
+		azureStorageProvider,
+		azureStorageBaseUrl,
+		azureTenantId,
+	)
+
+	gcsStorageLocationName := "gcsTest"
+	gcsStorageProvider := "GCS"
+	gcsStorageBaseUrl := "gcs://my_example_bucket"
+	gcsEncryptionTypeNone := "NONE"
+	gcsStorageLocationStandard := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["gcs://my_example_bucket/*"],"STORAGE_GCP_SERVICE_ACCOUNT":"test@test.iam.test.com","ENCRYPTION_TYPE":"%s","ENCRYPTION_KMS_KEY_ID":""}`,
+		gcsStorageLocationName,
+		gcsStorageProvider,
+		gcsStorageBaseUrl,
+		gcsEncryptionTypeNone,
+	)
+
+	s3StorageLocationName := "s3Test"
+	s3StorageProvider := "S3"
+	s3StorageBaseUrl := "s3://my_example_bucket"
+	s3StorageAwsRoleArn := "arn:aws:iam::123456789012:role/myrole"
+	s3StorageAwsExternalId := "123456789"
+	s3EncryptionTypeNone := "NONE"
+
+	s3StorageLocationStandard := fmt.Sprintf(
+		`{"NAME":"%s","STORAGE_PROVIDER":"%s","STORAGE_BASE_URL":"%s","STORAGE_ALLOWED_LOCATIONS":["s3://my_example_bucket/*"],"STORAGE_AWS_ROLE_ARN":"%s","STORAGE_AWS_IAM_USER_ARN":"arn:aws:iam::123456789:user/a11b0000-s","STORAGE_AWS_EXTERNAL_ID":"%s","ENCRYPTION_TYPE":"%s"}`,
+		s3StorageLocationName,
+		s3StorageProvider,
+		s3StorageBaseUrl,
+		s3StorageAwsRoleArn,
+		s3StorageAwsExternalId,
+		s3EncryptionTypeNone,
+	)
+
+	allowWritesTrue := "true"
+	comment := "some comment"
+	cases := []struct {
+		TestName         string
+		Comment          string
+		AllowWrites      string
+		StorageLocations []string
+		Active           string
+		ExpectedOutput   []ExternalVolumeProperty
+	}{
+		{
+			TestName:         "Generate input",
+			Comment:          comment,
+			AllowWrites:      allowWritesTrue,
+			StorageLocations: []string{s3StorageLocationStandard},
+			Active:           "",
+			ExpectedOutput: []ExternalVolumeProperty{
+				{
+					Parent:  "",
+					Name:    "ALLOW_WRITES",
+					Type:    "Boolean",
+					Value:   allowWritesTrue,
+					Default: "true",
+				},
+				{
+					Parent:  "",
+					Name:    "COMMENT",
+					Type:    "String",
+					Value:   comment,
+					Default: "",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "STORAGE_LOCATION_1",
+					Type:    "String",
+					Value:   s3StorageLocationStandard,
+					Default: "",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "ACTIVE",
+					Type:    "String",
+					Value:   "",
+					Default: "",
+				},
+			},
+		},
+		{
+			TestName:         "Generate input - multiple locations and active set",
+			Comment:          comment,
+			AllowWrites:      allowWritesTrue,
+			StorageLocations: []string{s3StorageLocationStandard, azureStorageLocationStandard, gcsStorageLocationStandard},
+			Active:           s3StorageLocationName,
+			ExpectedOutput: []ExternalVolumeProperty{
+				{
+					Parent:  "",
+					Name:    "ALLOW_WRITES",
+					Type:    "Boolean",
+					Value:   allowWritesTrue,
+					Default: "true",
+				},
+				{
+					Parent:  "",
+					Name:    "COMMENT",
+					Type:    "String",
+					Value:   comment,
+					Default: "",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "STORAGE_LOCATION_1",
+					Type:    "String",
+					Value:   s3StorageLocationStandard,
+					Default: "",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "STORAGE_LOCATION_2",
+					Type:    "String",
+					Value:   azureStorageLocationStandard,
+					Default: "",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "STORAGE_LOCATION_3",
+					Type:    "String",
+					Value:   gcsStorageLocationStandard,
+					Default: "",
+				},
+				{
+					Parent:  "STORAGE_LOCATIONS",
+					Name:    "ACTIVE",
+					Type:    "String",
+					Value:   s3StorageLocationName,
+					Default: "",
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.TestName, func(t *testing.T) {
+			generatedInput := GenerateParseExternalVolumeDescribedInput(
+				tc.Comment,
+				tc.AllowWrites,
+				tc.StorageLocations,
+				tc.Active,
+			)
+
+			assert.Len(t, generatedInput, len(tc.ExpectedOutput))
+			for i := range generatedInput {
+				assert.Equal(t, tc.ExpectedOutput[i].Parent, generatedInput[i].Parent)
+				assert.Equal(t, tc.ExpectedOutput[i].Name, generatedInput[i].Name)
+				assert.Equal(t, tc.ExpectedOutput[i].Type, generatedInput[i].Type)
+				assert.Equal(t, tc.ExpectedOutput[i].Value, generatedInput[i].Value)
+				assert.Equal(t, tc.ExpectedOutput[i].Default, generatedInput[i].Default)
+			}
 		})
 	}
 }

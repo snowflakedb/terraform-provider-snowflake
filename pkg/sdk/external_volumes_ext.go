@@ -47,6 +47,15 @@ func CopySentinelStorageLocation(
 				AzureTenantId:  storageLocation.AzureStorageLocationParams.AzureTenantId,
 			},
 		}
+	case StorageProviderS3Compatible:
+		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			S3CompatStorageLocationParams: &S3CompatStorageLocationParams{
+				Name:            newName,
+				StorageBaseUrl:  storageLocation.S3CompatStorageLocationParams.StorageBaseUrl,
+				StorageEndpoint: storageLocation.S3CompatStorageLocationParams.StorageEndpoint,
+				Credentials:     storageLocation.S3CompatStorageLocationParams.Credentials,
+			},
+		}
 	}
 
 	return tempNameStorageLocation, nil
@@ -72,6 +81,12 @@ func GetStorageLocationName(s ExternalVolumeStorageLocation) (string, error) {
 		}
 
 		return s.AzureStorageLocationParams.Name, nil
+	case s.S3CompatStorageLocationParams != nil && *s.S3CompatStorageLocationParams != S3CompatStorageLocationParams{}:
+		if len(s.S3CompatStorageLocationParams.Name) == 0 {
+			return "", fmt.Errorf("Invalid S3Compatible storage location - no name set")
+		}
+
+		return s.S3CompatStorageLocationParams.Name, nil
 	default:
 		return "", fmt.Errorf("Invalid storage location")
 	}
@@ -85,6 +100,8 @@ func GetStorageLocationStorageProvider(s ExternalVolumeStorageLocation) (Storage
 		return StorageProviderGCS, nil
 	case s.AzureStorageLocationParams != nil && *s.AzureStorageLocationParams != AzureStorageLocationParams{}:
 		return StorageProviderAzure, nil
+	case s.S3CompatStorageLocationParams != nil && *s.S3CompatStorageLocationParams != S3CompatStorageLocationParams{}:
+		return StorageProviderS3Compatible, nil
 	default:
 		return "", fmt.Errorf("Invalid storage location")
 	}
@@ -204,9 +221,9 @@ func validateParsedExternalVolumeDescribed(p ParsedExternalVolumeDescribed) erro
 			if len(s.AzureTenantId) == 0 {
 				return fmt.Errorf("An Azure storage location's AzureTenantId in this volume could not be parsed.")
 			}
-		case StorageProviderS3COMPAT:
+		case StorageProviderS3Compatible:
 			if len(s.StorageEndpoint) == 0 {
-				return fmt.Errorf("An S3COMPAT storage location's StorageEndpoint in this volume could not be parsed.")
+				return fmt.Errorf("An S3Compatible storage location's StorageEndpoint in this volume could not be parsed.")
 			}
 		}
 	}
