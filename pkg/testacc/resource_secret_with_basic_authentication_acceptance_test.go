@@ -13,17 +13,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
-	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{string(testenvs.SnowflakeNonProdEnvironment), string(testenvs.SnowflakePreProdGovEnvironment)}, "The test needs further investigation for non_prod environments, and for the time being, should be skipped")
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	username := random.String()
@@ -189,7 +187,7 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Destroy - ensure secret is destroyed before the next step
+			// Destroy
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
@@ -199,6 +197,11 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 			},
 			// Create - with optionals
 			{
+				PreConfig: func() {
+					// ensure secret is destroyed before the moving forward
+					_, err := testClient().Secret.Show(t, id)
+					require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
