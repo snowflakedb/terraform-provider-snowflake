@@ -12,8 +12,10 @@ import (
 
 var _ NetworkRules = (*networkRules)(nil)
 
-var _ convertibleRow[NetworkRule] = new(ShowNetworkRulesRow)
-var _ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
+var (
+	_ convertibleRow[NetworkRule]        = new(ShowNetworkRulesRow)
+	_ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
+)
 
 type networkRules struct {
 	client *Client
