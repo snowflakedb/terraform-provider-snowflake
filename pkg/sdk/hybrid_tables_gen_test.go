@@ -69,9 +69,9 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.ConstraintAction opts.AlterColumnAction opts.DropColumnAction opts.DropIndexAction opts.BuildIndexAction opts.Set opts.Unset] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.ConstraintAction opts.AlterColumnAction opts.DropColumnAction opts.DropIndexAction opts.Set opts.Unset] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "BuildIndexAction", "Set", "Unset"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -134,16 +134,6 @@ func TestHybridTables_Alter(t *testing.T) {
 			IndexName: "idx_name",
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP INDEX idx_name`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: build index with all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.BuildIndexAction = &HybridTableBuildIndexAction{
-			IndexName: "idx_name",
-			Fence:     Bool(true),
-			Backfill:  Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s BUILD INDEX idx_name FENCE BACKFILL`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: add constraint unique", func(t *testing.T) {

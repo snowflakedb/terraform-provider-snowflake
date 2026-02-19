@@ -26,7 +26,6 @@ type AlterHybridTableRequest struct {
 	AlterColumnAction *HybridTableAlterColumnActionRequest
 	DropColumnAction  *HybridTableDropColumnActionRequest
 	DropIndexAction   *HybridTableDropIndexActionRequest
-	BuildIndexAction  *HybridTableBuildIndexActionRequest
 	Set               *HybridTableSetPropertiesRequest
 	Unset             *HybridTableUnsetPropertiesRequest
 }
@@ -64,12 +63,6 @@ type HybridTableDropColumnActionRequest struct {
 
 type HybridTableDropIndexActionRequest struct {
 	IndexName string // required
-}
-
-type HybridTableBuildIndexActionRequest struct {
-	IndexName string // required
-	Fence     *bool
-	Backfill  *bool
 }
 
 type HybridTableSetPropertiesRequest struct {
