@@ -352,25 +352,16 @@ func ImportGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return nil, err
 	}
-	if err := d.Set("account_role_name", id.RoleName.FullyQualifiedName()); err != nil {
-		return nil, err
-	}
-	if err := d.Set("with_grant_option", id.WithGrantOption); err != nil {
-		return nil, err
-	}
-	if err := d.Set("always_apply", id.AlwaysApply); err != nil {
-		return nil, err
-	}
-	if err := d.Set("all_privileges", id.AllPrivileges); err != nil {
-		return nil, err
-	}
-	if err := d.Set("privileges", id.Privileges); err != nil {
-		return nil, err
-	}
-	if err := d.Set("on_account", false); err != nil {
-		return nil, err
-	}
-	if err := d.Set("strict_privilege_management", false); err != nil {
+	err = errors.Join(
+		d.Set("account_role_name", id.RoleName.FullyQualifiedName()),
+		d.Set("with_grant_option", id.WithGrantOption),
+		d.Set("always_apply", id.AlwaysApply),
+		d.Set("all_privileges", id.AllPrivileges),
+		d.Set("privileges", id.Privileges),
+		d.Set("on_account", false),
+		d.Set("strict_privilege_management", false),
+	)
+	if err != nil {
 		return nil, err
 	}
 

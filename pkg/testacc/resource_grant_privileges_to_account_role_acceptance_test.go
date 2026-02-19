@@ -3247,6 +3247,7 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_MismatchedPrivilege(t
 		ProtoV6ProviderFactories: grantsImportValidationProviderFactory,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
+			// Import with incorrect privilege (have monitor, want usage)
 			{
 				Config:        accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:  "snowflake_grant_privileges_to_account_role.test",
@@ -3254,9 +3255,10 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_MismatchedPrivilege(t
 				ImportStateId: importId,
 				ExpectError:   regexp.MustCompile("privileges granted in Snowflake do not match the expected privileges"),
 			},
-			// grant the privilege, but with incorrect grant option
+			// Import with correct privilege, but with incorrect grant option (revoke MONITOR so the only mismatch is with_grant_option)
 			{
 				PreConfig: func() {
+					testClient().Grant.RevokePrivilegesOnDatabaseFromAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeMonitor})
 					testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, true)
 				},
 				Config:        accconfig.FromModels(t, providerModel, resourceModel),
@@ -3403,9 +3405,6 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManage
 			},
 			// Import with matching ID should succeed with experiment enabled
 			{
-				PreConfig: func() {
-					testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
-				},
 				Config:                  accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:            resourceModel.ResourceReference(),
 				ImportState:             true,
