@@ -33,8 +33,8 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.Set, opts.Unset) {
-		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
+	if !exactlyOneValueSet(opts.ConstraintAction, opts.AlterColumnAction, opts.ModifyColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
 	}
 	if opts.ConstraintAction != nil && opts.ConstraintAction.Drop != nil {
 		if err := opts.ConstraintAction.Drop.validate(); err != nil {
