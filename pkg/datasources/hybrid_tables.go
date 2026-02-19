@@ -207,7 +207,7 @@ func ReadHybridTables(ctx context.Context, d *schema.ResourceData, meta any) dia
 	records := make([]map[string]any, 0, len(hts))
 	for _, ht := range hts {
 		record := map[string]any{}
-		record["created_on"] = ht.CreatedOn.Format("2006-01-02T16:04:05.000 -0700")
+		record["created_on"] = ht.CreatedOn.Format("2006-01-02T15:04:05.000 -0700")
 		record["name"] = ht.Name
 		record["database_name"] = ht.DatabaseName
 		record["schema_name"] = ht.SchemaName

@@ -63,8 +63,11 @@ type HybridTableConstraintActionAdd struct {
 }
 
 type HybridTableConstraintActionDrop struct {
-	drop                 bool                  `ddl:"static" sql:"DROP"`
-	ConstraintName       *string               `ddl:"keyword" sql:"CONSTRAINT"`
+	drop bool `ddl:"static" sql:"DROP"`
+	// Manually adjusted from ddl:"keyword" to ddl:"parameter,no_equals" to generate
+	// "DROP CONSTRAINT constraint_name" instead of "DROP constraint_name".
+	// See tables.go TableConstraintAlterAction for similar pattern.
+	ConstraintName       *string               `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
 	ColumnConstraintType *ColumnConstraintType `ddl:"keyword"`
 	Columns              []string              `ddl:"keyword,parentheses"`
 }
