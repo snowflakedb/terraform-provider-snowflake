@@ -619,6 +619,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_grant_privileges_to_account_role":                             resources.GrantPrivilegesToAccountRole(),
 		"snowflake_grant_privileges_to_database_role":                            resources.GrantPrivilegesToDatabaseRole(),
 		"snowflake_grant_privileges_to_share":                                    resources.GrantPrivilegesToShare(),
+		"snowflake_hybrid_table":                                                 resources.HybridTable(),
 		"snowflake_git_repository":                                               resources.GitRepository(),
 		"snowflake_image_repository":                                             resources.ImageRepository(),
 		"snowflake_stage_internal":                                               resources.InternalStage(),

@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var hybridTableSchema = map[string]*schema.Schema{
@@ -22,7 +21,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		Description:      "Specifies the identifier for the hybrid table; must be unique for the schema in which the hybrid table is created.",
+		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the hybrid table; must be unique for the schema in which the hybrid table is created."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"database": {
@@ -30,6 +29,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Required:         true,
 		ForceNew:         true,
 		Description:      "The database in which to create the hybrid table.",
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
@@ -37,6 +37,7 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Required:         true,
 		ForceNew:         true,
 		Description:      "The schema in which to create the hybrid table.",
+		ValidateDiagFunc: IsValidIdentifier[sdk.DatabaseObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"or_replace": {
@@ -266,10 +267,9 @@ var hybridTableSchema = map[string]*schema.Schema{
 		},
 	},
 	"data_retention_time_in_days": {
-		Type:             schema.TypeInt,
-		Optional:         true,
-		Description:      "Specifies the retention period for the table in days.",
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(0, 90)),
+		Type:        schema.TypeInt,
+		Optional:    true,
+		Description: "Specifies the retention period for the table in days.",
 	},
 	"comment": {
 		Type:        schema.TypeString,
@@ -433,43 +433,24 @@ func ReadContextHybridTable(readFromProject bool) func(ctx context.Context, d *s
 			return diag.FromErr(err)
 		}
 
-		// Set basic attributes
-		if err := d.Set("name", hybridTable.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := d.Set("database", hybridTable.DatabaseName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := d.Set("schema", hybridTable.SchemaName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := d.Set("comment", hybridTable.Comment); err != nil {
-			return diag.FromErr(err)
-		}
-
-		// Set show_output
+		// Build show_output and describe_output
 		showOutput := schemas.HybridTableToSchema(hybridTable)
-		if err := d.Set(ShowOutputAttributeName, []map[string]any{showOutput}); err != nil {
-			return diag.FromErr(err)
-		}
-
-		// Set describe_output
 		describeOutput := make([]map[string]any, len(details))
 		for i, detail := range details {
 			describeOutput[i] = schemas.HybridTableDetailsToSchema(&detail)
 		}
-		if err := d.Set(DescribeOutputAttributeName, describeOutput); err != nil {
-			return diag.FromErr(err)
-		}
 
-		// Set fully_qualified_name
-		if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
-			return diag.FromErr(err)
+		// Set all state attributes using errors.Join
+		// Note: We don't set name, database, schema - Terraform copies them from config automatically
+		errs := errors.Join(
+			d.Set("comment", hybridTable.Comment),
+			d.Set(ShowOutputAttributeName, []map[string]any{showOutput}),
+			d.Set(DescribeOutputAttributeName, describeOutput),
+			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
 		}
-
-		// Note: We don't set column, index, or constraint details back to state
-		// because those are ForceNew or require complex diff logic
-		// Users should manage these through the configuration
 
 		return nil
 	}

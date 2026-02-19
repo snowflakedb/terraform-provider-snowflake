@@ -46,6 +46,7 @@ const (
 	GrantPrivilegesToAccountRole                           resource = "snowflake_grant_privileges_to_account_role"
 	GrantPrivilegesToDatabaseRole                          resource = "snowflake_grant_privileges_to_database_role"
 	GrantPrivilegesToShare                                 resource = "snowflake_grant_privileges_to_share"
+	HybridTable                                            resource = "snowflake_hybrid_table"
 	ImageRepository                                        resource = "snowflake_image_repository"
 	InternalStage                                          resource = "snowflake_stage_internal"
 	JobService                                             resource = "snowflake_job_service"
