@@ -45,28 +45,17 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	OptionalSQL("UNSET COMMENT")
 
 // hybridTableDropColumnAction defines ALTER TABLE ... DROP COLUMN for hybrid tables.
-// Per Snowflake codebase: DROP COLUMN considers index dependencies.
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required())
 
 // hybridTableDropIndexAction defines ALTER TABLE ... DROP INDEX for hybrid tables.
-// Per Snowflake codebase: ALTER TABLE <table_name> DROP INDEX <index_name>
+// Syntax: ALTER TABLE <table_name> DROP INDEX <index_name>
 // This is an alternative to the standalone DROP INDEX command.
-// Confirmed in Snowflake codebase analysis.
 var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	SQL("DROP INDEX").
 	Text("IndexName", g.KeywordOptions().Required())
 
-// hybridTableBuildIndexAction defines ALTER TABLE ... BUILD INDEX for hybrid tables.
-// Per Snowflake codebase: ALTER TABLE <table_name> BUILD INDEX <index_name> [FENCE | BACKFILL]
-// FENCE: Coordinates index builds with ongoing writes.
-// BACKFILL: Populates index with existing table data.
-var hybridTableBuildIndexAction = g.NewQueryStruct("HybridTableBuildIndexAction").
-	SQL("BUILD INDEX").
-	Text("IndexName", g.KeywordOptions().Required()).
-	OptionalSQL("FENCE").
-	OptionalSQL("BACKFILL")
 
 // hybridTableSetProperties defines ALTER TABLE ... SET for hybrid tables.
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
@@ -128,11 +117,6 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
-			"BuildIndexAction",
-			hybridTableBuildIndexAction,
-			g.KeywordOptions(),
-		).
-		OptionalQueryStructField(
 			"Set",
 			hybridTableSetProperties,
 			g.KeywordOptions().SQL("SET"),
@@ -143,11 +127,8 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "BuildIndexAction", "Set", "Unset"),
+		WithValidation(g.ExactlyOneValueSet, "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"),
 ).DropOperation(
-	// Note: Snowflake codebase shows DROP HYBRID TABLE syntax, but official docs use DROP TABLE.
-	// We use DROP TABLE here (matching docs). Integration tests should verify if DROP HYBRID TABLE
-	// also works and document the finding (rule 9).
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
 		Drop().

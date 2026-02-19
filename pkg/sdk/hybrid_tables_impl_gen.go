@@ -126,13 +126,6 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 			IndexName: r.DropIndexAction.IndexName,
 		}
 	}
-	if r.BuildIndexAction != nil {
-		opts.BuildIndexAction = &HybridTableBuildIndexAction{
-			IndexName: r.BuildIndexAction.IndexName,
-			Fence:     r.BuildIndexAction.Fence,
-			Backfill:  r.BuildIndexAction.Backfill,
-		}
-	}
 	if r.Set != nil {
 		opts.Set = &HybridTableSetProperties{
 			DataRetentionTimeInDays: r.Set.DataRetentionTimeInDays,

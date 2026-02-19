@@ -65,11 +65,6 @@ func (s *AlterHybridTableRequest) WithDropIndexAction(dropIndexAction HybridTabl
 	return s
 }
 
-func (s *AlterHybridTableRequest) WithBuildIndexAction(buildIndexAction HybridTableBuildIndexActionRequest) *AlterHybridTableRequest {
-	s.BuildIndexAction = &buildIndexAction
-	return s
-}
-
 func (s *AlterHybridTableRequest) WithSet(set HybridTableSetPropertiesRequest) *AlterHybridTableRequest {
 	s.Set = &set
 	return s
@@ -170,24 +165,6 @@ func NewHybridTableDropIndexActionRequest(
 	s := HybridTableDropIndexActionRequest{}
 	s.IndexName = indexName
 	return &s
-}
-
-func NewHybridTableBuildIndexActionRequest(
-	indexName string,
-) *HybridTableBuildIndexActionRequest {
-	s := HybridTableBuildIndexActionRequest{}
-	s.IndexName = indexName
-	return &s
-}
-
-func (s *HybridTableBuildIndexActionRequest) WithFence(fence bool) *HybridTableBuildIndexActionRequest {
-	s.Fence = &fence
-	return s
-}
-
-func (s *HybridTableBuildIndexActionRequest) WithBackfill(backfill bool) *HybridTableBuildIndexActionRequest {
-	s.Backfill = &backfill
-	return s
 }
 
 func NewHybridTableSetPropertiesRequest() *HybridTableSetPropertiesRequest {

@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// HybridTables interface operations
 type HybridTables interface {
 	Create(ctx context.Context, request *CreateHybridTableRequest) error
 	Alter(ctx context.Context, request *AlterHybridTableRequest) error
@@ -17,8 +18,7 @@ type HybridTables interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]HybridTableDetails, error)
-	// Manually added index operations (rule 13) - these are standalone SQL commands
-	// implemented in hybrid_tables_ext.go, not part of the generator output
+	// Standalone index operations - implemented in hybrid_tables_ext.go
 	CreateIndex(ctx context.Context, request *CreateHybridTableIndexRequest) error
 	DropIndex(ctx context.Context, request *DropHybridTableIndexRequest) error
 	ShowIndexes(ctx context.Context, request *ShowHybridTableIndexesRequest) ([]HybridTableIndex, error)
@@ -46,7 +46,6 @@ type AlterHybridTableOptions struct {
 	AlterColumnAction *HybridTableAlterColumnAction `ddl:"keyword"`
 	DropColumnAction  *HybridTableDropColumnAction  `ddl:"keyword"`
 	DropIndexAction   *HybridTableDropIndexAction   `ddl:"keyword"`
-	BuildIndexAction  *HybridTableBuildIndexAction  `ddl:"keyword"`
 	Set               *HybridTableSetProperties     `ddl:"keyword" sql:"SET"`
 	Unset             *HybridTableUnsetProperties   `ddl:"keyword" sql:"UNSET"`
 }
@@ -75,8 +74,7 @@ type HybridTableConstraintActionDrop struct {
 type HybridTableConstraintActionRename struct {
 	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
 	OldName          string `ddl:"keyword"`
-	// Manually adjusted from ddl:"keyword" to ddl:"parameter,no_equals" per rule 13.
-	// The generator produces ddl:"keyword" sql:"TO" which doesn't emit the TO keyword.
+	// Manually adjusted: generator produces ddl:"keyword" sql:"TO" which doesn't emit TO keyword.
 	// See tables.go:368 TableConstraintRenameAction for the correct pattern.
 	NewName string `ddl:"parameter,no_equals" sql:"TO"`
 }
@@ -84,8 +82,7 @@ type HybridTableConstraintActionRename struct {
 type HybridTableAlterColumnAction struct {
 	alterColumn bool   `ddl:"static" sql:"ALTER COLUMN"`
 	ColumnName  string `ddl:"keyword"`
-	// Manually adjusted from ddl:"parameter,single_quotes" to ddl:"parameter,no_equals,single_quotes" per rule 13
-	// ALTER COLUMN syntax requires "COMMENT 'value'" not "COMMENT = 'value'"
+	// Manually adjusted: ALTER COLUMN syntax requires "COMMENT 'value'" not "COMMENT = 'value'"
 	// See: https://docs.snowflake.com/en/sql-reference/sql/alter-table
 	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
 	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
@@ -99,13 +96,6 @@ type HybridTableDropColumnAction struct {
 type HybridTableDropIndexAction struct {
 	dropIndex bool   `ddl:"static" sql:"DROP INDEX"`
 	IndexName string `ddl:"keyword"`
-}
-
-type HybridTableBuildIndexAction struct {
-	buildIndex bool   `ddl:"static" sql:"BUILD INDEX"`
-	IndexName  string `ddl:"keyword"`
-	Fence      *bool  `ddl:"keyword" sql:"FENCE"`
-	Backfill   *bool  `ddl:"keyword" sql:"BACKFILL"`
 }
 
 type HybridTableSetProperties struct {
@@ -145,7 +135,6 @@ type hybridTableRow struct {
 	SchemaName   string         `db:"schema_name"`
 	Owner        sql.NullString `db:"owner"`
 	// Manually adjusted: rows and bytes can be NULL for newly created tables
-	// Changed from int to sql.NullInt64 to handle NULL values (rule 13)
 	Rows          sql.NullInt64  `db:"rows"`
 	Bytes         sql.NullInt64  `db:"bytes"`
 	Comment       sql.NullString `db:"comment"`
@@ -183,10 +172,8 @@ type hybridTableDetailsRow struct {
 	Name string `db:"name"`
 	Type string `db:"type"`
 	Kind string `db:"kind"`
-	// Manually adjusted from db:"null" to db:"null?" per rule 13.
-	// Snowflake DESCRIBE TABLE returns column named "null?" with question mark.
+	// Manually adjusted: Snowflake DESCRIBE TABLE returns column named "null?" with question mark.
 	// The generator cannot produce "?" in tag names, so this requires manual adjustment.
-	// See: pkg/sdk/generator/defs/hybrid_tables_def.go lines 203-205.
 	Null                  string         `db:"null?"`
 	Default               sql.NullString `db:"default"`
 	PrimaryKey            string         `db:"primary key"`
