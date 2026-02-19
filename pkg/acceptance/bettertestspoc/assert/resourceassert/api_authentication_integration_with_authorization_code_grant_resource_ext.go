@@ -8,8 +8,8 @@ import (
 
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert) HasOauthAllowedScopes(values ...string) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert {
 	a.AddAssertion(assert.ValueSet("oauth_allowed_scopes.#", fmt.Sprintf("%d", len(values))))
-	for index, value := range values {
-		a.AddAssertion(assert.ValueSet(fmt.Sprintf("oauth_allowed_scopes.%d", index), value))
+	for _, value := range values {
+		a.AddAssertion(assert.SetElem("oauth_allowed_scopes", value))
 	}
 	return a
 }
