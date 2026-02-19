@@ -69,26 +69,37 @@ type HybridTableModifyColumnActionRequest struct {
 }
 
 type HybridTableDropColumnActionRequest struct {
-	ColumnName string // required
+	IfExists *bool
+	Columns  []string // required
 }
 
 type HybridTableDropIndexActionRequest struct {
+	IfExists  *bool
 	IndexName string // required
 }
 
 type HybridTableSetPropertiesRequest struct {
-	DataRetentionTimeInDays *int
-	Comment                 *string
+	DataRetentionTimeInDays    *int
+	MaxDataExtensionTimeInDays *int
+	ChangeTracking             *bool
+	DefaultDdlCollation        *string
+	EnableSchemaEvolution      *bool
+	Comment                    *string
 }
 
 type HybridTableUnsetPropertiesRequest struct {
-	DataRetentionTimeInDays *bool
-	Comment                 *bool
+	DataRetentionTimeInDays    *bool
+	MaxDataExtensionTimeInDays *bool
+	ChangeTracking             *bool
+	DefaultDdlCollation        *bool
+	EnableSchemaEvolution      *bool
+	Comment                    *bool
 }
 
 type DropHybridTableRequest struct {
 	IfExists *bool
 	name     SchemaObjectIdentifier // required
+	Cascade  *bool
 	Restrict *bool
 }
 

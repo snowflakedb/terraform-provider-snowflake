@@ -195,11 +195,16 @@ func (s *HybridTableModifyColumnActionRequest) WithUnsetComment(unsetComment boo
 }
 
 func NewHybridTableDropColumnActionRequest(
-	columnName string,
+	columns []string,
 ) *HybridTableDropColumnActionRequest {
 	s := HybridTableDropColumnActionRequest{}
-	s.ColumnName = columnName
+	s.Columns = columns
 	return &s
+}
+
+func (s *HybridTableDropColumnActionRequest) WithIfExists(ifExists bool) *HybridTableDropColumnActionRequest {
+	s.IfExists = &ifExists
+	return s
 }
 
 func NewHybridTableDropIndexActionRequest(
@@ -210,6 +215,11 @@ func NewHybridTableDropIndexActionRequest(
 	return &s
 }
 
+func (s *HybridTableDropIndexActionRequest) WithIfExists(ifExists bool) *HybridTableDropIndexActionRequest {
+	s.IfExists = &ifExists
+	return s
+}
+
 func NewHybridTableSetPropertiesRequest() *HybridTableSetPropertiesRequest {
 	s := HybridTableSetPropertiesRequest{}
 	return &s
@@ -217,6 +227,26 @@ func NewHybridTableSetPropertiesRequest() *HybridTableSetPropertiesRequest {
 
 func (s *HybridTableSetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *HybridTableSetPropertiesRequest {
 	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *HybridTableSetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *HybridTableSetPropertiesRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *HybridTableSetPropertiesRequest) WithChangeTracking(changeTracking bool) *HybridTableSetPropertiesRequest {
+	s.ChangeTracking = &changeTracking
+	return s
+}
+
+func (s *HybridTableSetPropertiesRequest) WithDefaultDdlCollation(defaultDdlCollation string) *HybridTableSetPropertiesRequest {
+	s.DefaultDdlCollation = &defaultDdlCollation
+	return s
+}
+
+func (s *HybridTableSetPropertiesRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *HybridTableSetPropertiesRequest {
+	s.EnableSchemaEvolution = &enableSchemaEvolution
 	return s
 }
 
@@ -232,6 +262,26 @@ func NewHybridTableUnsetPropertiesRequest() *HybridTableUnsetPropertiesRequest {
 
 func (s *HybridTableUnsetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
 	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
+	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithChangeTracking(changeTracking bool) *HybridTableUnsetPropertiesRequest {
+	s.ChangeTracking = &changeTracking
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *HybridTableUnsetPropertiesRequest {
+	s.DefaultDdlCollation = &defaultDdlCollation
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *HybridTableUnsetPropertiesRequest {
+	s.EnableSchemaEvolution = &enableSchemaEvolution
 	return s
 }
 

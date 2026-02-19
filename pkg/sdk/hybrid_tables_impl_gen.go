@@ -129,24 +129,34 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 	}
 	if r.DropColumnAction != nil {
 		opts.DropColumnAction = &HybridTableDropColumnAction{
-			ColumnName: r.DropColumnAction.ColumnName,
+			IfExists: r.DropColumnAction.IfExists,
+			Columns:  r.DropColumnAction.Columns,
 		}
 	}
 	if r.DropIndexAction != nil {
 		opts.DropIndexAction = &HybridTableDropIndexAction{
+			IfExists:  r.DropIndexAction.IfExists,
 			IndexName: r.DropIndexAction.IndexName,
 		}
 	}
 	if r.Set != nil {
 		opts.Set = &HybridTableSetProperties{
-			DataRetentionTimeInDays: r.Set.DataRetentionTimeInDays,
-			Comment:                 r.Set.Comment,
+			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
+			ChangeTracking:             r.Set.ChangeTracking,
+			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
+			EnableSchemaEvolution:      r.Set.EnableSchemaEvolution,
+			Comment:                    r.Set.Comment,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &HybridTableUnsetProperties{
-			DataRetentionTimeInDays: r.Unset.DataRetentionTimeInDays,
-			Comment:                 r.Unset.Comment,
+			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
+			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
+			ChangeTracking:             r.Unset.ChangeTracking,
+			DefaultDdlCollation:        r.Unset.DefaultDdlCollation,
+			EnableSchemaEvolution:      r.Unset.EnableSchemaEvolution,
+			Comment:                    r.Unset.Comment,
 		}
 	}
 	return opts
@@ -156,6 +166,7 @@ func (r *DropHybridTableRequest) toOpts() *DropHybridTableOptions {
 	opts := &DropHybridTableOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
+		Cascade:  r.Cascade,
 		Restrict: r.Restrict,
 	}
 	return opts
