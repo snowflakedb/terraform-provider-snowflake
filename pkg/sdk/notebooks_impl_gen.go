@@ -11,6 +11,7 @@ import (
 var _ Notebooks = (*notebooks)(nil)
 
 var _ convertibleRow[NotebookDetails] = new(NotebookDetailsRow)
+
 var _ convertibleRow[Notebook] = new(notebookRow)
 
 type notebooks struct {
