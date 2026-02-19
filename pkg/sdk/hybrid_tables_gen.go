@@ -98,8 +98,8 @@ type HybridTableAlterColumnAction struct {
 // HybridTableModifyColumnAction is an alias for ALTER COLUMN.
 // MODIFY is an alias for ALTER in Snowflake when working with columns.
 type HybridTableModifyColumnAction struct {
-	modifyColumn bool   `ddl:"static" sql:"MODIFY COLUMN"`
-	ColumnName   string `ddl:"keyword"`
+	modifyColumn bool    `ddl:"static" sql:"MODIFY COLUMN"`
+	ColumnName   string  `ddl:"keyword"`
 	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
 	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
 }

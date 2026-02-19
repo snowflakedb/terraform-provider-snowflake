@@ -80,7 +80,6 @@ var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	OptionalSQL("IF EXISTS").
 	Text("IndexName", g.KeywordOptions().Required())
 
-
 // hybridTableSetProperties defines ALTER TABLE ... SET for hybrid tables.
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
