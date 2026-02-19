@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// --- Manually-defined types for CREATE HYBRID TABLE body (rule 13) ---
+// --- Manually-defined types for CREATE HYBRID TABLE body ---
 // The column, constraint, and index structures in a CREATE HYBRID TABLE statement
 // are too complex for the generator DSL. These types are referenced by the generated
 // CreateHybridTableOptions via the PredefinedQueryStructField "ColumnsAndConstraints".
@@ -59,7 +59,7 @@ type HybridTableOutOfLineIndex struct {
 	IncludeColumns []string `ddl:"keyword,parentheses" sql:"INCLUDE"`
 }
 
-// --- Standalone CREATE INDEX / DROP INDEX commands (rule 13) ---
+// --- Standalone CREATE INDEX / DROP INDEX commands ---
 // These are standalone SQL commands, not part of ALTER TABLE.
 // https://docs.snowflake.com/en/sql-reference/sql/create-index
 // https://docs.snowflake.com/en/sql-reference/sql/drop-index
@@ -216,11 +216,9 @@ func (v *hybridTables) DropIndex(ctx context.Context, request *DropHybridTableIn
 	return validateAndExec(v.client, ctx, opts)
 }
 
-// --- SHOW INDEXES command (rule 13) ---
+// --- SHOW INDEXES command ---
 // Standalone SHOW INDEXES command for hybrid tables.
 // https://docs.snowflake.com/en/sql-reference/sql/show-indexes
-// Note: This is a hybrid-table-specific command; output columns validated against
-// official Snowflake documentation for SHOW INDEXES.
 
 // ShowHybridTableIndexesOptions represents SHOW INDEXES [IN <table>].
 type ShowHybridTableIndexesOptions struct {
@@ -325,7 +323,7 @@ func (v *hybridTables) ShowIndexes(ctx context.Context, request *ShowHybridTable
 	return convertRows[hybridTableIndexRow, HybridTableIndex](dbRows)
 }
 
-// --- convert() implementations for generated row structs (rule 13) ---
+// --- convert() implementations for generated row structs ---
 // These convert() functions map database row structs to public domain objects.
 // They are manually implemented here instead of in generated files to allow
 // customization without being overwritten by the generator.
@@ -389,23 +387,3 @@ func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
 	}
 	return details, nil
 }
-
-// --- Rule 9 documentation: Discrepancies between Snowflake docs and actual behavior ---
-//
-// 1. DROP HYBRID TABLE vs DROP TABLE:
-//    Codebase insights reference "DROP HYBRID TABLE" syntax, but official Snowflake docs
-//    (https://docs.snowflake.com/en/sql-reference/sql/drop-table) use "DROP TABLE".
-//    The SDK implements "DROP TABLE" per official docs. This needs validation via
-//    integration tests to confirm which syntax is accepted.
-//
-// 2. CREATE INDEX and UNIQUE:
-//    Codebase insights say "Supports UNIQUE indexes", but official Snowflake docs
-//    (https://docs.snowflake.com/en/sql-reference/sql/create-index) explicitly state
-//    "The CREATE INDEX command cannot be used to add a foreign, primary, or unique key
-//    constraint." UNIQUE indexes are created via UNIQUE constraints (ALTER TABLE ADD UNIQUE
-//    or inline UNIQUE), not via CREATE INDEX. The SDK follows official docs.
-//
-// 3. ALTER TABLE ... DROP INDEX / BUILD INDEX:
-//    Codebase insights show these as ALTER TABLE sub-commands. Official docs do not
-//    document these. They are included in the SDK based on codebase insights and will
-//    be validated via integration tests.

@@ -47,34 +47,6 @@ func TestHybridTables_Create(t *testing.T) {
 		opts.Comment = String("test comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s DATA_RETENTION_TIME_IN_DAYS = 7 COMMENT = 'test comment'`, id.FullyQualifiedName())
 	})
-
-	t.Run("with OR REPLACE", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("with IF NOT EXISTS", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE IF NOT EXISTS %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("with COMMENT", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
-		opts.Comment = String("table comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s COMMENT = 'table comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("with DATA_RETENTION_TIME_IN_DAYS", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
-		opts.DataRetentionTimeInDays = Int(0)
-		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s DATA_RETENTION_TIME_IN_DAYS = 0`, id.FullyQualifiedName())
-	})
 }
 
 func TestHybridTables_Alter(t *testing.T) {
@@ -110,7 +82,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s SET COMMENT = 'new comment'`, id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
+	t.Run("all options - set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.Set = &HybridTableSetProperties{
@@ -120,7 +92,17 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 14 COMMENT = 'updated comment'`, id.FullyQualifiedName())
 	})
 
-	t.Run("ALTER COLUMN SET COMMENT", func(t *testing.T) {
+	t.Run("all options - unset", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.Unset = &HybridTableUnsetProperties{
+			DataRetentionTimeInDays: Bool(true),
+			Comment:                 Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s UNSET DATA_RETENTION_TIME_IN_DAYS COMMENT`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: column set comment", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AlterColumnAction = &HybridTableAlterColumnAction{
 			ColumnName: "column1",
@@ -129,7 +111,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 COMMENT 'column comment'`, id.FullyQualifiedName())
 	})
 
-	t.Run("ALTER COLUMN UNSET COMMENT", func(t *testing.T) {
+	t.Run("alter: column unset comment", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AlterColumnAction = &HybridTableAlterColumnAction{
 			ColumnName:   "column1",
@@ -138,7 +120,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 UNSET COMMENT`, id.FullyQualifiedName())
 	})
 
-	t.Run("DROP COLUMN", func(t *testing.T) {
+	t.Run("alter: drop column", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.DropColumnAction = &HybridTableDropColumnAction{
 			ColumnName: "column_to_drop",
@@ -146,7 +128,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP COLUMN column_to_drop`, id.FullyQualifiedName())
 	})
 
-	t.Run("DROP INDEX", func(t *testing.T) {
+	t.Run("alter: drop index", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.DropIndexAction = &HybridTableDropIndexAction{
 			IndexName: "idx_name",
@@ -154,25 +136,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP INDEX idx_name`, id.FullyQualifiedName())
 	})
 
-	t.Run("BUILD INDEX with FENCE", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.BuildIndexAction = &HybridTableBuildIndexAction{
-			IndexName: "idx_name",
-			Fence:     Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s BUILD INDEX idx_name FENCE`, id.FullyQualifiedName())
-	})
-
-	t.Run("BUILD INDEX with BACKFILL", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.BuildIndexAction = &HybridTableBuildIndexAction{
-			IndexName: "idx_name",
-			Backfill:  Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s BUILD INDEX idx_name BACKFILL`, id.FullyQualifiedName())
-	})
-
-	t.Run("BUILD INDEX with FENCE and BACKFILL", func(t *testing.T) {
+	t.Run("alter: build index with all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.BuildIndexAction = &HybridTableBuildIndexAction{
 			IndexName: "idx_name",
@@ -182,39 +146,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s BUILD INDEX idx_name FENCE BACKFILL`, id.FullyQualifiedName())
 	})
 
-	t.Run("SET DATA_RETENTION_TIME_IN_DAYS", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &HybridTableSetProperties{
-			DataRetentionTimeInDays: Int(7),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s SET DATA_RETENTION_TIME_IN_DAYS = 7`, id.FullyQualifiedName())
-	})
-
-	t.Run("SET COMMENT", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &HybridTableSetProperties{
-			Comment: String("new comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s SET COMMENT = 'new comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("UNSET DATA_RETENTION_TIME_IN_DAYS", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &HybridTableUnsetProperties{
-			DataRetentionTimeInDays: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS`, id.FullyQualifiedName())
-	})
-
-	t.Run("UNSET COMMENT", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &HybridTableUnsetProperties{
-			Comment: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s UNSET COMMENT`, id.FullyQualifiedName())
-	})
-
-	t.Run("ADD CONSTRAINT UNIQUE", func(t *testing.T) {
+	t.Run("alter: add constraint unique", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &HybridTableConstraintAction{
 			Add: &HybridTableConstraintActionAdd{
@@ -227,7 +159,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD UNIQUE (col1, col2)`, id.FullyQualifiedName())
 	})
 
-	t.Run("DROP CONSTRAINT by name", func(t *testing.T) {
+	t.Run("alter: drop constraint by name", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &HybridTableConstraintAction{
 			Drop: &HybridTableConstraintActionDrop{
@@ -237,7 +169,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP CONSTRAINT constraint_name`, id.FullyQualifiedName())
 	})
 
-	t.Run("DROP CONSTRAINT by type", func(t *testing.T) {
+	t.Run("alter: drop constraint by type", func(t *testing.T) {
 		opts := defaultOpts()
 		constraintType := ColumnConstraintTypeUnique
 		opts.ConstraintAction = &HybridTableConstraintAction{
@@ -249,7 +181,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP UNIQUE (col1)`, id.FullyQualifiedName())
 	})
 
-	t.Run("RENAME CONSTRAINT", func(t *testing.T) {
+	t.Run("alter: rename constraint", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &HybridTableConstraintAction{
 			Rename: &HybridTableConstraintActionRename{
@@ -292,18 +224,6 @@ func TestHybridTables_Drop(t *testing.T) {
 		opts.Restrict = Bool(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE IF EXISTS %s RESTRICT`, id.FullyQualifiedName())
 	})
-
-	t.Run("with IF EXISTS", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE IF EXISTS %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("with RESTRICT", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Restrict = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE %s RESTRICT`, id.FullyQualifiedName())
-	})
 }
 
 func TestHybridTables_Show(t *testing.T) {
@@ -332,43 +252,25 @@ func TestHybridTables_Show(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE HYBRID TABLES LIKE 'some_pattern' IN SCHEMA "db"."schema" STARTS WITH 'prefix' LIMIT 10`)
 	})
 
-	t.Run("with TERSE", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE HYBRID TABLES`)
-	})
-
-	t.Run("with LIKE", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("pattern_test")}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES LIKE 'pattern_test'`)
-	})
-
-	t.Run("with IN DATABASE", func(t *testing.T) {
+	t.Run("show with in database", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.In = &In{Database: NewAccountObjectIdentifier("test_db")}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES IN DATABASE "test_db"`)
 	})
 
-	t.Run("with IN SCHEMA", func(t *testing.T) {
+	t.Run("show with in schema", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.In = &In{Schema: NewDatabaseObjectIdentifier("test_db", "test_schema")}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES IN SCHEMA "test_db"."test_schema"`)
 	})
 
-	t.Run("with STARTS WITH", func(t *testing.T) {
+	t.Run("show with like", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.StartsWith = String("test_prefix")
-		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES STARTS WITH 'test_prefix'`)
+		opts.Like = &Like{Pattern: String("pattern_test")}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES LIKE 'pattern_test'`)
 	})
 
-	t.Run("with LIMIT", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{Rows: Int(5)}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES LIMIT 5`)
-	})
-
-	t.Run("with LIMIT FROM", func(t *testing.T) {
+	t.Run("show with limit", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Limit = &LimitFrom{Rows: Int(10), From: String("table_name")}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES LIMIT 10 FROM 'table_name'`)
@@ -396,11 +298,6 @@ func TestHybridTables_Describe(t *testing.T) {
 	})
 
 	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE TABLE %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE TABLE %s`, id.FullyQualifiedName())
 	})

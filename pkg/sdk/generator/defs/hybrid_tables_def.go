@@ -13,7 +13,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 		"Add",
 		g.NewQueryStruct("HybridTableConstraintActionAdd").
 			SQL("ADD").
-			// Uses manually-defined HybridTableOutOfLineConstraint in hybrid_tables_ext.go (rule 13).
+			// Uses manually-defined HybridTableOutOfLineConstraint in hybrid_tables_ext.go.
 			PredefinedQueryStructField("OutOfLineConstraint", "HybridTableOutOfLineConstraint", g.KeywordOptions().Required()),
 		g.KeywordOptions(),
 	).
@@ -36,7 +36,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 	)
 
 // hybridTableAlterColumnAction defines ALTER TABLE ... ALTER COLUMN for hybrid tables.
-// Per Snowflake docs: "For interactive tables, currently the only clauses that you can use
+// Per Snowflake docs: "For hybrid tables, currently the only clauses that you can use
 // with the ALTER TABLE MODIFY COLUMN command are COMMENT and UNSET COMMENT."
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
 	SQL("ALTER COLUMN").
@@ -46,8 +46,6 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 
 // hybridTableDropColumnAction defines ALTER TABLE ... DROP COLUMN for hybrid tables.
 // Per Snowflake codebase: DROP COLUMN considers index dependencies.
-// This is confirmed in the Snowflake codebase but not prominently documented.
-// Deviation documented per rule 9.
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required())
@@ -64,7 +62,6 @@ var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 // Per Snowflake codebase: ALTER TABLE <table_name> BUILD INDEX <index_name> [FENCE | BACKFILL]
 // FENCE: Coordinates index builds with ongoing writes.
 // BACKFILL: Populates index with existing table data.
-// Not documented in official Snowflake docs — discovered via codebase analysis (rule 9).
 var hybridTableBuildIndexAction = g.NewQueryStruct("HybridTableBuildIndexAction").
 	SQL("BUILD INDEX").
 	Text("IndexName", g.KeywordOptions().Required()).
@@ -72,15 +69,16 @@ var hybridTableBuildIndexAction = g.NewQueryStruct("HybridTableBuildIndexAction"
 	OptionalSQL("BACKFILL")
 
 // hybridTableSetProperties defines ALTER TABLE ... SET for hybrid tables.
-// DATA_RETENTION_TIME_IN_DAYS is confirmed by Snowflake codebase but not in official CREATE docs (rule 9).
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes())
+	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "Comment")
 
 // hybridTableUnsetProperties defines ALTER TABLE ... UNSET for hybrid tables.
 var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
 	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
-	OptionalSQL("COMMENT")
+	OptionalSQL("COMMENT").
+	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "Comment")
 
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
@@ -96,10 +94,8 @@ var hybridTablesDef = g.NewInterface(
 		Name().
 		// Columns, out-of-line constraints, and indexes are in a parenthesized body.
 		// Uses manually-defined HybridTableColumnsConstraintsAndIndexes in hybrid_tables_ext.go
-		// because the column/constraint/index structure is too complex for the generator DSL (rule 13).
+		// because the column/constraint/index structure is too complex for the generator DSL.
 		PredefinedQueryStructField("ColumnsAndConstraints", "HybridTableColumnsConstraintsAndIndexes", g.ListOptions().Parentheses().Required()).
-		// DATA_RETENTION_TIME_IN_DAYS: not in official CREATE HYBRID TABLE docs but confirmed
-		// by Snowflake codebase (rule 9). Needs integration test verification.
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
@@ -201,7 +197,7 @@ var hybridTablesDef = g.NewInterface(
 		Text("type").
 		Text("kind").
 		// The actual Snowflake column name is "null?" but the generator produces db:"null" from Text("null").
-		// This MUST be manually adjusted to db:"null?" in the generated file (rule 13).
+		// This MUST be manually adjusted to db:"null?" in the generated file.
 		Text("null").
 		OptionalText("default").
 		Text("primary key").
