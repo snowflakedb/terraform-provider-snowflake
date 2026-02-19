@@ -21,9 +21,17 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 		"Drop",
 		g.NewQueryStruct("HybridTableConstraintActionDrop").
 			SQL("DROP").
+			// One of: ConstraintName, PrimaryKey, Unique, ForeignKey (with optional Columns)
 			OptionalText("ConstraintName", g.KeywordOptions().SQL("CONSTRAINT")).
-			PredefinedQueryStructField("ColumnConstraintType", "*ColumnConstraintType", g.KeywordOptions()).
-			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()),
+			OptionalSQL("PRIMARY KEY").
+			OptionalSQL("UNIQUE").
+			OptionalSQL("FOREIGN KEY").
+			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
+			// CASCADE or RESTRICT
+			OptionalSQL("CASCADE").
+			OptionalSQL("RESTRICT").
+			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey").
+			WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
 		g.KeywordOptions(),
 	).
 	OptionalQueryStructField(
@@ -140,7 +148,7 @@ var hybridTablesDef = g.NewInterface(
 ).ShowOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-hybrid-tables",
 	g.DbStruct("hybridTableRow").
-		Field("created_on", "time.Time").
+		Time("created_on").
 		Text("name").
 		Text("database_name").
 		Text("schema_name").
@@ -150,15 +158,15 @@ var hybridTablesDef = g.NewInterface(
 		OptionalText("comment").
 		OptionalText("owner_role_type"),
 	g.PlainStruct("HybridTable").
-		Field("CreatedOn", "time.Time").
-		Field("Name", "string").
-		Field("DatabaseName", "string").
-		Field("SchemaName", "string").
-		Field("Owner", "string").
-		Field("Rows", "int").
-		Field("Bytes", "int").
-		Field("Comment", "string").
-		Field("OwnerRoleType", "string"),
+		Time("CreatedOn").
+		Text("Name").
+		Text("DatabaseName").
+		Text("SchemaName").
+		Text("Owner").
+		Number("Rows").
+		Number("Bytes").
+		Text("Comment").
+		Text("OwnerRoleType"),
 	g.NewQueryStruct("ShowHybridTables").
 		Show().
 		Terse().
@@ -190,19 +198,19 @@ var hybridTablesDef = g.NewInterface(
 		OptionalText("privacy domain").
 		OptionalText("schema_evolution_record"),
 	g.PlainStruct("HybridTableDetails").
-		Field("Name", "string").
-		Field("Type", "string").
-		Field("Kind", "string").
-		Field("IsNullable", "string").
-		Field("Default", "string").
-		Field("PrimaryKey", "string").
-		Field("UniqueKey", "string").
-		Field("Check", "string").
-		Field("Expression", "string").
-		Field("Comment", "string").
-		Field("PolicyName", "string").
-		Field("PrivacyDomain", "string").
-		Field("SchemaEvolutionRecord", "string"),
+		Text("Name").
+		Text("Type").
+		Text("Kind").
+		Text("IsNullable").
+		Text("Default").
+		Text("PrimaryKey").
+		Text("UniqueKey").
+		Text("Check").
+		Text("Expression").
+		Text("Comment").
+		Text("PolicyName").
+		Text("PrivacyDomain").
+		Text("SchemaEvolutionRecord"),
 	g.NewQueryStruct("DescribeHybridTable").
 		Describe().
 		SQL("TABLE").
