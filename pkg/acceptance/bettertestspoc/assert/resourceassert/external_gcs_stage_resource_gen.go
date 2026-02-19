@@ -67,6 +67,11 @@ func (e *ExternalGcsStageResourceAssert) HasEncryptionString(expected string) *E
 	return e
 }
 
+func (e *ExternalGcsStageResourceAssert) HasFileFormatString(expected string) *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format", expected))
+	return e
+}
+
 func (e *ExternalGcsStageResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return e
@@ -157,6 +162,11 @@ func (e *ExternalGcsStageResourceAssert) HasDirectoryEmpty() *ExternalGcsStageRe
 
 func (e *ExternalGcsStageResourceAssert) HasEncryptionEmpty() *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("encryption.#", "0"))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasFileFormatEmpty() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
 	return e
 }
 
