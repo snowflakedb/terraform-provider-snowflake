@@ -72,7 +72,10 @@ type HybridTableConstraintActionDrop struct {
 type HybridTableConstraintActionRename struct {
 	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
 	OldName          string `ddl:"keyword"`
-	NewName          string `ddl:"keyword" sql:"TO"`
+	// Manually adjusted from ddl:"keyword" to ddl:"parameter,no_equals" per rule 13.
+	// The generator produces ddl:"keyword" sql:"TO" which doesn't emit the TO keyword.
+	// See tables.go:368 TableConstraintRenameAction for the correct pattern.
+	NewName string `ddl:"parameter,no_equals" sql:"TO"`
 }
 
 type HybridTableAlterColumnAction struct {

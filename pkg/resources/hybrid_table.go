@@ -477,6 +477,9 @@ func UpdateContextHybridTable(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	// Enable partial state mode to protect against partial failures during multi-ALTER updates
+	d.Partial(true)
+
 	// Handle updates to DATA_RETENTION_TIME_IN_DAYS or COMMENT
 	if d.HasChange("data_retention_time_in_days") || d.HasChange("comment") {
 		setReq := sdk.NewAlterHybridTableRequest(id)
@@ -529,6 +532,9 @@ func UpdateContextHybridTable(ctx context.Context, d *schema.ResourceData, meta 
 	// more complex alter operations or recreation. For the initial implementation,
 	// these are marked as ForceNew in the schema, so Terraform will handle recreation.
 	// Advanced column/index management can be added in future iterations.
+
+	// Disable partial state mode before final read
+	d.Partial(false)
 
 	return ReadContextHybridTable(true)(ctx, d, meta)
 }

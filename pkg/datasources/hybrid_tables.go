@@ -197,7 +197,7 @@ func ReadHybridTables(ctx context.Context, d *schema.ResourceData, meta any) dia
 		request.WithLimit(limit)
 	}
 
-	hts, err := client.HybridTables.Show(context.Background(), request)
+	hts, err := client.HybridTables.Show(ctx, request)
 	if err != nil {
 		log.Printf("[DEBUG] snowflake_hybrid_tables.go: %v", err)
 		d.SetId("")
