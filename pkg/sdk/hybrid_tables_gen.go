@@ -38,16 +38,17 @@ type CreateHybridTableOptions struct {
 
 // AlterHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-table.
 type AlterHybridTableOptions struct {
-	alter             bool                          `ddl:"static" sql:"ALTER"`
-	table             bool                          `ddl:"static" sql:"TABLE"`
-	IfExists          *bool                         `ddl:"keyword" sql:"IF EXISTS"`
-	name              SchemaObjectIdentifier        `ddl:"identifier"`
-	ConstraintAction  *HybridTableConstraintAction  `ddl:"keyword"`
-	AlterColumnAction *HybridTableAlterColumnAction `ddl:"keyword"`
-	DropColumnAction  *HybridTableDropColumnAction  `ddl:"keyword"`
-	DropIndexAction   *HybridTableDropIndexAction   `ddl:"keyword"`
-	Set               *HybridTableSetProperties     `ddl:"keyword" sql:"SET"`
-	Unset             *HybridTableUnsetProperties   `ddl:"keyword" sql:"UNSET"`
+	alter              bool                           `ddl:"static" sql:"ALTER"`
+	table              bool                           `ddl:"static" sql:"TABLE"`
+	IfExists           *bool                          `ddl:"keyword" sql:"IF EXISTS"`
+	name               SchemaObjectIdentifier         `ddl:"identifier"`
+	ConstraintAction   *HybridTableConstraintAction   `ddl:"keyword"`
+	AlterColumnAction  *HybridTableAlterColumnAction  `ddl:"keyword"`
+	ModifyColumnAction *HybridTableModifyColumnAction `ddl:"keyword"`
+	DropColumnAction   *HybridTableDropColumnAction   `ddl:"keyword"`
+	DropIndexAction    *HybridTableDropIndexAction    `ddl:"keyword"`
+	Set                *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
+	Unset              *HybridTableUnsetProperties    `ddl:"keyword" sql:"UNSET"`
 }
 
 type HybridTableConstraintAction struct {
@@ -87,6 +88,15 @@ type HybridTableAlterColumnAction struct {
 	ColumnName  string `ddl:"keyword"`
 	// Manually adjusted: ALTER COLUMN syntax requires "COMMENT 'value'" not "COMMENT = 'value'"
 	// See: https://docs.snowflake.com/en/sql-reference/sql/alter-table
+	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
+	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
+}
+
+// HybridTableModifyColumnAction is an alias for ALTER COLUMN.
+// MODIFY is an alias for ALTER in Snowflake when working with columns.
+type HybridTableModifyColumnAction struct {
+	modifyColumn bool   `ddl:"static" sql:"MODIFY COLUMN"`
+	ColumnName   string `ddl:"keyword"`
 	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
 	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
 }

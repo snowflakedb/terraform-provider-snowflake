@@ -20,14 +20,15 @@ type CreateHybridTableRequest struct {
 }
 
 type AlterHybridTableRequest struct {
-	IfExists          *bool
-	name              SchemaObjectIdentifier // required
-	ConstraintAction  *HybridTableConstraintActionRequest
-	AlterColumnAction *HybridTableAlterColumnActionRequest
-	DropColumnAction  *HybridTableDropColumnActionRequest
-	DropIndexAction   *HybridTableDropIndexActionRequest
-	Set               *HybridTableSetPropertiesRequest
-	Unset             *HybridTableUnsetPropertiesRequest
+	IfExists           *bool
+	name               SchemaObjectIdentifier // required
+	ConstraintAction   *HybridTableConstraintActionRequest
+	AlterColumnAction  *HybridTableAlterColumnActionRequest
+	ModifyColumnAction *HybridTableModifyColumnActionRequest
+	DropColumnAction   *HybridTableDropColumnActionRequest
+	DropIndexAction    *HybridTableDropIndexActionRequest
+	Set                *HybridTableSetPropertiesRequest
+	Unset              *HybridTableUnsetPropertiesRequest
 }
 
 type HybridTableConstraintActionRequest struct {
@@ -56,6 +57,12 @@ type HybridTableConstraintActionRenameRequest struct {
 }
 
 type HybridTableAlterColumnActionRequest struct {
+	ColumnName   string // required
+	Comment      *string
+	UnsetComment *bool
+}
+
+type HybridTableModifyColumnActionRequest struct {
 	ColumnName   string // required
 	Comment      *string
 	UnsetComment *bool

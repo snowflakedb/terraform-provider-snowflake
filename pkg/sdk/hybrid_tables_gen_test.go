@@ -69,9 +69,9 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.ConstraintAction opts.AlterColumnAction opts.DropColumnAction opts.DropIndexAction opts.Set opts.Unset] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.ConstraintAction opts.AlterColumnAction opts.ModifyColumnAction opts.DropColumnAction opts.DropIndexAction opts.Set opts.Unset] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
 	})
 
 	t.Run("validation: drop constraint - exactly one constraint type required", func(t *testing.T) {
@@ -138,6 +138,24 @@ func TestHybridTables_Alter(t *testing.T) {
 			UnsetComment: Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 UNSET COMMENT`, id.FullyQualifiedName())
+	})
+
+	t.Run("modify: column set comment", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ModifyColumnAction = &HybridTableModifyColumnAction{
+			ColumnName: "column1",
+			Comment:    String("column comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s MODIFY COLUMN column1 COMMENT 'column comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("modify: column unset comment", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ModifyColumnAction = &HybridTableModifyColumnAction{
+			ColumnName:   "column1",
+			UnsetComment: Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s MODIFY COLUMN column1 UNSET COMMENT`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop column", func(t *testing.T) {

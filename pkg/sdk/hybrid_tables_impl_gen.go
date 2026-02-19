@@ -120,6 +120,13 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 			UnsetComment: r.AlterColumnAction.UnsetComment,
 		}
 	}
+	if r.ModifyColumnAction != nil {
+		opts.ModifyColumnAction = &HybridTableModifyColumnAction{
+			ColumnName:   r.ModifyColumnAction.ColumnName,
+			Comment:      r.ModifyColumnAction.Comment,
+			UnsetComment: r.ModifyColumnAction.UnsetComment,
+		}
+	}
 	if r.DropColumnAction != nil {
 		opts.DropColumnAction = &HybridTableDropColumnAction{
 			ColumnName: r.DropColumnAction.ColumnName,

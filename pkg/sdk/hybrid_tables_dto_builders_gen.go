@@ -55,6 +55,11 @@ func (s *AlterHybridTableRequest) WithAlterColumnAction(alterColumnAction Hybrid
 	return s
 }
 
+func (s *AlterHybridTableRequest) WithModifyColumnAction(modifyColumnAction HybridTableModifyColumnActionRequest) *AlterHybridTableRequest {
+	s.ModifyColumnAction = &modifyColumnAction
+	return s
+}
+
 func (s *AlterHybridTableRequest) WithDropColumnAction(dropColumnAction HybridTableDropColumnActionRequest) *AlterHybridTableRequest {
 	s.DropColumnAction = &dropColumnAction
 	return s
@@ -167,6 +172,24 @@ func (s *HybridTableAlterColumnActionRequest) WithComment(comment string) *Hybri
 }
 
 func (s *HybridTableAlterColumnActionRequest) WithUnsetComment(unsetComment bool) *HybridTableAlterColumnActionRequest {
+	s.UnsetComment = &unsetComment
+	return s
+}
+
+func NewHybridTableModifyColumnActionRequest(
+	columnName string,
+) *HybridTableModifyColumnActionRequest {
+	s := HybridTableModifyColumnActionRequest{}
+	s.ColumnName = columnName
+	return &s
+}
+
+func (s *HybridTableModifyColumnActionRequest) WithComment(comment string) *HybridTableModifyColumnActionRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *HybridTableModifyColumnActionRequest) WithUnsetComment(unsetComment bool) *HybridTableModifyColumnActionRequest {
 	s.UnsetComment = &unsetComment
 	return s
 }
