@@ -62,9 +62,6 @@ type HybridTableConstraintActionAdd struct {
 	OutOfLineConstraint HybridTableOutOfLineConstraint `ddl:"keyword"`
 }
 
-// HybridTableConstraintActionDrop follows the common Constraint Drop Action Pattern.
-// See common_table_types.go for canonical documentation and ValidateConstraintDropFields.
-// This struct mirrors TableConstraintDropAction from tables.go.
 type HybridTableConstraintActionDrop struct {
 	drop bool `ddl:"static" sql:"DROP"`
 	// One of: ConstraintName, PrimaryKey, Unique, ForeignKey (with optional Columns)
@@ -108,23 +105,33 @@ type HybridTableModifyColumnAction struct {
 }
 
 type HybridTableDropColumnAction struct {
-	dropColumn bool   `ddl:"static" sql:"DROP COLUMN"`
-	ColumnName string `ddl:"keyword"`
+	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
+	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
+	Columns    []string `ddl:"keyword"`
 }
 
 type HybridTableDropIndexAction struct {
 	dropIndex bool   `ddl:"static" sql:"DROP INDEX"`
+	IfExists  *bool  `ddl:"keyword" sql:"IF EXISTS"`
 	IndexName string `ddl:"keyword"`
 }
 
 type HybridTableSetProperties struct {
-	DataRetentionTimeInDays *int    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	Comment                 *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	DataRetentionTimeInDays    *int    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool   `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	DefaultDdlCollation        *string `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	EnableSchemaEvolution      *bool   `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
+	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type HybridTableUnsetProperties struct {
-	DataRetentionTimeInDays *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	Comment                 *bool `ddl:"keyword" sql:"COMMENT"`
+	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool `ddl:"keyword" sql:"CHANGE_TRACKING"`
+	DefaultDdlCollation        *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
+	EnableSchemaEvolution      *bool `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
+	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.
@@ -133,6 +140,7 @@ type DropHybridTableOptions struct {
 	table    bool                   `ddl:"static" sql:"TABLE"`
 	IfExists *bool                  `ddl:"keyword" sql:"IF EXISTS"`
 	name     SchemaObjectIdentifier `ddl:"identifier"`
+	Cascade  *bool                  `ddl:"keyword" sql:"CASCADE"`
 	Restrict *bool                  `ddl:"keyword" sql:"RESTRICT"`
 }
 

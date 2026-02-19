@@ -9,6 +9,8 @@ var (
 	_ validatable = new(ShowHybridTableOptions)
 	_ validatable = new(DescribeHybridTableOptions)
 	_ validatable = new(HybridTableConstraintActionDrop)
+	_ validatable = new(HybridTableSetProperties)
+	_ validatable = new(HybridTableUnsetProperties)
 )
 
 func (opts *CreateHybridTableOptions) validate() error {
@@ -41,6 +43,16 @@ func (opts *AlterHybridTableOptions) validate() error {
 			errs = append(errs, err)
 		}
 	}
+	if opts.Set != nil {
+		if err := opts.Set.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if opts.Unset != nil {
+		if err := opts.Unset.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -66,6 +78,9 @@ func (opts *DropHybridTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if everyValueSet(opts.Cascade, opts.Restrict) {
+		errs = append(errs, errOneOf("DropHybridTableOptions", "Cascade", "Restrict"))
+	}
 	return JoinErrors(errs...)
 }
 
@@ -84,6 +99,28 @@ func (opts *DescribeHybridTableOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *HybridTableSetProperties) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !anyValueSet(opts.DataRetentionTimeInDays, opts.MaxDataExtensionTimeInDays, opts.ChangeTracking, opts.DefaultDdlCollation, opts.EnableSchemaEvolution, opts.Comment) {
+		errs = append(errs, errAtLeastOneOf("HybridTableSetProperties", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *HybridTableUnsetProperties) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !anyValueSet(opts.DataRetentionTimeInDays, opts.MaxDataExtensionTimeInDays, opts.ChangeTracking, opts.DefaultDdlCollation, opts.EnableSchemaEvolution, opts.Comment) {
+		errs = append(errs, errAtLeastOneOf("HybridTableUnsetProperties", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
 	}
 	return JoinErrors(errs...)
 }

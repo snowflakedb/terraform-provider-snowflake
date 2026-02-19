@@ -46,13 +46,24 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 // hybridTableAlterColumnAction defines ALTER TABLE ... ALTER COLUMN for hybrid tables.
 // Per Snowflake docs: "For hybrid tables, currently the only clauses that you can use
 // with the ALTER TABLE MODIFY COLUMN command are COMMENT and UNSET COMMENT."
+// https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
 	SQL("ALTER COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	OptionalSQL("UNSET COMMENT")
 
+// hybridTableModifyColumnAction defines ALTER TABLE ... MODIFY COLUMN for hybrid tables.
+// MODIFY is an alias for ALTER in Snowflake when working with columns.
+// https://docs.snowflake.com/en/sql-reference/sql/alter-table
+var hybridTableModifyColumnAction = g.NewQueryStruct("HybridTableModifyColumnAction").
+	SQL("MODIFY COLUMN").
+	Text("ColumnName", g.KeywordOptions().Required()).
+	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+	OptionalSQL("UNSET COMMENT")
+
 // hybridTableDropColumnAction defines ALTER TABLE ... DROP COLUMN for hybrid tables.
+// https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required())
@@ -60,6 +71,7 @@ var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction"
 // hybridTableDropIndexAction defines ALTER TABLE ... DROP INDEX for hybrid tables.
 // Syntax: ALTER TABLE <table_name> DROP INDEX <index_name>
 // This is an alternative to the standalone DROP INDEX command.
+// https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	SQL("DROP INDEX").
 	Text("IndexName", g.KeywordOptions().Required())
@@ -68,14 +80,22 @@ var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 // hybridTableSetProperties defines ALTER TABLE ... SET for hybrid tables.
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
+	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
+	OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
+	OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
+	OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "Comment")
+	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment")
 
 // hybridTableUnsetProperties defines ALTER TABLE ... UNSET for hybrid tables.
 var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
 	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
+	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
+	OptionalSQL("CHANGE_TRACKING").
+	OptionalSQL("DEFAULT_DDL_COLLATION").
+	OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
 	OptionalSQL("COMMENT").
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "Comment")
+	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment")
 
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
@@ -115,6 +135,11 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
+			"ModifyColumnAction",
+			hybridTableModifyColumnAction,
+			g.KeywordOptions(),
+		).
+		OptionalQueryStructField(
 			"DropColumnAction",
 			hybridTableDropColumnAction,
 			g.KeywordOptions(),
@@ -135,7 +160,7 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"),
+		WithValidation(g.ExactlyOneValueSet, "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
@@ -174,7 +199,7 @@ var hybridTablesDef = g.NewInterface(
 		OptionalLike().
 		OptionalIn().
 		OptionalStartsWith().
-		OptionalLimit(),
+		OptionalLimitFrom(),
 ).ShowByIdOperationWithFiltering(
 	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
