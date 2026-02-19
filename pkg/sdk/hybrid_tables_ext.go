@@ -7,12 +7,24 @@ import (
 )
 
 // --- Manually-defined types for CREATE HYBRID TABLE body ---
-// The column, constraint, and index structures in a CREATE HYBRID TABLE statement
-// are too complex for the generator DSL. These types are referenced by the generated
-// CreateHybridTableOptions via the PredefinedQueryStructField "ColumnsAndConstraints".
+//
+// IMPORTANT: These structs are defined here because the SDK generator does NOT
+// recursively generate nested struct types when using QueryStructField or
+// ListQueryStructField. The canonical DSL definitions for these structures are in:
+//
+//   pkg/sdk/generator/defs/hybrid_tables_def.go
+//
+// When modifying these structures:
+//   1. Update the DSL definition in hybrid_tables_def.go FIRST
+//   2. Then update the Go struct here to match
+//
+// The DSL definitions serve as the source of truth and documentation.
+// These Go structs are referenced by the generated CreateHybridTableOptions
+// via PredefinedQueryStructField "ColumnsAndConstraints".
 
 // HybridTableColumnsConstraintsAndIndexes is the parenthesized body of CREATE HYBRID TABLE,
 // containing column definitions, out-of-line constraints, and out-of-line indexes.
+// DSL definition: hybridTableColumnsConstraintsAndIndexesDef in hybrid_tables_def.go
 type HybridTableColumnsConstraintsAndIndexes struct {
 	Columns             []HybridTableColumn              `ddl:"keyword"`
 	OutOfLineConstraint []HybridTableOutOfLineConstraint `ddl:"keyword"`
@@ -21,6 +33,7 @@ type HybridTableColumnsConstraintsAndIndexes struct {
 
 // HybridTableColumn defines a single column in a hybrid table.
 // Based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table
+// DSL definition: hybridTableColumnDef in hybrid_tables_def.go
 type HybridTableColumn struct {
 	Name             string                             `ddl:"keyword"`
 	Type             DataType                           `ddl:"keyword"`
@@ -33,6 +46,7 @@ type HybridTableColumn struct {
 
 // HybridTableColumnInlineConstraint defines inline PRIMARY KEY, UNIQUE, or FOREIGN KEY on a column.
 // For hybrid tables, NOT ENFORCED is invalid — all constraints are enforced.
+// DSL definition: hybridTableColumnInlineConstraintDef in hybrid_tables_def.go
 type HybridTableColumnInlineConstraint struct {
 	Name       *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
 	Type       ColumnConstraintType `ddl:"keyword"`
@@ -42,6 +56,7 @@ type HybridTableColumnInlineConstraint struct {
 // HybridTableOutOfLineConstraint defines out-of-line PRIMARY KEY, UNIQUE, or FOREIGN KEY.
 // For hybrid tables, NOT ENFORCED is invalid — all constraints are enforced.
 // Based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table
+// DSL definition: hybridTableOutOfLineConstraintDef in hybrid_tables_def.go
 type HybridTableOutOfLineConstraint struct {
 	Name       *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
 	Type       ColumnConstraintType `ddl:"keyword"`
@@ -52,6 +67,7 @@ type HybridTableOutOfLineConstraint struct {
 // HybridTableOutOfLineIndex defines a secondary index in CREATE HYBRID TABLE.
 // Syntax: INDEX <name> (<cols>) [INCLUDE (<cols>)]
 // Based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table
+// DSL definition: hybridTableOutOfLineIndexDef in hybrid_tables_def.go
 type HybridTableOutOfLineIndex struct {
 	index          bool     `ddl:"static" sql:"INDEX"`
 	Name           string   `ddl:"keyword"`
