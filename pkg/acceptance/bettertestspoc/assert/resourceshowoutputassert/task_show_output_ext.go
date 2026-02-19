@@ -98,6 +98,11 @@ func (t *TaskShowOutputAssert) HasScheduleCron(cron string) *TaskShowOutputAsser
 	return t
 }
 
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalString(expected string) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", expected))
+	return t
+}
+
 func (t *TaskShowOutputAssert) HasTargetCompletionIntervalEmpty() *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval.#", "0"))
 	return t
