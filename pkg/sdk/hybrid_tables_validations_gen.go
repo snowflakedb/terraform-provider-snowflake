@@ -9,6 +9,8 @@ var (
 	_ validatable = new(ShowHybridTableOptions)
 	_ validatable = new(DescribeHybridTableOptions)
 	_ validatable = new(HybridTableConstraintActionDrop)
+	_ validatable = new(HybridTableAlterColumnAction)
+	_ validatable = new(HybridTableModifyColumnAction)
 	_ validatable = new(HybridTableSetProperties)
 	_ validatable = new(HybridTableUnsetProperties)
 )
@@ -50,6 +52,16 @@ func (opts *AlterHybridTableOptions) validate() error {
 	}
 	if opts.Unset != nil {
 		if err := opts.Unset.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if opts.AlterColumnAction != nil {
+		if err := opts.AlterColumnAction.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if opts.ModifyColumnAction != nil {
+		if err := opts.ModifyColumnAction.validate(); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -99,6 +111,28 @@ func (opts *DescribeHybridTableOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *HybridTableAlterColumnAction) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if everyValueSet(opts.Comment, opts.UnsetComment) {
+		errs = append(errs, errOneOf("HybridTableAlterColumnAction", "Comment", "UnsetComment"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *HybridTableModifyColumnAction) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if everyValueSet(opts.Comment, opts.UnsetComment) {
+		errs = append(errs, errOneOf("HybridTableModifyColumnAction", "Comment", "UnsetComment"))
 	}
 	return JoinErrors(errs...)
 }

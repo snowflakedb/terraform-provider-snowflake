@@ -51,7 +51,8 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	SQL("ALTER COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	OptionalSQL("UNSET COMMENT")
+	OptionalSQL("UNSET COMMENT").
+	WithValidation(g.ConflictingFields, "Comment", "UnsetComment")
 
 // hybridTableModifyColumnAction defines ALTER TABLE ... MODIFY COLUMN for hybrid tables.
 // MODIFY is an alias for ALTER in Snowflake when working with columns.
@@ -60,7 +61,8 @@ var hybridTableModifyColumnAction = g.NewQueryStruct("HybridTableModifyColumnAct
 	SQL("MODIFY COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	OptionalSQL("UNSET COMMENT")
+	OptionalSQL("UNSET COMMENT").
+	WithValidation(g.ConflictingFields, "Comment", "UnsetComment")
 
 // hybridTableDropColumnAction defines ALTER TABLE ... DROP COLUMN for hybrid tables.
 // https://docs.snowflake.com/en/sql-reference/sql/alter-table

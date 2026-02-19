@@ -106,6 +106,26 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("HybridTableUnsetProperties", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
 	})
 
+	t.Run("validation: alter column - conflicting fields for [opts.Comment opts.UnsetComment]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterColumnAction = &HybridTableAlterColumnAction{
+			ColumnName:   "column1",
+			Comment:      String("comment"),
+			UnsetComment: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("HybridTableAlterColumnAction", "Comment", "UnsetComment"))
+	})
+
+	t.Run("validation: modify column - conflicting fields for [opts.Comment opts.UnsetComment]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ModifyColumnAction = &HybridTableModifyColumnAction{
+			ColumnName:   "column1",
+			Comment:      String("comment"),
+			UnsetComment: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("HybridTableModifyColumnAction", "Comment", "UnsetComment"))
+	})
+
 	t.Run("alter: set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
