@@ -68,7 +68,8 @@ var hybridTableModifyColumnAction = g.NewQueryStruct("HybridTableModifyColumnAct
 // https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
-	Text("ColumnName", g.KeywordOptions().Required())
+	OptionalSQL("IF EXISTS").
+	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Required())
 
 // hybridTableDropIndexAction defines ALTER TABLE ... DROP INDEX for hybrid tables.
 // Syntax: ALTER TABLE <table_name> DROP INDEX <index_name>
@@ -76,6 +77,7 @@ var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction"
 // https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	SQL("DROP INDEX").
+	OptionalSQL("IF EXISTS").
 	Text("IndexName", g.KeywordOptions().Required())
 
 
@@ -170,8 +172,10 @@ var hybridTablesDef = g.NewInterface(
 		SQL("TABLE").
 		IfExists().
 		Name().
+		OptionalSQL("CASCADE").
 		OptionalSQL("RESTRICT").
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
 ).ShowOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-hybrid-tables",
 	g.DbStruct("hybridTableRow").
