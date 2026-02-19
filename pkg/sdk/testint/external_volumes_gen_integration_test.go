@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -47,8 +46,8 @@ func TestInt_ExternalVolumes(t *testing.T) {
 				StorageBaseUrl:       awsBaseUrl,
 				StorageAwsExternalId: sdk.String(awsExternalId),
 				Encryption: &sdk.ExternalVolumeS3Encryption{
-					Type:     sdk.S3EncryptionTypeSseKms,
-					KmsKeyId: &awsKmsKeyId,
+					EncryptionType: sdk.S3EncryptionTypeSseKms,
+					KmsKeyId:       &awsKmsKeyId,
 				},
 			},
 		},
@@ -63,7 +62,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 				StorageBaseUrl:       awsBaseUrl,
 				StorageAwsExternalId: sdk.String(awsExternalId),
 				Encryption: &sdk.ExternalVolumeS3Encryption{
-					Type: sdk.S3EncryptionNone,
+					EncryptionType: sdk.S3EncryptionNone,
 				},
 			},
 		},
@@ -87,7 +86,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 				Name:           "gcs_testing_storage_location_none_encryption",
 				StorageBaseUrl: gcsBaseUrl,
 				Encryption: &sdk.ExternalVolumeGCSEncryption{
-					Type: sdk.GCSEncryptionTypeNone,
+					EncryptionType: sdk.GCSEncryptionTypeNone,
 				},
 			},
 		},
@@ -108,8 +107,8 @@ func TestInt_ExternalVolumes(t *testing.T) {
 				Name:           "gcs_testing_storage_location",
 				StorageBaseUrl: gcsBaseUrl,
 				Encryption: &sdk.ExternalVolumeGCSEncryption{
-					Type:     sdk.GCSEncryptionTypeSseKms,
-					KmsKeyId: &gcsKmsKeyId,
+					EncryptionType: sdk.GCSEncryptionTypeSseKms,
+					KmsKeyId:       &gcsKmsKeyId,
 				},
 			},
 		},
@@ -270,17 +269,17 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		props, err := client.ExternalVolumes.Describe(ctx, id)
 		require.NoError(t, err)
 
-		parsedExternalVolumeDescribed, err := helpers.ParseExternalVolumeDescribed(props)
+		parsedExternalVolumeDescribed, err := sdk.ParseExternalVolumeDescribed(props)
 		require.NoError(t, err)
-		expectedParsedExternalVolumeDescribed := helpers.ParsedExternalVolumeDescribed{
-			StorageLocations: []helpers.StorageLocation{
+		expectedParsedExternalVolumeDescribed := sdk.ParsedExternalVolumeDescribed{
+			StorageLocations: []sdk.ExternalVolumeStorageLocationJson{
 				{
 					Name:                 s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Name,
 					StorageProvider:      string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageProvider),
 					StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsRoleArn,
 					StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsExternalId,
-					EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.Type),
+					EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   "",
 					AzureTenantId:        "",
 				},
@@ -309,17 +308,17 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		props, err := client.ExternalVolumes.Describe(ctx, id)
 		require.NoError(t, err)
 
-		parsedExternalVolumeDescribed, err := helpers.ParseExternalVolumeDescribed(props)
+		parsedExternalVolumeDescribed, err := sdk.ParseExternalVolumeDescribed(props)
 		require.NoError(t, err)
-		expectedParsedExternalVolumeDescribed := helpers.ParsedExternalVolumeDescribed{
-			StorageLocations: []helpers.StorageLocation{
+		expectedParsedExternalVolumeDescribed := sdk.ParsedExternalVolumeDescribed{
+			StorageLocations: []sdk.ExternalVolumeStorageLocationJson{
 				{
 					Name:                 s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Name,
 					StorageProvider:      string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageProvider),
 					StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsRoleArn,
 					StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsExternalId,
-					EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.Type),
+					EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   "",
 					AzureTenantId:        "",
 				},
@@ -347,17 +346,17 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		props, err := client.ExternalVolumes.Describe(ctx, id)
 		require.NoError(t, err)
 
-		parsedExternalVolumeDescribed, err := helpers.ParseExternalVolumeDescribed(props)
+		parsedExternalVolumeDescribed, err := sdk.ParseExternalVolumeDescribed(props)
 		require.NoError(t, err)
-		expectedParsedExternalVolumeDescribed := helpers.ParsedExternalVolumeDescribed{
-			StorageLocations: []helpers.StorageLocation{
+		expectedParsedExternalVolumeDescribed := sdk.ParsedExternalVolumeDescribed{
+			StorageLocations: []sdk.ExternalVolumeStorageLocationJson{
 				{
 					Name:                 s3StorageLocations[0].S3StorageLocationParams.Name,
 					StorageProvider:      string(s3StorageLocations[0].S3StorageLocationParams.StorageProvider),
 					StorageBaseUrl:       s3StorageLocations[0].S3StorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    s3StorageLocations[0].S3StorageLocationParams.StorageAwsRoleArn,
 					StorageAwsExternalId: *s3StorageLocations[0].S3StorageLocationParams.StorageAwsExternalId,
-					EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.Type),
+					EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   *s3StorageLocations[0].S3StorageLocationParams.Encryption.KmsKeyId,
 					AzureTenantId:        "",
 				},
@@ -384,7 +383,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 					s3StorageLocations[0].S3StorageLocationParams.StorageBaseUrl,
 				).WithStorageAwsExternalId(*s3StorageLocations[0].S3StorageLocationParams.StorageAwsExternalId).
 					WithEncryption(
-						*sdk.NewExternalVolumeS3EncryptionRequest(s3StorageLocations[0].S3StorageLocationParams.Encryption.Type).
+						*sdk.NewExternalVolumeS3EncryptionRequest(s3StorageLocations[0].S3StorageLocationParams.Encryption.EncryptionType).
 							WithKmsKeyId(*s3StorageLocations[0].S3StorageLocationParams.Encryption.KmsKeyId),
 					),
 			),
@@ -396,17 +395,17 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		props, err := client.ExternalVolumes.Describe(ctx, id)
 		require.NoError(t, err)
 
-		parsedExternalVolumeDescribed, err := helpers.ParseExternalVolumeDescribed(props)
+		parsedExternalVolumeDescribed, err := sdk.ParseExternalVolumeDescribed(props)
 		require.NoError(t, err)
-		expectedParsedExternalVolumeDescribed := helpers.ParsedExternalVolumeDescribed{
-			StorageLocations: []helpers.StorageLocation{
+		expectedParsedExternalVolumeDescribed := sdk.ParsedExternalVolumeDescribed{
+			StorageLocations: []sdk.ExternalVolumeStorageLocationJson{
 				{
 					Name:                 gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Name,
 					StorageProvider:      string(sdk.StorageProviderGCS),
 					StorageBaseUrl:       gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    "",
 					StorageAwsExternalId: "",
-					EncryptionType:       string(gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Encryption.Type),
+					EncryptionType:       string(gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   "",
 					AzureTenantId:        "",
 				},
@@ -416,7 +415,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 					StorageBaseUrl:       s3StorageLocations[0].S3StorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    s3StorageLocations[0].S3StorageLocationParams.StorageAwsRoleArn,
 					StorageAwsExternalId: *s3StorageLocations[0].S3StorageLocationParams.StorageAwsExternalId,
-					EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.Type),
+					EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   *s3StorageLocations[0].S3StorageLocationParams.Encryption.KmsKeyId,
 					AzureTenantId:        "",
 				},
@@ -442,17 +441,17 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		props, err := client.ExternalVolumes.Describe(ctx, id)
 		require.NoError(t, err)
 
-		parsedExternalVolumeDescribed, err := helpers.ParseExternalVolumeDescribed(props)
+		parsedExternalVolumeDescribed, err := sdk.ParseExternalVolumeDescribed(props)
 		require.NoError(t, err)
-		expectedParsedExternalVolumeDescribed := helpers.ParsedExternalVolumeDescribed{
-			StorageLocations: []helpers.StorageLocation{
+		expectedParsedExternalVolumeDescribed := sdk.ParsedExternalVolumeDescribed{
+			StorageLocations: []sdk.ExternalVolumeStorageLocationJson{
 				{
 					Name:                 s3StorageLocations[0].S3StorageLocationParams.Name,
 					StorageProvider:      string(s3StorageLocations[0].S3StorageLocationParams.StorageProvider),
 					StorageBaseUrl:       s3StorageLocations[0].S3StorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    s3StorageLocations[0].S3StorageLocationParams.StorageAwsRoleArn,
 					StorageAwsExternalId: *s3StorageLocations[0].S3StorageLocationParams.StorageAwsExternalId,
-					EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.Type),
+					EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   *s3StorageLocations[0].S3StorageLocationParams.Encryption.KmsKeyId,
 					AzureTenantId:        "",
 				},
@@ -462,7 +461,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 					StorageBaseUrl:       gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    "",
 					StorageAwsExternalId: "",
-					EncryptionType:       string(gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Encryption.Type),
+					EncryptionType:       string(gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   "",
 					AzureTenantId:        "",
 				},
@@ -482,7 +481,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 					StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsRoleArn,
 					StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsExternalId,
-					EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.Type),
+					EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   "",
 					AzureTenantId:        "",
 				},
@@ -492,7 +491,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 					StorageBaseUrl:       gcsStorageLocations[0].GCSStorageLocationParams.StorageBaseUrl,
 					StorageAwsRoleArn:    "",
 					StorageAwsExternalId: "",
-					EncryptionType:       string(gcsStorageLocations[0].GCSStorageLocationParams.Encryption.Type),
+					EncryptionType:       string(gcsStorageLocations[0].GCSStorageLocationParams.Encryption.EncryptionType),
 					EncryptionKmsKeyId:   *gcsStorageLocations[0].GCSStorageLocationParams.Encryption.KmsKeyId,
 					AzureTenantId:        "",
 				},

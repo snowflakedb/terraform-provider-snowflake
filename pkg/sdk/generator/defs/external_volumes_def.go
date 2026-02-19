@@ -14,10 +14,12 @@ var externalS3StorageLocationDef = g.NewQueryStruct("S3StorageLocationParams").
 	TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
+	OptionalTextAssignment("STORAGE_AWS_ACCESS_POINT_ARN", g.ParameterOptions().SingleQuotes()).
+	OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalVolumeS3Encryption").
-			Assignment("TYPE", g.KindOfT[sdkcommons.S3EncryptionType](), g.ParameterOptions().SingleQuotes().Required()).
+			AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.S3EncryptionType](), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 	)
@@ -29,7 +31,7 @@ var externalGCSStorageLocationDef = g.NewQueryStruct("GCSStorageLocationParams")
 	OptionalQueryStructField(
 		"Encryption",
 		g.NewQueryStruct("ExternalVolumeGCSEncryption").
-			Assignment("TYPE", g.KindOfT[sdkcommons.GCSEncryptionType](), g.ParameterOptions().SingleQuotes().Required()).
+			AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.GCSEncryptionType](), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
 			OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
 		g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 	)
@@ -38,7 +40,21 @@ var externalAzureStorageLocationDef = g.NewQueryStruct("AzureStorageLocationPara
 	TextAssignment("NAME", g.ParameterOptions().SingleQuotes().Required()).
 	PredefinedQueryStructField("StorageProviderAzure", "string", g.StaticOptions().SQL(fmt.Sprintf("STORAGE_PROVIDER = '%s'", sdkcommons.StorageProviderAzure))).
 	TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
-	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required())
+	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
+	OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions())
+
+var externalS3CompatStorageLocationDef = g.NewQueryStruct("S3CompatStorageLocationParams").
+	TextAssignment("NAME", g.ParameterOptions().SingleQuotes().Required()).
+	PredefinedQueryStructField("StorageProviderS3Compat", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'S3COMPAT'")).
+	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
+	TextAssignment("STORAGE_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
+	OptionalQueryStructField(
+		"Credentials",
+		g.NewQueryStruct("ExternalVolumeS3CompatCredentials").
+			TextAssignment("AWS_KEY_ID", g.ParameterOptions().SingleQuotes().Required()).
+			TextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes().Required()),
+		g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
+	)
 
 // Can't name StorageLocation due to naming clash with type in storage integration
 var storageLocationDef = g.NewQueryStruct("ExternalVolumeStorageLocation").
@@ -57,9 +73,13 @@ var storageLocationDef = g.NewQueryStruct("ExternalVolumeStorageLocation").
 		externalAzureStorageLocationDef,
 		g.ListOptions().Parentheses().NoComma(),
 	).
-	WithValidation(g.ExactlyOneValueSet, "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams")
+	OptionalQueryStructField(
+		"S3CompatStorageLocationParams",
+		externalS3CompatStorageLocationDef,
+		g.ListOptions().Parentheses().NoComma(),
+	).
+	WithValidation(g.ExactlyOneValueSet, "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams")
 
-// TODO [next PR]: regenerate external volumes and mark manual sections correctly
 var externalVolumesDef = g.NewInterface(
 	"ExternalVolumes",
 	"ExternalVolume",
