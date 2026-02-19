@@ -8,6 +8,7 @@ var (
 	_ validatable = new(DropHybridTableOptions)
 	_ validatable = new(ShowHybridTableOptions)
 	_ validatable = new(DescribeHybridTableOptions)
+	_ validatable = new(HybridTableConstraintActionDrop)
 )
 
 func (opts *CreateHybridTableOptions) validate() error {
@@ -34,6 +35,25 @@ func (opts *AlterHybridTableOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.Set, opts.Unset) {
 		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
+	}
+	if opts.ConstraintAction != nil && opts.ConstraintAction.Drop != nil {
+		if err := opts.ConstraintAction.Drop.validate(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *HybridTableConstraintActionDrop) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !exactlyOneValueSet(opts.ConstraintName, opts.PrimaryKey, opts.Unique, opts.ForeignKey) {
+		errs = append(errs, errExactlyOneOf("HybridTableConstraintActionDrop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
+	}
+	if everyValueSet(opts.Cascade, opts.Restrict) {
+		errs = append(errs, errOneOf("HybridTableConstraintActionDrop", "Cascade", "Restrict"))
 	}
 	return JoinErrors(errs...)
 }

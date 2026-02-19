@@ -113,13 +113,33 @@ func (s *HybridTableConstraintActionDropRequest) WithConstraintName(constraintNa
 	return s
 }
 
-func (s *HybridTableConstraintActionDropRequest) WithColumnConstraintType(columnConstraintType ColumnConstraintType) *HybridTableConstraintActionDropRequest {
-	s.ColumnConstraintType = &columnConstraintType
+func (s *HybridTableConstraintActionDropRequest) WithPrimaryKey(primaryKey bool) *HybridTableConstraintActionDropRequest {
+	s.PrimaryKey = &primaryKey
+	return s
+}
+
+func (s *HybridTableConstraintActionDropRequest) WithUnique(unique bool) *HybridTableConstraintActionDropRequest {
+	s.Unique = &unique
+	return s
+}
+
+func (s *HybridTableConstraintActionDropRequest) WithForeignKey(foreignKey bool) *HybridTableConstraintActionDropRequest {
+	s.ForeignKey = &foreignKey
 	return s
 }
 
 func (s *HybridTableConstraintActionDropRequest) WithColumns(columns []string) *HybridTableConstraintActionDropRequest {
 	s.Columns = columns
+	return s
+}
+
+func (s *HybridTableConstraintActionDropRequest) WithCascade(cascade bool) *HybridTableConstraintActionDropRequest {
+	s.Cascade = &cascade
+	return s
+}
+
+func (s *HybridTableConstraintActionDropRequest) WithRestrict(restrict bool) *HybridTableConstraintActionDropRequest {
+	s.Restrict = &restrict
 	return s
 }
 

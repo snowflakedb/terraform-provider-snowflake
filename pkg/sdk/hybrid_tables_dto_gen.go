@@ -41,9 +41,13 @@ type HybridTableConstraintActionAddRequest struct {
 }
 
 type HybridTableConstraintActionDropRequest struct {
-	ConstraintName       *string
-	ColumnConstraintType *ColumnConstraintType
-	Columns              []string
+	ConstraintName *string
+	PrimaryKey     *bool
+	Unique         *bool
+	ForeignKey     *bool
+	Columns        []string
+	Cascade        *bool
+	Restrict       *bool
 }
 
 type HybridTableConstraintActionRenameRequest struct {
