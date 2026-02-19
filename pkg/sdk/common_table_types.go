@@ -180,3 +180,88 @@ func AsStringList[T ~string](input []T) []string {
 	}
 	return output
 }
+
+// =============================================================================
+// Common ALTER TABLE Constraint Action Patterns
+// =============================================================================
+//
+// The following patterns are shared across multiple table types (regular tables,
+// hybrid tables, etc.) for ALTER TABLE constraint operations.
+//
+// ## Constraint Drop Action Pattern
+//
+// Used by:
+//   - TableConstraintDropAction (tables.go)
+//   - HybridTableConstraintActionDrop (hybrid_tables_gen.go)
+//
+// Standard fields:
+//   - ConstraintName *string  - Drop by constraint name
+//   - PrimaryKey     *bool    - Drop primary key constraint
+//   - Unique         *bool    - Drop unique constraint
+//   - ForeignKey     *bool    - Drop foreign key constraint
+//   - Columns        []string - Column specification (for compound keys)
+//   - Cascade        *bool    - CASCADE drop behavior
+//   - Restrict       *bool    - RESTRICT drop behavior
+//
+// Validation rules:
+//   - Exactly one of: ConstraintName, PrimaryKey, Unique, ForeignKey must be set
+//   - Columns is optional, used with PrimaryKey/Unique/ForeignKey for compound keys
+//   - At most one of: Cascade, Restrict
+//
+// ## Constraint Rename Action Pattern
+//
+// Used by:
+//   - TableConstraintRenameAction (tables.go)
+//   - HybridTableConstraintActionRename (hybrid_tables_gen.go)
+//
+// Standard fields:
+//   - OldName string - Current constraint name (required)
+//   - NewName string - New constraint name (required)
+//
+// Validation rules:
+//   - Both OldName and NewName must be non-empty
+//
+// ## Note on Type Extraction
+//
+// Full extraction (having hybrid tables directly use shared types) would require:
+//   - Generator DSL changes to support referencing external types
+//   - Modifications to how the generator handles DTOs and validation
+//   - Risk of breaking existing tables functionality
+//
+// The current approach documents the canonical patterns and maintains
+// consistency through comments and code review, which is safer for
+// generated code.
+// =============================================================================
+
+// ValidateConstraintDropFields validates common constraint drop action fields.
+// This can be used by both TableConstraintDropAction and HybridTableConstraintActionDrop.
+func ValidateConstraintDropFields(constraintName *string, primaryKey, unique, foreignKey, cascade, restrict *bool) error {
+	var errs []error
+
+	// Exactly one constraint identifier must be set
+	if !exactlyOneValueSet(constraintName, primaryKey, unique, foreignKey) {
+		errs = append(errs, errExactlyOneOf("ConstraintDropAction", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
+	}
+
+	// At most one of Cascade/Restrict
+	if moreThanOneValueSet(cascade, restrict) {
+		errs = append(errs, errMoreThanOneOf("ConstraintDropAction", "Cascade", "Restrict"))
+	}
+
+	return errors.Join(errs...)
+}
+
+// ValidateConstraintRenameFields validates common constraint rename action fields.
+// This can be used by both TableConstraintRenameAction and HybridTableConstraintActionRename.
+func ValidateConstraintRenameFields(oldName, newName string) error {
+	var errs []error
+
+	if oldName == "" {
+		errs = append(errs, errNotSet("ConstraintRenameAction", "OldName"))
+	}
+	if newName == "" {
+		errs = append(errs, errNotSet("ConstraintRenameAction", "NewName"))
+	}
+
+	return errors.Join(errs...)
+}

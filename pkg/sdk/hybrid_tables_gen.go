@@ -62,6 +62,9 @@ type HybridTableConstraintActionAdd struct {
 	OutOfLineConstraint HybridTableOutOfLineConstraint `ddl:"keyword"`
 }
 
+// HybridTableConstraintActionDrop follows the common Constraint Drop Action Pattern.
+// See common_table_types.go for canonical documentation and ValidateConstraintDropFields.
+// This struct mirrors TableConstraintDropAction from tables.go.
 type HybridTableConstraintActionDrop struct {
 	drop bool `ddl:"static" sql:"DROP"`
 	// One of: ConstraintName, PrimaryKey, Unique, ForeignKey (with optional Columns)
@@ -75,6 +78,9 @@ type HybridTableConstraintActionDrop struct {
 	Restrict *bool `ddl:"keyword" sql:"RESTRICT"`
 }
 
+// HybridTableConstraintActionRename follows the common Constraint Rename Action Pattern.
+// See common_table_types.go for canonical documentation and ValidateConstraintRenameFields.
+// This struct mirrors TableConstraintRenameAction from tables.go.
 type HybridTableConstraintActionRename struct {
 	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
 	OldName          string `ddl:"keyword"`

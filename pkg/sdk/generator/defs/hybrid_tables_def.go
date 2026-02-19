@@ -216,4 +216,75 @@ var hybridTablesDef = g.NewInterface(
 		SQL("TABLE").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+).CustomOperation(
+	// Standalone CREATE INDEX command for hybrid tables.
+	// Syntax: CREATE [OR REPLACE] INDEX [IF NOT EXISTS] <name> ON <table> (<cols>) [INCLUDE (<cols>)]
+	// https://docs.snowflake.com/en/sql-reference/sql/create-index
+	"CreateIndex",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-index",
+	g.NewQueryStruct("CreateHybridTableIndex").
+		Create().
+		OrReplace().
+		SQL("INDEX").
+		IfNotExists().
+		Name().
+		SQL("ON").
+		Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+		PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required()).
+		PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().SQL("INCLUDE")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifier, "TableName").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).CustomOperation(
+	// Standalone DROP INDEX command for hybrid tables.
+	// Syntax: DROP INDEX [IF EXISTS] <name>
+	// Note: For hybrid tables, the name is typically <table_name>.<index_name> as a dotted identifier.
+	// https://docs.snowflake.com/en/sql-reference/sql/drop-index
+	"DropIndex",
+	"https://docs.snowflake.com/en/sql-reference/sql/drop-index",
+	g.NewQueryStruct("DropHybridTableIndex").
+		Drop().
+		SQL("INDEX").
+		IfExists().
+		Name().
+		WithValidation(g.ValidIdentifier, "name"),
+).CustomShowOperation(
+	// SHOW INDEXES command for hybrid tables.
+	// Syntax: SHOW INDEXES [IN TABLE <table>]
+	// https://docs.snowflake.com/en/sql-reference/sql/show-indexes
+	"ShowIndexes",
+	g.ShowMappingKindSlice,
+	"https://docs.snowflake.com/en/sql-reference/sql/show-indexes",
+	g.DbStruct("hybridTableIndexRow").
+		Time("created_on").
+		Text("name").
+		Text("is_unique").
+		Text("columns").
+		OptionalText("included_columns").
+		Text("table").
+		Text("database_name").
+		Text("schema_name").
+		OptionalText("owner").
+		OptionalText("owner_role_type"),
+	g.PlainStruct("HybridTableIndex").
+		Time("CreatedOn").
+		Text("Name").
+		Bool("IsUnique").
+		Text("Columns").
+		Text("IncludedColumns").
+		Text("TableName").
+		Text("DatabaseName").
+		Text("SchemaName").
+		Text("Owner").
+		Text("OwnerRoleType"),
+	g.NewQueryStruct("ShowHybridTableIndexes").
+		Show().
+		SQL("INDEXES").
+		OptionalQueryStructField(
+			"In",
+			g.NewQueryStruct("ShowHybridTableIndexIn").
+				SQL("TABLE").
+				Identifier("Table", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions()),
+			g.KeywordOptions().SQL("IN"),
+		),
 )
