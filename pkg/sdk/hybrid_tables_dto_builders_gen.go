@@ -308,6 +308,11 @@ func (s *DropHybridTableRequest) WithRestrict(restrict bool) *DropHybridTableReq
 	return s
 }
 
+func (s *DropHybridTableRequest) WithCascade(cascade bool) *DropHybridTableRequest {
+	s.Cascade = &cascade
+	return s
+}
+
 func NewShowHybridTableRequest() *ShowHybridTableRequest {
 	s := ShowHybridTableRequest{}
 	return &s
