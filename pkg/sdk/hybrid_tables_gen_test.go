@@ -257,8 +257,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				NewName: "new_constraint_name",
 			},
 		}
-		// Note: Generator doesn't add "TO" keyword despite sql:"TO" tag
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s RENAME CONSTRAINT old_constraint_name new_constraint_name`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s RENAME CONSTRAINT old_constraint_name TO new_constraint_name`, id.FullyQualifiedName())
 	})
 }
 
