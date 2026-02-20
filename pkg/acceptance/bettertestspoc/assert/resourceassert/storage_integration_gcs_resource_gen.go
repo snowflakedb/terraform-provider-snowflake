@@ -28,6 +28,34 @@ func ImportedStorageIntegrationGcsResource(t *testing.T, id string) *StorageInte
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StorageIntegrationGcsResourceAssert) HasName(expected string) *StorageIntegrationGcsResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *StorageIntegrationGcsResourceAssert) HasComment(expected string) *StorageIntegrationGcsResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StorageIntegrationGcsResourceAssert) HasEnabled(expected bool) *StorageIntegrationGcsResourceAssert {
+	s.BoolValueSet("enabled", expected)
+	return s
+}
+
+func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedName(expected string) *StorageIntegrationGcsResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+// collection assert for storage_allowed_locations will be generated here
+
+// collection assert for storage_blocked_locations will be generated here
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -49,16 +77,6 @@ func (s *StorageIntegrationGcsResourceAssert) HasEnabledString(expected string) 
 
 func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedNameString(expected string) *StorageIntegrationGcsResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageAllowedLocationsString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_allowed_locations", expected))
-	return s
-}
-
-func (s *StorageIntegrationGcsResourceAssert) HasStorageBlockedLocationsString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_blocked_locations", expected))
 	return s
 }
 

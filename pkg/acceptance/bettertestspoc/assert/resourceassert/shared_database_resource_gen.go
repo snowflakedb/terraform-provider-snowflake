@@ -28,6 +28,100 @@ func ImportedSharedDatabaseResource(t *testing.T, id string) *SharedDatabaseReso
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SharedDatabaseResourceAssert) HasName(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasCatalog(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("catalog", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasComment(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollation(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("default_ddl_collation", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasEnableConsoleOutput(expected bool) *SharedDatabaseResourceAssert {
+	s.BoolValueSet("enable_console_output", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasExternalVolume(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("external_volume", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasFromShare(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("from_share", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasFullyQualifiedName(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasLogLevel(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("log_level", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *SharedDatabaseResourceAssert {
+	s.BoolValueSet("quoted_identifiers_ignore_case", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharacters(expected bool) *SharedDatabaseResourceAssert {
+	s.BoolValueSet("replace_invalid_characters", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasStorageSerializationPolicy(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("storage_serialization_policy", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasSuspendTaskAfterNumFailures(expected int) *SharedDatabaseResourceAssert {
+	s.IntValueSet("suspend_task_after_num_failures", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasTaskAutoRetryAttempts(expected int) *SharedDatabaseResourceAssert {
+	s.IntValueSet("task_auto_retry_attempts", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasTraceLevel(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("trace_level", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSize(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("user_task_managed_initial_warehouse_size", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *SharedDatabaseResourceAssert {
+	s.IntValueSet("user_task_minimum_trigger_interval_in_seconds", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMs(expected int) *SharedDatabaseResourceAssert {
+	s.IntValueSet("user_task_timeout_ms", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

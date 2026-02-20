@@ -28,6 +28,45 @@ func ImportedSemanticViewResource(t *testing.T, id string) *SemanticViewResource
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SemanticViewResourceAssert) HasDatabase(expected string) *SemanticViewResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasSchema(expected string) *SemanticViewResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasName(expected string) *SemanticViewResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SemanticViewResourceAssert) HasComment(expected string) *SemanticViewResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+// collection assert for dimensions will be generated here
+
+// collection assert for facts will be generated here
+
+func (s *SemanticViewResourceAssert) HasFullyQualifiedName(expected string) *SemanticViewResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+// collection assert for metrics will be generated here
+
+// collection assert for relationships will be generated here
+
+// collection assert for tables will be generated here
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -52,33 +91,8 @@ func (s *SemanticViewResourceAssert) HasCommentString(expected string) *Semantic
 	return s
 }
 
-func (s *SemanticViewResourceAssert) HasDimensionsString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("dimensions", expected))
-	return s
-}
-
-func (s *SemanticViewResourceAssert) HasFactsString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("facts", expected))
-	return s
-}
-
 func (s *SemanticViewResourceAssert) HasFullyQualifiedNameString(expected string) *SemanticViewResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return s
-}
-
-func (s *SemanticViewResourceAssert) HasMetricsString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("metrics", expected))
-	return s
-}
-
-func (s *SemanticViewResourceAssert) HasRelationshipsString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("relationships", expected))
-	return s
-}
-
-func (s *SemanticViewResourceAssert) HasTablesString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("tables", expected))
 	return s
 }
 

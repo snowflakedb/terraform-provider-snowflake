@@ -28,6 +28,82 @@ func ImportedFunctionSqlResource(t *testing.T, id string) *FunctionSqlResourceAs
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (f *FunctionSqlResourceAssert) HasDatabase(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("database", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasSchema(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("schema", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasName(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("name", expected)
+	return f
+}
+
+// collection assert for arguments will be generated here
+
+func (f *FunctionSqlResourceAssert) HasComment(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("comment", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasEnableConsoleOutput(expected bool) *FunctionSqlResourceAssert {
+	f.BoolValueSet("enable_console_output", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasFullyQualifiedName(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("fully_qualified_name", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasFunctionDefinition(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("function_definition", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasFunctionLanguage(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("function_language", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasIsSecure(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("is_secure", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasLogLevel(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("log_level", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasMetricLevel(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("metric_level", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasReturnResultsBehavior(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("return_results_behavior", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasReturnType(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("return_type", expected)
+	return f
+}
+
+func (f *FunctionSqlResourceAssert) HasTraceLevel(expected string) *FunctionSqlResourceAssert {
+	f.StringValueSet("trace_level", expected)
+	return f
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -44,11 +120,6 @@ func (f *FunctionSqlResourceAssert) HasSchemaString(expected string) *FunctionSq
 
 func (f *FunctionSqlResourceAssert) HasNameString(expected string) *FunctionSqlResourceAssert {
 	f.AddAssertion(assert.ValueSet("name", expected))
-	return f
-}
-
-func (f *FunctionSqlResourceAssert) HasArgumentsString(expected string) *FunctionSqlResourceAssert {
-	f.AddAssertion(assert.ValueSet("arguments", expected))
 	return f
 }
 

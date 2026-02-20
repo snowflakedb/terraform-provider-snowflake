@@ -28,6 +28,87 @@ func ImportedProcedureSqlResource(t *testing.T, id string) *ProcedureSqlResource
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (p *ProcedureSqlResourceAssert) HasDatabase(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("database", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasSchema(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("schema", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasName(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("name", expected)
+	return p
+}
+
+// collection assert for arguments will be generated here
+
+func (p *ProcedureSqlResourceAssert) HasComment(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("comment", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasEnableConsoleOutput(expected bool) *ProcedureSqlResourceAssert {
+	p.BoolValueSet("enable_console_output", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasExecuteAs(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("execute_as", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasFullyQualifiedName(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("fully_qualified_name", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasIsSecure(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("is_secure", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasLogLevel(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("log_level", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasMetricLevel(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("metric_level", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasNullInputBehavior(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("null_input_behavior", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasProcedureDefinition(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("procedure_definition", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasProcedureLanguage(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("procedure_language", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasReturnType(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("return_type", expected)
+	return p
+}
+
+func (p *ProcedureSqlResourceAssert) HasTraceLevel(expected string) *ProcedureSqlResourceAssert {
+	p.StringValueSet("trace_level", expected)
+	return p
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -44,11 +125,6 @@ func (p *ProcedureSqlResourceAssert) HasSchemaString(expected string) *Procedure
 
 func (p *ProcedureSqlResourceAssert) HasNameString(expected string) *ProcedureSqlResourceAssert {
 	p.AddAssertion(assert.ValueSet("name", expected))
-	return p
-}
-
-func (p *ProcedureSqlResourceAssert) HasArgumentsString(expected string) *ProcedureSqlResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
 }
 

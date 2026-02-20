@@ -28,6 +28,44 @@ func ImportedStorageIntegrationAzureResource(t *testing.T, id string) *StorageIn
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StorageIntegrationAzureResourceAssert) HasName(expected string) *StorageIntegrationAzureResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *StorageIntegrationAzureResourceAssert) HasAzureTenantId(expected string) *StorageIntegrationAzureResourceAssert {
+	s.StringValueSet("azure_tenant_id", expected)
+	return s
+}
+
+func (s *StorageIntegrationAzureResourceAssert) HasComment(expected string) *StorageIntegrationAzureResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StorageIntegrationAzureResourceAssert) HasEnabled(expected bool) *StorageIntegrationAzureResourceAssert {
+	s.BoolValueSet("enabled", expected)
+	return s
+}
+
+func (s *StorageIntegrationAzureResourceAssert) HasFullyQualifiedName(expected string) *StorageIntegrationAzureResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+// collection assert for storage_allowed_locations will be generated here
+
+// collection assert for storage_blocked_locations will be generated here
+
+func (s *StorageIntegrationAzureResourceAssert) HasUsePrivatelinkEndpoint(expected string) *StorageIntegrationAzureResourceAssert {
+	s.StringValueSet("use_privatelink_endpoint", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,16 +92,6 @@ func (s *StorageIntegrationAzureResourceAssert) HasEnabledString(expected string
 
 func (s *StorageIntegrationAzureResourceAssert) HasFullyQualifiedNameString(expected string) *StorageIntegrationAzureResourceAssert {
 	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageAllowedLocationsString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_allowed_locations", expected))
-	return s
-}
-
-func (s *StorageIntegrationAzureResourceAssert) HasStorageBlockedLocationsString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_blocked_locations", expected))
 	return s
 }
 

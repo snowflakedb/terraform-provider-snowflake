@@ -28,32 +28,39 @@ func ImportedNetworkPolicyResource(t *testing.T, id string) *NetworkPolicyResour
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (n *NetworkPolicyResourceAssert) HasName(expected string) *NetworkPolicyResourceAssert {
+	n.StringValueSet("name", expected)
+	return n
+}
+
+// collection assert for allowed_ip_list will be generated here
+
+// collection assert for allowed_network_rule_list will be generated here
+
+// collection assert for blocked_ip_list will be generated here
+
+// collection assert for blocked_network_rule_list will be generated here
+
+func (n *NetworkPolicyResourceAssert) HasComment(expected string) *NetworkPolicyResourceAssert {
+	n.StringValueSet("comment", expected)
+	return n
+}
+
+func (n *NetworkPolicyResourceAssert) HasFullyQualifiedName(expected string) *NetworkPolicyResourceAssert {
+	n.StringValueSet("fully_qualified_name", expected)
+	return n
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
 
 func (n *NetworkPolicyResourceAssert) HasNameString(expected string) *NetworkPolicyResourceAssert {
 	n.AddAssertion(assert.ValueSet("name", expected))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasAllowedIpListString(expected string) *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("allowed_ip_list", expected))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasAllowedNetworkRuleListString(expected string) *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("allowed_network_rule_list", expected))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasBlockedIpListString(expected string) *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("blocked_ip_list", expected))
-	return n
-}
-
-func (n *NetworkPolicyResourceAssert) HasBlockedNetworkRuleListString(expected string) *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("blocked_network_rule_list", expected))
 	return n
 }
 

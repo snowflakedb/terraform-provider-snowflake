@@ -28,6 +28,107 @@ func ImportedFunctionJavaResource(t *testing.T, id string) *FunctionJavaResource
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (f *FunctionJavaResourceAssert) HasDatabase(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("database", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasSchema(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("schema", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasName(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("name", expected)
+	return f
+}
+
+// collection assert for arguments will be generated here
+
+func (f *FunctionJavaResourceAssert) HasComment(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("comment", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasEnableConsoleOutput(expected bool) *FunctionJavaResourceAssert {
+	f.BoolValueSet("enable_console_output", expected)
+	return f
+}
+
+// collection assert for external_access_integrations will be generated here
+
+func (f *FunctionJavaResourceAssert) HasFullyQualifiedName(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("fully_qualified_name", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasFunctionDefinition(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("function_definition", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasFunctionLanguage(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("function_language", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasHandler(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("handler", expected)
+	return f
+}
+
+// collection assert for imports will be generated here
+
+func (f *FunctionJavaResourceAssert) HasIsSecure(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("is_secure", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasLogLevel(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("log_level", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasMetricLevel(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("metric_level", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasNullInputBehavior(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("null_input_behavior", expected)
+	return f
+}
+
+// collection assert for packages will be generated here
+
+func (f *FunctionJavaResourceAssert) HasReturnResultsBehavior(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("return_results_behavior", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasReturnType(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("return_type", expected)
+	return f
+}
+
+func (f *FunctionJavaResourceAssert) HasRuntimeVersion(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("runtime_version", expected)
+	return f
+}
+
+// collection assert for secrets will be generated here
+
+// collection assert for target_path will be generated here
+
+func (f *FunctionJavaResourceAssert) HasTraceLevel(expected string) *FunctionJavaResourceAssert {
+	f.StringValueSet("trace_level", expected)
+	return f
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,11 +148,6 @@ func (f *FunctionJavaResourceAssert) HasNameString(expected string) *FunctionJav
 	return f
 }
 
-func (f *FunctionJavaResourceAssert) HasArgumentsString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("arguments", expected))
-	return f
-}
-
 func (f *FunctionJavaResourceAssert) HasCommentString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("comment", expected))
 	return f
@@ -59,11 +155,6 @@ func (f *FunctionJavaResourceAssert) HasCommentString(expected string) *Function
 
 func (f *FunctionJavaResourceAssert) HasEnableConsoleOutputString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("enable_console_output", expected))
-	return f
-}
-
-func (f *FunctionJavaResourceAssert) HasExternalAccessIntegrationsString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("external_access_integrations", expected))
 	return f
 }
 
@@ -87,11 +178,6 @@ func (f *FunctionJavaResourceAssert) HasHandlerString(expected string) *Function
 	return f
 }
 
-func (f *FunctionJavaResourceAssert) HasImportsString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("imports", expected))
-	return f
-}
-
 func (f *FunctionJavaResourceAssert) HasIsSecureString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("is_secure", expected))
 	return f
@@ -112,11 +198,6 @@ func (f *FunctionJavaResourceAssert) HasNullInputBehaviorString(expected string)
 	return f
 }
 
-func (f *FunctionJavaResourceAssert) HasPackagesString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("packages", expected))
-	return f
-}
-
 func (f *FunctionJavaResourceAssert) HasReturnResultsBehaviorString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("return_results_behavior", expected))
 	return f
@@ -129,16 +210,6 @@ func (f *FunctionJavaResourceAssert) HasReturnTypeString(expected string) *Funct
 
 func (f *FunctionJavaResourceAssert) HasRuntimeVersionString(expected string) *FunctionJavaResourceAssert {
 	f.AddAssertion(assert.ValueSet("runtime_version", expected))
-	return f
-}
-
-func (f *FunctionJavaResourceAssert) HasSecretsString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("secrets", expected))
-	return f
-}
-
-func (f *FunctionJavaResourceAssert) HasTargetPathString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("target_path", expected))
 	return f
 }
 

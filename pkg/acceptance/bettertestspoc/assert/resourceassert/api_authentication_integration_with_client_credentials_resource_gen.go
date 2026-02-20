@@ -28,6 +28,62 @@ func ImportedApiAuthenticationIntegrationWithClientCredentialsResource(t *testin
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasName(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.StringValueSet("name", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasComment(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.StringValueSet("comment", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasEnabled(expected bool) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.BoolValueSet("enabled", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasFullyQualifiedName(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.StringValueSet("fully_qualified_name", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthAccessTokenValidity(expected int) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.IntValueSet("oauth_access_token_validity", expected)
+	return a
+}
+
+// collection assert for oauth_allowed_scopes will be generated here
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthClientAuthMethod(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.StringValueSet("oauth_client_auth_method", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthClientId(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.StringValueSet("oauth_client_id", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthClientSecret(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.StringValueSet("oauth_client_secret", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthRefreshTokenValidity(expected int) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.IntValueSet("oauth_refresh_token_validity", expected)
+	return a
+}
+
+func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthTokenEndpoint(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
+	a.StringValueSet("oauth_token_endpoint", expected)
+	return a
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,11 +110,6 @@ func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasFul
 
 func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthAccessTokenValidityString(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
 	a.AddAssertion(assert.ValueSet("oauth_access_token_validity", expected))
-	return a
-}
-
-func (a *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert) HasOauthAllowedScopesString(expected string) *ApiAuthenticationIntegrationWithClientCredentialsResourceAssert {
-	a.AddAssertion(assert.ValueSet("oauth_allowed_scopes", expected))
 	return a
 }
 

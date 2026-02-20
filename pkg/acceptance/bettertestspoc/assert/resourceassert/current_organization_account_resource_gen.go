@@ -28,6 +28,615 @@ func ImportedCurrentOrganizationAccountResource(t *testing.T, id string) *Curren
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (c *CurrentOrganizationAccountResourceAssert) HasName(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("name", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasAbortDetachedQuery(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("abort_detached_query", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasActivePythonProfiler(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("active_python_profiler", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasAllowClientMfaCaching(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("allow_client_mfa_caching", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasAllowIdToken(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("allow_id_token", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasAutocommit(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("autocommit", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasBaseLocationPrefix(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("base_location_prefix", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasBinaryInputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("binary_input_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasBinaryOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("binary_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCatalog(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("catalog", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCatalogSync(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("catalog_sync", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientEnableLogInfoStatementParameters(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("client_enable_log_info_statement_parameters", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientEncryptionKeySize(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("client_encryption_key_size", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientMemoryLimit(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("client_memory_limit", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("client_metadata_request_use_connection_ctx", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientMetadataUseSessionDatabase(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("client_metadata_use_session_database", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientPrefetchThreads(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("client_prefetch_threads", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientResultChunkSize(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("client_result_chunk_size", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientResultColumnCaseInsensitive(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("client_result_column_case_insensitive", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientSessionKeepAlive(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("client_session_keep_alive", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientSessionKeepAliveHeartbeatFrequency(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("client_session_keep_alive_heartbeat_frequency", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMapping(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("client_timestamp_type_mapping", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasComment(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("comment", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexEnabledCrossRegion(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("cortex_enabled_cross_region", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexModelsAllowlist(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("cortex_models_allowlist", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCsvTimestampFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("csv_timestamp_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDataRetentionTimeInDays(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("data_retention_time_in_days", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDateInputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("date_input_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDateOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("date_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDefaultDdlCollation(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("default_ddl_collation", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNotebookComputePoolCpu(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("default_notebook_compute_pool_cpu", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNotebookComputePoolGpu(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("default_notebook_compute_pool_gpu", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNullOrdering(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("default_null_ordering", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDefaultStreamlitNotebookWarehouse(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("default_streamlit_notebook_warehouse", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDisableUiDownloadButton(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("disable_ui_download_button", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasDisableUserPrivilegeGrants(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("disable_user_privilege_grants", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableAutomaticSensitiveDataClassificationLog(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_automatic_sensitive_data_classification_log", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableEgressCostOptimizer(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_egress_cost_optimizer", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableIdentifierFirstLogin(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_identifier_first_login", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableInternalStagesPrivatelink(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_internal_stages_privatelink", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForImageRepository(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_tri_secret_and_rekey_opt_out_for_image_repository", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorage(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableUnhandledExceptionsReporting(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_unhandled_exceptions_reporting", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_unload_physical_type_optimization", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableUnredactedQuerySyntaxError(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_unredacted_query_syntax_error", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnableUnredactedSecureObjectError(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_unredacted_secure_object_error", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnforceNetworkRulesForInternalStages(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enforce_network_rules_for_internal_stages", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasErrorOnNondeterministicMerge(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("error_on_nondeterministic_merge", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasErrorOnNondeterministicUpdate(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("error_on_nondeterministic_update", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEventTable(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("event_table", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasExternalOauthAddPrivilegedRolesToBlockedList(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("external_oauth_add_privileged_roles_to_blocked_list", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasExternalVolume(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("external_volume", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasGeographyOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("geography_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasGeometryOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("geometry_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasHybridTableLockTimeout(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("hybrid_table_lock_timeout", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasInitialReplicationSizeLimitInTb(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("initial_replication_size_limit_in_tb", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasJdbcTreatDecimalAsInt(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("jdbc_treat_decimal_as_int", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("jdbc_treat_timestamp_ntz_as_utc", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasJdbcUseSessionTimezone(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("jdbc_use_session_timezone", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasJsTreatIntegerAsBigint(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("js_treat_integer_as_bigint", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasJsonIndent(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("json_indent", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasListingAutoFulfillmentReplicationRefreshSchedule(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("listing_auto_fulfillment_replication_refresh_schedule", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasLockTimeout(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("lock_timeout", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasLogLevel(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("log_level", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasMaxConcurrencyLevel(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("max_concurrency_level", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("max_data_extension_time_in_days", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasMetricLevel(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("metric_level", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasMinDataRetentionTimeInDays(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("min_data_retention_time_in_days", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasMultiStatementCount(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("multi_statement_count", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasNetworkPolicy(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("network_policy", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasNoorderSequenceAsDefault(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("noorder_sequence_as_default", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasOauthAddPrivilegedRolesToBlockedList(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("oauth_add_privileged_roles_to_blocked_list", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasOdbcTreatDecimalAsInt(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("odbc_treat_decimal_as_int", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasPasswordPolicy(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("password_policy", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasPeriodicDataRekeying(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("periodic_data_rekeying", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasPipeExecutionPaused(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("pipe_execution_paused", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasPreventUnloadToInlineUrl(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("prevent_unload_to_inline_url", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasPreventUnloadToInternalStages(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("prevent_unload_to_internal_stages", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasPythonProfilerModules(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("python_profiler_modules", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasPythonProfilerTargetStage(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("python_profiler_target_stage", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasQueryTag(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("query_tag", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("quoted_identifiers_ignore_case", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasReplaceInvalidCharacters(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("replace_invalid_characters", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasRequireStorageIntegrationForStageCreation(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("require_storage_integration_for_stage_creation", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasRequireStorageIntegrationForStageOperation(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("require_storage_integration_for_stage_operation", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasResourceMonitor(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("resource_monitor", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasRowsPerResultset(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("rows_per_resultset", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasS3StageVpceDnsName(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("s3_stage_vpce_dns_name", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasSearchPath(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("search_path", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMaxStatementSize(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("serverless_task_max_statement_size", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMinStatementSize(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("serverless_task_min_statement_size", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasSessionPolicy(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("session_policy", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasSimulatedDataSharingConsumer(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("simulated_data_sharing_consumer", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasSsoLoginPage(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("sso_login_page", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasStatementQueuedTimeoutInSeconds(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("statement_queued_timeout_in_seconds", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasStatementTimeoutInSeconds(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("statement_timeout_in_seconds", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasStorageSerializationPolicy(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("storage_serialization_policy", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasStrictJsonOutput(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("strict_json_output", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasSuspendTaskAfterNumFailures(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("suspend_task_after_num_failures", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTaskAutoRetryAttempts(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("task_auto_retry_attempts", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimeInputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("time_input_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimeOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("time_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimestampDayIsAlways24h(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("timestamp_day_is_always_24h", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimestampInputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("timestamp_input_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimestampLtzOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("timestamp_ltz_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimestampNtzOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("timestamp_ntz_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimestampOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("timestamp_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimestampTypeMapping(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("timestamp_type_mapping", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimestampTzOutputFormat(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("timestamp_tz_output_format", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTimezone(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("timezone", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTraceLevel(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("trace_level", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTransactionAbortOnError(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("transaction_abort_on_error", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTransactionDefaultIsolationLevel(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("transaction_default_isolation_level", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasTwoDigitCenturyStart(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("two_digit_century_start", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasUnsupportedDdlAction(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("unsupported_ddl_action", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasUseCachedResult(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("use_cached_result", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasUserTaskManagedInitialWarehouseSize(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.StringValueSet("user_task_managed_initial_warehouse_size", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("user_task_minimum_trigger_interval_in_seconds", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasUserTaskTimeoutMs(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("user_task_timeout_ms", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasWeekOfYearPolicy(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("week_of_year_policy", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasWeekStart(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("week_start", expected)
+	return c
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

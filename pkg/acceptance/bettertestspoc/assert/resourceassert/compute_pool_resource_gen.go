@@ -28,6 +28,60 @@ func ImportedComputePoolResource(t *testing.T, id string) *ComputePoolResourceAs
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (c *ComputePoolResourceAssert) HasName(expected string) *ComputePoolResourceAssert {
+	c.StringValueSet("name", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasAutoResume(expected string) *ComputePoolResourceAssert {
+	c.StringValueSet("auto_resume", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasAutoSuspendSecs(expected int) *ComputePoolResourceAssert {
+	c.IntValueSet("auto_suspend_secs", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasComment(expected string) *ComputePoolResourceAssert {
+	c.StringValueSet("comment", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasForApplication(expected string) *ComputePoolResourceAssert {
+	c.StringValueSet("for_application", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasFullyQualifiedName(expected string) *ComputePoolResourceAssert {
+	c.StringValueSet("fully_qualified_name", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasInitiallySuspended(expected string) *ComputePoolResourceAssert {
+	c.StringValueSet("initially_suspended", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasInstanceFamily(expected string) *ComputePoolResourceAssert {
+	c.StringValueSet("instance_family", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasMaxNodes(expected int) *ComputePoolResourceAssert {
+	c.IntValueSet("max_nodes", expected)
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasMinNodes(expected int) *ComputePoolResourceAssert {
+	c.IntValueSet("min_nodes", expected)
+	return c
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

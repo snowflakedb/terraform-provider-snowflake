@@ -28,6 +28,112 @@ func ImportedProcedureJavaResource(t *testing.T, id string) *ProcedureJavaResour
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (p *ProcedureJavaResourceAssert) HasDatabase(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("database", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasSchema(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("schema", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasName(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("name", expected)
+	return p
+}
+
+// collection assert for arguments will be generated here
+
+func (p *ProcedureJavaResourceAssert) HasComment(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("comment", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasEnableConsoleOutput(expected bool) *ProcedureJavaResourceAssert {
+	p.BoolValueSet("enable_console_output", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasExecuteAs(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("execute_as", expected)
+	return p
+}
+
+// collection assert for external_access_integrations will be generated here
+
+func (p *ProcedureJavaResourceAssert) HasFullyQualifiedName(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("fully_qualified_name", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasHandler(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("handler", expected)
+	return p
+}
+
+// collection assert for imports will be generated here
+
+func (p *ProcedureJavaResourceAssert) HasIsSecure(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("is_secure", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasLogLevel(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("log_level", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasMetricLevel(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("metric_level", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasNullInputBehavior(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("null_input_behavior", expected)
+	return p
+}
+
+// collection assert for packages will be generated here
+
+func (p *ProcedureJavaResourceAssert) HasProcedureDefinition(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("procedure_definition", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasProcedureLanguage(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("procedure_language", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasReturnType(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("return_type", expected)
+	return p
+}
+
+func (p *ProcedureJavaResourceAssert) HasRuntimeVersion(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("runtime_version", expected)
+	return p
+}
+
+// collection assert for secrets will be generated here
+
+func (p *ProcedureJavaResourceAssert) HasSnowparkPackage(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("snowpark_package", expected)
+	return p
+}
+
+// collection assert for target_path will be generated here
+
+func (p *ProcedureJavaResourceAssert) HasTraceLevel(expected string) *ProcedureJavaResourceAssert {
+	p.StringValueSet("trace_level", expected)
+	return p
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,11 +153,6 @@ func (p *ProcedureJavaResourceAssert) HasNameString(expected string) *ProcedureJ
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasArgumentsString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments", expected))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasCommentString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
 	return p
@@ -67,11 +168,6 @@ func (p *ProcedureJavaResourceAssert) HasExecuteAsString(expected string) *Proce
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasExternalAccessIntegrationsString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("external_access_integrations", expected))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasFullyQualifiedNameString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return p
@@ -79,11 +175,6 @@ func (p *ProcedureJavaResourceAssert) HasFullyQualifiedNameString(expected strin
 
 func (p *ProcedureJavaResourceAssert) HasHandlerString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("handler", expected))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasImportsString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("imports", expected))
 	return p
 }
 
@@ -107,11 +198,6 @@ func (p *ProcedureJavaResourceAssert) HasNullInputBehaviorString(expected string
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasPackagesString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("packages", expected))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasProcedureDefinitionString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("procedure_definition", expected))
 	return p
@@ -132,18 +218,8 @@ func (p *ProcedureJavaResourceAssert) HasRuntimeVersionString(expected string) *
 	return p
 }
 
-func (p *ProcedureJavaResourceAssert) HasSecretsString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("secrets", expected))
-	return p
-}
-
 func (p *ProcedureJavaResourceAssert) HasSnowparkPackageString(expected string) *ProcedureJavaResourceAssert {
 	p.AddAssertion(assert.ValueSet("snowpark_package", expected))
-	return p
-}
-
-func (p *ProcedureJavaResourceAssert) HasTargetPathString(expected string) *ProcedureJavaResourceAssert {
-	p.AddAssertion(assert.ValueSet("target_path", expected))
 	return p
 }
 
