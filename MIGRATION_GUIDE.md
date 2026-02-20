@@ -37,7 +37,7 @@ With this change, we added support for the following missing object types:
 - `MCP SERVER` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
 - `NOTEBOOK PROJECT` object type in the `on_schema_object.object_type` field
 
-We also corrected the `on_schema_object.all` field validation to properly exclude `JOIN POLICY` object type, and the `on_schema_object.future` field validation to properly exclude `JOIN POLICY` and `SNAPSHOT` object types, which Snowflake does not support for bulk grants.
+We also corrected the `on_schema_object.all` field validation to properly exclude `JOIN POLICY` object type, and the `on_schema_object.future` field validation to properly exclude `JOIN POLICY` and `SNAPSHOT` object types, which Snowflake does not support for bulk grants. The same restrictions apply to the newly added `GATEWAY` and `NOTEBOOK PROJECT` object types.
 
 No changes in configuration are required.
 
