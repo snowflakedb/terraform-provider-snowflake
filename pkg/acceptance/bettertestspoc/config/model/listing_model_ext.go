@@ -43,44 +43,13 @@ func ListingWithInlineManifest(
 	return l
 }
 
-func ListingWithStagedManifest(
-	resourceName string,
-	name string,
-	stageId sdk.SchemaObjectIdentifier,
-) *ListingModel {
-	l := &ListingModel{ResourceModelMeta: config.Meta(resourceName, resources.Listing)}
-	l.WithName(name)
-	l.WithManifestValue(tfconfig.ListVariable(
-		tfconfig.MapVariable(map[string]tfconfig.Variable{
-			"from_stage": tfconfig.ListVariable(
-				tfconfig.MapVariable(map[string]tfconfig.Variable{
-					"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
-				}),
-			),
-		}),
-	))
-	return l
-}
-
 func ListingWithStagedManifestWithLocation(
 	resourceName string,
 	name string,
 	stageId sdk.SchemaObjectIdentifier,
 	location string,
 ) *ListingModel {
-	l := &ListingModel{ResourceModelMeta: config.Meta(resourceName, resources.Listing)}
-	l.WithName(name)
-	l.WithManifestValue(tfconfig.ListVariable(
-		tfconfig.MapVariable(map[string]tfconfig.Variable{
-			"from_stage": tfconfig.ListVariable(
-				tfconfig.MapVariable(map[string]tfconfig.Variable{
-					"stage":    tfconfig.StringVariable(stageId.FullyQualifiedName()),
-					"location": tfconfig.StringVariable(location),
-				}),
-			),
-		}),
-	))
-	return l
+	return Listing(resourceName, name, []sdk.StageLocation{sdk.NewStageLocation(stageId, location)})
 }
 
 func ListingWithStagedManifestWithOptionals(
