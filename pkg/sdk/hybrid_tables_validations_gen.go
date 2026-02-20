@@ -35,8 +35,8 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set, opts.Unset) {
-		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
+	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.ModifyColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
 	}
 	if valueSet(opts.ConstraintAction) {
 		if !exactlyOneValueSet(opts.ConstraintAction.Add, opts.ConstraintAction.Rename, opts.ConstraintAction.Drop) {
@@ -62,6 +62,14 @@ func (opts *AlterHybridTableOptions) validate() error {
 					errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction.NotNullConstraint", "SetNotNull", "DropNotNull"))
 				}
 			}
+		}
+		if everyValueSet(opts.AlterColumnAction.Comment, opts.AlterColumnAction.UnsetComment) {
+			errs = append(errs, errOneOf("AlterHybridTableOptions.AlterColumnAction", "Comment", "UnsetComment"))
+		}
+	}
+	if valueSet(opts.ModifyColumnAction) {
+		if everyValueSet(opts.ModifyColumnAction.Comment, opts.ModifyColumnAction.UnsetComment) {
+			errs = append(errs, errOneOf("AlterHybridTableOptions.ModifyColumnAction", "Comment", "UnsetComment"))
 		}
 	}
 	if valueSet(opts.ClusteringAction) {
