@@ -72,6 +72,11 @@ func (e *ExternalAzureStageResourceAssert) HasEncryptionString(expected string) 
 	return e
 }
 
+func (e *ExternalAzureStageResourceAssert) HasFileFormatString(expected string) *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format", expected))
+	return e
+}
+
 func (e *ExternalAzureStageResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return e
@@ -177,6 +182,11 @@ func (e *ExternalAzureStageResourceAssert) HasDirectoryEmpty() *ExternalAzureSta
 
 func (e *ExternalAzureStageResourceAssert) HasEncryptionEmpty() *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("encryption.#", "0"))
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasFileFormatEmpty() *ExternalAzureStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
 	return e
 }
 

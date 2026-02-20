@@ -229,7 +229,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("eastus").
-						HasCloud(string(sdk.StageCloudAzure)).
+						HasCloud(sdk.StageCloudAzure).
 						HasStorageIntegrationEmpty().
 						HasEndpointEmpty().
 						HasOwnerRoleType("ROLE").
@@ -261,7 +261,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("us-west-2").
-						HasCloud(string(sdk.StageCloudAws)).
+						HasCloud(sdk.StageCloudAws).
 						HasStorageIntegrationEmpty().
 						HasEndpointEmpty().
 						HasOwnerRoleType("ROLE").
@@ -298,7 +298,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegionEmpty().
-						HasCloud(string(sdk.StageCloudGcp)).
+						HasCloud(sdk.StageCloudGcp).
 						HasStorageIntegration(ids.PrecreatedGcpStorageIntegration).
 						HasEndpointEmpty().
 						HasOwnerRoleType("ROLE").
@@ -330,7 +330,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("us-west-2").
-						HasCloud(string(sdk.StageCloudAws)).
+						HasCloud(sdk.StageCloudAws).
 						HasStorageIntegrationEmpty().
 						HasEndpoint(endpoint).
 						HasOwnerRoleType("ROLE").
@@ -366,7 +366,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("us-west-2").
-						HasCloud(string(sdk.StageCloudAws)).
+						HasCloud(sdk.StageCloudAws).
 						HasStorageIntegrationEmpty().
 						HasEndpoint(endpoint).
 						HasOwnerRoleType("ROLE").
@@ -403,7 +403,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 						HasHasCredentials(false).
 						HasHasEncryptionKey(false).
 						HasRegion("us-west-2").
-						HasCloud(string(sdk.StageCloudAws)).
+						HasCloud(sdk.StageCloudAws).
 						HasStorageIntegrationEmpty().
 						HasEndpoint(endpoint).
 						HasOwnerRoleType("ROLE").

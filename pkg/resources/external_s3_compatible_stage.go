@@ -100,10 +100,10 @@ func ExternalS3CompatibleStage() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingCreateWrapper(resources.ExternalS3CompatibleStage, CreateExternalS3CompatStage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingReadWrapper(resources.ExternalS3CompatibleStage, ReadExternalS3CompatStageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3CompatStageResource), TrackingUpdateWrapper(resources.ExternalS3CompatibleStage, UpdateExternalS3CompatStage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalS3CompatStageResource, resources.ExternalS3CompatibleStage),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingCreateWrapper(resources.ExternalS3CompatibleStage, CreateExternalS3CompatStage)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingReadWrapper(resources.ExternalS3CompatibleStage, ReadExternalS3CompatStageFunc(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingUpdateWrapper(resources.ExternalS3CompatibleStage, UpdateExternalS3CompatStage)),
+		DeleteContext: DeleteStage(previewfeatures.ExternalS3CompatibleStageResource, resources.ExternalS3CompatibleStage),
 		Description:   "Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3CompatibleStage, customdiff.All(

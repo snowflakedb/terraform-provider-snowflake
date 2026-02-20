@@ -62,6 +62,11 @@ func (i *InternalStageResourceAssert) HasEncryptionString(expected string) *Inte
 	return i
 }
 
+func (i *InternalStageResourceAssert) HasFileFormatString(expected string) *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format", expected))
+	return i
+}
+
 func (i *InternalStageResourceAssert) HasFullyQualifiedNameString(expected string) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return i
@@ -122,6 +127,11 @@ func (i *InternalStageResourceAssert) HasDirectoryEmpty() *InternalStageResource
 
 func (i *InternalStageResourceAssert) HasEncryptionEmpty() *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("encryption.#", "0"))
+	return i
+}
+
+func (i *InternalStageResourceAssert) HasFileFormatEmpty() *InternalStageResourceAssert {
+	i.AddAssertion(assert.ValueSet("file_format.#", "0"))
 	return i
 }
 
