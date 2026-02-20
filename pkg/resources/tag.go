@@ -49,11 +49,6 @@ var tagSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Set of allowed values for the tag.",
 	},
-	"allowed_values_configured": {
-		Type:        schema.TypeBool,
-		Computed:    true,
-		Description: "Whether allowed_values is explicitly configured (even if empty). Used internally to distinguish between unset (permissive) and empty (restrictive).",
-	},
 	"masking_policies": {
 		Type: schema.TypeSet,
 		Elem: &schema.Schema{
@@ -119,9 +114,8 @@ func Tag() *schema.Resource {
 		Description:   "Resource used to manage tags. For more information, check [tag documentation](https://docs.snowflake.com/en/sql-reference/sql/create-tag). For assigning tags to Snowflake objects, see [tag_association resource](./tag_association).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Tag, customdiff.All(
-			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values", "allowed_values_configured"),
+			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values"),
 			ComputedIfAnyAttributeChanged(tagSchema, FullyQualifiedNameAttributeName, "name"),
-			NullableListCustomDiff("allowed_values", "allowed_values_configured"),
 		)),
 
 		Schema: tagSchema,
@@ -203,13 +197,6 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		d.Set("comment", tag.Comment),
 		d.Set("allowed_values", tag.AllowedValues),
 		func() error {
-			if d.GetRawConfig().IsNull() {
-				// Import: no config available, default based on Snowflake state.
-				return d.Set("allowed_values_configured", tag.AllowedValues != nil)
-			}
-			return d.Set("allowed_values_configured", !d.GetRawConfig().AsValueMap()["allowed_values"].IsNull())
-		}(),
-		func() error {
 			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
 			if err != nil {
 				return (fmt.Errorf("getting policy references for view: %w", err))
@@ -260,7 +247,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 		}
 	}
-	if d.HasChange("allowed_values") || d.HasChange("allowed_values_configured") {
+	if d.HasChange("allowed_values") {
 		// Using d.GetRawConfig to distinguish null (field removed from config)
 		// from empty set (allowed_values = []).
 		// This distinction matters because of Snowflake's behavior:
