@@ -10,8 +10,10 @@ import (
 
 var _ ExternalVolumes = (*externalVolumes)(nil)
 
-var _ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
-var _ convertibleRow[ExternalVolume] = new(externalVolumeShowRow)
+var (
+	_ convertibleRow[ExternalVolumeProperty] = new(externalVolumeDescRow)
+	_ convertibleRow[ExternalVolume]         = new(externalVolumeShowRow)
+)
 
 type externalVolumes struct {
 	client *Client

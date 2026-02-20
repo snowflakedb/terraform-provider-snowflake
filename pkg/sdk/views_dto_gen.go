@@ -99,8 +99,7 @@ type ViewSetDataMetricScheduleRequest struct {
 	DataMetricSchedule string // required
 }
 
-type ViewUnsetDataMetricScheduleRequest struct {
-}
+type ViewUnsetDataMetricScheduleRequest struct{}
 
 type ViewAddRowAccessPolicyRequest struct {
 	RowAccessPolicy SchemaObjectIdentifier // required
@@ -122,8 +121,7 @@ type ViewSetAggregationPolicyRequest struct {
 	Force             *bool
 }
 
-type ViewUnsetAggregationPolicyRequest struct {
-}
+type ViewUnsetAggregationPolicyRequest struct{}
 
 type ViewSetColumnMaskingPolicyRequest struct {
 	Name          string                 // required

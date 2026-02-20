@@ -12,8 +12,10 @@ import (
 
 var _ Views = (*views)(nil)
 
-var _ convertibleRow[View] = new(viewDBRow)
-var _ convertibleRow[ViewDetails] = new(viewDetailsRow)
+var (
+	_ convertibleRow[View]        = new(viewDBRow)
+	_ convertibleRow[ViewDetails] = new(viewDetailsRow)
+)
 
 type views struct {
 	client *Client
