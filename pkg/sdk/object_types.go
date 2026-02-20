@@ -73,7 +73,7 @@ const (
 	ObjectTypeExternalVolume         ObjectType = "EXTERNAL VOLUME"
 	ObjectTypeNetworkRule            ObjectType = "NETWORK RULE"
 	ObjectTypeNotebook               ObjectType = "NOTEBOOK"
-	ObjectTypeNotebookProject       ObjectType = "NOTEBOOK PROJECT"
+	ObjectTypeNotebookProject        ObjectType = "NOTEBOOK PROJECT"
 	ObjectTypePackagesPolicy         ObjectType = "PACKAGES POLICY"
 	ObjectTypeComputePool            ObjectType = "COMPUTE POOL"
 	ObjectTypeAggregationPolicy      ObjectType = "AGGREGATION POLICY"
@@ -274,7 +274,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeExternalVolume:          PluralObjectTypeExternalVolumes,
 		ObjectTypeNetworkRule:             PluralObjectTypeNetworkRules,
 		ObjectTypeNotebook:                PluralObjectTypeNotebooks,
-		ObjectTypeNotebookProject:        PluralObjectTypeNotebookProjects,
+		ObjectTypeNotebookProject:         PluralObjectTypeNotebookProjects,
 		ObjectTypePackagesPolicy:          PluralObjectTypePackagesPolicies,
 		ObjectTypeComputePool:             PluralObjectTypeComputePool,
 		ObjectTypeAggregationPolicy:       PluralObjectTypeAggregationPolicies,
