@@ -6,6 +6,19 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+// hybridTableAddColumnAction defines ALTER TABLE ... ADD COLUMN for hybrid tables.
+// https://docs.snowflake.com/en/sql-reference/sql/alter-table
+var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
+	SQL("ADD").
+	SQL("COLUMN").
+	OptionalSQL("IF NOT EXISTS").
+	Text("Name", g.KeywordOptions().Required()).
+	PredefinedQueryStructField("Type", "DataType", g.KeywordOptions().Required()).
+	OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
+	PredefinedQueryStructField("DefaultValue", "*ColumnDefaultValue", g.KeywordOptions()).
+	PredefinedQueryStructField("InlineConstraint", "*HybridTableColumnInlineConstraint", g.KeywordOptions()).
+	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
+
 // hybridTableConstraintAction defines ALTER TABLE ... ADD/DROP/RENAME constraint actions for hybrid tables.
 // Per Snowflake docs: https://docs.snowflake.com/en/sql-reference/sql/alter-table#constraint-actions-constraintaction
 var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction").
@@ -127,6 +140,12 @@ var hybridTablesDef = g.NewInterface(
 		SQL("TABLE").
 		IfExists().
 		Name().
+		OptionalIdentifier("NewName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		OptionalQueryStructField(
+			"AddColumnAction",
+			hybridTableAddColumnAction,
+			g.KeywordOptions(),
+		).
 		OptionalQueryStructField(
 			"ConstraintAction",
 			hybridTableConstraintAction,
@@ -163,7 +182,7 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").

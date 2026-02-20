@@ -87,6 +87,18 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 	opts := &AlterHybridTableOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
+		NewName:  r.NewName,
+	}
+	if r.AddColumnAction != nil {
+		opts.AddColumnAction = &HybridTableAddColumnAction{
+			IfNotExists:      r.AddColumnAction.IfNotExists,
+			Name:             r.AddColumnAction.Name,
+			Type:             r.AddColumnAction.Type,
+			Collate:          r.AddColumnAction.Collate,
+			DefaultValue:     r.AddColumnAction.DefaultValue,
+			InlineConstraint: r.AddColumnAction.InlineConstraint,
+			Comment:          r.AddColumnAction.Comment,
+		}
 	}
 	if r.ConstraintAction != nil {
 		opts.ConstraintAction = &HybridTableConstraintAction{}

@@ -22,6 +22,8 @@ type CreateHybridTableRequest struct {
 type AlterHybridTableRequest struct {
 	IfExists           *bool
 	name               SchemaObjectIdentifier // required
+	NewName            *SchemaObjectIdentifier
+	AddColumnAction    *HybridTableAddColumnActionRequest
 	ConstraintAction   *HybridTableConstraintActionRequest
 	AlterColumnAction  *HybridTableAlterColumnActionRequest
 	ModifyColumnAction *HybridTableModifyColumnActionRequest
@@ -29,6 +31,16 @@ type AlterHybridTableRequest struct {
 	DropIndexAction    *HybridTableDropIndexActionRequest
 	Set                *HybridTableSetPropertiesRequest
 	Unset              *HybridTableUnsetPropertiesRequest
+}
+
+type HybridTableAddColumnActionRequest struct {
+	IfNotExists      *bool
+	Name             string   // required
+	Type             DataType // required
+	Collate          *string
+	DefaultValue     *ColumnDefaultValue
+	InlineConstraint *HybridTableColumnInlineConstraint
+	Comment          *string
 }
 
 type HybridTableConstraintActionRequest struct {

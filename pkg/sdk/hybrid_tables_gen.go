@@ -42,6 +42,8 @@ type AlterHybridTableOptions struct {
 	table              bool                           `ddl:"static" sql:"TABLE"`
 	IfExists           *bool                          `ddl:"keyword" sql:"IF EXISTS"`
 	name               SchemaObjectIdentifier         `ddl:"identifier"`
+	NewName            *SchemaObjectIdentifier        `ddl:"identifier" sql:"RENAME TO"`
+	AddColumnAction    *HybridTableAddColumnAction    `ddl:"keyword"`
 	ConstraintAction   *HybridTableConstraintAction   `ddl:"keyword"`
 	AlterColumnAction  *HybridTableAlterColumnAction  `ddl:"keyword"`
 	ModifyColumnAction *HybridTableModifyColumnAction `ddl:"keyword"`
@@ -49,6 +51,20 @@ type AlterHybridTableOptions struct {
 	DropIndexAction    *HybridTableDropIndexAction    `ddl:"keyword"`
 	Set                *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
 	Unset              *HybridTableUnsetProperties    `ddl:"keyword" sql:"UNSET"`
+}
+
+// HybridTableAddColumnAction defines ALTER TABLE ... ADD COLUMN for hybrid tables.
+// https://docs.snowflake.com/en/sql-reference/sql/alter-table
+type HybridTableAddColumnAction struct {
+	add              bool                               `ddl:"static" sql:"ADD"`
+	column           bool                               `ddl:"static" sql:"COLUMN"`
+	IfNotExists      *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
+	Name             string                             `ddl:"keyword"`
+	Type             DataType                           `ddl:"keyword"`
+	Collate          *string                            `ddl:"parameter,no_equals,single_quotes" sql:"COLLATE"`
+	DefaultValue     *ColumnDefaultValue                `ddl:"keyword"`
+	InlineConstraint *HybridTableColumnInlineConstraint `ddl:"keyword"`
+	Comment          *string                            `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
 }
 
 type HybridTableConstraintAction struct {
