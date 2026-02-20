@@ -3,12 +3,13 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"slices"
 	"strings"
 )
 
-// Returns a copy of the given storage location with a set name
+// CopySentinelStorageLocation creates a copy of the given storage location with a
+// sentinel name used for Terraform provider operations. This is useful for managing
+// storage location state without affecting user-visible names.
 func CopySentinelStorageLocation(
 	storageLocation ExternalVolumeStorageLocation,
 ) (ExternalVolumeStorageLocation, error) {
@@ -59,11 +60,15 @@ func CopySentinelStorageLocation(
 				Credentials:     storageLocation.S3CompatStorageLocationParams.Credentials,
 			},
 		}
+	default:
+		return ExternalVolumeStorageLocation{}, fmt.Errorf("unsupported storage provider type: %s", storageProvider)
 	}
 
 	return tempNameStorageLocation, nil
 }
 
+// GetStorageLocationName retrieves the name from a storage location configuration.
+// Returns an error if the storage location is invalid or the name is empty.
 func GetStorageLocationName(s ExternalVolumeStorageLocation) (string, error) {
 	switch {
 	case s.S3StorageLocationParams != nil && *s.S3StorageLocationParams != S3StorageLocationParams{}:
@@ -110,74 +115,50 @@ func GetStorageLocationStorageProvider(s ExternalVolumeStorageLocation) (Storage
 	}
 }
 
-// Returns the index of the last matching elements in the list
-// e.g. [1,2,3] [1,3,2] -> 0, [1,2,3] [1,2,4] -> 1
-// -1 is returned if there are no common prefixes in the list
-func CommonPrefixLastIndex(a []ExternalVolumeStorageLocation, b []ExternalVolumeStorageLocation) (int, error) {
-	commonPrefixLastIndex := 0
 
-	if len(a) == 0 || len(b) == 0 {
-		return -1, nil
-	}
-
-	if !reflect.DeepEqual(a[0], b[0]) {
-		return -1, nil
-	}
-
-	for i := 1; i < min(len(a), len(b)); i++ {
-		if !reflect.DeepEqual(a[i], b[i]) {
-			break
-		}
-
-		commonPrefixLastIndex = i
-	}
-
-	return commonPrefixLastIndex, nil
-}
-
-type ParsedExternalVolumeDescribed struct {
-	StorageLocations []ExternalVolumeStorageLocationJson
+type ExternalVolumeDetails struct {
+	StorageLocations []ExternalVolumeStorageLocationDetails
 	Active           string
 	Comment          string
 	AllowWrites      string
 }
 
-func ParseExternalVolumeDescribed(props []ExternalVolumeProperty) (ParsedExternalVolumeDescribed, error) {
-	parsedExternalVolumeDescribed := ParsedExternalVolumeDescribed{}
-	var storageLocations []ExternalVolumeStorageLocationJson
+func ParseExternalVolumeDescribed(props []ExternalVolumeProperty) (ExternalVolumeDetails, error) {
+	externalVolumeDetails := ExternalVolumeDetails{}
+	var storageLocations []ExternalVolumeStorageLocationDetails
 	for _, p := range props {
 		switch {
 		case p.Name == "COMMENT":
-			parsedExternalVolumeDescribed.Comment = p.Value
+			externalVolumeDetails.Comment = p.Value
 		case p.Name == "ACTIVE":
-			parsedExternalVolumeDescribed.Active = p.Value
+			externalVolumeDetails.Active = p.Value
 		case p.Name == "ALLOW_WRITES":
-			parsedExternalVolumeDescribed.AllowWrites = p.Value
+			externalVolumeDetails.AllowWrites = p.Value
 		case strings.Contains(p.Name, "STORAGE_LOCATION_"):
-			storageLocation := ExternalVolumeStorageLocationJson{}
+			storageLocation := ExternalVolumeStorageLocationDetails{}
 			err := json.Unmarshal([]byte(p.Value), &storageLocation)
 			if err != nil {
-				return ParsedExternalVolumeDescribed{}, err
+				return ExternalVolumeDetails{}, err
 			}
 			storageLocations = append(
 				storageLocations,
 				storageLocation,
 			)
 		default:
-			return ParsedExternalVolumeDescribed{}, fmt.Errorf("Unrecognized external volume property: %s", p.Name)
+			return ExternalVolumeDetails{}, fmt.Errorf("Unrecognized external volume property: %s", p.Name)
 		}
 	}
 
-	parsedExternalVolumeDescribed.StorageLocations = storageLocations
-	err := validateParsedExternalVolumeDescribed(parsedExternalVolumeDescribed)
+	externalVolumeDetails.StorageLocations = storageLocations
+	err := validateExternalVolumeDetails(externalVolumeDetails)
 	if err != nil {
-		return ParsedExternalVolumeDescribed{}, err
+		return ExternalVolumeDetails{}, err
 	}
 
-	return parsedExternalVolumeDescribed, nil
+	return externalVolumeDetails, nil
 }
 
-type ExternalVolumeStorageLocationJson struct {
+type ExternalVolumeStorageLocationDetails struct {
 	Name                     string `json:"NAME"`
 	StorageProvider          string `json:"STORAGE_PROVIDER"`
 	StorageBaseUrl           string `json:"STORAGE_BASE_URL"`
@@ -191,7 +172,7 @@ type ExternalVolumeStorageLocationJson struct {
 	AzureTenantId            string `json:"AZURE_TENANT_ID"`
 }
 
-func validateParsedExternalVolumeDescribed(p ParsedExternalVolumeDescribed) error {
+func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
 	if len(p.StorageLocations) == 0 {
 		return fmt.Errorf("No storage locations could be parsed from the external volume.")
 	}

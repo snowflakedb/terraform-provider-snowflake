@@ -25,6 +25,7 @@ type AlterExternalVolumeRequest struct {
 	RemoveStorageLocation *string
 	Set                   *AlterExternalVolumeSetRequest
 	AddStorageLocation    *ExternalVolumeStorageLocationRequest
+	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocationRequest
 }
 
 type AlterExternalVolumeSetRequest struct {
@@ -81,6 +82,16 @@ type S3CompatStorageLocationParamsRequest struct {
 }
 
 type ExternalVolumeS3CompatCredentialsRequest struct {
+	AwsKeyId     string // required
+	AwsSecretKey string // required
+}
+
+type AlterExternalVolumeUpdateStorageLocationRequest struct {
+	StorageLocation string // required
+	Credentials     *ExternalVolumeUpdateCredentialsRequest
+}
+
+type ExternalVolumeUpdateCredentialsRequest struct {
 	AwsKeyId     string // required
 	AwsSecretKey string // required
 }

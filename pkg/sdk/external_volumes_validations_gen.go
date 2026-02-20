@@ -46,8 +46,8 @@ func (opts *AlterExternalVolumeOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	if !exactlyOneValueSet(opts.RemoveStorageLocation, opts.Set, opts.AddStorageLocation) {
-		errs = append(errs, errExactlyOneOf("AlterExternalVolumeOptions", "RemoveStorageLocation", "Set", "AddStorageLocation"))
+	if !exactlyOneValueSet(opts.RemoveStorageLocation, opts.Set, opts.AddStorageLocation, opts.UpdateStorageLocation) {
+		errs = append(errs, errExactlyOneOf("AlterExternalVolumeOptions", "RemoveStorageLocation", "Set", "AddStorageLocation", "UpdateStorageLocation"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)

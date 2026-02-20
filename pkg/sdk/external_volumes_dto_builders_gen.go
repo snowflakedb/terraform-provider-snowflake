@@ -60,6 +60,11 @@ func (s *AlterExternalVolumeRequest) WithAddStorageLocation(addStorageLocation E
 	return s
 }
 
+func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLocation AlterExternalVolumeUpdateStorageLocationRequest) *AlterExternalVolumeRequest {
+	s.UpdateStorageLocation = &updateStorageLocation
+	return s
+}
+
 func NewAlterExternalVolumeSetRequest() *AlterExternalVolumeSetRequest {
 	s := AlterExternalVolumeSetRequest{}
 	return &s
@@ -214,6 +219,29 @@ func NewExternalVolumeS3CompatCredentialsRequest(
 	awsSecretKey string,
 ) *ExternalVolumeS3CompatCredentialsRequest {
 	s := ExternalVolumeS3CompatCredentialsRequest{}
+	s.AwsKeyId = awsKeyId
+	s.AwsSecretKey = awsSecretKey
+	return &s
+}
+
+func NewAlterExternalVolumeUpdateStorageLocationRequest(
+	storageLocation string,
+) *AlterExternalVolumeUpdateStorageLocationRequest {
+	s := AlterExternalVolumeUpdateStorageLocationRequest{}
+	s.StorageLocation = storageLocation
+	return &s
+}
+
+func (s *AlterExternalVolumeUpdateStorageLocationRequest) WithCredentials(credentials ExternalVolumeUpdateCredentialsRequest) *AlterExternalVolumeUpdateStorageLocationRequest {
+	s.Credentials = &credentials
+	return s
+}
+
+func NewExternalVolumeUpdateCredentialsRequest(
+	awsKeyId string,
+	awsSecretKey string,
+) *ExternalVolumeUpdateCredentialsRequest {
+	s := ExternalVolumeUpdateCredentialsRequest{}
 	s.AwsKeyId = awsKeyId
 	s.AwsSecretKey = awsSecretKey
 	return &s

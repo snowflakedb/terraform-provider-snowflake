@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -365,10 +367,9 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 		// can be added back. The storage locations lower than index 5 don't need to be modified.
 		// The removal process could be done without the above recreation, but it handles this case
 		// too so it's used for both actions.
-		commonPrefixLastIndex, err := sdk.CommonPrefixLastIndex(newLocations, oldLocations)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		commonPrefixLastIndex := collections.CommonPrefixLastIndex(newLocations, oldLocations, func(a, b sdk.ExternalVolumeStorageLocation) bool {
+			return reflect.DeepEqual(a, b)
+		})
 
 		var removedLocations []sdk.ExternalVolumeStorageLocation
 		var addedLocations []sdk.ExternalVolumeStorageLocation

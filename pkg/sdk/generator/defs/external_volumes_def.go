@@ -80,6 +80,16 @@ var storageLocationDef = g.NewQueryStruct("ExternalVolumeStorageLocation").
 	).
 	WithValidation(g.ExactlyOneValueSet, "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams")
 
+var updateStorageLocationDef = g.NewQueryStruct("AlterExternalVolumeUpdateStorageLocation").
+	TextAssignment("STORAGE_LOCATION", g.ParameterOptions().SingleQuotes().NoEquals().Required()).
+	OptionalQueryStructField(
+		"Credentials",
+		g.NewQueryStruct("ExternalVolumeUpdateCredentials").
+			TextAssignment("AWS_KEY_ID", g.ParameterOptions().SingleQuotes().Required()).
+			TextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes().Required()),
+		g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
+	)
+
 var externalVolumesDef = g.NewInterface(
 	"ExternalVolumes",
 	"ExternalVolume",
@@ -120,7 +130,12 @@ var externalVolumesDef = g.NewInterface(
 				storageLocationDef,
 				g.ParameterOptions().SQL("ADD STORAGE_LOCATION"),
 			).
-			WithValidation(g.ExactlyOneValueSet, "RemoveStorageLocation", "Set", "AddStorageLocation").
+			OptionalQueryStructField(
+				"UpdateStorageLocation",
+				updateStorageLocationDef,
+				g.KeywordOptions().SQL("UPDATE"),
+			).
+			WithValidation(g.ExactlyOneValueSet, "RemoveStorageLocation", "Set", "AddStorageLocation", "UpdateStorageLocation").
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	DropOperation(

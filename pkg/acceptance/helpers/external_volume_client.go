@@ -63,6 +63,20 @@ func (c *ExternalVolumeClient) Show(t *testing.T, id sdk.AccountObjectIdentifier
 	return c.client().ShowByID(ctx, id)
 }
 
+func (c *ExternalVolumeClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ExternalVolumeDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	props, err := c.client().Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := sdk.ParseExternalVolumeDescribed(props)
+	if err != nil {
+		return nil, err
+	}
+	return &details, nil
+}
+
 func (c *ExternalVolumeClient) Alter(t *testing.T, req *sdk.AlterExternalVolumeRequest) {
 	t.Helper()
 	ctx := context.Background()

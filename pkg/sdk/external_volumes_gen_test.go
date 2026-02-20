@@ -895,268 +895,6 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 	}
 }
 
-func Test_CommonPrefixLastIndex(t *testing.T) {
-	s3StorageLocationName := "s3Test"
-	s3StorageLocationName2 := "s3Test2"
-	s3StorageBaseUrl := "s3://my_example_bucket"
-	s3StorageAwsRoleArn := "arn:aws:iam::123456789012:role/myrole"
-	s3EncryptionKmsKeyId := "123456789"
-
-	gcsStorageLocationName := "gcsTest"
-	gcsStorageLocationName2 := "gcsTest2"
-	gcsStorageBaseUrl := "gcs://my_example_bucket"
-	gcsEncryptionKmsKeyId := "123456789"
-
-	azureStorageLocationName := "azureTest"
-	azureStorageLocationName2 := "azureTest2"
-	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container"
-	azureTenantId := "123456789"
-
-	s3StorageLocationA := S3StorageLocationParams{
-		Name:                 s3StorageLocationName,
-		StorageProvider:      S3StorageProviderS3,
-		StorageBaseUrl:       s3StorageBaseUrl,
-		StorageAwsRoleArn:    s3StorageAwsRoleArn,
-		StorageAwsExternalId: &s3StorageAwsExternalId,
-		Encryption: &ExternalVolumeS3Encryption{
-			EncryptionType: S3EncryptionTypeSseKms,
-			KmsKeyId:       &s3EncryptionKmsKeyId,
-		},
-	}
-
-	s3StorageLocationB := S3StorageLocationParams{
-		Name:                 s3StorageLocationName2,
-		StorageProvider:      S3StorageProviderS3,
-		StorageBaseUrl:       s3StorageBaseUrl,
-		StorageAwsRoleArn:    s3StorageAwsRoleArn,
-		StorageAwsExternalId: &s3StorageAwsExternalId,
-		Encryption: &ExternalVolumeS3Encryption{
-			EncryptionType: S3EncryptionTypeSseKms,
-			KmsKeyId:       &s3EncryptionKmsKeyId,
-		},
-	}
-
-	azureStorageLocationA := AzureStorageLocationParams{
-		Name:           azureStorageLocationName,
-		StorageBaseUrl: azureStorageBaseUrl,
-		AzureTenantId:  azureTenantId,
-	}
-
-	azureStorageLocationB := AzureStorageLocationParams{
-		Name:           azureStorageLocationName2,
-		StorageBaseUrl: azureStorageBaseUrl,
-		AzureTenantId:  azureTenantId,
-	}
-
-	gcsStorageLocationA := GCSStorageLocationParams{
-		Name:           gcsStorageLocationName,
-		StorageBaseUrl: gcsStorageBaseUrl,
-		Encryption: &ExternalVolumeGCSEncryption{
-			EncryptionType: GCSEncryptionTypeSseKms,
-			KmsKeyId:       &gcsEncryptionKmsKeyId,
-		},
-	}
-
-	gcsStorageLocationB := GCSStorageLocationParams{
-		Name:           gcsStorageLocationName2,
-		StorageBaseUrl: gcsStorageBaseUrl,
-		Encryption: &ExternalVolumeGCSEncryption{
-			EncryptionType: GCSEncryptionTypeSseKms,
-			KmsKeyId:       &gcsEncryptionKmsKeyId,
-		},
-	}
-
-	gcsStorageLocationC := GCSStorageLocationParams{
-		Name:           "test",
-		StorageBaseUrl: gcsStorageBaseUrl,
-		Encryption: &ExternalVolumeGCSEncryption{
-			EncryptionType: GCSEncryptionTypeSseKms,
-			KmsKeyId:       &gcsEncryptionKmsKeyId,
-		},
-	}
-
-	s3GovStorageLocationA := S3StorageLocationParams{
-		Name:              s3StorageLocationName,
-		StorageProvider:   S3StorageProviderS3GOV,
-		StorageBaseUrl:    s3StorageBaseUrl,
-		StorageAwsRoleArn: s3StorageAwsRoleArn,
-	}
-
-	testCases := []struct {
-		Name           string
-		ListA          []ExternalVolumeStorageLocation
-		ListB          []ExternalVolumeStorageLocation
-		ExpectedOutput int
-	}{
-		{
-			Name:           "Two empty lists",
-			ListA:          []ExternalVolumeStorageLocation{},
-			ListB:          []ExternalVolumeStorageLocation{},
-			ExpectedOutput: -1,
-		},
-		{
-			Name:           "First list empty",
-			ListA:          []ExternalVolumeStorageLocation{},
-			ListB:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ExpectedOutput: -1,
-		},
-		{
-			Name:           "Second list empty",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{},
-			ExpectedOutput: -1,
-		},
-		{
-			Name:           "Lists with no common prefix - length 1",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationB}},
-			ExpectedOutput: -1,
-		},
-		{
-			Name:           "Lists with no common prefix - length 2",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}, {AzureStorageLocationParams: &azureStorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationB}, {AzureStorageLocationParams: &azureStorageLocationB}},
-			ExpectedOutput: -1,
-		},
-		{
-			Name:           "Identical lists - length 1",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ExpectedOutput: 0,
-		},
-		{
-			Name:           "Identical lists - length 2",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}, {AzureStorageLocationParams: &azureStorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}, {AzureStorageLocationParams: &azureStorageLocationA}},
-			ExpectedOutput: 1,
-		},
-		{
-			Name: "Identical lists - length 3",
-			ListA: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{S3StorageLocationParams: &s3GovStorageLocationA},
-			},
-			ListB: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{S3StorageLocationParams: &s3GovStorageLocationA},
-			},
-			ExpectedOutput: 2,
-		},
-		{
-			Name: "Lists with a common prefix - length 3, matching up to and including index 1",
-			ListA: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationA},
-			},
-			ListB: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationB},
-			},
-			ExpectedOutput: 1,
-		},
-		{
-			Name: "Lists with a common prefix - length 4, matching up to and including index 2",
-			ListA: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationB},
-			},
-			ListB: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationC},
-			},
-			ExpectedOutput: 2,
-		},
-		{
-			Name: "Lists with a common prefix - length 4, matching up to and including index 1",
-			ListA: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationC},
-			},
-			ListB: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationB},
-				{GCSStorageLocationParams: &gcsStorageLocationC},
-			},
-			ExpectedOutput: 1,
-		},
-		{
-			Name: "Lists with a common prefix - different lengths, matching up to and including index 1 (last index of shorter list)",
-			ListA: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationA},
-			},
-			ListB: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-			},
-			ExpectedOutput: 1,
-		},
-		{
-			Name: "Lists with a common prefix - different lengths, matching up to and including index 2",
-			ListA: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{S3StorageLocationParams: &s3StorageLocationB},
-				{GCSStorageLocationParams: &gcsStorageLocationA},
-				{GCSStorageLocationParams: &gcsStorageLocationB},
-				{AzureStorageLocationParams: &azureStorageLocationB},
-			},
-			ListB: []ExternalVolumeStorageLocation{
-				{S3StorageLocationParams: &s3StorageLocationA},
-				{AzureStorageLocationParams: &azureStorageLocationA},
-				{S3StorageLocationParams: &s3StorageLocationB},
-				{GCSStorageLocationParams: &gcsStorageLocationB},
-				{AzureStorageLocationParams: &azureStorageLocationB},
-			},
-			ExpectedOutput: 2,
-		},
-		{
-			Name:           "Empty S3 storage location",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &S3StorageLocationParams{}}},
-			ExpectedOutput: -1,
-		},
-		{
-			Name:           "Empty GCS storage location",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{{GCSStorageLocationParams: &GCSStorageLocationParams{}}},
-			ExpectedOutput: -1,
-		},
-		{
-			Name:           "Empty Azure storage location",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{{AzureStorageLocationParams: &AzureStorageLocationParams{}}},
-			ExpectedOutput: -1,
-		},
-		{
-			Name:           "Empty storage location",
-			ListA:          []ExternalVolumeStorageLocation{{S3StorageLocationParams: &s3StorageLocationA}},
-			ListB:          []ExternalVolumeStorageLocation{{}},
-			ExpectedOutput: -1,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			commonPrefixLastIndex, err := CommonPrefixLastIndex(tc.ListA, tc.ListB)
-			require.NoError(t, err)
-			assert.Equal(t, tc.ExpectedOutput, commonPrefixLastIndex)
-		})
-	}
-}
-
 func Test_ParseExternalVolumeDescribed(t *testing.T) {
 	azureStorageLocationName := "azureTest"
 	azureStorageProvider := "AZURE"
@@ -1310,13 +1048,13 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 	validCases := []struct {
 		Name                 string
 		DescribeOutput       []ExternalVolumeProperty
-		ParsedDescribeOutput ParsedExternalVolumeDescribed
+		ParsedDescribeOutput ExternalVolumeDetails
 	}{
 		{
 			Name:           "Volume with azure storage location",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesFalse, []string{azureStorageLocationStandard}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 azureStorageLocationName,
 						StorageProvider:      azureStorageProvider,
@@ -1336,8 +1074,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with azure storage location, with extra fields",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesFalse, []string{azureStorageLocationWithExtraFields}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 azureStorageLocationName,
 						StorageProvider:      azureStorageProvider,
@@ -1357,8 +1095,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with gcs storage location",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{gcsStorageLocationStandard}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 gcsStorageLocationName,
 						StorageProvider:      gcsStorageProvider,
@@ -1378,8 +1116,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with gcs storage location, with extra fields",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{gcsStorageLocationWithExtraFields}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 gcsStorageLocationName,
 						StorageProvider:      gcsStorageProvider,
@@ -1399,8 +1137,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with gcs storage location, sse kms encryption",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{gcsStorageLocationKmsEncryption}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 gcsStorageLocationName,
 						StorageProvider:      gcsStorageProvider,
@@ -1420,8 +1158,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with s3 storage location",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationStandard}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 s3StorageLocationName,
 						StorageProvider:      s3StorageProvider,
@@ -1441,8 +1179,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with s3 storage location, with extra fields",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationWithExtraFields}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 s3StorageLocationName,
 						StorageProvider:      s3StorageProvider,
@@ -1462,8 +1200,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with s3 storage location, sse s3 encryption",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationSseS3Encryption}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 s3StorageLocationName,
 						StorageProvider:      s3StorageProvider,
@@ -1483,8 +1221,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with s3 storage location, sse kms encryption",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3StorageLocationSseKmsEncryption}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 s3StorageLocationName,
 						StorageProvider:      s3StorageProvider,
@@ -1509,8 +1247,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 				[]string{s3StorageLocationStandard, gcsStorageLocationStandard, azureStorageLocationStandard},
 				s3StorageLocationName,
 			),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 s3StorageLocationName,
 						StorageProvider:      s3StorageProvider,
@@ -1572,8 +1310,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 					Default: "",
 				},
 			},
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:                 s3StorageLocationName,
 						StorageProvider:      s3StorageProvider,
@@ -1593,8 +1331,8 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 		{
 			Name:           "Volume with s3compat storage location",
 			DescribeOutput: GenerateParseExternalVolumeDescribedInput(comment, allowWritesTrue, []string{s3CompatStorageLocationStandard}, ""),
-			ParsedDescribeOutput: ParsedExternalVolumeDescribed{
-				StorageLocations: []ExternalVolumeStorageLocationJson{
+			ParsedDescribeOutput: ExternalVolumeDetails{
+				StorageLocations: []ExternalVolumeStorageLocationDetails{
 					{
 						Name:            s3CompatStorageLocationName,
 						StorageProvider: s3CompatStorageProvider,

@@ -149,6 +149,17 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 			}
 		}
 	}
+	if r.UpdateStorageLocation != nil {
+		opts.UpdateStorageLocation = &AlterExternalVolumeUpdateStorageLocation{
+			StorageLocation: r.UpdateStorageLocation.StorageLocation,
+		}
+		if r.UpdateStorageLocation.Credentials != nil {
+			opts.UpdateStorageLocation.Credentials = &ExternalVolumeUpdateCredentials{
+				AwsKeyId:     r.UpdateStorageLocation.Credentials.AwsKeyId,
+				AwsSecretKey: r.UpdateStorageLocation.Credentials.AwsSecretKey,
+			}
+		}
+	}
 	return opts
 }
 
