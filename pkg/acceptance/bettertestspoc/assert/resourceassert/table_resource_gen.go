@@ -52,7 +52,10 @@ func (t *TableResourceAssert) HasChangeTracking(expected bool) *TableResourceAss
 	return t
 }
 
-// collection assert for cluster_by will be generated here
+func (t *TableResourceAssert) HasClusterBy(expected ...string) *TableResourceAssert {
+	t.ListContainsExactlyStringValuesInOrder("cluster_by", expected...)
+	return t
+}
 
 // collection assert for column will be generated here
 
