@@ -43,6 +43,11 @@ func (n *NetworkRuleDescOutputAssert) HasCreatedOn(expected time.Time) *NetworkR
 	return n
 }
 
+func (n *NetworkRuleDescOutputAssert) HasCreatedOnNotEmpty() *NetworkRuleDescOutputAssert {
+	n.AddAssertion(assert.ResourceDescribeOutputValuePresent("created_on"))
+	return n
+}
+
 func (n *NetworkRuleDescOutputAssert) HasName(expected string) *NetworkRuleDescOutputAssert {
 	n.AddAssertion(assert.ResourceDescribeOutputValueSet("name", expected))
 	return n

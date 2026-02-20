@@ -29,6 +29,7 @@ const (
 	MaskingPolicies                datasource = "snowflake_masking_policies"
 	MaterializedViews              datasource = "snowflake_materialized_views"
 	NetworkPolicies                datasource = "snowflake_network_policies"
+	NetworkRules                   datasource = "snowflake_network_rules"
 	Notebooks                      datasource = "snowflake_notebooks"
 	Parameters                     datasource = "snowflake_parameters"
 	Pipes                          datasource = "snowflake_pipes"

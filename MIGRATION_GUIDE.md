@@ -88,6 +88,11 @@ No configuration changes are required.
 
 Reference: [#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956), [#4437](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4437)
 
+### *(new feature)* snowflake_network_rules data source
+Added a new preview data source for network rules. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-network-rules).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_network_rules_datasource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(bugfix)* Fixed timestamp parsing in stage resources
 
 The new stage resources introduced in v2.13.0 parsed the `last_refreshed_on` timestamp column. However, due to flexibility of the time formats, this could fail with errors like
