@@ -10,8 +10,10 @@ import (
 
 var _ HybridTables = (*hybridTables)(nil)
 
-var _ convertibleRow[HybridTable] = new(hybridTableRow)
-var _ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
+var (
+	_ convertibleRow[HybridTable]        = new(hybridTableRow)
+	_ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
+)
 
 type hybridTables struct {
 	client *Client

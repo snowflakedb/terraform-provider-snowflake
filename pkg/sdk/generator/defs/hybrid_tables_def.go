@@ -49,16 +49,19 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 	).
 	OptionalQueryStructField(
 		"Rename",
+		// NOTE: Generated struct needs manual DDL tag fix: NewName needs ddl:"parameter,no_equals" sql:"TO"
 		g.NewQueryStruct("HybridTableConstraintActionRename").
 			SQL("RENAME CONSTRAINT").
 			Text("OldName", g.KeywordOptions().Required()).
 			Text("NewName", g.KeywordOptions().Required().SQL("TO")),
 		g.KeywordOptions(),
-	)
+	).
+	WithValidation(g.ExactlyOneValueSet, "Add", "Drop", "Rename")
 
 // hybridTableAlterColumnAction defines ALTER TABLE ... ALTER COLUMN for hybrid tables.
 // Per Snowflake docs: "For hybrid tables, currently the only clauses that you can use
 // with the ALTER TABLE MODIFY COLUMN command are COMMENT and UNSET COMMENT."
+// NOTE: Generated COMMENT field needs manual fix to ddl:"parameter,no_equals,single_quotes"
 // https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
 	SQL("ALTER COLUMN").
@@ -68,7 +71,9 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	WithValidation(g.ConflictingFields, "Comment", "UnsetComment")
 
 // hybridTableModifyColumnAction defines ALTER TABLE ... MODIFY COLUMN for hybrid tables.
-// MODIFY is an alias for ALTER in Snowflake when working with columns.
+// MODIFY COLUMN is a documented alias for ALTER COLUMN in Snowflake.
+// Both are included because the Snowflake SQL reference documents both variants.
+// NOTE: Generated COMMENT field needs manual fix to ddl:"parameter,no_equals,single_quotes"
 // https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableModifyColumnAction = g.NewQueryStruct("HybridTableModifyColumnAction").
 	SQL("MODIFY COLUMN").

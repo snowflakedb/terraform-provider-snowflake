@@ -75,6 +75,87 @@ type HybridTableOutOfLineIndex struct {
 	IncludeColumns []string `ddl:"keyword,parentheses" sql:"INCLUDE"`
 }
 
+// --- Structs requiring manual DDL tag adjustments ---
+// These structs are moved from hybrid_tables_gen.go because the generator cannot produce
+// the correct DDL tags for certain Snowflake SQL syntax patterns.
+// The canonical DSL definitions remain in hybrid_tables_def.go for documentation.
+
+// HybridTableConstraintActionRename mirrors the structure of TableConstraintRenameAction in tables.go.
+// These types cannot be shared directly because the DDL generation context differs:
+// in tables.go the RENAME CONSTRAINT keyword is on the parent field tag, while here
+// it is embedded as a static SQL prefix within the struct itself.
+type HybridTableConstraintActionRename struct {
+	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
+	OldName          string `ddl:"keyword"`
+	// Manually adjusted: generator produces ddl:"keyword" sql:"TO" which doesn't emit TO keyword.
+	// See tables.go:368 TableConstraintRenameAction for the correct pattern.
+	NewName string `ddl:"parameter,no_equals" sql:"TO"`
+}
+
+type HybridTableAlterColumnAction struct {
+	alterColumn bool   `ddl:"static" sql:"ALTER COLUMN"`
+	ColumnName  string `ddl:"keyword"`
+	// Manually adjusted: ALTER COLUMN syntax requires "COMMENT 'value'" not "COMMENT = 'value'"
+	// See: https://docs.snowflake.com/en/sql-reference/sql/alter-table
+	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
+	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
+}
+
+// HybridTableModifyColumnAction is an alias for ALTER COLUMN.
+// MODIFY is an alias for ALTER in Snowflake when working with columns.
+type HybridTableModifyColumnAction struct {
+	modifyColumn bool    `ddl:"static" sql:"MODIFY COLUMN"`
+	ColumnName   string  `ddl:"keyword"`
+	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
+	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
+}
+
+type HybridTableDropColumnAction struct {
+	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
+	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
+	Columns    []string `ddl:"keyword"`
+}
+
+type HybridTableDropIndexAction struct {
+	dropIndex bool   `ddl:"static" sql:"DROP INDEX"`
+	IfExists  *bool  `ddl:"keyword" sql:"IF EXISTS"`
+	IndexName string `ddl:"keyword"`
+}
+
+type hybridTableDetailsRow struct {
+	Name string `db:"name"`
+	Type string `db:"type"`
+	Kind string `db:"kind"`
+	// Manually adjusted: Snowflake DESCRIBE TABLE returns column named "null?" with question mark.
+	// The generator cannot produce "?" in tag names, so this requires manual adjustment.
+	Null                  string         `db:"null?"`
+	Default               sql.NullString `db:"default"`
+	PrimaryKey            string         `db:"primary key"`
+	UniqueKey             string         `db:"unique key"`
+	Check                 sql.NullString `db:"check"`
+	Expression            sql.NullString `db:"expression"`
+	Comment               sql.NullString `db:"comment"`
+	PolicyName            sql.NullString `db:"policy name"`
+	PrivacyDomain         sql.NullString `db:"privacy domain"`
+	SchemaEvolutionRecord sql.NullString `db:"schema_evolution_record"`
+}
+
+type HybridTableDetails struct {
+	Name                  string
+	Type                  string
+	Kind                  string
+	IsNullable            string
+	Default               string
+	PrimaryKey            string
+	UniqueKey             string
+	Check                 string
+	Expression            string
+	Comment               string
+	PolicyName            string
+	PrivacyDomain         string
+	SchemaEvolutionRecord string
+}
+
 // --- Standalone CREATE INDEX / DROP INDEX commands ---
 // These are standalone SQL commands, not part of ALTER TABLE.
 // https://docs.snowflake.com/en/sql-reference/sql/create-index
@@ -252,7 +333,11 @@ func (opts *ShowHybridTableIndexesOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
-	return nil
+	var errs []error
+	if opts.In != nil && opts.In.Table == nil {
+		errs = append(errs, errNotSet("ShowHybridTableIndexesOptions", "In.Table"))
+	}
+	return JoinErrors(errs...)
 }
 
 // hybridTableIndexRow maps the SHOW INDEXES result columns.
