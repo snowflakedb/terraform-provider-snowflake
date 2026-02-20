@@ -18,7 +18,6 @@ type ResourceAssertionsModel struct {
 type ResourceAttributeAssertionModel struct {
 	Name         string
 	IsCollection bool
-	IsSet        bool
 	IsRequired   bool
 
 	ExpectedType                 string
@@ -37,7 +36,6 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		attributes = append(attributes, ResourceAttributeAssertionModel{
 			Name:         attr.Name,
 			IsCollection: attr.AttributeType == schema.TypeList || attr.AttributeType == schema.TypeSet,
-			IsSet:        attr.AttributeType == schema.TypeSet,
 			IsRequired:   attr.Required,
 
 			ExpectedType:                 expectedType,
