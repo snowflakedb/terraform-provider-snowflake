@@ -91,46 +91,19 @@ type HybridTableConstraintActionDrop struct {
 	Restrict *bool `ddl:"keyword" sql:"RESTRICT"`
 }
 
-// HybridTableConstraintActionRename follows the common Constraint Rename Action Pattern.
-// See common_table_types.go for canonical documentation and ValidateConstraintRenameFields.
-// This struct mirrors TableConstraintRenameAction from tables.go.
-type HybridTableConstraintActionRename struct {
-	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
-	OldName          string `ddl:"keyword"`
-	// Manually adjusted: generator produces ddl:"keyword" sql:"TO" which doesn't emit TO keyword.
-	// See tables.go:368 TableConstraintRenameAction for the correct pattern.
-	NewName string `ddl:"parameter,no_equals" sql:"TO"`
-}
+// HybridTableConstraintActionRename mirrors the structure of TableConstraintRenameAction in tables.go.
+// These types cannot be shared directly because the DDL generation context differs:
+// in tables.go the RENAME CONSTRAINT keyword is on the parent field tag, while here
+// it is embedded as a static SQL prefix within the struct itself.
+// HybridTableConstraintActionRename is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
 
-type HybridTableAlterColumnAction struct {
-	alterColumn bool   `ddl:"static" sql:"ALTER COLUMN"`
-	ColumnName  string `ddl:"keyword"`
-	// Manually adjusted: ALTER COLUMN syntax requires "COMMENT 'value'" not "COMMENT = 'value'"
-	// See: https://docs.snowflake.com/en/sql-reference/sql/alter-table
-	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
-	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
-}
+// HybridTableAlterColumnAction is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
 
-// HybridTableModifyColumnAction is an alias for ALTER COLUMN.
-// MODIFY is an alias for ALTER in Snowflake when working with columns.
-type HybridTableModifyColumnAction struct {
-	modifyColumn bool    `ddl:"static" sql:"MODIFY COLUMN"`
-	ColumnName   string  `ddl:"keyword"`
-	Comment      *string `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
-	UnsetComment *bool   `ddl:"keyword" sql:"UNSET COMMENT"`
-}
+// HybridTableModifyColumnAction is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
 
-type HybridTableDropColumnAction struct {
-	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
-	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
-	Columns    []string `ddl:"keyword"`
-}
+// HybridTableDropColumnAction is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
 
-type HybridTableDropIndexAction struct {
-	dropIndex bool   `ddl:"static" sql:"DROP INDEX"`
-	IfExists  *bool  `ddl:"keyword" sql:"IF EXISTS"`
-	IndexName string `ddl:"keyword"`
-}
+// HybridTableDropIndexAction is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
 
 type HybridTableSetProperties struct {
 	DataRetentionTimeInDays    *int    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
@@ -211,36 +184,6 @@ type DescribeHybridTableOptions struct {
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-type hybridTableDetailsRow struct {
-	Name string `db:"name"`
-	Type string `db:"type"`
-	Kind string `db:"kind"`
-	// Manually adjusted: Snowflake DESCRIBE TABLE returns column named "null?" with question mark.
-	// The generator cannot produce "?" in tag names, so this requires manual adjustment.
-	Null                  string         `db:"null?"`
-	Default               sql.NullString `db:"default"`
-	PrimaryKey            string         `db:"primary key"`
-	UniqueKey             string         `db:"unique key"`
-	Check                 sql.NullString `db:"check"`
-	Expression            sql.NullString `db:"expression"`
-	Comment               sql.NullString `db:"comment"`
-	PolicyName            sql.NullString `db:"policy name"`
-	PrivacyDomain         sql.NullString `db:"privacy domain"`
-	SchemaEvolutionRecord sql.NullString `db:"schema_evolution_record"`
-}
+// hybridTableDetailsRow is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments for "null?" column).
 
-type HybridTableDetails struct {
-	Name                  string
-	Type                  string
-	Kind                  string
-	IsNullable            string
-	Default               string
-	PrimaryKey            string
-	UniqueKey             string
-	Check                 string
-	Expression            string
-	Comment               string
-	PolicyName            string
-	PrivacyDomain         string
-	SchemaEvolutionRecord string
-}
+// HybridTableDetails is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).

@@ -33,7 +33,7 @@ func TestHybridTables_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateHybridTableOptions", "OrReplace", "IfNotExists"))
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("create", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s`, id.FullyQualifiedName())
@@ -107,6 +107,12 @@ func TestHybridTables_Alter(t *testing.T) {
 	t.Run("validation: exactly one field from [opts.NewName opts.AddColumnAction opts.ConstraintAction opts.AlterColumnAction opts.ModifyColumnAction opts.DropColumnAction opts.DropIndexAction opts.Set opts.Unset] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
+	})
+
+	t.Run("validation: constraint action - exactly one of Add, Drop, Rename required", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ConstraintAction = &HybridTableConstraintAction{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("HybridTableConstraintAction", "Add", "Drop", "Rename"))
 	})
 
 	t.Run("validation: drop constraint - exactly one constraint type required", func(t *testing.T) {
@@ -379,7 +385,7 @@ func TestHybridTables_Drop(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("DropHybridTableOptions", "Cascade", "Restrict"))
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("drop", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE %s`, id.FullyQualifiedName())
 	})
@@ -410,7 +416,7 @@ func TestHybridTables_Show(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("show", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES`)
 	})
@@ -470,7 +476,7 @@ func TestHybridTables_Describe(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("describe", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE TABLE %s`, id.FullyQualifiedName())
 	})
@@ -522,7 +528,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateHybridTableIndexOptions", "OrReplace", "IfNotExists"))
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("create index", func(t *testing.T) {
 		opts := &CreateHybridTableIndexOptions{
 			name:      id,
 			TableName: tableID,
@@ -568,7 +574,7 @@ func TestHybridTables_DropIndex(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("drop index", func(t *testing.T) {
 		opts := &DropHybridTableIndexOptions{
 			name: id,
 		}
@@ -590,7 +596,7 @@ func TestHybridTables_ShowIndexes(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("show indexes", func(t *testing.T) {
 		opts := &ShowHybridTableIndexesOptions{}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES`)
 	})
