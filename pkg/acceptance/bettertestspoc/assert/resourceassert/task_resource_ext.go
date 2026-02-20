@@ -1,12 +1,11 @@
 package resourceassert
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"strconv"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 func (t *TaskResourceAssert) HasAfterIdentifier(expected ...sdk.SchemaObjectIdentifier) *TaskResourceAssert {

@@ -118,15 +118,11 @@ func (r *ResourceAssert) SetContainsElem(fieldName string, expected string) {
 }
 
 func (r *ResourceAssert) SetContainsExactlyBoolValues(fieldName string, expectedValues ...bool) {
-	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, func(v bool) string {
-		return strconv.FormatBool(v)
-	})...)
+	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, strconv.FormatBool)...)
 }
 
 func (r *ResourceAssert) SetContainsExactlyIntValues(fieldName string, expectedValues ...int) {
-	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, func(v int) string {
-		return strconv.Itoa(v)
-	})...)
+	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, strconv.Itoa)...)
 }
 
 // TODO [SNOW-3113138]: extract common conversions
