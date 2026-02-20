@@ -73,6 +73,7 @@ const (
 	ObjectTypeExternalVolume         ObjectType = "EXTERNAL VOLUME"
 	ObjectTypeNetworkRule            ObjectType = "NETWORK RULE"
 	ObjectTypeNotebook               ObjectType = "NOTEBOOK"
+	ObjectTypeNotebookProject       ObjectType = "NOTEBOOK PROJECT"
 	ObjectTypePackagesPolicy         ObjectType = "PACKAGES POLICY"
 	ObjectTypeComputePool            ObjectType = "COMPUTE POOL"
 	ObjectTypeAggregationPolicy      ObjectType = "AGGREGATION POLICY"
@@ -180,6 +181,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeExternalVolume,
 	ObjectTypeNetworkRule,
 	ObjectTypeNotebook,
+	ObjectTypeNotebookProject,
 	ObjectTypePackagesPolicy,
 	ObjectTypeComputePool,
 	ObjectTypeAggregationPolicy,
@@ -272,6 +274,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeExternalVolume:          PluralObjectTypeExternalVolumes,
 		ObjectTypeNetworkRule:             PluralObjectTypeNetworkRules,
 		ObjectTypeNotebook:                PluralObjectTypeNotebooks,
+		ObjectTypeNotebookProject:        PluralObjectTypeNotebookProjects,
 		ObjectTypePackagesPolicy:          PluralObjectTypePackagesPolicies,
 		ObjectTypeComputePool:             PluralObjectTypeComputePool,
 		ObjectTypeAggregationPolicy:       PluralObjectTypeAggregationPolicies,
@@ -398,6 +401,7 @@ const (
 	PluralObjectTypeExternalVolumes          PluralObjectType = "EXTERNAL VOLUMES"
 	PluralObjectTypeNetworkRules             PluralObjectType = "NETWORK RULES"
 	PluralObjectTypeNotebooks                PluralObjectType = "NOTEBOOKS"
+	PluralObjectTypeNotebookProjects         PluralObjectType = "NOTEBOOK PROJECTS"
 	PluralObjectTypePackagesPolicies         PluralObjectType = "PACKAGES POLICIES"
 	PluralObjectTypeComputePool              PluralObjectType = "COMPUTE POOLS"
 	PluralObjectTypeAggregationPolicies      PluralObjectType = "AGGREGATION POLICIES"
