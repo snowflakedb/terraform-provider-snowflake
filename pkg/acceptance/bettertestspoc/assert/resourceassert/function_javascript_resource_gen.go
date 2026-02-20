@@ -47,7 +47,7 @@ func (f *FunctionJavascriptResourceAssert) HasName(expected string) *FunctionJav
 	return f
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (f *FunctionJavascriptResourceAssert) HasComment(expected string) *FunctionJavascriptResourceAssert {
 	f.StringValueSet("comment", expected)

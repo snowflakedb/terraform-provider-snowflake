@@ -47,7 +47,7 @@ func (p *ProcedurePythonResourceAssert) HasName(expected string) *ProcedurePytho
 	return p
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (p *ProcedurePythonResourceAssert) HasComment(expected string) *ProcedurePythonResourceAssert {
 	p.StringValueSet("comment", expected)
@@ -79,7 +79,7 @@ func (p *ProcedurePythonResourceAssert) HasHandler(expected string) *ProcedurePy
 	return p
 }
 
-// collection assert for imports will be generated here
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
 
 func (p *ProcedurePythonResourceAssert) HasIsSecure(expected string) *ProcedurePythonResourceAssert {
 	p.StringValueSet("is_secure", expected)
@@ -126,7 +126,7 @@ func (p *ProcedurePythonResourceAssert) HasRuntimeVersion(expected string) *Proc
 	return p
 }
 
-// collection assert for secrets will be generated here
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
 
 func (p *ProcedurePythonResourceAssert) HasSnowparkPackage(expected string) *ProcedurePythonResourceAssert {
 	p.StringValueSet("snowpark_package", expected)

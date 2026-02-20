@@ -47,7 +47,7 @@ func (r *RowAccessPolicyResourceAssert) HasName(expected string) *RowAccessPolic
 	return r
 }
 
-// collection assert for argument will be generated here
+// typed assert for "argument" (type: List, subtype: Map) is not currently supported
 
 func (r *RowAccessPolicyResourceAssert) HasBody(expected string) *RowAccessPolicyResourceAssert {
 	r.StringValueSet("body", expected)

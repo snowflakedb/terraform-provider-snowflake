@@ -47,7 +47,7 @@ func (f *FunctionScalaResourceAssert) HasName(expected string) *FunctionScalaRes
 	return f
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (f *FunctionScalaResourceAssert) HasComment(expected string) *FunctionScalaResourceAssert {
 	f.StringValueSet("comment", expected)
@@ -84,7 +84,7 @@ func (f *FunctionScalaResourceAssert) HasHandler(expected string) *FunctionScala
 	return f
 }
 
-// collection assert for imports will be generated here
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
 
 func (f *FunctionScalaResourceAssert) HasIsSecure(expected string) *FunctionScalaResourceAssert {
 	f.StringValueSet("is_secure", expected)
@@ -126,9 +126,9 @@ func (f *FunctionScalaResourceAssert) HasRuntimeVersion(expected string) *Functi
 	return f
 }
 
-// collection assert for secrets will be generated here
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
 
-// collection assert for target_path will be generated here
+// typed assert for "target_path" (type: Set, subtype: Map) is not currently supported
 
 func (f *FunctionScalaResourceAssert) HasTraceLevel(expected string) *FunctionScalaResourceAssert {
 	f.StringValueSet("trace_level", expected)

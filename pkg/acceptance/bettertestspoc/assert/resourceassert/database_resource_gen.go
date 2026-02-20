@@ -102,7 +102,7 @@ func (d *DatabaseResourceAssert) HasReplaceInvalidCharacters(expected bool) *Dat
 	return d
 }
 
-// collection assert for replication will be generated here
+// typed assert for "replication" (type: List, subtype: Map) is not currently supported
 
 func (d *DatabaseResourceAssert) HasStorageSerializationPolicy(expected string) *DatabaseResourceAssert {
 	d.StringValueSet("storage_serialization_policy", expected)

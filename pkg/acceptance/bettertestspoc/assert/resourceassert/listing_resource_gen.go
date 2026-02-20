@@ -52,7 +52,7 @@ func (l *ListingResourceAssert) HasFullyQualifiedName(expected string) *ListingR
 	return l
 }
 
-// collection assert for manifest will be generated here
+// typed assert for "manifest" (type: List, subtype: Map) is not currently supported
 
 func (l *ListingResourceAssert) HasPublish(expected string) *ListingResourceAssert {
 	l.StringValueSet("publish", expected)

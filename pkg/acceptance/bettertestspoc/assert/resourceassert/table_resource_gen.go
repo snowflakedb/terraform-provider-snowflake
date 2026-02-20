@@ -57,7 +57,7 @@ func (t *TableResourceAssert) HasClusterBy(expected ...string) *TableResourceAss
 	return t
 }
 
-// collection assert for column will be generated here
+// typed assert for "column" (type: List, subtype: Map) is not currently supported
 
 func (t *TableResourceAssert) HasComment(expected string) *TableResourceAssert {
 	t.StringValueSet("comment", expected)
@@ -79,9 +79,9 @@ func (t *TableResourceAssert) HasOwner(expected string) *TableResourceAssert {
 	return t
 }
 
-// collection assert for primary_key will be generated here
+// typed assert for "primary_key" (type: List, subtype: Map) is not currently supported
 
-// collection assert for tag will be generated here
+// typed assert for "tag" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

@@ -47,7 +47,7 @@ func (f *FunctionSqlResourceAssert) HasName(expected string) *FunctionSqlResourc
 	return f
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (f *FunctionSqlResourceAssert) HasComment(expected string) *FunctionSqlResourceAssert {
 	f.StringValueSet("comment", expected)

@@ -77,16 +77,16 @@ func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollment(expected string) *
 	return a
 }
 
-// collection assert for mfa_policy will be generated here
+// typed assert for "mfa_policy" (type: List, subtype: Map) is not currently supported
 
-// collection assert for pat_policy will be generated here
+// typed assert for "pat_policy" (type: List, subtype: Map) is not currently supported
 
 func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrations(expected ...string) *AuthenticationPolicyResourceAssert {
 	a.SetContainsExactlyStringValues("security_integrations", expected...)
 	return a
 }
 
-// collection assert for workload_identity_policy will be generated here
+// typed assert for "workload_identity_policy" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

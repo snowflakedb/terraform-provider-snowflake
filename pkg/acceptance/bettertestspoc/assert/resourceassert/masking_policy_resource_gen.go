@@ -47,7 +47,7 @@ func (m *MaskingPolicyResourceAssert) HasName(expected string) *MaskingPolicyRes
 	return m
 }
 
-// collection assert for argument will be generated here
+// typed assert for "argument" (type: List, subtype: Map) is not currently supported
 
 func (m *MaskingPolicyResourceAssert) HasBody(expected string) *MaskingPolicyResourceAssert {
 	m.StringValueSet("body", expected)

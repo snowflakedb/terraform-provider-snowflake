@@ -57,9 +57,9 @@ func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnDatabase(expected str
 	return g
 }
 
-// collection assert for on_schema will be generated here
+// typed assert for "on_schema" (type: List, subtype: Map) is not currently supported
 
-// collection assert for on_schema_object will be generated here
+// typed assert for "on_schema_object" (type: List, subtype: Map) is not currently supported
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasPrivileges(expected ...string) *GrantPrivilegesToDatabaseRoleResourceAssert {
 	g.SetContainsExactlyStringValues("privileges", expected...)

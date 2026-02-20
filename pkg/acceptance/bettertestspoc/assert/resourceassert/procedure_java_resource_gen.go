@@ -47,7 +47,7 @@ func (p *ProcedureJavaResourceAssert) HasName(expected string) *ProcedureJavaRes
 	return p
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (p *ProcedureJavaResourceAssert) HasComment(expected string) *ProcedureJavaResourceAssert {
 	p.StringValueSet("comment", expected)
@@ -79,7 +79,7 @@ func (p *ProcedureJavaResourceAssert) HasHandler(expected string) *ProcedureJava
 	return p
 }
 
-// collection assert for imports will be generated here
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
 
 func (p *ProcedureJavaResourceAssert) HasIsSecure(expected string) *ProcedureJavaResourceAssert {
 	p.StringValueSet("is_secure", expected)
@@ -126,14 +126,14 @@ func (p *ProcedureJavaResourceAssert) HasRuntimeVersion(expected string) *Proced
 	return p
 }
 
-// collection assert for secrets will be generated here
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
 
 func (p *ProcedureJavaResourceAssert) HasSnowparkPackage(expected string) *ProcedureJavaResourceAssert {
 	p.StringValueSet("snowpark_package", expected)
 	return p
 }
 
-// collection assert for target_path will be generated here
+// typed assert for "target_path" (type: Set, subtype: Map) is not currently supported
 
 func (p *ProcedureJavaResourceAssert) HasTraceLevel(expected string) *ProcedureJavaResourceAssert {
 	p.StringValueSet("trace_level", expected)

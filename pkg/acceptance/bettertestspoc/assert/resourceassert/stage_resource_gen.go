@@ -97,7 +97,7 @@ func (s *StageResourceAssert) HasStorageIntegration(expected string) *StageResou
 	return s
 }
 
-// collection assert for tag will be generated here
+// typed assert for "tag" (type: List, subtype: Map) is not currently supported
 
 func (s *StageResourceAssert) HasUrl(expected string) *StageResourceAssert {
 	s.StringValueSet("url", expected)

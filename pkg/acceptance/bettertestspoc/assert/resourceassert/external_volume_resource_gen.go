@@ -52,7 +52,7 @@ func (e *ExternalVolumeResourceAssert) HasFullyQualifiedName(expected string) *E
 	return e
 }
 
-// collection assert for storage_location will be generated here
+// typed assert for "storage_location" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

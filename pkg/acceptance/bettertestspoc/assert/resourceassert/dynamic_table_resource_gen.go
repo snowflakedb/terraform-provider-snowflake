@@ -137,7 +137,7 @@ func (d *DynamicTableResourceAssert) HasSchedulingState(expected string) *Dynami
 	return d
 }
 
-// collection assert for target_lag will be generated here
+// typed assert for "target_lag" (type: List, subtype: Map) is not currently supported
 
 func (d *DynamicTableResourceAssert) HasWarehouse(expected string) *DynamicTableResourceAssert {
 	d.StringValueSet("warehouse", expected)

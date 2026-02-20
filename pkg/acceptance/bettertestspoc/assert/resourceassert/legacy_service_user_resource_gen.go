@@ -137,7 +137,7 @@ func (l *LegacyServiceUserResourceAssert) HasDefaultWarehouse(expected string) *
 	return l
 }
 
-// collection assert for default_workload_identity will be generated here
+// typed assert for "default_workload_identity" (type: List, subtype: Map) is not currently supported
 
 func (l *LegacyServiceUserResourceAssert) HasDisabled(expected string) *LegacyServiceUserResourceAssert {
 	l.StringValueSet("disabled", expected)

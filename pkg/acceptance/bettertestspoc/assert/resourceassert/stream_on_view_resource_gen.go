@@ -52,9 +52,9 @@ func (s *StreamOnViewResourceAssert) HasAppendOnly(expected string) *StreamOnVie
 	return s
 }
 
-// collection assert for at will be generated here
+// typed assert for "at" (type: List, subtype: Map) is not currently supported
 
-// collection assert for before will be generated here
+// typed assert for "before" (type: List, subtype: Map) is not currently supported
 
 func (s *StreamOnViewResourceAssert) HasComment(expected string) *StreamOnViewResourceAssert {
 	s.StringValueSet("comment", expected)
