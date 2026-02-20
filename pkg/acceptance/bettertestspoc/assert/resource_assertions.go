@@ -117,6 +117,10 @@ func (r *ResourceAssert) SetContainsElem(fieldName string, expected string) {
 	r.AddAssertion(SetElem(fieldName, expected))
 }
 
+func (r *ResourceAssert) ListContainsElem(fieldName string, index int, expected string) {
+	r.AddAssertion(ValueSet(fmt.Sprintf("%s.%d", fieldName, index), expected))
+}
+
 func (r *ResourceAssert) SetContainsExactlyBoolValues(fieldName string, expectedValues ...bool) {
 	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, strconv.FormatBool)...)
 }
@@ -135,7 +139,29 @@ func (r *ResourceAssert) SetContainsExactlyFloatValues(fieldName string, expecte
 func (r *ResourceAssert) SetContainsExactlyStringValues(fieldName string, expectedValues ...string) {
 	r.CollectionLength(fieldName, len(expectedValues))
 	for _, value := range expectedValues {
-		r.AddAssertion(SetElem(fieldName, value))
+		r.SetContainsElem(fieldName, value)
+	}
+}
+
+func (r *ResourceAssert) ListContainsExactlyBoolValuesInOrder(fieldName string, expectedValues ...bool) {
+	r.ListContainsExactlyStringValuesInOrder(fieldName, collections.Map(expectedValues, strconv.FormatBool)...)
+}
+
+func (r *ResourceAssert) ListContainsExactlyIntValuesInOrder(fieldName string, expectedValues ...int) {
+	r.ListContainsExactlyStringValuesInOrder(fieldName, collections.Map(expectedValues, strconv.Itoa)...)
+}
+
+// TODO [SNOW-3113138]: extract common conversions
+func (r *ResourceAssert) ListContainsExactlyFloatValuesInOrder(fieldName string, expectedValues ...float64) {
+	r.ListContainsExactlyStringValuesInOrder(fieldName, collections.Map(expectedValues, func(v float64) string {
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	})...)
+}
+
+func (r *ResourceAssert) ListContainsExactlyStringValuesInOrder(fieldName string, expectedValues ...string) {
+	r.CollectionLength(fieldName, len(expectedValues))
+	for idx, value := range expectedValues {
+		r.ListContainsElem(fieldName, idx, value)
 	}
 }
 

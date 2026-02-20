@@ -68,7 +68,7 @@ func getExpectedTypeAndAssertionCreator(attr genhelpers.SchemaAttribute) (expect
 	case schema.TypeSet:
 		expectedType, assertionCreator = getExpectedTypeAndAssertionCreatorForSet(attr)
 	case schema.TypeList:
-		// TODO [SNOW-3113128]: handle/add limitation
+		expectedType, assertionCreator = getExpectedTypeAndAssertionCreatorForList(attr)
 	case schema.TypeMap:
 		// TODO [SNOW-3113128]: handle/add limitation
 	case schema.TypeInvalid:
@@ -90,6 +90,26 @@ func getExpectedTypeAndAssertionCreatorForSet(attr genhelpers.SchemaAttribute) (
 	case schema.TypeString:
 		expectedType = "...string"
 		assertionCreator = "SetContainsExactlyStringValues"
+	default:
+		// other types are not currently supported
+	}
+	return
+}
+
+func getExpectedTypeAndAssertionCreatorForList(attr genhelpers.SchemaAttribute) (expectedType string, assertionCreator string) {
+	switch attr.AttributeSubType {
+	case schema.TypeBool:
+		expectedType = "...bool"
+		assertionCreator = "ListContainsExactlyBoolValuesInOrder"
+	case schema.TypeInt:
+		expectedType = "...int"
+		assertionCreator = "ListContainsExactlyIntValuesInOrder"
+	case schema.TypeFloat:
+		expectedType = "...float64"
+		assertionCreator = "ListContainsExactlyFloatValuesInOrder"
+	case schema.TypeString:
+		expectedType = "...string"
+		assertionCreator = "ListContainsExactlyStringValuesInOrder"
 	default:
 		// other types are not currently supported
 	}
