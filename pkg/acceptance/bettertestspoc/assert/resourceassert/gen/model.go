@@ -20,6 +20,9 @@ type ResourceAttributeAssertionModel struct {
 	IsCollection bool
 	IsRequired   bool
 
+	Type    string
+	SubType string
+
 	ExpectedType                 string
 	AssertionCreator             string
 	ShouldGenerateTypedAssertion bool
@@ -33,10 +36,17 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		}
 
 		expectedType, assertionCreator := getExpectedTypeAndAssertionCreator(attr)
+		var subType string
+		if attr.AttributeSubType != schema.TypeInvalid {
+			subType = genhelpers.ResourceSchemaTypeToString(attr.AttributeSubType)
+		}
 		attributes = append(attributes, ResourceAttributeAssertionModel{
 			Name:         attr.Name,
 			IsCollection: attr.AttributeType == schema.TypeList || attr.AttributeType == schema.TypeSet,
 			IsRequired:   attr.Required,
+
+			Type:    genhelpers.ResourceSchemaTypeToString(attr.AttributeType),
+			SubType: subType,
 
 			ExpectedType:                 expectedType,
 			AssertionCreator:             assertionCreator,
@@ -70,7 +80,7 @@ func getExpectedTypeAndAssertionCreator(attr genhelpers.SchemaAttribute) (expect
 	case schema.TypeList:
 		expectedType, assertionCreator = getExpectedTypeAndAssertionCreatorForList(attr)
 	case schema.TypeMap:
-		// TODO [SNOW-3113128]: handle/add limitation
+		// map type is not currently supported
 	case schema.TypeInvalid:
 	}
 	return
