@@ -143,6 +143,7 @@ func TestAcc_NetworkRules_CompleteUseCase(t *testing.T) {
 			{
 				Config: config.DatasourceFromModel(t, withDescribe),
 				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(withDescribe.DatasourceReference(), "network_rules.#", "1")),
 					resourceshowoutputassert.NetworkRulesDatasourceShowOutput(t, withDescribe.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(nr.Name).
