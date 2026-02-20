@@ -3,16 +3,35 @@
 {{- $assertName := .Name | printf "%sResourceAssert" -}}
 {{- $nameLowerCase := FirstLetterLowercase .Name -}}
 {{- $assertVar := FirstLetter $nameLowerCase }}
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+{{ range .Attributes }}
+    {{ if .IsCollection -}}
+        // collection assert for {{ .Name }} will be generated here
+
+    {{ else -}}
+        func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}(expected {{ .ExpectedType }}) *{{ $assertName }} {
+            {{ $assertVar }}.{{ .AssertionCreator }}("{{ .Name }}", expected)
+            return {{ $assertVar }}
+        }
+
+    {{ end }}
+{{ end }}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
 
 {{ range .Attributes }}
+    {{ if not .IsCollection -}}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}String(expected string) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", expected))
         return {{ $assertVar }}
     }
 
+    {{ end }}
 {{ end }}
 
 ///////////////////////////////
@@ -59,5 +78,4 @@
             return {{ $assertVar }}
         }
     {{ end }}
-    {{/* TODO(SNOW-1501905): Implement custom assertion for not-empty collections */}}
 {{ end -}}
