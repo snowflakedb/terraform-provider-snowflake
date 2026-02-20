@@ -83,7 +83,7 @@ func TestAcc_NetworkRules_BasicUseCase_DifferentFiltering(t *testing.T) {
 					resource.TestCheckResourceAttr(limitOne.DatasourceReference(), "network_rules.#", "1"),
 				),
 			},
-			// in account
+			// in database
 			{
 				Config: config.DatasourceFromModel(t, inDatabase),
 				Check: resource.ComposeTestCheckFunc(
@@ -129,10 +129,12 @@ func TestAcc_NetworkRules_CompleteUseCase(t *testing.T) {
 						HasName(nr.Name).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasType(sdk.NetworkRuleTypeIpv4).
 						HasMode(sdk.NetworkRuleModeIngress).
-						HasEntriesInValueList(2),
+						HasEntriesInValueList(2).
+						HasOwnerRoleType("ROLE"),
 
 					assert.Check(resource.TestCheckResourceAttr(withoutDescribe.DatasourceReference(), "network_rules.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(withoutDescribe.DatasourceReference(), "network_rules.0.describe_output.#", "0")),
@@ -146,11 +148,14 @@ func TestAcc_NetworkRules_CompleteUseCase(t *testing.T) {
 						HasName(nr.Name).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasType(sdk.NetworkRuleTypeIpv4).
 						HasMode(sdk.NetworkRuleModeIngress).
-						HasEntriesInValueList(2),
+						HasEntriesInValueList(2).
+						HasOwnerRoleType("ROLE"),
 					resourceshowoutputassert.NetworkRulesDatasourceDescribeOutput(t, withDescribe.DatasourceReference()).
+						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
