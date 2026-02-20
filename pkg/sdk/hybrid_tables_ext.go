@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -160,19 +161,22 @@ type HybridTableDetails struct {
 // These are standalone SQL commands, not part of ALTER TABLE.
 // https://docs.snowflake.com/en/sql-reference/sql/create-index
 // https://docs.snowflake.com/en/sql-reference/sql/drop-index
+// IMPORTANT: Index names cannot be explicitly qualified in Snowflake.
+// Use AccountObjectIdentifier (unqualified) not SchemaObjectIdentifier.
 
 // CreateHybridTableIndexOptions represents the standalone CREATE INDEX command for hybrid tables.
 // Syntax: CREATE [OR REPLACE] INDEX [IF NOT EXISTS] <name> ON <table> (<cols>) [INCLUDE (<cols>)]
+// Note: Index name must be unqualified (no database/schema prefix).
 type CreateHybridTableIndexOptions struct {
-	create         bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace      *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	index          bool                   `ddl:"static" sql:"INDEX"`
-	IfNotExists    *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name           SchemaObjectIdentifier `ddl:"identifier"`
-	on             bool                   `ddl:"static" sql:"ON"`
-	TableName      SchemaObjectIdentifier `ddl:"identifier"`
-	Columns        []string               `ddl:"keyword,parentheses"`
-	IncludeColumns []string               `ddl:"keyword,parentheses" sql:"INCLUDE"`
+	create         bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace      *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	index          bool                    `ddl:"static" sql:"INDEX"`
+	IfNotExists    *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name           AccountObjectIdentifier `ddl:"identifier"` // unqualified index name
+	on             bool                    `ddl:"static" sql:"ON"`
+	TableName      SchemaObjectIdentifier  `ddl:"identifier"`
+	Columns        []string                `ddl:"keyword,parentheses"`
+	IncludeColumns []string                `ddl:"keyword,parentheses" sql:"INCLUDE"`
 }
 
 func (opts *CreateHybridTableIndexOptions) validate() error {
@@ -199,14 +203,14 @@ func (opts *CreateHybridTableIndexOptions) validate() error {
 type CreateHybridTableIndexRequest struct {
 	OrReplace      *bool
 	IfNotExists    *bool
-	name           SchemaObjectIdentifier // required — the index name
-	TableName      SchemaObjectIdentifier // required — the hybrid table
-	Columns        []string               // required
+	name           AccountObjectIdentifier // required — the index name (unqualified)
+	TableName      SchemaObjectIdentifier  // required — the hybrid table
+	Columns        []string                // required
 	IncludeColumns []string
 }
 
 func NewCreateHybridTableIndexRequest(
-	name SchemaObjectIdentifier,
+	name AccountObjectIdentifier,
 	tableName SchemaObjectIdentifier,
 	columns []string,
 ) *CreateHybridTableIndexRequest {
@@ -245,13 +249,29 @@ func (r *CreateHybridTableIndexRequest) toOpts() *CreateHybridTableIndexOptions 
 
 // DropHybridTableIndexOptions represents the standalone DROP INDEX command for hybrid tables.
 // Syntax: DROP INDEX [IF EXISTS] <table_name>.<index_name>
-// Note: Snowflake requires <table_name>.<index_name> as a dotted identifier.
-// We model this by constructing the SQL manually via structToSQL.
+// The index is identified by table_name.index_name (table is fully qualified, index is just the name).
 type DropHybridTableIndexOptions struct {
-	drop     bool                   `ddl:"static" sql:"DROP"`
-	index    bool                   `ddl:"static" sql:"INDEX"`
-	IfExists *bool                  `ddl:"keyword" sql:"IF EXISTS"`
-	name     SchemaObjectIdentifier `ddl:"identifier"`
+	drop     bool                       `ddl:"static" sql:"DROP"`
+	index    bool                       `ddl:"static" sql:"INDEX"`
+	IfExists *bool                      `ddl:"keyword" sql:"IF EXISTS"`
+	name     HybridTableIndexIdentifier `ddl:"identifier"` // compound table.index identifier
+}
+
+// HybridTableIndexIdentifier represents a hybrid table index identifier in the format table.index.
+// This is used for DROP INDEX which requires the syntax: DROP INDEX <table_name>.<index_name>
+type HybridTableIndexIdentifier struct {
+	TableName SchemaObjectIdentifier
+	IndexName string
+}
+
+// Name returns the fully qualified index identifier in the format "db"."schema"."table"."index"
+func (i HybridTableIndexIdentifier) Name() string {
+	return i.TableName.FullyQualifiedName() + "." + fmt.Sprintf(`"%v"`, i.IndexName)
+}
+
+// FullyQualifiedName implements ObjectIdentifier interface
+func (i HybridTableIndexIdentifier) FullyQualifiedName() string {
+	return i.Name()
 }
 
 func (opts *DropHybridTableIndexOptions) validate() error {
@@ -259,26 +279,31 @@ func (opts *DropHybridTableIndexOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
+	if !ValidObjectIdentifier(opts.name.TableName) {
+		errs = append(errs, errInvalidIdentifier("DropHybridTableIndexOptions", "TableName"))
+	}
+	if opts.name.IndexName == "" {
+		errs = append(errs, errNotSet("DropHybridTableIndexOptions", "IndexName"))
 	}
 	return JoinErrors(errs...)
 }
 
 // DropHybridTableIndexRequest is the user-facing request DTO for DROP INDEX.
 type DropHybridTableIndexRequest struct {
-	IfExists *bool
-	name     SchemaObjectIdentifier // required — use <table_name>.<index_name> format
+	IfExists  *bool
+	TableName SchemaObjectIdentifier // the table containing the index
+	IndexName string                 // the index name (unqualified)
 }
 
 // NewDropHybridTableIndexRequest creates a DROP INDEX request.
-// The name should be constructed as a SchemaObjectIdentifier where the object name
-// is "<table_name>.<index_name>" following Snowflake's dotted notation requirement.
+// tableName is the fully qualified table name, indexName is just the index name.
 func NewDropHybridTableIndexRequest(
-	name SchemaObjectIdentifier,
+	tableName SchemaObjectIdentifier,
+	indexName string,
 ) *DropHybridTableIndexRequest {
 	return &DropHybridTableIndexRequest{
-		name: name,
+		TableName: tableName,
+		IndexName: indexName,
 	}
 }
 
@@ -290,7 +315,10 @@ func (s *DropHybridTableIndexRequest) WithIfExists(ifExists bool) *DropHybridTab
 func (r *DropHybridTableIndexRequest) toOpts() *DropHybridTableIndexOptions {
 	return &DropHybridTableIndexOptions{
 		IfExists: r.IfExists,
-		name:     r.name,
+		name: HybridTableIndexIdentifier{
+			TableName: r.TableName,
+			IndexName: r.IndexName,
+		},
 	}
 }
 

@@ -546,7 +546,7 @@ func TestInt_HybridTables(t *testing.T) {
 	t.Run("index operations", func(t *testing.T) {
 		t.Run("CREATE INDEX basic", func(t *testing.T) {
 			tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			indexId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			indexId := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 			// Create hybrid table first
 			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
@@ -592,7 +592,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 		t.Run("CREATE INDEX with INCLUDE", func(t *testing.T) {
 			tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			indexId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			indexId := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 			// Create hybrid table
 			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
@@ -640,7 +640,8 @@ func TestInt_HybridTables(t *testing.T) {
 
 		t.Run("DROP INDEX", func(t *testing.T) {
 			tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			indexId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			// For CREATE INDEX, use unqualified name (AccountObjectIdentifier)
+			indexName := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 			// Create hybrid table and index
 			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
@@ -658,12 +659,12 @@ func TestInt_HybridTables(t *testing.T) {
 				require.NoError(t, err)
 			})
 
-			indexReq := sdk.NewCreateHybridTableIndexRequest(indexId, tableId, []string{"status"})
+			indexReq := sdk.NewCreateHybridTableIndexRequest(indexName, tableId, []string{"status"})
 			err = client.HybridTables.CreateIndex(ctx, indexReq)
 			require.NoError(t, err)
 
-			// Drop index using standalone DROP INDEX command
-			dropReq := sdk.NewDropHybridTableIndexRequest(indexId)
+			// Drop index using standalone DROP INDEX command (needs table.index format)
+			dropReq := sdk.NewDropHybridTableIndexRequest(tableId, indexName.Name())
 			err = client.HybridTables.DropIndex(ctx, dropReq)
 			require.NoError(t, err)
 
@@ -674,13 +675,13 @@ func TestInt_HybridTables(t *testing.T) {
 			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowHybridTableIndexesRequest().WithIn(*indexFilter))
 			require.NoError(t, err)
 			for _, idx := range indexes {
-				require.NotEqual(t, indexId.Name(), idx.Name, "Index should be dropped")
+				require.NotEqual(t, indexName.Name(), idx.Name, "Index should be dropped")
 			}
 		})
 
 		t.Run("SHOW INDEXES validates all columns", func(t *testing.T) {
 			tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			indexId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			indexId := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
 			// Create hybrid table and index
 			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
