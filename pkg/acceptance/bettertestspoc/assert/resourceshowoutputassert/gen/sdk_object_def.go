@@ -19,7 +19,9 @@ func GetFilteredSdkObjectDetails() []genhelpers.SdkObjectDetails {
 	})
 }
 
-var objectsNotBeingResources = []any{sdk.UserWorkloadIdentityAuthenticationMethod{}}
-var objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {
-	return reflect.ValueOf(o).Type().String()
-})
+var (
+	objectsNotBeingResources     = []any{sdk.UserWorkloadIdentityAuthenticationMethod{}}
+	objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {
+		return reflect.ValueOf(o).Type().String()
+	})
+)
