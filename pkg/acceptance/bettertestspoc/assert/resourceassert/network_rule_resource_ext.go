@@ -1,7 +1,6 @@
 package resourceassert
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -10,8 +9,8 @@ import (
 
 func (n *NetworkRuleResourceAssert) HasValueList(expected []string) *NetworkRuleResourceAssert {
 	n.AddAssertion(assert.ValueSet("value_list.#", strconv.FormatInt(int64(len(expected)), 10)))
-	for i, v := range expected {
-		n.AddAssertion(assert.ValueSet(fmt.Sprintf("value_list.%d", i), v))
+	for _, v := range expected {
+		n.AddAssertion(assert.SetElem("value_list", v))
 	}
 	return n
 }
