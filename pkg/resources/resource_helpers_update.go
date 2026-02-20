@@ -225,10 +225,10 @@ func attributeMappedValueUpdate[T, R any](d *schema.ResourceData, key string, se
 	return nil
 }
 
-func listValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
+func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
 	if d.HasChange(key) {
 		v := d.Get(key)
-		mappedValue, err := collections.MapErr(v.([]any), mapper)
+		mappedValue, err := collections.MapErr(v.(*schema.Set).List(), mapper)
 		if err != nil {
 			return err
 		}

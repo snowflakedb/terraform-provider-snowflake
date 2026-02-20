@@ -77,6 +77,11 @@ func (e *ExternalS3StageResourceAssert) HasEncryptionString(expected string) *Ex
 	return e
 }
 
+func (e *ExternalS3StageResourceAssert) HasFileFormatString(expected string) *ExternalS3StageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format", expected))
+	return e
+}
+
 func (e *ExternalS3StageResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalS3StageResourceAssert {
 	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return e
@@ -192,6 +197,11 @@ func (e *ExternalS3StageResourceAssert) HasDirectoryEmpty() *ExternalS3StageReso
 
 func (e *ExternalS3StageResourceAssert) HasEncryptionEmpty() *ExternalS3StageResourceAssert {
 	e.AddAssertion(assert.ValueSet("encryption.#", "0"))
+	return e
+}
+
+func (e *ExternalS3StageResourceAssert) HasFileFormatEmpty() *ExternalS3StageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
 	return e
 }
 

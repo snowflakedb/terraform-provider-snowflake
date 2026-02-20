@@ -42,7 +42,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_external_functions_datasource", want: ExternalFunctionsDatasource},
 		{input: "snowflake_stage_external_gcs_resource", want: ExternalGcsStageResource},
 		{input: "snowflake_stage_external_s3_resource", want: ExternalS3StageResource},
-		{input: "snowflake_stage_external_s3_compatible_resource", want: ExternalS3CompatStageResource},
+		{input: "snowflake_stage_external_s3_compatible_resource", want: ExternalS3CompatibleStageResource},
 		{input: "snowflake_external_table_resource", want: ExternalTableResource},
 		{input: "snowflake_external_tables_datasource", want: ExternalTablesDatasource},
 		{input: "snowflake_external_volume_resource", want: ExternalVolumeResource},

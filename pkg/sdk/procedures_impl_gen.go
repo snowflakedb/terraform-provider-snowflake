@@ -13,8 +13,10 @@ import (
 
 var _ Procedures = (*procedures)(nil)
 
-var _ convertibleRow[Procedure] = new(procedureRow)
-var _ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
+var (
+	_ convertibleRow[Procedure]       = new(procedureRow)
+	_ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
+)
 
 type procedures struct {
 	client *Client

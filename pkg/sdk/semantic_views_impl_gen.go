@@ -10,8 +10,10 @@ import (
 
 var _ SemanticViews = (*semanticViews)(nil)
 
-var _ convertibleRow[SemanticViewDetails] = new(semanticViewDetailsRow)
-var _ convertibleRow[SemanticView] = new(semanticViewDBRow)
+var (
+	_ convertibleRow[SemanticViewDetails] = new(semanticViewDetailsRow)
+	_ convertibleRow[SemanticView]        = new(semanticViewDBRow)
+)
 
 type semanticViews struct {
 	client *Client

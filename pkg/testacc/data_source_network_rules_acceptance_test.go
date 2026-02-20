@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -149,9 +150,15 @@ func TestAcc_NetworkRules_CompleteUseCase(t *testing.T) {
 						HasType(sdk.NetworkRuleTypeIpv4).
 						HasMode(sdk.NetworkRuleModeIngress).
 						HasEntriesInValueList(2),
-
-					assert.Check(resource.TestCheckResourceAttr(withDescribe.DatasourceReference(), "network_rules.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(withDescribe.DatasourceReference(), "network_rules.0.describe_output.#", "1")),
+					resourceshowoutputassert.NetworkRulesDatasourceDescribeOutput(t, withDescribe.DatasourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasType(sdk.NetworkRuleTypeIpv4).
+						HasMode(sdk.NetworkRuleModeIngress).
+						HasComment(comment).
+						HasValueList([]string{"1.2.3.4", "5.6.7.8"}).
+						HasOwner(snowflakeroles.Accountadmin.Name()),
 				),
 			},
 		},

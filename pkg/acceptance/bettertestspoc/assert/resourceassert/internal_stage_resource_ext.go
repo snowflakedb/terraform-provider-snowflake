@@ -45,11 +45,6 @@ func (i *InternalStageResourceAssert) HasStageTypeEnum(expected sdk.StageType) *
 	return i
 }
 
-func (i *InternalStageResourceAssert) HasFileFormatEmpty() *InternalStageResourceAssert {
-	i.AddAssertion(assert.ValueSet("file_format.#", "0"))
-	return i
-}
-
 func (i *InternalStageResourceAssert) HasFileFormatFormatName(expected string) *InternalStageResourceAssert {
 	i.AddAssertion(assert.ValueSet("file_format.#", "1"))
 	i.AddAssertion(assert.ValueSet("file_format.0.format_name", expected))

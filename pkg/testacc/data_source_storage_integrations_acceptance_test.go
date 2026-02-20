@@ -175,6 +175,7 @@ func TestAcc_StorageIntegrations_CompleteUseCase(t *testing.T) {
 						HasComment(comment).
 						HasStorageType("EXTERNAL_STAGE").
 						HasCategory("STORAGE"),
+					// TODO [SNOW-3113157]: replace assert.Check with proper assertions
 					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.id", awsIntegrationId.Name())),

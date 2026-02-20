@@ -26,6 +26,38 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.13.x ➞ v2.14.0
 
+### *(bugfix)* Fixed external change detection in user resources (`snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`)
+
+The user resources were not able to detect external changes for some string fields that were null or empty on the Snowflake side.
+As an example, when you specified `email` in configuration like so:
+```terraform
+resource "snowflake_user" "test" {
+  ...
+  name = "SOME_USER"
+  email = "some@email.com"
+  ...
+}
+```
+
+and then removed it on the snowflake side with:
+```sql
+ALTER USER SOME_USER UNSET EMAIL;
+```
+
+The change wasn't detected in the user resource. Now, such changes are detected. Here's the list of affected fields:
+- `email`
+- `default_warehouse`
+- `default_role`
+- `rsa_public_key`
+- `rsa_public_key_2`
+- `comment`
+- Fields only for users with `type = PERSON`:
+    - `first_name`
+    - `middle_name`
+    - `last_name`
+
+No configuration changes are required.
+
 ### *(enhancement)* `snowflake_network_rule` rework
 
 #### Changes in `type` and `mode` fields
@@ -49,9 +81,6 @@ terraform import snowflake_network_rule.example '"<database_name>"."<schema_name
 
 No change is required, the state will be migrated automatically.
 
-#### `value_list` type change
-The `value_list` attribute was changed from `TypeSet` to `TypeList`. This means the order of elements is now preserved and they are accessed by index (e.g. `value_list.0`) instead of by hash. If you reference individual `value_list` elements in your configuration, you may need to update those references. This change was done to follow Snowflake behavior - in Snowflake, the order of the values matters.
-
 #### New `show_output` and `describe_output` attributes
 New computed attributes `show_output` and `describe_output` were added to the `snowflake_network_rule` resource. They contain the output of `SHOW NETWORK RULES` and `DESCRIBE NETWORK RULE` queries, respectively. They can be used to reference network rule properties in other parts of the configuration.
 
@@ -63,6 +92,31 @@ Reference: [#3956](https://github.com/snowflakedb/terraform-provider-snowflake/i
 Added a new preview data source for network rules. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-network-rules).
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_network_rules_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(bugfix)* Fixed timestamp parsing in stage resources
+
+The new stage resources introduced in v2.13.0 parsed the `last_refreshed_on` timestamp column. However, due to flexibility of the time formats, this could fail with errors like
+```
+│ Error: parsing time "2026-02-15 23:59:47.000 Z" as "2006-01-02 15:04:05.000 -0700": cannot parse "Z" as "-0700"
+```
+
+This caused Terraform to detect a diff on the next plan and taint the resource, potentially leading to an unwanted recreation.
+
+This is now fixed - the provider does not parse the received timestamp. Additionally, this field can be now read in the `directory_table` schema in `describe_output`.
+
+The state is upgraded automatically.
+
+#### Important: untaint resources after the upgrade
+
+If Terraform has already tainted your resources before upgrading to this version, you should untaint them to avoid unnecessary recreation:
+
+```shell
+terraform untaint snowflake_external_s3_stage.example
+```
+
+After upgrading the provider to this version, the state upgrader will take care of populating `describe_output` and no further action is needed.
+
+Reference: [#4445](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4445).
 
 ## v2.12.x ➞ v2.13.0
 

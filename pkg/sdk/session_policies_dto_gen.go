@@ -46,8 +46,7 @@ type DropSessionPolicyRequest struct {
 	name     SchemaObjectIdentifier // required
 }
 
-type ShowSessionPolicyRequest struct {
-}
+type ShowSessionPolicyRequest struct{}
 
 type DescribeSessionPolicyRequest struct {
 	name SchemaObjectIdentifier // required
