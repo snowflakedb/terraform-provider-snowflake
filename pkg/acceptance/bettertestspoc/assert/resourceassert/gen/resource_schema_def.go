@@ -354,4 +354,8 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "DynamicTable",
 		schema: resources.DynamicTable().Schema,
 	},
+	{
+		name:   "NetworkRule",
+		schema: resources.NetworkRule().Schema,
+	},
 }

@@ -2,13 +2,11 @@ package helpers
 
 import (
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"log"
 	"path"
 	"reflect"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -153,98 +151,6 @@ func DecodeSnowflakeAccountIdentifier(identifier string) (sdk.AccountIdentifier,
 	default:
 		return sdk.AccountIdentifier{}, fmt.Errorf("unable to classify account identifier: %s, expected format: <organization_name>.<account_name>", identifier)
 	}
-}
-
-type StorageLocation struct {
-	Name                 string `json:"NAME"`
-	StorageProvider      string `json:"STORAGE_PROVIDER"`
-	StorageBaseUrl       string `json:"STORAGE_BASE_URL"`
-	StorageAwsRoleArn    string `json:"STORAGE_AWS_ROLE_ARN"`
-	StorageAwsExternalId string `json:"STORAGE_AWS_EXTERNAL_ID"`
-	EncryptionType       string `json:"ENCRYPTION_TYPE"`
-	EncryptionKmsKeyId   string `json:"ENCRYPTION_KMS_KEY_ID"`
-	AzureTenantId        string `json:"AZURE_TENANT_ID"`
-}
-
-func validateParsedExternalVolumeDescribed(p ParsedExternalVolumeDescribed) error {
-	if len(p.StorageLocations) == 0 {
-		return fmt.Errorf("No storage locations could be parsed from the external volume.")
-	}
-	if len(p.AllowWrites) == 0 {
-		return fmt.Errorf("The external volume AllowWrites property could not be parsed.")
-	}
-
-	for _, s := range p.StorageLocations {
-		if len(s.Name) == 0 {
-			return fmt.Errorf("A storage location's Name in this volume could not be parsed.")
-		}
-		if !slices.Contains(sdk.AsStringList(sdk.AllStorageProviderValues), s.StorageProvider) {
-			return fmt.Errorf("invalid storage provider parsed: %s", s)
-		}
-		if len(s.StorageBaseUrl) == 0 {
-			return fmt.Errorf("A storage location's StorageBaseUrl in this volume could not be parsed.")
-		}
-
-		storageProvider, err := sdk.ToStorageProvider(s.StorageProvider)
-		if err != nil {
-			return err
-		}
-
-		switch storageProvider {
-		case sdk.StorageProviderS3, sdk.StorageProviderS3GOV:
-			if len(s.StorageAwsRoleArn) == 0 {
-				return fmt.Errorf("An S3 storage location's StorageAwsRoleArn in this volume could not be parsed.")
-			}
-		case sdk.StorageProviderAzure:
-			if len(s.AzureTenantId) == 0 {
-				return fmt.Errorf("An Azure storage location's AzureTenantId in this volume could not be parsed.")
-			}
-		}
-	}
-
-	return nil
-}
-
-type ParsedExternalVolumeDescribed struct {
-	StorageLocations []StorageLocation
-	Active           string
-	Comment          string
-	AllowWrites      string
-}
-
-func ParseExternalVolumeDescribed(props []sdk.ExternalVolumeProperty) (ParsedExternalVolumeDescribed, error) {
-	parsedExternalVolumeDescribed := ParsedExternalVolumeDescribed{}
-	var storageLocations []StorageLocation
-	for _, p := range props {
-		switch {
-		case p.Name == "COMMENT":
-			parsedExternalVolumeDescribed.Comment = p.Value
-		case p.Name == "ACTIVE":
-			parsedExternalVolumeDescribed.Active = p.Value
-		case p.Name == "ALLOW_WRITES":
-			parsedExternalVolumeDescribed.AllowWrites = p.Value
-		case strings.Contains(p.Name, "STORAGE_LOCATION_"):
-			storageLocation := StorageLocation{}
-			err := json.Unmarshal([]byte(p.Value), &storageLocation)
-			if err != nil {
-				return ParsedExternalVolumeDescribed{}, err
-			}
-			storageLocations = append(
-				storageLocations,
-				storageLocation,
-			)
-		default:
-			return ParsedExternalVolumeDescribed{}, fmt.Errorf("Unrecognized external volume property: %s", p.Name)
-		}
-	}
-
-	parsedExternalVolumeDescribed.StorageLocations = storageLocations
-	err := validateParsedExternalVolumeDescribed(parsedExternalVolumeDescribed)
-	if err != nil {
-		return ParsedExternalVolumeDescribed{}, err
-	}
-
-	return parsedExternalVolumeDescribed, nil
 }
 
 // TODO(SNOW-1569530): address during identifiers rework follow-up

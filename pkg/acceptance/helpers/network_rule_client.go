@@ -29,6 +29,11 @@ func (c *NetworkRuleClient) Create(t *testing.T) (*sdk.NetworkRule, func()) {
 	return c.CreateEgressWithIdentifier(t, c.ids.RandomSchemaObjectIdentifier())
 }
 
+func (c *NetworkRuleClient) CreateWithIdentifier(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.NetworkRule, func()) {
+	t.Helper()
+	return c.CreateEgressWithIdentifier(t, id)
+}
+
 func (c *NetworkRuleClient) CreateIngress(t *testing.T) (*sdk.NetworkRule, func()) {
 	t.Helper()
 	return c.CreateWithRequest(t, sdk.NewCreateNetworkRuleRequest(
@@ -70,6 +75,14 @@ func (c *NetworkRuleClient) CreateWithRequest(t *testing.T, request *sdk.CreateN
 	require.NoError(t, err)
 
 	return networkRule, c.DropFunc(t, request.GetName())
+}
+
+func (c *NetworkRuleClient) Alter(t *testing.T, req *sdk.AlterNetworkRuleRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
 }
 
 func (c *NetworkRuleClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.NetworkRule, error) {

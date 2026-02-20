@@ -72,13 +72,15 @@ type ResourceAssertion struct {
 	resourceAssertionType resourceAssertionType
 }
 
+// TODO [SNOW-3113138]: improve prefixing logic (so it works with resource, show_output, describe_output, and data sources)
 func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
 	assertion.fieldName = r.additionalPrefix + assertion.fieldName
 	r.assertions = append(r.assertions, assertion)
 }
 
+// TODO [SNOW-3113138]: what if we made these functions ResourceAssert methods?
 func SetElem(fieldName string, expected string) ResourceAssertion {
-	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
+	return ResourceAssertion{fieldName: fieldName + ".*", expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
 }
 
 func ValuePresent(fieldName string) ResourceAssertion {

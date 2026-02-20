@@ -50,8 +50,10 @@ resource "snowflake_network_rule" "rule" {
 
 ### Read-Only
 
+- `describe_output` (List of Object) Outputs the result of `DESCRIBE NETWORK RULE` for the given network rule. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
+- `show_output` (List of Object) Outputs the result of `SHOW NETWORK RULES` for the given network rule. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -63,10 +65,43 @@ Optional:
 - `read` (String)
 - `update` (String)
 
+
+<a id="nestedatt--describe_output"></a>
+### Nested Schema for `describe_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `mode` (String)
+- `name` (String)
+- `owner` (String)
+- `schema_name` (String)
+- `type` (String)
+- `value_list` (List of String)
+
+
+<a id="nestedatt--show_output"></a>
+### Nested Schema for `show_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `entries_in_value_list` (Number)
+- `mode` (String)
+- `name` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `schema_name` (String)
+- `type` (String)
+
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_network_rule.example 'databaseName|schemaName|networkRuleName'
+terraform import snowflake_network_rule.example '"<database_name>"."<schema_name>"."<network_rule_name>"'
 ```

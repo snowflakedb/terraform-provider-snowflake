@@ -35,7 +35,7 @@ const (
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
 	ExternalGcsStageResource                      feature = "snowflake_stage_external_gcs_resource"
 	ExternalS3StageResource                       feature = "snowflake_stage_external_s3_resource"
-	ExternalS3CompatStageResource                 feature = "snowflake_stage_external_s3_compatible_resource"
+	ExternalS3CompatibleStageResource             feature = "snowflake_stage_external_s3_compatible_resource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
 	ExternalTablesDatasource                      feature = "snowflake_external_tables_datasource"
 	ExternalVolumeResource                        feature = "snowflake_external_volume_resource"
@@ -62,6 +62,7 @@ const (
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
+	NetworkRulesDatasource                        feature = "snowflake_network_rules_datasource"
 	NotebookResource                              feature = "snowflake_notebook_resource"
 	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
@@ -129,7 +130,7 @@ var allPreviewFeatures = []feature{
 	ExternalFunctionsDatasource,
 	ExternalGcsStageResource,
 	ExternalS3StageResource,
-	ExternalS3CompatStageResource,
+	ExternalS3CompatibleStageResource,
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	ExternalVolumeResource,
@@ -151,6 +152,7 @@ var allPreviewFeatures = []feature{
 	MaterializedViewsDatasource,
 	NetworkPolicyAttachmentResource,
 	NetworkRuleResource,
+	NetworkRulesDatasource,
 	NotebookResource,
 	NotebooksDatasource,
 	EmailNotificationIntegrationResource,

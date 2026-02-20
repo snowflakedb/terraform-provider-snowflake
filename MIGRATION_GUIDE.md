@@ -73,7 +73,25 @@ Two new `mode` values are now supported:
 
 No configuration changes are required. Existing configurations will continue to work as before. If you were using workarounds to force uppercase values, those can be removed.
 
+#### Identifiers related changes
+Resource ID format was changed from pipe-separated to regular Snowflake identifiers (e.g. `<database_name>|<schema_name>|<network_rule_name>` -> `"<database_name>"."<schema_name>"."<network_rule_name>"`). Importing resources also needs to be adjusted:
+```shell
+terraform import snowflake_network_rule.example '"<database_name>"."<schema_name>"."<network_rule_name>"'
+```
+
+No change is required, the state will be migrated automatically.
+
+#### New `show_output` and `describe_output` attributes
+New computed attributes `show_output` and `describe_output` were added to the `snowflake_network_rule` resource. They contain the output of `SHOW NETWORK RULES` and `DESCRIBE NETWORK RULE` queries, respectively. They can be used to reference network rule properties in other parts of the configuration.
+
+No configuration changes are required.
+
 Reference: [#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956), [#4437](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4437)
+
+### *(new feature)* snowflake_network_rules data source
+Added a new preview data source for network rules. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-network-rules).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_network_rules_datasource` to `preview_features_enabled` field in the provider configuration.
 
 ### *(bugfix)* Fixed timestamp parsing in stage resources
 
