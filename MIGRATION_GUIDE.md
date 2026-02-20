@@ -26,6 +26,20 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.13.x ➞ v2.14.0
 
+### *(new feature)* Added missing `object_types` in grant resources
+
+Previously, the `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources did not support all object types that Snowflake allows in GRANT statements.
+With this change, we added support for the following missing object types:
+
+- `AGENT` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `EXPERIMENT` object type in the `on_schema_object.object_type` field
+- `GATEWAY` object type in the `on_schema_object.object_type` field
+- `MCP SERVER` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+
+We also corrected the `on_schema_object.all` field validation to properly exclude `JOIN POLICY` object type, and the `on_schema_object.future` field validation to properly exclude `JOIN POLICY` and `SNAPSHOT` object types, which Snowflake does not support for bulk grants.
+
+No changes in configuration are required.
+
 ### *(bugfix)* Fixed external change detection in user resources (`snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`)
 
 The user resources were not able to detect external changes for some string fields that were null or empty on the Snowflake side.

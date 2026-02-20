@@ -90,6 +90,9 @@ const (
 	ObjectTypeSemanticView           ObjectType = "SEMANTIC VIEW"
 	ObjectTypeOnlineFeatureTable     ObjectType = "ONLINE FEATURE TABLE"
 	ObjectTypeExperiment             ObjectType = "EXPERIMENT"
+	ObjectTypeAgent                  ObjectType = "AGENT"
+	ObjectTypeGateway                ObjectType = "GATEWAY"
+	ObjectTypeMcpServer              ObjectType = "MCP SERVER"
 	ObjectTypeStorageLifecyclePolicy ObjectType = "STORAGE LIFECYCLE POLICY"
 	ObjectTypeWorkspace              ObjectType = "WORKSPACE"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
@@ -191,6 +194,9 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeService,
 	ObjectTypeListing,
 	ObjectTypeStorageIntegration,
+	ObjectTypeAgent,
+	ObjectTypeGateway,
+	ObjectTypeMcpServer,
 	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeWorkspace,
 	ObjectTypeProgrammaticAccessToken,
@@ -280,6 +286,9 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeService:                 PluralObjectTypeServices,
 		ObjectTypeProgrammaticAccessToken: PluralObjectTypeProgrammaticAccessTokens,
 		ObjectTypeStorageIntegration:      PluralObjectTypeStorageIntegrations,
+		ObjectTypeAgent:                   PluralObjectTypeAgents,
+		ObjectTypeGateway:                 PluralObjectTypeGateways,
+		ObjectTypeMcpServer:               PluralObjectTypeMcpServers,
 		ObjectTypeStorageLifecyclePolicy:  PluralObjectTypeStorageLifecyclePolicies,
 		ObjectTypeWorkspace:               PluralObjectTypeWorkspaces,
 	}
@@ -405,6 +414,9 @@ const (
 	PluralObjectTypeStorageIntegrations      PluralObjectType = "STORAGE INTEGRATIONS"
 	PluralObjectTypeWorkspaces               PluralObjectType = "WORKSPACES"
 	PluralObjectTypeStorageLifecyclePolicies PluralObjectType = "STORAGE LIFECYCLE POLICIES"
+	PluralObjectTypeAgents                   PluralObjectType = "AGENTS"
+	PluralObjectTypeGateways                 PluralObjectType = "GATEWAYS"
+	PluralObjectTypeMcpServers               PluralObjectType = "MCP SERVERS"
 )
 
 func (p PluralObjectType) String() string {
