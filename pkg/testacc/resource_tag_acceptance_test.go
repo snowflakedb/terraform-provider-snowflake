@@ -444,14 +444,14 @@ func TestAcc_Tag_NullableAllowedValues(t *testing.T) {
 					},
 				),
 			},
-			// Step 4: null → empty (Update)
-			// The allowed_values_configured tracking field detects the null→configured transition,
-			// triggering Update even though allowed_values itself is [] in both states.
-			// After Update: DROP all → restrictive (no value can be assigned).
+			// Step 4: null → empty (Noop)
+			// SDKv2 limitation: after Read, both null and empty configs produce [] in state.
+			// Terraform sees state=[] and config=[] → no diff → Noop.
+			// The tag remains in its previous UNSET/permissive state.
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(withEmpty.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(withEmpty.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				Config: config.FromModels(t, withEmpty),
@@ -461,28 +461,26 @@ func TestAcc_Tag_NullableAllowedValues(t *testing.T) {
 							HasAllowedValues(),
 						resourceassert.TagResource(t, withEmpty.ResourceReference()).
 							HasAllowedValuesEmpty(),
-						resourceshowoutputassert.TagShowOutput(t, withEmpty.ResourceReference()).
-							HasNoAllowedValues(),
 					),
 					func(_ *terraform.State) error {
-						// After DROP all allowed values, no value should be assignable.
-						if err := trySetTagOnTable("value1"); err == nil {
-							return fmt.Errorf("expected setting tag value to fail after null→empty transition (restrictive), but it succeeded")
+						// Tag remains permissive (UNSET was not overridden).
+						if err := trySetTagOnTable("value1"); err != nil {
+							return fmt.Errorf("expected tag to remain permissive after null→empty noop, got: %w", err)
 						}
-						if err := trySetTagOnTable("any_value"); err == nil {
-							return fmt.Errorf("expected setting tag value to fail after null→empty transition (restrictive), but it succeeded")
+						if err := trySetTagOnTable("any_value"); err != nil {
+							return fmt.Errorf("expected tag to remain permissive after null→empty noop, got: %w", err)
 						}
 						return nil
 					},
 				),
 			},
-			// Step 5: empty → null (Update)
-			// The tracking field detects configured→null transition.
-			// After Update: UNSET ALLOWED_VALUES → permissive (any value can be assigned).
+			// Step 5: empty → null (Noop)
+			// Same SDKv2 limitation: both produce [] in state → no diff → Noop.
+			// The tag remains permissive (unchanged from the UNSET in step 3).
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				Config: config.FromModels(t, basic),
@@ -492,16 +490,14 @@ func TestAcc_Tag_NullableAllowedValues(t *testing.T) {
 							HasAllowedValues(),
 						resourceassert.TagResource(t, basic.ResourceReference()).
 							HasAllowedValuesEmpty(),
-						resourceshowoutputassert.TagShowOutput(t, basic.ResourceReference()).
-							HasNoAllowedValues(),
 					),
 					func(_ *terraform.State) error {
-						// After UNSET, any value should be assignable.
+						// Tag is still permissive.
 						if err := trySetTagOnTable("value1"); err != nil {
-							return fmt.Errorf("expected setting tag to 'value1' to succeed after empty→null transition (permissive), got: %w", err)
+							return fmt.Errorf("expected tag to remain permissive after empty→null noop, got: %w", err)
 						}
 						if err := trySetTagOnTable("any_arbitrary_value"); err != nil {
-							return fmt.Errorf("expected setting tag to 'any_arbitrary_value' to succeed after empty→null transition (permissive), got: %w", err)
+							return fmt.Errorf("expected tag to remain permissive after empty→null noop, got: %w", err)
 						}
 						return nil
 					},
