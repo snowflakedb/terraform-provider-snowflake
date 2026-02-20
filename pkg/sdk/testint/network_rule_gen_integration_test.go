@@ -89,7 +89,7 @@ func TestInt_NetworkRules(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().NetworkRule.DropFunc(t, id))
 
-		setReq := sdk.NewNetworkRuleSetRequest([]sdk.NetworkRuleValue{
+		setReq := sdk.NewNetworkRuleSetRequest().WithValueList([]sdk.NetworkRuleValue{
 			{Value: "0.0.0.0"},
 			{Value: "1.1.1.1"},
 		}).WithComment("some comment")

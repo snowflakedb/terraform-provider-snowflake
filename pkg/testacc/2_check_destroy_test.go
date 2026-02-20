@@ -108,7 +108,6 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.FileFormat,
 		resources.ManagedAccount,
 		resources.MaterializedView,
-		resources.NetworkRule,
 		resources.NotificationIntegration,
 		resources.PasswordPolicy,
 		resources.Pipe,

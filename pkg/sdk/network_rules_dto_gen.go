@@ -27,7 +27,7 @@ type AlterNetworkRuleRequest struct {
 }
 
 type NetworkRuleSetRequest struct {
-	ValueList []NetworkRuleValue // required
+	ValueList []NetworkRuleValue
 	Comment   *string
 }
 

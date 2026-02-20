@@ -4,16 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -63,6 +64,22 @@ var networkRuleSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the network rule.",
 	},
+	ShowOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `SHOW NETWORK RULES` for the given network rule.",
+		Elem: &schema.Resource{
+			Schema: schemas.ShowNetworkRuleSchema,
+		},
+	},
+	DescribeOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `DESCRIBE NETWORK RULE` for the given network rule.",
+		Elem: &schema.Resource{
+			Schema: schemas.DescribeNetworkRuleSchema,
+		},
+	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
@@ -70,7 +87,7 @@ var networkRuleSchema = map[string]*schema.Schema{
 func NetworkRule() *schema.Resource {
 	// TODO(SNOW-1818849): unassign network rules before dropping
 	deleteFunc := ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		sdk.ParseSchemaObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.NetworkRules.DropSafely
 		},
@@ -84,9 +101,24 @@ func NetworkRule() *schema.Resource {
 
 		Schema: networkRuleSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: TrackingImportWrapper(resources.NetworkRule, ImportName[sdk.SchemaObjectIdentifier]),
 		},
 		Timeouts: defaultTimeouts,
+
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
+			},
+		},
+
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.NetworkRule, customdiff.All(
+			ComputedIfAnyAttributeChanged(networkRuleSchema, ShowOutputAttributeName, "comment", "value_list"),
+			ComputedIfAnyAttributeChanged(networkRuleSchema, DescribeOutputAttributeName, "comment", "value_list"),
+			ComputedIfAnyAttributeChanged(networkRuleSchema, FullyQualifiedNameAttributeName, "name"),
+		)),
 	}
 }
 
@@ -119,15 +151,15 @@ func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 	)
 
 	// Set optionals
-	if v, ok := d.GetOk("comment"); ok {
-		req = req.WithComment(v.(string))
+	if err := stringAttributeCreateBuilder(d, "comment", req.WithComment); err != nil {
+		return diag.FromErr(err)
 	}
 
 	client := meta.(*provider.Context).Client
 	if err := client.NetworkRules.Create(ctx, req); err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeResourceIdentifier(id))
 
 	return ReadContextNetworkRule(ctx, d, meta)
 }
@@ -135,7 +167,10 @@ func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	networkRule, err := client.NetworkRules.ShowByIDSafely(ctx, id)
 	if err != nil {
@@ -162,30 +197,20 @@ func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta in
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err = d.Set("name", networkRule.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("database", networkRule.DatabaseName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("schema", networkRule.SchemaName); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err = d.Set("type", networkRule.Type); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("value_list", networkRuleDescriptions.ValueList); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("mode", networkRule.Mode); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = d.Set("comment", networkRule.Comment); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()); err != nil {
-		return diag.FromErr(err)
+	errs := errors.Join(
+		d.Set("name", networkRule.Name),
+		d.Set("database", networkRule.DatabaseName),
+		d.Set("schema", networkRule.SchemaName),
+		d.Set("type", networkRule.Type),
+		d.Set("value_list", networkRuleDescriptions.ValueList),
+		d.Set("mode", networkRule.Mode),
+		d.Set("comment", networkRule.Comment),
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.NetworkRuleToSchema(networkRule)}),
+		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.NetworkRuleDetailsToSchema(networkRuleDescriptions)}),
+		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	return diags
@@ -193,41 +218,32 @@ func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta in
 
 func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
-
-	valueList := expandStringList(d.Get("value_list").(*schema.Set).List())
-	networkRuleValues := make([]sdk.NetworkRuleValue, len(valueList))
-	for i, v := range valueList {
-		networkRuleValues[i] = sdk.NetworkRuleValue{Value: v}
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
 	}
-	comment := d.Get("comment").(string)
 
-	if d.HasChange("value_list") {
-		baseReq := sdk.NewAlterNetworkRuleRequest(id)
-		if len(valueList) == 0 {
-			unsetReq := sdk.NewNetworkRuleUnsetRequest().WithValueList(true)
-			baseReq.WithUnset(*unsetReq)
-		} else {
-			setReq := sdk.NewNetworkRuleSetRequest(networkRuleValues)
-			baseReq.WithSet(*setReq)
-		}
+	set := sdk.NewNetworkRuleSetRequest()
+	unset := sdk.NewNetworkRuleUnsetRequest()
 
-		if err := client.NetworkRules.Alter(ctx, baseReq); err != nil {
+	errs := errors.Join(
+		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+		setValueUpdate(d, "value_list", &set.ValueList, &unset.ValueList, func(v any) (sdk.NetworkRuleValue, error) {
+			return sdk.NetworkRuleValue{Value: v.(string)}, nil
+		}),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	if !reflect.DeepEqual(*set, *sdk.NewNetworkRuleSetRequest()) {
+		if err := client.NetworkRules.Alter(ctx, sdk.NewAlterNetworkRuleRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if d.HasChange("comment") {
-		baseReq := sdk.NewAlterNetworkRuleRequest(id)
-		if len(comment) == 0 {
-			unsetReq := sdk.NewNetworkRuleUnsetRequest().WithComment(true)
-			baseReq.WithUnset(*unsetReq)
-		} else {
-			setReq := sdk.NewNetworkRuleSetRequest(networkRuleValues).WithComment(comment)
-			baseReq.WithSet(*setReq)
-		}
-
-		if err := client.NetworkRules.Alter(ctx, baseReq); err != nil {
+	if !reflect.DeepEqual(*unset, *sdk.NewNetworkRuleUnsetRequest()) {
+		if err := client.NetworkRules.Alter(ctx, sdk.NewAlterNetworkRuleRequest(id).WithUnset(*unset)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
