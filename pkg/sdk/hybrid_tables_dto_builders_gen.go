@@ -45,6 +45,16 @@ func (s *AlterHybridTableRequest) WithIfExists(ifExists bool) *AlterHybridTableR
 	return s
 }
 
+func (s *AlterHybridTableRequest) WithNewName(newName SchemaObjectIdentifier) *AlterHybridTableRequest {
+	s.NewName = &newName
+	return s
+}
+
+func (s *AlterHybridTableRequest) WithAddColumnAction(addColumnAction HybridTableAddColumnActionRequest) *AlterHybridTableRequest {
+	s.AddColumnAction = &addColumnAction
+	return s
+}
+
 func (s *AlterHybridTableRequest) WithConstraintAction(constraintAction HybridTableConstraintActionRequest) *AlterHybridTableRequest {
 	s.ConstraintAction = &constraintAction
 	return s
@@ -77,6 +87,41 @@ func (s *AlterHybridTableRequest) WithSet(set HybridTableSetPropertiesRequest) *
 
 func (s *AlterHybridTableRequest) WithUnset(unset HybridTableUnsetPropertiesRequest) *AlterHybridTableRequest {
 	s.Unset = &unset
+	return s
+}
+
+func NewHybridTableAddColumnActionRequest(
+	name string,
+	columnType DataType,
+) *HybridTableAddColumnActionRequest {
+	s := HybridTableAddColumnActionRequest{}
+	s.Name = name
+	s.Type = columnType
+	return &s
+}
+
+func (s *HybridTableAddColumnActionRequest) WithIfNotExists(ifNotExists bool) *HybridTableAddColumnActionRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *HybridTableAddColumnActionRequest) WithCollate(collate string) *HybridTableAddColumnActionRequest {
+	s.Collate = &collate
+	return s
+}
+
+func (s *HybridTableAddColumnActionRequest) WithDefaultValue(defaultValue ColumnDefaultValue) *HybridTableAddColumnActionRequest {
+	s.DefaultValue = &defaultValue
+	return s
+}
+
+func (s *HybridTableAddColumnActionRequest) WithInlineConstraint(inlineConstraint HybridTableColumnInlineConstraint) *HybridTableAddColumnActionRequest {
+	s.InlineConstraint = &inlineConstraint
+	return s
+}
+
+func (s *HybridTableAddColumnActionRequest) WithComment(comment string) *HybridTableAddColumnActionRequest {
+	s.Comment = &comment
 	return s
 }
 
