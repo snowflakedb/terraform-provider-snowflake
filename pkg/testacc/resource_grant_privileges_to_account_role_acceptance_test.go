@@ -3334,7 +3334,7 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Valid(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		ProtoV6ProviderFactories: grantsImportValidationProviderFactory,
-		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		CheckDestroy:             CheckAccountRolePrivilegesRevokedAtMost(t, 1),
 		Steps: []resource.TestStep{
 			// Create with correct settings
 			{
@@ -3354,6 +3354,17 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Valid(t *testing.T) {
 			},
 			// Import with different privilege order
 			{
+				Config:                  accconfig.FromModels(t, providerModel, resourceModelWithDifferentPrivilegeOrder),
+				ResourceName:            resourceModelWithDifferentPrivilegeOrder.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name"},
+			},
+			// Import with additional privileges in Snowflake
+			{
+				PreConfig: func() {
+					testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateSchema}, true)
+				},
 				Config:                  accconfig.FromModels(t, providerModel, resourceModelWithDifferentPrivilegeOrder),
 				ResourceName:            resourceModelWithDifferentPrivilegeOrder.ResourceReference(),
 				ImportState:             true,
@@ -3383,8 +3394,8 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManage
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		ProtoV6ProviderFactories: grantsImportValidationProviderFactory,
-		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		ProtoV6ProviderFactories: grantsImportValidationAndStrictProviderFactory,
+		CheckDestroy:             CheckAccountRolePrivilegesRevokedAtMost(t, 1),
 		Steps: []resource.TestStep{
 			// Create with correct settings
 			{
@@ -3403,22 +3414,16 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManage
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name", "strict_privilege_management"},
 			},
-			// Import with matching ID should succeed with experiment enabled
+			// Grant additional privilege in Snowflake
 			{
+				PreConfig: func() {
+					testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeCreateSchema}, false)
+				},
 				Config:                  accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:            resourceModel.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name", "strict_privilege_management"},
-			},
-			// Prepare for destroy check - revoke the privilege granted in the previous step.
-			{
-				Config: accconfig.FromModels(t, providerModel, resourceModel),
-				Check: assertThat(t,
-					resourceassert.GrantPrivilegesToAccountRoleResource(t, resourceModel.ResourceReference()).
-						HasStrictPrivilegeManagementString("true").
-						HasPrivileges(string(sdk.AccountObjectPrivilegeMonitor)),
-				),
 			},
 		},
 	})
