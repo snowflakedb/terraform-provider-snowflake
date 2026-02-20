@@ -75,6 +75,15 @@ To create a new generator:
 #### Improvements
 
 Functional improvements:
+- Currently, generation part filters are applied to all filtered objects. There are situations (like adding a generation part) in which we would like to use this part only for a subset of objects without disrupting the generation of other objects within the given generator. For that reason, generation part filtering could be handled on the object-by-object basis. It means:
+  - Extracting a common generation part setting on the object level. Consider:
+    - Setting it as additional field to the `PreambleModel` (in which case, maybe it's good to finally rename this struct to a more appropriate name).
+    - Setting it as a separate struct as `PreambleModel` is currently reused throughout the whole generator.
+    - Extracting a dedicated common struct that would be nested in each object definition; it could contain the default generation parts for the given object and some other common object-level generation settings in the future. Also, the object name currently acquired from the `ObjectNameProvider` could be a part of this dedicated struct and handled like the `HasPreambleModel` interface.
+  - Providing a generator-wide default for cases when generation part filtering is not set on the given object (e.g. when the new generation part is being developed it can be set on the chosen object without affecting the others and without the need to alter their definitions).
+    - Similarly to the defaults for the generation parts, we could provide the default object filtering for the given generator (e.g. for situations where given object requires some additional attention but all others can be automatically regenerated without problems).
+  - Rethinking how the filtering should be handled on the generator level and how it should behave with combination of the command-line argument (i.e. should it override filters for all objects? should it be treated as an additional filter in addition to the setting on the object level? if the latter, should we have another option to generate the given part even if it's not listed for the given object?).
+  - Ensuring that the listed parts are available for the given generator (compile-time or runtime validation?).
 - add a generic terraform schema reader, to allow later generation from schemas
 - handle the missing types (TODOs in [struct_details_extractor_test.go](./struct_details_extractor_test.go))
 - add support for custom command line flags

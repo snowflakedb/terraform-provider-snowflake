@@ -13,6 +13,7 @@ var (
 	definitionTemplateContent string
 	DefinitionTemplate, _     = template.New("definitionTemplate").Parse(definitionTemplateContent)
 
+	// TODO [SNOW-3113128]: use .IsCollection logic for string checks
 	//go:embed templates/assertions.tmpl
 	assertionsTemplateContent string
 	AssertionsTemplate, _     = template.New("assertionsTemplate").Funcs(genhelpers.BuildTemplateFuncMap(

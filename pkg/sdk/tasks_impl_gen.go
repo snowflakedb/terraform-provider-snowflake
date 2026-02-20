@@ -14,7 +14,7 @@ import (
 
 var _ Tasks = (*tasks)(nil)
 
-var _ convertibleRow[Task] = new(taskDBRow)
+// second type assert removed manually
 var _ convertibleRow[Task] = new(taskDBRow)
 
 type tasks struct {

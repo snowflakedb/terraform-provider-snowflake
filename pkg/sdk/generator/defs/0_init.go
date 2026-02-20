@@ -21,6 +21,7 @@ func init() {
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
 		externalFunctionsDef,
+		externalVolumesDef,
 		fileFormatsDef,
 		functionsDef,
 		gitRepositoriesDef,

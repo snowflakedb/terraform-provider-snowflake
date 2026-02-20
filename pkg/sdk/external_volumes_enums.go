@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -13,17 +14,18 @@ type (
 )
 
 var (
-	S3EncryptionTypeSseS3   S3EncryptionType  = "AWS_SSE_S3"
-	S3EncryptionTypeSseKms  S3EncryptionType  = "AWS_SSE_KMS"
-	S3EncryptionNone        S3EncryptionType  = "NONE"
-	GCSEncryptionTypeSseKms GCSEncryptionType = "GCS_SSE_KMS"
-	GCSEncryptionTypeNone   GCSEncryptionType = "NONE"
-	S3StorageProviderS3     S3StorageProvider = "S3"
-	S3StorageProviderS3GOV  S3StorageProvider = "S3GOV"
-	StorageProviderGCS      StorageProvider   = "GCS"
-	StorageProviderAzure    StorageProvider   = "AZURE"
-	StorageProviderS3       StorageProvider   = "S3"
-	StorageProviderS3GOV    StorageProvider   = "S3GOV"
+	S3EncryptionTypeSseS3       S3EncryptionType  = "AWS_SSE_S3"
+	S3EncryptionTypeSseKms      S3EncryptionType  = "AWS_SSE_KMS"
+	S3EncryptionNone            S3EncryptionType  = "NONE"
+	GCSEncryptionTypeSseKms     GCSEncryptionType = "GCS_SSE_KMS"
+	GCSEncryptionTypeNone       GCSEncryptionType = "NONE"
+	S3StorageProviderS3         S3StorageProvider = "S3"
+	S3StorageProviderS3GOV      S3StorageProvider = "S3GOV"
+	StorageProviderGCS          StorageProvider   = "GCS"
+	StorageProviderAzure        StorageProvider   = "AZURE"
+	StorageProviderS3           StorageProvider   = "S3"
+	StorageProviderS3GOV        StorageProvider   = "S3GOV"
+	StorageProviderS3Compatible StorageProvider   = "S3COMPAT"
 )
 
 var AllStorageProviderValues = []StorageProvider{
@@ -31,6 +33,16 @@ var AllStorageProviderValues = []StorageProvider{
 	StorageProviderAzure,
 	StorageProviderS3,
 	StorageProviderS3GOV,
+}
+
+// This is a temporary variable to be used in the describe function to avoid errors when the storage provider is S3Compatible.
+// S3compatible is not supported in the resource yet.
+var AllStorageProviderValuesInDescribe = []StorageProvider{
+	StorageProviderGCS,
+	StorageProviderAzure,
+	StorageProviderS3,
+	StorageProviderS3GOV,
+	StorageProviderS3Compatible,
 }
 
 func ToS3EncryptionType(s string) (S3EncryptionType, error) {
@@ -58,18 +70,21 @@ func ToGCSEncryptionType(s string) (GCSEncryptionType, error) {
 }
 
 func ToStorageProvider(s string) (StorageProvider, error) {
-	switch strings.ToUpper(s) {
-	case string(StorageProviderGCS):
-		return StorageProviderGCS, nil
-	case string(StorageProviderAzure):
-		return StorageProviderAzure, nil
-	case string(StorageProviderS3):
-		return StorageProviderS3, nil
-	case string(StorageProviderS3GOV):
-		return StorageProviderS3GOV, nil
-	default:
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllStorageProviderValues, StorageProvider(s)) {
 		return "", fmt.Errorf("invalid storage provider: %s", s)
 	}
+	return StorageProvider(s), nil
+}
+
+// This is a temporary function to be used in the describe function to avoid errors when the storage provider is S3Compatible.
+// S3compatible is not supported in the resource yet.
+func ToStorageProviderInDescribe(s string) (StorageProvider, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllStorageProviderValuesInDescribe, StorageProvider(s)) {
+		return "", fmt.Errorf("invalid storage provider: %s", s)
+	}
+	return StorageProvider(s), nil
 }
 
 func ToS3StorageProvider(s string) (S3StorageProvider, error) {

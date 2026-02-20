@@ -10,8 +10,10 @@ import (
 
 var _ NotificationIntegrations = (*notificationIntegrations)(nil)
 
-var _ convertibleRow[NotificationIntegration] = new(showNotificationIntegrationsDbRow)
-var _ convertibleRow[NotificationIntegrationProperty] = new(descNotificationIntegrationsDbRow)
+var (
+	_ convertibleRow[NotificationIntegration]         = new(showNotificationIntegrationsDbRow)
+	_ convertibleRow[NotificationIntegrationProperty] = new(descNotificationIntegrationsDbRow)
+)
 
 type notificationIntegrations struct {
 	client *Client

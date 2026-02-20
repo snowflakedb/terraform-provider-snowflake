@@ -11,7 +11,7 @@ import (
 func (t *TaskResourceAssert) HasAfter(ids ...sdk.SchemaObjectIdentifier) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("after.#", strconv.FormatInt(int64(len(ids)), 10)))
 	for _, id := range ids {
-		t.AddAssertion(assert.SetElem("after.*", id.FullyQualifiedName()))
+		t.AddAssertion(assert.SetElem("after", id.FullyQualifiedName()))
 	}
 	return t
 }

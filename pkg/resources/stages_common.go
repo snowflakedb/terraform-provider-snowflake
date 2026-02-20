@@ -120,3 +120,31 @@ func DeleteStage(previewFeature previewfeatures.PreviewFeature, resource resourc
 		),
 	)
 }
+
+func directoryTableToSet(directoryTable sdk.StageDirectoryTable) []any {
+	return []any{
+		map[string]any{
+			"enable":       directoryTable.Enable,
+			"auto_refresh": booleanStringFromBool(directoryTable.AutoRefresh),
+		},
+	}
+}
+
+func directoryTableToCompare(directoryTable sdk.StageDirectoryTable) []any {
+	lastRefreshedOn := ""
+	if directoryTable.LastRefreshedOn != nil {
+		lastRefreshedOn = *directoryTable.LastRefreshedOn
+	}
+	directoryTableMap := map[string]any{
+		"enable":            directoryTable.Enable,
+		"auto_refresh":      directoryTable.AutoRefresh,
+		"last_refreshed_on": lastRefreshedOn,
+	}
+	return []any{directoryTableMap}
+}
+
+func directoryTableOutputMapping(directoryTable sdk.StageDirectoryTable) outputMapping {
+	return outputMapping{
+		"directory_table", "directory", directoryTableToCompare(directoryTable), directoryTableToSet(directoryTable), nil,
+	}
+}
