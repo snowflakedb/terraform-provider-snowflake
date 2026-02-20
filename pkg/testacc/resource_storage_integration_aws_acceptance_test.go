@@ -96,7 +96,7 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
 						HasStorageBlockedLocationsEmpty().
 						HasCommentString("").
 						HasStorageAwsRoleArnString(awsRoleArn).
@@ -164,8 +164,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsAllAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
-						HasStorageBlockedLocations(blockedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations...).
 						HasCommentString(comment).
 						HasStorageAwsRoleArnString(awsRoleArn).
 						HasStorageAwsExternalIdString(externalId).
@@ -202,8 +202,8 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsAllAttributesChanged.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanTrue).
-						HasStorageAllowedLocations(allowedLocations2...).
-						HasStorageBlockedLocations(blockedLocations2...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations2...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations2...).
 						HasCommentString(newComment).
 						HasStorageAwsRoleArnString(awsRoleArn).
 						HasStorageAwsExternalIdString(externalId2).
@@ -288,7 +288,7 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
 						HasStorageBlockedLocationsEmpty().
 						HasCommentString("").
 						HasStorageAwsRoleArnString(awsRoleArn).
@@ -433,7 +433,7 @@ func TestAcc_StorageIntegrationAws_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationAwsModel),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel.ResourceReference()).
 						HasAllowedLocations(allowedLocations...),
 				),
@@ -454,7 +454,7 @@ func TestAcc_StorageIntegrationAws_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationAwsModel),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel.ResourceReference()).
 						HasAllowedLocations(allowedLocationsDifferentOrder...),
 				),
@@ -469,7 +469,7 @@ func TestAcc_StorageIntegrationAws_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationAwsModel2),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAwsResource(t, storageIntegrationAwsModel2.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, storageIntegrationAwsModel2.ResourceReference()).
 						HasAllowedLocations(allowedLocationsDifferentOrder...),
 				),

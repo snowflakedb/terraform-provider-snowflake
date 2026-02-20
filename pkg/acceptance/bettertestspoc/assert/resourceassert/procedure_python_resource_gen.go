@@ -64,7 +64,10 @@ func (p *ProcedurePythonResourceAssert) HasExecuteAs(expected string) *Procedure
 	return p
 }
 
-// collection assert for external_access_integrations will be generated here
+func (p *ProcedurePythonResourceAssert) HasExternalAccessIntegrations(expected ...string) *ProcedurePythonResourceAssert {
+	p.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return p
+}
 
 func (p *ProcedurePythonResourceAssert) HasFullyQualifiedName(expected string) *ProcedurePythonResourceAssert {
 	p.StringValueSet("fully_qualified_name", expected)
@@ -98,7 +101,10 @@ func (p *ProcedurePythonResourceAssert) HasNullInputBehavior(expected string) *P
 	return p
 }
 
-// collection assert for packages will be generated here
+func (p *ProcedurePythonResourceAssert) HasPackages(expected ...string) *ProcedurePythonResourceAssert {
+	p.SetContainsExactlyStringValues("packages", expected...)
+	return p
+}
 
 func (p *ProcedurePythonResourceAssert) HasProcedureDefinition(expected string) *ProcedurePythonResourceAssert {
 	p.StringValueSet("procedure_definition", expected)

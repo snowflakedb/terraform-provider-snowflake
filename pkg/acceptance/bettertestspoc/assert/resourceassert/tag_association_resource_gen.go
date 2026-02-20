@@ -32,7 +32,10 @@ func ImportedTagAssociationResource(t *testing.T, id string) *TagAssociationReso
 // Attribute typed value checks //
 //////////////////////////////////
 
-// collection assert for object_identifiers will be generated here
+func (t *TagAssociationResourceAssert) HasObjectIdentifiers(expected ...string) *TagAssociationResourceAssert {
+	t.SetContainsExactlyStringValues("object_identifiers", expected...)
+	return t
+}
 
 func (t *TagAssociationResourceAssert) HasObjectType(expected string) *TagAssociationResourceAssert {
 	t.StringValueSet("object_type", expected)

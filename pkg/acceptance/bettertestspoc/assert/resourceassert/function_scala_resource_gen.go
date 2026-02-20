@@ -59,7 +59,10 @@ func (f *FunctionScalaResourceAssert) HasEnableConsoleOutput(expected bool) *Fun
 	return f
 }
 
-// collection assert for external_access_integrations will be generated here
+func (f *FunctionScalaResourceAssert) HasExternalAccessIntegrations(expected ...string) *FunctionScalaResourceAssert {
+	f.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return f
+}
 
 func (f *FunctionScalaResourceAssert) HasFullyQualifiedName(expected string) *FunctionScalaResourceAssert {
 	f.StringValueSet("fully_qualified_name", expected)
@@ -103,7 +106,10 @@ func (f *FunctionScalaResourceAssert) HasNullInputBehavior(expected string) *Fun
 	return f
 }
 
-// collection assert for packages will be generated here
+func (f *FunctionScalaResourceAssert) HasPackages(expected ...string) *FunctionScalaResourceAssert {
+	f.SetContainsExactlyStringValues("packages", expected...)
+	return f
+}
 
 func (f *FunctionScalaResourceAssert) HasReturnResultsBehavior(expected string) *FunctionScalaResourceAssert {
 	f.StringValueSet("return_results_behavior", expected)

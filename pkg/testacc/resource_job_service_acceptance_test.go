@@ -235,7 +235,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasExternalAccessIntegrations(externalAccessIntegration1Id).
+						HasExternalAccessIntegrationsEnum(externalAccessIntegration1Id).
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(comment),
@@ -322,7 +322,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasExternalAccessIntegrations(externalAccessIntegration2Id).
+						HasExternalAccessIntegrationsEnum(externalAccessIntegration2Id).
 						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(changedComment),
@@ -407,7 +407,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasExternalAccessIntegrations(externalAccessIntegration2Id).
+						HasExternalAccessIntegrationsEnum(externalAccessIntegration2Id).
 						HasQueryWarehouseString(warehouse.ID().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(changedComment),
@@ -1031,7 +1031,7 @@ func TestAcc_JobService_complete(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsEnum(externalAccessIntegrationId).
 						HasQueryWarehouseString(testClient().Ids.WarehouseId().FullyQualifiedName()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)).
 						HasCommentString(comment),

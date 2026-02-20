@@ -61,7 +61,10 @@ func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasOnDatabase(expected str
 
 // collection assert for on_schema_object will be generated here
 
-// collection assert for privileges will be generated here
+func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasPrivileges(expected ...string) *GrantPrivilegesToDatabaseRoleResourceAssert {
+	g.SetContainsExactlyStringValues("privileges", expected...)
+	return g
+}
 
 func (g *GrantPrivilegesToDatabaseRoleResourceAssert) HasWithGrantOption(expected bool) *GrantPrivilegesToDatabaseRoleResourceAssert {
 	g.BoolValueSet("with_grant_option", expected)

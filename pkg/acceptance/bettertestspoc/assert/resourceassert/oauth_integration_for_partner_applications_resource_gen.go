@@ -37,7 +37,10 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasName(expected 
 	return o
 }
 
-// collection assert for blocked_roles_list will be generated here
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasBlockedRolesList(expected ...string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.SetContainsExactlyStringValues("blocked_roles_list", expected...)
+	return o
+}
 
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasComment(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.StringValueSet("comment", expected)

@@ -67,7 +67,10 @@ func (g *GrantPrivilegesToShareResourceAssert) HasOnView(expected string) *Grant
 	return g
 }
 
-// collection assert for privileges will be generated here
+func (g *GrantPrivilegesToShareResourceAssert) HasPrivileges(expected ...string) *GrantPrivilegesToShareResourceAssert {
+	g.SetContainsExactlyStringValues("privileges", expected...)
+	return g
+}
 
 func (g *GrantPrivilegesToShareResourceAssert) HasToShare(expected string) *GrantPrivilegesToShareResourceAssert {
 	g.StringValueSet("to_share", expected)

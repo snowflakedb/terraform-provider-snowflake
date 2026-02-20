@@ -108,6 +108,7 @@ func (r *ResourceAssert) StringValueSet(fieldName string, expected string) {
 	r.AddAssertion(ValueSet(fieldName, expected))
 }
 
+// TODO [SNOW-3113138]: do we want to generate assertions for the length only?
 func (r *ResourceAssert) CollectionLength(fieldName string, expected int) {
 	r.AddAssertion(ValueSet(fieldName+".#", strconv.Itoa(expected)))
 }

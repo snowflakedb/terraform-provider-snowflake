@@ -64,7 +64,10 @@ func (p *ProcedureJavaResourceAssert) HasExecuteAs(expected string) *ProcedureJa
 	return p
 }
 
-// collection assert for external_access_integrations will be generated here
+func (p *ProcedureJavaResourceAssert) HasExternalAccessIntegrations(expected ...string) *ProcedureJavaResourceAssert {
+	p.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return p
+}
 
 func (p *ProcedureJavaResourceAssert) HasFullyQualifiedName(expected string) *ProcedureJavaResourceAssert {
 	p.StringValueSet("fully_qualified_name", expected)
@@ -98,7 +101,10 @@ func (p *ProcedureJavaResourceAssert) HasNullInputBehavior(expected string) *Pro
 	return p
 }
 
-// collection assert for packages will be generated here
+func (p *ProcedureJavaResourceAssert) HasPackages(expected ...string) *ProcedureJavaResourceAssert {
+	p.SetContainsExactlyStringValues("packages", expected...)
+	return p
+}
 
 func (p *ProcedureJavaResourceAssert) HasProcedureDefinition(expected string) *ProcedureJavaResourceAssert {
 	p.StringValueSet("procedure_definition", expected)

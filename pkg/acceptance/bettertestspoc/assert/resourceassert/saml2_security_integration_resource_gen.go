@@ -37,9 +37,15 @@ func (s *Saml2SecurityIntegrationResourceAssert) HasName(expected string) *Saml2
 	return s
 }
 
-// collection assert for allowed_email_patterns will be generated here
+func (s *Saml2SecurityIntegrationResourceAssert) HasAllowedEmailPatterns(expected ...string) *Saml2SecurityIntegrationResourceAssert {
+	s.SetContainsExactlyStringValues("allowed_email_patterns", expected...)
+	return s
+}
 
-// collection assert for allowed_user_domains will be generated here
+func (s *Saml2SecurityIntegrationResourceAssert) HasAllowedUserDomains(expected ...string) *Saml2SecurityIntegrationResourceAssert {
+	s.SetContainsExactlyStringValues("allowed_user_domains", expected...)
+	return s
+}
 
 func (s *Saml2SecurityIntegrationResourceAssert) HasComment(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.StringValueSet("comment", expected)

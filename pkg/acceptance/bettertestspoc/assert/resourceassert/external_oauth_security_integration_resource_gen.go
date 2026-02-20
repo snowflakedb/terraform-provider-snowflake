@@ -47,23 +47,35 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasEnabled(expected boo
 	return e
 }
 
-// collection assert for external_oauth_allowed_roles_list will be generated here
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAllowedRolesList(expected ...string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.SetContainsExactlyStringValues("external_oauth_allowed_roles_list", expected...)
+	return e
+}
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAnyRoleMode(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.StringValueSet("external_oauth_any_role_mode", expected)
 	return e
 }
 
-// collection assert for external_oauth_audience_list will be generated here
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAudienceList(expected ...string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.SetContainsExactlyStringValues("external_oauth_audience_list", expected...)
+	return e
+}
 
-// collection assert for external_oauth_blocked_roles_list will be generated here
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthBlockedRolesList(expected ...string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.SetContainsExactlyStringValues("external_oauth_blocked_roles_list", expected...)
+	return e
+}
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthIssuer(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.StringValueSet("external_oauth_issuer", expected)
 	return e
 }
 
-// collection assert for external_oauth_jws_keys_url will be generated here
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthJwsKeysUrl(expected ...string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.SetContainsExactlyStringValues("external_oauth_jws_keys_url", expected...)
+	return e
+}
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKey(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.StringValueSet("external_oauth_rsa_public_key", expected)
@@ -90,7 +102,10 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthSnowfla
 	return e
 }
 
-// collection assert for external_oauth_token_user_mapping_claim will be generated here
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthTokenUserMappingClaim(expected ...string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.SetContainsExactlyStringValues("external_oauth_token_user_mapping_claim", expected...)
+	return e
+}
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthType(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.StringValueSet("external_oauth_type", expected)

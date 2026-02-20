@@ -1,6 +1,7 @@
 package resourceassert
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -8,12 +9,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
 
-func (t *TaskResourceAssert) HasAfter(ids ...sdk.SchemaObjectIdentifier) *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("after.#", strconv.FormatInt(int64(len(ids)), 10)))
-	for _, id := range ids {
-		t.AddAssertion(assert.SetElem("after", id.FullyQualifiedName()))
-	}
-	return t
+func (t *TaskResourceAssert) HasAfterIdentifier(expected ...sdk.SchemaObjectIdentifier) *TaskResourceAssert {
+	return t.HasAfter(collections.Map(expected, func(v sdk.SchemaObjectIdentifier) string {
+		return v.FullyQualifiedName()
+	})...)
 }
 
 func (t *TaskResourceAssert) HasScheduleSeconds(seconds int) *TaskResourceAssert {

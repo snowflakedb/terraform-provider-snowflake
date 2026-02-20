@@ -57,9 +57,15 @@ func (s *StorageIntegrationAzureResourceAssert) HasFullyQualifiedName(expected s
 	return s
 }
 
-// collection assert for storage_allowed_locations will be generated here
+func (s *StorageIntegrationAzureResourceAssert) HasStorageAllowedLocations(expected ...string) *StorageIntegrationAzureResourceAssert {
+	s.SetContainsExactlyStringValues("storage_allowed_locations", expected...)
+	return s
+}
 
-// collection assert for storage_blocked_locations will be generated here
+func (s *StorageIntegrationAzureResourceAssert) HasStorageBlockedLocations(expected ...string) *StorageIntegrationAzureResourceAssert {
+	s.SetContainsExactlyStringValues("storage_blocked_locations", expected...)
+	return s
+}
 
 func (s *StorageIntegrationAzureResourceAssert) HasUsePrivatelinkEndpoint(expected string) *StorageIntegrationAzureResourceAssert {
 	s.StringValueSet("use_privatelink_endpoint", expected)

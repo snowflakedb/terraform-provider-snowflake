@@ -57,7 +57,10 @@ func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert) H
 	return a
 }
 
-// collection assert for oauth_allowed_scopes will be generated here
+func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert) HasOauthAllowedScopes(expected ...string) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert {
+	a.SetContainsExactlyStringValues("oauth_allowed_scopes", expected...)
+	return a
+}
 
 func (a *ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert) HasOauthAuthorizationEndpoint(expected string) *ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert {
 	a.StringValueSet("oauth_authorization_endpoint", expected)

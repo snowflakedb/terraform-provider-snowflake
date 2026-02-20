@@ -152,9 +152,9 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
 						HasCommentString("").
-						HasAuthenticationMethods(sdk.AuthenticationMethodsAll).
+						HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsAll).
 						HasMfaEnrollmentString(string(sdk.MfaEnrollmentRequiredPasswordOnly)).
-						HasClientTypes(sdk.ClientTypesAll).
+						HasClientTypesEnum(sdk.ClientTypesAll).
 						HasSecurityIntegrations("ALL"),
 					resourceshowoutputassert.ImportedAuthenticationPolicyShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasCreatedOnNotEmpty().
@@ -176,9 +176,9 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 					HasDatabaseString(id.DatabaseName()).
 					HasSchemaString(id.SchemaName()).
 					HasCommentString(comment).
-					HasAuthenticationMethods(sdk.AuthenticationMethodsPassword).
+					HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsPassword).
 					HasMfaEnrollmentString(string(sdk.MfaEnrollmentRequired)).
-					HasClientTypes(sdk.ClientTypesSnowflakeUi).
+					HasClientTypesEnum(sdk.ClientTypesSnowflakeUi).
 					HasSecurityIntegrations("ALL"),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, completeModel.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -212,9 +212,9 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 					HasDatabaseString(id2.DatabaseName()).
 					HasSchemaString(id2.SchemaName()).
 					HasCommentString(changedComment).
-					HasAuthenticationMethods(sdk.AuthenticationMethodsSaml).
+					HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsSaml).
 					HasMfaEnrollmentString(string(sdk.MfaEnrollmentRequiredPasswordOnly)).
-					HasClientTypes(sdk.ClientTypesSnowflakeCli).
+					HasClientTypesEnum(sdk.ClientTypesSnowflakeCli).
 					HasSecurityIntegrations(samlIntegration.ID().Name()),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, completeModelWithDifferentValues.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -259,9 +259,9 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 					HasDatabaseString(id2.DatabaseName()).
 					HasSchemaString(id2.SchemaName()).
 					HasCommentString(changedComment).
-					HasAuthenticationMethods(sdk.AuthenticationMethodsSaml).
+					HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsSaml).
 					HasMfaEnrollmentString(string(sdk.MfaEnrollmentRequiredPasswordOnly)).
-					HasClientTypes(sdk.ClientTypesSnowflakeCli).
+					HasClientTypesEnum(sdk.ClientTypesSnowflakeCli).
 					HasSecurityIntegrations(samlIntegration.ID().Name()),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, completeModelWithDifferentValues.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -376,9 +376,9 @@ func TestAcc_AuthenticationPolicy_complete(t *testing.T) {
 					resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(comment).
-						HasAuthenticationMethods(sdk.AuthenticationMethodsPassword).
+						HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsPassword).
 						HasMfaEnrollmentString(string(sdk.MfaEnrollmentRequired)).
-						HasClientTypes(sdk.ClientTypesSnowflakeUi).
+						HasClientTypesEnum(sdk.ClientTypesSnowflakeUi).
 						HasSecurityIntegrations("ALL"),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, completeModel.ResourceReference()).
 						HasName(id.Name()).
@@ -412,9 +412,9 @@ func TestAcc_AuthenticationPolicy_complete(t *testing.T) {
 					resourceassert.ImportedAuthenticationPolicyResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasCommentString(comment).
-						HasAuthenticationMethods(sdk.AuthenticationMethodsPassword).
+						HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsPassword).
 						HasMfaEnrollmentString(string(sdk.MfaEnrollmentRequired)).
-						HasClientTypes(sdk.ClientTypesSnowflakeUi).
+						HasClientTypesEnum(sdk.ClientTypesSnowflakeUi).
 						HasSecurityIntegrations("ALL"),
 					resourceshowoutputassert.ImportedAuthenticationPolicyShowOutput(t, helpers.EncodeResourceIdentifier(id)).
 						HasCreatedOnNotEmpty().

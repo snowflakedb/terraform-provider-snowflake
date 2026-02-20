@@ -57,7 +57,10 @@ func (j *JobServiceResourceAssert) HasComputePool(expected string) *JobServiceRe
 	return j
 }
 
-// collection assert for external_access_integrations will be generated here
+func (j *JobServiceResourceAssert) HasExternalAccessIntegrations(expected ...string) *JobServiceResourceAssert {
+	j.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return j
+}
 
 // collection assert for from_specification will be generated here
 

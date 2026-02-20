@@ -129,7 +129,7 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 			HasQueryWarehouseString(warehouse.ID().Name()).
 			HasTitleString(title).
 			HasCommentString(comment).
-			HasExternalAccessIntegrations([]string{externalAccessIntegrationId.Name()}),
+			HasExternalAccessIntegrations(externalAccessIntegrationId.Name()),
 
 		resourceshowoutputassert.StreamlitShowOutput(t, complete.ResourceReference()).
 			HasCreatedOnNotEmpty().

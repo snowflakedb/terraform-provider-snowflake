@@ -57,9 +57,15 @@ func (r *ResourceMonitorResourceAssert) HasFullyQualifiedName(expected string) *
 	return r
 }
 
-// collection assert for notify_triggers will be generated here
+func (r *ResourceMonitorResourceAssert) HasNotifyTriggers(expected ...int) *ResourceMonitorResourceAssert {
+	r.SetContainsExactlyIntValues("notify_triggers", expected...)
+	return r
+}
 
-// collection assert for notify_users will be generated here
+func (r *ResourceMonitorResourceAssert) HasNotifyUsers(expected ...string) *ResourceMonitorResourceAssert {
+	r.SetContainsExactlyStringValues("notify_users", expected...)
+	return r
+}
 
 func (r *ResourceMonitorResourceAssert) HasStartTimestamp(expected string) *ResourceMonitorResourceAssert {
 	r.StringValueSet("start_timestamp", expected)
