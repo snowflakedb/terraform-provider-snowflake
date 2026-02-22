@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -575,6 +576,84 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := tt.input.DriverConfig()
 			require.ErrorContains(t, err, tt.err.Error())
+		})
+	}
+}
+
+func TestLegacyConfigDTODriverConfig_insecureModeAndDisableOcspChecks(t *testing.T) {
+	tests := []struct {
+		insecureMode      *bool
+		disableOcspChecks *bool
+		expected          bool
+	}{
+		{
+			insecureMode:      nil,
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: nil,
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(false),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+	}
+
+	boolPtrToString := func(b *bool) string {
+		if b != nil {
+			return strconv.FormatBool(*b)
+		}
+		return "nil"
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("insecure mode: %s, disableOcspChecks: %s, expected: %v", boolPtrToString(tt.insecureMode), boolPtrToString(tt.disableOcspChecks), tt.expected), func(t *testing.T) {
+			cfg := NewLegacyConfigDTO()
+			if tt.insecureMode != nil {
+				cfg = cfg.WithInsecureMode(*tt.insecureMode)
+			}
+			if tt.disableOcspChecks != nil {
+				cfg = cfg.WithDisableOCSPChecks(*tt.disableOcspChecks)
+			}
+
+			got, err := cfg.DriverConfig()
+
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, got.DisableOCSPChecks)
 		})
 	}
 }

@@ -888,8 +888,6 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleDurationInSecondsAttribute(s, "client_timeout", &config.ClientTimeout),
 		handleDurationInSecondsAttribute(s, "jwt_client_timeout", &config.JWTClientTimeout),
 		handleDurationInSecondsAttribute(s, "external_browser_timeout", &config.ExternalBrowserTimeout),
-		// TODO [this PR]: verify that setting DisableOCSPChecks and InsecureMode is backward compatible
-		handleBoolField(s, "insecure_mode", &config.DisableOCSPChecks),
 		// ocsp fail open
 		func() error {
 			if v := s.Get("ocsp_fail_open").(string); v != provider.BooleanDefault {
@@ -938,7 +936,8 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "proxy_password", &config.ProxyPassword),
 		handleStringField(s, "proxy_protocol", &config.ProxyProtocol),
 		handleStringField(s, "no_proxy", &config.NoProxy),
-		// TODO [this PR]: verify that setting DisableOCSPChecks and InsecureMode is backward compatible
+		// if any of the insecure_mode and disable_ocsp_checks is true, then it sets DisableOCSPChecks (mimicking the pre-v2 driver behavior)
+		handleBoolField(s, "insecure_mode", &config.DisableOCSPChecks),
 		handleBoolField(s, "disable_ocsp_checks", &config.DisableOCSPChecks),
 		handleFieldWithMappingIfSet(s, "cert_revocation_check_mode", &config.CertRevocationCheckMode, sdk.ToCertRevocationCheckMode),
 		handleBooleanStringAttribute(s, "crl_allow_certificates_without_crl_url", &config.CrlAllowCertificatesWithoutCrlURL),

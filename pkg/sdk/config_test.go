@@ -312,7 +312,7 @@ func TestProfileConfig(t *testing.T) {
 		WithExternalBrowserTimeout(60).
 		WithMaxRetryCount(1).
 		WithAuthenticator(string(AuthenticationTypeJwt)).
-		WithInsecureMode(true).
+		WithInsecureMode(false).
 		WithOcspFailOpen(true).
 		WithToken("token").
 		WithKeepSessionAlive(true).
@@ -525,7 +525,7 @@ func Test_MergeConfig(t *testing.T) {
 		ProxyPassword:                     "proxy_password1",
 		ProxyProtocol:                     "proxy_protocol1",
 		NoProxy:                           "no_proxy1",
-		DisableOCSPChecks:                 false,
+		DisableOCSPChecks:                 true,
 		CertRevocationCheckMode:           gosnowflake.CertRevocationCheckAdvisory,
 		CrlAllowCertificatesWithoutCrlURL: gosnowflake.ConfigBoolTrue,
 		CrlInMemoryCacheDisabled:          false,
@@ -919,7 +919,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithExternalBrowserTimeout(60).
 				WithMaxRetryCount(2).
 				WithAuthenticator("SNOWFLAKE_JWT").
-				WithInsecureMode(true).
+				WithInsecureMode(false).
 				WithOcspFailOpen(true).
 				WithToken("token").
 				WithKeepSessionAlive(true).
@@ -1072,6 +1072,84 @@ func TestConfigDTODriverConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := tt.input.DriverConfig()
 			require.ErrorContains(t, err, tt.err.Error())
+		})
+	}
+}
+
+func TestConfigDTODriverConfig_insecureModeAndDisableOcspChecks(t *testing.T) {
+	tests := []struct {
+		insecureMode      *bool
+		disableOcspChecks *bool
+		expected          bool
+	}{
+		{
+			insecureMode:      nil,
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: nil,
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(false),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+	}
+
+	boolPtrToString := func(b *bool) string {
+		if b != nil {
+			return strconv.FormatBool(*b)
+		}
+		return "nil"
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("insecure mode: %s, disableOcspChecks: %s, expected: %v", boolPtrToString(tt.insecureMode), boolPtrToString(tt.disableOcspChecks), tt.expected), func(t *testing.T) {
+			cfg := NewConfigDTO()
+			if tt.insecureMode != nil {
+				cfg = cfg.WithInsecureMode(*tt.insecureMode)
+			}
+			if tt.disableOcspChecks != nil {
+				cfg = cfg.WithDisableOCSPChecks(*tt.disableOcspChecks)
+			}
+
+			got, err := cfg.DriverConfig()
+
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, got.DisableOCSPChecks)
 		})
 	}
 }

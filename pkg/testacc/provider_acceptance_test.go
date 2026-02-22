@@ -323,13 +323,95 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
 					assert.Equal(t, "https", config.ProxyProtocol)
 					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
-					assert.False(t, config.DisableOCSPChecks)
+					assert.True(t, config.DisableOCSPChecks)
 					assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
 					assert.False(t, config.CrlInMemoryCacheDisabled)
 					assert.True(t, config.CrlOnDiskCacheDisabled)
 					assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_DisableOcspChecks_atLeastOneSetToTrueInToml(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
+		return helpers.TomlConfigForServiceUserWithModifiers(t, profile, tmpServiceUser, func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO {
+			return cfg.
+				WithInsecureMode(true).
+				WithDisableOCSPChecks(false)
+		})
+	})
+
+	factory, p := providerFactoryWithoutCacheReturningProvider()
+
+	providerModelWithBothSetToFalse := providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).
+		WithInsecureMode(false).
+		WithDisableOcspChecks(false)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: factory,
+		PreCheck: func() {
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
+
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModelWithBothSetToFalse, datasourceModel()),
+				Check: func(s *terraform.State) error {
+					config := p.Meta().(*internalprovider.Context).Client.GetConfig()
+					assert.True(t, config.DisableOCSPChecks)
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_DisableOcspChecks_trueInTfNotOverriddenByFalseInToml(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
+		return helpers.TomlConfigForServiceUserWithModifiers(t, profile, tmpServiceUser, func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO {
+			return cfg.
+				WithInsecureMode(false).
+				WithDisableOCSPChecks(false)
+		})
+	})
+
+	factory, p := providerFactoryWithoutCacheReturningProvider()
+
+	providerModelWithBothSetToFalse := providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).
+		WithInsecureMode(true).
+		WithDisableOcspChecks(false)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: factory,
+		PreCheck: func() {
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
+
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModelWithBothSetToFalse, datasourceModel()),
+				Check: func(s *terraform.State) error {
+					config := p.Meta().(*internalprovider.Context).Client.GetConfig()
+					assert.True(t, config.DisableOCSPChecks)
 					return nil
 				},
 			},
@@ -682,7 +764,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.ProxyPassword, "overridden")
 					t.Setenv(snowflakeenvs.ProxyProtocol, "overridden")
 					t.Setenv(snowflakeenvs.NoProxy, "overridden")
-					t.Setenv(snowflakeenvs.DisableOCSPChecks, "true")
+					t.Setenv(snowflakeenvs.DisableOCSPChecks, "false")
 					t.Setenv(snowflakeenvs.CertRevocationCheckMode, "overridden")
 					t.Setenv(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, "false")
 					t.Setenv(snowflakeenvs.CrlInMemoryCacheDisabled, "false")
@@ -745,7 +827,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
 					assert.Equal(t, "https", config.ProxyProtocol)
 					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
-					assert.False(t, config.DisableOCSPChecks)
+					assert.True(t, config.DisableOCSPChecks)
 					assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
 					assert.False(t, config.CrlInMemoryCacheDisabled)

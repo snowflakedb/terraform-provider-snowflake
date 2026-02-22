@@ -129,8 +129,6 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 		driverCfg.Authenticator = authenticator
 	}
-	// TODO [this PR]: merge logic for DisableOCSPChecks and InsecureMode, so that it's backward compatible
-	pointerAttributeSet(c.InsecureMode, &driverCfg.DisableOCSPChecks) //nolint:staticcheck
 	if c.OcspFailOpen != nil {
 		if *c.OcspFailOpen {
 			driverCfg.OCSPFailOpen = gosnowflake.OCSPFailOpenTrue
@@ -180,8 +178,20 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.ProxyPassword, &driverCfg.ProxyPassword)
 	pointerAttributeSet(c.ProxyProtocol, &driverCfg.ProxyProtocol)
 	pointerAttributeSet(c.NoProxy, &driverCfg.NoProxy)
-	// TODO [this PR]: merge logic for DisableOCSPChecks and InsecureMode, so that it's backward compatible
-	pointerAttributeSet(c.DisableOCSPChecks, &driverCfg.DisableOCSPChecks)
+	// Go driver in pre-v2 versions allowed setting both InsecureMode and DisableOCSPChecks.
+	// Setting any of them to true, used to turn the behavior on.
+	// In v2, there is no longer InsecureMode attribute, but we need to keep it in our provider configuration to avoid breaking changes.
+	// To mimic the behavior, we need to set DisableOCSPChecks value:
+	//  - if any of the two is present
+	//  - true should win over false if they are different
+	// This behavior will be removed with the removal of InsecureMode in the next major provider version.
+	if c.InsecureMode != nil || c.DisableOCSPChecks != nil {
+		var insecureMode bool
+		pointerAttributeSet(c.InsecureMode, &insecureMode) //nolint:staticcheck
+		var disableOcspChecks bool
+		pointerAttributeSet(c.DisableOCSPChecks, &disableOcspChecks)
+		driverCfg.DisableOCSPChecks = insecureMode || disableOcspChecks
+	}
 	err = pointerEnumSet(c.CertRevocationCheckMode, &driverCfg.CertRevocationCheckMode, ToCertRevocationCheckMode)
 	if err != nil {
 		return *EmptyDriverConfig(), err
