@@ -1,13 +1,12 @@
 package provider
 
 import (
-	"net"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -37,7 +36,6 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Empty(t, config.Host)
 	assert.Zero(t, config.Port)
 	assert.Empty(t, config.Protocol)
-	assert.Nil(t, config.ClientIP)
 	assert.Equal(t, sdk.GosnowflakeAuthTypeEmpty, config.Authenticator)
 	assert.Empty(t, config.ValidateDefaultParameters)
 	assert.Empty(t, config.Passcode)
@@ -48,11 +46,10 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Zero(t, config.ClientTimeout)
 	assert.Zero(t, config.JWTClientTimeout)
 	assert.Zero(t, config.ExternalBrowserTimeout)
-	assert.Empty(t, config.InsecureMode) //nolint:staticcheck
 	assert.Empty(t, config.OCSPFailOpen)
 	assert.Empty(t, config.Token)
-	assert.Empty(t, config.KeepSessionAlive)
-	assert.Empty(t, config.DisableTelemetry)
+	// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
+	// assert.Empty(t, config.KeepSessionAlive)
 	assert.Empty(t, config.ClientRequestMfaToken)
 	assert.Empty(t, config.ClientStoreTemporaryCredential)
 	assert.Empty(t, config.DisableQueryContextCache)
@@ -165,7 +162,6 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "test_host", config.Host)
 	assert.Equal(t, 443, config.Port)
 	assert.Equal(t, "https", config.Protocol)
-	assert.Equal(t, net.ParseIP("192.168.1.1"), config.ClientIP)
 	assert.Equal(t, gosnowflake.AuthTypeSnowflake, config.Authenticator)
 	assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
 	assert.Equal(t, "123456", config.Passcode)
@@ -176,11 +172,10 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, 45*time.Second, config.ClientTimeout)
 	assert.Equal(t, 90*time.Second, config.JWTClientTimeout)
 	assert.Equal(t, 180*time.Second, config.ExternalBrowserTimeout)
-	assert.False(t, config.InsecureMode) //nolint:staticcheck
 	assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 	assert.Empty(t, config.Token)
-	assert.True(t, config.KeepSessionAlive)
-	assert.False(t, config.DisableTelemetry)
+	// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
+	// assert.True(t, config.KeepSessionAlive)
 	assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 	assert.Equal(t, gosnowflake.ConfigBoolFalse, config.ClientStoreTemporaryCredential)
 	assert.False(t, config.DisableQueryContextCache)
@@ -189,7 +184,9 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "info", config.Tracing)
 	assert.Equal(t, "/tmp/snowflake", config.TmpDirPath)
 	assert.Equal(t, gosnowflake.ConfigBoolFalse, config.DisableConsoleLogin)
-	assert.NotNil(t, config.Params)
+	assert.Contains(t, config.Params, "QUERY_TAG")
+	assert.Contains(t, config.Params, "TIMEZONE")
+	assert.NotContains(t, config.Params, "CLIENT_TELEMETRY_ENABLED")
 	assert.Equal(t, "test_tag", *config.Params["QUERY_TAG"])
 	assert.Equal(t, "UTC", *config.Params["TIMEZONE"])
 	assert.Equal(t, "oauth_client_id", config.OauthClientID)

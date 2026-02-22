@@ -16,7 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/pelletier/go-toml/v2"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/youmark/pkcs8"
 	"golang.org/x/crypto/ssh"
 )
@@ -107,7 +107,6 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.Warehouse, &driverCfg.Warehouse)
 	pointerAttributeSet(c.Role, &driverCfg.Role)
 	pointerAttributeSet(c.Params, &driverCfg.Params)
-	pointerIpAttributeSet(c.ClientIp, &driverCfg.ClientIP)
 	pointerAttributeSet(c.Protocol, &driverCfg.Protocol)
 	pointerAttributeSet(c.Passcode, &driverCfg.Passcode)
 	pointerAttributeSet(c.Port, &driverCfg.Port)
@@ -130,7 +129,8 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 		driverCfg.Authenticator = authenticator
 	}
-	pointerAttributeSet(c.InsecureMode, &driverCfg.InsecureMode) //nolint:staticcheck
+	// TODO [this PR]: merge logic for DisableOCSPChecks and InsecureMode, so that it's backward compatible
+	pointerAttributeSet(c.InsecureMode, &driverCfg.DisableOCSPChecks) //nolint:staticcheck
 	if c.OcspFailOpen != nil {
 		if *c.OcspFailOpen {
 			driverCfg.OCSPFailOpen = gosnowflake.OCSPFailOpenTrue
@@ -139,7 +139,8 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 	}
 	pointerAttributeSet(c.Token, &driverCfg.Token)
-	pointerAttributeSet(c.KeepSessionAlive, &driverCfg.KeepSessionAlive)
+	// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
+	// pointerAttributeSet(c.KeepSessionAlive, &driverCfg.KeepSessionAlive)
 	if c.PrivateKey != nil {
 		passphrase := make([]byte, 0)
 		if c.PrivateKeyPassphrase != nil {
@@ -151,7 +152,10 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 		driverCfg.PrivateKey = privKey
 	}
-	pointerAttributeSet(c.DisableTelemetry, &driverCfg.DisableTelemetry)
+	if c.DisableTelemetry != nil && *c.DisableTelemetry {
+		trueString := "true"
+		driverCfg.Params["CLIENT_TELEMETRY_ENABLED"] = &trueString
+	}
 	pointerConfigBoolAttributeSet(c.ValidateDefaultParameters, &driverCfg.ValidateDefaultParameters)
 	pointerConfigBoolAttributeSet(c.ClientRequestMfaToken, &driverCfg.ClientRequestMfaToken)
 	pointerConfigBoolAttributeSet(c.ClientStoreTemporaryCredential, &driverCfg.ClientStoreTemporaryCredential)
@@ -177,6 +181,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.ProxyPassword, &driverCfg.ProxyPassword)
 	pointerAttributeSet(c.ProxyProtocol, &driverCfg.ProxyProtocol)
 	pointerAttributeSet(c.NoProxy, &driverCfg.NoProxy)
+	// TODO [this PR]: merge logic for DisableOCSPChecks and InsecureMode, so that it's backward compatible
 	pointerAttributeSet(c.DisableOCSPChecks, &driverCfg.DisableOCSPChecks)
 	err = pointerEnumSet(c.CertRevocationCheckMode, &driverCfg.CertRevocationCheckMode, ToCertRevocationCheckMode)
 	if err != nil {
@@ -221,9 +226,6 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if mergedMap := collections.MergeMaps(mergeConfig.Params, baseConfig.Params); len(mergedMap) > 0 {
 		baseConfig.Params = mergedMap
 	}
-	if baseConfig.ClientIP == nil {
-		baseConfig.ClientIP = mergeConfig.ClientIP
-	}
 	if baseConfig.Protocol == "" {
 		baseConfig.Protocol = mergeConfig.Protocol
 	}
@@ -266,23 +268,18 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if baseConfig.MaxRetryCount == 0 {
 		baseConfig.MaxRetryCount = mergeConfig.MaxRetryCount
 	}
-	if !baseConfig.InsecureMode { //nolint:staticcheck
-		baseConfig.InsecureMode = mergeConfig.InsecureMode //nolint:staticcheck
-	}
 	if baseConfig.OCSPFailOpen == 0 {
 		baseConfig.OCSPFailOpen = mergeConfig.OCSPFailOpen
 	}
 	if baseConfig.Token == "" {
 		baseConfig.Token = mergeConfig.Token
 	}
-	if !baseConfig.KeepSessionAlive {
-		baseConfig.KeepSessionAlive = mergeConfig.KeepSessionAlive
-	}
+	// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
+	// if !baseConfig.KeepSessionAlive {
+	//	baseConfig.KeepSessionAlive = mergeConfig.KeepSessionAlive
+	// }
 	if baseConfig.PrivateKey == nil {
 		baseConfig.PrivateKey = mergeConfig.PrivateKey
-	}
-	if !baseConfig.DisableTelemetry {
-		baseConfig.DisableTelemetry = mergeConfig.DisableTelemetry
 	}
 	if baseConfig.Tracing == "" {
 		baseConfig.Tracing = mergeConfig.Tracing

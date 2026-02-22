@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"slices"
 	"strings"
@@ -21,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 func init() {
@@ -131,8 +130,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"client_ip": {
 			Type:             schema.TypeString,
-			Description:      envNameFieldDescription("IP address for network checks.", snowflakeenvs.ClientIp),
+			Description:      envNameFieldDescription("This field is deprecated. It will be removed in the next major release. The driver was accepting this value in the previous versions but it had no impact. Setting this field causes no action on the provider side.", snowflakeenvs.ClientIp),
 			Optional:         true,
+			Deprecated:       "This field is deprecated. It will be removed in the next major release. The driver was accepting this value in the previous versions but it had no impact. Setting this field causes no action on the provider side.",
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.ClientIp, nil),
 			ValidateDiagFunc: validation.ToDiagFunc(validation.IsIPAddress),
 		},
@@ -229,9 +229,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"insecure_mode": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("This field is deprecated. Use `disable_ocsp_checks` instead. If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only.", snowflakeenvs.InsecureMode),
+			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. Use `disable_ocsp_checks` instead. Setting this field sets `disable_ocsp_checks` in the underlying driver. If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only.", snowflakeenvs.InsecureMode),
 			Optional:    true,
-			Deprecated:  "This field is deprecated. Use `disable_ocsp_checks` instead.",
+			Deprecated:  "This field is deprecated. It will be removed in the next major release. Use `disable_ocsp_checks` instead. Setting this field sets `disable_ocsp_checks` in the underlying driver.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.InsecureMode, nil),
 		},
 		"ocsp_fail_open": {
@@ -318,8 +318,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"disable_telemetry": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("Disables telemetry in the driver.", snowflakeenvs.DisableTelemetry),
+			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `true` to `params`. Disables telemetry in the driver.", snowflakeenvs.DisableTelemetry),
 			Optional:    true,
+			Deprecated:  "This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `true` to `params`.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableTelemetry, nil),
 		},
 		"client_request_mfa_token": {
@@ -856,13 +857,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "role", &config.Role),
 		handleBooleanStringAttribute(s, "validate_default_parameters", &config.ValidateDefaultParameters),
 		// params are handled below
-		// client ip
-		func() error {
-			if v, ok := s.GetOk("client_ip"); ok && v.(string) != "" {
-				config.ClientIP = net.ParseIP(v.(string))
-			}
-			return nil
-		}(),
+		// client ip is not handled (deprecated and noop in driver)
 		// protocol
 		func() error {
 			if v, ok := s.GetOk("protocol"); ok && v.(string) != "" {
@@ -893,7 +888,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleDurationInSecondsAttribute(s, "client_timeout", &config.ClientTimeout),
 		handleDurationInSecondsAttribute(s, "jwt_client_timeout", &config.JWTClientTimeout),
 		handleDurationInSecondsAttribute(s, "external_browser_timeout", &config.ExternalBrowserTimeout),
-		handleBoolField(s, "insecure_mode", &config.InsecureMode), //nolint:staticcheck
+		handleBoolField(s, "insecure_mode", &config.DisableOCSPChecks),
 		// ocsp fail open
 		func() error {
 			if v := s.Get("ocsp_fail_open").(string); v != provider.BooleanDefault {
@@ -910,9 +905,10 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 			return nil
 		}(),
 		// token accessor is handled below
-		handleBoolField(s, "keep_session_alive", &config.KeepSessionAlive),
+		// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
+		// handleBoolField(s, "keep_session_alive", &config.KeepSessionAlive),
 		// private key and private key passphrase are handled below
-		handleBoolField(s, "disable_telemetry", &config.DisableTelemetry),
+		// disable telemetry is handled below by setting session parameter as DisableTelemetry was removed in v2 of Go driver
 		handleBooleanStringAttribute(s, "client_request_mfa_token", &config.ClientRequestMfaToken),
 		handleBooleanStringAttribute(s, "client_store_temporary_credential", &config.ClientStoreTemporaryCredential),
 		handleBoolField(s, "disable_query_context_cache", &config.DisableQueryContextCache),
@@ -970,6 +966,11 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 	for key, value := range m {
 		strValue := value.(string)
 		params[key] = &strValue
+	}
+	// disable telemetry is handled by setting session parameter as DisableTelemetry was removed in v2 of Go driver
+	if _, ok := s.GetOk("disable_telemetry"); ok {
+		// TODO [this PR]: extract to named const?
+		params["CLIENT_TELEMETRY_ENABLED"] = sdk.Pointer("true")
 	}
 	config.Params = params
 
