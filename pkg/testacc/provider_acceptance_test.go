@@ -226,8 +226,7 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 					assert.True(t, config.DisableOCSPChecks)
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-					// assert.True(t, config.KeepSessionAlive)
+					assert.True(t, config.ServerSessionKeepAlive)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
@@ -294,8 +293,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-					// assert.True(t, config.KeepSessionAlive)
+					assert.True(t, config.ServerSessionKeepAlive)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
@@ -507,8 +505,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.ExternalBrowserTimeout, "600")
 					t.Setenv(snowflakeenvs.InsecureMode, "false")
 					t.Setenv(snowflakeenvs.OcspFailOpen, "false")
-					// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-					// t.Setenv(snowflakeenvs.KeepSessionAlive, "false")
+					t.Setenv(snowflakeenvs.KeepSessionAlive, "false")
 					t.Setenv(snowflakeenvs.DisableTelemetry, "false")
 					t.Setenv(snowflakeenvs.ClientRequestMfaToken, "false")
 					t.Setenv(snowflakeenvs.ClientStoreTemporaryCredential, "false")
@@ -568,8 +565,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
 					assert.Equal(t, gosnowflake.OCSPFailOpenFalse, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-					// assert.True(t, config.KeepSessionAlive)
+					assert.True(t, config.ServerSessionKeepAlive)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, "../", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.ClientRequestMfaToken)
@@ -659,8 +655,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.ExternalBrowserTimeout, "600")
 					t.Setenv(snowflakeenvs.InsecureMode, "false")
 					t.Setenv(snowflakeenvs.OcspFailOpen, "false")
-					// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-					// t.Setenv(snowflakeenvs.KeepSessionAlive, "false")
+					t.Setenv(snowflakeenvs.KeepSessionAlive, "false")
 					t.Setenv(snowflakeenvs.DisableTelemetry, "false")
 					t.Setenv(snowflakeenvs.ClientRequestMfaToken, "false")
 					t.Setenv(snowflakeenvs.ClientStoreTemporaryCredential, "false")
@@ -720,8 +715,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "correct token", config.Token)
-					// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-					// assert.True(t, config.KeepSessionAlive)
+					assert.True(t, config.ServerSessionKeepAlive)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, "../../", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)

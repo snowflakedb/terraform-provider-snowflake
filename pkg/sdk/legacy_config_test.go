@@ -332,8 +332,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, 1, config.MaxRetryCount)
 		assert.Equal(t, "token", config.Token)
 		assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
-		// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-		// assert.True(t, config.KeepSessionAlive)
+		assert.True(t, config.ServerSessionKeepAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
 		assert.Equal(t, string(DriverLogLevelTrace), config.Tracing)
 		assert.Equal(t, ".", config.TmpDirPath)
@@ -501,8 +500,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
 				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
 				assert.Equal(t, "token", got.Token)
-				// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-				// assert.True(t, got.KeepSessionAlive)
+				assert.True(t, got.ServerSessionKeepAlive)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ValidateDefaultParameters)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientRequestMfaToken)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientStoreTemporaryCredential)

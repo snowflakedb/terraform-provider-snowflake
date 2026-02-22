@@ -48,8 +48,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Zero(t, config.ExternalBrowserTimeout)
 	assert.Empty(t, config.OCSPFailOpen)
 	assert.Empty(t, config.Token)
-	// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-	// assert.Empty(t, config.KeepSessionAlive)
+	assert.Empty(t, config.ServerSessionKeepAlive)
 	assert.Empty(t, config.ClientRequestMfaToken)
 	assert.Empty(t, config.ClientStoreTemporaryCredential)
 	assert.Empty(t, config.DisableQueryContextCache)
@@ -174,8 +173,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, 180*time.Second, config.ExternalBrowserTimeout)
 	assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 	assert.Empty(t, config.Token)
-	// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-	// assert.True(t, config.KeepSessionAlive)
+	assert.True(t, config.ServerSessionKeepAlive)
 	assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 	assert.Equal(t, gosnowflake.ConfigBoolFalse, config.ClientStoreTemporaryCredential)
 	assert.False(t, config.DisableQueryContextCache)

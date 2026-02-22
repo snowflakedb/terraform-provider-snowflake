@@ -400,8 +400,7 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, 1, config.MaxRetryCount)
 		assert.Equal(t, "token", config.Token)
 		assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
-		// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-		// assert.True(t, config.KeepSessionAlive)
+		assert.True(t, config.ServerSessionKeepAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
 		assert.Equal(t, "trace", config.Tracing)
 		assert.Equal(t, ".", config.TmpDirPath)
@@ -484,24 +483,23 @@ func Test_MergeConfig(t *testing.T) {
 		Params: map[string]*string{
 			"foo": Pointer("1"),
 		},
-		Protocol:               "protocol1",
-		Host:                   "host1",
-		Port:                   1,
-		Authenticator:          gosnowflake.AuthTypeSnowflake,
-		Passcode:               "passcode1",
-		PasscodeInPassword:     false,
-		OktaURL:                testvars.ExampleOktaUrl,
-		LoginTimeout:           1,
-		RequestTimeout:         1,
-		JWTExpireTimeout:       1,
-		ClientTimeout:          1,
-		JWTClientTimeout:       1,
-		ExternalBrowserTimeout: 1,
-		MaxRetryCount:          1,
-		OCSPFailOpen:           1,
-		Token:                  "token1",
-		// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-		// KeepSessionAlive:                  false,
+		Protocol:                          "protocol1",
+		Host:                              "host1",
+		Port:                              1,
+		Authenticator:                     gosnowflake.AuthTypeSnowflake,
+		Passcode:                          "passcode1",
+		PasscodeInPassword:                false,
+		OktaURL:                           testvars.ExampleOktaUrl,
+		LoginTimeout:                      1,
+		RequestTimeout:                    1,
+		JWTExpireTimeout:                  1,
+		ClientTimeout:                     1,
+		JWTClientTimeout:                  1,
+		ExternalBrowserTimeout:            1,
+		MaxRetryCount:                     1,
+		OCSPFailOpen:                      1,
+		Token:                             "token1",
+		ServerSessionKeepAlive:            false,
 		PrivateKey:                        random.GenerateRSAPrivateKey(t),
 		Tracing:                           "tracing1",
 		TmpDirPath:                        "tmpdirpath1",
@@ -547,24 +545,23 @@ func Test_MergeConfig(t *testing.T) {
 			"foo":                      Pointer("2"),
 			"CLIENT_TELEMETRY_ENABLED": Pointer("true"),
 		},
-		Protocol:               "protocol2",
-		Host:                   "host2",
-		Port:                   2,
-		Authenticator:          gosnowflake.AuthTypeOAuth,
-		Passcode:               "passcode2",
-		PasscodeInPassword:     true,
-		OktaURL:                testvars.ExampleOktaUrlFromEnv,
-		LoginTimeout:           2,
-		RequestTimeout:         2,
-		JWTExpireTimeout:       2,
-		ClientTimeout:          2,
-		JWTClientTimeout:       2,
-		ExternalBrowserTimeout: 2,
-		MaxRetryCount:          2,
-		OCSPFailOpen:           2,
-		Token:                  "token2",
-		// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-		// KeepSessionAlive:                  true,
+		Protocol:                          "protocol2",
+		Host:                              "host2",
+		Port:                              2,
+		Authenticator:                     gosnowflake.AuthTypeOAuth,
+		Passcode:                          "passcode2",
+		PasscodeInPassword:                true,
+		OktaURL:                           testvars.ExampleOktaUrlFromEnv,
+		LoginTimeout:                      2,
+		RequestTimeout:                    2,
+		JWTExpireTimeout:                  2,
+		ClientTimeout:                     2,
+		JWTClientTimeout:                  2,
+		ExternalBrowserTimeout:            2,
+		MaxRetryCount:                     2,
+		OCSPFailOpen:                      2,
+		Token:                             "token2",
+		ServerSessionKeepAlive:            true,
 		PrivateKey:                        random.GenerateRSAPrivateKey(t),
 		Tracing:                           "tracing2",
 		TmpDirPath:                        "tmpdirpath2",
@@ -986,8 +983,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
 				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
 				assert.Equal(t, "token", got.Token)
-				// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-				// assert.True(t, got.KeepSessionAlive)
+				assert.True(t, got.ServerSessionKeepAlive)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ValidateDefaultParameters)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientRequestMfaToken)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientStoreTemporaryCredential)

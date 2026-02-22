@@ -888,6 +888,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleDurationInSecondsAttribute(s, "client_timeout", &config.ClientTimeout),
 		handleDurationInSecondsAttribute(s, "jwt_client_timeout", &config.JWTClientTimeout),
 		handleDurationInSecondsAttribute(s, "external_browser_timeout", &config.ExternalBrowserTimeout),
+		// TODO [this PR]: verify that setting DisableOCSPChecks and InsecureMode is backward compatible
 		handleBoolField(s, "insecure_mode", &config.DisableOCSPChecks),
 		// ocsp fail open
 		func() error {
@@ -905,8 +906,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 			return nil
 		}(),
 		// token accessor is handled below
-		// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-		// handleBoolField(s, "keep_session_alive", &config.KeepSessionAlive),
+		handleBoolField(s, "keep_session_alive", &config.ServerSessionKeepAlive),
 		// private key and private key passphrase are handled below
 		// disable telemetry is handled below by setting session parameter as DisableTelemetry was removed in v2 of Go driver
 		handleBooleanStringAttribute(s, "client_request_mfa_token", &config.ClientRequestMfaToken),
@@ -938,6 +938,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "proxy_password", &config.ProxyPassword),
 		handleStringField(s, "proxy_protocol", &config.ProxyProtocol),
 		handleStringField(s, "no_proxy", &config.NoProxy),
+		// TODO [this PR]: verify that setting DisableOCSPChecks and InsecureMode is backward compatible
 		handleBoolField(s, "disable_ocsp_checks", &config.DisableOCSPChecks),
 		handleFieldWithMappingIfSet(s, "cert_revocation_check_mode", &config.CertRevocationCheckMode, sdk.ToCertRevocationCheckMode),
 		handleBooleanStringAttribute(s, "crl_allow_certificates_without_crl_url", &config.CrlAllowCertificatesWithoutCrlURL),
@@ -969,7 +970,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 	}
 	// disable telemetry is handled by setting session parameter as DisableTelemetry was removed in v2 of Go driver
 	if _, ok := s.GetOk("disable_telemetry"); ok {
-		// TODO [this PR]: extract to named const?
+		// TODO [this PR]: extract to named const? add to the SessionParameters inside SDK?
 		params["CLIENT_TELEMETRY_ENABLED"] = sdk.Pointer("true")
 	}
 	config.Params = params

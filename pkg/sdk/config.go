@@ -139,8 +139,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 	}
 	pointerAttributeSet(c.Token, &driverCfg.Token)
-	// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-	// pointerAttributeSet(c.KeepSessionAlive, &driverCfg.KeepSessionAlive)
+	pointerAttributeSet(c.KeepSessionAlive, &driverCfg.ServerSessionKeepAlive)
 	if c.PrivateKey != nil {
 		passphrase := make([]byte, 0)
 		if c.PrivateKeyPassphrase != nil {
@@ -274,10 +273,9 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if baseConfig.Token == "" {
 		baseConfig.Token = mergeConfig.Token
 	}
-	// TODO [this PR]: discuss with the driver's team what is the replacement or is it the same case as ClientIP
-	// if !baseConfig.KeepSessionAlive {
-	//	baseConfig.KeepSessionAlive = mergeConfig.KeepSessionAlive
-	// }
+	if !baseConfig.ServerSessionKeepAlive {
+		baseConfig.ServerSessionKeepAlive = mergeConfig.ServerSessionKeepAlive
+	}
 	if baseConfig.PrivateKey == nil {
 		baseConfig.PrivateKey = mergeConfig.PrivateKey
 	}
