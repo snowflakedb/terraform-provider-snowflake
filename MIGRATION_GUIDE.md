@@ -26,7 +26,39 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.13.x ➞ v2.14.0
 
-[//]: # (TODO [this PR]: add migration guide entry for v2)
+### *(improvement)* Go driver bumped to v2
+
+There was a recent major release for the underlying Go Snowflake driver ([summary](https://github.com/snowflakedb/gosnowflake/issues/1586) and [v2.0.0 release notes](https://github.com/snowflakedb/gosnowflake/releases/tag/v2.0.0)). It introduced a few breaking changes but the provider adopted them in a non-breaking way - summary in the sections below. Keep in mind, that we will align the behavior with the driver in the next major release of the provider.
+
+#### `ClientIP` configuration attribute removed from the driver
+
+`ClientIP` attribute was not used by the driver internally. It's still allowed to set this attribute on the provider configuration side, but:
+- it won't be passed to the driver;
+- it will be removed with the next major release.
+
+No changes are required, but because `client_ip` attribute is not affecting the configuration, you can safely remove it, to reduce the number of required changes in the next major provider release.
+
+#### `InsecureMode` configuration attribute removed from the driver
+
+`InsecureMode` attribute was deprecated both in the driver and the provider for a long time already. It's behavior was the same as using `DisableOCSPChecks`. We still allow to set it, but:
+- setting any of `insecure_mode` or `disable_ocsp_checks` to `true` sets the `DisableOCSPChecks` on the driver side (from every perspective: tf config, environment variable, TOML config).
+- `insecure_mode` will be removed with the next major release.
+
+No changes are required, but because `insecure_mode` will be removed in the next major version, switch to `disable_ocsp_checks`, to reduce the number of required changes in the next major provider release.
+
+#### `TelemetryDisabled` configuration attribute removed from the driver
+
+`TelemetryDisabled` was removed from the driver. To avoid making it a breaking change in the provider, setting it in your configuration will cause `CLIENT_TELEMETRY_ENABLED` with value `false` to be added to session parameters (`params` map). It shouldn't affect the existing configurations as:
+- in the previous Go driver versions, setting `CLIENT_TELEMETRY_ENABLED` parameter had no effect (only `TelemetryDisabled` mattered);
+- the parameter is by default set to `true`.
+
+No changes are required, but switch to `CLIENT_TELEMETRY_ENABLED` instead of the `telemetry_disabled` attribute, to reduce the number of required changes in the next major provider release.
+
+#### `KeepSessionAlive` configuration attribute renamed on the driver side
+
+`KeepSessionAlive` was renamed to `ServerSessionKeepAlive` to align it with other drivers.
+
+No changes are required. `keep_session_alive` attribute will be renamed in the next major provider release.
 
 ### *(new feature)* Added `DECFLOAT` support
 
