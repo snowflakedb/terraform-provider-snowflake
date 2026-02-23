@@ -9,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -105,6 +106,37 @@ func (r *ResourceAssert) FloatValueSet(fieldName string, expected float64) {
 
 func (r *ResourceAssert) StringValueSet(fieldName string, expected string) {
 	r.AddAssertion(ValueSet(fieldName, expected))
+}
+
+// TODO [SNOW-3113138]: do we want to generate assertions for the length only?
+func (r *ResourceAssert) CollectionLength(fieldName string, expected int) {
+	r.AddAssertion(ValueSet(fieldName+".#", strconv.Itoa(expected)))
+}
+
+func (r *ResourceAssert) SetContainsElem(fieldName string, expected string) {
+	r.AddAssertion(SetElem(fieldName, expected))
+}
+
+func (r *ResourceAssert) SetContainsExactlyBoolValues(fieldName string, expectedValues ...bool) {
+	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, strconv.FormatBool)...)
+}
+
+func (r *ResourceAssert) SetContainsExactlyIntValues(fieldName string, expectedValues ...int) {
+	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, strconv.Itoa)...)
+}
+
+// TODO [SNOW-3113138]: extract common conversions
+func (r *ResourceAssert) SetContainsExactlyFloatValues(fieldName string, expectedValues ...float64) {
+	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, func(v float64) string {
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	})...)
+}
+
+func (r *ResourceAssert) SetContainsExactlyStringValues(fieldName string, expectedValues ...string) {
+	r.CollectionLength(fieldName, len(expectedValues))
+	for _, value := range expectedValues {
+		r.AddAssertion(SetElem(fieldName, value))
+	}
 }
 
 func ValueNotSet(fieldName string) ResourceAssertion {

@@ -47,9 +47,15 @@ func (a *AuthenticationPolicyResourceAssert) HasName(expected string) *Authentic
 	return a
 }
 
-// collection assert for authentication_methods will be generated here
+func (a *AuthenticationPolicyResourceAssert) HasAuthenticationMethods(expected ...string) *AuthenticationPolicyResourceAssert {
+	a.SetContainsExactlyStringValues("authentication_methods", expected...)
+	return a
+}
 
-// collection assert for client_types will be generated here
+func (a *AuthenticationPolicyResourceAssert) HasClientTypes(expected ...string) *AuthenticationPolicyResourceAssert {
+	a.SetContainsExactlyStringValues("client_types", expected...)
+	return a
+}
 
 func (a *AuthenticationPolicyResourceAssert) HasComment(expected string) *AuthenticationPolicyResourceAssert {
 	a.StringValueSet("comment", expected)
@@ -61,7 +67,10 @@ func (a *AuthenticationPolicyResourceAssert) HasFullyQualifiedName(expected stri
 	return a
 }
 
-// collection assert for mfa_authentication_methods will be generated here
+func (a *AuthenticationPolicyResourceAssert) HasMfaAuthenticationMethods(expected ...string) *AuthenticationPolicyResourceAssert {
+	a.SetContainsExactlyStringValues("mfa_authentication_methods", expected...)
+	return a
+}
 
 func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollment(expected string) *AuthenticationPolicyResourceAssert {
 	a.StringValueSet("mfa_enrollment", expected)
@@ -72,7 +81,10 @@ func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollment(expected string) *
 
 // collection assert for pat_policy will be generated here
 
-// collection assert for security_integrations will be generated here
+func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrations(expected ...string) *AuthenticationPolicyResourceAssert {
+	a.SetContainsExactlyStringValues("security_integrations", expected...)
+	return a
+}
 
 // collection assert for workload_identity_policy will be generated here
 

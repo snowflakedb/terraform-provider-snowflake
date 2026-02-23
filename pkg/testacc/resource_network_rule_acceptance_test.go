@@ -54,7 +54,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasModeEnum(sdk.NetworkRuleModeIngress).
 			HasCommentEmpty().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasValueList(values),
+			HasValueList(values...),
 		resourceshowoutputassert.NetworkRuleShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
@@ -86,7 +86,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasModeEnum(sdk.NetworkRuleModeIngress).
 			HasCommentEmpty().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasValueList([]string{}),
+			HasValueList(),
 		resourceshowoutputassert.NetworkRuleShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
@@ -118,7 +118,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasModeEnum(sdk.NetworkRuleModeIngress).
 			HasCommentString(changedComment).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasValueList(values),
+			HasValueList(values...),
 		resourceshowoutputassert.NetworkRuleShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
@@ -150,7 +150,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasModeEnum(sdk.NetworkRuleModeIngress).
 			HasCommentString(changedComment).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasValueList(changedValues),
+			HasValueList(changedValues...),
 		resourceshowoutputassert.NetworkRuleShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
@@ -182,7 +182,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasModeEnum(sdk.NetworkRuleModeEgress).
 			HasCommentString(changedComment).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasValueList(hostPortValues),
+			HasValueList(hostPortValues...),
 		resourceshowoutputassert.NetworkRuleShowOutput(t, ref).
 			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
@@ -314,7 +314,7 @@ func TestAcc_NetworkRule_CompleteUseCase(t *testing.T) {
 						HasModeEnum(sdk.NetworkRuleModeIngress).
 						HasCommentString(comment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
-						HasValueList(values),
+						HasValueList(values...),
 					resourceshowoutputassert.NetworkRuleShowOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).

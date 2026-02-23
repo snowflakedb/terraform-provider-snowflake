@@ -67,7 +67,10 @@ func (n *NetworkRuleResourceAssert) HasType(expected string) *NetworkRuleResourc
 	return n
 }
 
-// collection assert for value_list will be generated here
+func (n *NetworkRuleResourceAssert) HasValueList(expected ...string) *NetworkRuleResourceAssert {
+	n.SetContainsExactlyStringValues("value_list", expected...)
+	return n
+}
 
 ///////////////////////////////////
 // Attribute value string checks //

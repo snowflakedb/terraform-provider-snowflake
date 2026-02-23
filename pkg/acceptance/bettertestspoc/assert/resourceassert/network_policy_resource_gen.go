@@ -37,13 +37,25 @@ func (n *NetworkPolicyResourceAssert) HasName(expected string) *NetworkPolicyRes
 	return n
 }
 
-// collection assert for allowed_ip_list will be generated here
+func (n *NetworkPolicyResourceAssert) HasAllowedIpList(expected ...string) *NetworkPolicyResourceAssert {
+	n.SetContainsExactlyStringValues("allowed_ip_list", expected...)
+	return n
+}
 
-// collection assert for allowed_network_rule_list will be generated here
+func (n *NetworkPolicyResourceAssert) HasAllowedNetworkRuleList(expected ...string) *NetworkPolicyResourceAssert {
+	n.SetContainsExactlyStringValues("allowed_network_rule_list", expected...)
+	return n
+}
 
-// collection assert for blocked_ip_list will be generated here
+func (n *NetworkPolicyResourceAssert) HasBlockedIpList(expected ...string) *NetworkPolicyResourceAssert {
+	n.SetContainsExactlyStringValues("blocked_ip_list", expected...)
+	return n
+}
 
-// collection assert for blocked_network_rule_list will be generated here
+func (n *NetworkPolicyResourceAssert) HasBlockedNetworkRuleList(expected ...string) *NetworkPolicyResourceAssert {
+	n.SetContainsExactlyStringValues("blocked_network_rule_list", expected...)
+	return n
+}
 
 func (n *NetworkPolicyResourceAssert) HasComment(expected string) *NetworkPolicyResourceAssert {
 	n.StringValueSet("comment", expected)

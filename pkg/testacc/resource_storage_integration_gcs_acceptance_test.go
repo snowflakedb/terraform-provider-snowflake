@@ -75,7 +75,7 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
 						HasStorageBlockedLocationsEmpty().
 						HasCommentString(""),
 					resourceshowoutputassert.StorageIntegrationShowOutput(t, storageIntegrationGcsModelNoAttributes.ResourceReference()).
@@ -123,8 +123,8 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsAllAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
-						HasStorageBlockedLocations(blockedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations...).
 						HasCommentString(comment),
 					resourceshowoutputassert.StorageIntegrationShowOutput(t, storageIntegrationGcsAllAttributes.ResourceReference()).
 						HasName(id.Name()).
@@ -154,8 +154,8 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsAllAttributesChanged.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanTrue).
-						HasStorageAllowedLocations(allowedLocations2...).
-						HasStorageBlockedLocations(blockedLocations2...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations2...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations2...).
 						HasCommentString(newComment),
 					resourceshowoutputassert.StorageIntegrationShowOutput(t, storageIntegrationGcsAllAttributesChanged.ResourceReference()).
 						HasName(id.Name()).
@@ -191,7 +191,7 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
 						HasStorageBlockedLocationsEmpty().
 						HasCommentString(""),
 					resourceshowoutputassert.StorageIntegrationShowOutput(t, storageIntegrationGcsModelNoAttributes.ResourceReference()).
@@ -308,7 +308,7 @@ func TestAcc_StorageIntegrationGcs_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationGcsModel),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModel.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationGcsDescribeOutput(t, storageIntegrationGcsModel.ResourceReference()).
 						HasAllowedLocations(allowedLocations...),
 				),
@@ -329,7 +329,7 @@ func TestAcc_StorageIntegrationGcs_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationGcsModel),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModel.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationGcsDescribeOutput(t, storageIntegrationGcsModel.ResourceReference()).
 						HasAllowedLocations(allowedLocationsDifferentOrder...),
 				),
@@ -344,7 +344,7 @@ func TestAcc_StorageIntegrationGcs_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationGcsModel2),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationGcsResource(t, storageIntegrationGcsModel2.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationGcsDescribeOutput(t, storageIntegrationGcsModel2.ResourceReference()).
 						HasAllowedLocations(allowedLocationsDifferentOrder...),
 				),

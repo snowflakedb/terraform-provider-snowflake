@@ -37,7 +37,10 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasName(expected string
 	return o
 }
 
-// collection assert for blocked_roles_list will be generated here
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasBlockedRolesList(expected ...string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.SetContainsExactlyStringValues("blocked_roles_list", expected...)
+	return o
+}
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasComment(expected string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.StringValueSet("comment", expected)
@@ -104,7 +107,10 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthUseSecondaryRol
 	return o
 }
 
-// collection assert for pre_authorized_roles_list will be generated here
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesList(expected ...string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.SetContainsExactlyStringValues("pre_authorized_roles_list", expected...)
+	return o
+}
 
 // collection assert for related_parameters will be generated here
 

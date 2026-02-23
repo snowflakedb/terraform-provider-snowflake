@@ -47,7 +47,10 @@ func (t *TagResourceAssert) HasName(expected string) *TagResourceAssert {
 	return t
 }
 
-// collection assert for allowed_values will be generated here
+func (t *TagResourceAssert) HasAllowedValues(expected ...string) *TagResourceAssert {
+	t.SetContainsExactlyStringValues("allowed_values", expected...)
+	return t
+}
 
 func (t *TagResourceAssert) HasComment(expected string) *TagResourceAssert {
 	t.StringValueSet("comment", expected)
@@ -59,7 +62,10 @@ func (t *TagResourceAssert) HasFullyQualifiedName(expected string) *TagResourceA
 	return t
 }
 
-// collection assert for masking_policies will be generated here
+func (t *TagResourceAssert) HasMaskingPolicies(expected ...string) *TagResourceAssert {
+	t.SetContainsExactlyStringValues("masking_policies", expected...)
+	return t
+}
 
 ///////////////////////////////////
 // Attribute value string checks //

@@ -67,7 +67,10 @@ func (s *ServiceResourceAssert) HasComputePool(expected string) *ServiceResource
 	return s
 }
 
-// collection assert for external_access_integrations will be generated here
+func (s *ServiceResourceAssert) HasExternalAccessIntegrations(expected ...string) *ServiceResourceAssert {
+	s.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return s
+}
 
 // collection assert for from_specification will be generated here
 

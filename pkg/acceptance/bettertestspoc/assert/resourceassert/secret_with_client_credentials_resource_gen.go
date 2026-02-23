@@ -62,7 +62,10 @@ func (s *SecretWithClientCredentialsResourceAssert) HasFullyQualifiedName(expect
 	return s
 }
 
-// collection assert for oauth_scopes will be generated here
+func (s *SecretWithClientCredentialsResourceAssert) HasOauthScopes(expected ...string) *SecretWithClientCredentialsResourceAssert {
+	s.SetContainsExactlyStringValues("oauth_scopes", expected...)
+	return s
+}
 
 func (s *SecretWithClientCredentialsResourceAssert) HasSecretType(expected string) *SecretWithClientCredentialsResourceAssert {
 	s.StringValueSet("secret_type", expected)

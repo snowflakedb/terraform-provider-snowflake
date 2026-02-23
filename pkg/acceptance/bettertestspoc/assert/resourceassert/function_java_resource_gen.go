@@ -59,7 +59,10 @@ func (f *FunctionJavaResourceAssert) HasEnableConsoleOutput(expected bool) *Func
 	return f
 }
 
-// collection assert for external_access_integrations will be generated here
+func (f *FunctionJavaResourceAssert) HasExternalAccessIntegrations(expected ...string) *FunctionJavaResourceAssert {
+	f.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return f
+}
 
 func (f *FunctionJavaResourceAssert) HasFullyQualifiedName(expected string) *FunctionJavaResourceAssert {
 	f.StringValueSet("fully_qualified_name", expected)
@@ -103,7 +106,10 @@ func (f *FunctionJavaResourceAssert) HasNullInputBehavior(expected string) *Func
 	return f
 }
 
-// collection assert for packages will be generated here
+func (f *FunctionJavaResourceAssert) HasPackages(expected ...string) *FunctionJavaResourceAssert {
+	f.SetContainsExactlyStringValues("packages", expected...)
+	return f
+}
 
 func (f *FunctionJavaResourceAssert) HasReturnResultsBehavior(expected string) *FunctionJavaResourceAssert {
 	f.StringValueSet("return_results_behavior", expected)

@@ -52,7 +52,10 @@ func (t *TaskResourceAssert) HasAbortDetachedQuery(expected bool) *TaskResourceA
 	return t
 }
 
-// collection assert for after will be generated here
+func (t *TaskResourceAssert) HasAfter(expected ...string) *TaskResourceAssert {
+	t.SetContainsExactlyStringValues("after", expected...)
+	return t
+}
 
 func (t *TaskResourceAssert) HasAllowOverlappingExecution(expected string) *TaskResourceAssert {
 	t.StringValueSet("allow_overlapping_execution", expected)

@@ -52,9 +52,15 @@ func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedName(expected str
 	return s
 }
 
-// collection assert for storage_allowed_locations will be generated here
+func (s *StorageIntegrationGcsResourceAssert) HasStorageAllowedLocations(expected ...string) *StorageIntegrationGcsResourceAssert {
+	s.SetContainsExactlyStringValues("storage_allowed_locations", expected...)
+	return s
+}
 
-// collection assert for storage_blocked_locations will be generated here
+func (s *StorageIntegrationGcsResourceAssert) HasStorageBlockedLocations(expected ...string) *StorageIntegrationGcsResourceAssert {
+	s.SetContainsExactlyStringValues("storage_blocked_locations", expected...)
+	return s
+}
 
 ///////////////////////////////////
 // Attribute value string checks //

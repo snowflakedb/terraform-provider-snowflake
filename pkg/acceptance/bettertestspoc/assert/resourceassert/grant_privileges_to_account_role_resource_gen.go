@@ -63,7 +63,10 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccount(expected bool)
 
 // collection assert for on_schema_object will be generated here
 
-// collection assert for privileges will be generated here
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivileges(expected ...string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.SetContainsExactlyStringValues("privileges", expected...)
+	return g
+}
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagement(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
 	g.BoolValueSet("strict_privilege_management", expected)

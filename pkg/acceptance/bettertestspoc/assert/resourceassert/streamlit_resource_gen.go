@@ -57,7 +57,10 @@ func (s *StreamlitResourceAssert) HasDirectoryLocation(expected string) *Streaml
 	return s
 }
 
-// collection assert for external_access_integrations will be generated here
+func (s *StreamlitResourceAssert) HasExternalAccessIntegrations(expected ...string) *StreamlitResourceAssert {
+	s.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return s
+}
 
 func (s *StreamlitResourceAssert) HasFullyQualifiedName(expected string) *StreamlitResourceAssert {
 	s.StringValueSet("fully_qualified_name", expected)

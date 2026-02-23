@@ -78,7 +78,7 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
 						HasStorageBlockedLocationsEmpty().
 						HasCommentString("").
 						HasUsePrivatelinkEndpointString(r.BooleanDefault).
@@ -143,8 +143,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureAllAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
-						HasStorageBlockedLocations(blockedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations...).
 						HasCommentString(comment).
 						HasUsePrivatelinkEndpointString(r.BooleanDefault).
 						HasAzureTenantIdString(azureTenantId),
@@ -178,8 +178,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureAllAttributesChanged.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanTrue).
-						HasStorageAllowedLocations(allowedLocations2...).
-						HasStorageBlockedLocations(blockedLocations2...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations2...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations2...).
 						HasCommentString(newComment).
 						HasUsePrivatelinkEndpointString(r.BooleanDefault).
 						HasAzureTenantIdString(azureTenantId),
@@ -224,7 +224,7 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
 						HasStorageBlockedLocationsEmpty().
 						HasCommentString("").
 						HasUsePrivatelinkEndpointString(r.BooleanDefault).
@@ -360,7 +360,7 @@ func TestAcc_StorageIntegrationAzure_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationAzureModel),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModel.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAzureDescribeOutput(t, storageIntegrationAzureModel.ResourceReference()).
 						HasAllowedLocations(allowedLocations...),
 				),
@@ -381,7 +381,7 @@ func TestAcc_StorageIntegrationAzure_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationAzureModel),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModel.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAzureDescribeOutput(t, storageIntegrationAzureModel.ResourceReference()).
 						HasAllowedLocations(allowedLocationsDifferentOrder...),
 				),
@@ -396,7 +396,7 @@ func TestAcc_StorageIntegrationAzure_AllowedLocationsUnordered(t *testing.T) {
 				Config: config.FromModels(t, storageIntegrationAzureModel2),
 				Check: assertThat(t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModel2.ResourceReference()).
-						HasStorageAllowedLocations(allowedLocations...),
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAzureDescribeOutput(t, storageIntegrationAzureModel2.ResourceReference()).
 						HasAllowedLocations(allowedLocationsDifferentOrder...),
 				),

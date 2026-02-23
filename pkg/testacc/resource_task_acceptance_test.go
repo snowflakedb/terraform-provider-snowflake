@@ -265,7 +265,7 @@ func TestAcc_Task_UpdatesInComplexDAG(t *testing.T) {
 						HasSchemaString(child3Id.SchemaName()).
 						HasNameString(child3Id.Name()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(child1.ID(), child2.ID()).
+						HasAfterIdentifier(child1.ID(), child2.ID()).
 						HasSqlStatementString("SELECT 1"),
 					resourceshowoutputassert.TaskShowOutput(t, basicConfigModel.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -287,7 +287,7 @@ func TestAcc_Task_UpdatesInComplexDAG(t *testing.T) {
 						HasNameString(child3Id.Name()).
 						HasStartedString(r.BooleanTrue).
 						HasCommentString(comment).
-						HasAfter(child1.ID(), child2.ID()).
+						HasAfterIdentifier(child1.ID(), child2.ID()).
 						HasSqlStatementString("SELECT 123"),
 					resourceshowoutputassert.TaskShowOutput(t, basicConfigModelAfterUpdate.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -1283,7 +1283,7 @@ func TestAcc_Task_ConvertStandaloneTaskToSubtask(t *testing.T) {
 						HasScheduleMinutes(5).
 						HasState(sdk.TaskStateStarted),
 					resourceassert.TaskResource(t, childTaskModel.ResourceReference()).
-						HasAfter(id).
+						HasAfterIdentifier(id).
 						HasStartedString(r.BooleanTrue),
 					resourceshowoutputassert.TaskShowOutput(t, childTaskModel.ResourceReference()).
 						HasPredecessors(id).
@@ -1472,7 +1472,7 @@ func TestAcc_Task_SwitchScheduledWithAfter(t *testing.T) {
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
 						HasNoScheduleSet().
-						HasAfter(rootId).
+						HasAfterIdentifier(rootId).
 						HasSuspendTaskAfterNumFailuresString("10"),
 				),
 			},
@@ -1547,7 +1547,7 @@ func TestAcc_Task_WithAfter(t *testing.T) {
 						HasScheduleMinutes(schedule),
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId),
+						HasAfterIdentifier(rootId),
 				),
 			},
 			{
@@ -1615,7 +1615,7 @@ func TestAcc_Task_WithAfter_issue4001(t *testing.T) {
 				ExpectNonEmptyPlan:       true,
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
-						HasAfter(rootId),
+						HasAfterIdentifier(rootId),
 				),
 			},
 		},
@@ -1852,7 +1852,7 @@ func TestAcc_Task_UpdateAfterExternally(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId),
+						HasAfterIdentifier(rootId),
 					resourceshowoutputassert.TaskShowOutput(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasState(sdk.TaskStateStarted).
 						HasTaskRelations(sdk.TaskRelations{Predecessors: []sdk.SchemaObjectIdentifier{rootId}}),
@@ -1875,7 +1875,7 @@ func TestAcc_Task_UpdateAfterExternally(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId),
+						HasAfterIdentifier(rootId),
 					resourceshowoutputassert.TaskShowOutput(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasState(sdk.TaskStateStarted).
 						HasTaskRelations(sdk.TaskRelations{Predecessors: []sdk.SchemaObjectIdentifier{rootId}}),
@@ -1937,7 +1937,7 @@ func TestAcc_Task_issue2207(t *testing.T) {
 						HasScheduleMinutes(schedule),
 					resourceassert.TaskResource(t, childTaskConfigModel.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId).
+						HasAfterIdentifier(rootId).
 						HasCommentString("abc"),
 				),
 			},
@@ -1956,7 +1956,7 @@ func TestAcc_Task_issue2207(t *testing.T) {
 						HasScheduleMinutes(schedule),
 					resourceassert.TaskResource(t, childTaskConfigModelWithDifferentComment.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId).
+						HasAfterIdentifier(rootId).
 						HasCommentString("def"),
 				),
 			},
@@ -2247,7 +2247,7 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 						HasNameString(id.Name()).
 						HasStartedString(r.BooleanFalse).
 						HasSqlStatementString(statement).
-						HasAfter(rootTask.ID()).
+						HasAfterIdentifier(rootTask.ID()).
 						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
 						HasUserTaskTimeoutMsString("50").
 						HasLogLevelString(string(sdk.LogLevelInfo)).

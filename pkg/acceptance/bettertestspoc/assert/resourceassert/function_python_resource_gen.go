@@ -59,7 +59,10 @@ func (f *FunctionPythonResourceAssert) HasEnableConsoleOutput(expected bool) *Fu
 	return f
 }
 
-// collection assert for external_access_integrations will be generated here
+func (f *FunctionPythonResourceAssert) HasExternalAccessIntegrations(expected ...string) *FunctionPythonResourceAssert {
+	f.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return f
+}
 
 func (f *FunctionPythonResourceAssert) HasFullyQualifiedName(expected string) *FunctionPythonResourceAssert {
 	f.StringValueSet("fully_qualified_name", expected)
@@ -108,7 +111,10 @@ func (f *FunctionPythonResourceAssert) HasNullInputBehavior(expected string) *Fu
 	return f
 }
 
-// collection assert for packages will be generated here
+func (f *FunctionPythonResourceAssert) HasPackages(expected ...string) *FunctionPythonResourceAssert {
+	f.SetContainsExactlyStringValues("packages", expected...)
+	return f
+}
 
 func (f *FunctionPythonResourceAssert) HasReturnResultsBehavior(expected string) *FunctionPythonResourceAssert {
 	f.StringValueSet("return_results_behavior", expected)

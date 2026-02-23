@@ -248,7 +248,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString(r.BooleanTrue).
 						HasMinInstancesString("2").
 						HasMinReadyInstancesString("2").
@@ -330,7 +330,7 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString("true").
 						HasMinInstancesString("2").
 						HasMinReadyInstancesString("2").
@@ -1183,7 +1183,7 @@ func TestAcc_Service_complete(t *testing.T) {
 						HasComputePoolString(computePool.ID().FullyQualifiedName()).
 						HasFromSpecificationTextNotEmpty().
 						HasAutoSuspendSecsString("6767").
-						HasExternalAccessIntegrations(externalAccessIntegrationId).
+						HasExternalAccessIntegrationsIdentifier(externalAccessIntegrationId).
 						HasAutoResumeString(r.BooleanTrue).
 						HasMinInstancesString("1").
 						HasMinReadyInstancesString("1").
