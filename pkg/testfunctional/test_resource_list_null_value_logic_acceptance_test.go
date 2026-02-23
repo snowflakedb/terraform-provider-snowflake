@@ -8,17 +8,29 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 // TestAcc_SdkV2Functional_TestResource_ListNullValueLogic tests whether SDKv2 can distinguish
 // between three states of an Optional TypeList field:
-// - null (field not specified in config)
+// - null (field = null or not specified in config)
 // - empty list (field = [])
 // - filled list (field = ["a", "b"])
 //
-// It observes the results of d.Get, d.GetOk, and d.GetRawConfig for each state and transition.
+// Expected SDKv2 observation matrix:
+//
+//	| State  | d.GetOk ok | d.Get value | RawConfig value |
+//	|--------|------------|-------------|-----------------|
+//	| null   | false      | []          | null            |
+//	| empty  | false      | []          | []              |
+//	| filled | true       | [a b]       | [a b]           |
+//
+// d.GetOk and d.Get cannot distinguish null from empty.
+// Only d.GetRawConfig() reliably differentiates null vs empty.
+//
+// SDKv2 also cannot detect transitions between null and empty because both
+// produce nullable_list.# = 0 in state, so no plan diff is generated and
+// Update is never called for null <-> empty changes.
 func TestAcc_SdkV2Functional_TestResource_ListNullValueLogic(t *testing.T) {
 	envName := fmt.Sprintf("%s_%s", testenvs.TestResourceDataTypeDiffHandlingEnv, strings.ToUpper(random.AlphaN(10)))
 	resourceType := "snowflake_test_resource_list_null_value_logic"
@@ -54,7 +66,6 @@ resource "%[1]s" "%[2]s" {
 `, resourceType, resourceName, SdkV2FunctionalTestsProviderName, envName, strings.Join(quoted, ", "))
 	}
 
-	// Test 1: Create with null list (field not specified)
 	t.Run("create_with_null", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -64,23 +75,16 @@ resource "%[1]s" "%[2]s" {
 					PreConfig: func() { t.Setenv(envName, "") },
 					Config:    configWithNull,
 					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttrSet(ref, "get_ok_result"),
-						resource.TestCheckResourceAttrSet(ref, "get_length_result"),
-						resource.TestCheckResourceAttrSet(ref, "raw_config_is_null_result"),
-						resource.TestCheckResourceAttrSet(ref, "raw_config_length_result"),
-						// Log all observations for analysis
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
 					),
 				},
 			},
 		})
 	})
 
-	// Test 2: Create with empty list
 	t.Run("create_with_empty", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -90,18 +94,19 @@ resource "%[1]s" "%[2]s" {
 					PreConfig: func() { t.Setenv(envName, "") },
 					Config:    configWithEmpty,
 					Check: resource.ComposeTestCheckFunc(
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
+						// d.GetOk returns false for empty list (zero value)
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
+						// d.Get returns the same empty slice as null — indistinguishable
+						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
+						// RawConfig distinguishes empty from null
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
 					),
 				},
 			},
 		})
 	})
 
-	// Test 3: Create with filled list
 	t.Run("create_with_items", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -111,11 +116,9 @@ resource "%[1]s" "%[2]s" {
 					PreConfig: func() { t.Setenv(envName, "") },
 					Config:    configWithItems("a", "b"),
 					Check: resource.ComposeTestCheckFunc(
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "true"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[a b]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[a b]"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "2"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.0", "a"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.1", "b"),
@@ -125,7 +128,8 @@ resource "%[1]s" "%[2]s" {
 		})
 	})
 
-	// Test 4: Transition from filled to empty
+	// Transitions where Update IS triggered (state diff: #=N → #=M, N≠M)
+
 	t.Run("filled_to_empty", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -141,18 +145,16 @@ resource "%[1]s" "%[2]s" {
 				{
 					Config: configWithEmpty,
 					Check: resource.ComposeTestCheckFunc(
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
 					),
 				},
 			},
 		})
 	})
 
-	// Test 5: Transition from filled to null
 	t.Run("filled_to_null", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -168,42 +170,16 @@ resource "%[1]s" "%[2]s" {
 				{
 					Config: configWithNull,
 					Check: resource.ComposeTestCheckFunc(
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
 					),
 				},
 			},
 		})
 	})
 
-	// Test 6: Transition from null to empty
-	t.Run("null_to_empty", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
-			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
-			Steps: []resource.TestStep{
-				{
-					PreConfig: func() { t.Setenv(envName, "") },
-					Config:    configWithNull,
-				},
-				{
-					Config: configWithEmpty,
-					Check: resource.ComposeTestCheckFunc(
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
-					),
-				},
-			},
-		})
-	})
-
-	// Test 7: Transition from empty to filled
 	t.Run("empty_to_filled", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -216,19 +192,19 @@ resource "%[1]s" "%[2]s" {
 				{
 					Config: configWithItems("x", "y", "z"),
 					Check: resource.ComposeTestCheckFunc(
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "true"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[x y z]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[x y z]"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "3"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.0", "x"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.1", "y"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.2", "z"),
 					),
 				},
 			},
 		})
 	})
 
-	// Test 8: Transition from null to filled
 	t.Run("null_to_filled", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -241,19 +217,48 @@ resource "%[1]s" "%[2]s" {
 				{
 					Config: configWithItems("x"),
 					Check: resource.ComposeTestCheckFunc(
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "true"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[x]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[x]"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.0", "x"),
 					),
 				},
 			},
 		})
 	})
 
-	// Test 9: Transition from empty to null
+	// Transitions between null and empty: SDKv2 represents both as nullable_list.# = 0
+	// in state, so no plan diff is generated and Update is never called. The observation
+	// fields retain their values from the Create in step 1.
+
+	t.Run("null_to_empty", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
+			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
+			Steps: []resource.TestStep{
+				{
+					PreConfig: func() { t.Setenv(envName, "") },
+					Config:    configWithNull,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
+					),
+				},
+				{
+					Config: configWithEmpty,
+					Check: resource.ComposeTestCheckFunc(
+						// Observations are stale from Create(null) because SDKv2 detected
+						// no diff (both null and empty produce #=0), so Update was not called.
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+					),
+				},
+			},
+		})
+	})
+
 	t.Run("empty_to_null", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -262,34 +267,22 @@ resource "%[1]s" "%[2]s" {
 				{
 					PreConfig: func() { t.Setenv(envName, "") },
 					Config:    configWithEmpty,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
+					),
 				},
 				{
 					Config: configWithNull,
 					Check: resource.ComposeTestCheckFunc(
-						logResourceAttr(ref, "get_ok_result"),
-						logResourceAttr(ref, "get_length_result"),
-						logResourceAttr(ref, "raw_config_is_null_result"),
-						logResourceAttr(ref, "raw_config_length_result"),
-						logResourceAttr(ref, "nullable_list.#"),
+						// Observations are stale from Create(empty) because SDKv2 detected
+						// no diff (both null and empty produce #=0), so Update was not called.
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
 					),
 				},
 			},
 		})
 	})
-}
-
-// logResourceAttr is a test check function that logs the value of a resource attribute for observation.
-func logResourceAttr(resourceReference string, attrName string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceReference]
-		if !ok {
-			return fmt.Errorf("resource %s not found", resourceReference)
-		}
-		value, ok := rs.Primary.Attributes[attrName]
-		if !ok {
-			value = "<not set>"
-		}
-		fmt.Printf("[OBSERVATION] %s.%s = %s\n", resourceReference, attrName, value)
-		return nil
-	}
 }

@@ -30,20 +30,15 @@ var testResourceListNullValueLogicSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Result of d.GetOk('nullable_list') - the ok boolean.",
 	},
-	"get_length_result": {
+	"get_result": {
 		Type:        schema.TypeString,
 		Computed:    true,
-		Description: "Length of d.Get('nullable_list').([]any).",
+		Description: "String representation of d.Get('nullable_list').([]any).",
 	},
-	"raw_config_is_null_result": {
+	"raw_config_result": {
 		Type:        schema.TypeString,
 		Computed:    true,
-		Description: "Result of d.GetRawConfig().AsValueMap()['nullable_list'].IsNull().",
-	},
-	"raw_config_length_result": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "Length of d.GetRawConfig().AsValueMap()['nullable_list'].AsValueSlice() (only when not null).",
+		Description: "String representation of d.GetRawConfig().AsValueMap()['nullable_list'].",
 	},
 }
 
@@ -79,28 +74,29 @@ func observeAndStoreList(d *schema.ResourceData, envName string) diag.Diagnostic
 		return diag.FromErr(err)
 	}
 
-	// Observation 2: d.Get length
+	// Observation 2: d.Get raw value
 	getResult := d.Get("nullable_list").([]any)
-	log.Printf("[DEBUG] d.Get('nullable_list') length=%d, value=%v", len(getResult), getResult)
-	if err := d.Set("get_length_result", fmt.Sprintf("%d", len(getResult))); err != nil {
+	log.Printf("[DEBUG] d.Get('nullable_list') = %v", getResult)
+	if err := d.Set("get_result", fmt.Sprintf("%v", getResult)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Observation 3: d.GetRawConfig null check
+	// Observation 3: d.GetRawConfig value
 	rawConfigValue := d.GetRawConfig().AsValueMap()["nullable_list"]
 	isNull := rawConfigValue.IsNull()
-	log.Printf("[DEBUG] d.GetRawConfig()['nullable_list'].IsNull()=%t", isNull)
-	if err := d.Set("raw_config_is_null_result", fmt.Sprintf("%t", isNull)); err != nil {
-		return diag.FromErr(err)
+	var rawConfigStr string
+	if isNull {
+		rawConfigStr = "null"
+	} else {
+		slice := rawConfigValue.AsValueSlice()
+		items := make([]string, len(slice))
+		for i, v := range slice {
+			items[i] = v.AsString()
+		}
+		rawConfigStr = fmt.Sprintf("%v", items)
 	}
-
-	// Observation 4: d.GetRawConfig length (only meaningful when not null)
-	rawConfigLength := -1
-	if !isNull {
-		rawConfigLength = len(rawConfigValue.AsValueSlice())
-	}
-	log.Printf("[DEBUG] d.GetRawConfig()['nullable_list'] length=%d", rawConfigLength)
-	if err := d.Set("raw_config_length_result", fmt.Sprintf("%d", rawConfigLength)); err != nil {
+	log.Printf("[DEBUG] d.GetRawConfig()['nullable_list'] = %s", rawConfigStr)
+	if err := d.Set("raw_config_result", rawConfigStr); err != nil {
 		return diag.FromErr(err)
 	}
 

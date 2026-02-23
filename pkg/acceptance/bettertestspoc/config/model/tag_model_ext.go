@@ -3,7 +3,6 @@ package model
 import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -18,11 +17,6 @@ func (t *TagModel) WithAllowedValues(allowedValues ...string) *TagModel {
 	}
 
 	t.AllowedValues = tfconfig.SetVariable(allowedValuesStringVariables...)
-	return t
-}
-
-func (t *TagModel) WithAllowedValuesEmpty() *TagModel {
-	t.AllowedValues = config.EmptyListVariable()
 	return t
 }
 
