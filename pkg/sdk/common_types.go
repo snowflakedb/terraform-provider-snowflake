@@ -498,6 +498,14 @@ func NewStageLocation(stage SchemaObjectIdentifier, path string) StageLocation {
 	}
 }
 
+func (s StageLocation) GetStageId() SchemaObjectIdentifier {
+	return s.stage
+}
+
+func (s StageLocation) GetPath() string {
+	return s.path
+}
+
 func (s StageLocation) ToSql() string {
 	if s.stage.FullyQualifiedName() == "" && s.path == "" {
 		return ""
