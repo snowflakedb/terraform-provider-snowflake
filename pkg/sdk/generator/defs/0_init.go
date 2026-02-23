@@ -15,6 +15,7 @@ func init() {
 		applicationRolesDef,
 		applicationsDef,
 		authenticationPoliciesDef,
+		catalogIntegrationsDef,
 		computePoolsDef,
 		connectionsDef,
 		cortexSearchServicesDef,

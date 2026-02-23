@@ -109,7 +109,8 @@ const (
 	ObjectTypeListingDetails ObjectType = "LISTING DETAILS"
 	// ObjectTypeApiIntegration is a pseudo-object, only used in object and invoke action assertions.
 	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
-	ObjectTypeApiIntegration ObjectType = "API INTEGRATION"
+	ObjectTypeApiIntegration     ObjectType = "API INTEGRATION"
+	ObjectTypeCatalogIntegration ObjectType = "CATALOG INTEGRATION"
 )
 
 func (o ObjectType) String() string {
