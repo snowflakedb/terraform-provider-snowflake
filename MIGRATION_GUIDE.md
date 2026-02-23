@@ -26,6 +26,8 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.13.x ➞ v2.14.0
 
+[//]: # (TODO [this PR]: add migration guide entry for v2)
+
 ### *(new feature)* Added `DECFLOAT` support
 
 We added the [`DECFLOAT`](https://docs.snowflake.com/en/sql-reference/data-types-numeric#decfloat) data type support inside the provider.

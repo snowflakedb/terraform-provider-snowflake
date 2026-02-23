@@ -68,7 +68,7 @@ func TestClient_NewClientDriverLoggingLevel(t *testing.T) {
 		} else {
 			expected = "error"
 		}
-		// TODO [this PR]: GetLogger may be removed, consult with gosnowflake team
+		// TODO [this PR]: GetLogger should stay here but we need to verify after the logging-related changes on the gosnowflake team side
 		assert.Equal(t, expected, gosnowflake.GetLogger().GetLogLevel())
 	})
 
