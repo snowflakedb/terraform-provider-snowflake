@@ -31,10 +31,10 @@ func TestInt_ExternalVolumes(t *testing.T) {
 	// Storage location structs for testing
 	// Note cannot test awsgov on non-gov Snowflake deployments
 
-	s3StorageLocations := []sdk.ExternalVolumeStorageLocation{
-		{
+	s3StorageLocations := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "s3_testing_storage_location",
 			S3StorageLocationParams: &sdk.S3StorageLocationParams{
-				Name:                 "s3_testing_storage_location",
 				StorageProvider:      sdk.S3StorageProviderS3,
 				StorageAwsRoleArn:    awsRoleARN,
 				StorageBaseUrl:       awsBaseUrl,
@@ -44,13 +44,13 @@ func TestInt_ExternalVolumes(t *testing.T) {
 					KmsKeyId:       &awsKmsKeyId,
 				},
 			},
-		},
+		}},
 	}
 
-	s3StorageLocationsNoneEncryption := []sdk.ExternalVolumeStorageLocation{
-		{
+	s3StorageLocationsNoneEncryption := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "s3_testing_storage_location_none_encryption",
 			S3StorageLocationParams: &sdk.S3StorageLocationParams{
-				Name:                 "s3_testing_storage_location_none_encryption",
 				StorageProvider:      sdk.S3StorageProviderS3,
 				StorageAwsRoleArn:    awsRoleARN,
 				StorageBaseUrl:       awsBaseUrl,
@@ -59,66 +59,66 @@ func TestInt_ExternalVolumes(t *testing.T) {
 					EncryptionType: sdk.S3EncryptionNone,
 				},
 			},
-		},
+		}},
 	}
 
-	s3StorageLocationsNoEncryption := []sdk.ExternalVolumeStorageLocation{
-		{
+	s3StorageLocationsNoEncryption := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "s3_testing_storage_location_no_encryption",
 			S3StorageLocationParams: &sdk.S3StorageLocationParams{
-				Name:                 "s3_testing_storage_location_no_encryption",
 				StorageProvider:      sdk.S3StorageProviderS3,
 				StorageAwsRoleArn:    awsRoleARN,
 				StorageBaseUrl:       awsBaseUrl,
 				StorageAwsExternalId: sdk.String(awsExternalId),
 			},
-		},
+		}},
 	}
 
-	gcsStorageLocationsNoneEncryption := []sdk.ExternalVolumeStorageLocation{
-		{
+	gcsStorageLocationsNoneEncryption := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "gcs_testing_storage_location_none_encryption",
 			GCSStorageLocationParams: &sdk.GCSStorageLocationParams{
-				Name:           "gcs_testing_storage_location_none_encryption",
 				StorageBaseUrl: gcsBaseUrl,
 				Encryption: &sdk.ExternalVolumeGCSEncryption{
 					EncryptionType: sdk.GCSEncryptionTypeNone,
 				},
 			},
-		},
+		}},
 	}
 
-	gcsStorageLocationsNoEncryption := []sdk.ExternalVolumeStorageLocation{
-		{
+	gcsStorageLocationsNoEncryption := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "gcs_testing_storage_location_no_encryption",
 			GCSStorageLocationParams: &sdk.GCSStorageLocationParams{
-				Name:           "gcs_testing_storage_location_no_encryption",
 				StorageBaseUrl: gcsBaseUrl,
 			},
-		},
+		}},
 	}
 
-	gcsStorageLocations := []sdk.ExternalVolumeStorageLocation{
-		{
+	gcsStorageLocations := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "gcs_testing_storage_location",
 			GCSStorageLocationParams: &sdk.GCSStorageLocationParams{
-				Name:           "gcs_testing_storage_location",
 				StorageBaseUrl: gcsBaseUrl,
 				Encryption: &sdk.ExternalVolumeGCSEncryption{
 					EncryptionType: sdk.GCSEncryptionTypeSseKms,
 					KmsKeyId:       &gcsKmsKeyId,
 				},
 			},
-		},
+		}},
 	}
 
-	azureStorageLocations := []sdk.ExternalVolumeStorageLocation{
-		{
+	azureStorageLocations := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "azure_testing_storage_location",
 			AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
-				Name:           "azure_testing_storage_location",
 				AzureTenantId:  azureTenantId,
 				StorageBaseUrl: azureBaseUrl,
 			},
-		},
+		}},
 	}
 
-	createExternalVolume := func(t *testing.T, storageLocations []sdk.ExternalVolumeStorageLocation, allowWrites bool, comment *string) sdk.AccountObjectIdentifier {
+	createExternalVolume := func(t *testing.T, storageLocations []sdk.ExternalVolumeStorageLocationItem, allowWrites bool, comment *string) sdk.AccountObjectIdentifier {
 		t.Helper()
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -285,7 +285,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		comment := "some comment"
 		id := createExternalVolume(t, append(s3StorageLocationsNoneEncryption, gcsStorageLocationsNoneEncryption...), allowWrites, &comment)
 
-		req := sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Name)
+		req := sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name)
 
 		err := client.ExternalVolumes.Alter(ctx, req)
 		require.NoError(t, err)
@@ -294,14 +294,13 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasActive("").
 			HasComment(comment).
 			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocationsLength(1).
-			HasStorageLocationAtIndex(0, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Name,
-				StorageProvider:      string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageProvider),
-				StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsExternalId,
-				EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.EncryptionType),
+			HasStorageLocations(sdk.ExternalVolumeStorageLocationDetails{
+				Name:                 s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
+				StorageProvider:      string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
+				StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+				StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+				StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+				EncryptionType:       string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
 				EncryptionKmsKeyId:   "",
 				AzureTenantId:        "",
 			}))
@@ -324,14 +323,13 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasActive("").
 			HasComment(comment2).
 			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocationsLength(1).
-			HasStorageLocationAtIndex(0, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Name,
-				StorageProvider:      string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageProvider),
-				StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsExternalId,
-				EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.EncryptionType),
+			HasStorageLocations(sdk.ExternalVolumeStorageLocationDetails{
+				Name:                 s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
+				StorageProvider:      string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
+				StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+				StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+				StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+				EncryptionType:       string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
 				EncryptionKmsKeyId:   "",
 				AzureTenantId:        "",
 			}))
@@ -353,15 +351,14 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasActive("").
 			HasComment(comment).
 			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocationsLength(1).
-			HasStorageLocationAtIndex(0, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 s3StorageLocations[0].S3StorageLocationParams.Name,
-				StorageProvider:      string(s3StorageLocations[0].S3StorageLocationParams.StorageProvider),
-				StorageBaseUrl:       s3StorageLocations[0].S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    s3StorageLocations[0].S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId: *s3StorageLocations[0].S3StorageLocationParams.StorageAwsExternalId,
-				EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.EncryptionType),
-				EncryptionKmsKeyId:   *s3StorageLocations[0].S3StorageLocationParams.Encryption.KmsKeyId,
+			HasStorageLocations(sdk.ExternalVolumeStorageLocationDetails{
+				Name:                 s3StorageLocations[0].ExternalVolumeStorageLocation.Name,
+				StorageProvider:      string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
+				StorageBaseUrl:       s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+				StorageAwsRoleArn:    s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+				StorageAwsExternalId: *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+				EncryptionType:       string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
+				EncryptionKmsKeyId:   *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
 				AzureTenantId:        "",
 			}))
 	})
@@ -371,18 +368,22 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		comment := "some comment"
 		id := createExternalVolume(t, gcsStorageLocationsNoneEncryption, allowWrites, &comment)
 
+		s3Loc := s3StorageLocations[0].ExternalVolumeStorageLocation
 		req := sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(
-			*sdk.NewExternalVolumeStorageLocationRequest().WithS3StorageLocationParams(
-				*sdk.NewS3StorageLocationParamsRequest(
-					s3StorageLocations[0].S3StorageLocationParams.Name,
-					s3StorageLocations[0].S3StorageLocationParams.StorageProvider,
-					s3StorageLocations[0].S3StorageLocationParams.StorageAwsRoleArn,
-					s3StorageLocations[0].S3StorageLocationParams.StorageBaseUrl,
-				).WithStorageAwsExternalId(*s3StorageLocations[0].S3StorageLocationParams.StorageAwsExternalId).
-					WithEncryption(
-						*sdk.NewExternalVolumeS3EncryptionRequest(s3StorageLocations[0].S3StorageLocationParams.Encryption.EncryptionType).
-							WithKmsKeyId(*s3StorageLocations[0].S3StorageLocationParams.Encryption.KmsKeyId),
-					),
+			*sdk.NewExternalVolumeStorageLocationItemRequest().WithExternalVolumeStorageLocation(
+				*sdk.NewExternalVolumeStorageLocationRequest(
+					s3Loc.Name,
+				).WithS3StorageLocationParams(
+					*sdk.NewS3StorageLocationParamsRequest(
+						s3Loc.S3StorageLocationParams.StorageProvider,
+						s3Loc.S3StorageLocationParams.StorageAwsRoleArn,
+						s3Loc.S3StorageLocationParams.StorageBaseUrl,
+					).WithStorageAwsExternalId(*s3Loc.S3StorageLocationParams.StorageAwsExternalId).
+						WithEncryption(
+							*sdk.NewExternalVolumeS3EncryptionRequest(s3Loc.S3StorageLocationParams.Encryption.EncryptionType).
+								WithKmsKeyId(*s3Loc.S3StorageLocationParams.Encryption.KmsKeyId),
+						),
+				),
 			),
 		)
 
@@ -393,27 +394,28 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasActive("").
 			HasComment(comment).
 			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocationsLength(2).
-			HasStorageLocationAtIndex(0, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Name,
-				StorageProvider:      string(sdk.StorageProviderGCS),
-				StorageBaseUrl:       gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    "",
-				StorageAwsExternalId: "",
-				EncryptionType:       string(gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Encryption.EncryptionType),
-				EncryptionKmsKeyId:   "",
-				AzureTenantId:        "",
-			}).
-			HasStorageLocationAtIndex(1, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 s3StorageLocations[0].S3StorageLocationParams.Name,
-				StorageProvider:      string(s3StorageLocations[0].S3StorageLocationParams.StorageProvider),
-				StorageBaseUrl:       s3StorageLocations[0].S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    s3StorageLocations[0].S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId: *s3StorageLocations[0].S3StorageLocationParams.StorageAwsExternalId,
-				EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.EncryptionType),
-				EncryptionKmsKeyId:   *s3StorageLocations[0].S3StorageLocationParams.Encryption.KmsKeyId,
-				AzureTenantId:        "",
-			}))
+			HasStorageLocations(
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(sdk.StorageProviderGCS),
+					StorageBaseUrl:       gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    "",
+					StorageAwsExternalId: "",
+					EncryptionType:       string(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType),
+					EncryptionKmsKeyId:   "",
+					AzureTenantId:        "",
+				},
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 s3StorageLocations[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
+					StorageBaseUrl:       s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+					StorageAwsExternalId: *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+					EncryptionType:       string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
+					EncryptionKmsKeyId:   *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
+					AzureTenantId:        "",
+				},
+			))
 	})
 
 	t.Run("Describe", func(t *testing.T) {
@@ -430,77 +432,78 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasActive("").
 			HasComment(comment).
 			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocationsLength(7).
-			HasStorageLocationAtIndex(0, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 s3StorageLocations[0].S3StorageLocationParams.Name,
-				StorageProvider:      string(s3StorageLocations[0].S3StorageLocationParams.StorageProvider),
-				StorageBaseUrl:       s3StorageLocations[0].S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    s3StorageLocations[0].S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId: *s3StorageLocations[0].S3StorageLocationParams.StorageAwsExternalId,
-				EncryptionType:       string(s3StorageLocations[0].S3StorageLocationParams.Encryption.EncryptionType),
-				EncryptionKmsKeyId:   *s3StorageLocations[0].S3StorageLocationParams.Encryption.KmsKeyId,
-				AzureTenantId:        "",
-			}).
-			HasStorageLocationAtIndex(1, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Name,
-				StorageProvider:      string(sdk.StorageProviderGCS),
-				StorageBaseUrl:       gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    "",
-				StorageAwsExternalId: "",
-				EncryptionType:       string(gcsStorageLocationsNoneEncryption[0].GCSStorageLocationParams.Encryption.EncryptionType),
-				EncryptionKmsKeyId:   "",
-				AzureTenantId:        "",
-			}).
-			HasStorageLocationAtIndex(2, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 azureStorageLocations[0].AzureStorageLocationParams.Name,
-				StorageProvider:      string(sdk.StorageProviderAzure),
-				StorageBaseUrl:       azureStorageLocations[0].AzureStorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    "",
-				StorageAwsExternalId: "",
-				EncryptionType:       "NONE",
-				EncryptionKmsKeyId:   "",
-				AzureTenantId:        azureStorageLocations[0].AzureStorageLocationParams.AzureTenantId,
-			}).
-			HasStorageLocationAtIndex(3, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Name,
-				StorageProvider:      string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageProvider),
-				StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.StorageAwsExternalId,
-				EncryptionType:       string(s3StorageLocationsNoneEncryption[0].S3StorageLocationParams.Encryption.EncryptionType),
-				EncryptionKmsKeyId:   "",
-				AzureTenantId:        "",
-			}).
-			HasStorageLocationAtIndex(4, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 gcsStorageLocations[0].GCSStorageLocationParams.Name,
-				StorageProvider:      string(sdk.StorageProviderGCS),
-				StorageBaseUrl:       gcsStorageLocations[0].GCSStorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    "",
-				StorageAwsExternalId: "",
-				EncryptionType:       string(gcsStorageLocations[0].GCSStorageLocationParams.Encryption.EncryptionType),
-				EncryptionKmsKeyId:   *gcsStorageLocations[0].GCSStorageLocationParams.Encryption.KmsKeyId,
-				AzureTenantId:        "",
-			}).
-			HasStorageLocationAtIndex(5, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 s3StorageLocationsNoEncryption[0].S3StorageLocationParams.Name,
-				StorageProvider:      string(s3StorageLocationsNoEncryption[0].S3StorageLocationParams.StorageProvider),
-				StorageBaseUrl:       s3StorageLocationsNoEncryption[0].S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    s3StorageLocationsNoEncryption[0].S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId: *s3StorageLocationsNoEncryption[0].S3StorageLocationParams.StorageAwsExternalId,
-				EncryptionType:       "NONE",
-				EncryptionKmsKeyId:   "",
-				AzureTenantId:        "",
-			}).
-			HasStorageLocationAtIndex(6, sdk.ExternalVolumeStorageLocationDetails{
-				Name:                 gcsStorageLocationsNoEncryption[0].GCSStorageLocationParams.Name,
-				StorageProvider:      string(sdk.StorageProviderGCS),
-				StorageBaseUrl:       gcsStorageLocationsNoEncryption[0].GCSStorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:    "",
-				StorageAwsExternalId: "",
-				EncryptionType:       "NONE",
-				EncryptionKmsKeyId:   "",
-				AzureTenantId:        "",
-			}))
+			HasStorageLocations(
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 s3StorageLocations[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
+					StorageBaseUrl:       s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+					StorageAwsExternalId: *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+					EncryptionType:       string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
+					EncryptionKmsKeyId:   *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
+					AzureTenantId:        "",
+				},
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(sdk.StorageProviderGCS),
+					StorageBaseUrl:       gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    "",
+					StorageAwsExternalId: "",
+					EncryptionType:       string(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType),
+					EncryptionKmsKeyId:   "",
+					AzureTenantId:        "",
+				},
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 azureStorageLocations[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(sdk.StorageProviderAzure),
+					StorageBaseUrl:       azureStorageLocations[0].ExternalVolumeStorageLocation.AzureStorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    "",
+					StorageAwsExternalId: "",
+					EncryptionType:       "NONE",
+					EncryptionKmsKeyId:   "",
+					AzureTenantId:        azureStorageLocations[0].ExternalVolumeStorageLocation.AzureStorageLocationParams.AzureTenantId,
+				},
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
+					StorageBaseUrl:       s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+					StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+					EncryptionType:       string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
+					EncryptionKmsKeyId:   "",
+					AzureTenantId:        "",
+				},
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 gcsStorageLocations[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(sdk.StorageProviderGCS),
+					StorageBaseUrl:       gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    "",
+					StorageAwsExternalId: "",
+					EncryptionType:       string(gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType),
+					EncryptionKmsKeyId:   *gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
+					AzureTenantId:        "",
+				},
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
+					StorageBaseUrl:       s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+					StorageAwsExternalId: *s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+					EncryptionType:       "NONE",
+					EncryptionKmsKeyId:   "",
+					AzureTenantId:        "",
+				},
+				sdk.ExternalVolumeStorageLocationDetails{
+					Name:                 gcsStorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.Name,
+					StorageProvider:      string(sdk.StorageProviderGCS),
+					StorageBaseUrl:       gcsStorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
+					StorageAwsRoleArn:    "",
+					StorageAwsExternalId: "",
+					EncryptionType:       "NONE",
+					EncryptionKmsKeyId:   "",
+					AzureTenantId:        "",
+				},
+			))
 	})
 
 	t.Run("Show with like", func(t *testing.T) {

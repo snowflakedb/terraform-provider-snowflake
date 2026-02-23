@@ -31,10 +31,10 @@ func (c *ExternalVolumeClient) Create(t *testing.T) (sdk.AccountObjectIdentifier
 
 	id := c.ids.RandomAccountObjectIdentifier()
 	kmsKeyId := "1234abcd-12ab-34cd-56ef-1234567890ab"
-	storageLocations := []sdk.ExternalVolumeStorageLocation{
-		{
+	storageLocations := []sdk.ExternalVolumeStorageLocationItem{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: "my-s3-us-west-2",
 			S3StorageLocationParams: &sdk.S3StorageLocationParams{
-				Name:              "my-s3-us-west-2",
 				StorageProvider:   sdk.S3StorageProviderS3,
 				StorageAwsRoleArn: "arn:aws:iam::123456789012:role/myrole",
 				StorageBaseUrl:    "s3://my-example-bucket/",
@@ -43,7 +43,7 @@ func (c *ExternalVolumeClient) Create(t *testing.T) (sdk.AccountObjectIdentifier
 					KmsKeyId:       &kmsKeyId,
 				},
 			},
-		},
+		}},
 	}
 
 	req := sdk.NewCreateExternalVolumeRequest(id, storageLocations)

@@ -27,7 +27,8 @@ func (opts *CreateExternalVolumeOptions) validate() error {
 	// Added manually
 
 	// Apply errExactlyOneOf to each element in storage locations list
-	for i, storageLocation := range opts.StorageLocations {
+	for i, storageLocationItem := range opts.StorageLocations {
+		storageLocation := storageLocationItem.ExternalVolumeStorageLocation
 		if !exactlyOneValueSet(storageLocation.S3StorageLocationParams, storageLocation.GCSStorageLocationParams, storageLocation.AzureStorageLocationParams, storageLocation.S3CompatStorageLocationParams) {
 			errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateExternalVolumeOptions.StorageLocation[%d]", i), "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
 		}
@@ -53,8 +54,10 @@ func (opts *AlterExternalVolumeOptions) validate() error {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if valueSet(opts.AddStorageLocation) {
-		if !exactlyOneValueSet(opts.AddStorageLocation.S3StorageLocationParams, opts.AddStorageLocation.GCSStorageLocationParams, opts.AddStorageLocation.AzureStorageLocationParams, opts.AddStorageLocation.S3CompatStorageLocationParams) {
-			errs = append(errs, errExactlyOneOf("AlterExternalVolumeOptions.AddStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
+		if valueSet(opts.AddStorageLocation.ExternalVolumeStorageLocation) {
+			if !exactlyOneValueSet(opts.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams, opts.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams, opts.AddStorageLocation.ExternalVolumeStorageLocation.AzureStorageLocationParams, opts.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams) {
+				errs = append(errs, errExactlyOneOf("AlterExternalVolumeOptions.AddStorageLocation.ExternalVolumeStorageLocation", "S3StorageLocationParams", "GCSStorageLocationParams", "AzureStorageLocationParams", "S3CompatStorageLocationParams"))
+			}
 		}
 	}
 	return JoinErrors(errs...)

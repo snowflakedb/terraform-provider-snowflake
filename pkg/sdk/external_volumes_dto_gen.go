@@ -13,8 +13,8 @@ var (
 type CreateExternalVolumeRequest struct {
 	OrReplace        *bool
 	IfNotExists      *bool
-	name             AccountObjectIdentifier         // required
-	StorageLocations []ExternalVolumeStorageLocation // required
+	name             AccountObjectIdentifier             // required
+	StorageLocations []ExternalVolumeStorageLocationItem // required
 	AllowWrites      *bool
 	Comment          *string
 }
@@ -24,7 +24,7 @@ type AlterExternalVolumeRequest struct {
 	name                  AccountObjectIdentifier // required
 	RemoveStorageLocation *string
 	Set                   *AlterExternalVolumeSetRequest
-	AddStorageLocation    *ExternalVolumeStorageLocationRequest
+	AddStorageLocation    *ExternalVolumeStorageLocationItemRequest
 	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocationRequest
 }
 
@@ -33,7 +33,12 @@ type AlterExternalVolumeSetRequest struct {
 	Comment     *string
 }
 
+type ExternalVolumeStorageLocationItemRequest struct {
+	ExternalVolumeStorageLocation ExternalVolumeStorageLocationRequest
+}
+
 type ExternalVolumeStorageLocationRequest struct {
+	Name                          string // required
 	S3StorageLocationParams       *S3StorageLocationParamsRequest
 	GCSStorageLocationParams      *GCSStorageLocationParamsRequest
 	AzureStorageLocationParams    *AzureStorageLocationParamsRequest
@@ -41,7 +46,6 @@ type ExternalVolumeStorageLocationRequest struct {
 }
 
 type S3StorageLocationParamsRequest struct {
-	Name                     string            // required
 	StorageProvider          S3StorageProvider // required
 	StorageAwsRoleArn        string            // required
 	StorageBaseUrl           string            // required
@@ -57,7 +61,6 @@ type ExternalVolumeS3EncryptionRequest struct {
 }
 
 type GCSStorageLocationParamsRequest struct {
-	Name           string // required
 	StorageBaseUrl string // required
 	Encryption     *ExternalVolumeGCSEncryptionRequest
 }
@@ -68,14 +71,12 @@ type ExternalVolumeGCSEncryptionRequest struct {
 }
 
 type AzureStorageLocationParamsRequest struct {
-	Name                   string // required
 	AzureTenantId          string // required
 	StorageBaseUrl         string // required
 	UsePrivatelinkEndpoint *bool
 }
 
 type S3CompatStorageLocationParamsRequest struct {
-	Name            string // required
 	StorageBaseUrl  string // required
 	StorageEndpoint string // required
 	Credentials     *ExternalVolumeS3CompatCredentialsRequest
@@ -87,8 +88,8 @@ type ExternalVolumeS3CompatCredentialsRequest struct {
 }
 
 type AlterExternalVolumeUpdateStorageLocationRequest struct {
-	StorageLocation string // required
-	Credentials     *ExternalVolumeUpdateCredentialsRequest
+	StorageLocation string                                 // required
+	Credentials     ExternalVolumeUpdateCredentialsRequest // required
 }
 
 type ExternalVolumeUpdateCredentialsRequest struct {

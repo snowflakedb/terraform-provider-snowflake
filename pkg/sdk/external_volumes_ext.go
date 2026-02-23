@@ -11,11 +11,12 @@ import (
 // sentinel name used for Terraform provider operations. This is useful for managing
 // storage location state without affecting user-visible names.
 func CopySentinelStorageLocation(
-	storageLocation ExternalVolumeStorageLocation,
-) (ExternalVolumeStorageLocation, error) {
-	storageProvider, err := GetStorageLocationStorageProvider(storageLocation)
+	storageLocationItem ExternalVolumeStorageLocationItem,
+) (ExternalVolumeStorageLocationItem, error) {
+	storageLocation := storageLocationItem.ExternalVolumeStorageLocation
+	storageProvider, err := GetStorageLocationStorageProvider(storageLocationItem)
 	if err != nil {
-		return ExternalVolumeStorageLocation{}, err
+		return ExternalVolumeStorageLocationItem{}, err
 	}
 
 	newName := "terraform_provider_sentinel_storage_location"
@@ -23,8 +24,8 @@ func CopySentinelStorageLocation(
 	switch storageProvider {
 	case StorageProviderS3, StorageProviderS3GOV:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			Name: newName,
 			S3StorageLocationParams: &S3StorageLocationParams{
-				Name:                     newName,
 				StorageProvider:          storageLocation.S3StorageLocationParams.StorageProvider,
 				StorageBaseUrl:           storageLocation.S3StorageLocationParams.StorageBaseUrl,
 				StorageAwsRoleArn:        storageLocation.S3StorageLocationParams.StorageAwsRoleArn,
@@ -36,16 +37,16 @@ func CopySentinelStorageLocation(
 		}
 	case StorageProviderGCS:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			Name: newName,
 			GCSStorageLocationParams: &GCSStorageLocationParams{
-				Name:           newName,
 				StorageBaseUrl: storageLocation.GCSStorageLocationParams.StorageBaseUrl,
 				Encryption:     storageLocation.GCSStorageLocationParams.Encryption,
 			},
 		}
 	case StorageProviderAzure:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			Name: newName,
 			AzureStorageLocationParams: &AzureStorageLocationParams{
-				Name:                   newName,
 				StorageBaseUrl:         storageLocation.AzureStorageLocationParams.StorageBaseUrl,
 				AzureTenantId:          storageLocation.AzureStorageLocationParams.AzureTenantId,
 				UsePrivatelinkEndpoint: storageLocation.AzureStorageLocationParams.UsePrivatelinkEndpoint,
@@ -53,54 +54,33 @@ func CopySentinelStorageLocation(
 		}
 	case StorageProviderS3Compatible:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			Name: newName,
 			S3CompatStorageLocationParams: &S3CompatStorageLocationParams{
-				Name:            newName,
 				StorageBaseUrl:  storageLocation.S3CompatStorageLocationParams.StorageBaseUrl,
 				StorageEndpoint: storageLocation.S3CompatStorageLocationParams.StorageEndpoint,
 				Credentials:     storageLocation.S3CompatStorageLocationParams.Credentials,
 			},
 		}
 	default:
-		return ExternalVolumeStorageLocation{}, fmt.Errorf("unsupported storage provider type: %s", storageProvider)
+		return ExternalVolumeStorageLocationItem{}, fmt.Errorf("unsupported storage provider type: %s", storageProvider)
 	}
 
-	return tempNameStorageLocation, nil
+	return ExternalVolumeStorageLocationItem{
+		ExternalVolumeStorageLocation: tempNameStorageLocation,
+	}, nil
 }
 
 // GetStorageLocationName retrieves the name from a storage location configuration.
 // Returns an error if the storage location is invalid or the name is empty.
 func GetStorageLocationName(s ExternalVolumeStorageLocation) (string, error) {
-	switch {
-	case s.S3StorageLocationParams != nil && *s.S3StorageLocationParams != S3StorageLocationParams{}:
-		if len(s.S3StorageLocationParams.Name) == 0 {
-			return "", fmt.Errorf("Invalid S3 storage location - no name set")
-		}
-
-		return s.S3StorageLocationParams.Name, nil
-	case s.GCSStorageLocationParams != nil && *s.GCSStorageLocationParams != GCSStorageLocationParams{}:
-		if len(s.GCSStorageLocationParams.Name) == 0 {
-			return "", fmt.Errorf("Invalid GCS storage location - no name set")
-		}
-
-		return s.GCSStorageLocationParams.Name, nil
-	case s.AzureStorageLocationParams != nil && *s.AzureStorageLocationParams != AzureStorageLocationParams{}:
-		if len(s.AzureStorageLocationParams.Name) == 0 {
-			return "", fmt.Errorf("Invalid Azure storage location - no name set")
-		}
-
-		return s.AzureStorageLocationParams.Name, nil
-	case s.S3CompatStorageLocationParams != nil && *s.S3CompatStorageLocationParams != S3CompatStorageLocationParams{}:
-		if len(s.S3CompatStorageLocationParams.Name) == 0 {
-			return "", fmt.Errorf("Invalid S3Compatible storage location - no name set")
-		}
-
-		return s.S3CompatStorageLocationParams.Name, nil
-	default:
-		return "", fmt.Errorf("Invalid storage location")
+	if len(s.Name) == 0 {
+		return "", fmt.Errorf("Invalid storage location - no name set")
 	}
+	return s.Name, nil
 }
 
-func GetStorageLocationStorageProvider(s ExternalVolumeStorageLocation) (StorageProvider, error) {
+func GetStorageLocationStorageProvider(i ExternalVolumeStorageLocationItem) (StorageProvider, error) {
+	s := i.ExternalVolumeStorageLocation
 	switch {
 	case s.S3StorageLocationParams != nil && *s.S3StorageLocationParams != S3StorageLocationParams{}:
 		return ToStorageProvider(string(s.S3StorageLocationParams.StorageProvider))
@@ -114,7 +94,6 @@ func GetStorageLocationStorageProvider(s ExternalVolumeStorageLocation) (Storage
 		return "", fmt.Errorf("Invalid storage location")
 	}
 }
-
 
 type ExternalVolumeDetails struct {
 	StorageLocations []ExternalVolumeStorageLocationDetails
