@@ -28,6 +28,122 @@ func ImportedDynamicTableResource(t *testing.T, id string) *DynamicTableResource
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (d *DynamicTableResourceAssert) HasDatabase(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("database", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasSchema(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("schema", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasName(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("name", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasAutomaticClustering(expected bool) *DynamicTableResourceAssert {
+	d.BoolValueSet("automatic_clustering", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasBytes(expected int) *DynamicTableResourceAssert {
+	d.IntValueSet("bytes", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasClusterBy(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("cluster_by", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasComment(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("comment", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasCreatedOn(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("created_on", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasDataTimestamp(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("data_timestamp", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasFullyQualifiedName(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("fully_qualified_name", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasInitialize(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("initialize", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasIsClone(expected bool) *DynamicTableResourceAssert {
+	d.BoolValueSet("is_clone", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasIsReplica(expected bool) *DynamicTableResourceAssert {
+	d.BoolValueSet("is_replica", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasLastSuspendedOn(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("last_suspended_on", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasOrReplace(expected bool) *DynamicTableResourceAssert {
+	d.BoolValueSet("or_replace", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasOwner(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("owner", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasQuery(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("query", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasRefreshMode(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("refresh_mode", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasRefreshModeReason(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("refresh_mode_reason", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasRows(expected int) *DynamicTableResourceAssert {
+	d.IntValueSet("rows", expected)
+	return d
+}
+
+func (d *DynamicTableResourceAssert) HasSchedulingState(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("scheduling_state", expected)
+	return d
+}
+
+// collection assert for target_lag will be generated here
+
+func (d *DynamicTableResourceAssert) HasWarehouse(expected string) *DynamicTableResourceAssert {
+	d.StringValueSet("warehouse", expected)
+	return d
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -134,11 +250,6 @@ func (d *DynamicTableResourceAssert) HasRowsString(expected string) *DynamicTabl
 
 func (d *DynamicTableResourceAssert) HasSchedulingStateString(expected string) *DynamicTableResourceAssert {
 	d.AddAssertion(assert.ValueSet("scheduling_state", expected))
-	return d
-}
-
-func (d *DynamicTableResourceAssert) HasTargetLagString(expected string) *DynamicTableResourceAssert {
-	d.AddAssertion(assert.ValueSet("target_lag", expected))
 	return d
 }
 

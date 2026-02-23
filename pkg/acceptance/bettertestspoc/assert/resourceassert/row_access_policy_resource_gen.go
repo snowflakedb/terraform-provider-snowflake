@@ -28,6 +28,42 @@ func ImportedRowAccessPolicyResource(t *testing.T, id string) *RowAccessPolicyRe
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (r *RowAccessPolicyResourceAssert) HasDatabase(expected string) *RowAccessPolicyResourceAssert {
+	r.StringValueSet("database", expected)
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasSchema(expected string) *RowAccessPolicyResourceAssert {
+	r.StringValueSet("schema", expected)
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasName(expected string) *RowAccessPolicyResourceAssert {
+	r.StringValueSet("name", expected)
+	return r
+}
+
+// collection assert for argument will be generated here
+
+func (r *RowAccessPolicyResourceAssert) HasBody(expected string) *RowAccessPolicyResourceAssert {
+	r.StringValueSet("body", expected)
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasComment(expected string) *RowAccessPolicyResourceAssert {
+	r.StringValueSet("comment", expected)
+	return r
+}
+
+func (r *RowAccessPolicyResourceAssert) HasFullyQualifiedName(expected string) *RowAccessPolicyResourceAssert {
+	r.StringValueSet("fully_qualified_name", expected)
+	return r
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -44,11 +80,6 @@ func (r *RowAccessPolicyResourceAssert) HasSchemaString(expected string) *RowAcc
 
 func (r *RowAccessPolicyResourceAssert) HasNameString(expected string) *RowAccessPolicyResourceAssert {
 	r.AddAssertion(assert.ValueSet("name", expected))
-	return r
-}
-
-func (r *RowAccessPolicyResourceAssert) HasArgumentString(expected string) *RowAccessPolicyResourceAssert {
-	r.AddAssertion(assert.ValueSet("argument", expected))
 	return r
 }
 

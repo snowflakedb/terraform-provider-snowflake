@@ -28,6 +28,27 @@ func ImportedExecuteResource(t *testing.T, id string) *ExecuteResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (e *ExecuteResourceAssert) HasExecute(expected string) *ExecuteResourceAssert {
+	e.StringValueSet("execute", expected)
+	return e
+}
+
+func (e *ExecuteResourceAssert) HasQuery(expected string) *ExecuteResourceAssert {
+	e.StringValueSet("query", expected)
+	return e
+}
+
+// collection assert for query_results will be generated here
+
+func (e *ExecuteResourceAssert) HasRevert(expected string) *ExecuteResourceAssert {
+	e.StringValueSet("revert", expected)
+	return e
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -39,11 +60,6 @@ func (e *ExecuteResourceAssert) HasExecuteString(expected string) *ExecuteResour
 
 func (e *ExecuteResourceAssert) HasQueryString(expected string) *ExecuteResourceAssert {
 	e.AddAssertion(assert.ValueSet("query", expected))
-	return e
-}
-
-func (e *ExecuteResourceAssert) HasQueryResultsString(expected string) *ExecuteResourceAssert {
-	e.AddAssertion(assert.ValueSet("query_results", expected))
 	return e
 }
 

@@ -28,6 +28,53 @@ func ImportedGrantPrivilegesToAccountRoleResource(t *testing.T, id string) *Gran
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAccountRoleName(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.StringValueSet("account_role_name", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAllPrivileges(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("all_privileges", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApply(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("always_apply", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyTrigger(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.StringValueSet("always_apply_trigger", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccount(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("on_account", expected)
+	return g
+}
+
+// collection assert for on_account_object will be generated here
+
+// collection assert for on_schema will be generated here
+
+// collection assert for on_schema_object will be generated here
+
+// collection assert for privileges will be generated here
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagement(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("strict_privilege_management", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOption(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("with_grant_option", expected)
+	return g
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,26 +101,6 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyTriggerString
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
 	g.AddAssertion(assert.ValueSet("on_account", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountObjectString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_account_object", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnSchemaString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnSchemaObjectString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema_object", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivilegesString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("privileges", expected))
 	return g
 }
 

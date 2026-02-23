@@ -28,6 +28,82 @@ func ImportedExternalOauthSecurityIntegrationResource(t *testing.T, id string) *
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasName(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("name", expected)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasComment(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("comment", expected)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasEnabled(expected bool) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.BoolValueSet("enabled", expected)
+	return e
+}
+
+// collection assert for external_oauth_allowed_roles_list will be generated here
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAnyRoleMode(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("external_oauth_any_role_mode", expected)
+	return e
+}
+
+// collection assert for external_oauth_audience_list will be generated here
+
+// collection assert for external_oauth_blocked_roles_list will be generated here
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthIssuer(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("external_oauth_issuer", expected)
+	return e
+}
+
+// collection assert for external_oauth_jws_keys_url will be generated here
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKey(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("external_oauth_rsa_public_key", expected)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKey2(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("external_oauth_rsa_public_key_2", expected)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeDelimiter(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("external_oauth_scope_delimiter", expected)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeMappingAttribute(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("external_oauth_scope_mapping_attribute", expected)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthSnowflakeUserMappingAttribute(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("external_oauth_snowflake_user_mapping_attribute", expected)
+	return e
+}
+
+// collection assert for external_oauth_token_user_mapping_claim will be generated here
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthType(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("external_oauth_type", expected)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedName(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("fully_qualified_name", expected)
+	return e
+}
+
+// collection assert for related_parameters will be generated here
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,33 +123,13 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasEnabledString(expect
 	return e
 }
 
-func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAllowedRolesListString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_allowed_roles_list", expected))
-	return e
-}
-
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAnyRoleModeString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.AddAssertion(assert.ValueSet("external_oauth_any_role_mode", expected))
 	return e
 }
 
-func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAudienceListString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_audience_list", expected))
-	return e
-}
-
-func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthBlockedRolesListString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_blocked_roles_list", expected))
-	return e
-}
-
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthIssuerString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.AddAssertion(assert.ValueSet("external_oauth_issuer", expected))
-	return e
-}
-
-func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthJwsKeysUrlString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_jws_keys_url", expected))
 	return e
 }
 
@@ -102,11 +158,6 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthSnowfla
 	return e
 }
 
-func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthTokenUserMappingClaimString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_token_user_mapping_claim", expected))
-	return e
-}
-
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthTypeString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.AddAssertion(assert.ValueSet("external_oauth_type", expected))
 	return e
@@ -114,11 +165,6 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthTypeStr
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return e
-}
-
-func (e *ExternalOauthSecurityIntegrationResourceAssert) HasRelatedParametersString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("related_parameters", expected))
 	return e
 }
 

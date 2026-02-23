@@ -28,6 +28,54 @@ func ImportedResourceMonitorResource(t *testing.T, id string) *ResourceMonitorRe
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (r *ResourceMonitorResourceAssert) HasName(expected string) *ResourceMonitorResourceAssert {
+	r.StringValueSet("name", expected)
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasCreditQuota(expected int) *ResourceMonitorResourceAssert {
+	r.IntValueSet("credit_quota", expected)
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasEndTimestamp(expected string) *ResourceMonitorResourceAssert {
+	r.StringValueSet("end_timestamp", expected)
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasFrequency(expected string) *ResourceMonitorResourceAssert {
+	r.StringValueSet("frequency", expected)
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasFullyQualifiedName(expected string) *ResourceMonitorResourceAssert {
+	r.StringValueSet("fully_qualified_name", expected)
+	return r
+}
+
+// collection assert for notify_triggers will be generated here
+
+// collection assert for notify_users will be generated here
+
+func (r *ResourceMonitorResourceAssert) HasStartTimestamp(expected string) *ResourceMonitorResourceAssert {
+	r.StringValueSet("start_timestamp", expected)
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasSuspendImmediateTrigger(expected int) *ResourceMonitorResourceAssert {
+	r.IntValueSet("suspend_immediate_trigger", expected)
+	return r
+}
+
+func (r *ResourceMonitorResourceAssert) HasSuspendTrigger(expected int) *ResourceMonitorResourceAssert {
+	r.IntValueSet("suspend_trigger", expected)
+	return r
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,16 +102,6 @@ func (r *ResourceMonitorResourceAssert) HasFrequencyString(expected string) *Res
 
 func (r *ResourceMonitorResourceAssert) HasFullyQualifiedNameString(expected string) *ResourceMonitorResourceAssert {
 	r.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return r
-}
-
-func (r *ResourceMonitorResourceAssert) HasNotifyTriggersString(expected string) *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValueSet("notify_triggers", expected))
-	return r
-}
-
-func (r *ResourceMonitorResourceAssert) HasNotifyUsersString(expected string) *ResourceMonitorResourceAssert {
-	r.AddAssertion(assert.ValueSet("notify_users", expected))
 	return r
 }
 

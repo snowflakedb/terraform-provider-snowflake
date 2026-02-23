@@ -58,7 +58,7 @@ func getExpectedTypeAndAssertionCreator(attr genhelpers.SchemaAttribute) (expect
 		expectedType = "int"
 		assertionCreator = "IntValueSet"
 	case schema.TypeFloat:
-		expectedType = "float"
+		expectedType = "float64"
 		assertionCreator = "FloatValueSet"
 	case schema.TypeString:
 		expectedType = "string"

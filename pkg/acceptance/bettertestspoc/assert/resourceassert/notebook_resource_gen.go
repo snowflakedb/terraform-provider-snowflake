@@ -28,6 +28,57 @@ func ImportedNotebookResource(t *testing.T, id string) *NotebookResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (n *NotebookResourceAssert) HasDatabase(expected string) *NotebookResourceAssert {
+	n.StringValueSet("database", expected)
+	return n
+}
+
+func (n *NotebookResourceAssert) HasSchema(expected string) *NotebookResourceAssert {
+	n.StringValueSet("schema", expected)
+	return n
+}
+
+func (n *NotebookResourceAssert) HasName(expected string) *NotebookResourceAssert {
+	n.StringValueSet("name", expected)
+	return n
+}
+
+func (n *NotebookResourceAssert) HasComment(expected string) *NotebookResourceAssert {
+	n.StringValueSet("comment", expected)
+	return n
+}
+
+// collection assert for from will be generated here
+
+func (n *NotebookResourceAssert) HasFullyQualifiedName(expected string) *NotebookResourceAssert {
+	n.StringValueSet("fully_qualified_name", expected)
+	return n
+}
+
+func (n *NotebookResourceAssert) HasIdleAutoShutdownTimeSeconds(expected int) *NotebookResourceAssert {
+	n.IntValueSet("idle_auto_shutdown_time_seconds", expected)
+	return n
+}
+
+func (n *NotebookResourceAssert) HasMainFile(expected string) *NotebookResourceAssert {
+	n.StringValueSet("main_file", expected)
+	return n
+}
+
+func (n *NotebookResourceAssert) HasQueryWarehouse(expected string) *NotebookResourceAssert {
+	n.StringValueSet("query_warehouse", expected)
+	return n
+}
+
+func (n *NotebookResourceAssert) HasWarehouse(expected string) *NotebookResourceAssert {
+	n.StringValueSet("warehouse", expected)
+	return n
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -49,11 +100,6 @@ func (n *NotebookResourceAssert) HasNameString(expected string) *NotebookResourc
 
 func (n *NotebookResourceAssert) HasCommentString(expected string) *NotebookResourceAssert {
 	n.AddAssertion(assert.ValueSet("comment", expected))
-	return n
-}
-
-func (n *NotebookResourceAssert) HasFromString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("from", expected))
 	return n
 }
 

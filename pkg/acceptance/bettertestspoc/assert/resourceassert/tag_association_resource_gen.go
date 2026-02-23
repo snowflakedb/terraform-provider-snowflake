@@ -28,14 +28,35 @@ func ImportedTagAssociationResource(t *testing.T, id string) *TagAssociationReso
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+// collection assert for object_identifiers will be generated here
+
+func (t *TagAssociationResourceAssert) HasObjectType(expected string) *TagAssociationResourceAssert {
+	t.StringValueSet("object_type", expected)
+	return t
+}
+
+func (t *TagAssociationResourceAssert) HasSkipValidation(expected bool) *TagAssociationResourceAssert {
+	t.BoolValueSet("skip_validation", expected)
+	return t
+}
+
+func (t *TagAssociationResourceAssert) HasTagId(expected string) *TagAssociationResourceAssert {
+	t.StringValueSet("tag_id", expected)
+	return t
+}
+
+func (t *TagAssociationResourceAssert) HasTagValue(expected string) *TagAssociationResourceAssert {
+	t.StringValueSet("tag_value", expected)
+	return t
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
-
-func (t *TagAssociationResourceAssert) HasObjectIdentifiersString(expected string) *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueSet("object_identifiers", expected))
-	return t
-}
 
 func (t *TagAssociationResourceAssert) HasObjectTypeString(expected string) *TagAssociationResourceAssert {
 	t.AddAssertion(assert.ValueSet("object_type", expected))

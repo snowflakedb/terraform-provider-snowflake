@@ -28,6 +28,112 @@ func ImportedProcedureScalaResource(t *testing.T, id string) *ProcedureScalaReso
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (p *ProcedureScalaResourceAssert) HasDatabase(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("database", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasSchema(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("schema", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasName(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("name", expected)
+	return p
+}
+
+// collection assert for arguments will be generated here
+
+func (p *ProcedureScalaResourceAssert) HasComment(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("comment", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasEnableConsoleOutput(expected bool) *ProcedureScalaResourceAssert {
+	p.BoolValueSet("enable_console_output", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasExecuteAs(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("execute_as", expected)
+	return p
+}
+
+// collection assert for external_access_integrations will be generated here
+
+func (p *ProcedureScalaResourceAssert) HasFullyQualifiedName(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("fully_qualified_name", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasHandler(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("handler", expected)
+	return p
+}
+
+// collection assert for imports will be generated here
+
+func (p *ProcedureScalaResourceAssert) HasIsSecure(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("is_secure", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasLogLevel(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("log_level", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasMetricLevel(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("metric_level", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasNullInputBehavior(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("null_input_behavior", expected)
+	return p
+}
+
+// collection assert for packages will be generated here
+
+func (p *ProcedureScalaResourceAssert) HasProcedureDefinition(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("procedure_definition", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasProcedureLanguage(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("procedure_language", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasReturnType(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("return_type", expected)
+	return p
+}
+
+func (p *ProcedureScalaResourceAssert) HasRuntimeVersion(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("runtime_version", expected)
+	return p
+}
+
+// collection assert for secrets will be generated here
+
+func (p *ProcedureScalaResourceAssert) HasSnowparkPackage(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("snowpark_package", expected)
+	return p
+}
+
+// collection assert for target_path will be generated here
+
+func (p *ProcedureScalaResourceAssert) HasTraceLevel(expected string) *ProcedureScalaResourceAssert {
+	p.StringValueSet("trace_level", expected)
+	return p
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,11 +153,6 @@ func (p *ProcedureScalaResourceAssert) HasNameString(expected string) *Procedure
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasArgumentsString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments", expected))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasCommentString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
 	return p
@@ -67,11 +168,6 @@ func (p *ProcedureScalaResourceAssert) HasExecuteAsString(expected string) *Proc
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasExternalAccessIntegrationsString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("external_access_integrations", expected))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasFullyQualifiedNameString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return p
@@ -79,11 +175,6 @@ func (p *ProcedureScalaResourceAssert) HasFullyQualifiedNameString(expected stri
 
 func (p *ProcedureScalaResourceAssert) HasHandlerString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("handler", expected))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasImportsString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("imports", expected))
 	return p
 }
 
@@ -107,11 +198,6 @@ func (p *ProcedureScalaResourceAssert) HasNullInputBehaviorString(expected strin
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasPackagesString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("packages", expected))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasProcedureDefinitionString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("procedure_definition", expected))
 	return p
@@ -132,18 +218,8 @@ func (p *ProcedureScalaResourceAssert) HasRuntimeVersionString(expected string) 
 	return p
 }
 
-func (p *ProcedureScalaResourceAssert) HasSecretsString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("secrets", expected))
-	return p
-}
-
 func (p *ProcedureScalaResourceAssert) HasSnowparkPackageString(expected string) *ProcedureScalaResourceAssert {
 	p.AddAssertion(assert.ValueSet("snowpark_package", expected))
-	return p
-}
-
-func (p *ProcedureScalaResourceAssert) HasTargetPathString(expected string) *ProcedureScalaResourceAssert {
-	p.AddAssertion(assert.ValueSet("target_path", expected))
 	return p
 }
 

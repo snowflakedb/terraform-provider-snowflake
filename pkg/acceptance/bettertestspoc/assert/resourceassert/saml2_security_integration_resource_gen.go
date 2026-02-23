@@ -28,22 +28,100 @@ func ImportedSaml2SecurityIntegrationResource(t *testing.T, id string) *Saml2Sec
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasName(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+// collection assert for allowed_email_patterns will be generated here
+
+// collection assert for allowed_user_domains will be generated here
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasComment(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasEnabled(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("enabled", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasFullyQualifiedName(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2EnableSpInitiated(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_enable_sp_initiated", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2ForceAuthn(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_force_authn", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2Issuer(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_issuer", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2PostLogoutRedirectUrl(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_post_logout_redirect_url", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2Provider(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_provider", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2RequestedNameidFormat(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_requested_nameid_format", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SignRequest(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_sign_request", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SnowflakeAcsUrl(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_snowflake_acs_url", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SnowflakeIssuerUrl(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_snowflake_issuer_url", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SpInitiatedLoginPageLabel(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_sp_initiated_login_page_label", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2SsoUrl(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_sso_url", expected)
+	return s
+}
+
+func (s *Saml2SecurityIntegrationResourceAssert) HasSaml2X509Cert(expected string) *Saml2SecurityIntegrationResourceAssert {
+	s.StringValueSet("saml2_x509_cert", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
 
 func (s *Saml2SecurityIntegrationResourceAssert) HasNameString(expected string) *Saml2SecurityIntegrationResourceAssert {
 	s.AddAssertion(assert.ValueSet("name", expected))
-	return s
-}
-
-func (s *Saml2SecurityIntegrationResourceAssert) HasAllowedEmailPatternsString(expected string) *Saml2SecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValueSet("allowed_email_patterns", expected))
-	return s
-}
-
-func (s *Saml2SecurityIntegrationResourceAssert) HasAllowedUserDomainsString(expected string) *Saml2SecurityIntegrationResourceAssert {
-	s.AddAssertion(assert.ValueSet("allowed_user_domains", expected))
 	return s
 }
 
