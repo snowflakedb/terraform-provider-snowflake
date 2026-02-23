@@ -25,6 +25,7 @@
 - [snowflake_listing](./docs/resources/listing)
 - [snowflake_masking_policy](./docs/resources/masking_policy)
 - [snowflake_network_policy](./docs/resources/network_policy)
+- [snowflake_network_rule](./docs/resources/network_rule)
 - [snowflake_oauth_integration_for_custom_clients](./docs/resources/oauth_integration_for_custom_clients)
 - [snowflake_oauth_integration_for_partner_applications](./docs/resources/oauth_integration_for_partner_applications)
 - [snowflake_primary_connection](./docs/resources/primary_connection)

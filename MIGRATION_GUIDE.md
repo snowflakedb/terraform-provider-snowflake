@@ -88,6 +88,14 @@ No configuration changes are required.
 
 Reference: [#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956), [#4437](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4437)
 
+### snowflake_network_rule promoted to stable
+
+Since this version, this resource is stable and is enabled by default: enabling it in the provider configuration is no longer required. Please remove it from the `preview_features_enabled` list.
+
+Provider will issue a warning if a stable feature is still used on the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
 ### *(new feature)* snowflake_network_rules data source
 Added a new preview data source for network rules. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-network-rules).
 

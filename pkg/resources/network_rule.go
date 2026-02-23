@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -94,10 +93,10 @@ func NetworkRule() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingCreateWrapper(resources.NetworkRule, CreateContextNetworkRule)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingReadWrapper(resources.NetworkRule, ReadContextNetworkRule)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingUpdateWrapper(resources.NetworkRule, UpdateContextNetworkRule)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.NetworkRuleResource), TrackingDeleteWrapper(resources.NetworkRule, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.NetworkRule, CreateContextNetworkRule),
+		ReadContext:   TrackingReadWrapper(resources.NetworkRule, ReadContextNetworkRule),
+		UpdateContext: TrackingUpdateWrapper(resources.NetworkRule, UpdateContextNetworkRule),
+		DeleteContext: TrackingDeleteWrapper(resources.NetworkRule, deleteFunc),
 
 		Schema: networkRuleSchema,
 		Importer: &schema.ResourceImporter{

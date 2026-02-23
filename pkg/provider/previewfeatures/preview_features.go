@@ -151,7 +151,6 @@ var allPreviewFeatures = []feature{
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
 	NetworkPolicyAttachmentResource,
-	NetworkRuleResource,
 	NetworkRulesDatasource,
 	NotebookResource,
 	NotebooksDatasource,
@@ -208,6 +207,7 @@ var promotedFeatures = []feature{
 	ServicesDatasource,
 	UserProgrammaticAccessTokenResource,
 	UserProgrammaticAccessTokensDatasource,
+	NetworkRuleResource,
 }
 var PromotedFeatures = sdk.AsStringList(promotedFeatures)
 
