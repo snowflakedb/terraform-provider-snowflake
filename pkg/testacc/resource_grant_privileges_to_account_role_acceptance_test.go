@@ -3300,10 +3300,11 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Disabled(t *testing.T
 			},
 			// Import without experiment enabled - should succeed (default behavior preserved)
 			{
-				Config:                  accconfig.FromModels(t, resourceModel),
-				ResourceName:            resourceModel.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
+				Config:            accconfig.FromModels(t, resourceModel),
+				ResourceName:      resourceModel.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Privileges are not verified because the config is not matching the current state, and this field is overridden by the read function.
 				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name", "privileges"},
 			},
 		},
