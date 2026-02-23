@@ -231,7 +231,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(scimWithDescribe.DatasourceReference(), "security_integrations.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(scimWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(scimWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "false")),
+					assert.Check(resource.TestCheckResourceAttr(scimWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true")),
 					assert.Check(resource.TestCheckResourceAttr(scimWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.run_as_role.0.value", "GENERIC_SCIM_PROVISIONER")),
 					assert.Check(resource.TestCheckResourceAttr(scimWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.sync_password.0.value", "false")),
 					assert.Check(resource.TestCheckResourceAttr(scimWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.comment.0.value", comment)),
@@ -430,7 +430,7 @@ func TestAcc_SecurityIntegrations_MultipleTypes(t *testing.T) {
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.show_output.0.name", idOne.Name()),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.show_output.0.integration_type", "SAML2"),
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.show_output.0.category", sdk.SecurityIntegrationCategory),
-					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.show_output.0.enabled", "false"),
+					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.show_output.0.enabled", "true"),
 					resource.TestCheckResourceAttrSet(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(securityIntegrationsModel.DatasourceReference(), "security_integrations.1.describe_output.#", "1"),

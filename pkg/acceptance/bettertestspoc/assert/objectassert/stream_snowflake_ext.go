@@ -3,7 +3,6 @@ package objectassert
 import (
 	"errors"
 	"fmt"
-	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -49,7 +48,26 @@ func (s *StreamAssert) HasBaseTablesPartiallyQualified(expected ...string) *Stre
 		}
 		var errs []error
 		for _, wantName := range expected {
-			if !slices.Contains(o.BaseTables, wantName) {
+			found := false
+			for _, gotName := range o.BaseTables {
+				if gotName == wantName {
+					found = true
+					break
+				}
+				gotId, err := sdk.ParseSchemaObjectIdentifier(gotName)
+				if err == nil {
+					wantId, err := sdk.ParseSchemaObjectIdentifier(wantName)
+					if err == nil && gotId.FullyQualifiedName() == wantId.FullyQualifiedName() {
+						found = true
+						break
+					}
+					if gotId.Name() == wantName {
+						found = true
+						break
+					}
+				}
+			}
+			if !found {
 				errs = append(errs, fmt.Errorf("expected name: %s, to be in the list ids: %v", wantName, o.BaseTables))
 			}
 		}

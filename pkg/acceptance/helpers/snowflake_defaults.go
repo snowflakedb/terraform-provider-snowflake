@@ -1,12 +1,9 @@
 package helpers
 
 import (
-	"fmt"
-	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type SnowflakeDefaultsClient struct {
@@ -18,14 +15,6 @@ func NewSnowflakeDefaultsClient(context *TestClientContext) *SnowflakeDefaultsCl
 	return &SnowflakeDefaultsClient{
 		context: context,
 	}
-}
-
-func (c *SnowflakeDefaultsClient) StageIdentifierOutputFormatForStreamOnDirectoryTable(t *testing.T, id sdk.SchemaObjectIdentifier) string {
-	t.Helper()
-	if slices.Contains([]testenvs.SnowflakeEnvironment{testenvs.SnowflakeNonProdEnvironment, testenvs.SnowflakePreProdGovEnvironment}, c.context.snowflakeEnvironment) {
-		return fmt.Sprintf(`"%s"."%s".%s`, id.DatabaseName(), id.SchemaName(), id.Name())
-	}
-	return id.Name()
 }
 
 func (c *SnowflakeDefaultsClient) WarehouseGenerationEmptyByDefault(t *testing.T) bool {
