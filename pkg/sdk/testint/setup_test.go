@@ -64,9 +64,6 @@ func setup() {
 
 func cleanup() {
 	log.Println("[DEBUG] Running integration tests cleanup")
-	if itc.bcrCleanup != nil {
-		defer itc.bcrCleanup()
-	}
 	if itc.databaseCleanup != nil {
 		defer itc.databaseCleanup()
 	}
@@ -98,7 +95,6 @@ type integrationTestContext struct {
 	schemaCleanup    func()
 	warehouse        *sdk.Warehouse
 	warehouseCleanup func()
-	bcrCleanup       func()
 
 	secondaryClient *sdk.Client
 	secondaryCtx    context.Context
@@ -258,30 +254,6 @@ func (itc *integrationTestContext) initialize() error {
 		}
 	}
 
-	// TODO: Remove once 2026_01 BCR is enabled by default on all accounts
-	if err := itc.ensureBcrBundle202601(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (itc *integrationTestContext) ensureBcrBundle202601() error {
-	ctx := context.Background()
-	status, err := itc.client.SystemFunctions.BehaviorChangeBundleStatus(ctx, "2026_01")
-	if err != nil {
-		return fmt.Errorf("checking BCR 2026_01 status: %w", err)
-	}
-	if status != sdk.BehaviorChangeBundleStatusEnabled {
-		log.Println("[DEBUG] Enabling BCR 2026_01 for test run")
-		if err := itc.client.SystemFunctions.EnableBehaviorChangeBundle(ctx, "2026_01"); err != nil {
-			return fmt.Errorf("enabling BCR 2026_01: %w", err)
-		}
-		itc.bcrCleanup = func() {
-			log.Println("[DEBUG] Disabling BCR 2026_01 after test run")
-			_ = itc.client.SystemFunctions.DisableBehaviorChangeBundle(context.Background(), "2026_01")
-		}
-	}
 	return nil
 }
 
