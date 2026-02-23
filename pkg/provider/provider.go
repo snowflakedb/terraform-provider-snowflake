@@ -969,8 +969,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 	}
 	// disable telemetry is handled by setting session parameter as DisableTelemetry was removed in v2 of Go driver
 	if _, ok := s.GetOk("disable_telemetry"); ok {
-		// TODO [this PR]: extract to named const? add to the SessionParameters inside SDK?
-		params["CLIENT_TELEMETRY_ENABLED"] = sdk.Pointer("true")
+		params[sdk.ClientTelemetryEnableSessionParameter] = sdk.Pointer(provider.BooleanFalse)
 	}
 	config.Params = params
 

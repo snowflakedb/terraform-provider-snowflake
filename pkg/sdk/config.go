@@ -150,8 +150,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		driverCfg.PrivateKey = privKey
 	}
 	if c.DisableTelemetry != nil && *c.DisableTelemetry {
-		trueString := "true"
-		driverCfg.Params["CLIENT_TELEMETRY_ENABLED"] = &trueString
+		driverCfg.Params[ClientTelemetryEnableSessionParameter] = Pointer("false")
 	}
 	pointerConfigBoolAttributeSet(c.ValidateDefaultParameters, &driverCfg.ValidateDefaultParameters)
 	pointerConfigBoolAttributeSet(c.ClientRequestMfaToken, &driverCfg.ClientRequestMfaToken)

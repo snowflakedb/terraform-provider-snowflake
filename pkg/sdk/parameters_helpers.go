@@ -5,6 +5,9 @@ import (
 	"strconv"
 )
 
+// ClientTelemetryEnableSessionParameter is an undocumented session parameter, so we are keeping it out SessionParameter list for now.
+const ClientTelemetryEnableSessionParameter = "CLIENT_TELEMETRY_ENABLED"
+
 func parseBooleanParameter(parameter, value string) (_ *bool, err error) {
 	b, err := strconv.ParseBool(value)
 	if err != nil {

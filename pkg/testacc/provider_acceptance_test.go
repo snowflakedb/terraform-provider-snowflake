@@ -235,8 +235,8 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
-						"foo":                      sdk.Pointer("bar"),
-						"CLIENT_TELEMETRY_ENABLED": sdk.Pointer("true"),
+						"foo": sdk.Pointer("bar"),
+						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 
@@ -302,8 +302,8 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
-						"foo":                      sdk.Pointer("bar"),
-						"CLIENT_TELEMETRY_ENABLED": sdk.Pointer("true"),
+						"foo": sdk.Pointer("bar"),
+						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
@@ -656,8 +656,8 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.IncludeRetryReason)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
-						"foo":                      sdk.Pointer("bar"),
-						"CLIENT_TELEMETRY_ENABLED": sdk.Pointer("true"),
+						"foo": sdk.Pointer("bar"),
+						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
@@ -806,8 +806,8 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
-						"foo":                      sdk.Pointer("piyo"),
-						"CLIENT_TELEMETRY_ENABLED": sdk.Pointer("true"),
+						"foo": sdk.Pointer("piyo"),
+						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)

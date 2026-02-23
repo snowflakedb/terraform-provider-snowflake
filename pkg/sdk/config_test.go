@@ -382,7 +382,7 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, "password", config.Password)
 		assert.Equal(t, "warehouse", config.Warehouse)
 		assert.Equal(t, "role", config.Role)
-		assert.Equal(t, map[string]*string{"foo": Pointer("bar"), "CLIENT_TELEMETRY_ENABLED": Pointer("true")}, config.Params)
+		assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, config.Params)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
 		assert.Equal(t, "http", config.Protocol)
 		assert.Equal(t, "host", config.Host)
@@ -542,8 +542,8 @@ func Test_MergeConfig(t *testing.T) {
 		Role:                      "role2",
 		ValidateDefaultParameters: 1,
 		Params: map[string]*string{
-			"foo":                      Pointer("2"),
-			"CLIENT_TELEMETRY_ENABLED": Pointer("true"),
+			"foo":                                 Pointer("2"),
+			ClientTelemetryEnableSessionParameter: Pointer("false"),
 		},
 		Protocol:                          "protocol2",
 		Host:                              "host2",
@@ -967,7 +967,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "host", got.Host)
 				assert.Equal(t, "wh", got.Warehouse)
 				assert.Equal(t, "role", got.Role)
-				assert.Equal(t, map[string]*string{"foo": Pointer("bar"), "CLIENT_TELEMETRY_ENABLED": Pointer("true")}, got.Params)
+				assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, got.Params)
 				assert.Equal(t, "https", got.Protocol)
 				assert.Equal(t, "code", got.Passcode)
 				assert.Equal(t, 1234, got.Port)
