@@ -46,6 +46,7 @@ type acceptanceTestContext struct {
 	schemaCleanup    func()
 	warehouse        *sdk.Warehouse
 	warehouseCleanup func()
+	bcrCleanup       func()
 
 	secondaryDatabase         *sdk.Database
 	secondaryDatabaseCleanup  func()
@@ -191,11 +192,38 @@ func (atc *acceptanceTestContext) initialize() error {
 		return fmt.Errorf("cannot set up the provider for the acceptance tests, err: %w", err)
 	}
 
+	// TODO: Remove once 2026_01 BCR is enabled by default on all accounts
+	if err := atc.ensureBcrBundle202601(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (atc *acceptanceTestContext) ensureBcrBundle202601() error {
+	ctx := context.Background()
+	status, err := atc.client.SystemFunctions.BehaviorChangeBundleStatus(ctx, "2026_01")
+	if err != nil {
+		return fmt.Errorf("checking BCR 2026_01 status: %w", err)
+	}
+	if status != sdk.BehaviorChangeBundleStatusEnabled {
+		accTestLog.Printf("[INFO] Enabling BCR 2026_01 for test run")
+		if err := atc.client.SystemFunctions.EnableBehaviorChangeBundle(ctx, "2026_01"); err != nil {
+			return fmt.Errorf("enabling BCR 2026_01: %w", err)
+		}
+		atc.bcrCleanup = func() {
+			accTestLog.Printf("[INFO] Disabling BCR 2026_01 after test run")
+			_ = atc.client.SystemFunctions.DisableBehaviorChangeBundle(context.Background(), "2026_01")
+		}
+	}
 	return nil
 }
 
 func cleanup() {
 	accTestLog.Printf("[INFO] Running acceptance tests cleanup")
+	if atc.bcrCleanup != nil {
+		defer atc.bcrCleanup()
+	}
 	if atc.databaseCleanup != nil {
 		defer atc.databaseCleanup()
 	}
