@@ -22,11 +22,6 @@ func (s *CreateHybridTableRequest) WithIfNotExists(ifNotExists bool) *CreateHybr
 	return s
 }
 
-func (s *CreateHybridTableRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateHybridTableRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
 func (s *CreateHybridTableRequest) WithComment(comment string) *CreateHybridTableRequest {
 	s.Comment = &comment
 	return s
@@ -65,11 +60,6 @@ func (s *AlterHybridTableRequest) WithAlterColumnAction(alterColumnAction Hybrid
 	return s
 }
 
-func (s *AlterHybridTableRequest) WithModifyColumnAction(modifyColumnAction HybridTableModifyColumnActionRequest) *AlterHybridTableRequest {
-	s.ModifyColumnAction = &modifyColumnAction
-	return s
-}
-
 func (s *AlterHybridTableRequest) WithDropColumnAction(dropColumnAction HybridTableDropColumnActionRequest) *AlterHybridTableRequest {
 	s.DropColumnAction = &dropColumnAction
 	return s
@@ -77,6 +67,11 @@ func (s *AlterHybridTableRequest) WithDropColumnAction(dropColumnAction HybridTa
 
 func (s *AlterHybridTableRequest) WithDropIndexAction(dropIndexAction HybridTableDropIndexActionRequest) *AlterHybridTableRequest {
 	s.DropIndexAction = &dropIndexAction
+	return s
+}
+
+func (s *AlterHybridTableRequest) WithClusteringAction(clusteringAction HybridTableClusteringActionRequest) *AlterHybridTableRequest {
+	s.ClusteringAction = &clusteringAction
 	return s
 }
 
@@ -135,13 +130,13 @@ func (s *HybridTableConstraintActionRequest) WithAdd(add HybridTableConstraintAc
 	return s
 }
 
-func (s *HybridTableConstraintActionRequest) WithDrop(drop HybridTableConstraintActionDropRequest) *HybridTableConstraintActionRequest {
-	s.Drop = &drop
+func (s *HybridTableConstraintActionRequest) WithRename(rename HybridTableConstraintActionRenameRequest) *HybridTableConstraintActionRequest {
+	s.Rename = &rename
 	return s
 }
 
-func (s *HybridTableConstraintActionRequest) WithRename(rename HybridTableConstraintActionRenameRequest) *HybridTableConstraintActionRequest {
-	s.Rename = &rename
+func (s *HybridTableConstraintActionRequest) WithDrop(drop HybridTableConstraintActionDropRequest) *HybridTableConstraintActionRequest {
+	s.Drop = &drop
 	return s
 }
 
@@ -150,6 +145,16 @@ func NewHybridTableConstraintActionAddRequest(
 ) *HybridTableConstraintActionAddRequest {
 	s := HybridTableConstraintActionAddRequest{}
 	s.OutOfLineConstraint = outOfLineConstraint
+	return &s
+}
+
+func NewHybridTableConstraintActionRenameRequest(
+	oldName string,
+	newName string,
+) *HybridTableConstraintActionRenameRequest {
+	s := HybridTableConstraintActionRenameRequest{}
+	s.OldName = oldName
+	s.NewName = newName
 	return &s
 }
 
@@ -193,22 +198,32 @@ func (s *HybridTableConstraintActionDropRequest) WithRestrict(restrict bool) *Hy
 	return s
 }
 
-func NewHybridTableConstraintActionRenameRequest(
-	oldName string,
-	newName string,
-) *HybridTableConstraintActionRenameRequest {
-	s := HybridTableConstraintActionRenameRequest{}
-	s.OldName = oldName
-	s.NewName = newName
-	return &s
-}
-
 func NewHybridTableAlterColumnActionRequest(
 	columnName string,
 ) *HybridTableAlterColumnActionRequest {
 	s := HybridTableAlterColumnActionRequest{}
 	s.ColumnName = columnName
 	return &s
+}
+
+func (s *HybridTableAlterColumnActionRequest) WithDropDefault(dropDefault bool) *HybridTableAlterColumnActionRequest {
+	s.DropDefault = &dropDefault
+	return s
+}
+
+func (s *HybridTableAlterColumnActionRequest) WithSetDefault(setDefault SequenceName) *HybridTableAlterColumnActionRequest {
+	s.SetDefault = &setDefault
+	return s
+}
+
+func (s *HybridTableAlterColumnActionRequest) WithNotNullConstraint(notNullConstraint HybridTableColumnNotNullConstraintRequest) *HybridTableAlterColumnActionRequest {
+	s.NotNullConstraint = &notNullConstraint
+	return s
+}
+
+func (s *HybridTableAlterColumnActionRequest) WithType(dataType DataType) *HybridTableAlterColumnActionRequest {
+	s.Type = &dataType
+	return s
 }
 
 func (s *HybridTableAlterColumnActionRequest) WithComment(comment string) *HybridTableAlterColumnActionRequest {
@@ -221,21 +236,18 @@ func (s *HybridTableAlterColumnActionRequest) WithUnsetComment(unsetComment bool
 	return s
 }
 
-func NewHybridTableModifyColumnActionRequest(
-	columnName string,
-) *HybridTableModifyColumnActionRequest {
-	s := HybridTableModifyColumnActionRequest{}
-	s.ColumnName = columnName
+func NewHybridTableColumnNotNullConstraintRequest() *HybridTableColumnNotNullConstraintRequest {
+	s := HybridTableColumnNotNullConstraintRequest{}
 	return &s
 }
 
-func (s *HybridTableModifyColumnActionRequest) WithComment(comment string) *HybridTableModifyColumnActionRequest {
-	s.Comment = &comment
+func (s *HybridTableColumnNotNullConstraintRequest) WithSetNotNull(setNotNull bool) *HybridTableColumnNotNullConstraintRequest {
+	s.SetNotNull = &setNotNull
 	return s
 }
 
-func (s *HybridTableModifyColumnActionRequest) WithUnsetComment(unsetComment bool) *HybridTableModifyColumnActionRequest {
-	s.UnsetComment = &unsetComment
+func (s *HybridTableColumnNotNullConstraintRequest) WithDropNotNull(dropNotNull bool) *HybridTableColumnNotNullConstraintRequest {
+	s.DropNotNull = &dropNotNull
 	return s
 }
 
@@ -263,6 +275,54 @@ func NewHybridTableDropIndexActionRequest(
 func (s *HybridTableDropIndexActionRequest) WithIfExists(ifExists bool) *HybridTableDropIndexActionRequest {
 	s.IfExists = &ifExists
 	return s
+}
+
+func NewHybridTableClusteringActionRequest() *HybridTableClusteringActionRequest {
+	s := HybridTableClusteringActionRequest{}
+	return &s
+}
+
+func (s *HybridTableClusteringActionRequest) WithClusterBy(clusterBy []string) *HybridTableClusteringActionRequest {
+	s.ClusterBy = clusterBy
+	return s
+}
+
+func (s *HybridTableClusteringActionRequest) WithRecluster(recluster HybridTableReclusterActionRequest) *HybridTableClusteringActionRequest {
+	s.Recluster = &recluster
+	return s
+}
+
+func (s *HybridTableClusteringActionRequest) WithChangeReclusterState(changeReclusterState HybridTableReclusterChangeStateRequest) *HybridTableClusteringActionRequest {
+	s.ChangeReclusterState = &changeReclusterState
+	return s
+}
+
+func (s *HybridTableClusteringActionRequest) WithDropClusteringKey(dropClusteringKey bool) *HybridTableClusteringActionRequest {
+	s.DropClusteringKey = &dropClusteringKey
+	return s
+}
+
+func NewHybridTableReclusterActionRequest() *HybridTableReclusterActionRequest {
+	s := HybridTableReclusterActionRequest{}
+	return &s
+}
+
+func (s *HybridTableReclusterActionRequest) WithMaxSize(maxSize int) *HybridTableReclusterActionRequest {
+	s.MaxSize = &maxSize
+	return s
+}
+
+func (s *HybridTableReclusterActionRequest) WithWhere(where string) *HybridTableReclusterActionRequest {
+	s.Where = &where
+	return s
+}
+
+func NewHybridTableReclusterChangeStateRequest(
+	state ReclusterState,
+) *HybridTableReclusterChangeStateRequest {
+	s := HybridTableReclusterChangeStateRequest{}
+	s.State = &state
+	return &s
 }
 
 func NewHybridTableSetPropertiesRequest() *HybridTableSetPropertiesRequest {
@@ -295,8 +355,18 @@ func (s *HybridTableSetPropertiesRequest) WithEnableSchemaEvolution(enableSchema
 	return s
 }
 
+func (s *HybridTableSetPropertiesRequest) WithContact(contact []TableContact) *HybridTableSetPropertiesRequest {
+	s.Contact = contact
+	return s
+}
+
 func (s *HybridTableSetPropertiesRequest) WithComment(comment string) *HybridTableSetPropertiesRequest {
 	s.Comment = &comment
+	return s
+}
+
+func (s *HybridTableSetPropertiesRequest) WithRowTimestamp(rowTimestamp bool) *HybridTableSetPropertiesRequest {
+	s.RowTimestamp = &rowTimestamp
 	return s
 }
 
@@ -327,6 +397,11 @@ func (s *HybridTableUnsetPropertiesRequest) WithDefaultDdlCollation(defaultDdlCo
 
 func (s *HybridTableUnsetPropertiesRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *HybridTableUnsetPropertiesRequest {
 	s.EnableSchemaEvolution = &enableSchemaEvolution
+	return s
+}
+
+func (s *HybridTableUnsetPropertiesRequest) WithContactPurpose(contactPurpose string) *HybridTableUnsetPropertiesRequest {
+	s.ContactPurpose = &contactPurpose
 	return s
 }
 
@@ -393,5 +468,63 @@ func NewDescribeHybridTableRequest(
 ) *DescribeHybridTableRequest {
 	s := DescribeHybridTableRequest{}
 	s.name = name
+	return &s
+}
+
+func NewCreateIndexHybridTableRequest(
+	name SchemaObjectIdentifier,
+	tableName SchemaObjectIdentifier,
+	columns []string,
+) *CreateIndexHybridTableRequest {
+	s := CreateIndexHybridTableRequest{}
+	s.name = name
+	s.TableName = tableName
+	s.Columns = columns
+	return &s
+}
+
+func (s *CreateIndexHybridTableRequest) WithOrReplace(orReplace bool) *CreateIndexHybridTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateIndexHybridTableRequest) WithIfNotExists(ifNotExists bool) *CreateIndexHybridTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateIndexHybridTableRequest) WithIncludeColumns(includeColumns []string) *CreateIndexHybridTableRequest {
+	s.IncludeColumns = includeColumns
+	return s
+}
+
+func NewDropIndexHybridTableRequest(
+	name SchemaObjectIdentifier,
+) *DropIndexHybridTableRequest {
+	s := DropIndexHybridTableRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *DropIndexHybridTableRequest) WithIfExists(ifExists bool) *DropIndexHybridTableRequest {
+	s.IfExists = &ifExists
+	return s
+}
+
+func NewShowIndexesHybridTableRequest() *ShowIndexesHybridTableRequest {
+	s := ShowIndexesHybridTableRequest{}
+	return &s
+}
+
+func (s *ShowIndexesHybridTableRequest) WithIn(in ShowHybridTableIndexInRequest) *ShowIndexesHybridTableRequest {
+	s.In = &in
+	return s
+}
+
+func NewShowHybridTableIndexInRequest(
+	table SchemaObjectIdentifier,
+) *ShowHybridTableIndexInRequest {
+	s := ShowHybridTableIndexInRequest{}
+	s.Table = table
 	return &s
 }

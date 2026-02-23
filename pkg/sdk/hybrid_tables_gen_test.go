@@ -8,7 +8,6 @@ import (
 
 func TestHybridTables_Create(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateHybridTableOptions
 	defaultOpts := func() *CreateHybridTableOptions {
 		return &CreateHybridTableOptions{
 			name: id,
@@ -42,10 +41,51 @@ func TestHybridTables_Create(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
-		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
-		opts.DataRetentionTimeInDays = Int(7)
+		opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{
+			Columns: []HybridTableColumn{
+				{
+					Name: "ID",
+					Type: DataTypeNumber,
+					InlineConstraint: &HybridTableColumnInlineConstraint{
+						Name: String("pk_id"),
+						Type: ColumnConstraintTypePrimaryKey,
+					},
+				},
+				{
+					Name:    "NAME",
+					Type:    DataTypeVARCHAR,
+					NotNull: Bool(true),
+					Collate: String("en-ci"),
+					Comment: String("the name"),
+				},
+				{
+					Name: "REF_ID",
+					Type: DataTypeNumber,
+					InlineConstraint: &HybridTableColumnInlineConstraint{
+						Type: ColumnConstraintTypeForeignKey,
+						ForeignKey: &InlineForeignKey{
+							TableName:  "other_table",
+							ColumnName: []string{"ID"},
+						},
+					},
+				},
+			},
+			OutOfLineConstraint: []HybridTableOutOfLineConstraint{
+				{
+					Type:    ColumnConstraintTypeUnique,
+					Columns: []string{"NAME"},
+				},
+			},
+			OutOfLineIndex: []HybridTableOutOfLineIndex{
+				{
+					Name:           "idx_name",
+					Columns:        []string{"NAME"},
+					IncludeColumns: []string{"ID"},
+				},
+			},
+		}
 		opts.Comment = String("test comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s DATA_RETENTION_TIME_IN_DAYS = 7 COMMENT = 'test comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s (ID NUMBER CONSTRAINT pk_id PRIMARY KEY, NAME VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', REF_ID NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE (NAME), INDEX idx_name (NAME) INCLUDE (ID)) COMMENT = 'test comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("with columns and constraints", func(t *testing.T) {
@@ -79,14 +119,12 @@ func TestHybridTables_Create(t *testing.T) {
 				},
 			},
 		}
-		opts.DataRetentionTimeInDays = Int(7)
-		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s (ID NUMBER PRIMARY KEY, NAME VARCHAR NOT NULL COMMENT 'the name', UNIQUE (NAME), INDEX idx_name (NAME)) DATA_RETENTION_TIME_IN_DAYS = 7`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s (ID NUMBER PRIMARY KEY, NAME VARCHAR NOT NULL COMMENT 'the name', UNIQUE (NAME), INDEX idx_name (NAME))`, id.FullyQualifiedName())
 	})
 }
 
 func TestHybridTables_Alter(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterHybridTableOptions
 	defaultOpts := func() *AlterHybridTableOptions {
 		return &AlterHybridTableOptions{
 			name: id,
@@ -104,15 +142,15 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.NewName opts.AddColumnAction opts.ConstraintAction opts.AlterColumnAction opts.ModifyColumnAction opts.DropColumnAction opts.DropIndexAction opts.Set opts.Unset] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from alter actions should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
 	})
 
-	t.Run("validation: constraint action - exactly one of Add, Drop, Rename required", func(t *testing.T) {
+	t.Run("validation: constraint action - exactly one of Add, Rename, Drop required", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &HybridTableConstraintAction{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("HybridTableConstraintAction", "Add", "Drop", "Rename"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction", "Add", "Rename", "Drop"))
 	})
 
 	t.Run("validation: drop constraint - exactly one constraint type required", func(t *testing.T) {
@@ -120,7 +158,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.ConstraintAction = &HybridTableConstraintAction{
 			Drop: &HybridTableConstraintActionDrop{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("HybridTableConstraintActionDrop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
 	})
 
 	t.Run("validation: drop constraint - cascade and restrict are mutually exclusive", func(t *testing.T) {
@@ -132,39 +170,34 @@ func TestHybridTables_Alter(t *testing.T) {
 				Restrict:   Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("HybridTableConstraintActionDrop", "Cascade", "Restrict"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "Cascade", "Restrict"))
+	})
+
+	t.Run("validation: alter column not null constraint - exactly one", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterColumnAction = &HybridTableAlterColumnAction{
+			ColumnName:        "col1",
+			NotNullConstraint: &HybridTableColumnNotNullConstraint{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction.NotNullConstraint", "SetNotNull", "DropNotNull"))
+	})
+
+	t.Run("validation: clustering action - exactly one", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &HybridTableClusteringAction{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
 	})
 
 	t.Run("validation: at least one of set fields", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &HybridTableSetProperties{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("HybridTableSetProperties", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Contact", "Comment", "RowTimestamp"))
 	})
 
 	t.Run("validation: at least one of unset fields", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &HybridTableUnsetProperties{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("HybridTableUnsetProperties", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
-	})
-
-	t.Run("validation: alter column - conflicting fields for [opts.Comment opts.UnsetComment]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AlterColumnAction = &HybridTableAlterColumnAction{
-			ColumnName:   "column1",
-			Comment:      String("comment"),
-			UnsetComment: Bool(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("HybridTableAlterColumnAction", "Comment", "UnsetComment"))
-	})
-
-	t.Run("validation: modify column - conflicting fields for [opts.Comment opts.UnsetComment]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ModifyColumnAction = &HybridTableModifyColumnAction{
-			ColumnName:   "column1",
-			Comment:      String("comment"),
-			UnsetComment: Bool(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("HybridTableModifyColumnAction", "Comment", "UnsetComment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterHybridTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "ContactPurpose", "Comment"))
 	})
 
 	t.Run("alter: set", func(t *testing.T) {
@@ -176,9 +209,13 @@ func TestHybridTables_Alter(t *testing.T) {
 			ChangeTracking:             Bool(true),
 			DefaultDdlCollation:        String("en-ci"),
 			EnableSchemaEvolution:      Bool(true),
-			Comment:                    String("updated comment"),
+			Contact: []TableContact{
+				{Purpose: "admin", Contact: "John"},
+			},
+			Comment:      String("updated comment"),
+			RowTimestamp: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 14 MAX_DATA_EXTENSION_TIME_IN_DAYS = 28 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en-ci' ENABLE_SCHEMA_EVOLUTION = true COMMENT = 'updated comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 14 MAX_DATA_EXTENSION_TIME_IN_DAYS = 28 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en-ci' ENABLE_SCHEMA_EVOLUTION = true CONTACT admin 'John' COMMENT = 'updated comment' ROW_TIMESTAMP = true`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: unset", func(t *testing.T) {
@@ -193,6 +230,14 @@ func TestHybridTables_Alter(t *testing.T) {
 			Comment:                    Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s UNSET DATA_RETENTION_TIME_IN_DAYS MAX_DATA_EXTENSION_TIME_IN_DAYS CHANGE_TRACKING DEFAULT_DDL_COLLATION ENABLE_SCHEMA_EVOLUTION COMMENT`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: unset contact", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &HybridTableUnsetProperties{
+			ContactPurpose: String("admin"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s UNSET CONTACT admin`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column set comment", func(t *testing.T) {
@@ -215,24 +260,45 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ALTER COLUMN column1 UNSET COMMENT`, id.FullyQualifiedName())
 	})
 
-	t.Run("alter: modify column set comment", func(t *testing.T) {
+	t.Run("alter: alter column drop default", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.ModifyColumnAction = &HybridTableModifyColumnAction{
-			ColumnName: "column1",
-			Comment:    String("column comment"),
+		opts.AlterColumnAction = &HybridTableAlterColumnAction{
+			ColumnName:  "column1",
+			DropDefault: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s MODIFY COLUMN column1 COMMENT 'column comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 DROP DEFAULT`, id.FullyQualifiedName())
 	})
 
-	t.Run("alter: modify column unset comment", func(t *testing.T) {
+	t.Run("alter: alter column set not null", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.ModifyColumnAction = &HybridTableModifyColumnAction{
-			ColumnName:   "column1",
-			UnsetComment: Bool(true),
+		opts.AlterColumnAction = &HybridTableAlterColumnAction{
+			ColumnName: "column1",
+			NotNullConstraint: &HybridTableColumnNotNullConstraint{
+				SetNotNull: Bool(true),
+			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s MODIFY COLUMN column1 UNSET COMMENT`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 SET NOT NULL`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: alter column drop not null", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterColumnAction = &HybridTableAlterColumnAction{
+			ColumnName: "column1",
+			NotNullConstraint: &HybridTableColumnNotNullConstraint{
+				DropNotNull: Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 DROP NOT NULL`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: alter column set data type", func(t *testing.T) {
+		dt := DataType("VARCHAR(200)")
+		opts := defaultOpts()
+		opts.AlterColumnAction = &HybridTableAlterColumnAction{
+			ColumnName: "column1",
+			Type:       &dt,
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 SET DATA TYPE VARCHAR(200)`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop column", func(t *testing.T) {
@@ -253,7 +319,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP INDEX idx_name`, id.FullyQualifiedName())
 	})
 
-	t.Run("alter: add constraint", func(t *testing.T) {
+	t.Run("alter: add constraint unique", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.ConstraintAction = &HybridTableConstraintAction{
@@ -265,6 +331,26 @@ func TestHybridTables_Alter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD UNIQUE (col1, col2)`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: add constraint foreign key", func(t *testing.T) {
+		refTableId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.ConstraintAction = &HybridTableConstraintAction{
+			Add: &HybridTableConstraintActionAdd{
+				OutOfLineConstraint: HybridTableOutOfLineConstraint{
+					Name:    String("fk_ref"),
+					Type:    ColumnConstraintTypeForeignKey,
+					Columns: []string{"ref_id"},
+					ForeignKey: &OutOfLineForeignKey{
+						TableName:   refTableId,
+						ColumnNames: []string{"id"},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD CONSTRAINT fk_ref FOREIGN KEY (ref_id) REFERENCES %s (id)`, id.FullyQualifiedName(), refTableId.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop constraint by name", func(t *testing.T) {
@@ -352,15 +438,73 @@ func TestHybridTables_Alter(t *testing.T) {
 			Name:        "NEW_COLUMN",
 			Type:        DataTypeVARCHAR,
 			Collate:     String("utf8"),
-			Comment:     String("new column comment"),
+			InlineConstraint: &HybridTableColumnInlineConstraint{
+				Name: String("uq_new"),
+				Type: ColumnConstraintTypeUnique,
+			},
+			Comment: String("new column comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS NEW_COLUMN VARCHAR COLLATE 'utf8' COMMENT 'new column comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS NEW_COLUMN VARCHAR COLLATE 'utf8' CONSTRAINT uq_new UNIQUE COMMENT 'new column comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: cluster by", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &HybridTableClusteringAction{
+			ClusterBy: []string{"col1", "col2"},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s CLUSTER BY (col1, col2)`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: recluster", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &HybridTableClusteringAction{
+			Recluster: &HybridTableReclusterAction{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s RECLUSTER`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: recluster with options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &HybridTableClusteringAction{
+			Recluster: &HybridTableReclusterAction{
+				MaxSize: Int(1000),
+				Where:   String("col1 > 100"),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s RECLUSTER MAX_SIZE = 1000 WHERE col1 > 100`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: suspend recluster", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &HybridTableClusteringAction{
+			ChangeReclusterState: &HybridTableReclusterChangeState{
+				State: Pointer(ReclusterStateSuspend),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s SUSPEND RECLUSTER`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: resume recluster", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &HybridTableClusteringAction{
+			ChangeReclusterState: &HybridTableReclusterChangeState{
+				State: Pointer(ReclusterStateResume),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s RESUME RECLUSTER`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: drop clustering key", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusteringAction = &HybridTableClusteringAction{
+			DropClusteringKey: Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP CLUSTERING KEY`, id.FullyQualifiedName())
 	})
 }
 
 func TestHybridTables_Drop(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropHybridTableOptions
 	defaultOpts := func() *DropHybridTableOptions {
 		return &DropHybridTableOptions{
 			name: id,
@@ -406,7 +550,6 @@ func TestHybridTables_Drop(t *testing.T) {
 }
 
 func TestHybridTables_Show(t *testing.T) {
-	// Minimal valid ShowHybridTableOptions
 	defaultOpts := func() *ShowHybridTableOptions {
 		return &ShowHybridTableOptions{}
 	}
@@ -458,7 +601,6 @@ func TestHybridTables_Show(t *testing.T) {
 
 func TestHybridTables_Describe(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeHybridTableOptions
 	defaultOpts := func() *DescribeHybridTableOptions {
 		return &DescribeHybridTableOptions{
 			name: id,
@@ -487,12 +629,12 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 	tableID := randomSchemaObjectIdentifier()
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateHybridTableIndexOptions)(nil)
+		opts := (*CreateIndexHybridTableOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := &CreateHybridTableIndexOptions{
+		opts := &CreateIndexHybridTableOptions{
 			name:      emptySchemaObjectIdentifier,
 			TableName: tableID,
 			Columns:   []string{"col1"},
@@ -501,35 +643,27 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 	})
 
 	t.Run("validation: valid identifier for [opts.TableName]", func(t *testing.T) {
-		opts := &CreateHybridTableIndexOptions{
+		opts := &CreateIndexHybridTableOptions{
 			name:      id,
 			TableName: emptySchemaObjectIdentifier,
 			Columns:   []string{"col1"},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("CreateHybridTableIndexOptions", "TableName"))
-	})
-
-	t.Run("validation: columns required", func(t *testing.T) {
-		opts := &CreateHybridTableIndexOptions{
-			name:      id,
-			TableName: tableID,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateHybridTableIndexOptions", "Columns"))
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := &CreateHybridTableIndexOptions{
+		opts := &CreateIndexHybridTableOptions{
 			OrReplace:   Bool(true),
 			IfNotExists: Bool(true),
 			name:        id,
 			TableName:   tableID,
 			Columns:     []string{"col1"},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateHybridTableIndexOptions", "OrReplace", "IfNotExists"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateIndexHybridTableOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("create index", func(t *testing.T) {
-		opts := &CreateHybridTableIndexOptions{
+		opts := &CreateIndexHybridTableOptions{
 			name:      id,
 			TableName: tableID,
 			Columns:   []string{"col1"},
@@ -538,7 +672,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
-		opts := &CreateHybridTableIndexOptions{
+		opts := &CreateIndexHybridTableOptions{
 			OrReplace:      Bool(true),
 			name:           id,
 			TableName:      tableID,
@@ -549,7 +683,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 	})
 
 	t.Run("if not exists", func(t *testing.T) {
-		opts := &CreateHybridTableIndexOptions{
+		opts := &CreateIndexHybridTableOptions{
 			IfNotExists: Bool(true),
 			name:        id,
 			TableName:   tableID,
@@ -563,26 +697,26 @@ func TestHybridTables_DropIndex(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropHybridTableIndexOptions)(nil)
+		opts := (*DropIndexHybridTableOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := &DropHybridTableIndexOptions{
+		opts := &DropIndexHybridTableOptions{
 			name: emptySchemaObjectIdentifier,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("drop index", func(t *testing.T) {
-		opts := &DropHybridTableIndexOptions{
+		opts := &DropIndexHybridTableOptions{
 			name: id,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP INDEX %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("if exists", func(t *testing.T) {
-		opts := &DropHybridTableIndexOptions{
+		opts := &DropIndexHybridTableOptions{
 			IfExists: Bool(true),
 			name:     id,
 		}
@@ -592,18 +726,18 @@ func TestHybridTables_DropIndex(t *testing.T) {
 
 func TestHybridTables_ShowIndexes(t *testing.T) {
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowHybridTableIndexesOptions)(nil)
+		opts := (*ShowIndexesHybridTableOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
 	t.Run("show indexes", func(t *testing.T) {
-		opts := &ShowHybridTableIndexesOptions{}
+		opts := &ShowIndexesHybridTableOptions{}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES`)
 	})
 
 	t.Run("in table", func(t *testing.T) {
 		tableID := randomSchemaObjectIdentifier()
-		opts := &ShowHybridTableIndexesOptions{
+		opts := &ShowIndexesHybridTableOptions{
 			In: &ShowHybridTableIndexIn{
 				Table: &tableID,
 			},

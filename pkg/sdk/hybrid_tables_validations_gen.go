@@ -8,12 +8,9 @@ var (
 	_ validatable = new(DropHybridTableOptions)
 	_ validatable = new(ShowHybridTableOptions)
 	_ validatable = new(DescribeHybridTableOptions)
-	_ validatable = new(HybridTableConstraintAction)
-	_ validatable = new(HybridTableConstraintActionDrop)
-	_ validatable = new(HybridTableAlterColumnAction)
-	_ validatable = new(HybridTableModifyColumnAction)
-	_ validatable = new(HybridTableSetProperties)
-	_ validatable = new(HybridTableUnsetProperties)
+	_ validatable = new(CreateIndexHybridTableOptions)
+	_ validatable = new(DropIndexHybridTableOptions)
+	_ validatable = new(ShowIndexesHybridTableOptions)
 )
 
 func (opts *CreateHybridTableOptions) validate() error {
@@ -38,62 +35,42 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.ModifyColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.Set, opts.Unset) {
-		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"))
+	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
 	}
-	if opts.ConstraintAction != nil {
-		if err := opts.ConstraintAction.validate(); err != nil {
-			errs = append(errs, err)
+	if valueSet(opts.ConstraintAction) {
+		if !exactlyOneValueSet(opts.ConstraintAction.Add, opts.ConstraintAction.Rename, opts.ConstraintAction.Drop) {
+			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction", "Add", "Rename", "Drop"))
+		}
+		if valueSet(opts.ConstraintAction.Drop) {
+			if !exactlyOneValueSet(opts.ConstraintAction.Drop.ConstraintName, opts.ConstraintAction.Drop.PrimaryKey, opts.ConstraintAction.Drop.Unique, opts.ConstraintAction.Drop.ForeignKey) {
+				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
+			}
+			if everyValueSet(opts.ConstraintAction.Drop.Cascade, opts.ConstraintAction.Drop.Restrict) {
+				errs = append(errs, errOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "Cascade", "Restrict"))
+			}
 		}
 	}
-	if opts.Set != nil {
-		if err := opts.Set.validate(); err != nil {
-			errs = append(errs, err)
+	if valueSet(opts.AlterColumnAction) {
+		if valueSet(opts.AlterColumnAction.NotNullConstraint) {
+			if !exactlyOneValueSet(opts.AlterColumnAction.NotNullConstraint.SetNotNull, opts.AlterColumnAction.NotNullConstraint.DropNotNull) {
+				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction.NotNullConstraint", "SetNotNull", "DropNotNull"))
+			}
 		}
 	}
-	if opts.Unset != nil {
-		if err := opts.Unset.validate(); err != nil {
-			errs = append(errs, err)
+	if valueSet(opts.ClusteringAction) {
+		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.Recluster, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
+			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
 		}
 	}
-	if opts.AlterColumnAction != nil {
-		if err := opts.AlterColumnAction.validate(); err != nil {
-			errs = append(errs, err)
+	if valueSet(opts.Set) {
+		if !anyValueSet(opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.EnableSchemaEvolution, opts.Set.Contact, opts.Set.Comment, opts.Set.RowTimestamp) {
+			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Contact", "Comment", "RowTimestamp"))
 		}
 	}
-	if opts.ModifyColumnAction != nil {
-		if err := opts.ModifyColumnAction.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *HybridTableConstraintActionDrop) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !exactlyOneValueSet(opts.ConstraintName, opts.PrimaryKey, opts.Unique, opts.ForeignKey) {
-		errs = append(errs, errExactlyOneOf("HybridTableConstraintActionDrop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
-	}
-	if everyValueSet(opts.Cascade, opts.Restrict) {
-		errs = append(errs, errOneOf("HybridTableConstraintActionDrop", "Cascade", "Restrict"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *HybridTableConstraintAction) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !exactlyOneValueSet(opts.Add, opts.Drop, opts.Rename) {
-		errs = append(errs, errExactlyOneOf("HybridTableConstraintAction", "Add", "Drop", "Rename"))
-	}
-	if opts.Drop != nil {
-		if err := opts.Drop.validate(); err != nil {
-			errs = append(errs, err)
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ChangeTracking, opts.Unset.DefaultDdlCollation, opts.Unset.EnableSchemaEvolution, opts.Unset.ContactPurpose, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "ContactPurpose", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -132,46 +109,38 @@ func (opts *DescribeHybridTableOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
-func (opts *HybridTableAlterColumnAction) validate() error {
+func (opts *CreateIndexHybridTableOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
 	var errs []error
-	if everyValueSet(opts.Comment, opts.UnsetComment) {
-		errs = append(errs, errOneOf("HybridTableAlterColumnAction", "Comment", "UnsetComment"))
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !ValidObjectIdentifier(opts.TableName) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateIndexHybridTableOptions", "OrReplace", "IfNotExists"))
 	}
 	return JoinErrors(errs...)
 }
 
-func (opts *HybridTableModifyColumnAction) validate() error {
+func (opts *DropIndexHybridTableOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
 	var errs []error
-	if everyValueSet(opts.Comment, opts.UnsetComment) {
-		errs = append(errs, errOneOf("HybridTableModifyColumnAction", "Comment", "UnsetComment"))
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	return JoinErrors(errs...)
 }
 
-func (opts *HybridTableSetProperties) validate() error {
+func (opts *ShowIndexesHybridTableOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
 	var errs []error
-	if !anyValueSet(opts.DataRetentionTimeInDays, opts.MaxDataExtensionTimeInDays, opts.ChangeTracking, opts.DefaultDdlCollation, opts.EnableSchemaEvolution, opts.Comment) {
-		errs = append(errs, errAtLeastOneOf("HybridTableSetProperties", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *HybridTableUnsetProperties) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !anyValueSet(opts.DataRetentionTimeInDays, opts.MaxDataExtensionTimeInDays, opts.ChangeTracking, opts.DefaultDdlCollation, opts.EnableSchemaEvolution, opts.Comment) {
-		errs = append(errs, errAtLeastOneOf("HybridTableUnsetProperties", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
-	}
 	return JoinErrors(errs...)
 }

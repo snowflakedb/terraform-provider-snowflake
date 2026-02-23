@@ -61,10 +61,9 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 					},
 				},
 			},
-			DataRetentionTimeInDays: Int(7),
-			Comment:                 String("test table"),
+			Comment: String("test table"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s (id NUMBER(38,0) PRIMARY KEY, email VARCHAR(200), UNIQUE (email), INDEX idx_email (email) INCLUDE (id)) DATA_RETENTION_TIME_IN_DAYS = 7 COMMENT = 'test table'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s (id NUMBER(38,0) PRIMARY KEY, email VARCHAR(200), UNIQUE (email), INDEX idx_email (email) INCLUDE (id)) COMMENT = 'test table'`, id.FullyQualifiedName())
 	})
 
 	t.Run("create with named inline constraint", func(t *testing.T) {
@@ -116,8 +115,8 @@ func TestHybridTables_CreateIndex_Ext(t *testing.T) {
 	indexId := randomSchemaObjectIdentifier()
 	tableId := randomSchemaObjectIdentifier()
 
-	defaultOpts := func() *CreateHybridTableIndexOptions {
-		return &CreateHybridTableIndexOptions{
+	defaultOpts := func() *CreateIndexHybridTableOptions {
+		return &CreateIndexHybridTableOptions{
 			name:      indexId,
 			TableName: tableId,
 			Columns:   []string{"col1"},
@@ -125,7 +124,7 @@ func TestHybridTables_CreateIndex_Ext(t *testing.T) {
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateHybridTableIndexOptions)(nil)
+		opts := (*CreateIndexHybridTableOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -138,20 +137,14 @@ func TestHybridTables_CreateIndex_Ext(t *testing.T) {
 	t.Run("validation: valid identifier for [opts.TableName]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.TableName = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("CreateHybridTableIndexOptions", "TableName"))
-	})
-
-	t.Run("validation: columns required", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Columns = []string{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateHybridTableIndexOptions", "Columns"))
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateHybridTableIndexOptions", "OrReplace", "IfNotExists"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateIndexHybridTableOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("create index", func(t *testing.T) {
@@ -177,14 +170,14 @@ func TestHybridTables_CreateIndex_Ext(t *testing.T) {
 func TestHybridTables_DropIndex_Ext(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 
-	defaultOpts := func() *DropHybridTableIndexOptions {
-		return &DropHybridTableIndexOptions{
+	defaultOpts := func() *DropIndexHybridTableOptions {
+		return &DropIndexHybridTableOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropHybridTableIndexOptions)(nil)
+		opts := (*DropIndexHybridTableOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -207,19 +200,13 @@ func TestHybridTables_DropIndex_Ext(t *testing.T) {
 }
 
 func TestHybridTables_ShowIndexes_Ext(t *testing.T) {
-	defaultOpts := func() *ShowHybridTableIndexesOptions {
-		return &ShowHybridTableIndexesOptions{}
+	defaultOpts := func() *ShowIndexesHybridTableOptions {
+		return &ShowIndexesHybridTableOptions{}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowHybridTableIndexesOptions)(nil)
+		opts := (*ShowIndexesHybridTableOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: in set but table nil", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &ShowHybridTableIndexIn{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("ShowHybridTableIndexesOptions", "In.Table"))
 	})
 
 	t.Run("show indexes", func(t *testing.T) {

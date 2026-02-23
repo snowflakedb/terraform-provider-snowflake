@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-// HybridTables interface operations
 type HybridTables interface {
 	Create(ctx context.Context, request *CreateHybridTableRequest) error
 	Alter(ctx context.Context, request *AlterHybridTableRequest) error
@@ -18,59 +17,55 @@ type HybridTables interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]HybridTableDetails, error)
-	// Standalone index operations - implemented in hybrid_tables_ext.go
-	CreateIndex(ctx context.Context, request *CreateHybridTableIndexRequest) error
-	DropIndex(ctx context.Context, request *DropHybridTableIndexRequest) error
-	ShowIndexes(ctx context.Context, request *ShowHybridTableIndexesRequest) ([]HybridTableIndex, error)
+	CreateIndex(ctx context.Context, request *CreateIndexHybridTableRequest) error
+	DropIndex(ctx context.Context, request *DropIndexHybridTableRequest) error
+	ShowIndexes(ctx context.Context, request *ShowIndexesHybridTableRequest) ([]HybridTableIndex, error)
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.
 type CreateHybridTableOptions struct {
-	create                  bool                                    `ddl:"static" sql:"CREATE"`
-	OrReplace               *bool                                   `ddl:"keyword" sql:"OR REPLACE"`
-	hybridTable             bool                                    `ddl:"static" sql:"HYBRID TABLE"`
-	IfNotExists             *bool                                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                    SchemaObjectIdentifier                  `ddl:"identifier"`
-	ColumnsAndConstraints   HybridTableColumnsConstraintsAndIndexes `ddl:"list,parentheses"`
-	DataRetentionTimeInDays *int                                    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	Comment                 *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                bool                                    `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                                   `ddl:"keyword" sql:"OR REPLACE"`
+	hybridTable           bool                                    `ddl:"static" sql:"HYBRID TABLE"`
+	IfNotExists           *bool                                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier                  `ddl:"identifier"`
+	ColumnsAndConstraints HybridTableColumnsConstraintsAndIndexes `ddl:"list,parentheses"`
+	Comment               *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-table.
 type AlterHybridTableOptions struct {
-	alter              bool                           `ddl:"static" sql:"ALTER"`
-	table              bool                           `ddl:"static" sql:"TABLE"`
-	IfExists           *bool                          `ddl:"keyword" sql:"IF EXISTS"`
-	name               SchemaObjectIdentifier         `ddl:"identifier"`
-	NewName            *SchemaObjectIdentifier        `ddl:"identifier" sql:"RENAME TO"`
-	AddColumnAction    *HybridTableAddColumnAction    `ddl:"keyword"`
-	ConstraintAction   *HybridTableConstraintAction   `ddl:"keyword"`
-	AlterColumnAction  *HybridTableAlterColumnAction  `ddl:"keyword"`
-	ModifyColumnAction *HybridTableModifyColumnAction `ddl:"keyword"`
-	DropColumnAction   *HybridTableDropColumnAction   `ddl:"keyword"`
-	DropIndexAction    *HybridTableDropIndexAction    `ddl:"keyword"`
-	Set                *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
-	Unset              *HybridTableUnsetProperties    `ddl:"keyword" sql:"UNSET"`
+	alter             bool                          `ddl:"static" sql:"ALTER"`
+	table             bool                          `ddl:"static" sql:"TABLE"`
+	IfExists          *bool                         `ddl:"keyword" sql:"IF EXISTS"`
+	name              SchemaObjectIdentifier        `ddl:"identifier"`
+	NewName           *SchemaObjectIdentifier       `ddl:"identifier" sql:"RENAME TO"`
+	AddColumnAction   *HybridTableAddColumnAction   `ddl:"keyword"`
+	ConstraintAction  *HybridTableConstraintAction  `ddl:"keyword"`
+	AlterColumnAction *HybridTableAlterColumnAction `ddl:"keyword"`
+	DropColumnAction  *HybridTableDropColumnAction  `ddl:"keyword"`
+	DropIndexAction   *HybridTableDropIndexAction   `ddl:"keyword"`
+	ClusteringAction  *HybridTableClusteringAction  `ddl:"keyword"`
+	Set               *HybridTableSetProperties     `ddl:"keyword" sql:"SET"`
+	Unset             *HybridTableUnsetProperties   `ddl:"keyword" sql:"UNSET"`
 }
 
-// HybridTableAddColumnAction defines ALTER TABLE ... ADD COLUMN for hybrid tables.
-// https://docs.snowflake.com/en/sql-reference/sql/alter-table
 type HybridTableAddColumnAction struct {
 	add              bool                               `ddl:"static" sql:"ADD"`
 	column           bool                               `ddl:"static" sql:"COLUMN"`
 	IfNotExists      *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
 	Name             string                             `ddl:"keyword"`
 	Type             DataType                           `ddl:"keyword"`
-	Collate          *string                            `ddl:"parameter,no_equals,single_quotes" sql:"COLLATE"`
+	Collate          *string                            `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 	DefaultValue     *ColumnDefaultValue                `ddl:"keyword"`
 	InlineConstraint *HybridTableColumnInlineConstraint `ddl:"keyword"`
-	Comment          *string                            `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
+	Comment          *string                            `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
 type HybridTableConstraintAction struct {
 	Add    *HybridTableConstraintActionAdd    `ddl:"keyword"`
-	Drop   *HybridTableConstraintActionDrop   `ddl:"keyword"`
 	Rename *HybridTableConstraintActionRename `ddl:"keyword"`
+	Drop   *HybridTableConstraintActionDrop   `ddl:"keyword"`
 }
 
 type HybridTableConstraintActionAdd struct {
@@ -78,49 +73,88 @@ type HybridTableConstraintActionAdd struct {
 	OutOfLineConstraint HybridTableOutOfLineConstraint `ddl:"keyword"`
 }
 
+type HybridTableConstraintActionRename struct {
+	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
+	OldName          string `ddl:"keyword"`
+	NewName          string `ddl:"parameter,no_equals" sql:"TO"`
+}
+
 type HybridTableConstraintActionDrop struct {
-	drop bool `ddl:"static" sql:"DROP"`
-	// One of: ConstraintName, PrimaryKey, Unique, ForeignKey (with optional Columns)
+	drop           bool     `ddl:"static" sql:"DROP"`
 	ConstraintName *string  `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
 	Columns        []string `ddl:"keyword,parentheses"`
-	// CASCADE or RESTRICT
-	Cascade  *bool `ddl:"keyword" sql:"CASCADE"`
-	Restrict *bool `ddl:"keyword" sql:"RESTRICT"`
+	Cascade        *bool    `ddl:"keyword" sql:"CASCADE"`
+	Restrict       *bool    `ddl:"keyword" sql:"RESTRICT"`
 }
 
-// HybridTableConstraintActionRename mirrors the structure of TableConstraintRenameAction in tables.go.
-// These types cannot be shared directly because the DDL generation context differs:
-// in tables.go the RENAME CONSTRAINT keyword is on the parent field tag, while here
-// it is embedded as a static SQL prefix within the struct itself.
-// HybridTableConstraintActionRename is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
+type HybridTableAlterColumnAction struct {
+	alterColumn       bool                                `ddl:"static" sql:"ALTER COLUMN"`
+	ColumnName        string                              `ddl:"keyword"`
+	DropDefault       *bool                               `ddl:"keyword" sql:"DROP DEFAULT"`
+	SetDefault        *SequenceName                       `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
+	NotNullConstraint *HybridTableColumnNotNullConstraint `ddl:"keyword"`
+	Type              *DataType                           `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
+	Comment           *string                             `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	UnsetComment      *bool                               `ddl:"keyword" sql:"UNSET COMMENT"`
+}
 
-// HybridTableAlterColumnAction is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
+type HybridTableColumnNotNullConstraint struct {
+	SetNotNull  *bool `ddl:"keyword" sql:"SET NOT NULL"`
+	DropNotNull *bool `ddl:"keyword" sql:"DROP NOT NULL"`
+}
 
-// HybridTableModifyColumnAction is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
+type HybridTableDropColumnAction struct {
+	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
+	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
+	Columns    []string `ddl:"keyword"`
+}
 
-// HybridTableDropColumnAction is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
+type HybridTableDropIndexAction struct {
+	dropIndex bool   `ddl:"static" sql:"DROP INDEX"`
+	IfExists  *bool  `ddl:"keyword" sql:"IF EXISTS"`
+	IndexName string `ddl:"keyword"`
+}
 
-// HybridTableDropIndexAction is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
+type HybridTableClusteringAction struct {
+	ClusterBy            []string                         `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	Recluster            *HybridTableReclusterAction      `ddl:"keyword"`
+	ChangeReclusterState *HybridTableReclusterChangeState `ddl:"keyword"`
+	DropClusteringKey    *bool                            `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
+}
+
+type HybridTableReclusterAction struct {
+	recluster bool    `ddl:"static" sql:"RECLUSTER"`
+	MaxSize   *int    `ddl:"parameter" sql:"MAX_SIZE"`
+	Where     *string `ddl:"parameter,no_equals" sql:"WHERE"`
+}
+
+type HybridTableReclusterChangeState struct {
+	State     *ReclusterState `ddl:"keyword"`
+	recluster bool            `ddl:"static" sql:"RECLUSTER"`
+}
 
 type HybridTableSetProperties struct {
-	DataRetentionTimeInDays    *int    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool   `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *string `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
-	EnableSchemaEvolution      *bool   `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	DataRetentionTimeInDays    *int           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool          `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	DefaultDdlCollation        *string        `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	EnableSchemaEvolution      *bool          `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
+	Contact                    []TableContact `ddl:"keyword" sql:"CONTACT"`
+	Comment                    *string        `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	RowTimestamp               *bool          `ddl:"parameter" sql:"ROW_TIMESTAMP"`
 }
 
 type HybridTableUnsetProperties struct {
-	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool `ddl:"keyword" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
-	EnableSchemaEvolution      *bool `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
+	DataRetentionTimeInDays    *bool   `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *bool   `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool   `ddl:"keyword" sql:"CHANGE_TRACKING"`
+	DefaultDdlCollation        *bool   `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
+	EnableSchemaEvolution      *bool   `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
+	ContactPurpose             *string `ddl:"parameter,no_equals" sql:"CONTACT"`
+	Comment                    *bool   `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.
@@ -145,12 +179,11 @@ type ShowHybridTableOptions struct {
 }
 
 type hybridTableRow struct {
-	CreatedOn    time.Time      `db:"created_on"`
-	Name         string         `db:"name"`
-	DatabaseName string         `db:"database_name"`
-	SchemaName   string         `db:"schema_name"`
-	Owner        sql.NullString `db:"owner"`
-	// Manually adjusted: rows and bytes can be NULL for newly created tables
+	CreatedOn     time.Time      `db:"created_on"`
+	Name          string         `db:"name"`
+	DatabaseName  string         `db:"database_name"`
+	SchemaName    string         `db:"schema_name"`
+	Owner         sql.NullString `db:"owner"`
 	Rows          sql.NullInt64  `db:"rows"`
 	Bytes         sql.NullInt64  `db:"bytes"`
 	Comment       sql.NullString `db:"comment"`
@@ -163,8 +196,8 @@ type HybridTable struct {
 	DatabaseName  string
 	SchemaName    string
 	Owner         string
-	Rows          int
-	Bytes         int
+	Rows          *int
+	Bytes         *int
 	Comment       string
 	OwnerRoleType string
 }
@@ -184,6 +217,93 @@ type DescribeHybridTableOptions struct {
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-// hybridTableDetailsRow is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments for "null?" column).
+type hybridTableDetailsRow struct {
+	Name                  string         `db:"name"`
+	Type                  string         `db:"type"`
+	Kind                  string         `db:"kind"`
+	Null                  string         `db:"null?"`
+	Default               sql.NullString `db:"default"`
+	PrimaryKey            string         `db:"primary key"`
+	UniqueKey             string         `db:"unique key"`
+	Check                 sql.NullString `db:"check"`
+	Expression            sql.NullString `db:"expression"`
+	Comment               sql.NullString `db:"comment"`
+	PolicyName            sql.NullString `db:"policy name"`
+	PrivacyDomain         sql.NullString `db:"privacy domain"`
+	SchemaEvolutionRecord sql.NullString `db:"schema_evolution_record"`
+}
 
-// HybridTableDetails is defined in hybrid_tables_ext.go (requires manual DDL tag adjustments).
+type HybridTableDetails struct {
+	Name                  string
+	Type                  string
+	Kind                  string
+	IsNullable            string
+	Default               string
+	PrimaryKey            string
+	UniqueKey             string
+	Check                 string
+	Expression            string
+	Comment               string
+	PolicyName            string
+	PrivacyDomain         string
+	SchemaEvolutionRecord string
+}
+
+// CreateIndexHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-index.
+type CreateIndexHybridTableOptions struct {
+	create         bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace      *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	index          bool                   `ddl:"static" sql:"INDEX"`
+	IfNotExists    *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name           SchemaObjectIdentifier `ddl:"identifier"`
+	on             bool                   `ddl:"static" sql:"ON"`
+	TableName      SchemaObjectIdentifier `ddl:"identifier"`
+	Columns        []string               `ddl:"keyword,parentheses"`
+	IncludeColumns []string               `ddl:"keyword,parentheses" sql:"INCLUDE"`
+}
+
+// DropIndexHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-index.
+type DropIndexHybridTableOptions struct {
+	drop     bool                   `ddl:"static" sql:"DROP"`
+	index    bool                   `ddl:"static" sql:"INDEX"`
+	IfExists *bool                  `ddl:"keyword" sql:"IF EXISTS"`
+	name     SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+// ShowIndexesHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-indexes.
+type ShowIndexesHybridTableOptions struct {
+	show    bool                    `ddl:"static" sql:"SHOW"`
+	indexes bool                    `ddl:"static" sql:"INDEXES"`
+	In      *ShowHybridTableIndexIn `ddl:"keyword" sql:"IN"`
+}
+
+type hybridTableIndexRow struct {
+	CreatedOn       time.Time      `db:"created_on"`
+	Name            string         `db:"name"`
+	IsUnique        string         `db:"is_unique"`
+	Columns         string         `db:"columns"`
+	IncludedColumns sql.NullString `db:"included_columns"`
+	Table           string         `db:"table"`
+	DatabaseName    string         `db:"database_name"`
+	SchemaName      string         `db:"schema_name"`
+	Owner           sql.NullString `db:"owner"`
+	OwnerRoleType   sql.NullString `db:"owner_role_type"`
+}
+
+type HybridTableIndex struct {
+	CreatedOn       time.Time
+	Name            string
+	IsUnique        bool
+	Columns         string
+	IncludedColumns string
+	TableName       string
+	DatabaseName    string
+	SchemaName      string
+	Owner           string
+	OwnerRoleType   string
+}
+
+type ShowHybridTableIndexIn struct {
+	table bool                    `ddl:"static" sql:"TABLE"`
+	Table *SchemaObjectIdentifier `ddl:"identifier"`
+}

@@ -75,12 +75,11 @@ func (v *hybridTables) Describe(ctx context.Context, id SchemaObjectIdentifier) 
 
 func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 	opts := &CreateHybridTableOptions{
-		OrReplace:               r.OrReplace,
-		IfNotExists:             r.IfNotExists,
-		name:                    r.name,
-		ColumnsAndConstraints:   r.ColumnsAndConstraints,
-		DataRetentionTimeInDays: r.DataRetentionTimeInDays,
-		Comment:                 r.Comment,
+		OrReplace:             r.OrReplace,
+		IfNotExists:           r.IfNotExists,
+		name:                  r.name,
+		ColumnsAndConstraints: r.ColumnsAndConstraints,
+		Comment:               r.Comment,
 	}
 	return opts
 }
@@ -109,6 +108,12 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 				OutOfLineConstraint: r.ConstraintAction.Add.OutOfLineConstraint,
 			}
 		}
+		if r.ConstraintAction.Rename != nil {
+			opts.ConstraintAction.Rename = &HybridTableConstraintActionRename{
+				OldName: r.ConstraintAction.Rename.OldName,
+				NewName: r.ConstraintAction.Rename.NewName,
+			}
+		}
 		if r.ConstraintAction.Drop != nil {
 			opts.ConstraintAction.Drop = &HybridTableConstraintActionDrop{
 				ConstraintName: r.ConstraintAction.Drop.ConstraintName,
@@ -120,25 +125,21 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 				Restrict:       r.ConstraintAction.Drop.Restrict,
 			}
 		}
-		if r.ConstraintAction.Rename != nil {
-			opts.ConstraintAction.Rename = &HybridTableConstraintActionRename{
-				OldName: r.ConstraintAction.Rename.OldName,
-				NewName: r.ConstraintAction.Rename.NewName,
-			}
-		}
 	}
 	if r.AlterColumnAction != nil {
 		opts.AlterColumnAction = &HybridTableAlterColumnAction{
 			ColumnName:   r.AlterColumnAction.ColumnName,
+			DropDefault:  r.AlterColumnAction.DropDefault,
+			SetDefault:   r.AlterColumnAction.SetDefault,
+			Type:         r.AlterColumnAction.Type,
 			Comment:      r.AlterColumnAction.Comment,
 			UnsetComment: r.AlterColumnAction.UnsetComment,
 		}
-	}
-	if r.ModifyColumnAction != nil {
-		opts.ModifyColumnAction = &HybridTableModifyColumnAction{
-			ColumnName:   r.ModifyColumnAction.ColumnName,
-			Comment:      r.ModifyColumnAction.Comment,
-			UnsetComment: r.ModifyColumnAction.UnsetComment,
+		if r.AlterColumnAction.NotNullConstraint != nil {
+			opts.AlterColumnAction.NotNullConstraint = &HybridTableColumnNotNullConstraint{
+				SetNotNull:  r.AlterColumnAction.NotNullConstraint.SetNotNull,
+				DropNotNull: r.AlterColumnAction.NotNullConstraint.DropNotNull,
+			}
 		}
 	}
 	if r.DropColumnAction != nil {
@@ -153,6 +154,23 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 			IndexName: r.DropIndexAction.IndexName,
 		}
 	}
+	if r.ClusteringAction != nil {
+		opts.ClusteringAction = &HybridTableClusteringAction{
+			ClusterBy:         r.ClusteringAction.ClusterBy,
+			DropClusteringKey: r.ClusteringAction.DropClusteringKey,
+		}
+		if r.ClusteringAction.Recluster != nil {
+			opts.ClusteringAction.Recluster = &HybridTableReclusterAction{
+				MaxSize: r.ClusteringAction.Recluster.MaxSize,
+				Where:   r.ClusteringAction.Recluster.Where,
+			}
+		}
+		if r.ClusteringAction.ChangeReclusterState != nil {
+			opts.ClusteringAction.ChangeReclusterState = &HybridTableReclusterChangeState{
+				State: r.ClusteringAction.ChangeReclusterState.State,
+			}
+		}
+	}
 	if r.Set != nil {
 		opts.Set = &HybridTableSetProperties{
 			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
@@ -160,7 +178,9 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 			ChangeTracking:             r.Set.ChangeTracking,
 			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
 			EnableSchemaEvolution:      r.Set.EnableSchemaEvolution,
+			Contact:                    r.Set.Contact,
 			Comment:                    r.Set.Comment,
+			RowTimestamp:               r.Set.RowTimestamp,
 		}
 	}
 	if r.Unset != nil {
@@ -170,6 +190,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 			ChangeTracking:             r.Unset.ChangeTracking,
 			DefaultDdlCollation:        r.Unset.DefaultDdlCollation,
 			EnableSchemaEvolution:      r.Unset.EnableSchemaEvolution,
+			ContactPurpose:             r.Unset.ContactPurpose,
 			Comment:                    r.Unset.Comment,
 		}
 	}
@@ -197,12 +218,39 @@ func (r *ShowHybridTableRequest) toOpts() *ShowHybridTableOptions {
 	return opts
 }
 
-// Note: convert() methods for hybridTableRow and hybridTableDetailsRow are implemented
-// in hybrid_tables_ext.go to allow customization without being overwritten by the generator.
-
 func (r *DescribeHybridTableRequest) toOpts() *DescribeHybridTableOptions {
 	opts := &DescribeHybridTableOptions{
 		name: r.name,
+	}
+	return opts
+}
+
+func (r *CreateIndexHybridTableRequest) toOpts() *CreateIndexHybridTableOptions {
+	opts := &CreateIndexHybridTableOptions{
+		OrReplace:      r.OrReplace,
+		IfNotExists:    r.IfNotExists,
+		name:           r.name,
+		TableName:      r.TableName,
+		Columns:        r.Columns,
+		IncludeColumns: r.IncludeColumns,
+	}
+	return opts
+}
+
+func (r *DropIndexHybridTableRequest) toOpts() *DropIndexHybridTableOptions {
+	opts := &DropIndexHybridTableOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+	}
+	return opts
+}
+
+func (r *ShowIndexesHybridTableRequest) toOpts() *ShowIndexesHybridTableOptions {
+	opts := &ShowIndexesHybridTableOptions{}
+	if r.In != nil {
+		opts.In = &ShowHybridTableIndexIn{
+			Table: &r.In.Table,
+		}
 	}
 	return opts
 }

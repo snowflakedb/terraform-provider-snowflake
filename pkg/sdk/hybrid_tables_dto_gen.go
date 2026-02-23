@@ -3,34 +3,36 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateHybridTableOptions]   = new(CreateHybridTableRequest)
-	_ optionsProvider[AlterHybridTableOptions]    = new(AlterHybridTableRequest)
-	_ optionsProvider[DropHybridTableOptions]     = new(DropHybridTableRequest)
-	_ optionsProvider[ShowHybridTableOptions]     = new(ShowHybridTableRequest)
-	_ optionsProvider[DescribeHybridTableOptions] = new(DescribeHybridTableRequest)
+	_ optionsProvider[CreateHybridTableOptions]      = new(CreateHybridTableRequest)
+	_ optionsProvider[AlterHybridTableOptions]       = new(AlterHybridTableRequest)
+	_ optionsProvider[DropHybridTableOptions]        = new(DropHybridTableRequest)
+	_ optionsProvider[ShowHybridTableOptions]        = new(ShowHybridTableRequest)
+	_ optionsProvider[DescribeHybridTableOptions]    = new(DescribeHybridTableRequest)
+	_ optionsProvider[CreateIndexHybridTableOptions] = new(CreateIndexHybridTableRequest)
+	_ optionsProvider[DropIndexHybridTableOptions]   = new(DropIndexHybridTableRequest)
+	_ optionsProvider[ShowIndexesHybridTableOptions] = new(ShowIndexesHybridTableRequest)
 )
 
 type CreateHybridTableRequest struct {
-	OrReplace               *bool
-	IfNotExists             *bool
-	name                    SchemaObjectIdentifier                  // required
-	ColumnsAndConstraints   HybridTableColumnsConstraintsAndIndexes // required
-	DataRetentionTimeInDays *int
-	Comment                 *string
+	OrReplace             *bool
+	IfNotExists           *bool
+	name                  SchemaObjectIdentifier                  // required
+	ColumnsAndConstraints HybridTableColumnsConstraintsAndIndexes // required
+	Comment               *string
 }
 
 type AlterHybridTableRequest struct {
-	IfExists           *bool
-	name               SchemaObjectIdentifier // required
-	NewName            *SchemaObjectIdentifier
-	AddColumnAction    *HybridTableAddColumnActionRequest
-	ConstraintAction   *HybridTableConstraintActionRequest
-	AlterColumnAction  *HybridTableAlterColumnActionRequest
-	ModifyColumnAction *HybridTableModifyColumnActionRequest
-	DropColumnAction   *HybridTableDropColumnActionRequest
-	DropIndexAction    *HybridTableDropIndexActionRequest
-	Set                *HybridTableSetPropertiesRequest
-	Unset              *HybridTableUnsetPropertiesRequest
+	IfExists          *bool
+	name              SchemaObjectIdentifier // required
+	NewName           *SchemaObjectIdentifier
+	AddColumnAction   *HybridTableAddColumnActionRequest
+	ConstraintAction  *HybridTableConstraintActionRequest
+	AlterColumnAction *HybridTableAlterColumnActionRequest
+	DropColumnAction  *HybridTableDropColumnActionRequest
+	DropIndexAction   *HybridTableDropIndexActionRequest
+	ClusteringAction  *HybridTableClusteringActionRequest
+	Set               *HybridTableSetPropertiesRequest
+	Unset             *HybridTableUnsetPropertiesRequest
 }
 
 type HybridTableAddColumnActionRequest struct {
@@ -45,12 +47,17 @@ type HybridTableAddColumnActionRequest struct {
 
 type HybridTableConstraintActionRequest struct {
 	Add    *HybridTableConstraintActionAddRequest
-	Drop   *HybridTableConstraintActionDropRequest
 	Rename *HybridTableConstraintActionRenameRequest
+	Drop   *HybridTableConstraintActionDropRequest
 }
 
 type HybridTableConstraintActionAddRequest struct {
 	OutOfLineConstraint HybridTableOutOfLineConstraint // required
+}
+
+type HybridTableConstraintActionRenameRequest struct {
+	OldName string // required
+	NewName string // required
 }
 
 type HybridTableConstraintActionDropRequest struct {
@@ -63,21 +70,19 @@ type HybridTableConstraintActionDropRequest struct {
 	Restrict       *bool
 }
 
-type HybridTableConstraintActionRenameRequest struct {
-	OldName string // required
-	NewName string // required
-}
-
 type HybridTableAlterColumnActionRequest struct {
-	ColumnName   string // required
-	Comment      *string
-	UnsetComment *bool
+	ColumnName        string // required
+	DropDefault       *bool
+	SetDefault        *SequenceName
+	NotNullConstraint *HybridTableColumnNotNullConstraintRequest
+	Type              *DataType
+	Comment           *string
+	UnsetComment      *bool
 }
 
-type HybridTableModifyColumnActionRequest struct {
-	ColumnName   string // required
-	Comment      *string
-	UnsetComment *bool
+type HybridTableColumnNotNullConstraintRequest struct {
+	SetNotNull  *bool
+	DropNotNull *bool
 }
 
 type HybridTableDropColumnActionRequest struct {
@@ -90,13 +95,31 @@ type HybridTableDropIndexActionRequest struct {
 	IndexName string // required
 }
 
+type HybridTableClusteringActionRequest struct {
+	ClusterBy            []string
+	Recluster            *HybridTableReclusterActionRequest
+	ChangeReclusterState *HybridTableReclusterChangeStateRequest
+	DropClusteringKey    *bool
+}
+
+type HybridTableReclusterActionRequest struct {
+	MaxSize *int
+	Where   *string
+}
+
+type HybridTableReclusterChangeStateRequest struct {
+	State *ReclusterState
+}
+
 type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
 	DefaultDdlCollation        *string
 	EnableSchemaEvolution      *bool
+	Contact                    []TableContact
 	Comment                    *string
+	RowTimestamp               *bool
 }
 
 type HybridTableUnsetPropertiesRequest struct {
@@ -105,6 +128,7 @@ type HybridTableUnsetPropertiesRequest struct {
 	ChangeTracking             *bool
 	DefaultDdlCollation        *bool
 	EnableSchemaEvolution      *bool
+	ContactPurpose             *string
 	Comment                    *bool
 }
 
@@ -125,4 +149,26 @@ type ShowHybridTableRequest struct {
 
 type DescribeHybridTableRequest struct {
 	name SchemaObjectIdentifier // required
+}
+
+type CreateIndexHybridTableRequest struct {
+	OrReplace      *bool
+	IfNotExists    *bool
+	name           SchemaObjectIdentifier // required
+	TableName      SchemaObjectIdentifier // required
+	Columns        []string               // required
+	IncludeColumns []string
+}
+
+type DropIndexHybridTableRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+}
+
+type ShowIndexesHybridTableRequest struct {
+	In *ShowHybridTableIndexInRequest
+}
+
+type ShowHybridTableIndexInRequest struct {
+	Table SchemaObjectIdentifier
 }

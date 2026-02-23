@@ -6,8 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// hybridTableAddColumnAction defines ALTER TABLE ... ADD COLUMN for hybrid tables.
-// https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	SQL("ADD").
 	SQL("COLUMN").
@@ -19,104 +17,106 @@ var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	PredefinedQueryStructField("InlineConstraint", "*HybridTableColumnInlineConstraint", g.KeywordOptions()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
-// hybridTableConstraintAction defines ALTER TABLE ... ADD/DROP/RENAME constraint actions for hybrid tables.
-// Per Snowflake docs: https://docs.snowflake.com/en/sql-reference/sql/alter-table#constraint-actions-constraintaction
 var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction").
 	OptionalQueryStructField(
 		"Add",
 		g.NewQueryStruct("HybridTableConstraintActionAdd").
 			SQL("ADD").
-			// Uses manually-defined HybridTableOutOfLineConstraint in hybrid_tables_ext.go.
 			PredefinedQueryStructField("OutOfLineConstraint", "HybridTableOutOfLineConstraint", g.KeywordOptions().Required()),
 		g.KeywordOptions(),
 	).
 	OptionalQueryStructField(
-		"Drop",
-		g.NewQueryStruct("HybridTableConstraintActionDrop").
-			SQL("DROP").
-			// One of: ConstraintName, PrimaryKey, Unique, ForeignKey (with optional Columns)
-			OptionalText("ConstraintName", g.KeywordOptions().SQL("CONSTRAINT")).
-			OptionalSQL("PRIMARY KEY").
-			OptionalSQL("UNIQUE").
-			OptionalSQL("FOREIGN KEY").
-			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
-			// CASCADE or RESTRICT
-			OptionalSQL("CASCADE").
-			OptionalSQL("RESTRICT").
-			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey").
-			WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
-		g.KeywordOptions(),
-	).
-	OptionalQueryStructField(
 		"Rename",
-		// NOTE: Generated struct needs manual DDL tag fix: NewName needs ddl:"parameter,no_equals" sql:"TO"
 		g.NewQueryStruct("HybridTableConstraintActionRename").
 			SQL("RENAME CONSTRAINT").
 			Text("OldName", g.KeywordOptions().Required()).
 			Text("NewName", g.KeywordOptions().Required().SQL("TO")),
 		g.KeywordOptions(),
 	).
-	WithValidation(g.ExactlyOneValueSet, "Add", "Drop", "Rename")
+	OptionalQueryStructField(
+		"Drop",
+		g.NewQueryStruct("HybridTableConstraintActionDrop").
+			SQL("DROP").
+			OptionalText("ConstraintName", g.KeywordOptions().SQL("CONSTRAINT")).
+			OptionalSQL("PRIMARY KEY").
+			OptionalSQL("UNIQUE").
+			OptionalSQL("FOREIGN KEY").
+			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
+			OptionalSQL("CASCADE").
+			OptionalSQL("RESTRICT").
+			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey").
+			WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
+		g.KeywordOptions(),
+	).
+	WithValidation(g.ExactlyOneValueSet, "Add", "Rename", "Drop")
 
-// hybridTableAlterColumnAction defines ALTER TABLE ... ALTER COLUMN for hybrid tables.
-// Per Snowflake docs: "For hybrid tables, currently the only clauses that you can use
-// with the ALTER TABLE MODIFY COLUMN command are COMMENT and UNSET COMMENT."
-// NOTE: Generated COMMENT field needs manual fix to ddl:"parameter,no_equals,single_quotes"
-// https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
 	SQL("ALTER COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required()).
-	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	OptionalSQL("UNSET COMMENT").
-	WithValidation(g.ConflictingFields, "Comment", "UnsetComment")
+	OptionalSQL("DROP DEFAULT").
+	PredefinedQueryStructField("SetDefault", "*SequenceName", g.ParameterOptions().NoEquals().SQL("SET DEFAULT")).
+	OptionalQueryStructField(
+		"NotNullConstraint",
+		g.NewQueryStruct("HybridTableColumnNotNullConstraint").
+			OptionalSQL("SET NOT NULL").
+			OptionalSQL("DROP NOT NULL").
+			WithValidation(g.ExactlyOneValueSet, "SetNotNull", "DropNotNull"),
+		g.KeywordOptions(),
+	).
+	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
+	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
+	OptionalSQL("UNSET COMMENT")
 
-// hybridTableModifyColumnAction defines ALTER TABLE ... MODIFY COLUMN for hybrid tables.
-// MODIFY COLUMN is a documented alias for ALTER COLUMN in Snowflake.
-// Both are included because the Snowflake SQL reference documents both variants.
-// NOTE: Generated COMMENT field needs manual fix to ddl:"parameter,no_equals,single_quotes"
-// https://docs.snowflake.com/en/sql-reference/sql/alter-table
-var hybridTableModifyColumnAction = g.NewQueryStruct("HybridTableModifyColumnAction").
-	SQL("MODIFY COLUMN").
-	Text("ColumnName", g.KeywordOptions().Required()).
-	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	OptionalSQL("UNSET COMMENT").
-	WithValidation(g.ConflictingFields, "Comment", "UnsetComment")
-
-// hybridTableDropColumnAction defines ALTER TABLE ... DROP COLUMN for hybrid tables.
-// https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
 	OptionalSQL("IF EXISTS").
 	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Required())
 
-// hybridTableDropIndexAction defines ALTER TABLE ... DROP INDEX for hybrid tables.
-// Syntax: ALTER TABLE <table_name> DROP INDEX <index_name>
-// This is an alternative to the standalone DROP INDEX command.
-// https://docs.snowflake.com/en/sql-reference/sql/alter-table
 var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	SQL("DROP INDEX").
 	OptionalSQL("IF EXISTS").
 	Text("IndexName", g.KeywordOptions().Required())
 
-// hybridTableSetProperties defines ALTER TABLE ... SET for hybrid tables.
+var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction").
+	PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+	OptionalQueryStructField(
+		"Recluster",
+		g.NewQueryStruct("HybridTableReclusterAction").
+			SQL("RECLUSTER").
+			OptionalNumberAssignment("MAX_SIZE", g.ParameterOptions()).
+			OptionalTextAssignment("WHERE", g.ParameterOptions().NoEquals()),
+		g.KeywordOptions(),
+	).
+	OptionalQueryStructField(
+		"ChangeReclusterState",
+		g.NewQueryStruct("HybridTableReclusterChangeState").
+			PredefinedQueryStructField("State", "*ReclusterState", g.KeywordOptions()).
+			SQL("RECLUSTER"),
+		g.KeywordOptions(),
+	).
+	OptionalSQL("DROP CLUSTERING KEY").
+	WithValidation(g.ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
+
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 	OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
 	OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
 	OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
+	PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().SQL("CONTACT")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment")
+	OptionalBooleanAssignment("ROW_TIMESTAMP", g.ParameterOptions()).
+	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Contact", "Comment", "RowTimestamp")
 
-// hybridTableUnsetProperties defines ALTER TABLE ... UNSET for hybrid tables.
 var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
 	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
 	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
 	OptionalSQL("CHANGE_TRACKING").
 	OptionalSQL("DEFAULT_DDL_COLLATION").
 	OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
+	OptionalText("ContactPurpose", g.KeywordOptions().SQL("CONTACT")).
 	OptionalSQL("COMMENT").
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment")
+	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "ContactPurpose", "Comment")
 
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
@@ -130,11 +130,7 @@ var hybridTablesDef = g.NewInterface(
 		SQL("HYBRID TABLE").
 		IfNotExists().
 		Name().
-		// Columns, out-of-line constraints, and indexes are in a parenthesized body.
-		// Uses manually-defined HybridTableColumnsConstraintsAndIndexes in hybrid_tables_ext.go
-		// because the column/constraint/index structure is too complex for the generator DSL.
 		PredefinedQueryStructField("ColumnsAndConstraints", "HybridTableColumnsConstraintsAndIndexes", g.ListOptions().Parentheses().Required()).
-		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
@@ -162,11 +158,6 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
-			"ModifyColumnAction",
-			hybridTableModifyColumnAction,
-			g.KeywordOptions(),
-		).
-		OptionalQueryStructField(
 			"DropColumnAction",
 			hybridTableDropColumnAction,
 			g.KeywordOptions(),
@@ -174,6 +165,11 @@ var hybridTablesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"DropIndexAction",
 			hybridTableDropIndexAction,
+			g.KeywordOptions(),
+		).
+		OptionalQueryStructField(
+			"ClusteringAction",
+			hybridTableClusteringAction,
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
@@ -187,7 +183,7 @@ var hybridTablesDef = g.NewInterface(
 			g.KeywordOptions().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "ModifyColumnAction", "DropColumnAction", "DropIndexAction", "Set", "Unset"),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
@@ -239,8 +235,6 @@ var hybridTablesDef = g.NewInterface(
 		Text("name").
 		Text("type").
 		Text("kind").
-		// The actual Snowflake column name is "null?" but the generator produces db:"null" from Text("null").
-		// This MUST be manually adjusted to db:"null?" in the generated file.
 		Text("null").
 		OptionalText("default").
 		Text("primary key").
@@ -271,9 +265,6 @@ var hybridTablesDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).CustomOperation(
-	// Standalone CREATE INDEX command for hybrid tables.
-	// Syntax: CREATE [OR REPLACE] INDEX [IF NOT EXISTS] <name> ON <table> (<cols>) [INCLUDE (<cols>)]
-	// https://docs.snowflake.com/en/sql-reference/sql/create-index
 	"CreateIndex",
 	"https://docs.snowflake.com/en/sql-reference/sql/create-index",
 	g.NewQueryStruct("CreateHybridTableIndex").
@@ -290,10 +281,6 @@ var hybridTablesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "TableName").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).CustomOperation(
-	// Standalone DROP INDEX command for hybrid tables.
-	// Syntax: DROP INDEX [IF EXISTS] <name>
-	// Note: For hybrid tables, the name is typically <table_name>.<index_name> as a dotted identifier.
-	// https://docs.snowflake.com/en/sql-reference/sql/drop-index
 	"DropIndex",
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-index",
 	g.NewQueryStruct("DropHybridTableIndex").
@@ -303,9 +290,6 @@ var hybridTablesDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).CustomShowOperation(
-	// SHOW INDEXES command for hybrid tables.
-	// Syntax: SHOW INDEXES [IN TABLE <table>]
-	// https://docs.snowflake.com/en/sql-reference/sql/show-indexes
 	"ShowIndexes",
 	g.ShowMappingKindSlice,
 	"https://docs.snowflake.com/en/sql-reference/sql/show-indexes",
