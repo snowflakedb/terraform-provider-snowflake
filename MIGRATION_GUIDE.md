@@ -26,7 +26,22 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.13.x ➞ v2.14.0
 
-### *(bugfix)* Fixed external change detection in user resources (`snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`)
+### *(bugfix)* Fixed `snowflake_share` update failing when adding accounts to a share that already has a database granted
+
+Previously, updating the `accounts` field on the `snowflake_share` resource (e.g., adding consumer accounts after the initial creation) would fail with:
+```
+│ Error: error adding accounts to share: 003033 (0A000): SQL compilation error:
+│ Database 'TEMP_...' does not belong to the database that is being shared.
+```
+This happened because the provider always used an internal workaround that creates a temporary database and grants it to the share before adding accounts. When a real database was already granted to the share, Snowflake rejected the grant on the temporary database since only one database can be granted `USAGE` on a share at a time.
+
+After the fix, the provider now checks whether a database is already granted to the share before adding accounts. If a database is present, accounts are added directly via `ALTER SHARE ... ADD ACCOUNTS` without the temporary database workaround.
+
+No changes in configuration are required.
+
+References: [#4398](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4398).
+
+### *(enhancement)* Fixed external change detection in user resources (`snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`)
 
 The user resources were not able to detect external changes for some string fields that were null or empty on the Snowflake side.
 As an example, when you specified `email` in configuration like so:
