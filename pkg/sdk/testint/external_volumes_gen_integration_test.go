@@ -370,7 +370,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 
 		s3Loc := s3StorageLocations[0].ExternalVolumeStorageLocation
 		req := sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(
-			*sdk.NewExternalVolumeStorageLocationItemRequest().WithExternalVolumeStorageLocation(
+			*sdk.NewExternalVolumeStorageLocationItemRequest(
 				*sdk.NewExternalVolumeStorageLocationRequest(
 					s3Loc.Name,
 				).WithS3StorageLocationParams(

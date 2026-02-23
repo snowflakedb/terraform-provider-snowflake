@@ -80,14 +80,12 @@ func (s *AlterExternalVolumeSetRequest) WithComment(comment string) *AlterExtern
 	return s
 }
 
-func NewExternalVolumeStorageLocationItemRequest() *ExternalVolumeStorageLocationItemRequest {
+func NewExternalVolumeStorageLocationItemRequest(
+	externalVolumeStorageLocation ExternalVolumeStorageLocationRequest,
+) *ExternalVolumeStorageLocationItemRequest {
 	s := ExternalVolumeStorageLocationItemRequest{}
-	return &s
-}
-
-func (s *ExternalVolumeStorageLocationItemRequest) WithExternalVolumeStorageLocation(externalVolumeStorageLocation ExternalVolumeStorageLocationRequest) *ExternalVolumeStorageLocationItemRequest {
 	s.ExternalVolumeStorageLocation = externalVolumeStorageLocation
-	return s
+	return &s
 }
 
 func NewExternalVolumeStorageLocationRequest(

@@ -91,7 +91,7 @@ func storageLocationItemDef() *g.QueryStruct {
 		QueryStructField(
 			"ExternalVolumeStorageLocation",
 			storageLocationDef(),
-			g.ListOptions().Parentheses().NoComma(),
+			g.ListOptions().Parentheses().NoComma().Required(),
 		)
 }
 

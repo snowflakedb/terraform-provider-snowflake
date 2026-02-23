@@ -34,7 +34,7 @@ type AlterExternalVolumeSetRequest struct {
 }
 
 type ExternalVolumeStorageLocationItemRequest struct {
-	ExternalVolumeStorageLocation ExternalVolumeStorageLocationRequest
+	ExternalVolumeStorageLocation ExternalVolumeStorageLocationRequest // required
 }
 
 type ExternalVolumeStorageLocationRequest struct {
