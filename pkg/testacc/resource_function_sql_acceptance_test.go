@@ -23,6 +23,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TODO [this PR]: test creation with DECFLOAT argument (and error for other type like java)
+
 func TestAcc_FunctionSql_InlineBasic(t *testing.T) {
 	argName := "abc"
 	dataType := testdatatypes.DataTypeFloat

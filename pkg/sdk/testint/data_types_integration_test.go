@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [this PR]: add decfloat to below tests
 func TestInt_DataTypes(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
