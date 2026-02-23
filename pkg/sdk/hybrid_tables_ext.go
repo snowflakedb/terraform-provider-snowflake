@@ -53,16 +53,14 @@ type HybridTableColumnInlineConstraint struct {
 	ForeignKey *InlineForeignKey    `ddl:"keyword" sql:"FOREIGN KEY"`
 }
 
-// HybridTableOutOfLineConstraint defines out-of-line PRIMARY KEY, UNIQUE, or FOREIGN KEY.
-// For hybrid tables, NOT ENFORCED is invalid — all constraints are enforced.
-// Based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table
-// DSL definition: hybridTableOutOfLineConstraintDef in hybrid_tables_def.go
-type HybridTableOutOfLineConstraint struct {
-	Name       *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
-	Type       ColumnConstraintType `ddl:"keyword"`
-	Columns    []string             `ddl:"keyword,parentheses"`
-	ForeignKey *OutOfLineForeignKey `ddl:"keyword"`
-}
+// HybridTableOutOfLineConstraint reuses OutOfLineConstraint from tables.go.
+// The first 4 fields (Name, Type, Columns, ForeignKey) are identical in both struct and DDL tags.
+// The 12 additional enforcement fields (Enforced, NotEnforced, Deferrable, etc.) in OutOfLineConstraint
+// are all *bool pointers — when nil, structToSQL skips them, producing identical SQL output.
+// For hybrid tables, enforcement fields are invalid (all constraints are enforced), so they stay nil.
+// HybridTableConstraintActionRename is kept separate because its DDL generation context differs
+// (static "RENAME CONSTRAINT" prefix vs parent field tag in tables.go).
+type HybridTableOutOfLineConstraint = OutOfLineConstraint
 
 // HybridTableOutOfLineIndex defines a secondary index in CREATE HYBRID TABLE.
 // Syntax: INDEX <name> (<cols>) [INCLUDE (<cols>)]
@@ -245,8 +243,9 @@ func (r *CreateHybridTableIndexRequest) toOpts() *CreateHybridTableIndexOptions 
 
 // DropHybridTableIndexOptions represents the standalone DROP INDEX command for hybrid tables.
 // Syntax: DROP INDEX [IF EXISTS] <table_name>.<index_name>
-// Note: Snowflake requires <table_name>.<index_name> as a dotted identifier.
-// We model this by constructing the SQL manually via structToSQL.
+// TODO [SNOW-XXXXXX]: Snowflake requires <table_name>.<index_name> as a dotted identifier,
+// which doesn't fit the standard SchemaObjectIdentifier model. This workaround constructs
+// the identifier manually. Revisit once Snowflake supports qualified index names natively.
 type DropHybridTableIndexOptions struct {
 	drop     bool                   `ddl:"static" sql:"DROP"`
 	index    bool                   `ddl:"static" sql:"INDEX"`
@@ -272,8 +271,9 @@ type DropHybridTableIndexRequest struct {
 }
 
 // NewDropHybridTableIndexRequest creates a DROP INDEX request.
-// The name should be constructed as a SchemaObjectIdentifier where the object name
+// TODO [SNOW-XXXXXX]: The name should be constructed as a SchemaObjectIdentifier where the object name
 // is "<table_name>.<index_name>" following Snowflake's dotted notation requirement.
+// Revisit once Snowflake supports qualified index names natively.
 func NewDropHybridTableIndexRequest(
 	name SchemaObjectIdentifier,
 ) *DropHybridTableIndexRequest {
