@@ -133,6 +133,19 @@ After upgrading the provider to this version, the state upgrader will take care 
 
 Reference: [#4445](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4445).
 
+### *(new feature)* Import validation for `snowflake_grant_privileges_to_account_role`
+
+A new `GRANTS_IMPORT_VALIDATION` experimental feature was added. When enabled, importing a `snowflake_grant_privileges_to_account_role` resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `GRANTS_IMPORT_VALIDATION` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
+It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1),
+but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
+
+**It's still considered a preview feature, even when applied to the stable resources.**
+
+This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
+
 ## v2.12.x ➞ v2.13.0
 
 ### *(bugfix)* Fixed `snowflake_tag_association` usage with function or procedure object types
