@@ -9,7 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (s *JobServiceResourceAssert) HasExternalAccessIntegrationsEnum(expected ...sdk.AccountObjectIdentifier) *JobServiceResourceAssert {
+func (s *JobServiceResourceAssert) HasExternalAccessIntegrationsIdentifier(expected ...sdk.AccountObjectIdentifier) *JobServiceResourceAssert {
 	return s.HasExternalAccessIntegrations(collections.Map(expected, func(v sdk.AccountObjectIdentifier) string {
 		return v.FullyQualifiedName()
 	})...)

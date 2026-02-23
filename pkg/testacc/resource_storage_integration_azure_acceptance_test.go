@@ -78,7 +78,7 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
-						HasStorageAllowedLocations(allowedLocations...).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
 						HasStorageBlockedLocationsEmpty().
 						HasCommentString("").
 						HasUsePrivatelinkEndpointString(r.BooleanDefault).
