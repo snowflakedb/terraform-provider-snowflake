@@ -28,17 +28,98 @@ func ImportedOauthIntegrationForCustomClientsResource(t *testing.T, id string) *
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasName(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("name", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasBlockedRolesList(expected ...string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.SetContainsExactlyStringValues("blocked_roles_list", expected...)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasComment(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("comment", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasEnabled(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("enabled", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasFullyQualifiedName(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("fully_qualified_name", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasNetworkPolicy(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("network_policy", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthAllowNonTlsRedirectUri(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("oauth_allow_non_tls_redirect_uri", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthClientRsaPublicKey(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("oauth_client_rsa_public_key", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthClientRsaPublicKey2(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("oauth_client_rsa_public_key_2", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthClientType(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("oauth_client_type", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthEnforcePkce(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("oauth_enforce_pkce", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthIssueRefreshTokens(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("oauth_issue_refresh_tokens", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthRedirectUri(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("oauth_redirect_uri", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthRefreshTokenValidity(expected int) *OauthIntegrationForCustomClientsResourceAssert {
+	o.IntValueSet("oauth_refresh_token_validity", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthUseSecondaryRoles(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("oauth_use_secondary_roles", expected)
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesList(expected ...string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.SetContainsExactlyStringValues("pre_authorized_roles_list", expected...)
+	return o
+}
+
+// collection assert for related_parameters will be generated here
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNameString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueSet("name", expected))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasBlockedRolesListString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("blocked_roles_list", expected))
 	return o
 }
 
@@ -104,16 +185,6 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthRefreshTokenVal
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasOauthUseSecondaryRolesString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.AddAssertion(assert.ValueSet("oauth_use_secondary_roles", expected))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasPreAuthorizedRolesListString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("pre_authorized_roles_list", expected))
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsResourceAssert) HasRelatedParametersString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
-	o.AddAssertion(assert.ValueSet("related_parameters", expected))
 	return o
 }
 

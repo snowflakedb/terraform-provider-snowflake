@@ -28,6 +28,384 @@ func ImportedTaskResource(t *testing.T, id string) *TaskResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (t *TaskResourceAssert) HasDatabase(expected string) *TaskResourceAssert {
+	t.StringValueSet("database", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasSchema(expected string) *TaskResourceAssert {
+	t.StringValueSet("schema", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasName(expected string) *TaskResourceAssert {
+	t.StringValueSet("name", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasAbortDetachedQuery(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("abort_detached_query", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasAfter(expected ...string) *TaskResourceAssert {
+	t.SetContainsExactlyStringValues("after", expected...)
+	return t
+}
+
+func (t *TaskResourceAssert) HasAllowOverlappingExecution(expected string) *TaskResourceAssert {
+	t.StringValueSet("allow_overlapping_execution", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasAutocommit(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("autocommit", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasBinaryInputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("binary_input_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasBinaryOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("binary_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasClientMemoryLimit(expected int) *TaskResourceAssert {
+	t.IntValueSet("client_memory_limit", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("client_metadata_request_use_connection_ctx", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasClientPrefetchThreads(expected int) *TaskResourceAssert {
+	t.IntValueSet("client_prefetch_threads", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasClientResultChunkSize(expected int) *TaskResourceAssert {
+	t.IntValueSet("client_result_chunk_size", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasClientResultColumnCaseInsensitive(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("client_result_column_case_insensitive", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasClientSessionKeepAlive(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("client_session_keep_alive", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasClientSessionKeepAliveHeartbeatFrequency(expected int) *TaskResourceAssert {
+	t.IntValueSet("client_session_keep_alive_heartbeat_frequency", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasClientTimestampTypeMapping(expected string) *TaskResourceAssert {
+	t.StringValueSet("client_timestamp_type_mapping", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasComment(expected string) *TaskResourceAssert {
+	t.StringValueSet("comment", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasConfig(expected string) *TaskResourceAssert {
+	t.StringValueSet("config", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasDateInputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("date_input_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasDateOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("date_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("enable_unload_physical_type_optimization", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasErrorIntegration(expected string) *TaskResourceAssert {
+	t.StringValueSet("error_integration", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasErrorOnNondeterministicMerge(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("error_on_nondeterministic_merge", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasErrorOnNondeterministicUpdate(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("error_on_nondeterministic_update", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasFinalize(expected string) *TaskResourceAssert {
+	t.StringValueSet("finalize", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasFullyQualifiedName(expected string) *TaskResourceAssert {
+	t.StringValueSet("fully_qualified_name", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasGeographyOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("geography_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasGeometryOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("geometry_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("jdbc_treat_timestamp_ntz_as_utc", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasJdbcUseSessionTimezone(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("jdbc_use_session_timezone", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasJsonIndent(expected int) *TaskResourceAssert {
+	t.IntValueSet("json_indent", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasLockTimeout(expected int) *TaskResourceAssert {
+	t.IntValueSet("lock_timeout", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasLogLevel(expected string) *TaskResourceAssert {
+	t.StringValueSet("log_level", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasMultiStatementCount(expected int) *TaskResourceAssert {
+	t.IntValueSet("multi_statement_count", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasNoorderSequenceAsDefault(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("noorder_sequence_as_default", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasOdbcTreatDecimalAsInt(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("odbc_treat_decimal_as_int", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasQueryTag(expected string) *TaskResourceAssert {
+	t.StringValueSet("query_tag", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("quoted_identifiers_ignore_case", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasRowsPerResultset(expected int) *TaskResourceAssert {
+	t.IntValueSet("rows_per_resultset", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasS3StageVpceDnsName(expected string) *TaskResourceAssert {
+	t.StringValueSet("s3_stage_vpce_dns_name", expected)
+	return t
+}
+
+// collection assert for schedule will be generated here
+
+func (t *TaskResourceAssert) HasSearchPath(expected string) *TaskResourceAssert {
+	t.StringValueSet("search_path", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMaxStatementSize(expected string) *TaskResourceAssert {
+	t.StringValueSet("serverless_task_max_statement_size", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasServerlessTaskMinStatementSize(expected string) *TaskResourceAssert {
+	t.StringValueSet("serverless_task_min_statement_size", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasSqlStatement(expected string) *TaskResourceAssert {
+	t.StringValueSet("sql_statement", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasStarted(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("started", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasStatementQueuedTimeoutInSeconds(expected int) *TaskResourceAssert {
+	t.IntValueSet("statement_queued_timeout_in_seconds", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasStatementTimeoutInSeconds(expected int) *TaskResourceAssert {
+	t.IntValueSet("statement_timeout_in_seconds", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasStrictJsonOutput(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("strict_json_output", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasSuspendTaskAfterNumFailures(expected int) *TaskResourceAssert {
+	t.IntValueSet("suspend_task_after_num_failures", expected)
+	return t
+}
+
+// collection assert for target_completion_interval will be generated here
+
+func (t *TaskResourceAssert) HasTaskAutoRetryAttempts(expected int) *TaskResourceAssert {
+	t.IntValueSet("task_auto_retry_attempts", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimeInputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("time_input_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimeOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("time_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimestampDayIsAlways24h(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("timestamp_day_is_always_24h", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimestampInputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("timestamp_input_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimestampLtzOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("timestamp_ltz_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimestampNtzOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("timestamp_ntz_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimestampOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("timestamp_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimestampTypeMapping(expected string) *TaskResourceAssert {
+	t.StringValueSet("timestamp_type_mapping", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimestampTzOutputFormat(expected string) *TaskResourceAssert {
+	t.StringValueSet("timestamp_tz_output_format", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTimezone(expected string) *TaskResourceAssert {
+	t.StringValueSet("timezone", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTraceLevel(expected string) *TaskResourceAssert {
+	t.StringValueSet("trace_level", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTransactionAbortOnError(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("transaction_abort_on_error", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTransactionDefaultIsolationLevel(expected string) *TaskResourceAssert {
+	t.StringValueSet("transaction_default_isolation_level", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasTwoDigitCenturyStart(expected int) *TaskResourceAssert {
+	t.IntValueSet("two_digit_century_start", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasUnsupportedDdlAction(expected string) *TaskResourceAssert {
+	t.StringValueSet("unsupported_ddl_action", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasUseCachedResult(expected bool) *TaskResourceAssert {
+	t.BoolValueSet("use_cached_result", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasUserTaskManagedInitialWarehouseSize(expected string) *TaskResourceAssert {
+	t.StringValueSet("user_task_managed_initial_warehouse_size", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *TaskResourceAssert {
+	t.IntValueSet("user_task_minimum_trigger_interval_in_seconds", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasUserTaskTimeoutMs(expected int) *TaskResourceAssert {
+	t.IntValueSet("user_task_timeout_ms", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasWarehouse(expected string) *TaskResourceAssert {
+	t.StringValueSet("warehouse", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasWeekOfYearPolicy(expected int) *TaskResourceAssert {
+	t.IntValueSet("week_of_year_policy", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasWeekStart(expected int) *TaskResourceAssert {
+	t.IntValueSet("week_start", expected)
+	return t
+}
+
+func (t *TaskResourceAssert) HasWhen(expected string) *TaskResourceAssert {
+	t.StringValueSet("when", expected)
+	return t
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -49,11 +427,6 @@ func (t *TaskResourceAssert) HasNameString(expected string) *TaskResourceAssert 
 
 func (t *TaskResourceAssert) HasAbortDetachedQueryString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("abort_detached_query", expected))
-	return t
-}
-
-func (t *TaskResourceAssert) HasAfterString(expected string) *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("after", expected))
 	return t
 }
 
@@ -237,11 +610,6 @@ func (t *TaskResourceAssert) HasS3StageVpceDnsNameString(expected string) *TaskR
 	return t
 }
 
-func (t *TaskResourceAssert) HasScheduleString(expected string) *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("schedule", expected))
-	return t
-}
-
 func (t *TaskResourceAssert) HasSearchPathString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("search_path", expected))
 	return t
@@ -284,11 +652,6 @@ func (t *TaskResourceAssert) HasStrictJsonOutputString(expected string) *TaskRes
 
 func (t *TaskResourceAssert) HasSuspendTaskAfterNumFailuresString(expected string) *TaskResourceAssert {
 	t.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", expected))
-	return t
-}
-
-func (t *TaskResourceAssert) HasTargetCompletionIntervalString(expected string) *TaskResourceAssert {
-	t.AddAssertion(assert.ValueSet("target_completion_interval", expected))
 	return t
 }
 

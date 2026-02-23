@@ -122,7 +122,7 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 						HasDefaultWarehouseEmpty().
 						HasNoDefaultNamespace().
 						HasDefaultRoleEmpty().
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault).
 						HasMinsToBypassMfaString(r.IntDefaultString).
 						HasRsaPublicKeyEmpty().
 						HasRsaPublicKey2Empty().
@@ -168,9 +168,9 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 					resourceassert.ImportedUserResource(t, id2.Name()).
 						HasLoginNameString(strings.ToUpper(id.Name())).
 						HasDisplayNameString(id.Name()).
-						HasDisabled(false).
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
-						HasMustChangePassword(false),
+						HasDisabledBool(false).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
+						HasMustChangePasswordBool(false),
 				),
 			},
 			// DESTROY
@@ -191,14 +191,14 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 						HasMiddleNameString("Jakub").
 						HasLastNameString("Testowski").
 						HasEmailString("fake@email.com").
-						HasMustChangePassword(true).
-						HasDisabled(false).
+						HasMustChangePasswordBool(true).
+						HasDisabledBool(false).
 						HasDaysToExpiryString("8").
 						HasMinsToUnlockString("9").
 						HasDefaultWarehouseString("some_warehouse").
 						HasDefaultNamespaceString("some.namespace").
 						HasDefaultRoleString("some_role").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
 						HasMinsToBypassMfaString("10").
 						HasRsaPublicKeyString(key1).
 						HasRsaPublicKey2String(key2).
@@ -220,14 +220,14 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 						HasMiddleNameString("Kuba").
 						HasLastNameString("Terraformowski").
 						HasEmailString("fake@email.net").
-						HasMustChangePassword(false).
-						HasDisabled(true).
+						HasMustChangePasswordBool(false).
+						HasDisabledBool(true).
 						HasDaysToExpiryString("12").
 						HasMinsToUnlockString("13").
 						HasDefaultWarehouseString("other_warehouse").
 						HasDefaultNamespaceString("one_part_namespace").
 						HasDefaultRoleString("other_role").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
 						HasMinsToBypassMfaString("14").
 						HasRsaPublicKeyString(key2).
 						HasRsaPublicKey2String(key1).
@@ -289,7 +289,7 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 						HasDefaultWarehouseString("").
 						HasDefaultNamespaceString("").
 						HasDefaultRoleString("").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault).
 						HasMinsToBypassMfaString(r.IntDefaultString).
 						HasRsaPublicKeyString("").
 						HasRsaPublicKey2String("").
@@ -1080,7 +1080,7 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 			{
 				Config: config.FromModels(t, userModelEmpty),
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
+					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
 			},
@@ -1110,7 +1110,7 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 			{
 				Config: config.FromModels(t, userModelWithOptionNone),
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelWithOptionNone.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionNone),
+					resourceassert.UserResource(t, userModelWithOptionNone.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`[]`),
 				),
 			},
@@ -1126,7 +1126,7 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelWithOptionAll.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionNone),
+					resourceassert.UserResource(t, userModelWithOptionAll.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`[]`),
 				),
 			},
@@ -1139,7 +1139,7 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
+					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
 			},
@@ -1162,7 +1162,7 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelWithOptionNone.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionNone),
+					resourceassert.UserResource(t, userModelWithOptionNone.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles("[]"),
 				),
 			},
@@ -1175,7 +1175,7 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
+					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
 			},
@@ -1183,7 +1183,7 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 			{
 				Config: config.FromModels(t, userModelWithOptionNone),
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionNone),
+					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`[]`),
 				),
 			},
@@ -1196,7 +1196,7 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 					},
 				},
 				Check: assertThat(t,
-					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault),
+					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
 			},
@@ -1469,7 +1469,7 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 						HasNoDefaultWarehouse().
 						HasNoDefaultNamespace().
 						HasNoDefaultRole().
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault).
 						HasMinsToBypassMfaString(r.IntDefaultString).
 						HasNoRsaPublicKey().
 						HasNoRsaPublicKey2().

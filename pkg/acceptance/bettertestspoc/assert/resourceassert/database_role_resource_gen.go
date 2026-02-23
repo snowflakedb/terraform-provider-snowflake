@@ -28,6 +28,30 @@ func ImportedDatabaseRoleResource(t *testing.T, id string) *DatabaseRoleResource
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (d *DatabaseRoleResourceAssert) HasDatabase(expected string) *DatabaseRoleResourceAssert {
+	d.StringValueSet("database", expected)
+	return d
+}
+
+func (d *DatabaseRoleResourceAssert) HasName(expected string) *DatabaseRoleResourceAssert {
+	d.StringValueSet("name", expected)
+	return d
+}
+
+func (d *DatabaseRoleResourceAssert) HasComment(expected string) *DatabaseRoleResourceAssert {
+	d.StringValueSet("comment", expected)
+	return d
+}
+
+func (d *DatabaseRoleResourceAssert) HasFullyQualifiedName(expected string) *DatabaseRoleResourceAssert {
+	d.StringValueSet("fully_qualified_name", expected)
+	return d
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

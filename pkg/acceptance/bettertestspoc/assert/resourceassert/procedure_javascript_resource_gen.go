@@ -28,6 +28,87 @@ func ImportedProcedureJavascriptResource(t *testing.T, id string) *ProcedureJava
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (p *ProcedureJavascriptResourceAssert) HasDatabase(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("database", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasSchema(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("schema", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasName(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("name", expected)
+	return p
+}
+
+// collection assert for arguments will be generated here
+
+func (p *ProcedureJavascriptResourceAssert) HasComment(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("comment", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasEnableConsoleOutput(expected bool) *ProcedureJavascriptResourceAssert {
+	p.BoolValueSet("enable_console_output", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasExecuteAs(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("execute_as", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasFullyQualifiedName(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("fully_qualified_name", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasIsSecure(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("is_secure", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasLogLevel(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("log_level", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasMetricLevel(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("metric_level", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasNullInputBehavior(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("null_input_behavior", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasProcedureDefinition(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("procedure_definition", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasProcedureLanguage(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("procedure_language", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasReturnType(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("return_type", expected)
+	return p
+}
+
+func (p *ProcedureJavascriptResourceAssert) HasTraceLevel(expected string) *ProcedureJavascriptResourceAssert {
+	p.StringValueSet("trace_level", expected)
+	return p
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -44,11 +125,6 @@ func (p *ProcedureJavascriptResourceAssert) HasSchemaString(expected string) *Pr
 
 func (p *ProcedureJavascriptResourceAssert) HasNameString(expected string) *ProcedureJavascriptResourceAssert {
 	p.AddAssertion(assert.ValueSet("name", expected))
-	return p
-}
-
-func (p *ProcedureJavascriptResourceAssert) HasArgumentsString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments", expected))
 	return p
 }
 

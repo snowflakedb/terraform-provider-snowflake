@@ -28,6 +28,35 @@ func ImportedSecondaryConnectionResource(t *testing.T, id string) *SecondaryConn
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SecondaryConnectionResourceAssert) HasName(expected string) *SecondaryConnectionResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasAsReplicaOf(expected string) *SecondaryConnectionResourceAssert {
+	s.StringValueSet("as_replica_of", expected)
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasComment(expected string) *SecondaryConnectionResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasFullyQualifiedName(expected string) *SecondaryConnectionResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *SecondaryConnectionResourceAssert) HasIsPrimary(expected bool) *SecondaryConnectionResourceAssert {
+	s.BoolValueSet("is_primary", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

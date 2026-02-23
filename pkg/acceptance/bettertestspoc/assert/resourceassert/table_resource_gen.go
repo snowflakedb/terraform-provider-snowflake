@@ -28,6 +28,58 @@ func ImportedTableResource(t *testing.T, id string) *TableResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (t *TableResourceAssert) HasDatabase(expected string) *TableResourceAssert {
+	t.StringValueSet("database", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasSchema(expected string) *TableResourceAssert {
+	t.StringValueSet("schema", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasName(expected string) *TableResourceAssert {
+	t.StringValueSet("name", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasChangeTracking(expected bool) *TableResourceAssert {
+	t.BoolValueSet("change_tracking", expected)
+	return t
+}
+
+// collection assert for cluster_by will be generated here
+
+// collection assert for column will be generated here
+
+func (t *TableResourceAssert) HasComment(expected string) *TableResourceAssert {
+	t.StringValueSet("comment", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasDataRetentionTimeInDays(expected int) *TableResourceAssert {
+	t.IntValueSet("data_retention_time_in_days", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasFullyQualifiedName(expected string) *TableResourceAssert {
+	t.StringValueSet("fully_qualified_name", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasOwner(expected string) *TableResourceAssert {
+	t.StringValueSet("owner", expected)
+	return t
+}
+
+// collection assert for primary_key will be generated here
+
+// collection assert for tag will be generated here
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -52,16 +104,6 @@ func (t *TableResourceAssert) HasChangeTrackingString(expected string) *TableRes
 	return t
 }
 
-func (t *TableResourceAssert) HasClusterByString(expected string) *TableResourceAssert {
-	t.AddAssertion(assert.ValueSet("cluster_by", expected))
-	return t
-}
-
-func (t *TableResourceAssert) HasColumnString(expected string) *TableResourceAssert {
-	t.AddAssertion(assert.ValueSet("column", expected))
-	return t
-}
-
 func (t *TableResourceAssert) HasCommentString(expected string) *TableResourceAssert {
 	t.AddAssertion(assert.ValueSet("comment", expected))
 	return t
@@ -79,16 +121,6 @@ func (t *TableResourceAssert) HasFullyQualifiedNameString(expected string) *Tabl
 
 func (t *TableResourceAssert) HasOwnerString(expected string) *TableResourceAssert {
 	t.AddAssertion(assert.ValueSet("owner", expected))
-	return t
-}
-
-func (t *TableResourceAssert) HasPrimaryKeyString(expected string) *TableResourceAssert {
-	t.AddAssertion(assert.ValueSet("primary_key", expected))
-	return t
-}
-
-func (t *TableResourceAssert) HasTagString(expected string) *TableResourceAssert {
-	t.AddAssertion(assert.ValueSet("tag", expected))
 	return t
 }
 

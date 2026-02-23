@@ -28,6 +28,65 @@ func ImportedStreamlitResource(t *testing.T, id string) *StreamlitResourceAssert
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StreamlitResourceAssert) HasDatabase(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasSchema(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasName(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasComment(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasDirectoryLocation(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("directory_location", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasExternalAccessIntegrations(expected ...string) *StreamlitResourceAssert {
+	s.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasFullyQualifiedName(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasMainFile(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("main_file", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasQueryWarehouse(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("query_warehouse", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasStage(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("stage", expected)
+	return s
+}
+
+func (s *StreamlitResourceAssert) HasTitle(expected string) *StreamlitResourceAssert {
+	s.StringValueSet("title", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,11 +113,6 @@ func (s *StreamlitResourceAssert) HasCommentString(expected string) *StreamlitRe
 
 func (s *StreamlitResourceAssert) HasDirectoryLocationString(expected string) *StreamlitResourceAssert {
 	s.AddAssertion(assert.ValueSet("directory_location", expected))
-	return s
-}
-
-func (s *StreamlitResourceAssert) HasExternalAccessIntegrationsString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_access_integrations", expected))
 	return s
 }
 

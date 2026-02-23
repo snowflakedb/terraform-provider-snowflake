@@ -96,7 +96,7 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 						HasDefaultWarehouseEmpty().
 						HasNoDefaultNamespace().
 						HasDefaultRoleEmpty().
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault).
 						HasRsaPublicKeyEmpty().
 						HasRsaPublicKey2Empty().
 						HasCommentEmpty().
@@ -137,8 +137,8 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 					resourceassert.ImportedServiceUserResource(t, id2.Name()).
 						HasLoginNameString(strings.ToUpper(id.Name())).
 						HasDisplayNameString(id.Name()).
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
-						HasDisabled(false),
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
+						HasDisabledBool(false),
 				),
 			},
 			// DESTROY
@@ -155,13 +155,13 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 						HasLoginNameString(loginName).
 						HasDisplayNameString("Display Name").
 						HasEmailString("fake@email.com").
-						HasDisabled(false).
+						HasDisabledBool(false).
 						HasDaysToExpiryString("8").
 						HasMinsToUnlockString("9").
 						HasDefaultWarehouseString("some_warehouse").
 						HasDefaultNamespaceString("some.namespace").
 						HasDefaultRoleString("some_role").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
 						HasRsaPublicKeyString(key1).
 						HasRsaPublicKey2String(key2).
 						HasCommentString(comment).
@@ -177,13 +177,13 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 						HasLoginNameString(newLoginName).
 						HasDisplayNameString("New Display Name").
 						HasEmailString("fake@email.net").
-						HasDisabled(true).
+						HasDisabledBool(true).
 						HasDaysToExpiryString("12").
 						HasMinsToUnlockString("13").
 						HasDefaultWarehouseString("other_warehouse").
 						HasDefaultNamespaceString("one_part_namespace").
 						HasDefaultRoleString("other_role").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
 						HasRsaPublicKeyString(key2).
 						HasRsaPublicKey2String(key1).
 						HasCommentString(newComment).
@@ -235,7 +235,7 @@ func TestAcc_ServiceUser_BasicFlows(t *testing.T) {
 						HasDefaultWarehouseString("").
 						HasDefaultNamespaceString("").
 						HasDefaultRoleString("").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault).
 						HasRsaPublicKeyString("").
 						HasRsaPublicKey2String("").
 						HasCommentString("").

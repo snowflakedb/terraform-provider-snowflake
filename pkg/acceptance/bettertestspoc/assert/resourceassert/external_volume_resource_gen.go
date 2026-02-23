@@ -28,6 +28,32 @@ func ImportedExternalVolumeResource(t *testing.T, id string) *ExternalVolumeReso
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (e *ExternalVolumeResourceAssert) HasName(expected string) *ExternalVolumeResourceAssert {
+	e.StringValueSet("name", expected)
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasAllowWrites(expected string) *ExternalVolumeResourceAssert {
+	e.StringValueSet("allow_writes", expected)
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasComment(expected string) *ExternalVolumeResourceAssert {
+	e.StringValueSet("comment", expected)
+	return e
+}
+
+func (e *ExternalVolumeResourceAssert) HasFullyQualifiedName(expected string) *ExternalVolumeResourceAssert {
+	e.StringValueSet("fully_qualified_name", expected)
+	return e
+}
+
+// collection assert for storage_location will be generated here
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -49,11 +75,6 @@ func (e *ExternalVolumeResourceAssert) HasCommentString(expected string) *Extern
 
 func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalVolumeResourceAssert {
 	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return e
-}
-
-func (e *ExternalVolumeResourceAssert) HasStorageLocationString(expected string) *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("storage_location", expected))
 	return e
 }
 

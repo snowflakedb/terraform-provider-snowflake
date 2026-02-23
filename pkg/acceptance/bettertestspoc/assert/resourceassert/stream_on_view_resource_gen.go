@@ -28,6 +28,69 @@ func ImportedStreamOnViewResource(t *testing.T, id string) *StreamOnViewResource
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StreamOnViewResourceAssert) HasDatabase(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasSchema(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasName(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasAppendOnly(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("append_only", expected)
+	return s
+}
+
+// collection assert for at will be generated here
+
+// collection assert for before will be generated here
+
+func (s *StreamOnViewResourceAssert) HasComment(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasCopyGrants(expected bool) *StreamOnViewResourceAssert {
+	s.BoolValueSet("copy_grants", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasFullyQualifiedName(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasShowInitialRows(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("show_initial_rows", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasStale(expected bool) *StreamOnViewResourceAssert {
+	s.BoolValueSet("stale", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasStreamType(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("stream_type", expected)
+	return s
+}
+
+func (s *StreamOnViewResourceAssert) HasView(expected string) *StreamOnViewResourceAssert {
+	s.StringValueSet("view", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -49,16 +112,6 @@ func (s *StreamOnViewResourceAssert) HasNameString(expected string) *StreamOnVie
 
 func (s *StreamOnViewResourceAssert) HasAppendOnlyString(expected string) *StreamOnViewResourceAssert {
 	s.AddAssertion(assert.ValueSet("append_only", expected))
-	return s
-}
-
-func (s *StreamOnViewResourceAssert) HasAtString(expected string) *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("at", expected))
-	return s
-}
-
-func (s *StreamOnViewResourceAssert) HasBeforeString(expected string) *StreamOnViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("before", expected))
 	return s
 }
 

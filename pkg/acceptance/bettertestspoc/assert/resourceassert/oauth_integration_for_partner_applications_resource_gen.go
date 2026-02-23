@@ -28,17 +28,68 @@ func ImportedOauthIntegrationForPartnerApplicationsResource(t *testing.T, id str
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasName(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.StringValueSet("name", expected)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasBlockedRolesList(expected ...string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.SetContainsExactlyStringValues("blocked_roles_list", expected...)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasComment(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.StringValueSet("comment", expected)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasEnabled(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.StringValueSet("enabled", expected)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasFullyQualifiedName(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.StringValueSet("fully_qualified_name", expected)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthClient(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.StringValueSet("oauth_client", expected)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthIssueRefreshTokens(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.StringValueSet("oauth_issue_refresh_tokens", expected)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthRedirectUri(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.StringValueSet("oauth_redirect_uri", expected)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthRefreshTokenValidity(expected int) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.IntValueSet("oauth_refresh_token_validity", expected)
+	return o
+}
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthUseSecondaryRoles(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.StringValueSet("oauth_use_secondary_roles", expected)
+	return o
+}
+
+// collection assert for related_parameters will be generated here
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
 
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNameString(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.AddAssertion(assert.ValueSet("name", expected))
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasBlockedRolesListString(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
-	o.AddAssertion(assert.ValueSet("blocked_roles_list", expected))
 	return o
 }
 
@@ -79,11 +130,6 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthRefreshTo
 
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthUseSecondaryRolesString(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.AddAssertion(assert.ValueSet("oauth_use_secondary_roles", expected))
-	return o
-}
-
-func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasRelatedParametersString(expected string) *OauthIntegrationForPartnerApplicationsResourceAssert {
-	o.AddAssertion(assert.ValueSet("related_parameters", expected))
 	return o
 }
 

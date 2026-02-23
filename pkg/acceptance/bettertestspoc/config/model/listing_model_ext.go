@@ -1,11 +1,47 @@
 package model
 
 import (
+	"log"
+
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
+
+// TODO(SNOW-1501905): Remove after complex non-list type overrides are handled
+func (l *ListingModel) WithManifest(locations []sdk.StageLocation) *ListingModel {
+	if len(locations) != 1 {
+		log.Fatalf("expected exactly one location for manifest, got %d", len(locations))
+	}
+
+	return l.WithManifestValue(tfconfig.ListVariable(
+		tfconfig.MapVariable(map[string]tfconfig.Variable{
+			"from_stage": tfconfig.ListVariable(
+				tfconfig.MapVariable(map[string]tfconfig.Variable{
+					"stage":    tfconfig.StringVariable(locations[0].GetStageId().FullyQualifiedName()),
+					"location": tfconfig.StringVariable(locations[0].GetPath()),
+				}),
+			),
+		}),
+	))
+}
+
+func ListingWithInlineManifest(
+	resourceName string,
+	name string,
+	manifest string,
+) *ListingModel {
+	l := &ListingModel{ResourceModelMeta: config.Meta(resourceName, resources.Listing)}
+	l.WithName(name)
+	l.WithManifestValue(tfconfig.ListVariable(
+		tfconfig.MapVariable(map[string]tfconfig.Variable{
+			"from_string": config.MultilineWrapperVariable(manifest),
+		}),
+	))
+	return l
+}
 
 func ListingWithStagedManifestWithLocation(
 	resourceName string,
@@ -13,19 +49,7 @@ func ListingWithStagedManifestWithLocation(
 	stageId sdk.SchemaObjectIdentifier,
 	location string,
 ) *ListingModel {
-	l := &ListingModel{ResourceModelMeta: config.Meta(resourceName, resources.Listing)}
-	l.WithName(name)
-	l.WithManifestValue(tfconfig.ListVariable(
-		tfconfig.MapVariable(map[string]tfconfig.Variable{
-			"from_stage": tfconfig.ListVariable(
-				tfconfig.MapVariable(map[string]tfconfig.Variable{
-					"stage":    tfconfig.StringVariable(stageId.FullyQualifiedName()),
-					"location": tfconfig.StringVariable(location),
-				}),
-			),
-		}),
-	))
-	return l
+	return Listing(resourceName, name, []sdk.StageLocation{sdk.NewStageLocation(stageId, location)})
 }
 
 func ListingWithStagedManifestWithOptionals(

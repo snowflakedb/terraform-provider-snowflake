@@ -28,6 +28,50 @@ func ImportedSecretWithBasicAuthenticationResource(t *testing.T, id string) *Sec
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SecretWithBasicAuthenticationResourceAssert) HasDatabase(expected string) *SecretWithBasicAuthenticationResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationResourceAssert) HasSchema(expected string) *SecretWithBasicAuthenticationResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationResourceAssert) HasName(expected string) *SecretWithBasicAuthenticationResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationResourceAssert) HasComment(expected string) *SecretWithBasicAuthenticationResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationResourceAssert) HasFullyQualifiedName(expected string) *SecretWithBasicAuthenticationResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationResourceAssert) HasPassword(expected string) *SecretWithBasicAuthenticationResourceAssert {
+	s.StringValueSet("password", expected)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationResourceAssert) HasSecretType(expected string) *SecretWithBasicAuthenticationResourceAssert {
+	s.StringValueSet("secret_type", expected)
+	return s
+}
+
+func (s *SecretWithBasicAuthenticationResourceAssert) HasUsername(expected string) *SecretWithBasicAuthenticationResourceAssert {
+	s.StringValueSet("username", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

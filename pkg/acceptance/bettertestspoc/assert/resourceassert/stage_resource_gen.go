@@ -28,6 +28,82 @@ func ImportedStageResource(t *testing.T, id string) *StageResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StageResourceAssert) HasDatabase(expected string) *StageResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasSchema(expected string) *StageResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasName(expected string) *StageResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasAwsExternalId(expected string) *StageResourceAssert {
+	s.StringValueSet("aws_external_id", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasComment(expected string) *StageResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasCopyOptions(expected string) *StageResourceAssert {
+	s.StringValueSet("copy_options", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasCredentials(expected string) *StageResourceAssert {
+	s.StringValueSet("credentials", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasDirectory(expected string) *StageResourceAssert {
+	s.StringValueSet("directory", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasEncryption(expected string) *StageResourceAssert {
+	s.StringValueSet("encryption", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasFileFormat(expected string) *StageResourceAssert {
+	s.StringValueSet("file_format", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasFullyQualifiedName(expected string) *StageResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasSnowflakeIamUser(expected string) *StageResourceAssert {
+	s.StringValueSet("snowflake_iam_user", expected)
+	return s
+}
+
+func (s *StageResourceAssert) HasStorageIntegration(expected string) *StageResourceAssert {
+	s.StringValueSet("storage_integration", expected)
+	return s
+}
+
+// collection assert for tag will be generated here
+
+func (s *StageResourceAssert) HasUrl(expected string) *StageResourceAssert {
+	s.StringValueSet("url", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -94,11 +170,6 @@ func (s *StageResourceAssert) HasSnowflakeIamUserString(expected string) *StageR
 
 func (s *StageResourceAssert) HasStorageIntegrationString(expected string) *StageResourceAssert {
 	s.AddAssertion(assert.ValueSet("storage_integration", expected))
-	return s
-}
-
-func (s *StageResourceAssert) HasTagString(expected string) *StageResourceAssert {
-	s.AddAssertion(assert.ValueSet("tag", expected))
 	return s
 }
 

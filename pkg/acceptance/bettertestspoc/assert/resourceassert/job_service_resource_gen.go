@@ -28,6 +28,59 @@ func ImportedJobServiceResource(t *testing.T, id string) *JobServiceResourceAsse
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (j *JobServiceResourceAssert) HasDatabase(expected string) *JobServiceResourceAssert {
+	j.StringValueSet("database", expected)
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasSchema(expected string) *JobServiceResourceAssert {
+	j.StringValueSet("schema", expected)
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasName(expected string) *JobServiceResourceAssert {
+	j.StringValueSet("name", expected)
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasComment(expected string) *JobServiceResourceAssert {
+	j.StringValueSet("comment", expected)
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasComputePool(expected string) *JobServiceResourceAssert {
+	j.StringValueSet("compute_pool", expected)
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasExternalAccessIntegrations(expected ...string) *JobServiceResourceAssert {
+	j.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return j
+}
+
+// collection assert for from_specification will be generated here
+
+// collection assert for from_specification_template will be generated here
+
+func (j *JobServiceResourceAssert) HasFullyQualifiedName(expected string) *JobServiceResourceAssert {
+	j.StringValueSet("fully_qualified_name", expected)
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasQueryWarehouse(expected string) *JobServiceResourceAssert {
+	j.StringValueSet("query_warehouse", expected)
+	return j
+}
+
+func (j *JobServiceResourceAssert) HasServiceType(expected string) *JobServiceResourceAssert {
+	j.StringValueSet("service_type", expected)
+	return j
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,21 +107,6 @@ func (j *JobServiceResourceAssert) HasCommentString(expected string) *JobService
 
 func (j *JobServiceResourceAssert) HasComputePoolString(expected string) *JobServiceResourceAssert {
 	j.AddAssertion(assert.ValueSet("compute_pool", expected))
-	return j
-}
-
-func (j *JobServiceResourceAssert) HasExternalAccessIntegrationsString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("external_access_integrations", expected))
-	return j
-}
-
-func (j *JobServiceResourceAssert) HasFromSpecificationString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("from_specification", expected))
-	return j
-}
-
-func (j *JobServiceResourceAssert) HasFromSpecificationTemplateString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("from_specification_template", expected))
 	return j
 }
 

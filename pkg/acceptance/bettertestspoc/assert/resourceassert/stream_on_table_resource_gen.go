@@ -28,6 +28,69 @@ func ImportedStreamOnTableResource(t *testing.T, id string) *StreamOnTableResour
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StreamOnTableResourceAssert) HasDatabase(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasSchema(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasName(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasAppendOnly(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("append_only", expected)
+	return s
+}
+
+// collection assert for at will be generated here
+
+// collection assert for before will be generated here
+
+func (s *StreamOnTableResourceAssert) HasComment(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasCopyGrants(expected bool) *StreamOnTableResourceAssert {
+	s.BoolValueSet("copy_grants", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasFullyQualifiedName(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasShowInitialRows(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("show_initial_rows", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasStale(expected bool) *StreamOnTableResourceAssert {
+	s.BoolValueSet("stale", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasStreamType(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("stream_type", expected)
+	return s
+}
+
+func (s *StreamOnTableResourceAssert) HasTable(expected string) *StreamOnTableResourceAssert {
+	s.StringValueSet("table", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -49,16 +112,6 @@ func (s *StreamOnTableResourceAssert) HasNameString(expected string) *StreamOnTa
 
 func (s *StreamOnTableResourceAssert) HasAppendOnlyString(expected string) *StreamOnTableResourceAssert {
 	s.AddAssertion(assert.ValueSet("append_only", expected))
-	return s
-}
-
-func (s *StreamOnTableResourceAssert) HasAtString(expected string) *StreamOnTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("at", expected))
-	return s
-}
-
-func (s *StreamOnTableResourceAssert) HasBeforeString(expected string) *StreamOnTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("before", expected))
 	return s
 }
 

@@ -28,6 +28,68 @@ func ImportedExternalAzureStageResource(t *testing.T, id string) *ExternalAzureS
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (e *ExternalAzureStageResourceAssert) HasDatabase(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("database", expected)
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasSchema(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("schema", expected)
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasName(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("name", expected)
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasCloud(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("cloud", expected)
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasComment(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("comment", expected)
+	return e
+}
+
+// collection assert for credentials will be generated here
+
+// collection assert for directory will be generated here
+
+// collection assert for encryption will be generated here
+
+// collection assert for file_format will be generated here
+
+func (e *ExternalAzureStageResourceAssert) HasFullyQualifiedName(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("fully_qualified_name", expected)
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasStageType(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("stage_type", expected)
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasStorageIntegration(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("storage_integration", expected)
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasUrl(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("url", expected)
+	return e
+}
+
+func (e *ExternalAzureStageResourceAssert) HasUsePrivatelinkEndpoint(expected string) *ExternalAzureStageResourceAssert {
+	e.StringValueSet("use_privatelink_endpoint", expected)
+	return e
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,26 +116,6 @@ func (e *ExternalAzureStageResourceAssert) HasCloudString(expected string) *Exte
 
 func (e *ExternalAzureStageResourceAssert) HasCommentString(expected string) *ExternalAzureStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasCredentialsString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("credentials", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasDirectoryString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasEncryptionString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("encryption", expected))
-	return e
-}
-
-func (e *ExternalAzureStageResourceAssert) HasFileFormatString(expected string) *ExternalAzureStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("file_format", expected))
 	return e
 }
 

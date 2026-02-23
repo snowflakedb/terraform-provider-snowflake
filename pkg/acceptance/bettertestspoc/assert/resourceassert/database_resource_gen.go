@@ -28,6 +28,117 @@ func ImportedDatabaseResource(t *testing.T, id string) *DatabaseResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (d *DatabaseResourceAssert) HasName(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("name", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasCatalog(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("catalog", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasComment(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("comment", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDataRetentionTimeInDays(expected int) *DatabaseResourceAssert {
+	d.IntValueSet("data_retention_time_in_days", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultDdlCollation(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("default_ddl_collation", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDropPublicSchemaOnCreation(expected bool) *DatabaseResourceAssert {
+	d.BoolValueSet("drop_public_schema_on_creation", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasEnableConsoleOutput(expected bool) *DatabaseResourceAssert {
+	d.BoolValueSet("enable_console_output", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasExternalVolume(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("external_volume", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasFullyQualifiedName(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("fully_qualified_name", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasIsTransient(expected bool) *DatabaseResourceAssert {
+	d.BoolValueSet("is_transient", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasLogLevel(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("log_level", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *DatabaseResourceAssert {
+	d.IntValueSet("max_data_extension_time_in_days", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *DatabaseResourceAssert {
+	d.BoolValueSet("quoted_identifiers_ignore_case", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasReplaceInvalidCharacters(expected bool) *DatabaseResourceAssert {
+	d.BoolValueSet("replace_invalid_characters", expected)
+	return d
+}
+
+// collection assert for replication will be generated here
+
+func (d *DatabaseResourceAssert) HasStorageSerializationPolicy(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("storage_serialization_policy", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasSuspendTaskAfterNumFailures(expected int) *DatabaseResourceAssert {
+	d.IntValueSet("suspend_task_after_num_failures", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasTaskAutoRetryAttempts(expected int) *DatabaseResourceAssert {
+	d.IntValueSet("task_auto_retry_attempts", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasTraceLevel(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("trace_level", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSize(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("user_task_managed_initial_warehouse_size", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *DatabaseResourceAssert {
+	d.IntValueSet("user_task_minimum_trigger_interval_in_seconds", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasUserTaskTimeoutMs(expected int) *DatabaseResourceAssert {
+	d.IntValueSet("user_task_timeout_ms", expected)
+	return d
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -99,11 +210,6 @@ func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected s
 
 func (d *DatabaseResourceAssert) HasReplaceInvalidCharactersString(expected string) *DatabaseResourceAssert {
 	d.AddAssertion(assert.ValueSet("replace_invalid_characters", expected))
-	return d
-}
-
-func (d *DatabaseResourceAssert) HasReplicationString(expected string) *DatabaseResourceAssert {
-	d.AddAssertion(assert.ValueSet("replication", expected))
 	return d
 }
 
