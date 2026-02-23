@@ -47,7 +47,7 @@ func (f *FunctionPythonResourceAssert) HasName(expected string) *FunctionPythonR
 	return f
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (f *FunctionPythonResourceAssert) HasComment(expected string) *FunctionPythonResourceAssert {
 	f.StringValueSet("comment", expected)
@@ -84,7 +84,7 @@ func (f *FunctionPythonResourceAssert) HasHandler(expected string) *FunctionPyth
 	return f
 }
 
-// collection assert for imports will be generated here
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
 
 func (f *FunctionPythonResourceAssert) HasIsAggregate(expected string) *FunctionPythonResourceAssert {
 	f.StringValueSet("is_aggregate", expected)
@@ -131,7 +131,7 @@ func (f *FunctionPythonResourceAssert) HasRuntimeVersion(expected string) *Funct
 	return f
 }
 
-// collection assert for secrets will be generated here
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
 
 func (f *FunctionPythonResourceAssert) HasTraceLevel(expected string) *FunctionPythonResourceAssert {
 	f.StringValueSet("trace_level", expected)

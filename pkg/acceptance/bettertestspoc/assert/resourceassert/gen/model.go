@@ -20,6 +20,9 @@ type ResourceAttributeAssertionModel struct {
 	IsCollection bool
 	IsRequired   bool
 
+	Type    string
+	SubType string
+
 	ExpectedType                 string
 	AssertionCreator             string
 	ShouldGenerateTypedAssertion bool
@@ -33,10 +36,17 @@ func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSch
 		}
 
 		expectedType, assertionCreator := getExpectedTypeAndAssertionCreator(attr)
+		var subType string
+		if attr.AttributeSubType != schema.TypeInvalid {
+			subType = genhelpers.ResourceSchemaTypeToString(attr.AttributeSubType)
+		}
 		attributes = append(attributes, ResourceAttributeAssertionModel{
 			Name:         attr.Name,
 			IsCollection: attr.AttributeType == schema.TypeList || attr.AttributeType == schema.TypeSet,
 			IsRequired:   attr.Required,
+
+			Type:    genhelpers.ResourceSchemaTypeToString(attr.AttributeType),
+			SubType: subType,
 
 			ExpectedType:                 expectedType,
 			AssertionCreator:             assertionCreator,
@@ -68,9 +78,9 @@ func getExpectedTypeAndAssertionCreator(attr genhelpers.SchemaAttribute) (expect
 	case schema.TypeSet:
 		expectedType, assertionCreator = getExpectedTypeAndAssertionCreatorForSet(attr)
 	case schema.TypeList:
-		// TODO [SNOW-3113128]: handle/add limitation
+		expectedType, assertionCreator = getExpectedTypeAndAssertionCreatorForList(attr)
 	case schema.TypeMap:
-		// TODO [SNOW-3113128]: handle/add limitation
+		// map type is not currently supported
 	case schema.TypeInvalid:
 	}
 	return
@@ -90,6 +100,26 @@ func getExpectedTypeAndAssertionCreatorForSet(attr genhelpers.SchemaAttribute) (
 	case schema.TypeString:
 		expectedType = "...string"
 		assertionCreator = "SetContainsExactlyStringValues"
+	default:
+		// other types are not currently supported
+	}
+	return
+}
+
+func getExpectedTypeAndAssertionCreatorForList(attr genhelpers.SchemaAttribute) (expectedType string, assertionCreator string) {
+	switch attr.AttributeSubType {
+	case schema.TypeBool:
+		expectedType = "...bool"
+		assertionCreator = "ListContainsExactlyBoolValuesInOrder"
+	case schema.TypeInt:
+		expectedType = "...int"
+		assertionCreator = "ListContainsExactlyIntValuesInOrder"
+	case schema.TypeFloat:
+		expectedType = "...float64"
+		assertionCreator = "ListContainsExactlyFloatValuesInOrder"
+	case schema.TypeString:
+		expectedType = "...string"
+		assertionCreator = "ListContainsExactlyStringValuesInOrder"
 	default:
 		// other types are not currently supported
 	}

@@ -47,7 +47,7 @@ func (p *ProcedureScalaResourceAssert) HasName(expected string) *ProcedureScalaR
 	return p
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (p *ProcedureScalaResourceAssert) HasComment(expected string) *ProcedureScalaResourceAssert {
 	p.StringValueSet("comment", expected)
@@ -79,7 +79,7 @@ func (p *ProcedureScalaResourceAssert) HasHandler(expected string) *ProcedureSca
 	return p
 }
 
-// collection assert for imports will be generated here
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
 
 func (p *ProcedureScalaResourceAssert) HasIsSecure(expected string) *ProcedureScalaResourceAssert {
 	p.StringValueSet("is_secure", expected)
@@ -126,14 +126,14 @@ func (p *ProcedureScalaResourceAssert) HasRuntimeVersion(expected string) *Proce
 	return p
 }
 
-// collection assert for secrets will be generated here
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
 
 func (p *ProcedureScalaResourceAssert) HasSnowparkPackage(expected string) *ProcedureScalaResourceAssert {
 	p.StringValueSet("snowpark_package", expected)
 	return p
 }
 
-// collection assert for target_path will be generated here
+// typed assert for "target_path" (type: Set, subtype: Map) is not currently supported
 
 func (p *ProcedureScalaResourceAssert) HasTraceLevel(expected string) *ProcedureScalaResourceAssert {
 	p.StringValueSet("trace_level", expected)

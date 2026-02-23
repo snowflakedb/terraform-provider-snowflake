@@ -52,20 +52,20 @@ func (s *SemanticViewResourceAssert) HasComment(expected string) *SemanticViewRe
 	return s
 }
 
-// collection assert for dimensions will be generated here
+// typed assert for "dimensions" (type: List, subtype: Map) is not currently supported
 
-// collection assert for facts will be generated here
+// typed assert for "facts" (type: List, subtype: Map) is not currently supported
 
 func (s *SemanticViewResourceAssert) HasFullyQualifiedName(expected string) *SemanticViewResourceAssert {
 	s.StringValueSet("fully_qualified_name", expected)
 	return s
 }
 
-// collection assert for metrics will be generated here
+// typed assert for "metrics" (type: List, subtype: Map) is not currently supported
 
-// collection assert for relationships will be generated here
+// typed assert for "relationships" (type: List, subtype: Map) is not currently supported
 
-// collection assert for tables will be generated here
+// typed assert for "tables" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

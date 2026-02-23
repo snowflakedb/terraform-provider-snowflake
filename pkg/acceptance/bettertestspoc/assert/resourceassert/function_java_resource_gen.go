@@ -47,7 +47,7 @@ func (f *FunctionJavaResourceAssert) HasName(expected string) *FunctionJavaResou
 	return f
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (f *FunctionJavaResourceAssert) HasComment(expected string) *FunctionJavaResourceAssert {
 	f.StringValueSet("comment", expected)
@@ -84,7 +84,7 @@ func (f *FunctionJavaResourceAssert) HasHandler(expected string) *FunctionJavaRe
 	return f
 }
 
-// collection assert for imports will be generated here
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
 
 func (f *FunctionJavaResourceAssert) HasIsSecure(expected string) *FunctionJavaResourceAssert {
 	f.StringValueSet("is_secure", expected)
@@ -126,9 +126,9 @@ func (f *FunctionJavaResourceAssert) HasRuntimeVersion(expected string) *Functio
 	return f
 }
 
-// collection assert for secrets will be generated here
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
 
-// collection assert for target_path will be generated here
+// typed assert for "target_path" (type: Set, subtype: Map) is not currently supported
 
 func (f *FunctionJavaResourceAssert) HasTraceLevel(expected string) *FunctionJavaResourceAssert {
 	f.StringValueSet("trace_level", expected)

@@ -42,7 +42,7 @@ func (e *ExecuteResourceAssert) HasQuery(expected string) *ExecuteResourceAssert
 	return e
 }
 
-// collection assert for query_results will be generated here
+// typed assert for "query_results" (type: List, subtype: Map) is not currently supported
 
 func (e *ExecuteResourceAssert) HasRevert(expected string) *ExecuteResourceAssert {
 	e.StringValueSet("revert", expected)

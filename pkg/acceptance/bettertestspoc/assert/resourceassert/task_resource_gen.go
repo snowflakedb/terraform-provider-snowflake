@@ -237,7 +237,7 @@ func (t *TaskResourceAssert) HasS3StageVpceDnsName(expected string) *TaskResourc
 	return t
 }
 
-// collection assert for schedule will be generated here
+// typed assert for "schedule" (type: List, subtype: Map) is not currently supported
 
 func (t *TaskResourceAssert) HasSearchPath(expected string) *TaskResourceAssert {
 	t.StringValueSet("search_path", expected)
@@ -284,7 +284,7 @@ func (t *TaskResourceAssert) HasSuspendTaskAfterNumFailures(expected int) *TaskR
 	return t
 }
 
-// collection assert for target_completion_interval will be generated here
+// typed assert for "target_completion_interval" (type: List, subtype: Map) is not currently supported
 
 func (t *TaskResourceAssert) HasTaskAutoRetryAttempts(expected int) *TaskResourceAssert {
 	t.IntValueSet("task_auto_retry_attempts", expected)

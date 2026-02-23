@@ -47,14 +47,14 @@ func (v *ViewResourceAssert) HasName(expected string) *ViewResourceAssert {
 	return v
 }
 
-// collection assert for aggregation_policy will be generated here
+// typed assert for "aggregation_policy" (type: List, subtype: Map) is not currently supported
 
 func (v *ViewResourceAssert) HasChangeTracking(expected string) *ViewResourceAssert {
 	v.StringValueSet("change_tracking", expected)
 	return v
 }
 
-// collection assert for column will be generated here
+// typed assert for "column" (type: List, subtype: Map) is not currently supported
 
 func (v *ViewResourceAssert) HasComment(expected string) *ViewResourceAssert {
 	v.StringValueSet("comment", expected)
@@ -66,9 +66,9 @@ func (v *ViewResourceAssert) HasCopyGrants(expected bool) *ViewResourceAssert {
 	return v
 }
 
-// collection assert for data_metric_function will be generated here
+// typed assert for "data_metric_function" (type: Set, subtype: Map) is not currently supported
 
-// collection assert for data_metric_schedule will be generated here
+// typed assert for "data_metric_schedule" (type: List, subtype: Map) is not currently supported
 
 func (v *ViewResourceAssert) HasFullyQualifiedName(expected string) *ViewResourceAssert {
 	v.StringValueSet("fully_qualified_name", expected)
@@ -90,7 +90,7 @@ func (v *ViewResourceAssert) HasIsTemporary(expected string) *ViewResourceAssert
 	return v
 }
 
-// collection assert for row_access_policy will be generated here
+// typed assert for "row_access_policy" (type: List, subtype: Map) is not currently supported
 
 func (v *ViewResourceAssert) HasStatement(expected string) *ViewResourceAssert {
 	v.StringValueSet("statement", expected)

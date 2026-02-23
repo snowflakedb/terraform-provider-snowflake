@@ -42,7 +42,10 @@ func (p *PrimaryConnectionResourceAssert) HasComment(expected string) *PrimaryCo
 	return p
 }
 
-// collection assert for enable_failover_to_accounts will be generated here
+func (p *PrimaryConnectionResourceAssert) HasEnableFailoverToAccounts(expected ...string) *PrimaryConnectionResourceAssert {
+	p.ListContainsExactlyStringValuesInOrder("enable_failover_to_accounts", expected...)
+	return p
+}
 
 func (p *PrimaryConnectionResourceAssert) HasFullyQualifiedName(expected string) *PrimaryConnectionResourceAssert {
 	p.StringValueSet("fully_qualified_name", expected)

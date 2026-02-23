@@ -57,16 +57,16 @@ func (e *ExternalS3CompatibleStageResourceAssert) HasComment(expected string) *E
 	return e
 }
 
-// collection assert for credentials will be generated here
+// typed assert for "credentials" (type: List, subtype: Map) is not currently supported
 
-// collection assert for directory will be generated here
+// typed assert for "directory" (type: List, subtype: Map) is not currently supported
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasEndpoint(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.StringValueSet("endpoint", expected)
 	return e
 }
 
-// collection assert for file_format will be generated here
+// typed assert for "file_format" (type: List, subtype: Map) is not currently supported
 
 func (e *ExternalS3CompatibleStageResourceAssert) HasFullyQualifiedName(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.StringValueSet("fully_qualified_name", expected)

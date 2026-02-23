@@ -82,7 +82,7 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasOauthUseSecond
 	return o
 }
 
-// collection assert for related_parameters will be generated here
+// typed assert for "related_parameters" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

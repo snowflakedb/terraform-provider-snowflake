@@ -57,11 +57,11 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccount(expected bool)
 	return g
 }
 
-// collection assert for on_account_object will be generated here
+// typed assert for "on_account_object" (type: List, subtype: Map) is not currently supported
 
-// collection assert for on_schema will be generated here
+// typed assert for "on_schema" (type: List, subtype: Map) is not currently supported
 
-// collection assert for on_schema_object will be generated here
+// typed assert for "on_schema_object" (type: List, subtype: Map) is not currently supported
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivileges(expected ...string) *GrantPrivilegesToAccountRoleResourceAssert {
 	g.SetContainsExactlyStringValues("privileges", expected...)

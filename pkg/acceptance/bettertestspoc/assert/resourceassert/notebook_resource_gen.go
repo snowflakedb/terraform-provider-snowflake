@@ -52,7 +52,7 @@ func (n *NotebookResourceAssert) HasComment(expected string) *NotebookResourceAs
 	return n
 }
 
-// collection assert for from will be generated here
+// typed assert for "from" (type: List, subtype: Map) is not currently supported
 
 func (n *NotebookResourceAssert) HasFullyQualifiedName(expected string) *NotebookResourceAssert {
 	n.StringValueSet("fully_qualified_name", expected)

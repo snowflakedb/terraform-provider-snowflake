@@ -47,7 +47,7 @@ func (p *ProcedureJavascriptResourceAssert) HasName(expected string) *ProcedureJ
 	return p
 }
 
-// collection assert for arguments will be generated here
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
 
 func (p *ProcedureJavascriptResourceAssert) HasComment(expected string) *ProcedureJavascriptResourceAssert {
 	p.StringValueSet("comment", expected)

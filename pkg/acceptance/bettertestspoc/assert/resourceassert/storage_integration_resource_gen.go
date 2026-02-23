@@ -72,7 +72,10 @@ func (s *StorageIntegrationResourceAssert) HasFullyQualifiedName(expected string
 	return s
 }
 
-// collection assert for storage_allowed_locations will be generated here
+func (s *StorageIntegrationResourceAssert) HasStorageAllowedLocations(expected ...string) *StorageIntegrationResourceAssert {
+	s.ListContainsExactlyStringValuesInOrder("storage_allowed_locations", expected...)
+	return s
+}
 
 func (s *StorageIntegrationResourceAssert) HasStorageAwsExternalId(expected string) *StorageIntegrationResourceAssert {
 	s.StringValueSet("storage_aws_external_id", expected)
@@ -94,7 +97,10 @@ func (s *StorageIntegrationResourceAssert) HasStorageAwsRoleArn(expected string)
 	return s
 }
 
-// collection assert for storage_blocked_locations will be generated here
+func (s *StorageIntegrationResourceAssert) HasStorageBlockedLocations(expected ...string) *StorageIntegrationResourceAssert {
+	s.ListContainsExactlyStringValuesInOrder("storage_blocked_locations", expected...)
+	return s
+}
 
 func (s *StorageIntegrationResourceAssert) HasStorageGcpServiceAccount(expected string) *StorageIntegrationResourceAssert {
 	s.StringValueSet("storage_gcp_service_account", expected)

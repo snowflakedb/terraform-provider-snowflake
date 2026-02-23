@@ -117,7 +117,7 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedName(e
 	return e
 }
 
-// collection assert for related_parameters will be generated here
+// typed assert for "related_parameters" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

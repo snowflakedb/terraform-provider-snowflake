@@ -57,11 +57,11 @@ func (e *ExternalGcsStageResourceAssert) HasComment(expected string) *ExternalGc
 	return e
 }
 
-// collection assert for directory will be generated here
+// typed assert for "directory" (type: List, subtype: Map) is not currently supported
 
-// collection assert for encryption will be generated here
+// typed assert for "encryption" (type: List, subtype: Map) is not currently supported
 
-// collection assert for file_format will be generated here
+// typed assert for "file_format" (type: List, subtype: Map) is not currently supported
 
 func (e *ExternalGcsStageResourceAssert) HasFullyQualifiedName(expected string) *ExternalGcsStageResourceAssert {
 	e.StringValueSet("fully_qualified_name", expected)

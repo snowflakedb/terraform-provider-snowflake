@@ -15,7 +15,7 @@
         }
 
     {{ else -}}
-        // collection assert for {{ .Name }} will be generated here
+        // typed assert for "{{ .Name }}" (type: {{ .Type }}{{ if .SubType }}, subtype: {{ .SubType }}{{ end }}) is not currently supported
 
     {{ end }}
 {{ end }}

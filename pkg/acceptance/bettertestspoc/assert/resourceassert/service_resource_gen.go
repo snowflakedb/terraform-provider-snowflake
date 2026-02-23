@@ -72,9 +72,9 @@ func (s *ServiceResourceAssert) HasExternalAccessIntegrations(expected ...string
 	return s
 }
 
-// collection assert for from_specification will be generated here
+// typed assert for "from_specification" (type: List, subtype: Map) is not currently supported
 
-// collection assert for from_specification_template will be generated here
+// typed assert for "from_specification_template" (type: List, subtype: Map) is not currently supported
 
 func (s *ServiceResourceAssert) HasFullyQualifiedName(expected string) *ServiceResourceAssert {
 	s.StringValueSet("fully_qualified_name", expected)
