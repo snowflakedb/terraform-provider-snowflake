@@ -28,6 +28,47 @@ func ImportedNetworkRuleResource(t *testing.T, id string) *NetworkRuleResourceAs
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (n *NetworkRuleResourceAssert) HasDatabase(expected string) *NetworkRuleResourceAssert {
+	n.StringValueSet("database", expected)
+	return n
+}
+
+func (n *NetworkRuleResourceAssert) HasSchema(expected string) *NetworkRuleResourceAssert {
+	n.StringValueSet("schema", expected)
+	return n
+}
+
+func (n *NetworkRuleResourceAssert) HasName(expected string) *NetworkRuleResourceAssert {
+	n.StringValueSet("name", expected)
+	return n
+}
+
+func (n *NetworkRuleResourceAssert) HasComment(expected string) *NetworkRuleResourceAssert {
+	n.StringValueSet("comment", expected)
+	return n
+}
+
+func (n *NetworkRuleResourceAssert) HasFullyQualifiedName(expected string) *NetworkRuleResourceAssert {
+	n.StringValueSet("fully_qualified_name", expected)
+	return n
+}
+
+func (n *NetworkRuleResourceAssert) HasMode(expected string) *NetworkRuleResourceAssert {
+	n.StringValueSet("mode", expected)
+	return n
+}
+
+func (n *NetworkRuleResourceAssert) HasType(expected string) *NetworkRuleResourceAssert {
+	n.StringValueSet("type", expected)
+	return n
+}
+
+// collection assert for value_list will be generated here
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -64,11 +105,6 @@ func (n *NetworkRuleResourceAssert) HasModeString(expected string) *NetworkRuleR
 
 func (n *NetworkRuleResourceAssert) HasTypeString(expected string) *NetworkRuleResourceAssert {
 	n.AddAssertion(assert.ValueSet("type", expected))
-	return n
-}
-
-func (n *NetworkRuleResourceAssert) HasValueListString(expected string) *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("value_list", expected))
 	return n
 }
 
