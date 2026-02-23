@@ -91,6 +91,22 @@ func ValueSet(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
 }
 
+func (r *ResourceAssert) BoolValueSet(fieldName string, expected bool) {
+	r.AddAssertion(ValueSet(fieldName, strconv.FormatBool(expected)))
+}
+
+func (r *ResourceAssert) IntValueSet(fieldName string, expected int) {
+	r.AddAssertion(ValueSet(fieldName, strconv.Itoa(expected)))
+}
+
+func (r *ResourceAssert) FloatValueSet(fieldName string, expected float64) {
+	r.AddAssertion(ValueSet(fieldName, strconv.FormatFloat(expected, 'f', -1, 64)))
+}
+
+func (r *ResourceAssert) StringValueSet(fieldName string, expected string) {
+	r.AddAssertion(ValueSet(fieldName, expected))
+}
+
 func ValueNotSet(fieldName string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
 }

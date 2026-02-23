@@ -28,6 +28,95 @@ func ImportedAccountResource(t *testing.T, id string) *AccountResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (a *AccountResourceAssert) HasName(expected string) *AccountResourceAssert {
+	a.StringValueSet("name", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasAdminName(expected string) *AccountResourceAssert {
+	a.StringValueSet("admin_name", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasAdminPassword(expected string) *AccountResourceAssert {
+	a.StringValueSet("admin_password", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasAdminRsaPublicKey(expected string) *AccountResourceAssert {
+	a.StringValueSet("admin_rsa_public_key", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasAdminUserType(expected string) *AccountResourceAssert {
+	a.StringValueSet("admin_user_type", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasComment(expected string) *AccountResourceAssert {
+	a.StringValueSet("comment", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasConsumptionBillingEntity(expected string) *AccountResourceAssert {
+	a.StringValueSet("consumption_billing_entity", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasEdition(expected string) *AccountResourceAssert {
+	a.StringValueSet("edition", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasEmail(expected string) *AccountResourceAssert {
+	a.StringValueSet("email", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasFirstName(expected string) *AccountResourceAssert {
+	a.StringValueSet("first_name", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasFullyQualifiedName(expected string) *AccountResourceAssert {
+	a.StringValueSet("fully_qualified_name", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasGracePeriodInDays(expected int) *AccountResourceAssert {
+	a.IntValueSet("grace_period_in_days", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasIsOrgAdmin(expected string) *AccountResourceAssert {
+	a.StringValueSet("is_org_admin", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasLastName(expected string) *AccountResourceAssert {
+	a.StringValueSet("last_name", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasMustChangePassword(expected string) *AccountResourceAssert {
+	a.StringValueSet("must_change_password", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasRegion(expected string) *AccountResourceAssert {
+	a.StringValueSet("region", expected)
+	return a
+}
+
+func (a *AccountResourceAssert) HasRegionGroup(expected string) *AccountResourceAssert {
+	a.StringValueSet("region_group", expected)
+	return a
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
