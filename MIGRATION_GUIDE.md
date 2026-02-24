@@ -26,6 +26,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.13.x ➞ v2.14.0
 
+### *(new feature)* Added missing `object_types` in grant resources
+
+Previously, the `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources did not support all object types that Snowflake allows in GRANT statements.
+With this change, we added support for the following missing object types:
+
+- `AGENT` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `EXPERIMENT` object type in the `on_schema_object.object_type` field
+- `GATEWAY` object type in the `on_schema_object.object_type` field
+- `MCP SERVER` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `NOTEBOOK PROJECT` object type in the `on_schema_object.object_type` field
+
+We also corrected the `on_schema_object.all` field validation to properly exclude `JOIN POLICY` object type, and the `on_schema_object.future` field validation to properly exclude `JOIN POLICY` and `SNAPSHOT` object types, which Snowflake does not support for bulk grants. The same restrictions apply to the newly added `GATEWAY` and `NOTEBOOK PROJECT` object types.
+
+No changes in configuration are required.
+
 ### *(bugfix)* Fixed `snowflake_share` update failing when adding accounts to a share that already has a database granted
 
 Previously, updating the `accounts` field on the `snowflake_share` resource (e.g., adding consumer accounts after the initial creation) would fail with:

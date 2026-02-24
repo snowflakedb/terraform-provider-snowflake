@@ -73,6 +73,7 @@ const (
 	ObjectTypeExternalVolume         ObjectType = "EXTERNAL VOLUME"
 	ObjectTypeNetworkRule            ObjectType = "NETWORK RULE"
 	ObjectTypeNotebook               ObjectType = "NOTEBOOK"
+	ObjectTypeNotebookProject        ObjectType = "NOTEBOOK PROJECT"
 	ObjectTypePackagesPolicy         ObjectType = "PACKAGES POLICY"
 	ObjectTypeComputePool            ObjectType = "COMPUTE POOL"
 	ObjectTypeAggregationPolicy      ObjectType = "AGGREGATION POLICY"
@@ -90,6 +91,9 @@ const (
 	ObjectTypeSemanticView           ObjectType = "SEMANTIC VIEW"
 	ObjectTypeOnlineFeatureTable     ObjectType = "ONLINE FEATURE TABLE"
 	ObjectTypeExperiment             ObjectType = "EXPERIMENT"
+	ObjectTypeAgent                  ObjectType = "AGENT"
+	ObjectTypeGateway                ObjectType = "GATEWAY"
+	ObjectTypeMcpServer              ObjectType = "MCP SERVER"
 	ObjectTypeStorageLifecyclePolicy ObjectType = "STORAGE LIFECYCLE POLICY"
 	ObjectTypeWorkspace              ObjectType = "WORKSPACE"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
@@ -177,6 +181,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeExternalVolume,
 	ObjectTypeNetworkRule,
 	ObjectTypeNotebook,
+	ObjectTypeNotebookProject,
 	ObjectTypePackagesPolicy,
 	ObjectTypeComputePool,
 	ObjectTypeAggregationPolicy,
@@ -191,6 +196,9 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeService,
 	ObjectTypeListing,
 	ObjectTypeStorageIntegration,
+	ObjectTypeAgent,
+	ObjectTypeGateway,
+	ObjectTypeMcpServer,
 	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeWorkspace,
 	ObjectTypeProgrammaticAccessToken,
@@ -266,6 +274,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeExternalVolume:          PluralObjectTypeExternalVolumes,
 		ObjectTypeNetworkRule:             PluralObjectTypeNetworkRules,
 		ObjectTypeNotebook:                PluralObjectTypeNotebooks,
+		ObjectTypeNotebookProject:         PluralObjectTypeNotebookProjects,
 		ObjectTypePackagesPolicy:          PluralObjectTypePackagesPolicies,
 		ObjectTypeComputePool:             PluralObjectTypeComputePool,
 		ObjectTypeAggregationPolicy:       PluralObjectTypeAggregationPolicies,
@@ -280,6 +289,9 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeService:                 PluralObjectTypeServices,
 		ObjectTypeProgrammaticAccessToken: PluralObjectTypeProgrammaticAccessTokens,
 		ObjectTypeStorageIntegration:      PluralObjectTypeStorageIntegrations,
+		ObjectTypeAgent:                   PluralObjectTypeAgents,
+		ObjectTypeGateway:                 PluralObjectTypeGateways,
+		ObjectTypeMcpServer:               PluralObjectTypeMcpServers,
 		ObjectTypeStorageLifecyclePolicy:  PluralObjectTypeStorageLifecyclePolicies,
 		ObjectTypeWorkspace:               PluralObjectTypeWorkspaces,
 	}
@@ -389,6 +401,7 @@ const (
 	PluralObjectTypeExternalVolumes          PluralObjectType = "EXTERNAL VOLUMES"
 	PluralObjectTypeNetworkRules             PluralObjectType = "NETWORK RULES"
 	PluralObjectTypeNotebooks                PluralObjectType = "NOTEBOOKS"
+	PluralObjectTypeNotebookProjects         PluralObjectType = "NOTEBOOK PROJECTS"
 	PluralObjectTypePackagesPolicies         PluralObjectType = "PACKAGES POLICIES"
 	PluralObjectTypeComputePool              PluralObjectType = "COMPUTE POOLS"
 	PluralObjectTypeAggregationPolicies      PluralObjectType = "AGGREGATION POLICIES"
@@ -405,6 +418,9 @@ const (
 	PluralObjectTypeStorageIntegrations      PluralObjectType = "STORAGE INTEGRATIONS"
 	PluralObjectTypeWorkspaces               PluralObjectType = "WORKSPACES"
 	PluralObjectTypeStorageLifecyclePolicies PluralObjectType = "STORAGE LIFECYCLE POLICIES"
+	PluralObjectTypeAgents                   PluralObjectType = "AGENTS"
+	PluralObjectTypeGateways                 PluralObjectType = "GATEWAYS"
+	PluralObjectTypeMcpServers               PluralObjectType = "MCP SERVERS"
 )
 
 func (p PluralObjectType) String() string {
