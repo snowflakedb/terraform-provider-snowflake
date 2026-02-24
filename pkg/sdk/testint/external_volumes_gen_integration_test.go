@@ -118,6 +118,15 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		}},
 	}
 
+	describeExternalVolume := func(t *testing.T, id sdk.AccountObjectIdentifier) sdk.ExternalVolumeDetails {
+		t.Helper()
+		externalVolumeProperties, err := client.ExternalVolumes.Describe(ctx, id)
+		require.NoError(t, err)
+		externalVolumeDetails, err := sdk.ParseExternalVolumeDescribed(externalVolumeProperties)
+		require.NoError(t, err)
+		return externalVolumeDetails
+	}
+
 	createExternalVolume := func(t *testing.T, storageLocations []sdk.ExternalVolumeStorageLocationItem, allowWrites bool, comment *string) sdk.AccountObjectIdentifier {
 		t.Helper()
 
@@ -236,22 +245,19 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(id.Name()).
 			HasAllowWrites(allowWrites).
 			HasComment(comment))
-		// TODO: move to helpers?
-		externalVolumeProperties, err := client.ExternalVolumes.Describe(ctx, id)
-		require.NoError(t, err)
-		externalVolumeDetails, err := sdk.ParseExternalVolumeDescribed(externalVolumeProperties)
-		require.NoError(t, err)
+
+		externalVolumeDetails := describeExternalVolume(t, id)
+		require.Len(t, externalVolumeDetails.StorageLocations, 1)
 
 		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
 			HasStorageProvider(string(sdk.StorageProviderGCS)).
 			HasStorageBaseUrl(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl).
 			HasStorageAllowedLocations(gcsBaseUrl+"*").
-			HasEncryptionType(string(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType)).
-			HasGCSStorageLocationCustomFields(sdk.StorageLocationGcsDetails{
-				StorageGcpServiceAccount: "",
-				EncryptionKmsKeyId:       "",
-			}),
-		)
+			HasEncryptionType(string(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationGcsDetailsFromObject(t, externalVolumeDetails.StorageLocations[0].GCSStorageLocation).
+			HasEncryptionKmsKeyId("").
+			HasStorageGcpServiceAccountNotEmpty())
 	})
 
 	t.Run("Create - GCS Storage Location No Encryption", func(t *testing.T) {
@@ -309,18 +315,22 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeDetails(t, id).
 			HasActive("").
 			HasComment(comment).
-			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocations(sdk.ExternalVolumeStorageLocationDetails{
-				Name:                    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
-				StorageProvider:         string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
-				StorageAllowedLocations: []string{awsBaseUrl + "*"},
-				StorageBaseUrl:          s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
-				EncryptionType:          string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
-				S3StorageLocation: &sdk.StorageLocationS3Details{
-					StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-					StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
-				},
-			}))
+			HasAllowWrites(strconv.FormatBool(allowWrites)))
+
+		externalVolumeDetails := describeExternalVolume(t, id)
+		require.Len(t, externalVolumeDetails.StorageLocations, 1)
+
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
+			HasName(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider)).
+			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageBaseUrl(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
+			HasStorageAwsRoleArn(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn).
+			HasStorageAwsExternalId(*s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId).
+			HasStorageAwsIamUserArnNotEmpty())
 	})
 
 	t.Run("Alter - set comment", func(t *testing.T) {
@@ -339,18 +349,22 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeDetails(t, id).
 			HasActive("").
 			HasComment(comment2).
-			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocations(sdk.ExternalVolumeStorageLocationDetails{
-				Name:                    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
-				StorageProvider:         string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
-				StorageAllowedLocations: []string{awsBaseUrl + "*"},
-				StorageBaseUrl:          s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
-				EncryptionType:          string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
-				S3StorageLocation: &sdk.StorageLocationS3Details{
-					StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-					StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
-				},
-			}))
+			HasAllowWrites(strconv.FormatBool(allowWrites)))
+
+		externalVolumeDetails := describeExternalVolume(t, id)
+		require.Len(t, externalVolumeDetails.StorageLocations, 1)
+
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
+			HasName(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider)).
+			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageBaseUrl(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
+			HasStorageAwsRoleArn(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn).
+			HasStorageAwsExternalId(*s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId).
+			HasStorageAwsIamUserArnNotEmpty())
 	})
 
 	t.Run("Alter - set allow writes", func(t *testing.T) {
@@ -368,19 +382,23 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeDetails(t, id).
 			HasActive("").
 			HasComment(comment).
-			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocations(sdk.ExternalVolumeStorageLocationDetails{
-				Name:                    s3StorageLocations[0].ExternalVolumeStorageLocation.Name,
-				StorageProvider:         string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
-				StorageAllowedLocations: []string{awsBaseUrl + "*"},
-				StorageBaseUrl:          s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
-				EncryptionType:          string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
-				S3StorageLocation: &sdk.StorageLocationS3Details{
-					StorageAwsRoleArn:    s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-					StorageAwsExternalId: *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
-					EncryptionKmsKeyId:   *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
-				},
-			}))
+			HasAllowWrites(strconv.FormatBool(allowWrites)))
+
+		externalVolumeDetails := describeExternalVolume(t, id)
+		require.Len(t, externalVolumeDetails.StorageLocations, 1)
+
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
+			HasName(s3StorageLocations[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider)).
+			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageBaseUrl(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
+			HasStorageAwsRoleArn(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn).
+			HasStorageAwsExternalId(*s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId).
+			HasEncryptionKmsKeyId(*s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId).
+			HasStorageAwsIamUserArnNotEmpty())
 	})
 
 	t.Run("Alter - add s3 storage location to external volume", func(t *testing.T) {
@@ -413,32 +431,39 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeDetails(t, id).
 			HasActive("").
 			HasComment(comment).
-			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocations(
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(sdk.StorageProviderGCS),
-					StorageAllowedLocations: []string{gcsBaseUrl + "*"},
-					StorageBaseUrl:          gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
-					EncryptionType:          string(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType),
-					GCSStorageLocation:      &sdk.StorageLocationGcsDetails{},
-				},
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    s3StorageLocations[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
-					StorageAllowedLocations: []string{awsBaseUrl + "*"},
-					StorageBaseUrl:          s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
-					EncryptionType:          string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
-					S3StorageLocation: &sdk.StorageLocationS3Details{
-						StorageAwsRoleArn:    s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-						StorageAwsExternalId: *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
-						EncryptionKmsKeyId:   *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
-					},
-				},
-			))
+			HasAllowWrites(strconv.FormatBool(allowWrites)))
+
+		externalVolumeDetails := describeExternalVolume(t, id)
+		require.Len(t, externalVolumeDetails.StorageLocations, 2)
+
+		// Location 0: GCS
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
+			HasName(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(sdk.StorageProviderGCS)).
+			HasStorageAllowedLocations(gcsBaseUrl+"*").
+			HasStorageBaseUrl(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationGcsDetailsFromObject(t, externalVolumeDetails.StorageLocations[0].GCSStorageLocation).
+			HasEncryptionKmsKeyId("").
+			HasStorageGcpServiceAccountNotEmpty())
+
+		// Location 1: S3
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[1]).
+			HasName(s3StorageLocations[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider)).
+			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageBaseUrl(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[1].S3StorageLocation).
+			HasStorageAwsRoleArn(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn).
+			HasStorageAwsExternalId(*s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId).
+			HasEncryptionKmsKeyId(*s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId).
+			HasStorageAwsIamUserArnNotEmpty())
 	})
 
-	t.Run("Describe", func(t *testing.T) {
+	t.Run("Describe - multiple storage locations", func(t *testing.T) {
 		allowWrites := true
 		comment := "some comment"
 		id := createExternalVolume(
@@ -451,79 +476,99 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeDetails(t, id).
 			HasActive("").
 			HasComment(comment).
-			HasAllowWrites(strconv.FormatBool(allowWrites)).
-			HasStorageLocations(
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    s3StorageLocations[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
-					StorageAllowedLocations: []string{awsBaseUrl + "*"},
-					StorageBaseUrl:          s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
-					EncryptionType:          string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
-					S3StorageLocation: &sdk.StorageLocationS3Details{
-						StorageAwsRoleArn:    s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-						StorageAwsExternalId: *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
-						EncryptionKmsKeyId:   *s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
-					},
-				},
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(sdk.StorageProviderGCS),
-					StorageAllowedLocations: []string{gcsBaseUrl + "*"},
-					StorageBaseUrl:          gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
-					EncryptionType:          string(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType),
-					GCSStorageLocation:      &sdk.StorageLocationGcsDetails{},
-				},
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    azureStorageLocations[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(sdk.StorageProviderAzure),
-					StorageAllowedLocations: []string{azureBaseUrl + "*"},
-					StorageBaseUrl:          azureStorageLocations[0].ExternalVolumeStorageLocation.AzureStorageLocationParams.StorageBaseUrl,
-					EncryptionType:          "NONE",
-					AzureStorageLocation: &sdk.StorageLocationAzureDetails{
-						AzureTenantId: azureStorageLocations[0].ExternalVolumeStorageLocation.AzureStorageLocationParams.AzureTenantId,
-					},
-				},
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
-					StorageAllowedLocations: []string{awsBaseUrl + "*"},
-					StorageBaseUrl:          s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
-					EncryptionType:          string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType),
-					S3StorageLocation: &sdk.StorageLocationS3Details{
-						StorageAwsRoleArn:    s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-						StorageAwsExternalId: *s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
-					},
-				},
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    gcsStorageLocations[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(sdk.StorageProviderGCS),
-					StorageAllowedLocations: []string{gcsBaseUrl + "*"},
-					StorageBaseUrl:          gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
-					EncryptionType:          string(gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType),
-					GCSStorageLocation: &sdk.StorageLocationGcsDetails{
-						EncryptionKmsKeyId: *gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
-					},
-				},
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider),
-					StorageAllowedLocations: []string{awsBaseUrl + "*"},
-					StorageBaseUrl:          s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
-					EncryptionType:          "NONE",
-					S3StorageLocation: &sdk.StorageLocationS3Details{
-						StorageAwsRoleArn:    s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-						StorageAwsExternalId: *s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
-					},
-				},
-				sdk.ExternalVolumeStorageLocationDetails{
-					Name:                    gcsStorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.Name,
-					StorageProvider:         string(sdk.StorageProviderGCS),
-					StorageAllowedLocations: []string{gcsBaseUrl + "*"},
-					StorageBaseUrl:          gcsStorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
-					EncryptionType:          "NONE",
-					GCSStorageLocation:      &sdk.StorageLocationGcsDetails{},
-				},
-			))
+			HasAllowWrites(strconv.FormatBool(allowWrites)))
+
+		externalVolumeDetails := describeExternalVolume(t, id)
+		require.Len(t, externalVolumeDetails.StorageLocations, 7)
+
+		// Location 0: S3 with KMS encryption
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
+			HasName(s3StorageLocations[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider)).
+			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageBaseUrl(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
+			HasStorageAwsRoleArn(s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn).
+			HasStorageAwsExternalId(*s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId).
+			HasEncryptionKmsKeyId(*s3StorageLocations[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId).
+			HasStorageAwsIamUserArnNotEmpty())
+
+		// Location 1: GCS with NONE encryption
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[1]).
+			HasName(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(sdk.StorageProviderGCS)).
+			HasStorageAllowedLocations(gcsBaseUrl+"*").
+			HasStorageBaseUrl(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(gcsStorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationGcsDetailsFromObject(t, externalVolumeDetails.StorageLocations[1].GCSStorageLocation).
+			HasEncryptionKmsKeyId("").
+			HasStorageGcpServiceAccountNotEmpty())
+
+		// Location 2: Azure
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[2]).
+			HasName(azureStorageLocations[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(sdk.StorageProviderAzure)).
+			HasStorageAllowedLocations(azureBaseUrl+"*").
+			HasStorageBaseUrl(azureStorageLocations[0].ExternalVolumeStorageLocation.AzureStorageLocationParams.StorageBaseUrl).
+			HasEncryptionType("NONE"))
+
+		assertThatObject(t, objectassert.StorageLocationAzureDetailsFromObject(t, externalVolumeDetails.StorageLocations[2].AzureStorageLocation).
+			HasAzureTenantId(azureStorageLocations[0].ExternalVolumeStorageLocation.AzureStorageLocationParams.AzureTenantId).
+			HasAzureMultiTenantAppNameNotEmpty().
+			HasAzureConsentUrlNotEmpty())
+
+		// Location 3: S3 with NONE encryption
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[3]).
+			HasName(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider)).
+			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageBaseUrl(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[3].S3StorageLocation).
+			HasStorageAwsRoleArn(s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn).
+			HasStorageAwsExternalId(*s3StorageLocationsNoneEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId).
+			HasStorageAwsIamUserArnNotEmpty())
+
+		// Location 4: GCS with KMS encryption
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[4]).
+			HasName(gcsStorageLocations[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(sdk.StorageProviderGCS)).
+			HasStorageAllowedLocations(gcsBaseUrl+"*").
+			HasStorageBaseUrl(gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl).
+			HasEncryptionType(string(gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType)))
+
+		assertThatObject(t, objectassert.StorageLocationGcsDetailsFromObject(t, externalVolumeDetails.StorageLocations[4].GCSStorageLocation).
+			HasEncryptionKmsKeyId(*gcsStorageLocations[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId).
+			HasStorageGcpServiceAccountNotEmpty())
+
+		// Location 5: S3 with no encryption specified
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[5]).
+			HasName(s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider)).
+			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageBaseUrl(s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl).
+			HasEncryptionType("NONE"))
+
+		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[5].S3StorageLocation).
+			HasStorageAwsRoleArn(s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn).
+			HasStorageAwsExternalId(*s3StorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId).
+			HasStorageAwsIamUserArnNotEmpty())
+
+		// Location 6: GCS with no encryption specified
+		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[6]).
+			HasName(gcsStorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.Name).
+			HasStorageProvider(string(sdk.StorageProviderGCS)).
+			HasStorageAllowedLocations(gcsBaseUrl+"*").
+			HasStorageBaseUrl(gcsStorageLocationsNoEncryption[0].ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl).
+			HasEncryptionType("NONE"))
+
+		assertThatObject(t, objectassert.StorageLocationGcsDetailsFromObject(t, externalVolumeDetails.StorageLocations[6].GCSStorageLocation).
+			HasEncryptionKmsKeyId("").
+			HasStorageGcpServiceAccountNotEmpty())
 	})
 
 	t.Run("Show with like", func(t *testing.T) {
