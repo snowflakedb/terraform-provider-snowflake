@@ -372,3 +372,62 @@ resource "snowflake_failover_group" "fg" {
 }
 `, randomCharacters, accountName, interval)
 }
+
+func TestAcc_FailoverGroup_UpdateAllowedAccounts(t *testing.T) {
+	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
+	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
+		Steps: []resource.TestStep{
+			{
+				Config: failoverGroupBasic(id.Name(), accountName, TestDatabaseName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", accountName),
+				),
+			},
+			{
+				Config: failoverGroupWithUpdatedAllowedAccounts(id.Name(), accountName, TestDatabaseName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", accountName),
+				),
+			},
+			// IMPORT
+			{
+				ResourceName:            "snowflake_failover_group.fg",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ignore_edition_check"},
+			},
+		},
+	})
+}
+
+func failoverGroupWithUpdatedAllowedAccounts(randomCharacters, accountName, databaseName string) string {
+	return fmt.Sprintf(`
+resource "snowflake_failover_group" "fg" {
+	name = "%s"
+	object_types = ["WAREHOUSES", "DATABASES", "INTEGRATIONS", "ROLES"]
+	allowed_accounts= ["%s"]
+	allowed_databases = ["%s"]
+	allowed_integration_types = ["SECURITY INTEGRATIONS"]
+	replication_schedule {
+		cron {
+			expression = "0 0 5-20 * TUE,THU"
+			time_zone = "UTC"
+		}
+	}
+}
+`, randomCharacters, accountName, databaseName)
+}
