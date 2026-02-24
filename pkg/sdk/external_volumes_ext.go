@@ -278,3 +278,7 @@ func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
 
 	return nil
 }
+
+func (r *CreateExternalVolumeRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}
