@@ -21,8 +21,10 @@ func TestInt_HybridTables(t *testing.T) {
 		require.Equal(t, id.DatabaseName(), ht.DatabaseName)
 		require.Equal(t, id.SchemaName(), ht.SchemaName)
 		require.NotEmpty(t, ht.Owner)
-		require.GreaterOrEqual(t, ht.Rows, 0)
-		require.GreaterOrEqual(t, ht.Bytes, 0)
+		require.NotNil(t, ht.Rows)
+		require.GreaterOrEqual(t, *ht.Rows, 0)
+		require.NotNil(t, ht.Bytes)
+		require.GreaterOrEqual(t, *ht.Bytes, 0)
 		require.Equal(t, expectedComment, ht.Comment)
 		require.NotEmpty(t, ht.OwnerRoleType)
 	}
@@ -516,19 +518,25 @@ func TestInt_HybridTables(t *testing.T) {
 				},
 			}
 
-			retentionDays := 7
-			req := sdk.NewCreateHybridTableRequest(id, columns).
-				WithDataRetentionTimeInDays(retentionDays)
+      retentionDays := 7
+      req := sdk.NewCreateHybridTableRequest(id, columns)
 
-			err := client.HybridTables.Create(ctx, req)
-			require.NoError(t, err)
+      err := client.HybridTables.Create(ctx, req)
+      require.NoError(t, err)
 
-			t.Cleanup(func() {
-				err := client.HybridTables.Drop(ctx, sdk.NewDropHybridTableRequest(id).WithIfExists(true))
-				require.NoError(t, err)
-			})
+      t.Cleanup(func() {
+        err := client.HybridTables.Drop(ctx, sdk.NewDropHybridTableRequest(id).WithIfExists(true))
+        require.NoError(t, err)
+      })
 
-			// Unset retention time
+      // DATA_RETENTION_TIME_IN_DAYS is not supported on CREATE, so set it via ALTER
+      setReq := sdk.NewAlterHybridTableRequest(id).
+        WithSet(*sdk.NewHybridTableSetPropertiesRequest().
+          WithDataRetentionTimeInDays(retentionDays))
+      err = client.HybridTables.Alter(ctx, setReq)
+      require.NoError(t, err)
+
+      // Unset retention time
 			unsetReq := sdk.NewAlterHybridTableRequest(id).
 				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().
 					WithDataRetentionTimeInDays(true))
