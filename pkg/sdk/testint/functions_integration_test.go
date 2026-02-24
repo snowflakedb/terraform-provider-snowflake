@@ -1936,7 +1936,7 @@ func TestInt_Functions(t *testing.T) {
 		require.Equal(t, *e, *es)
 	})
 
-	// TODO [this PR]: add decfloat to below tests
+	// TODO [SNOW-3151661]: add decfloat to below tests
 	// TODO [SNOW-1348103]: remove with old function removal for V1
 	t.Run("function returns non detailed data types of arguments - old data types", func(t *testing.T) {
 		// This test proves that every detailed data types (e.g. VARCHAR(20) and NUMBER(10, 0)) are generalized
