@@ -180,6 +180,10 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.NetworkRule{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

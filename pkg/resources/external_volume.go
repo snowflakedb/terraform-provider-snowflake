@@ -176,17 +176,24 @@ func ImportExternalVolume(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	storageLocations := make([]map[string]any, len(parsedExternalVolumeDescribed.StorageLocations))
-	for i, storageLocation := range parsedExternalVolumeDescribed.StorageLocations {
-		storageLocations[i] = map[string]any{
-			"storage_location_name":   storageLocation.Name,
-			"storage_provider":        storageLocation.StorageProvider,
-			"storage_base_url":        storageLocation.StorageBaseUrl,
-			"storage_aws_role_arn":    storageLocation.StorageAwsRoleArn,
-			"storage_aws_external_id": storageLocation.StorageAwsExternalId,
-			"encryption_type":         storageLocation.EncryptionType,
-			"encryption_kms_key_id":   storageLocation.EncryptionKmsKeyId,
-			"azure_tenant_id":         storageLocation.AzureTenantId,
+	for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
+		m := map[string]any{
+			"storage_location_name": loc.Name,
+			"storage_provider":      loc.StorageProvider,
+			"storage_base_url":      loc.StorageBaseUrl,
+			"encryption_type":       loc.EncryptionType,
 		}
+		switch {
+		case loc.S3StorageLocation != nil:
+			m["storage_aws_role_arn"] = loc.S3StorageLocation.StorageAwsRoleArn
+			m["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+			m["encryption_kms_key_id"] = loc.S3StorageLocation.EncryptionKmsKeyId
+		case loc.AzureStorageLocation != nil:
+			m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
+		case loc.S3CompatStorageLocation != nil:
+			m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
+		}
+		storageLocations[i] = m
 	}
 
 	if err = d.Set("storage_location", storageLocations); err != nil {
@@ -287,17 +294,24 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 		}
 
 		storageLocations := make([]map[string]any, len(parsedExternalVolumeDescribed.StorageLocations))
-		for i, storageLocation := range parsedExternalVolumeDescribed.StorageLocations {
-			storageLocations[i] = map[string]any{
-				"storage_location_name":   storageLocation.Name,
-				"storage_provider":        storageLocation.StorageProvider,
-				"storage_base_url":        storageLocation.StorageBaseUrl,
-				"storage_aws_role_arn":    storageLocation.StorageAwsRoleArn,
-				"storage_aws_external_id": storageLocation.StorageAwsExternalId,
-				"encryption_type":         storageLocation.EncryptionType,
-				"encryption_kms_key_id":   storageLocation.EncryptionKmsKeyId,
-				"azure_tenant_id":         storageLocation.AzureTenantId,
+		for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
+			m := map[string]any{
+				"storage_location_name": loc.Name,
+				"storage_provider":      loc.StorageProvider,
+				"storage_base_url":      loc.StorageBaseUrl,
+				"encryption_type":       loc.EncryptionType,
 			}
+			switch {
+			case loc.S3StorageLocation != nil:
+				m["storage_aws_role_arn"] = loc.S3StorageLocation.StorageAwsRoleArn
+				m["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+				m["encryption_kms_key_id"] = loc.S3StorageLocation.EncryptionKmsKeyId
+			case loc.AzureStorageLocation != nil:
+				m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
+			case loc.S3CompatStorageLocation != nil:
+				m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
+			}
+			storageLocations[i] = m
 		}
 
 		if err = d.Set("storage_location", storageLocations); err != nil {

@@ -18,7 +18,7 @@ type ExternalVolumeAssert struct {
 func ExternalVolume(t *testing.T, id sdk.AccountObjectIdentifier) *ExternalVolumeAssert {
 	t.Helper()
 	return &ExternalVolumeAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeExternalVolume, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ExternalVolume, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("ExternalVolume"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ExternalVolume, sdk.AccountObjectIdentifier] {
 			return testClient.ExternalVolume.Show
 		}),
 	}
