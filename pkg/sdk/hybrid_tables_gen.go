@@ -54,7 +54,7 @@ type HybridTableAddColumnAction struct {
 	add              bool                               `ddl:"static" sql:"ADD"`
 	column           bool                               `ddl:"static" sql:"COLUMN"`
 	IfNotExists      *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
-	Name             string                             `ddl:"keyword"`
+	Name             string                             `ddl:"keyword,double_quotes"`
 	Type             DataType                           `ddl:"keyword"`
 	Collate          *string                            `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 	DefaultValue     *ColumnDefaultValue                `ddl:"keyword"`
@@ -75,24 +75,24 @@ type HybridTableConstraintActionAdd struct {
 
 type HybridTableConstraintActionRename struct {
 	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
-	OldName          string `ddl:"keyword"`
-	NewName          string `ddl:"parameter,no_equals" sql:"TO"`
+	OldName          string `ddl:"keyword,double_quotes"`
+	NewName          string `ddl:"parameter,no_equals,double_quotes" sql:"TO"`
 }
 
 type HybridTableConstraintActionDrop struct {
 	drop           bool     `ddl:"static" sql:"DROP"`
-	ConstraintName *string  `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
-	Columns        []string `ddl:"keyword,parentheses"`
+	Columns        []string `ddl:"keyword,double_quotes,parentheses"`
 	Cascade        *bool    `ddl:"keyword" sql:"CASCADE"`
 	Restrict       *bool    `ddl:"keyword" sql:"RESTRICT"`
 }
 
 type HybridTableAlterColumnAction struct {
 	alterColumn       bool                                `ddl:"static" sql:"ALTER COLUMN"`
-	ColumnName        string                              `ddl:"keyword"`
+	ColumnName        string                              `ddl:"keyword,double_quotes"`
 	DropDefault       *bool                               `ddl:"keyword" sql:"DROP DEFAULT"`
 	SetDefault        *SequenceName                       `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
 	NotNullConstraint *HybridTableColumnNotNullConstraint `ddl:"keyword"`
@@ -109,17 +109,17 @@ type HybridTableColumnNotNullConstraint struct {
 type HybridTableDropColumnAction struct {
 	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
 	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
-	Columns    []string `ddl:"keyword"`
+	Columns    []string `ddl:"keyword,double_quotes"`
 }
 
 type HybridTableDropIndexAction struct {
 	dropIndex bool   `ddl:"static" sql:"DROP INDEX"`
 	IfExists  *bool  `ddl:"keyword" sql:"IF EXISTS"`
-	IndexName string `ddl:"keyword"`
+	IndexName string `ddl:"keyword,double_quotes"`
 }
 
 type HybridTableClusteringAction struct {
-	ClusterBy            []string                         `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	ClusterBy            []string                         `ddl:"keyword,double_quotes,parentheses" sql:"CLUSTER BY"`
 	Recluster            *HybridTableReclusterAction      `ddl:"keyword"`
 	ChangeReclusterState *HybridTableReclusterChangeState `ddl:"keyword"`
 	DropClusteringKey    *bool                            `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
@@ -258,8 +258,8 @@ type CreateIndexHybridTableOptions struct {
 	name           SchemaObjectIdentifier `ddl:"identifier"`
 	on             bool                   `ddl:"static" sql:"ON"`
 	TableName      SchemaObjectIdentifier `ddl:"identifier"`
-	Columns        []string               `ddl:"keyword,parentheses"`
-	IncludeColumns []string               `ddl:"keyword,parentheses" sql:"INCLUDE"`
+	Columns        []string               `ddl:"keyword,double_quotes,parentheses"`
+	IncludeColumns []string               `ddl:"keyword,double_quotes,parentheses" sql:"INCLUDE"`
 }
 
 // DropIndexHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-index.

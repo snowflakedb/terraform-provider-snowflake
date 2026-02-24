@@ -10,7 +10,7 @@ var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	SQL("ADD").
 	SQL("COLUMN").
 	OptionalSQL("IF NOT EXISTS").
-	Text("Name", g.KeywordOptions().Required()).
+	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 	PredefinedQueryStructField("Type", "DataType", g.KeywordOptions().Required()).
 	OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 	PredefinedQueryStructField("DefaultValue", "*ColumnDefaultValue", g.KeywordOptions()).
@@ -29,19 +29,19 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 		"Rename",
 		g.NewQueryStruct("HybridTableConstraintActionRename").
 			SQL("RENAME CONSTRAINT").
-			Text("OldName", g.KeywordOptions().Required()).
-			Text("NewName", g.KeywordOptions().Required().SQL("TO")),
+			Text("OldName", g.KeywordOptions().Required().DoubleQuotes()).
+			Text("NewName", g.KeywordOptions().Required().DoubleQuotes().SQL("TO")),
 		g.KeywordOptions(),
 	).
 	OptionalQueryStructField(
 		"Drop",
 		g.NewQueryStruct("HybridTableConstraintActionDrop").
 			SQL("DROP").
-			OptionalText("ConstraintName", g.KeywordOptions().SQL("CONSTRAINT")).
+			OptionalText("ConstraintName", g.KeywordOptions().DoubleQuotes().SQL("CONSTRAINT")).
 			OptionalSQL("PRIMARY KEY").
 			OptionalSQL("UNIQUE").
 			OptionalSQL("FOREIGN KEY").
-			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
+			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes()).
 			OptionalSQL("CASCADE").
 			OptionalSQL("RESTRICT").
 			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey").
@@ -52,7 +52,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
 	SQL("ALTER COLUMN").
-	Text("ColumnName", g.KeywordOptions().Required()).
+	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("DROP DEFAULT").
 	PredefinedQueryStructField("SetDefault", "*SequenceName", g.ParameterOptions().NoEquals().SQL("SET DEFAULT")).
 	OptionalQueryStructField(
@@ -70,15 +70,15 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
 	OptionalSQL("IF EXISTS").
-	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Required())
+	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Required().DoubleQuotes())
 
 var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	SQL("DROP INDEX").
 	OptionalSQL("IF EXISTS").
-	Text("IndexName", g.KeywordOptions().Required())
+	Text("IndexName", g.KeywordOptions().Required().DoubleQuotes())
 
 var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction").
-	PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+	PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes().SQL("CLUSTER BY")).
 	OptionalQueryStructField(
 		"Recluster",
 		g.NewQueryStruct("HybridTableReclusterAction").
@@ -275,8 +275,8 @@ var hybridTablesDef = g.NewInterface(
 		Name().
 		SQL("ON").
 		Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-		PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required()).
-		PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().SQL("INCLUDE")).
+		PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required().DoubleQuotes()).
+		PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes().SQL("INCLUDE")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "TableName").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),

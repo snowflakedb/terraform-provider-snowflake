@@ -85,7 +85,7 @@ func TestHybridTables_Create(t *testing.T) {
 			},
 		}
 		opts.Comment = String("test comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s (ID NUMBER CONSTRAINT pk_id PRIMARY KEY, NAME VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', REF_ID NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE (NAME), INDEX idx_name (NAME) INCLUDE (ID)) COMMENT = 'test comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s ("ID" NUMBER CONSTRAINT "pk_id" PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("with columns and constraints", func(t *testing.T) {
@@ -119,7 +119,7 @@ func TestHybridTables_Create(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s (ID NUMBER PRIMARY KEY, NAME VARCHAR NOT NULL COMMENT 'the name', UNIQUE (NAME), INDEX idx_name (NAME))`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("ID" NUMBER PRIMARY KEY, "NAME" VARCHAR NOT NULL COMMENT 'the name', UNIQUE ("NAME"), INDEX "idx_name" ("NAME"))`, id.FullyQualifiedName())
 	})
 }
 
@@ -247,7 +247,7 @@ func TestHybridTables_Alter(t *testing.T) {
 			ColumnName: "column1",
 			Comment:    String("column comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ALTER COLUMN column1 COMMENT 'column comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ALTER COLUMN "column1" COMMENT 'column comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column unset comment", func(t *testing.T) {
@@ -257,7 +257,7 @@ func TestHybridTables_Alter(t *testing.T) {
 			ColumnName:   "column1",
 			UnsetComment: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ALTER COLUMN column1 UNSET COMMENT`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ALTER COLUMN "column1" UNSET COMMENT`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column drop default", func(t *testing.T) {
@@ -266,7 +266,7 @@ func TestHybridTables_Alter(t *testing.T) {
 			ColumnName:  "column1",
 			DropDefault: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 DROP DEFAULT`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN "column1" DROP DEFAULT`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column set not null", func(t *testing.T) {
@@ -277,7 +277,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				SetNotNull: Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 SET NOT NULL`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN "column1" SET NOT NULL`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column drop not null", func(t *testing.T) {
@@ -288,7 +288,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				DropNotNull: Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 DROP NOT NULL`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN "column1" DROP NOT NULL`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column set data type", func(t *testing.T) {
@@ -298,7 +298,7 @@ func TestHybridTables_Alter(t *testing.T) {
 			ColumnName: "column1",
 			Type:       &dt,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN column1 SET DATA TYPE VARCHAR(200)`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN "column1" SET DATA TYPE VARCHAR(200)`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop column", func(t *testing.T) {
@@ -307,7 +307,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.DropColumnAction = &HybridTableDropColumnAction{
 			Columns: []string{"column_to_drop"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP COLUMN column_to_drop`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP COLUMN "column_to_drop"`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop index", func(t *testing.T) {
@@ -316,7 +316,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.DropIndexAction = &HybridTableDropIndexAction{
 			IndexName: "idx_name",
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP INDEX idx_name`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP INDEX "idx_name"`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: add constraint unique", func(t *testing.T) {
@@ -330,7 +330,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD UNIQUE (col1, col2)`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD UNIQUE ("col1", "col2")`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: add constraint foreign key", func(t *testing.T) {
@@ -350,7 +350,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD CONSTRAINT fk_ref FOREIGN KEY (ref_id) REFERENCES %s (id)`, id.FullyQualifiedName(), refTableId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD CONSTRAINT "fk_ref" FOREIGN KEY ("ref_id") REFERENCES %s (id)`, id.FullyQualifiedName(), refTableId.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop constraint by name", func(t *testing.T) {
@@ -362,7 +362,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				Restrict:       Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP CONSTRAINT my_constraint RESTRICT`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP CONSTRAINT "my_constraint" RESTRICT`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop primary key", func(t *testing.T) {
@@ -386,7 +386,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				Columns: []string{"col1"},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP UNIQUE (col1)`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP UNIQUE ("col1")`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop foreign key with cascade", func(t *testing.T) {
@@ -399,7 +399,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				Cascade:    Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP FOREIGN KEY (col1, col2) CASCADE`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP FOREIGN KEY ("col1", "col2") CASCADE`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: rename constraint", func(t *testing.T) {
@@ -411,7 +411,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				NewName: "new_constraint_name",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s RENAME CONSTRAINT old_constraint_name TO new_constraint_name`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s RENAME CONSTRAINT "old_constraint_name" TO "new_constraint_name"`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: rename to", func(t *testing.T) {
@@ -427,7 +427,7 @@ func TestHybridTables_Alter(t *testing.T) {
 			Name: "NEW_COLUMN",
 			Type: DataTypeVARCHAR,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD COLUMN NEW_COLUMN VARCHAR`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD COLUMN "NEW_COLUMN" VARCHAR`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: add column with all options", func(t *testing.T) {
@@ -444,7 +444,7 @@ func TestHybridTables_Alter(t *testing.T) {
 			},
 			Comment: String("new column comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS NEW_COLUMN VARCHAR COLLATE 'utf8' CONSTRAINT uq_new UNIQUE COMMENT 'new column comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS "NEW_COLUMN" VARCHAR COLLATE 'utf8' CONSTRAINT "uq_new" UNIQUE COMMENT 'new column comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: cluster by", func(t *testing.T) {
@@ -452,7 +452,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.ClusteringAction = &HybridTableClusteringAction{
 			ClusterBy: []string{"col1", "col2"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s CLUSTER BY (col1, col2)`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s CLUSTER BY ("col1", "col2")`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: recluster", func(t *testing.T) {
@@ -668,7 +668,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 			TableName: tableID,
 			Columns:   []string{"col1"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE INDEX %s ON %s (col1)`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE INDEX %s ON %s ("col1")`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -679,7 +679,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 			Columns:        []string{"col1", "col2"},
 			IncludeColumns: []string{"col3"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE INDEX %s ON %s (col1, col2) INCLUDE (col3)`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE INDEX %s ON %s ("col1", "col2") INCLUDE ("col3")`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
 	})
 
 	t.Run("if not exists", func(t *testing.T) {
@@ -689,7 +689,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 			TableName:   tableID,
 			Columns:     []string{"col1"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE INDEX IF NOT EXISTS %s ON %s (col1)`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE INDEX IF NOT EXISTS %s ON %s ("col1")`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
 	})
 }
 

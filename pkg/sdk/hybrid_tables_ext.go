@@ -18,7 +18,7 @@ type HybridTableColumnsConstraintsAndIndexes struct {
 
 // HybridTableColumn defines a single column in a hybrid table.
 type HybridTableColumn struct {
-	Name             string                             `ddl:"keyword"`
+	Name             string                             `ddl:"keyword,double_quotes"`
 	Type             DataType                           `ddl:"keyword"`
 	InlineConstraint *HybridTableColumnInlineConstraint `ddl:"keyword"`
 	NotNull          *bool                              `ddl:"keyword" sql:"NOT NULL"`
@@ -29,20 +29,40 @@ type HybridTableColumn struct {
 
 // HybridTableColumnInlineConstraint defines inline PRIMARY KEY, UNIQUE, or FOREIGN KEY on a column.
 type HybridTableColumnInlineConstraint struct {
-	Name       *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
+	Name       *string              `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
 	Type       ColumnConstraintType `ddl:"keyword"`
 	ForeignKey *InlineForeignKey    `ddl:"keyword" sql:"REFERENCES"`
 }
 
-// HybridTableOutOfLineConstraint reuses OutOfLineConstraint from tables.go.
-type HybridTableOutOfLineConstraint = OutOfLineConstraint
+// HybridTableOutOfLineConstraint is a hybrid-table-specific copy of OutOfLineConstraint
+// with double-quoted constraint names and column references for case-preserving identifiers.
+type HybridTableOutOfLineConstraint struct {
+	Name       *string              `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
+	Type       ColumnConstraintType `ddl:"keyword"`
+	Columns    []string             `ddl:"keyword,parentheses,double_quotes"`
+	ForeignKey *OutOfLineForeignKey `ddl:"keyword"`
+
+	// optional
+	Enforced           *bool `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool `ddl:"keyword" sql:"VALIDATE"`
+	NoValidate         *bool `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool `ddl:"keyword" sql:"RELY"`
+	NoRely             *bool `ddl:"keyword" sql:"NORELY"`
+}
 
 // HybridTableOutOfLineIndex defines a secondary index in CREATE HYBRID TABLE.
 type HybridTableOutOfLineIndex struct {
 	index          bool     `ddl:"static" sql:"INDEX"`
-	Name           string   `ddl:"keyword"`
-	Columns        []string `ddl:"keyword,parentheses"`
-	IncludeColumns []string `ddl:"keyword,parentheses" sql:"INCLUDE"`
+	Name           string   `ddl:"keyword,double_quotes"`
+	Columns        []string `ddl:"keyword,parentheses,double_quotes"`
+	IncludeColumns []string `ddl:"keyword,parentheses,double_quotes" sql:"INCLUDE"`
 }
 
 func (r hybridTableRow) convert() (*HybridTable, error) {
