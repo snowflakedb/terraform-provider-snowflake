@@ -1088,7 +1088,8 @@ func TestAcc_MaskingPolicy_Decfloat(t *testing.T) {
 				"name": config.StringVariable("A"),
 				"type": config.StringVariable(datatypes.DecfloatLegacyDataType),
 			}),
-		)}
+		),
+	}
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
