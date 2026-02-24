@@ -10,10 +10,8 @@ import (
 
 var _ HybridTables = (*hybridTables)(nil)
 
-var (
-	_ convertibleRow[HybridTable]        = new(hybridTableRow)
-	_ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
-)
+var _ convertibleRow[HybridTable] = new(hybridTableRow)
+var _ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
 
 type hybridTables struct {
 	client *Client
@@ -75,11 +73,61 @@ func (v *hybridTables) Describe(ctx context.Context, id SchemaObjectIdentifier) 
 
 func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 	opts := &CreateHybridTableOptions{
-		OrReplace:             r.OrReplace,
-		IfNotExists:           r.IfNotExists,
-		name:                  r.name,
-		ColumnsAndConstraints: r.ColumnsAndConstraints,
-		Comment:               r.Comment,
+		OrReplace:   r.OrReplace,
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		Comment:     r.Comment,
+	}
+	opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{}
+	if r.ColumnsAndConstraints.Columns != nil {
+		s := make([]HybridTableColumn, len(r.ColumnsAndConstraints.Columns))
+		for i, v := range r.ColumnsAndConstraints.Columns {
+			s[i] = HybridTableColumn{
+				Name:             v.Name,
+				Type:             v.Type,
+				InlineConstraint: v.InlineConstraint,
+				NotNull:          v.NotNull,
+				DefaultValue:     v.DefaultValue,
+				Collate:          v.Collate,
+				Comment:          v.Comment,
+			}
+		}
+		opts.ColumnsAndConstraints.Columns = s
+	}
+	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
+		s := make([]HybridTableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
+			s[i] = HybridTableOutOfLineConstraint{
+				Name:               v.Name,
+				Type:               v.Type,
+				Columns:            v.Columns,
+				ForeignKey:         v.ForeignKey,
+				Enforced:           v.Enforced,
+				NotEnforced:        v.NotEnforced,
+				Deferrable:         v.Deferrable,
+				NotDeferrable:      v.NotDeferrable,
+				InitiallyDeferred:  v.InitiallyDeferred,
+				InitiallyImmediate: v.InitiallyImmediate,
+				Enable:             v.Enable,
+				Disable:            v.Disable,
+				Validate:           v.Validate,
+				Novalidate:         v.Novalidate,
+				Rely:               v.Rely,
+				Norely:             v.Norely,
+			}
+		}
+		opts.ColumnsAndConstraints.OutOfLineConstraint = s
+	}
+	if r.ColumnsAndConstraints.OutOfLineIndex != nil {
+		s := make([]HybridTableOutOfLineIndex, len(r.ColumnsAndConstraints.OutOfLineIndex))
+		for i, v := range r.ColumnsAndConstraints.OutOfLineIndex {
+			s[i] = HybridTableOutOfLineIndex{
+				Name:           v.Name,
+				Columns:        v.Columns,
+				IncludeColumns: v.IncludeColumns,
+			}
+		}
+		opts.ColumnsAndConstraints.OutOfLineIndex = s
 	}
 	return opts
 }
@@ -104,8 +152,24 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 	if r.ConstraintAction != nil {
 		opts.ConstraintAction = &HybridTableConstraintAction{}
 		if r.ConstraintAction.Add != nil {
-			opts.ConstraintAction.Add = &HybridTableConstraintActionAdd{
-				OutOfLineConstraint: r.ConstraintAction.Add.OutOfLineConstraint,
+			opts.ConstraintAction.Add = &HybridTableConstraintActionAdd{}
+			opts.ConstraintAction.Add.OutOfLineConstraint = HybridTableOutOfLineConstraint{
+				Name:               r.ConstraintAction.Add.OutOfLineConstraint.Name,
+				Type:               r.ConstraintAction.Add.OutOfLineConstraint.Type,
+				Columns:            r.ConstraintAction.Add.OutOfLineConstraint.Columns,
+				ForeignKey:         r.ConstraintAction.Add.OutOfLineConstraint.ForeignKey,
+				Enforced:           r.ConstraintAction.Add.OutOfLineConstraint.Enforced,
+				NotEnforced:        r.ConstraintAction.Add.OutOfLineConstraint.NotEnforced,
+				Deferrable:         r.ConstraintAction.Add.OutOfLineConstraint.Deferrable,
+				NotDeferrable:      r.ConstraintAction.Add.OutOfLineConstraint.NotDeferrable,
+				InitiallyDeferred:  r.ConstraintAction.Add.OutOfLineConstraint.InitiallyDeferred,
+				InitiallyImmediate: r.ConstraintAction.Add.OutOfLineConstraint.InitiallyImmediate,
+				Enable:             r.ConstraintAction.Add.OutOfLineConstraint.Enable,
+				Disable:            r.ConstraintAction.Add.OutOfLineConstraint.Disable,
+				Validate:           r.ConstraintAction.Add.OutOfLineConstraint.Validate,
+				Novalidate:         r.ConstraintAction.Add.OutOfLineConstraint.Novalidate,
+				Rely:               r.ConstraintAction.Add.OutOfLineConstraint.Rely,
+				Norely:             r.ConstraintAction.Add.OutOfLineConstraint.Norely,
 			}
 		}
 		if r.ConstraintAction.Rename != nil {
@@ -127,20 +191,24 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		}
 	}
 	if r.AlterColumnAction != nil {
-		opts.AlterColumnAction = &HybridTableAlterColumnAction{
-			ColumnName:   r.AlterColumnAction.ColumnName,
-			DropDefault:  r.AlterColumnAction.DropDefault,
-			SetDefault:   r.AlterColumnAction.SetDefault,
-			Type:         r.AlterColumnAction.Type,
-			Comment:      r.AlterColumnAction.Comment,
-			UnsetComment: r.AlterColumnAction.UnsetComment,
-		}
-		if r.AlterColumnAction.NotNullConstraint != nil {
-			opts.AlterColumnAction.NotNullConstraint = &HybridTableColumnNotNullConstraint{
-				SetNotNull:  r.AlterColumnAction.NotNullConstraint.SetNotNull,
-				DropNotNull: r.AlterColumnAction.NotNullConstraint.DropNotNull,
+		s := make([]HybridTableAlterColumnAction, len(r.AlterColumnAction))
+		for i, v := range r.AlterColumnAction {
+			s[i] = HybridTableAlterColumnAction{
+				ColumnName:   v.ColumnName,
+				DropDefault:  v.DropDefault,
+				SetDefault:   v.SetDefault,
+				Type:         v.Type,
+				Comment:      v.Comment,
+				UnsetComment: v.UnsetComment,
+			}
+			if v.NotNullConstraint != nil {
+				s[i].NotNullConstraint = &HybridTableColumnNotNullConstraint{
+					SetNotNull:  v.NotNullConstraint.SetNotNull,
+					DropNotNull: v.NotNullConstraint.DropNotNull,
+				}
 			}
 		}
+		opts.AlterColumnAction = s
 	}
 	if r.DropColumnAction != nil {
 		opts.DropColumnAction = &HybridTableDropColumnAction{
@@ -246,11 +314,11 @@ func (r *DropIndexHybridTableRequest) toOpts() *DropIndexHybridTableOptions {
 }
 
 func (r *ShowIndexesHybridTableRequest) toOpts() *ShowIndexesHybridTableOptions {
-	opts := &ShowIndexesHybridTableOptions{}
-	if r.In != nil {
-		opts.In = &ShowHybridTableIndexIn{
-			Table: &r.In.Table,
-		}
+	opts := &ShowIndexesHybridTableOptions{
+		Like:       r.Like,
+		In:         r.In,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
 	}
 	return opts
 }

@@ -2,6 +2,7 @@ package sdkcommons
 
 type (
 	AllowedProviderOption                                               string
+	ColumnConstraintType                                                string
 	ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOption     string
 	ApiIntegrationAwsApiProviderType                                    string
 	AuthenticationMethodsOption                                         string
@@ -48,6 +49,7 @@ type (
 	OauthSecurityIntegrationUseSecondaryRolesOption                     string
 	OrganizationAccountEdition                                          string
 	ParquetCompression                                                  string
+	ReclusterState                                                      string
 	ReturnNullValues                                                    string
 	ReturnResultsBehavior                                               string
 	S3EncryptionType                                                    string
@@ -58,6 +60,7 @@ type (
 	ScimSecurityIntegrationRunAsRoleOption                              string
 	ScimSecurityIntegrationScimClientOption                             string
 	SecretType                                                          string
+	SequenceName                                                        string
 	StageCopyColumnMapOption                                            string
 	StorageProvider                                                     string
 	TaskState                                                           string

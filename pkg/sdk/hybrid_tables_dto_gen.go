@@ -16,9 +16,50 @@ var (
 type CreateHybridTableRequest struct {
 	OrReplace             *bool
 	IfNotExists           *bool
-	name                  SchemaObjectIdentifier                  // required
-	ColumnsAndConstraints HybridTableColumnsConstraintsAndIndexes // required
+	name                  SchemaObjectIdentifier // required
+	ColumnsAndConstraints HybridTableColumnsConstraintsAndIndexesRequest
 	Comment               *string
+}
+
+type HybridTableColumnsConstraintsAndIndexesRequest struct {
+	Columns             []HybridTableColumnRequest
+	OutOfLineConstraint []HybridTableOutOfLineConstraintRequest
+	OutOfLineIndex      []HybridTableOutOfLineIndexRequest
+}
+
+type HybridTableColumnRequest struct {
+	Name             string   // required
+	Type             DataType // required
+	InlineConstraint *ColumnInlineConstraint
+	NotNull          *bool
+	DefaultValue     *ColumnDefaultValue
+	Collate          *string
+	Comment          *string
+}
+
+type HybridTableOutOfLineConstraintRequest struct {
+	Name               *string
+	Type               ColumnConstraintType // required
+	Columns            []string
+	ForeignKey         *OutOfLineForeignKey
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type HybridTableOutOfLineIndexRequest struct {
+	Name           string   // required
+	Columns        []string // required
+	IncludeColumns []string
 }
 
 type AlterHybridTableRequest struct {
@@ -27,7 +68,7 @@ type AlterHybridTableRequest struct {
 	NewName           *SchemaObjectIdentifier
 	AddColumnAction   *HybridTableAddColumnActionRequest
 	ConstraintAction  *HybridTableConstraintActionRequest
-	AlterColumnAction *HybridTableAlterColumnActionRequest
+	AlterColumnAction []HybridTableAlterColumnActionRequest
 	DropColumnAction  *HybridTableDropColumnActionRequest
 	DropIndexAction   *HybridTableDropIndexActionRequest
 	ClusteringAction  *HybridTableClusteringActionRequest
@@ -41,7 +82,7 @@ type HybridTableAddColumnActionRequest struct {
 	Type             DataType // required
 	Collate          *string
 	DefaultValue     *ColumnDefaultValue
-	InlineConstraint *HybridTableColumnInlineConstraint
+	InlineConstraint *ColumnInlineConstraint
 	Comment          *string
 }
 
@@ -52,7 +93,7 @@ type HybridTableConstraintActionRequest struct {
 }
 
 type HybridTableConstraintActionAddRequest struct {
-	OutOfLineConstraint HybridTableOutOfLineConstraint // required
+	OutOfLineConstraint HybridTableOutOfLineConstraintRequest
 }
 
 type HybridTableConstraintActionRenameRequest struct {
@@ -166,9 +207,8 @@ type DropIndexHybridTableRequest struct {
 }
 
 type ShowIndexesHybridTableRequest struct {
-	In *ShowHybridTableIndexInRequest
-}
-
-type ShowHybridTableIndexInRequest struct {
-	Table SchemaObjectIdentifier
+	Like       *Like
+	In         *In
+	StartsWith *string
+	Limit      *LimitFrom
 }

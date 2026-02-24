@@ -6,15 +6,53 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
+	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
+	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
+	OptionalSQL("NOT NULL").
+	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
+	OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
+	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
+
+var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
+	OptionalText("Name", g.KeywordOptions().DoubleQuotes().SQL("CONSTRAINT")).
+	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.ColumnConstraintType](), g.KeywordOptions().Required()).
+	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes()).
+	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions()).
+	OptionalSQL("ENFORCED").
+	OptionalSQL("NOT ENFORCED").
+	OptionalSQL("DEFERRABLE").
+	OptionalSQL("NOT DEFERRABLE").
+	OptionalSQL("INITIALLY DEFERRED").
+	OptionalSQL("INITIALLY IMMEDIATE").
+	OptionalSQL("ENABLE").
+	OptionalSQL("DISABLE").
+	OptionalSQL("VALIDATE").
+	OptionalSQL("NOVALIDATE").
+	OptionalSQL("RELY").
+	OptionalSQL("NORELY")
+
+var hybridTableOutOfLineIndex = g.NewQueryStruct("HybridTableOutOfLineIndex").
+	SQL("INDEX").
+	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
+	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required().DoubleQuotes()).
+	PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes().SQL("INCLUDE"))
+
+var hybridTableColumnsConstraintsAndIndexes = g.NewQueryStruct("HybridTableColumnsConstraintsAndIndexes").
+	ListQueryStructField("Columns", hybridTableColumn, g.KeywordOptions()).
+	ListQueryStructField("OutOfLineConstraint", hybridTableOutOfLineConstraint, g.KeywordOptions()).
+	ListQueryStructField("OutOfLineIndex", hybridTableOutOfLineIndex, g.KeywordOptions())
+
 var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	SQL("ADD").
 	SQL("COLUMN").
 	OptionalSQL("IF NOT EXISTS").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("Type", "DataType", g.KeywordOptions().Required()).
+	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
 	OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
-	PredefinedQueryStructField("DefaultValue", "*ColumnDefaultValue", g.KeywordOptions()).
-	PredefinedQueryStructField("InlineConstraint", "*HybridTableColumnInlineConstraint", g.KeywordOptions()).
+	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
+	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
 var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction").
@@ -22,7 +60,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 		"Add",
 		g.NewQueryStruct("HybridTableConstraintActionAdd").
 			SQL("ADD").
-			PredefinedQueryStructField("OutOfLineConstraint", "HybridTableOutOfLineConstraint", g.KeywordOptions().Required()),
+			QueryStructField("OutOfLineConstraint", hybridTableOutOfLineConstraint, g.KeywordOptions()),
 		g.KeywordOptions(),
 	).
 	OptionalQueryStructField(
@@ -51,10 +89,11 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 	WithValidation(g.ExactlyOneValueSet, "Add", "Rename", "Drop")
 
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
-	SQL("ALTER COLUMN").
+	SQL("ALTER").
+	SQL("COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("DROP DEFAULT").
-	PredefinedQueryStructField("SetDefault", "*SequenceName", g.ParameterOptions().NoEquals().SQL("SET DEFAULT")).
+	PredefinedQueryStructField("SetDefault", g.KindOfTPointer[sdkcommons.SequenceName](), g.ParameterOptions().NoEquals().SQL("SET DEFAULT")).
 	OptionalQueryStructField(
 		"NotNullConstraint",
 		g.NewQueryStruct("HybridTableColumnNotNullConstraint").
@@ -65,7 +104,8 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	).
 	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
-	OptionalSQL("UNSET COMMENT")
+	OptionalSQL("UNSET COMMENT").
+	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "NotNullConstraint", "Type", "Comment", "UnsetComment")
 
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
@@ -78,7 +118,7 @@ var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	Text("IndexName", g.KeywordOptions().Required().DoubleQuotes())
 
 var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction").
-	PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes().SQL("CLUSTER BY")).
+	PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 	OptionalQueryStructField(
 		"Recluster",
 		g.NewQueryStruct("HybridTableReclusterAction").
@@ -90,7 +130,7 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 	OptionalQueryStructField(
 		"ChangeReclusterState",
 		g.NewQueryStruct("HybridTableReclusterChangeState").
-			PredefinedQueryStructField("State", "*ReclusterState", g.KeywordOptions()).
+			PredefinedQueryStructField("State", g.KindOfTPointer[sdkcommons.ReclusterState](), g.KeywordOptions()).
 			SQL("RECLUSTER"),
 		g.KeywordOptions(),
 	).
@@ -103,7 +143,7 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
 	OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
 	OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
-	PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().SQL("CONTACT")).
+	PredefinedQueryStructField("Contact", g.KindOfTSlice[sdkcommons.TableContact](), g.KeywordOptions().SQL("CONTACT")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	OptionalBooleanAssignment("ROW_TIMESTAMP", g.ParameterOptions()).
 	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Contact", "Comment", "RowTimestamp")
@@ -130,7 +170,7 @@ var hybridTablesDef = g.NewInterface(
 		SQL("HYBRID TABLE").
 		IfNotExists().
 		Name().
-		PredefinedQueryStructField("ColumnsAndConstraints", "HybridTableColumnsConstraintsAndIndexes", g.ListOptions().Parentheses().Required()).
+		QueryStructField("ColumnsAndConstraints", hybridTableColumnsConstraintsAndIndexes, g.ListOptions().Parentheses()).
 		OptionalComment().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
@@ -152,7 +192,7 @@ var hybridTablesDef = g.NewInterface(
 			hybridTableConstraintAction,
 			g.KeywordOptions(),
 		).
-		OptionalQueryStructField(
+		ListQueryStructField(
 			"AlterColumnAction",
 			hybridTableAlterColumnAction,
 			g.KeywordOptions(),
@@ -203,8 +243,8 @@ var hybridTablesDef = g.NewInterface(
 		Text("database_name").
 		Text("schema_name").
 		OptionalText("owner").
-		Number("rows").
-		Number("bytes").
+		OptionalNumber("rows").
+		OptionalNumber("bytes").
 		OptionalText("comment").
 		OptionalText("owner_role_type"),
 	g.PlainStruct("HybridTable").
@@ -213,8 +253,8 @@ var hybridTablesDef = g.NewInterface(
 		Text("DatabaseName").
 		Text("SchemaName").
 		Text("Owner").
-		Number("Rows").
-		Number("Bytes").
+		OptionalNumber("Rows").
+		OptionalNumber("Bytes").
 		Text("Comment").
 		Text("OwnerRoleType"),
 	g.NewQueryStruct("ShowHybridTables").
@@ -296,8 +336,8 @@ var hybridTablesDef = g.NewInterface(
 	g.DbStruct("hybridTableIndexRow").
 		Time("created_on").
 		Text("name").
-		Text("is_unique").
-		Text("columns").
+		OptionalText("is_unique").
+		OptionalText("columns").
 		OptionalText("included_columns").
 		Text("table").
 		Text("database_name").
@@ -307,8 +347,8 @@ var hybridTablesDef = g.NewInterface(
 	g.PlainStruct("HybridTableIndex").
 		Time("CreatedOn").
 		Text("Name").
-		Bool("IsUnique").
-		Text("Columns").
+		OptionalBool("IsUnique").
+		OptionalText("Columns").
 		Text("IncludedColumns").
 		Text("TableName").
 		Text("DatabaseName").
@@ -318,11 +358,8 @@ var hybridTablesDef = g.NewInterface(
 	g.NewQueryStruct("ShowHybridTableIndexes").
 		Show().
 		SQL("INDEXES").
-		OptionalQueryStructField(
-			"In",
-			g.NewQueryStruct("ShowHybridTableIndexIn").
-				SQL("TABLE").
-				Identifier("Table", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions()),
-			g.KeywordOptions().SQL("IN"),
-		),
+		OptionalLike().
+		OptionalIn().
+		OptionalStartsWith().
+		OptionalLimitFrom(),
 )

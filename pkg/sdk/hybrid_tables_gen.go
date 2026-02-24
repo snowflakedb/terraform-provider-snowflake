@@ -33,33 +33,75 @@ type CreateHybridTableOptions struct {
 	Comment               *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
+type HybridTableColumnsConstraintsAndIndexes struct {
+	Columns             []HybridTableColumn              `ddl:"keyword"`
+	OutOfLineConstraint []HybridTableOutOfLineConstraint `ddl:"keyword"`
+	OutOfLineIndex      []HybridTableOutOfLineIndex      `ddl:"keyword"`
+}
+
+type HybridTableColumn struct {
+	Name             string                  `ddl:"keyword,double_quotes"`
+	Type             DataType                `ddl:"keyword"`
+	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
+	NotNull          *bool                   `ddl:"keyword" sql:"NOT NULL"`
+	DefaultValue     *ColumnDefaultValue     `ddl:"keyword"`
+	Collate          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	Comment          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+}
+
+type HybridTableOutOfLineConstraint struct {
+	Name               *string              `ddl:"keyword,double_quotes" sql:"CONSTRAINT"`
+	Type               ColumnConstraintType `ddl:"keyword"`
+	Columns            []string             `ddl:"keyword,double_quotes,parentheses"`
+	ForeignKey         *OutOfLineForeignKey `ddl:"keyword"`
+	Enforced           *bool                `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool                `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool                `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool                `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool                `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool                `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool                `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool                `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool                `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool                `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool                `ddl:"keyword" sql:"RELY"`
+	Norely             *bool                `ddl:"keyword" sql:"NORELY"`
+}
+
+type HybridTableOutOfLineIndex struct {
+	index          bool     `ddl:"static" sql:"INDEX"`
+	Name           string   `ddl:"keyword,double_quotes"`
+	Columns        []string `ddl:"keyword,double_quotes,parentheses"`
+	IncludeColumns []string `ddl:"keyword,double_quotes,parentheses" sql:"INCLUDE"`
+}
+
 // AlterHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-table.
 type AlterHybridTableOptions struct {
-	alter             bool                          `ddl:"static" sql:"ALTER"`
-	table             bool                          `ddl:"static" sql:"TABLE"`
-	IfExists          *bool                         `ddl:"keyword" sql:"IF EXISTS"`
-	name              SchemaObjectIdentifier        `ddl:"identifier"`
-	NewName           *SchemaObjectIdentifier       `ddl:"identifier" sql:"RENAME TO"`
-	AddColumnAction   *HybridTableAddColumnAction   `ddl:"keyword"`
-	ConstraintAction  *HybridTableConstraintAction  `ddl:"keyword"`
-	AlterColumnAction *HybridTableAlterColumnAction `ddl:"keyword"`
-	DropColumnAction  *HybridTableDropColumnAction  `ddl:"keyword"`
-	DropIndexAction   *HybridTableDropIndexAction   `ddl:"keyword"`
-	ClusteringAction  *HybridTableClusteringAction  `ddl:"keyword"`
-	Set               *HybridTableSetProperties     `ddl:"keyword" sql:"SET"`
-	Unset             *HybridTableUnsetProperties   `ddl:"keyword" sql:"UNSET"`
+	alter             bool                           `ddl:"static" sql:"ALTER"`
+	table             bool                           `ddl:"static" sql:"TABLE"`
+	IfExists          *bool                          `ddl:"keyword" sql:"IF EXISTS"`
+	name              SchemaObjectIdentifier         `ddl:"identifier"`
+	NewName           *SchemaObjectIdentifier        `ddl:"identifier" sql:"RENAME TO"`
+	AddColumnAction   *HybridTableAddColumnAction    `ddl:"keyword"`
+	ConstraintAction  *HybridTableConstraintAction   `ddl:"keyword"`
+	AlterColumnAction []HybridTableAlterColumnAction `ddl:"keyword"`
+	DropColumnAction  *HybridTableDropColumnAction   `ddl:"keyword"`
+	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
+	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
+	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
+	Unset             *HybridTableUnsetProperties    `ddl:"keyword" sql:"UNSET"`
 }
 
 type HybridTableAddColumnAction struct {
-	add              bool                               `ddl:"static" sql:"ADD"`
-	column           bool                               `ddl:"static" sql:"COLUMN"`
-	IfNotExists      *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
-	Name             string                             `ddl:"keyword,double_quotes"`
-	Type             DataType                           `ddl:"keyword"`
-	Collate          *string                            `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
-	DefaultValue     *ColumnDefaultValue                `ddl:"keyword"`
-	InlineConstraint *HybridTableColumnInlineConstraint `ddl:"keyword"`
-	Comment          *string                            `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	add              bool                    `ddl:"static" sql:"ADD"`
+	column           bool                    `ddl:"static" sql:"COLUMN"`
+	IfNotExists      *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	Name             string                  `ddl:"keyword,double_quotes"`
+	Type             DataType                `ddl:"keyword"`
+	Collate          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	DefaultValue     *ColumnDefaultValue     `ddl:"keyword"`
+	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
+	Comment          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
 type HybridTableConstraintAction struct {
@@ -76,12 +118,12 @@ type HybridTableConstraintActionAdd struct {
 type HybridTableConstraintActionRename struct {
 	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
 	OldName          string `ddl:"keyword,double_quotes"`
-	NewName          string `ddl:"parameter,no_equals,double_quotes" sql:"TO"`
+	NewName          string `ddl:"keyword,double_quotes" sql:"TO"`
 }
 
 type HybridTableConstraintActionDrop struct {
 	drop           bool     `ddl:"static" sql:"DROP"`
-	ConstraintName *string  `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"keyword,double_quotes" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
@@ -91,7 +133,8 @@ type HybridTableConstraintActionDrop struct {
 }
 
 type HybridTableAlterColumnAction struct {
-	alterColumn       bool                                `ddl:"static" sql:"ALTER COLUMN"`
+	alter             bool                                `ddl:"static" sql:"ALTER"`
+	column            bool                                `ddl:"static" sql:"COLUMN"`
 	ColumnName        string                              `ddl:"keyword,double_quotes"`
 	DropDefault       *bool                               `ddl:"keyword" sql:"DROP DEFAULT"`
 	SetDefault        *SequenceName                       `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
@@ -153,7 +196,7 @@ type HybridTableUnsetProperties struct {
 	ChangeTracking             *bool   `ddl:"keyword" sql:"CHANGE_TRACKING"`
 	DefaultDdlCollation        *bool   `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
 	EnableSchemaEvolution      *bool   `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	ContactPurpose             *string `ddl:"parameter,no_equals" sql:"CONTACT"`
+	ContactPurpose             *string `ddl:"keyword" sql:"CONTACT"`
 	Comment                    *bool   `ddl:"keyword" sql:"COMMENT"`
 }
 
@@ -221,7 +264,7 @@ type hybridTableDetailsRow struct {
 	Name                  string         `db:"name"`
 	Type                  string         `db:"type"`
 	Kind                  string         `db:"kind"`
-	Null                  string         `db:"null?"`
+	Null                  string         `db:"null"`
 	Default               sql.NullString `db:"default"`
 	PrimaryKey            string         `db:"primary key"`
 	UniqueKey             string         `db:"unique key"`
@@ -272,16 +315,19 @@ type DropIndexHybridTableOptions struct {
 
 // ShowIndexesHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-indexes.
 type ShowIndexesHybridTableOptions struct {
-	show    bool                    `ddl:"static" sql:"SHOW"`
-	indexes bool                    `ddl:"static" sql:"INDEXES"`
-	In      *ShowHybridTableIndexIn `ddl:"keyword" sql:"IN"`
+	show       bool       `ddl:"static" sql:"SHOW"`
+	indexes    bool       `ddl:"static" sql:"INDEXES"`
+	Like       *Like      `ddl:"keyword" sql:"LIKE"`
+	In         *In        `ddl:"keyword" sql:"IN"`
+	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 type hybridTableIndexRow struct {
 	CreatedOn       time.Time      `db:"created_on"`
 	Name            string         `db:"name"`
-	IsUnique        string         `db:"is_unique"`
-	Columns         string         `db:"columns"`
+	IsUnique        sql.NullString `db:"is_unique"`
+	Columns         sql.NullString `db:"columns"`
 	IncludedColumns sql.NullString `db:"included_columns"`
 	Table           string         `db:"table"`
 	DatabaseName    string         `db:"database_name"`
@@ -293,17 +339,12 @@ type hybridTableIndexRow struct {
 type HybridTableIndex struct {
 	CreatedOn       time.Time
 	Name            string
-	IsUnique        bool
-	Columns         string
+	IsUnique        *bool
+	Columns         *string
 	IncludedColumns string
 	TableName       string
 	DatabaseName    string
 	SchemaName      string
 	Owner           string
 	OwnerRoleType   string
-}
-
-type ShowHybridTableIndexIn struct {
-	table bool                    `ddl:"static" sql:"TABLE"`
-	Table *SchemaObjectIdentifier `ddl:"identifier"`
 }

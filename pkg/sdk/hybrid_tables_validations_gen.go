@@ -52,9 +52,15 @@ func (opts *AlterHybridTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.AlterColumnAction) {
-		if valueSet(opts.AlterColumnAction.NotNullConstraint) {
-			if !exactlyOneValueSet(opts.AlterColumnAction.NotNullConstraint.SetNotNull, opts.AlterColumnAction.NotNullConstraint.DropNotNull) {
-				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction.NotNullConstraint", "SetNotNull", "DropNotNull"))
+		for i, action := range opts.AlterColumnAction {
+			_ = i
+			if !exactlyOneValueSet(action.DropDefault, action.SetDefault, action.NotNullConstraint, action.Type, action.Comment, action.UnsetComment) {
+				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "NotNullConstraint", "Type", "Comment", "UnsetComment"))
+			}
+			if valueSet(action.NotNullConstraint) {
+				if !exactlyOneValueSet(action.NotNullConstraint.SetNotNull, action.NotNullConstraint.DropNotNull) {
+					errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction.NotNullConstraint", "SetNotNull", "DropNotNull"))
+				}
 			}
 		}
 	}

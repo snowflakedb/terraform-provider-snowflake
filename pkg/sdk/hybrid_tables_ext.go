@@ -8,63 +8,6 @@ type TableContact struct {
 	Contact string `ddl:"parameter,no_equals,single_quotes"`
 }
 
-// HybridTableColumnsConstraintsAndIndexes is the parenthesized body of CREATE HYBRID TABLE,
-// containing column definitions, out-of-line constraints, and out-of-line indexes.
-type HybridTableColumnsConstraintsAndIndexes struct {
-	Columns             []HybridTableColumn              `ddl:"keyword"`
-	OutOfLineConstraint []HybridTableOutOfLineConstraint `ddl:"keyword"`
-	OutOfLineIndex      []HybridTableOutOfLineIndex      `ddl:"keyword"`
-}
-
-// HybridTableColumn defines a single column in a hybrid table.
-type HybridTableColumn struct {
-	Name             string                             `ddl:"keyword,double_quotes"`
-	Type             DataType                           `ddl:"keyword"`
-	InlineConstraint *HybridTableColumnInlineConstraint `ddl:"keyword"`
-	NotNull          *bool                              `ddl:"keyword" sql:"NOT NULL"`
-	DefaultValue     *ColumnDefaultValue                `ddl:"keyword"`
-	Collate          *string                            `ddl:"parameter,no_equals,single_quotes" sql:"COLLATE"`
-	Comment          *string                            `ddl:"parameter,no_equals,single_quotes" sql:"COMMENT"`
-}
-
-// HybridTableColumnInlineConstraint defines inline PRIMARY KEY, UNIQUE, or FOREIGN KEY on a column.
-type HybridTableColumnInlineConstraint struct {
-	Name       *string              `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
-	Type       ColumnConstraintType `ddl:"keyword"`
-	ForeignKey *InlineForeignKey    `ddl:"keyword" sql:"REFERENCES"`
-}
-
-// HybridTableOutOfLineConstraint is a hybrid-table-specific copy of OutOfLineConstraint
-// with double-quoted constraint names and column references for case-preserving identifiers.
-type HybridTableOutOfLineConstraint struct {
-	Name       *string              `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
-	Type       ColumnConstraintType `ddl:"keyword"`
-	Columns    []string             `ddl:"keyword,parentheses,double_quotes"`
-	ForeignKey *OutOfLineForeignKey `ddl:"keyword"`
-
-	// optional
-	Enforced           *bool `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool `ddl:"keyword" sql:"VALIDATE"`
-	NoValidate         *bool `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool `ddl:"keyword" sql:"RELY"`
-	NoRely             *bool `ddl:"keyword" sql:"NORELY"`
-}
-
-// HybridTableOutOfLineIndex defines a secondary index in CREATE HYBRID TABLE.
-type HybridTableOutOfLineIndex struct {
-	index          bool     `ddl:"static" sql:"INDEX"`
-	Name           string   `ddl:"keyword,double_quotes"`
-	Columns        []string `ddl:"keyword,parentheses,double_quotes"`
-	IncludeColumns []string `ddl:"keyword,parentheses,double_quotes" sql:"INCLUDE"`
-}
-
 func (r hybridTableRow) convert() (*HybridTable, error) {
 	ht := &HybridTable{
 		CreatedOn:    r.CreatedOn,
@@ -129,11 +72,16 @@ func (r hybridTableIndexRow) convert() (*HybridTableIndex, error) {
 	idx := &HybridTableIndex{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
-		IsUnique:     r.IsUnique == "Y",
-		Columns:      r.Columns,
 		TableName:    r.Table,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
+	}
+	if r.IsUnique.Valid {
+		v := r.IsUnique.String == "Y"
+		idx.IsUnique = &v
+	}
+	if r.Columns.Valid {
+		idx.Columns = &r.Columns.String
 	}
 	if r.IncludedColumns.Valid {
 		idx.IncludedColumns = r.IncludedColumns.String
@@ -148,8 +96,6 @@ func (r hybridTableIndexRow) convert() (*HybridTableIndex, error) {
 }
 
 var _ convertibleRow[HybridTableIndex] = new(hybridTableIndexRow)
-
-// Standalone index operations
 
 func (v *hybridTables) CreateIndex(ctx context.Context, request *CreateIndexHybridTableRequest) error {
 	opts := request.toOpts()

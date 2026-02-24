@@ -15,7 +15,7 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 					{
 						Name: "id",
 						Type: DataType("NUMBER(38,0)"),
-						InlineConstraint: &HybridTableColumnInlineConstraint{
+						InlineConstraint: &ColumnInlineConstraint{
 							Type: ColumnConstraintTypePrimaryKey,
 						},
 					},
@@ -38,7 +38,7 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 					{
 						Name: "id",
 						Type: DataType("NUMBER(38,0)"),
-						InlineConstraint: &HybridTableColumnInlineConstraint{
+						InlineConstraint: &ColumnInlineConstraint{
 							Type: ColumnConstraintTypePrimaryKey,
 						},
 					},
@@ -74,7 +74,7 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 					{
 						Name: "id",
 						Type: DataType("NUMBER(38,0)"),
-						InlineConstraint: &HybridTableColumnInlineConstraint{
+						InlineConstraint: &ColumnInlineConstraint{
 							Name: String("pk_id"),
 							Type: ColumnConstraintTypePrimaryKey,
 						},
@@ -82,7 +82,7 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("id" NUMBER(38,0) CONSTRAINT "pk_id" PRIMARY KEY)`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("id" NUMBER(38,0) CONSTRAINT pk_id PRIMARY KEY)`, id.FullyQualifiedName())
 	})
 
 	t.Run("create with column comment and collate", func(t *testing.T) {
@@ -93,7 +93,7 @@ func TestHybridTables_Create_AllOptions(t *testing.T) {
 					{
 						Name: "id",
 						Type: DataType("NUMBER(38,0)"),
-						InlineConstraint: &HybridTableColumnInlineConstraint{
+						InlineConstraint: &ColumnInlineConstraint{
 							Type: ColumnConstraintTypePrimaryKey,
 						},
 					},
@@ -214,13 +214,13 @@ func TestHybridTables_ShowIndexes_Ext(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES`)
 	})
 
-	t.Run("with in table", func(t *testing.T) {
-		tableId := randomSchemaObjectIdentifier()
+	t.Run("with in schema", func(t *testing.T) {
+		schemaId := randomDatabaseObjectIdentifier()
 		opts := defaultOpts()
-		opts.In = &ShowHybridTableIndexIn{
-			Table: &tableId,
+		opts.In = &In{
+			Schema: schemaId,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES IN TABLE %s`, tableId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES IN SCHEMA %s`, schemaId.FullyQualifiedName())
 	})
 }
 

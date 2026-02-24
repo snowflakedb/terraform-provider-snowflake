@@ -4,7 +4,7 @@ package sdk
 
 func NewCreateHybridTableRequest(
 	name SchemaObjectIdentifier,
-	columnsAndConstraints HybridTableColumnsConstraintsAndIndexes,
+	columnsAndConstraints HybridTableColumnsConstraintsAndIndexesRequest,
 ) *CreateHybridTableRequest {
 	s := CreateHybridTableRequest{}
 	s.name = name
@@ -24,6 +24,159 @@ func (s *CreateHybridTableRequest) WithIfNotExists(ifNotExists bool) *CreateHybr
 
 func (s *CreateHybridTableRequest) WithComment(comment string) *CreateHybridTableRequest {
 	s.Comment = &comment
+	return s
+}
+
+func NewHybridTableColumnsConstraintsAndIndexesRequest() *HybridTableColumnsConstraintsAndIndexesRequest {
+	s := HybridTableColumnsConstraintsAndIndexesRequest{}
+	return &s
+}
+
+func (s *HybridTableColumnsConstraintsAndIndexesRequest) WithColumns(columns []HybridTableColumnRequest) *HybridTableColumnsConstraintsAndIndexesRequest {
+	s.Columns = columns
+	return s
+}
+
+func (s *HybridTableColumnsConstraintsAndIndexesRequest) WithOutOfLineConstraint(outOfLineConstraint []HybridTableOutOfLineConstraintRequest) *HybridTableColumnsConstraintsAndIndexesRequest {
+	s.OutOfLineConstraint = outOfLineConstraint
+	return s
+}
+
+func (s *HybridTableColumnsConstraintsAndIndexesRequest) WithOutOfLineIndex(outOfLineIndex []HybridTableOutOfLineIndexRequest) *HybridTableColumnsConstraintsAndIndexesRequest {
+	s.OutOfLineIndex = outOfLineIndex
+	return s
+}
+
+func NewHybridTableColumnRequest(
+	name string,
+	columnType DataType,
+) *HybridTableColumnRequest {
+	s := HybridTableColumnRequest{}
+	s.Name = name
+	s.Type = columnType
+	return &s
+}
+
+func (s *HybridTableColumnRequest) WithInlineConstraint(inlineConstraint ColumnInlineConstraint) *HybridTableColumnRequest {
+	s.InlineConstraint = &inlineConstraint
+	return s
+}
+
+func (s *HybridTableColumnRequest) WithNotNull(notNull bool) *HybridTableColumnRequest {
+	s.NotNull = &notNull
+	return s
+}
+
+func (s *HybridTableColumnRequest) WithDefaultValue(defaultValue ColumnDefaultValue) *HybridTableColumnRequest {
+	s.DefaultValue = &defaultValue
+	return s
+}
+
+func (s *HybridTableColumnRequest) WithCollate(collate string) *HybridTableColumnRequest {
+	s.Collate = &collate
+	return s
+}
+
+func (s *HybridTableColumnRequest) WithComment(comment string) *HybridTableColumnRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewHybridTableOutOfLineConstraintRequest(
+	constraintType ColumnConstraintType,
+) *HybridTableOutOfLineConstraintRequest {
+	s := HybridTableOutOfLineConstraintRequest{}
+	s.Type = constraintType
+	return &s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithName(name string) *HybridTableOutOfLineConstraintRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithColumns(columns []string) *HybridTableOutOfLineConstraintRequest {
+	s.Columns = columns
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithForeignKey(foreignKey OutOfLineForeignKey) *HybridTableOutOfLineConstraintRequest {
+	s.ForeignKey = &foreignKey
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithEnforced(enforced bool) *HybridTableOutOfLineConstraintRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithNotEnforced(notEnforced bool) *HybridTableOutOfLineConstraintRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithDeferrable(deferrable bool) *HybridTableOutOfLineConstraintRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithNotDeferrable(notDeferrable bool) *HybridTableOutOfLineConstraintRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithInitiallyDeferred(initiallyDeferred bool) *HybridTableOutOfLineConstraintRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithInitiallyImmediate(initiallyImmediate bool) *HybridTableOutOfLineConstraintRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithEnable(enable bool) *HybridTableOutOfLineConstraintRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithDisable(disable bool) *HybridTableOutOfLineConstraintRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithValidate(validate bool) *HybridTableOutOfLineConstraintRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithNovalidate(novalidate bool) *HybridTableOutOfLineConstraintRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithRely(rely bool) *HybridTableOutOfLineConstraintRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *HybridTableOutOfLineConstraintRequest) WithNorely(norely bool) *HybridTableOutOfLineConstraintRequest {
+	s.Norely = &norely
+	return s
+}
+
+func NewHybridTableOutOfLineIndexRequest(
+	name string,
+	columns []string,
+) *HybridTableOutOfLineIndexRequest {
+	s := HybridTableOutOfLineIndexRequest{}
+	s.Name = name
+	s.Columns = columns
+	return &s
+}
+
+func (s *HybridTableOutOfLineIndexRequest) WithIncludeColumns(includeColumns []string) *HybridTableOutOfLineIndexRequest {
+	s.IncludeColumns = includeColumns
 	return s
 }
 
@@ -55,8 +208,8 @@ func (s *AlterHybridTableRequest) WithConstraintAction(constraintAction HybridTa
 	return s
 }
 
-func (s *AlterHybridTableRequest) WithAlterColumnAction(alterColumnAction HybridTableAlterColumnActionRequest) *AlterHybridTableRequest {
-	s.AlterColumnAction = &alterColumnAction
+func (s *AlterHybridTableRequest) WithAlterColumnAction(alterColumnAction []HybridTableAlterColumnActionRequest) *AlterHybridTableRequest {
+	s.AlterColumnAction = alterColumnAction
 	return s
 }
 
@@ -110,7 +263,7 @@ func (s *HybridTableAddColumnActionRequest) WithDefaultValue(defaultValue Column
 	return s
 }
 
-func (s *HybridTableAddColumnActionRequest) WithInlineConstraint(inlineConstraint HybridTableColumnInlineConstraint) *HybridTableAddColumnActionRequest {
+func (s *HybridTableAddColumnActionRequest) WithInlineConstraint(inlineConstraint ColumnInlineConstraint) *HybridTableAddColumnActionRequest {
 	s.InlineConstraint = &inlineConstraint
 	return s
 }
@@ -141,7 +294,7 @@ func (s *HybridTableConstraintActionRequest) WithDrop(drop HybridTableConstraint
 }
 
 func NewHybridTableConstraintActionAddRequest(
-	outOfLineConstraint HybridTableOutOfLineConstraint,
+	outOfLineConstraint HybridTableOutOfLineConstraintRequest,
 ) *HybridTableConstraintActionAddRequest {
 	s := HybridTableConstraintActionAddRequest{}
 	s.OutOfLineConstraint = outOfLineConstraint
@@ -317,12 +470,14 @@ func (s *HybridTableReclusterActionRequest) WithWhere(where string) *HybridTable
 	return s
 }
 
-func NewHybridTableReclusterChangeStateRequest(
-	state ReclusterState,
-) *HybridTableReclusterChangeStateRequest {
+func NewHybridTableReclusterChangeStateRequest() *HybridTableReclusterChangeStateRequest {
 	s := HybridTableReclusterChangeStateRequest{}
-	s.State = &state
 	return &s
+}
+
+func (s *HybridTableReclusterChangeStateRequest) WithState(state ReclusterState) *HybridTableReclusterChangeStateRequest {
+	s.State = &state
+	return s
 }
 
 func NewHybridTableSetPropertiesRequest() *HybridTableSetPropertiesRequest {
@@ -423,13 +578,13 @@ func (s *DropHybridTableRequest) WithIfExists(ifExists bool) *DropHybridTableReq
 	return s
 }
 
-func (s *DropHybridTableRequest) WithRestrict(restrict bool) *DropHybridTableRequest {
-	s.Restrict = &restrict
+func (s *DropHybridTableRequest) WithCascade(cascade bool) *DropHybridTableRequest {
+	s.Cascade = &cascade
 	return s
 }
 
-func (s *DropHybridTableRequest) WithCascade(cascade bool) *DropHybridTableRequest {
-	s.Cascade = &cascade
+func (s *DropHybridTableRequest) WithRestrict(restrict bool) *DropHybridTableRequest {
+	s.Restrict = &restrict
 	return s
 }
 
@@ -516,15 +671,22 @@ func NewShowIndexesHybridTableRequest() *ShowIndexesHybridTableRequest {
 	return &s
 }
 
-func (s *ShowIndexesHybridTableRequest) WithIn(in ShowHybridTableIndexInRequest) *ShowIndexesHybridTableRequest {
+func (s *ShowIndexesHybridTableRequest) WithLike(like Like) *ShowIndexesHybridTableRequest {
+	s.Like = &like
+	return s
+}
+
+func (s *ShowIndexesHybridTableRequest) WithIn(in In) *ShowIndexesHybridTableRequest {
 	s.In = &in
 	return s
 }
 
-func NewShowHybridTableIndexInRequest(
-	table SchemaObjectIdentifier,
-) *ShowHybridTableIndexInRequest {
-	s := ShowHybridTableIndexInRequest{}
-	s.Table = table
-	return &s
+func (s *ShowIndexesHybridTableRequest) WithStartsWith(startsWith string) *ShowIndexesHybridTableRequest {
+	s.StartsWith = &startsWith
+	return s
+}
+
+func (s *ShowIndexesHybridTableRequest) WithLimit(limit LimitFrom) *ShowIndexesHybridTableRequest {
+	s.Limit = &limit
+	return s
 }
