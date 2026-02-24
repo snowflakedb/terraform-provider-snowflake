@@ -57,6 +57,11 @@ func (s *AutomatedDataLoadsParamsRequest) WithAzureAutoParams(azureAutoParams Az
 	return s
 }
 
+func (s *AutomatedDataLoadsParamsRequest) WithAmazonAutoParams(amazonAutoParams AmazonAutoParamsRequest) *AutomatedDataLoadsParamsRequest {
+	s.AmazonAutoParams = &amazonAutoParams
+	return s
+}
+
 func NewGoogleAutoParamsRequest(
 	gcpPubsubSubscriptionName string,
 ) *GoogleAutoParamsRequest {
@@ -72,6 +77,14 @@ func NewAzureAutoParamsRequest(
 	s := AzureAutoParamsRequest{}
 	s.AzureStorageQueuePrimaryUri = azureStorageQueuePrimaryUri
 	s.AzureTenantId = azureTenantId
+	return &s
+}
+
+func NewAmazonAutoParamsRequest(
+	awsSqsArn string,
+) *AmazonAutoParamsRequest {
+	s := AmazonAutoParamsRequest{}
+	s.AwsSqsArn = awsSqsArn
 	return &s
 }
 

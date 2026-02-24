@@ -21,7 +21,6 @@ import (
 )
 
 // TODO [SNOW-1348345]: split this resource into smaller ones (SNOW-1021713)
-// TODO [SNOW-1348345]: remove SQS entirely
 // TODO [SNOW-1348345]: support Azure push notifications (AZURE_EVENT_GRID)
 var notificationIntegrationSchema = map[string]*schema.Schema{
 	// The first part of the schema is shared between all integration vendors
@@ -58,7 +57,7 @@ var notificationIntegrationSchema = map[string]*schema.Schema{
 		Type:         schema.TypeString,
 		Required:     true,
 		ValidateFunc: validation.StringInSlice([]string{"AZURE_STORAGE_QUEUE", "AWS_SQS", "AWS_SNS", "GCP_PUBSUB"}, true),
-		Description:  "The third-party cloud message queuing service (supported values: AZURE_STORAGE_QUEUE, AWS_SNS, GCP_PUBSUB; AWS_SQS is deprecated and will be removed in the future provider versions)",
+		Description:  "The third-party cloud message queuing service (supported values: AZURE_STORAGE_QUEUE, AWS_SQS, AWS_SNS, GCP_PUBSUB)",
 		ForceNew:     true,
 	},
 	"azure_storage_queue_primary_uri": {
@@ -79,25 +78,23 @@ var notificationIntegrationSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The external ID that Snowflake will use when assuming the AWS role",
-		Deprecated:  "No longer supported notification method",
 	},
 	"aws_sqs_iam_user_arn": {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The Snowflake user that will attempt to assume the AWS role.",
-		Deprecated:  "No longer supported notification method",
 	},
 	"aws_sqs_arn": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "AWS SQS queue ARN for notification integration to connect to",
-		Deprecated:  "No longer supported notification method",
+		Description: "AWS SQS queue ARN for inbound notification integration (BYOQ - Bring Your Own Queue). Required for AWS_SQS provider.",
+		ForceNew:    true,
 	},
 	"aws_sqs_role_arn": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		Description: "AWS IAM role ARN for notification integration to assume",
-		Deprecated:  "No longer supported notification method",
+		Description: "AWS IAM role ARN for notification integration to assume (deprecated - not used for inbound AWS_SQS integrations)",
+		Deprecated:  "Not used for inbound AWS_SQS notification integrations",
 	},
 	"aws_sns_external_id": {
 		Type:        schema.TypeString,
@@ -227,6 +224,14 @@ func CreateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 		createRequest.WithAutomatedDataLoadsParams(
 			*sdk.NewAutomatedDataLoadsParamsRequest().WithAzureAutoParams(*sdk.NewAzureAutoParamsRequest(uri.(string), tenantId.(string))),
 		)
+	case "AWS_SQS":
+		arn, ok := d.GetOk("aws_sqs_arn")
+		if !ok {
+			return diag.FromErr(fmt.Errorf("if you use AWS_SQS provider you must specify an aws_sqs_arn"))
+		}
+		createRequest.WithAutomatedDataLoadsParams(
+			*sdk.NewAutomatedDataLoadsParamsRequest().WithAmazonAutoParams(*sdk.NewAmazonAutoParamsRequest(arn.(string))),
+		)
 	default:
 		return diag.FromErr(fmt.Errorf("unexpected provider %v", notificationProvider))
 	}
@@ -337,7 +342,23 @@ func ReadNotificationIntegration(ctx context.Context, d *schema.ResourceData, me
 				return diag.FromErr(err)
 			}
 		case "SF_AWS_IAM_USER_ARN":
-			if err := d.Set("aws_sns_iam_user_arn", value); err != nil {
+			// Check notification provider to determine if this is for SNS or SQS
+			provider := d.Get("notification_provider").(string)
+			if strings.ToUpper(provider) == "AWS_SQS" {
+				if err := d.Set("aws_sqs_iam_user_arn", value); err != nil {
+					return diag.FromErr(err)
+				}
+			} else {
+				if err := d.Set("aws_sns_iam_user_arn", value); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		case "AWS_SQS_ARN":
+			if err := d.Set("aws_sqs_arn", value); err != nil {
+				return diag.FromErr(err)
+			}
+			// NOTIFICATION_PROVIDER is not returned for AWS SQS automated data load, so we set it manually
+			if err := d.Set("notification_provider", "AWS_SQS"); err != nil {
 				return diag.FromErr(err)
 			}
 		case "GCP_PUBSUB_SUBSCRIPTION_NAME":
@@ -398,6 +419,8 @@ func UpdateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 		log.Printf("[WARN] all GCP_PUBSUB properties should recreate the resource")
 	case "AZURE_STORAGE_QUEUE":
 		log.Printf("[WARN] all AZURE_STORAGE_QUEUE properties should recreate the resource")
+	case "AWS_SQS":
+		log.Printf("[WARN] all AWS_SQS properties should recreate the resource")
 	default:
 		return diag.FromErr(fmt.Errorf("unexpected provider %v", notificationProvider))
 	}
