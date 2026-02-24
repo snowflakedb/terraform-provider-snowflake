@@ -1124,7 +1124,7 @@ func Test_ParseExternalVolumeDescribed(t *testing.T) {
 						StorageBaseUrl:  s3CompatStorageBaseUrl,
 						EncryptionType:  "NONE",
 						S3CompatStorageLocation: &StorageLocationS3CompatDetails{
-							StorageEndpoint: s3CompatStorageEndpoint,
+							Endpoint: s3CompatStorageEndpoint,
 						},
 					},
 				},

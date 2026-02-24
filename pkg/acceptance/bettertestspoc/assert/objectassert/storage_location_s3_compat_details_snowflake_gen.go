@@ -26,8 +26,8 @@ func StorageLocationS3CompatDetailsFromObject(t *testing.T, storageLocationS3Com
 func (s *StorageLocationS3CompatDetailsAssert) HasStorageEndpoint(expected string) *StorageLocationS3CompatDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3CompatDetails) error {
 		t.Helper()
-		if o.StorageEndpoint != expected {
-			return fmt.Errorf("expected storage endpoint: %v; got: %v", expected, o.StorageEndpoint)
+		if o.Endpoint != expected {
+			return fmt.Errorf("expected storage endpoint: %v; got: %v", expected, o.Endpoint)
 		}
 		return nil
 	})

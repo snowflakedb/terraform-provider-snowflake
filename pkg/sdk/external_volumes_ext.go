@@ -122,7 +122,7 @@ type StorageLocationAzureDetails struct {
 }
 
 type StorageLocationS3CompatDetails struct {
-	StorageEndpoint    string
+	Endpoint           string
 	AwsAccessKeyId     string
 	EncryptionKmsKeyId string
 }
@@ -145,7 +145,7 @@ type externalVolumeStorageLocationJsonRaw struct {
 	StorageAwsIamUserArn     string   `json:"STORAGE_AWS_IAM_USER_ARN"`
 	StorageAwsExternalId     string   `json:"STORAGE_AWS_EXTERNAL_ID"`
 	StorageAwsAccessPointArn string   `json:"STORAGE_AWS_ACCESS_POINT_ARN"`
-	StorageEndpoint          string   `json:"STORAGE_ENDPOINT"`
+	Endpoint                 string   `json:"ENDPOINT"`
 	UsePrivatelinkEndpoint   string   `json:"USE_PRIVATELINK_ENDPOINT"`
 	EncryptionType           string   `json:"ENCRYPTION_TYPE"`
 	EncryptionKmsKeyId       string   `json:"ENCRYPTION_KMS_KEY_ID"`
@@ -193,7 +193,7 @@ func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (Extern
 		}
 	case StorageProviderS3Compatible:
 		details.S3CompatStorageLocation = &StorageLocationS3CompatDetails{
-			StorageEndpoint:    e.StorageEndpoint,
+			Endpoint:           e.Endpoint,
 			AwsAccessKeyId:     e.AwsAccessKeyId,
 			EncryptionKmsKeyId: e.EncryptionKmsKeyId,
 		}
@@ -270,7 +270,7 @@ func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
 				return fmt.Errorf("An Azure storage location's AzureTenantId in this volume could not be parsed.")
 			}
 		case s.S3CompatStorageLocation != nil:
-			if len(s.S3CompatStorageLocation.StorageEndpoint) == 0 {
+			if len(s.S3CompatStorageLocation.Endpoint) == 0 {
 				return fmt.Errorf("An S3Compatible storage location's StorageEndpoint in this volume could not be parsed.")
 			}
 		}

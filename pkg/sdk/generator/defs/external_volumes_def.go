@@ -44,12 +44,12 @@ var externalS3CompatStorageLocationDef = g.NewQueryStruct("S3CompatStorageLocati
 	PredefinedQueryStructField("StorageProviderS3Compat", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'S3COMPAT'")).
 	TextAssignment("STORAGE_BASE_URL", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("STORAGE_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
-	OptionalQueryStructField(
+	QueryStructField(
 		"Credentials",
 		g.NewQueryStruct("ExternalVolumeS3CompatCredentials").
 			TextAssignment("AWS_KEY_ID", g.ParameterOptions().SingleQuotes().Required()).
 			TextAssignment("AWS_SECRET_KEY", g.ParameterOptions().SingleQuotes().Required()),
-		g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
+		g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS =").Required(),
 	)
 
 var storageLocationDef = g.NewQueryStruct("ExternalVolumeStorageLocation").
