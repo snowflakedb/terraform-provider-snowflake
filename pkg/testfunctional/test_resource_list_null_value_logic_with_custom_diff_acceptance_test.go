@@ -12,29 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TestAcc_SdkV2Functional_TestResource_ListNullValueLogic tests whether SDKv2 can distinguish
-// between three states of an Optional TypeList field:
-// - null (field = null or not specified in config)
-// - empty list (field = [])
-// - filled list (field = ["a", "b"])
-//
-// Expected SDKv2 observation matrix:
-//
-//	| State  | d.GetOk ok | d.Get value | RawConfig value |
-//	|--------|------------|-------------|-----------------|
-//	| null   | false      | []          | null            |
-//	| empty  | false      | []          | []              |
-//	| filled | true       | [a b]       | [a b]           |
-//
-// d.GetOk and d.Get cannot distinguish null from empty.
-// Only d.GetRawConfig() reliably differentiates null vs empty.
-//
-// SDKv2 also cannot detect transitions between null and empty because both
-// produce nullable_list.# = 0 in state, so no plan diff is generated and
-// Update is never called for null <-> empty changes.
-func TestAcc_SdkV2Functional_TestResource_ListNullValueLogic(t *testing.T) {
+// TestAcc_SdkV2Functional_TestResource_ListNullValueLogicWithPresence tests that adding a
+// nullable_list_presence helper field with CustomizeDiff solves the null <-> empty limitation.
+// The helper field stores whether the config has null, empty, or items, and CustomizeDiff
+// forces a plan diff when the config presence diverges from state, triggering Update.
+func TestAcc_SdkV2Functional_TestResource_ListNullValueLogicWithPresence(t *testing.T) {
 	envName := fmt.Sprintf("%s_%s", testenvs.TestResourceNullListHandlingEnv, strings.ToUpper(random.AlphaN(10)))
-	resourceType := "snowflake_test_resource_list_null_value_logic"
+	resourceType := "snowflake_test_resource_list_null_value_logic_with_presence"
 	resourceName := "test"
 	ref := fmt.Sprintf("%s.%s", resourceType, resourceName)
 
@@ -67,181 +51,6 @@ resource "%[1]s" "%[2]s" {
 `, resourceType, resourceName, SdkV2FunctionalTestsProviderName, envName, strings.Join(quoted, ", "))
 	}
 
-	t.Run("create_with_null", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
-			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
-			Steps: []resource.TestStep{
-				{
-					PreConfig: func() { t.Setenv(envName, "") },
-					Config:    configWithNull,
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
-						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
-					),
-				},
-			},
-		})
-	})
-
-	t.Run("create_with_empty", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
-			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
-			Steps: []resource.TestStep{
-				{
-					PreConfig: func() { t.Setenv(envName, "") },
-					Config:    configWithEmpty,
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
-						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
-					),
-				},
-			},
-		})
-	})
-
-	t.Run("create_with_items", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
-			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
-			Steps: []resource.TestStep{
-				{
-					PreConfig: func() { t.Setenv(envName, "") },
-					Config:    configWithItems("a", "b"),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "get_ok_result", "true"),
-						resource.TestCheckResourceAttr(ref, "get_result", "[a b]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[a b]"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "2"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.0", "a"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.1", "b"),
-					),
-				},
-			},
-		})
-	})
-
-	t.Run("transition_filled_to_empty", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
-			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
-			Steps: []resource.TestStep{
-				{
-					PreConfig: func() { t.Setenv(envName, "") },
-					Config:    configWithItems("a", "b"),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "2"),
-					),
-				},
-				{
-					ConfigPlanChecks: resource.ConfigPlanChecks{
-						PreApply: []plancheck.PlanCheck{
-							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						},
-					},
-					Config: configWithEmpty,
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
-						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
-					),
-				},
-			},
-		})
-	})
-
-	t.Run("transition_filled_to_null", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
-			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
-			Steps: []resource.TestStep{
-				{
-					PreConfig: func() { t.Setenv(envName, "") },
-					Config:    configWithItems("a", "b"),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "2"),
-					),
-				},
-				{
-					ConfigPlanChecks: resource.ConfigPlanChecks{
-						PreApply: []plancheck.PlanCheck{
-							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						},
-					},
-					Config: configWithNull,
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
-						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
-					),
-				},
-			},
-		})
-	})
-
-	t.Run("transition_empty_to_filled", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
-			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
-			Steps: []resource.TestStep{
-				{
-					PreConfig: func() { t.Setenv(envName, "") },
-					Config:    configWithEmpty,
-				},
-				{
-					ConfigPlanChecks: resource.ConfigPlanChecks{
-						PreApply: []plancheck.PlanCheck{
-							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						},
-					},
-					Config: configWithItems("x"),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "get_ok_result", "true"),
-						resource.TestCheckResourceAttr(ref, "get_result", "[x]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[x]"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.0", "x"),
-					),
-				},
-			},
-		})
-	})
-
-	t.Run("transition_null_to_filled", func(t *testing.T) {
-		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
-			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
-			Steps: []resource.TestStep{
-				{
-					PreConfig: func() { t.Setenv(envName, "") },
-					Config:    configWithNull,
-				},
-				{
-					ConfigPlanChecks: resource.ConfigPlanChecks{
-						PreApply: []plancheck.PlanCheck{
-							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						},
-					},
-					Config: configWithItems("x"),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttr(ref, "get_ok_result", "true"),
-						resource.TestCheckResourceAttr(ref, "get_result", "[x]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[x]"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
-						resource.TestCheckResourceAttr(ref, "nullable_list.0", "x"),
-					),
-				},
-			},
-		})
-	})
-
 	t.Run("transition_null_to_empty", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
@@ -252,20 +61,22 @@ resource "%[1]s" "%[2]s" {
 					Config:    configWithNull,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "null"),
 					),
 				},
 				{
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
-							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						},
 					},
 					Config: configWithEmpty,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
 						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "empty"),
 					),
 				},
 			},
@@ -282,28 +93,147 @@ resource "%[1]s" "%[2]s" {
 					Config:    configWithEmpty,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "empty"),
 					),
 				},
 				{
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
-							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						},
 					},
 					Config: configWithNull,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "get_ok_result", "false"),
 						resource.TestCheckResourceAttr(ref, "get_result", "[]"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "null"),
 					),
 				},
 			},
 		})
 	})
 
-	// External change tests: simulate out-of-band modifications to the backing store (env var)
-	// and verify how Terraform detects (or fails to detect) the drift.
+	t.Run("transition_empty_to_filled", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
+			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
+			Steps: []resource.TestStep{
+				{
+					PreConfig: func() { t.Setenv(envName, "") },
+					Config:    configWithEmpty,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "empty"),
+					),
+				},
+				{
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						},
+					},
+					Config: configWithItems("x"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "get_ok_result", "true"),
+						resource.TestCheckResourceAttr(ref, "get_result", "[x]"),
+						resource.TestCheckResourceAttr(ref, "raw_config_result", "[x]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.0", "x"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "items"),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("transition_null_to_filled", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
+			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
+			Steps: []resource.TestStep{
+				{
+					PreConfig: func() { t.Setenv(envName, "") },
+					Config:    configWithNull,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "null"),
+					),
+				},
+				{
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						},
+					},
+					Config: configWithItems("a"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
+						resource.TestCheckResourceAttr(ref, "nullable_list.0", "a"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "items"),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("transition_filled_to_empty", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
+			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
+			Steps: []resource.TestStep{
+				{
+					PreConfig: func() { t.Setenv(envName, "") },
+					Config:    configWithItems("a", "b"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "2"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "items"),
+					),
+				},
+				{
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						},
+					},
+					Config: configWithEmpty,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "empty"),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("transition_filled_to_null", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
+			TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.RequireAbove(tfversion.Version1_5_0)},
+			Steps: []resource.TestStep{
+				{
+					PreConfig: func() { t.Setenv(envName, "") },
+					Config:    configWithItems("a", "b"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "2"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "items"),
+					),
+				},
+				{
+					ConfigPlanChecks: resource.ConfigPlanChecks{
+						PreApply: []plancheck.PlanCheck{
+							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						},
+					},
+					Config: configWithNull,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "null"),
+					),
+				},
+			},
+		})
+	})
 
 	t.Run("external_change_removes_items_to_null", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
@@ -315,6 +245,7 @@ resource "%[1]s" "%[2]s" {
 					Config:    configWithItems("a"),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "items"),
 					),
 				},
 				{
@@ -328,7 +259,7 @@ resource "%[1]s" "%[2]s" {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.0", "a"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[a]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "items"),
 					),
 				},
 			},
@@ -345,6 +276,7 @@ resource "%[1]s" "%[2]s" {
 					Config:    configWithItems("a"),
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "items"),
 					),
 				},
 				{
@@ -358,7 +290,7 @@ resource "%[1]s" "%[2]s" {
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "1"),
 						resource.TestCheckResourceAttr(ref, "nullable_list.0", "a"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[a]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "items"),
 					),
 				},
 			},
@@ -375,6 +307,7 @@ resource "%[1]s" "%[2]s" {
 					Config:    configWithNull,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "null"),
 					),
 				},
 				{
@@ -387,7 +320,7 @@ resource "%[1]s" "%[2]s" {
 					Config: configWithNull,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "null"),
 					),
 				},
 			},
@@ -404,6 +337,7 @@ resource "%[1]s" "%[2]s" {
 					Config:    configWithEmpty,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "empty"),
 					),
 				},
 				{
@@ -416,7 +350,7 @@ resource "%[1]s" "%[2]s" {
 					Config: configWithEmpty,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "empty"),
 					),
 				},
 			},
@@ -433,19 +367,20 @@ resource "%[1]s" "%[2]s" {
 					Config:    configWithEmpty,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "empty"),
 					),
 				},
 				{
 					PreConfig: func() { t.Setenv(envName, "__NULL__") },
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
-							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						},
 					},
 					Config: configWithEmpty,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "[]"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "empty"),
 					),
 				},
 			},
@@ -462,19 +397,20 @@ resource "%[1]s" "%[2]s" {
 					Config:    configWithNull,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "null"),
 					),
 				},
 				{
 					PreConfig: func() { t.Setenv(envName, "__EMPTY__") },
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
-							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+							plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						},
 					},
 					Config: configWithNull,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(ref, "nullable_list.#", "0"),
-						resource.TestCheckResourceAttr(ref, "raw_config_result", "null"),
+						resource.TestCheckResourceAttr(ref, "nullable_list_presence", "null"),
 					),
 				},
 			},

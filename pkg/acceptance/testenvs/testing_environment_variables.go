@@ -45,6 +45,7 @@ const (
 
 	SimplifiedIntegrationTestsSetup env = "TEST_SF_TF_SIMPLIFIED_INTEGRATION_TESTS_SETUP"
 
+	TestResourceNullListHandlingEnv     env = "TEST_SF_TF_TEST_RESOURCE_DATA_NULL_LIST_HANDLING_ENV"
 	TestResourceDataTypeDiffHandlingEnv env = "TEST_SF_TF_TEST_RESOURCE_DATA_DIFF_HANDLING_ENV"
 
 	// Oauth-related

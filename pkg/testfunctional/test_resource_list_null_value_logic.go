@@ -83,9 +83,8 @@ func observeAndStoreList(d *schema.ResourceData, envName string) diag.Diagnostic
 
 	// Observation 3: d.GetRawConfig value
 	rawConfigValue := d.GetRawConfig().AsValueMap()["nullable_list"]
-	isNull := rawConfigValue.IsNull()
 	var rawConfigStr string
-	if isNull {
+	if rawConfigValue.IsNull() {
 		rawConfigStr = "null"
 	} else {
 		slice := rawConfigValue.AsValueSlice()
@@ -101,7 +100,7 @@ func observeAndStoreList(d *schema.ResourceData, envName string) diag.Diagnostic
 	}
 
 	// Store list state in env var (simulates persisting to Snowflake)
-	if isNull {
+	if rawConfigValue.IsNull() {
 		log.Printf("[DEBUG] storing %s in env %s (null list)", listNullValueLogicEnvNull, envName)
 		if err := os.Setenv(envName, listNullValueLogicEnvNull); err != nil {
 			return diag.FromErr(err)
