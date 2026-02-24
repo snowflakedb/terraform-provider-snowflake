@@ -452,7 +452,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.ClusteringAction = &HybridTableClusteringAction{
 			ClusterBy: []string{"col1", "col2"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s CLUSTER BY ("col1", "col2")`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s CLUSTER BY (col1, col2)`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: recluster", func(t *testing.T) {

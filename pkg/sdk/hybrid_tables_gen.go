@@ -119,7 +119,7 @@ type HybridTableDropIndexAction struct {
 }
 
 type HybridTableClusteringAction struct {
-	ClusterBy            []string                         `ddl:"keyword,double_quotes,parentheses" sql:"CLUSTER BY"`
+	ClusterBy            []string                         `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	Recluster            *HybridTableReclusterAction      `ddl:"keyword"`
 	ChangeReclusterState *HybridTableReclusterChangeState `ddl:"keyword"`
 	DropClusteringKey    *bool                            `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
