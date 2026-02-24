@@ -26,6 +26,13 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.13.x ➞ v2.14.0
 
+### *(new feature)* Added `DECFLOAT` support
+
+We added the [`DECFLOAT`](https://docs.snowflake.com/en/sql-reference/data-types-numeric#decfloat) data type support inside the provider.
+It applies to all resources and data sources, however, keep in mind that these are limited by the underlying Snowflake objects capabilities (check the [limitations section](https://docs.snowflake.com/en/sql-reference/data-types-numeric#limitations-for-the-decfloat-data-type) in Snowflake public docs), so e.g. it works correctly for `snowflake_function_sql` but nor for `snowflake_function_python`. 
+
+No changes in configuration are required.
+
 ### *(new feature)* Added missing `object_types` in grant resources
 
 Previously, the `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources did not support all object types that Snowflake allows in GRANT statements.
