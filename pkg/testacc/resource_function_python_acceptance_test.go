@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -235,6 +236,38 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 					resourceshowoutputassert.FunctionShowOutput(t, functionModelUpdateWithoutRecreation.ResourceReference()).
 						HasIsSecure(false),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_FunctionPython_DecfloatUnsupported(t *testing.T) {
+	funcName := "some_function"
+	argName := "x"
+	dataType := testdatatypes.DataTypeDecflaot
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+
+	definition := testClient().Function.PythonIdentityDefinition(t, funcName, argName)
+
+	functionModel := model.FunctionPythonBasicInline("test", id, testvars.PythonRuntime, dataType, funcName, definition).
+		WithArgument(argName, dataType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionPython),
+		Steps: []resource.TestStep{
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config:      config.FromModels(t, functionModel),
+				ExpectError: regexp.MustCompile(`Snowflake type DECFLOAT\[DECFLOAT18]\(38,0\)\{nullable\} is not supported in function .* with handler some_function`),
 			},
 		},
 	})

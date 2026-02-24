@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TODO [SNOW-3151661]: test creation with DECFLOAT argument (and error for other type like java)
+// TODO [SNOW-3151661]: test creation with DECFLOAT argument
 
 func TestAcc_FunctionSql_InlineBasic(t *testing.T) {
 	argName := "abc"

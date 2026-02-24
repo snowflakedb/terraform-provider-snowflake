@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -21,8 +22,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
-
-// TODO [SNOW-3151661]: test creation with DECFLOAT argument (and error for other type like java)
 
 func TestAcc_ProcedureSql_InlineBasic(t *testing.T) {
 	argName := "x"
@@ -185,6 +184,37 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 					resourceshowoutputassert.ProcedureShowOutput(t, procedureModelUpdateWithoutRecreation.ResourceReference()).
 						HasIsSecure(false),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_ProcedureSql_DecfloatUnsupported(t *testing.T) {
+	argName := "x"
+	dataType := testdatatypes.DataTypeDecflaot
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+
+	definition := testClient().Procedure.SampleSqlDefinitionWithArgument(t)
+
+	procedureModel := model.ProcedureSqlBasicInline("w", id, dataType, definition).
+		WithArgument(argName, dataType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
+		Steps: []resource.TestStep{
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(procedureModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config:      config.FromModels(t, procedureModel),
+				ExpectError: regexp.MustCompile(`Language SQL does not support type 'DECFLOAT\(38\)' for argument or return type`),
 			},
 		},
 	})
