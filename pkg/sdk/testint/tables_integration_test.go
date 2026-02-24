@@ -25,6 +25,7 @@ type expectedColumn struct {
 	Type sdk.DataType
 }
 
+// TODO [SNOW-3151661]: test creation with DECFLOAT column
 func TestInt_Table(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)

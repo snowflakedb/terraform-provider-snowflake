@@ -27,6 +27,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TODO [SNOW-3151661]: test creation with DECFLOAT column
+
 func TestAcc_TableWithSeparateDataRetentionObjectParameterWithoutLifecycle(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 

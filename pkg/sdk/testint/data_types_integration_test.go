@@ -39,6 +39,12 @@ func TestInt_DataTypes(t *testing.T) {
 		"INT()",
 		"NUMBER(36, 5, 7)",
 	}
+	incorrectDecfloatDatatypes := []string{
+		"DECFLOAT()",
+		"DECFLOAT(x)",
+		"DECFLOAT(38, 2)",
+		"DECFLOAT(35)",
+	}
 	incorrectTextDatatypes := []string{
 		"VARCHAR()",
 		"VARCHAR(x)",
@@ -201,6 +207,26 @@ func TestInt_DataTypes(t *testing.T) {
 
 	for _, c := range incorrectNumberDatatypes {
 		t.Run(fmt.Sprintf("check behavior of number datatype: %s", c), func(t *testing.T) {
+			sql := fmt.Sprintf("SELECT 1::%s", c)
+			_, err := client.QueryUnsafe(ctx, sql)
+			require.Error(t, err)
+		})
+	}
+
+	for _, c := range datatypes.DecfloatDataTypeSynonyms {
+		t.Run(fmt.Sprintf("check behavior of decfloat datatype: %s", c), func(t *testing.T) {
+			sql := fmt.Sprintf("SELECT 1::%s", c)
+			_, err := client.QueryUnsafe(ctx, sql)
+			assert.NoError(t, err)
+
+			sql = fmt.Sprintf("SELECT 1::%s(%d)", c, datatypes.DefaultDecfloatPrecision)
+			_, err = client.QueryUnsafe(ctx, sql)
+			assert.NoError(t, err)
+		})
+	}
+
+	for _, c := range incorrectDecfloatDatatypes {
+		t.Run(fmt.Sprintf("check behavior of decfloat datatype: %s", c), func(t *testing.T) {
 			sql := fmt.Sprintf("SELECT 1::%s", c)
 			_, err := client.QueryUnsafe(ctx, sql)
 			require.Error(t, err)

@@ -2246,6 +2246,7 @@ def filter_by_role(session, table_name, role):
 		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
+	// TODO [SNOW-3151661]: add decfloat to below tests
 	// This test shows behavior of detailed types (e.g. VARCHAR(20) and NUMBER(10, 0)) on Snowflake side for procedures.
 	// NOTE: These changes has been rolled back from 2025_03 bundle and may be reintroduced in the future.
 	// For SHOW, it changed after 2025_03 Bundle:

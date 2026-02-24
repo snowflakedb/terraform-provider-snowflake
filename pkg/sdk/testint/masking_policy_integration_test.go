@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [SNOW-3151661]: test creation with DECFLOAT column
 // TODO [SNOW-2298256]: merge these tests
 func TestInt_MaskingPoliciesShow(t *testing.T) {
 	client := testClient(t)
