@@ -28,6 +28,115 @@ func ImportedSecondaryDatabaseResource(t *testing.T, id string) *SecondaryDataba
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SecondaryDatabaseResourceAssert) HasName(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasAsReplicaOf(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("as_replica_of", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasCatalog(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("catalog", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasComment(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasDataRetentionTimeInDays(expected int) *SecondaryDatabaseResourceAssert {
+	s.IntValueSet("data_retention_time_in_days", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasDefaultDdlCollation(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("default_ddl_collation", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasEnableConsoleOutput(expected bool) *SecondaryDatabaseResourceAssert {
+	s.BoolValueSet("enable_console_output", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasExternalVolume(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("external_volume", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasFullyQualifiedName(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasIsTransient(expected bool) *SecondaryDatabaseResourceAssert {
+	s.BoolValueSet("is_transient", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasLogLevel(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("log_level", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *SecondaryDatabaseResourceAssert {
+	s.IntValueSet("max_data_extension_time_in_days", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *SecondaryDatabaseResourceAssert {
+	s.BoolValueSet("quoted_identifiers_ignore_case", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasReplaceInvalidCharacters(expected bool) *SecondaryDatabaseResourceAssert {
+	s.BoolValueSet("replace_invalid_characters", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasStorageSerializationPolicy(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("storage_serialization_policy", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasSuspendTaskAfterNumFailures(expected int) *SecondaryDatabaseResourceAssert {
+	s.IntValueSet("suspend_task_after_num_failures", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasTaskAutoRetryAttempts(expected int) *SecondaryDatabaseResourceAssert {
+	s.IntValueSet("task_auto_retry_attempts", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasTraceLevel(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("trace_level", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSize(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("user_task_managed_initial_warehouse_size", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *SecondaryDatabaseResourceAssert {
+	s.IntValueSet("user_task_minimum_trigger_interval_in_seconds", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasUserTaskTimeoutMs(expected int) *SecondaryDatabaseResourceAssert {
+	s.IntValueSet("user_task_timeout_ms", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

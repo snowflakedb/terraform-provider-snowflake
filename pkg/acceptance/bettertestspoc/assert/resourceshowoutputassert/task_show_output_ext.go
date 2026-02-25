@@ -52,8 +52,8 @@ func (t *TaskShowOutputAssert) HasLastSuspendedOnNotEmpty() *TaskShowOutputAsser
 
 func (t *TaskShowOutputAssert) HasPredecessors(predecessors ...sdk.SchemaObjectIdentifier) *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("predecessors.#", strconv.Itoa(len(predecessors))))
-	for i, predecessor := range predecessors {
-		t.AddAssertion(assert.ResourceShowOutputValueSet(fmt.Sprintf("predecessors.%d", i), predecessor.FullyQualifiedName()))
+	for _, predecessor := range predecessors {
+		t.AddAssertion(assert.ResourceShowOutputSetElem("predecessors", predecessor.FullyQualifiedName()))
 	}
 	return t
 }
@@ -95,6 +95,11 @@ func (t *TaskShowOutputAssert) HasScheduleHours(hours int) *TaskShowOutputAssert
 
 func (t *TaskShowOutputAssert) HasScheduleCron(cron string) *TaskShowOutputAssert {
 	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", fmt.Sprintf("USING CRON %s", cron)))
+	return t
+}
+
+func (t *TaskShowOutputAssert) HasTargetCompletionIntervalString(expected string) *TaskShowOutputAssert {
+	t.AddAssertion(assert.ResourceShowOutputValueSet("target_completion_interval", expected))
 	return t
 }
 

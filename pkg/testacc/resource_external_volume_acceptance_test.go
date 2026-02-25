@@ -2479,7 +2479,7 @@ func TestAcc_External_Volume_Invalid_Cases(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
 				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationInvalidStorageProvider), externalVolumeName, "", ""),
-				ExpectError:     regexp.MustCompile("invalid storage provider: invalid-storage-provider"),
+				ExpectError:     regexp.MustCompile("invalid storage provider: INVALID-STORAGE-PROVIDER"),
 			},
 			// no storage locations test
 			{

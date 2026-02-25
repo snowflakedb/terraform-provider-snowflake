@@ -108,7 +108,6 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.FileFormat,
 		resources.ManagedAccount,
 		resources.MaterializedView,
-		resources.NetworkRule,
 		resources.NotificationIntegration,
 		resources.PasswordPolicy,
 		resources.Pipe,
@@ -489,8 +488,21 @@ func CheckGrantDatabaseRoleDestroy(t *testing.T) func(*terraform.State) error {
 	}
 }
 
-// CheckAccountRolePrivilegesRevoked is a custom checks that should be later incorporated into generic CheckDestroy
+// CheckAccountRolePrivilegesRevoked is a custom check that should be later incorporated into generic CheckDestroy
 func CheckAccountRolePrivilegesRevoked(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+
+	return checkAccountRolePrivilegesRevoked(t, 0)
+}
+
+// CheckAccountRolePrivilegesRevokedAtMost checks if the number of granted privileges is less than or equal to the given number
+func CheckAccountRolePrivilegesRevokedAtMost(t *testing.T, atMost int) func(*terraform.State) error {
+	t.Helper()
+
+	return checkAccountRolePrivilegesRevoked(t, atMost)
+}
+
+func checkAccountRolePrivilegesRevoked(t *testing.T, atMost int) func(*terraform.State) error {
 	t.Helper()
 
 	return func(s *terraform.State) error {
@@ -511,8 +523,8 @@ func CheckAccountRolePrivilegesRevoked(t *testing.T) func(*terraform.State) erro
 			for _, grant := range grants {
 				grantedPrivileges = append(grantedPrivileges, grant.Privilege)
 			}
-			if len(grantedPrivileges) > 0 {
-				return fmt.Errorf("account role (%s) is still granted, granted privileges %v", id.FullyQualifiedName(), grantedPrivileges)
+			if len(grantedPrivileges) > atMost {
+				return fmt.Errorf("account role (%s) is still granted with more than %d privileges: %v", id.FullyQualifiedName(), atMost, grantedPrivileges)
 			}
 		}
 		return nil

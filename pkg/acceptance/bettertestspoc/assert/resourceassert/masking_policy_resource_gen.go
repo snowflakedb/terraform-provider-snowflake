@@ -28,6 +28,52 @@ func ImportedMaskingPolicyResource(t *testing.T, id string) *MaskingPolicyResour
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (m *MaskingPolicyResourceAssert) HasDatabase(expected string) *MaskingPolicyResourceAssert {
+	m.StringValueSet("database", expected)
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasSchema(expected string) *MaskingPolicyResourceAssert {
+	m.StringValueSet("schema", expected)
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasName(expected string) *MaskingPolicyResourceAssert {
+	m.StringValueSet("name", expected)
+	return m
+}
+
+// typed assert for "argument" (type: List, subtype: Map) is not currently supported
+
+func (m *MaskingPolicyResourceAssert) HasBody(expected string) *MaskingPolicyResourceAssert {
+	m.StringValueSet("body", expected)
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasComment(expected string) *MaskingPolicyResourceAssert {
+	m.StringValueSet("comment", expected)
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasExemptOtherPolicies(expected string) *MaskingPolicyResourceAssert {
+	m.StringValueSet("exempt_other_policies", expected)
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasFullyQualifiedName(expected string) *MaskingPolicyResourceAssert {
+	m.StringValueSet("fully_qualified_name", expected)
+	return m
+}
+
+func (m *MaskingPolicyResourceAssert) HasReturnDataType(expected string) *MaskingPolicyResourceAssert {
+	m.StringValueSet("return_data_type", expected)
+	return m
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -44,11 +90,6 @@ func (m *MaskingPolicyResourceAssert) HasSchemaString(expected string) *MaskingP
 
 func (m *MaskingPolicyResourceAssert) HasNameString(expected string) *MaskingPolicyResourceAssert {
 	m.AddAssertion(assert.ValueSet("name", expected))
-	return m
-}
-
-func (m *MaskingPolicyResourceAssert) HasArgumentString(expected string) *MaskingPolicyResourceAssert {
-	m.AddAssertion(assert.ValueSet("argument", expected))
 	return m
 }
 

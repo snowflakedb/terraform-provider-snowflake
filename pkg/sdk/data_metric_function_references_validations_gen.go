@@ -2,9 +2,7 @@
 
 package sdk
 
-var (
-	_ validatable = new(GetForEntityDataMetricFunctionReferenceOptions)
-)
+var _ validatable = new(GetForEntityDataMetricFunctionReferenceOptions)
 
 func (opts *GetForEntityDataMetricFunctionReferenceOptions) validate() error {
 	if opts == nil {

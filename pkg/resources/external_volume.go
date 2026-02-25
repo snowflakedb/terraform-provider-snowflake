@@ -168,7 +168,7 @@ func ImportExternalVolume(ctx context.Context, d *schema.ResourceData, meta any)
 		return nil, err
 	}
 
-	parsedExternalVolumeDescribed, err := helpers.ParseExternalVolumeDescribed(externalVolumeDescribe)
+	parsedExternalVolumeDescribed, err := sdk.ParseExternalVolumeDescribed(externalVolumeDescribe)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +279,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		parsedExternalVolumeDescribed, err := helpers.ParseExternalVolumeDescribed(externalVolumeDescribe)
+		parsedExternalVolumeDescribed, err := sdk.ParseExternalVolumeDescribed(externalVolumeDescribe)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -496,12 +496,12 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error)
 				encryptionKmsKeyId, ok := storageLocationConfig["encryption_kms_key_id"].(string)
 				if ok && len(encryptionKmsKeyId) > 0 {
 					s3StorageLocation.Encryption = &sdk.ExternalVolumeS3Encryption{
-						Type:     encryptionTypeParsed,
-						KmsKeyId: &encryptionKmsKeyId,
+						EncryptionType: encryptionTypeParsed,
+						KmsKeyId:       &encryptionKmsKeyId,
 					}
 				} else {
 					s3StorageLocation.Encryption = &sdk.ExternalVolumeS3Encryption{
-						Type: encryptionTypeParsed,
+						EncryptionType: encryptionTypeParsed,
 					}
 				}
 			}
@@ -535,12 +535,12 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error)
 				encryptionKmsKeyId, ok := storageLocationConfig["encryption_kms_key_id"].(string)
 				if ok && len(encryptionKmsKeyId) > 0 {
 					gcsStorageLocation.Encryption = &sdk.ExternalVolumeGCSEncryption{
-						Type:     encryptionTypeParsed,
-						KmsKeyId: &encryptionKmsKeyId,
+						EncryptionType: encryptionTypeParsed,
+						KmsKeyId:       &encryptionKmsKeyId,
 					}
 				} else {
 					gcsStorageLocation.Encryption = &sdk.ExternalVolumeGCSEncryption{
-						Type: encryptionTypeParsed,
+						EncryptionType: encryptionTypeParsed,
 					}
 				}
 			}
@@ -605,7 +605,7 @@ func addStorageLocation(
 			addedLocation.StorageBaseUrl,
 		)
 		if addedLocation.Encryption != nil {
-			encryptionRequest := sdk.NewExternalVolumeS3EncryptionRequest(addedLocation.Encryption.Type)
+			encryptionRequest := sdk.NewExternalVolumeS3EncryptionRequest(addedLocation.Encryption.EncryptionType)
 			if addedLocation.Encryption.KmsKeyId != nil {
 				encryptionRequest = encryptionRequest.WithKmsKeyId(*addedLocation.Encryption.KmsKeyId)
 			}
@@ -622,7 +622,7 @@ func addStorageLocation(
 		)
 
 		if addedLocation.Encryption != nil {
-			encryptionRequest := sdk.NewExternalVolumeGCSEncryptionRequest(addedLocation.Encryption.Type)
+			encryptionRequest := sdk.NewExternalVolumeGCSEncryptionRequest(addedLocation.Encryption.EncryptionType)
 			if addedLocation.Encryption.KmsKeyId != nil {
 				encryptionRequest = encryptionRequest.WithKmsKeyId(*addedLocation.Encryption.KmsKeyId)
 			}

@@ -1,6 +1,5 @@
 name: Documentation
 description: Issues or feature requests for the documentation.
-title: "[Docs]: "
 labels: ["docs"]
 body:
   - type: markdown

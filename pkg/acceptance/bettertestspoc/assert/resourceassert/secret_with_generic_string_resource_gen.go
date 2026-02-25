@@ -28,6 +28,45 @@ func ImportedSecretWithGenericStringResource(t *testing.T, id string) *SecretWit
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SecretWithGenericStringResourceAssert) HasDatabase(expected string) *SecretWithGenericStringResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *SecretWithGenericStringResourceAssert) HasSchema(expected string) *SecretWithGenericStringResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *SecretWithGenericStringResourceAssert) HasName(expected string) *SecretWithGenericStringResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SecretWithGenericStringResourceAssert) HasComment(expected string) *SecretWithGenericStringResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *SecretWithGenericStringResourceAssert) HasFullyQualifiedName(expected string) *SecretWithGenericStringResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *SecretWithGenericStringResourceAssert) HasSecretString(expected string) *SecretWithGenericStringResourceAssert {
+	s.StringValueSet("secret_string", expected)
+	return s
+}
+
+func (s *SecretWithGenericStringResourceAssert) HasSecretType(expected string) *SecretWithGenericStringResourceAssert {
+	s.StringValueSet("secret_type", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

@@ -28,6 +28,66 @@ func ImportedAuthenticationPolicyResource(t *testing.T, id string) *Authenticati
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (a *AuthenticationPolicyResourceAssert) HasDatabase(expected string) *AuthenticationPolicyResourceAssert {
+	a.StringValueSet("database", expected)
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasSchema(expected string) *AuthenticationPolicyResourceAssert {
+	a.StringValueSet("schema", expected)
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasName(expected string) *AuthenticationPolicyResourceAssert {
+	a.StringValueSet("name", expected)
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasAuthenticationMethods(expected ...string) *AuthenticationPolicyResourceAssert {
+	a.SetContainsExactlyStringValues("authentication_methods", expected...)
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasClientTypes(expected ...string) *AuthenticationPolicyResourceAssert {
+	a.SetContainsExactlyStringValues("client_types", expected...)
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasComment(expected string) *AuthenticationPolicyResourceAssert {
+	a.StringValueSet("comment", expected)
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasFullyQualifiedName(expected string) *AuthenticationPolicyResourceAssert {
+	a.StringValueSet("fully_qualified_name", expected)
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasMfaAuthenticationMethods(expected ...string) *AuthenticationPolicyResourceAssert {
+	a.SetContainsExactlyStringValues("mfa_authentication_methods", expected...)
+	return a
+}
+
+func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollment(expected string) *AuthenticationPolicyResourceAssert {
+	a.StringValueSet("mfa_enrollment", expected)
+	return a
+}
+
+// typed assert for "mfa_policy" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "pat_policy" (type: List, subtype: Map) is not currently supported
+
+func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrations(expected ...string) *AuthenticationPolicyResourceAssert {
+	a.SetContainsExactlyStringValues("security_integrations", expected...)
+	return a
+}
+
+// typed assert for "workload_identity_policy" (type: List, subtype: Map) is not currently supported
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,16 +107,6 @@ func (a *AuthenticationPolicyResourceAssert) HasNameString(expected string) *Aut
 	return a
 }
 
-func (a *AuthenticationPolicyResourceAssert) HasAuthenticationMethodsString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("authentication_methods", expected))
-	return a
-}
-
-func (a *AuthenticationPolicyResourceAssert) HasClientTypesString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("client_types", expected))
-	return a
-}
-
 func (a *AuthenticationPolicyResourceAssert) HasCommentString(expected string) *AuthenticationPolicyResourceAssert {
 	a.AddAssertion(assert.ValueSet("comment", expected))
 	return a
@@ -67,33 +117,8 @@ func (a *AuthenticationPolicyResourceAssert) HasFullyQualifiedNameString(expecte
 	return a
 }
 
-func (a *AuthenticationPolicyResourceAssert) HasMfaAuthenticationMethodsString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("mfa_authentication_methods", expected))
-	return a
-}
-
 func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollmentString(expected string) *AuthenticationPolicyResourceAssert {
 	a.AddAssertion(assert.ValueSet("mfa_enrollment", expected))
-	return a
-}
-
-func (a *AuthenticationPolicyResourceAssert) HasMfaPolicyString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("mfa_policy", expected))
-	return a
-}
-
-func (a *AuthenticationPolicyResourceAssert) HasPatPolicyString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("pat_policy", expected))
-	return a
-}
-
-func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrationsString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("security_integrations", expected))
-	return a
-}
-
-func (a *AuthenticationPolicyResourceAssert) HasWorkloadIdentityPolicyString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("workload_identity_policy", expected))
 	return a
 }
 

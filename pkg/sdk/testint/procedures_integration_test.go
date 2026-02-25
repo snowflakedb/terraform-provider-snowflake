@@ -2861,4 +2861,27 @@ def filter_by_role(session, name, role):
 		err := client.Procedures.CreateAndCallForJava(ctx, request)
 		require.NoError(t, err)
 	})
+
+	// Limitation at https://docs.snowflake.com/en/sql-reference/data-types-numeric#limitations-for-the-decfloat-data-type:
+	// `The DECFLOAT data type isn’t supported in stored procedures or user-defined functions (UDFs) written in a language other than SQL, such as Python or Java.`
+	// is unclear. Confirming that DECFLOAT is not supported even for SQL procedures.
+	t.Run("document that DECFLOAT is not supported even for SQL procedures", func(t *testing.T) {
+		argName := "A"
+		dataType, err := datatypes.ParseDataType("DECFLOAT")
+		require.NoError(t, err)
+
+		args := []sdk.ProcedureArgumentRequest{
+			*sdk.NewProcedureArgumentRequest(argName, dataType),
+		}
+		idWithArguments := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+
+		err = client.Procedures.CreateForSQL(ctx, sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(
+			idWithArguments.SchemaObjectId(),
+			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(dataType)),
+			testClientHelper().Procedure.SampleSqlDefinitionWithArgument(t),
+		).
+			WithArguments(args),
+		)
+		require.ErrorContains(t, err, "Language SQL does not support type 'DECFLOAT(38)' for argument or return type.")
+	})
 }

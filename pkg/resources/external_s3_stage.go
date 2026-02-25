@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -191,6 +192,8 @@ var externalS3StageSchema = func() map[string]*schema.Schema {
 
 func ExternalS3Stage() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingCreateWrapper(resources.ExternalS3Stage, CreateExternalS3Stage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingReadWrapper(resources.ExternalS3Stage, ReadExternalS3StageFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingUpdateWrapper(resources.ExternalS3Stage, UpdateExternalS3Stage)),
@@ -222,6 +225,13 @@ func ExternalS3Stage() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.ExternalS3Stage, ImportExternalS3Stage),
 		},
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_ExternalS3StageStateUpgrader,
+			},
+		},
 	}
 }
 
@@ -373,20 +383,8 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			); err != nil {
 				return diag.FromErr(err)
 			}
-			directoryTable := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": details.DirectoryTable.AutoRefresh,
-				},
-			}
-			directoryTableToSet := []any{
-				map[string]any{
-					"enable":       details.DirectoryTable.Enable,
-					"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-				},
-			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
-				outputMapping{"directory_table", "directory", directoryTable, directoryTableToSet, nil},
+				directoryTableOutputMapping(*details.DirectoryTable),
 				outputMapping{"location.0.aws_access_point_arn", "aws_access_point_arn", details.Location.AwsAccessPointArn, details.Location.AwsAccessPointArn, nil},
 			); err != nil {
 				return diag.FromErr(err)

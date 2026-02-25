@@ -83,6 +83,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.NetworkPolicies().Schema,
 	},
 	{
+		name:   "NetworkRules",
+		schema: datasources.NetworkRules().Schema,
+	},
+	{
 		name:   "Notebooks",
 		schema: datasources.Notebooks().Schema,
 	},

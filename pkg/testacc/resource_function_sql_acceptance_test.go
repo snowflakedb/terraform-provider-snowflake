@@ -178,3 +178,72 @@ func TestAcc_FunctionSql_InlineFull(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_FunctionSql_Decfloat(t *testing.T) {
+	argName := "abc"
+	dataType := testdatatypes.DataTypeDecflaot
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+
+	definition := testClient().Function.SampleSqlDefinitionWithArgument(t, argName)
+
+	functionModel := model.FunctionSqlBasicInline("test", id, definition, dataType.ToLegacyDataTypeSql()).
+		WithArgument(argName, dataType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
+		Steps: []resource.TestStep{
+			// CREATE BASIC
+			{
+				Config: config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasIsSecureString(r.BooleanDefault).
+						HasCommentString(sdk.DefaultFunctionComment).
+						HasFunctionDefinitionString(definition).
+						HasFunctionLanguageString("SQL").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.FunctionShowOutput(t, functionModel.ResourceReference()).
+						HasIsSecure(false),
+					assert.Check(resource.TestCheckResourceAttr(functionModel.ResourceReference(), "arguments.0.arg_name", argName)),
+					assert.Check(resource.TestCheckResourceAttr(functionModel.ResourceReference(), "arguments.0.arg_data_type", dataType.ToSql())),
+					assert.Check(resource.TestCheckResourceAttr(functionModel.ResourceReference(), "arguments.0.arg_default_value", "")),
+				),
+			},
+			// REMOVE EXTERNALLY (CHECK RECREATION)
+			{
+				PreConfig: func() {
+					testClient().Function.DropFunctionFunc(t, id)()
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()),
+				),
+			},
+			// IMPORT
+			{
+				ResourceName:            functionModel.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"is_secure"},
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedFunctionSqlResource(t, id.FullyQualifiedName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_data_type", dataType.ToSql())),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_default_value", "")),
+				),
+			},
+		},
+	})
+}

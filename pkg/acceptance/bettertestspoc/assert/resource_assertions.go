@@ -9,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -72,13 +73,15 @@ type ResourceAssertion struct {
 	resourceAssertionType resourceAssertionType
 }
 
+// TODO [SNOW-3113138]: improve prefixing logic (so it works with resource, show_output, describe_output, and data sources)
 func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
 	assertion.fieldName = r.additionalPrefix + assertion.fieldName
 	r.assertions = append(r.assertions, assertion)
 }
 
+// TODO [SNOW-3113138]: what if we made these functions ResourceAssert methods?
 func SetElem(fieldName string, expected string) ResourceAssertion {
-	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
+	return ResourceAssertion{fieldName: fieldName + ".*", expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
 }
 
 func ValuePresent(fieldName string) ResourceAssertion {
@@ -87,6 +90,79 @@ func ValuePresent(fieldName string) ResourceAssertion {
 
 func ValueSet(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
+}
+
+func (r *ResourceAssert) BoolValueSet(fieldName string, expected bool) {
+	r.AddAssertion(ValueSet(fieldName, strconv.FormatBool(expected)))
+}
+
+func (r *ResourceAssert) IntValueSet(fieldName string, expected int) {
+	r.AddAssertion(ValueSet(fieldName, strconv.Itoa(expected)))
+}
+
+func (r *ResourceAssert) FloatValueSet(fieldName string, expected float64) {
+	r.AddAssertion(ValueSet(fieldName, strconv.FormatFloat(expected, 'f', -1, 64)))
+}
+
+func (r *ResourceAssert) StringValueSet(fieldName string, expected string) {
+	r.AddAssertion(ValueSet(fieldName, expected))
+}
+
+// TODO [SNOW-3113138]: do we want to generate assertions for the length only?
+func (r *ResourceAssert) CollectionLength(fieldName string, expected int) {
+	r.AddAssertion(ValueSet(fieldName+".#", strconv.Itoa(expected)))
+}
+
+func (r *ResourceAssert) SetContainsElem(fieldName string, expected string) {
+	r.AddAssertion(SetElem(fieldName, expected))
+}
+
+func (r *ResourceAssert) ListContainsElem(fieldName string, index int, expected string) {
+	r.AddAssertion(ValueSet(fmt.Sprintf("%s.%d", fieldName, index), expected))
+}
+
+func (r *ResourceAssert) SetContainsExactlyBoolValues(fieldName string, expectedValues ...bool) {
+	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, strconv.FormatBool)...)
+}
+
+func (r *ResourceAssert) SetContainsExactlyIntValues(fieldName string, expectedValues ...int) {
+	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, strconv.Itoa)...)
+}
+
+// TODO [SNOW-3113138]: extract common conversions
+func (r *ResourceAssert) SetContainsExactlyFloatValues(fieldName string, expectedValues ...float64) {
+	r.SetContainsExactlyStringValues(fieldName, collections.Map(expectedValues, func(v float64) string {
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	})...)
+}
+
+func (r *ResourceAssert) SetContainsExactlyStringValues(fieldName string, expectedValues ...string) {
+	r.CollectionLength(fieldName, len(expectedValues))
+	for _, value := range expectedValues {
+		r.SetContainsElem(fieldName, value)
+	}
+}
+
+func (r *ResourceAssert) ListContainsExactlyBoolValuesInOrder(fieldName string, expectedValues ...bool) {
+	r.ListContainsExactlyStringValuesInOrder(fieldName, collections.Map(expectedValues, strconv.FormatBool)...)
+}
+
+func (r *ResourceAssert) ListContainsExactlyIntValuesInOrder(fieldName string, expectedValues ...int) {
+	r.ListContainsExactlyStringValuesInOrder(fieldName, collections.Map(expectedValues, strconv.Itoa)...)
+}
+
+// TODO [SNOW-3113138]: extract common conversions
+func (r *ResourceAssert) ListContainsExactlyFloatValuesInOrder(fieldName string, expectedValues ...float64) {
+	r.ListContainsExactlyStringValuesInOrder(fieldName, collections.Map(expectedValues, func(v float64) string {
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	})...)
+}
+
+func (r *ResourceAssert) ListContainsExactlyStringValuesInOrder(fieldName string, expectedValues ...string) {
+	r.CollectionLength(fieldName, len(expectedValues))
+	for idx, value := range expectedValues {
+		r.ListContainsElem(fieldName, idx, value)
+	}
 }
 
 func ValueNotSet(fieldName string) ResourceAssertion {

@@ -28,6 +28,25 @@ func ImportedGrantAccountRoleResource(t *testing.T, id string) *GrantAccountRole
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (g *GrantAccountRoleResourceAssert) HasParentRoleName(expected string) *GrantAccountRoleResourceAssert {
+	g.StringValueSet("parent_role_name", expected)
+	return g
+}
+
+func (g *GrantAccountRoleResourceAssert) HasRoleName(expected string) *GrantAccountRoleResourceAssert {
+	g.StringValueSet("role_name", expected)
+	return g
+}
+
+func (g *GrantAccountRoleResourceAssert) HasUserName(expected string) *GrantAccountRoleResourceAssert {
+	g.StringValueSet("user_name", expected)
+	return g
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

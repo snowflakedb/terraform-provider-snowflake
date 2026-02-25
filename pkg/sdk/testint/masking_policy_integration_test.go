@@ -224,6 +224,26 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		assert.False(t, maskingPolicy[0].ExemptOtherPolicies)
 	})
 
+	t.Run("create: DECFLOAT", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		name := id.Name()
+		signature := []sdk.TableColumnSignature{
+			{
+				Name: "col1",
+				Type: testdatatypes.DataTypeDecflaot,
+			},
+		}
+		expression := "REPLACE('X', 1, 2)::DECFLOAT"
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeDecflaot, expression, nil)
+		require.NoError(t, err)
+		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, name, maskingPolicyDetails.Name)
+		assert.Equal(t, signature, maskingPolicyDetails.Signature)
+		assert.Equal(t, "DECFLOAT(38)", maskingPolicyDetails.ReturnType.ToSqlWithoutUnknowns())
+		assert.Equal(t, expression, maskingPolicyDetails.Body)
+	})
+
 	t.Run("test multiline expression", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		name := id.Name()

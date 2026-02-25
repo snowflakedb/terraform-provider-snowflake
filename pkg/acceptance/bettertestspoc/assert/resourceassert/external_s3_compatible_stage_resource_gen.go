@@ -8,81 +8,126 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
 
-type ExternalS3CompatStageResourceAssert struct {
+type ExternalS3CompatibleStageResourceAssert struct {
 	*assert.ResourceAssert
 }
 
-func ExternalS3CompatStageResource(t *testing.T, name string) *ExternalS3CompatStageResourceAssert {
+func ExternalS3CompatibleStageResource(t *testing.T, name string) *ExternalS3CompatibleStageResourceAssert {
 	t.Helper()
 
-	return &ExternalS3CompatStageResourceAssert{
+	return &ExternalS3CompatibleStageResourceAssert{
 		ResourceAssert: assert.NewResourceAssert(name, "resource"),
 	}
 }
 
-func ImportedExternalS3CompatStageResource(t *testing.T, id string) *ExternalS3CompatStageResourceAssert {
+func ImportedExternalS3CompatibleStageResource(t *testing.T, id string) *ExternalS3CompatibleStageResourceAssert {
 	t.Helper()
 
-	return &ExternalS3CompatStageResourceAssert{
+	return &ExternalS3CompatibleStageResourceAssert{
 		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
 	}
+}
+
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasDatabase(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("database", expected)
+	return e
+}
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasSchema(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("schema", expected)
+	return e
+}
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasName(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("name", expected)
+	return e
+}
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasCloud(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("cloud", expected)
+	return e
+}
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasComment(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("comment", expected)
+	return e
+}
+
+// typed assert for "credentials" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "directory" (type: List, subtype: Map) is not currently supported
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasEndpoint(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("endpoint", expected)
+	return e
+}
+
+// typed assert for "file_format" (type: List, subtype: Map) is not currently supported
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasFullyQualifiedName(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("fully_qualified_name", expected)
+	return e
+}
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasStageType(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("stage_type", expected)
+	return e
+}
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasUrl(expected string) *ExternalS3CompatibleStageResourceAssert {
+	e.StringValueSet("url", expected)
+	return e
 }
 
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
 
-func (e *ExternalS3CompatStageResourceAssert) HasDatabaseString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasDatabaseString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("database", expected))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasSchemaString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasSchemaString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("schema", expected))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNameString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNameString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("name", expected))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasCloudString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasCloudString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("cloud", expected))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasCommentString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasCommentString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", expected))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasCredentialsString(expected string) *ExternalS3CompatStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("credentials", expected))
-	return e
-}
-
-func (e *ExternalS3CompatStageResourceAssert) HasDirectoryString(expected string) *ExternalS3CompatStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory", expected))
-	return e
-}
-
-func (e *ExternalS3CompatStageResourceAssert) HasEndpointString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasEndpointString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("endpoint", expected))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasStageTypeString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasStageTypeString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("stage_type", expected))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasUrlString(expected string) *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasUrlString(expected string) *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("url", expected))
 	return e
 }
@@ -91,47 +136,47 @@ func (e *ExternalS3CompatStageResourceAssert) HasUrlString(expected string) *Ext
 // Attribute no value checks //
 ///////////////////////////////
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoDatabase() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoDatabase() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("database"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoSchema() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoSchema() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("schema"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoName() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoName() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("name"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoCloud() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoCloud() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("cloud"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoComment() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoComment() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("comment"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoEndpoint() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoEndpoint() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("endpoint"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoFullyQualifiedName() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoFullyQualifiedName() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoStageType() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoStageType() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("stage_type"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNoUrl() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNoUrl() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueNotSet("url"))
 	return e
 }
@@ -140,32 +185,37 @@ func (e *ExternalS3CompatStageResourceAssert) HasNoUrl() *ExternalS3CompatStageR
 // Attribute empty checks //
 ////////////////////////////
 
-func (e *ExternalS3CompatStageResourceAssert) HasCloudEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasCloudEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("cloud", ""))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasCommentEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasCommentEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", ""))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasCredentialsEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasCredentialsEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("credentials.#", "0"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasDirectoryEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasDirectoryEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("directory.#", "0"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasFullyQualifiedNameEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasFileFormatEmpty() *ExternalS3CompatibleStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
+	return e
+}
+
+func (e *ExternalS3CompatibleStageResourceAssert) HasFullyQualifiedNameEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasStageTypeEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasStageTypeEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("stage_type", ""))
 	return e
 }
@@ -174,47 +224,47 @@ func (e *ExternalS3CompatStageResourceAssert) HasStageTypeEmpty() *ExternalS3Com
 // Attribute presence checks //
 ///////////////////////////////
 
-func (e *ExternalS3CompatStageResourceAssert) HasDatabaseNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasDatabaseNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("database"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasSchemaNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasSchemaNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("schema"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasNameNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasNameNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("name"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasCloudNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasCloudNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("cloud"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasCommentNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasCommentNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("comment"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasEndpointNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasEndpointNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("endpoint"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasFullyQualifiedNameNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasFullyQualifiedNameNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("fully_qualified_name"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasStageTypeNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasStageTypeNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("stage_type"))
 	return e
 }
 
-func (e *ExternalS3CompatStageResourceAssert) HasUrlNotEmpty() *ExternalS3CompatStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasUrlNotEmpty() *ExternalS3CompatibleStageResourceAssert {
 	e.AddAssertion(assert.ValuePresent("url"))
 	return e
 }

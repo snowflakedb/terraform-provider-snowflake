@@ -28,6 +28,45 @@ func ImportedTagResource(t *testing.T, id string) *TagResourceAssert {
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (t *TagResourceAssert) HasDatabase(expected string) *TagResourceAssert {
+	t.StringValueSet("database", expected)
+	return t
+}
+
+func (t *TagResourceAssert) HasSchema(expected string) *TagResourceAssert {
+	t.StringValueSet("schema", expected)
+	return t
+}
+
+func (t *TagResourceAssert) HasName(expected string) *TagResourceAssert {
+	t.StringValueSet("name", expected)
+	return t
+}
+
+func (t *TagResourceAssert) HasAllowedValues(expected ...string) *TagResourceAssert {
+	t.SetContainsExactlyStringValues("allowed_values", expected...)
+	return t
+}
+
+func (t *TagResourceAssert) HasComment(expected string) *TagResourceAssert {
+	t.StringValueSet("comment", expected)
+	return t
+}
+
+func (t *TagResourceAssert) HasFullyQualifiedName(expected string) *TagResourceAssert {
+	t.StringValueSet("fully_qualified_name", expected)
+	return t
+}
+
+func (t *TagResourceAssert) HasMaskingPolicies(expected ...string) *TagResourceAssert {
+	t.SetContainsExactlyStringValues("masking_policies", expected...)
+	return t
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,11 +86,6 @@ func (t *TagResourceAssert) HasNameString(expected string) *TagResourceAssert {
 	return t
 }
 
-func (t *TagResourceAssert) HasAllowedValuesString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("allowed_values", expected))
-	return t
-}
-
 func (t *TagResourceAssert) HasCommentString(expected string) *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("comment", expected))
 	return t
@@ -59,11 +93,6 @@ func (t *TagResourceAssert) HasCommentString(expected string) *TagResourceAssert
 
 func (t *TagResourceAssert) HasFullyQualifiedNameString(expected string) *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
-	return t
-}
-
-func (t *TagResourceAssert) HasMaskingPoliciesString(expected string) *TagResourceAssert {
-	t.AddAssertion(assert.ValueSet("masking_policies", expected))
 	return t
 }
 

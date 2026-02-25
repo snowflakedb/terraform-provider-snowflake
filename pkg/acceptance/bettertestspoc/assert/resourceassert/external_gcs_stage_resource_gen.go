@@ -28,6 +28,61 @@ func ImportedExternalGcsStageResource(t *testing.T, id string) *ExternalGcsStage
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (e *ExternalGcsStageResourceAssert) HasDatabase(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("database", expected)
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasSchema(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("schema", expected)
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasName(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("name", expected)
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasCloud(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("cloud", expected)
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasComment(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("comment", expected)
+	return e
+}
+
+// typed assert for "directory" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "encryption" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "file_format" (type: List, subtype: Map) is not currently supported
+
+func (e *ExternalGcsStageResourceAssert) HasFullyQualifiedName(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("fully_qualified_name", expected)
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasStageType(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("stage_type", expected)
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasStorageIntegration(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("storage_integration", expected)
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasUrl(expected string) *ExternalGcsStageResourceAssert {
+	e.StringValueSet("url", expected)
+	return e
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -54,16 +109,6 @@ func (e *ExternalGcsStageResourceAssert) HasCloudString(expected string) *Extern
 
 func (e *ExternalGcsStageResourceAssert) HasCommentString(expected string) *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("comment", expected))
-	return e
-}
-
-func (e *ExternalGcsStageResourceAssert) HasDirectoryString(expected string) *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("directory", expected))
-	return e
-}
-
-func (e *ExternalGcsStageResourceAssert) HasEncryptionString(expected string) *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("encryption", expected))
 	return e
 }
 
@@ -157,6 +202,11 @@ func (e *ExternalGcsStageResourceAssert) HasDirectoryEmpty() *ExternalGcsStageRe
 
 func (e *ExternalGcsStageResourceAssert) HasEncryptionEmpty() *ExternalGcsStageResourceAssert {
 	e.AddAssertion(assert.ValueSet("encryption.#", "0"))
+	return e
+}
+
+func (e *ExternalGcsStageResourceAssert) HasFileFormatEmpty() *ExternalGcsStageResourceAssert {
+	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
 	return e
 }
 

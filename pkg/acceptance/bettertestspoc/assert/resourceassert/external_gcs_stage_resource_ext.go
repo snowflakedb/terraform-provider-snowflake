@@ -52,11 +52,6 @@ func (e *ExternalGcsStageResourceAssert) HasCloudEnum(expected sdk.StageCloud) *
 	return e
 }
 
-func (e *ExternalGcsStageResourceAssert) HasFileFormatEmpty() *ExternalGcsStageResourceAssert {
-	e.AddAssertion(assert.ValueSet("file_format.#", "0"))
-	return e
-}
-
 func (e *ExternalGcsStageResourceAssert) HasFileFormatFormatName(expected string) *ExternalGcsStageResourceAssert {
 	for _, a := range stageHasFileFormatFormatName(expected) {
 		e.AddAssertion(a)

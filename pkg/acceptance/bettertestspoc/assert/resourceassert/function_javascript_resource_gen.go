@@ -28,6 +28,87 @@ func ImportedFunctionJavascriptResource(t *testing.T, id string) *FunctionJavasc
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (f *FunctionJavascriptResourceAssert) HasDatabase(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("database", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasSchema(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("schema", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasName(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("name", expected)
+	return f
+}
+
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
+
+func (f *FunctionJavascriptResourceAssert) HasComment(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("comment", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasEnableConsoleOutput(expected bool) *FunctionJavascriptResourceAssert {
+	f.BoolValueSet("enable_console_output", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasFullyQualifiedName(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("fully_qualified_name", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasFunctionDefinition(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("function_definition", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasFunctionLanguage(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("function_language", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasIsSecure(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("is_secure", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasLogLevel(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("log_level", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasMetricLevel(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("metric_level", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasNullInputBehavior(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("null_input_behavior", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasReturnResultsBehavior(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("return_results_behavior", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasReturnType(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("return_type", expected)
+	return f
+}
+
+func (f *FunctionJavascriptResourceAssert) HasTraceLevel(expected string) *FunctionJavascriptResourceAssert {
+	f.StringValueSet("trace_level", expected)
+	return f
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -44,11 +125,6 @@ func (f *FunctionJavascriptResourceAssert) HasSchemaString(expected string) *Fun
 
 func (f *FunctionJavascriptResourceAssert) HasNameString(expected string) *FunctionJavascriptResourceAssert {
 	f.AddAssertion(assert.ValueSet("name", expected))
-	return f
-}
-
-func (f *FunctionJavascriptResourceAssert) HasArgumentsString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("arguments", expected))
 	return f
 }
 

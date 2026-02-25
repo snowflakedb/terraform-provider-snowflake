@@ -28,6 +28,113 @@ func ImportedFunctionScalaResource(t *testing.T, id string) *FunctionScalaResour
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (f *FunctionScalaResourceAssert) HasDatabase(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("database", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasSchema(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("schema", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasName(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("name", expected)
+	return f
+}
+
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
+
+func (f *FunctionScalaResourceAssert) HasComment(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("comment", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasEnableConsoleOutput(expected bool) *FunctionScalaResourceAssert {
+	f.BoolValueSet("enable_console_output", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasExternalAccessIntegrations(expected ...string) *FunctionScalaResourceAssert {
+	f.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasFullyQualifiedName(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("fully_qualified_name", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasFunctionDefinition(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("function_definition", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasFunctionLanguage(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("function_language", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasHandler(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("handler", expected)
+	return f
+}
+
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
+
+func (f *FunctionScalaResourceAssert) HasIsSecure(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("is_secure", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasLogLevel(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("log_level", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasMetricLevel(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("metric_level", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasNullInputBehavior(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("null_input_behavior", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasPackages(expected ...string) *FunctionScalaResourceAssert {
+	f.SetContainsExactlyStringValues("packages", expected...)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasReturnResultsBehavior(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("return_results_behavior", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasReturnType(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("return_type", expected)
+	return f
+}
+
+func (f *FunctionScalaResourceAssert) HasRuntimeVersion(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("runtime_version", expected)
+	return f
+}
+
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
+
+// typed assert for "target_path" (type: Set, subtype: Map) is not currently supported
+
+func (f *FunctionScalaResourceAssert) HasTraceLevel(expected string) *FunctionScalaResourceAssert {
+	f.StringValueSet("trace_level", expected)
+	return f
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,11 +154,6 @@ func (f *FunctionScalaResourceAssert) HasNameString(expected string) *FunctionSc
 	return f
 }
 
-func (f *FunctionScalaResourceAssert) HasArgumentsString(expected string) *FunctionScalaResourceAssert {
-	f.AddAssertion(assert.ValueSet("arguments", expected))
-	return f
-}
-
 func (f *FunctionScalaResourceAssert) HasCommentString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("comment", expected))
 	return f
@@ -59,11 +161,6 @@ func (f *FunctionScalaResourceAssert) HasCommentString(expected string) *Functio
 
 func (f *FunctionScalaResourceAssert) HasEnableConsoleOutputString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("enable_console_output", expected))
-	return f
-}
-
-func (f *FunctionScalaResourceAssert) HasExternalAccessIntegrationsString(expected string) *FunctionScalaResourceAssert {
-	f.AddAssertion(assert.ValueSet("external_access_integrations", expected))
 	return f
 }
 
@@ -87,11 +184,6 @@ func (f *FunctionScalaResourceAssert) HasHandlerString(expected string) *Functio
 	return f
 }
 
-func (f *FunctionScalaResourceAssert) HasImportsString(expected string) *FunctionScalaResourceAssert {
-	f.AddAssertion(assert.ValueSet("imports", expected))
-	return f
-}
-
 func (f *FunctionScalaResourceAssert) HasIsSecureString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("is_secure", expected))
 	return f
@@ -112,11 +204,6 @@ func (f *FunctionScalaResourceAssert) HasNullInputBehaviorString(expected string
 	return f
 }
 
-func (f *FunctionScalaResourceAssert) HasPackagesString(expected string) *FunctionScalaResourceAssert {
-	f.AddAssertion(assert.ValueSet("packages", expected))
-	return f
-}
-
 func (f *FunctionScalaResourceAssert) HasReturnResultsBehaviorString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("return_results_behavior", expected))
 	return f
@@ -129,16 +216,6 @@ func (f *FunctionScalaResourceAssert) HasReturnTypeString(expected string) *Func
 
 func (f *FunctionScalaResourceAssert) HasRuntimeVersionString(expected string) *FunctionScalaResourceAssert {
 	f.AddAssertion(assert.ValueSet("runtime_version", expected))
-	return f
-}
-
-func (f *FunctionScalaResourceAssert) HasSecretsString(expected string) *FunctionScalaResourceAssert {
-	f.AddAssertion(assert.ValueSet("secrets", expected))
-	return f
-}
-
-func (f *FunctionScalaResourceAssert) HasTargetPathString(expected string) *FunctionScalaResourceAssert {
-	f.AddAssertion(assert.ValueSet("target_path", expected))
 	return f
 }
 

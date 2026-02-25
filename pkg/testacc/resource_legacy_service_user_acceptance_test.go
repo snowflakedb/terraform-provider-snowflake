@@ -96,18 +96,18 @@ func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
 						HasNoPassword().
 						HasNoLoginName().
 						HasNoDisplayName().
-						HasNoEmail().
+						HasEmailEmpty().
 						HasMustChangePasswordString(r.BooleanDefault).
 						HasDisabledString(r.BooleanDefault).
 						HasNoDaysToExpiry().
 						HasMinsToUnlockString(r.IntDefaultString).
-						HasNoDefaultWarehouse().
+						HasDefaultWarehouseEmpty().
 						HasNoDefaultNamespace().
-						HasNoDefaultRole().
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
-						HasNoRsaPublicKey().
-						HasNoRsaPublicKey2().
-						HasNoComment().
+						HasDefaultRoleEmpty().
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault).
+						HasRsaPublicKeyEmpty().
+						HasRsaPublicKey2Empty().
+						HasCommentEmpty().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					resourceshowoutputassert.UserShowOutput(t, userModelNoAttributes.ResourceReference()).
 						HasLoginName(strings.ToUpper(id.Name())).
@@ -129,17 +129,26 @@ func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:            userModelNoAttributesRenamed.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password", "days_to_expiry", "mins_to_unlock", "login_name", "display_name", "disabled", "must_change_password", "default_secondary_roles_option"},
+				ResourceName:      userModelNoAttributesRenamed.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"password",
+					"days_to_expiry",
+					"mins_to_unlock",
+					"login_name",
+					"display_name",
+					"disabled",
+					"must_change_password",
+					"default_secondary_roles_option",
+				},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedLegacyServiceUserResource(t, id2.Name()).
 						HasLoginNameString(strings.ToUpper(id.Name())).
 						HasDisplayNameString(id.Name()).
-						HasDisabled(false).
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
-						HasMustChangePassword(false),
+						HasDisabledBool(false).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
+						HasMustChangePasswordBool(false),
 				),
 			},
 			// DESTROY
@@ -157,14 +166,14 @@ func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
 						HasLoginNameString(loginName).
 						HasDisplayNameString("Display Name").
 						HasEmailString("fake@email.com").
-						HasMustChangePassword(true).
-						HasDisabled(false).
+						HasMustChangePasswordBool(true).
+						HasDisabledBool(false).
 						HasDaysToExpiryString("8").
 						HasMinsToUnlockString("9").
 						HasDefaultWarehouseString("some_warehouse").
 						HasDefaultNamespaceString("some.namespace").
 						HasDefaultRoleString("some_role").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
 						HasRsaPublicKeyString(key1).
 						HasRsaPublicKey2String(key2).
 						HasCommentString(comment).
@@ -181,14 +190,14 @@ func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
 						HasLoginNameString(newLoginName).
 						HasDisplayNameString("New Display Name").
 						HasEmailString("fake@email.net").
-						HasMustChangePassword(false).
-						HasDisabled(true).
+						HasMustChangePasswordBool(false).
+						HasDisabledBool(true).
 						HasDaysToExpiryString("12").
 						HasMinsToUnlockString("13").
 						HasDefaultWarehouseString("other_warehouse").
 						HasDefaultNamespaceString("one_part_namespace").
 						HasDefaultRoleString("other_role").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionAll).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionAll).
 						HasRsaPublicKeyString(key2).
 						HasRsaPublicKey2String(key1).
 						HasCommentString(newComment).
@@ -197,10 +206,17 @@ func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:            userModelAllAttributesChanged(newLoginName).ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password", "days_to_expiry", "mins_to_unlock", "default_namespace", "login_name", "show_output.0.days_to_expiry"},
+				ResourceName:      userModelAllAttributesChanged(newLoginName).ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"password",
+					"days_to_expiry",
+					"mins_to_unlock",
+					"default_namespace",
+					"login_name",
+					"show_output.0.days_to_expiry",
+				},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedLegacyServiceUserResource(t, id.Name()).
 						HasDefaultNamespaceString("ONE_PART_NAMESPACE").
@@ -236,7 +252,7 @@ func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
 						HasDefaultWarehouseString("").
 						HasDefaultNamespaceString("").
 						HasDefaultRoleString("").
-						HasDefaultSecondaryRolesOption(sdk.SecondaryRolesOptionDefault).
+						HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault).
 						HasRsaPublicKeyString("").
 						HasRsaPublicKey2String("").
 						HasCommentString("").

@@ -28,6 +28,50 @@ func ImportedGitRepositoryResource(t *testing.T, id string) *GitRepositoryResour
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (g *GitRepositoryResourceAssert) HasDatabase(expected string) *GitRepositoryResourceAssert {
+	g.StringValueSet("database", expected)
+	return g
+}
+
+func (g *GitRepositoryResourceAssert) HasSchema(expected string) *GitRepositoryResourceAssert {
+	g.StringValueSet("schema", expected)
+	return g
+}
+
+func (g *GitRepositoryResourceAssert) HasName(expected string) *GitRepositoryResourceAssert {
+	g.StringValueSet("name", expected)
+	return g
+}
+
+func (g *GitRepositoryResourceAssert) HasApiIntegration(expected string) *GitRepositoryResourceAssert {
+	g.StringValueSet("api_integration", expected)
+	return g
+}
+
+func (g *GitRepositoryResourceAssert) HasComment(expected string) *GitRepositoryResourceAssert {
+	g.StringValueSet("comment", expected)
+	return g
+}
+
+func (g *GitRepositoryResourceAssert) HasFullyQualifiedName(expected string) *GitRepositoryResourceAssert {
+	g.StringValueSet("fully_qualified_name", expected)
+	return g
+}
+
+func (g *GitRepositoryResourceAssert) HasGitCredentials(expected string) *GitRepositoryResourceAssert {
+	g.StringValueSet("git_credentials", expected)
+	return g
+}
+
+func (g *GitRepositoryResourceAssert) HasOrigin(expected string) *GitRepositoryResourceAssert {
+	g.StringValueSet("origin", expected)
+	return g
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

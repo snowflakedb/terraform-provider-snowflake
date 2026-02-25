@@ -24,6 +24,158 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.13.x ➞ v2.14.0
+
+### *(new feature)* Added `DECFLOAT` support
+
+We added the [`DECFLOAT`](https://docs.snowflake.com/en/sql-reference/data-types-numeric#decfloat) data type support inside the provider.
+It applies to all resources and data sources, however, keep in mind that these are limited by the underlying Snowflake objects capabilities (check the [limitations section](https://docs.snowflake.com/en/sql-reference/data-types-numeric#limitations-for-the-decfloat-data-type) in Snowflake public docs), so e.g. it works correctly for `snowflake_function_sql` but nor for `snowflake_function_python`. 
+
+No changes in configuration are required.
+
+### *(new feature)* Added missing `object_types` in grant resources
+
+Previously, the `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources did not support all object types that Snowflake allows in GRANT statements.
+With this change, we added support for the following missing object types:
+
+- `AGENT` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `EXPERIMENT` object type in the `on_schema_object.object_type` field
+- `GATEWAY` object type in the `on_schema_object.object_type` field
+- `MCP SERVER` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `NOTEBOOK PROJECT` object type in the `on_schema_object.object_type` field
+
+We also corrected the `on_schema_object.all` field validation to properly exclude `JOIN POLICY` object type, and the `on_schema_object.future` field validation to properly exclude `JOIN POLICY` and `SNAPSHOT` object types, which Snowflake does not support for bulk grants. The same restrictions apply to the newly added `GATEWAY` and `NOTEBOOK PROJECT` object types.
+
+No changes in configuration are required.
+
+### *(bugfix)* Fixed `snowflake_share` update failing when adding accounts to a share that already has a database granted
+
+Previously, updating the `accounts` field on the `snowflake_share` resource (e.g., adding consumer accounts after the initial creation) would fail with:
+```
+│ Error: error adding accounts to share: 003033 (0A000): SQL compilation error:
+│ Database 'TEMP_...' does not belong to the database that is being shared.
+```
+This happened because the provider always used an internal workaround that creates a temporary database and grants it to the share before adding accounts. When a real database was already granted to the share, Snowflake rejected the grant on the temporary database since only one database can be granted `USAGE` on a share at a time.
+
+After the fix, the provider now checks whether a database is already granted to the share before adding accounts. If a database is present, accounts are added directly via `ALTER SHARE ... ADD ACCOUNTS` without the temporary database workaround.
+
+No changes in configuration are required.
+
+References: [#4398](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4398).
+
+### *(enhancement)* Fixed external change detection in user resources (`snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`)
+
+The user resources were not able to detect external changes for some string fields that were null or empty on the Snowflake side.
+As an example, when you specified `email` in configuration like so:
+```terraform
+resource "snowflake_user" "test" {
+  ...
+  name = "SOME_USER"
+  email = "some@email.com"
+  ...
+}
+```
+
+and then removed it on the snowflake side with:
+```sql
+ALTER USER SOME_USER UNSET EMAIL;
+```
+
+The change wasn't detected in the user resource. Now, such changes are detected. Here's the list of affected fields:
+- `email`
+- `default_warehouse`
+- `default_role`
+- `rsa_public_key`
+- `rsa_public_key_2`
+- `comment`
+- Fields only for users with `type = PERSON`:
+    - `first_name`
+    - `middle_name`
+    - `last_name`
+
+No configuration changes are required.
+
+### *(enhancement)* `snowflake_network_rule` rework
+
+#### Changes in `type` and `mode` fields
+Previously, the `type` and `mode` fields on `snowflake_network_rule` required exact uppercase values (e.g. `IPV4`, `INGRESS`). Values in any other casing would be rejected by the provider validation.
+
+Additionally, two new `type` values are now supported:
+- `GCPPSCID` - for GCP Private Service Connect endpoint identifiers
+- `PRIVATE_HOST_PORT` - for private host port identifiers
+
+Two new `mode` values are now supported:
+- `POSTGRES_INGRESS` - for incoming traffic to Snowflake Postgres instances
+- `POSTGRES_EGRESS` - for outgoing traffic from Snowflake Postgres instances
+
+No configuration changes are required. Existing configurations will continue to work as before. If you were using workarounds to force uppercase values, those can be removed.
+
+#### Identifiers related changes
+Resource ID format was changed from pipe-separated to regular Snowflake identifiers (e.g. `<database_name>|<schema_name>|<network_rule_name>` -> `"<database_name>"."<schema_name>"."<network_rule_name>"`). Importing resources also needs to be adjusted:
+```shell
+terraform import snowflake_network_rule.example '"<database_name>"."<schema_name>"."<network_rule_name>"'
+```
+
+No change is required, the state will be migrated automatically.
+
+#### New `show_output` and `describe_output` attributes
+New computed attributes `show_output` and `describe_output` were added to the `snowflake_network_rule` resource. They contain the output of `SHOW NETWORK RULES` and `DESCRIBE NETWORK RULE` queries, respectively. They can be used to reference network rule properties in other parts of the configuration.
+
+No configuration changes are required.
+
+Reference: [#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956), [#4437](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4437)
+
+### snowflake_network_rule promoted to stable
+
+Since this version, this resource is stable and is enabled by default: enabling it in the provider configuration is no longer required. Please remove it from the `preview_features_enabled` list.
+
+Provider will issue a warning if a stable feature is still used on the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
+### *(new feature)* snowflake_network_rules data source
+Added a new preview data source for network rules. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-network-rules).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_network_rules_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(bugfix)* Fixed timestamp parsing in stage resources
+
+The new stage resources introduced in v2.13.0 parsed the `last_refreshed_on` timestamp column. However, due to flexibility of the time formats, this could fail with errors like
+```
+│ Error: parsing time "2026-02-15 23:59:47.000 Z" as "2006-01-02 15:04:05.000 -0700": cannot parse "Z" as "-0700"
+```
+
+This caused Terraform to detect a diff on the next plan and taint the resource, potentially leading to an unwanted recreation.
+
+This is now fixed - the provider does not parse the received timestamp. Additionally, this field can be now read in the `directory_table` schema in `describe_output`.
+
+The state is upgraded automatically.
+
+#### Important: untaint resources after the upgrade
+
+If Terraform has already tainted your resources before upgrading to this version, you should untaint them to avoid unnecessary recreation:
+
+```shell
+terraform untaint snowflake_external_s3_stage.example
+```
+
+After upgrading the provider to this version, the state upgrader will take care of populating `describe_output` and no further action is needed.
+
+Reference: [#4445](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4445).
+
+### *(new feature)* Import validation for `snowflake_grant_privileges_to_account_role`
+
+A new `GRANTS_IMPORT_VALIDATION` experimental feature was added. When enabled, importing a `snowflake_grant_privileges_to_account_role` resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `GRANTS_IMPORT_VALIDATION` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
+It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1),
+but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
+
+**It's still considered a preview feature, even when applied to the stable resources.**
+
+This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
+
 ## v2.12.x ➞ v2.13.0
 
 ### *(bugfix)* Fixed `snowflake_tag_association` usage with function or procedure object types
