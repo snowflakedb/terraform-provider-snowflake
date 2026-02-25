@@ -24,6 +24,54 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.14.x ➞ v2.15.0
+
+### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
+
+A new `TAG_ALLOWED_VALUES_BEHAVIOR_CHANGES` experimental feature was added. It improves how the `snowflake_tag` resource handles the `allowed_values` field by introducing a new `no_allowed_values` field. In Snowflake, a tag can be in one of three states regarding allowed values:
+
+1. **Any value is allowed** (default) — the tag accepts any value. In previous versions, this was only possible when the tag was first created without `allowed_values`. Once you added allowed values and later removed them from the configuration, the tag would not return to this state — instead, it would end up in the "no value is allowed" state (see below). With the experimental flag enabled, removing `allowed_values` from the configuration now correctly restores the tag to this default state:
+
+```terraform
+resource "snowflake_tag" "example" {
+  name     = "my_tag"
+  database = "my_database"
+  schema   = "my_schema"
+  # or allowed_values = []
+}
+```
+
+2. **Only specific values are allowed** — only the listed values can be used with the tag. This works the same as in previous versions:
+
+```terraform
+resource "snowflake_tag" "example" {
+  name           = "my_tag"
+  database       = "my_database"
+  schema         = "my_schema"
+  allowed_values = ["production", "staging", "development"]
+}
+```
+
+3. **No value is allowed** — the tag cannot have any value assigned to it. In previous versions, you could end up in this state unintentionally after removing all entries from `allowed_values`. With the experimental flag enabled, you can now reach this state explicitly using the new `no_allowed_values` field. Note that under the hood, the provider may briefly add and remove a temporary `SNOWFLAKE_TERRAFORM_TEMP_TAG_ALLOWED_VALUE` value as a workaround to reach this state in Snowflake:
+
+```terraform
+resource "snowflake_tag" "example" {
+  name              = "my_tag"
+  database          = "my_database"
+  schema            = "my_schema"
+  no_allowed_values = true
+}
+```
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `TAG_ALLOWED_VALUES_BEHAVIOR_CHANGES` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
+It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1),
+but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
+
+**It's still considered a preview feature, even when applied to the stable resources.**
+
+Without the flag enabled, the behavior remains the same as in previous versions — the `no_allowed_values` field is present in the schema but has no effect. No changes in configuration are required.
+
 ## v2.13.x ➞ v2.14.0
 
 ### *(new feature)* Added `DECFLOAT` support
