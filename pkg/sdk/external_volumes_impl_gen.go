@@ -97,56 +97,64 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 		}
 	}
 	if r.AddStorageLocation != nil {
-		opts.AddStorageLocation = &ExternalVolumeStorageLocation{}
-		if r.AddStorageLocation.S3StorageLocationParams != nil {
-			opts.AddStorageLocation.S3StorageLocationParams = &S3StorageLocationParams{
-				Name:                     r.AddStorageLocation.S3StorageLocationParams.Name,
-				StorageProvider:          r.AddStorageLocation.S3StorageLocationParams.StorageProvider,
-				StorageAwsRoleArn:        r.AddStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-				StorageBaseUrl:           r.AddStorageLocation.S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsExternalId:     r.AddStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
-				StorageAwsAccessPointArn: r.AddStorageLocation.S3StorageLocationParams.StorageAwsAccessPointArn,
-				UsePrivatelinkEndpoint:   r.AddStorageLocation.S3StorageLocationParams.UsePrivatelinkEndpoint,
+		opts.AddStorageLocation = &ExternalVolumeStorageLocationItem{}
+		opts.AddStorageLocation.ExternalVolumeStorageLocation = ExternalVolumeStorageLocation{
+			Name: r.AddStorageLocation.ExternalVolumeStorageLocation.Name,
+		}
+		if r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams != nil {
+			opts.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams = &S3StorageLocationParams{
+				StorageProvider:          r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageProvider,
+				StorageAwsRoleArn:        r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsRoleArn,
+				StorageBaseUrl:           r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageBaseUrl,
+				StorageAwsExternalId:     r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsExternalId,
+				StorageAwsAccessPointArn: r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.StorageAwsAccessPointArn,
+				UsePrivatelinkEndpoint:   r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.UsePrivatelinkEndpoint,
 			}
-			if r.AddStorageLocation.S3StorageLocationParams.Encryption != nil {
-				opts.AddStorageLocation.S3StorageLocationParams.Encryption = &ExternalVolumeS3Encryption{
-					EncryptionType: r.AddStorageLocation.S3StorageLocationParams.Encryption.EncryptionType,
-					KmsKeyId:       r.AddStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
+			if r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption != nil {
+				opts.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption = &ExternalVolumeS3Encryption{
+					EncryptionType: r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.EncryptionType,
+					KmsKeyId:       r.AddStorageLocation.ExternalVolumeStorageLocation.S3StorageLocationParams.Encryption.KmsKeyId,
 				}
 			}
 		}
-		if r.AddStorageLocation.GCSStorageLocationParams != nil {
-			opts.AddStorageLocation.GCSStorageLocationParams = &GCSStorageLocationParams{
-				Name:           r.AddStorageLocation.GCSStorageLocationParams.Name,
-				StorageBaseUrl: r.AddStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
+		if r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams != nil {
+			opts.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams = &GCSStorageLocationParams{
+				StorageBaseUrl: r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.StorageBaseUrl,
 			}
-			if r.AddStorageLocation.GCSStorageLocationParams.Encryption != nil {
-				opts.AddStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGCSEncryption{
-					EncryptionType: r.AddStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType,
-					KmsKeyId:       r.AddStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
+			if r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption != nil {
+				opts.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption = &ExternalVolumeGCSEncryption{
+					EncryptionType: r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.EncryptionType,
+					KmsKeyId:       r.AddStorageLocation.ExternalVolumeStorageLocation.GCSStorageLocationParams.Encryption.KmsKeyId,
 				}
 			}
 		}
-		if r.AddStorageLocation.AzureStorageLocationParams != nil {
-			opts.AddStorageLocation.AzureStorageLocationParams = &AzureStorageLocationParams{
-				Name:                   r.AddStorageLocation.AzureStorageLocationParams.Name,
-				AzureTenantId:          r.AddStorageLocation.AzureStorageLocationParams.AzureTenantId,
-				StorageBaseUrl:         r.AddStorageLocation.AzureStorageLocationParams.StorageBaseUrl,
-				UsePrivatelinkEndpoint: r.AddStorageLocation.AzureStorageLocationParams.UsePrivatelinkEndpoint,
+		if r.AddStorageLocation.ExternalVolumeStorageLocation.AzureStorageLocationParams != nil {
+			opts.AddStorageLocation.ExternalVolumeStorageLocation.AzureStorageLocationParams = &AzureStorageLocationParams{
+				AzureTenantId:          r.AddStorageLocation.ExternalVolumeStorageLocation.AzureStorageLocationParams.AzureTenantId,
+				StorageBaseUrl:         r.AddStorageLocation.ExternalVolumeStorageLocation.AzureStorageLocationParams.StorageBaseUrl,
+				UsePrivatelinkEndpoint: r.AddStorageLocation.ExternalVolumeStorageLocation.AzureStorageLocationParams.UsePrivatelinkEndpoint,
 			}
 		}
-		if r.AddStorageLocation.S3CompatStorageLocationParams != nil {
-			opts.AddStorageLocation.S3CompatStorageLocationParams = &S3CompatStorageLocationParams{
-				Name:            r.AddStorageLocation.S3CompatStorageLocationParams.Name,
-				StorageBaseUrl:  r.AddStorageLocation.S3CompatStorageLocationParams.StorageBaseUrl,
-				StorageEndpoint: r.AddStorageLocation.S3CompatStorageLocationParams.StorageEndpoint,
+		if r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams != nil {
+			opts.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams = &S3CompatStorageLocationParams{
+				StorageBaseUrl:  r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.StorageBaseUrl,
+				StorageEndpoint: r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.StorageEndpoint,
 			}
-			if r.AddStorageLocation.S3CompatStorageLocationParams.Credentials != nil {
-				opts.AddStorageLocation.S3CompatStorageLocationParams.Credentials = &ExternalVolumeS3CompatCredentials{
-					AwsKeyId:     r.AddStorageLocation.S3CompatStorageLocationParams.Credentials.AwsKeyId,
-					AwsSecretKey: r.AddStorageLocation.S3CompatStorageLocationParams.Credentials.AwsSecretKey,
+			if r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials != nil {
+				opts.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials = &ExternalVolumeS3CompatCredentials{
+					AwsKeyId:     r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials.AwsKeyId,
+					AwsSecretKey: r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials.AwsSecretKey,
 				}
 			}
+		}
+	}
+	if r.UpdateStorageLocation != nil {
+		opts.UpdateStorageLocation = &AlterExternalVolumeUpdateStorageLocation{
+			StorageLocation: r.UpdateStorageLocation.StorageLocation,
+		}
+		opts.UpdateStorageLocation.Credentials = ExternalVolumeUpdateCredentials{
+			AwsKeyId:     r.UpdateStorageLocation.Credentials.AwsKeyId,
+			AwsSecretKey: r.UpdateStorageLocation.Credentials.AwsSecretKey,
 		}
 	}
 	return opts

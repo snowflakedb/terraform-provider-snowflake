@@ -4,7 +4,7 @@ package sdk
 
 func NewCreateExternalVolumeRequest(
 	name AccountObjectIdentifier,
-	storageLocations []ExternalVolumeStorageLocation,
+	storageLocations []ExternalVolumeStorageLocationItem,
 ) *CreateExternalVolumeRequest {
 	s := CreateExternalVolumeRequest{}
 	s.name = name
@@ -55,8 +55,13 @@ func (s *AlterExternalVolumeRequest) WithSet(set AlterExternalVolumeSetRequest) 
 	return s
 }
 
-func (s *AlterExternalVolumeRequest) WithAddStorageLocation(addStorageLocation ExternalVolumeStorageLocationRequest) *AlterExternalVolumeRequest {
+func (s *AlterExternalVolumeRequest) WithAddStorageLocation(addStorageLocation ExternalVolumeStorageLocationItemRequest) *AlterExternalVolumeRequest {
 	s.AddStorageLocation = &addStorageLocation
+	return s
+}
+
+func (s *AlterExternalVolumeRequest) WithUpdateStorageLocation(updateStorageLocation AlterExternalVolumeUpdateStorageLocationRequest) *AlterExternalVolumeRequest {
+	s.UpdateStorageLocation = &updateStorageLocation
 	return s
 }
 
@@ -75,8 +80,19 @@ func (s *AlterExternalVolumeSetRequest) WithComment(comment string) *AlterExtern
 	return s
 }
 
-func NewExternalVolumeStorageLocationRequest() *ExternalVolumeStorageLocationRequest {
+func NewExternalVolumeStorageLocationItemRequest(
+	externalVolumeStorageLocation ExternalVolumeStorageLocationRequest,
+) *ExternalVolumeStorageLocationItemRequest {
+	s := ExternalVolumeStorageLocationItemRequest{}
+	s.ExternalVolumeStorageLocation = externalVolumeStorageLocation
+	return &s
+}
+
+func NewExternalVolumeStorageLocationRequest(
+	name string,
+) *ExternalVolumeStorageLocationRequest {
 	s := ExternalVolumeStorageLocationRequest{}
+	s.Name = name
 	return &s
 }
 
@@ -101,13 +117,11 @@ func (s *ExternalVolumeStorageLocationRequest) WithS3CompatStorageLocationParams
 }
 
 func NewS3StorageLocationParamsRequest(
-	name string,
 	storageProvider S3StorageProvider,
 	storageAwsRoleArn string,
 	storageBaseUrl string,
 ) *S3StorageLocationParamsRequest {
 	s := S3StorageLocationParamsRequest{}
-	s.Name = name
 	s.StorageProvider = storageProvider
 	s.StorageAwsRoleArn = storageAwsRoleArn
 	s.StorageBaseUrl = storageBaseUrl
@@ -148,11 +162,9 @@ func (s *ExternalVolumeS3EncryptionRequest) WithKmsKeyId(kmsKeyId string) *Exter
 }
 
 func NewGCSStorageLocationParamsRequest(
-	name string,
 	storageBaseUrl string,
 ) *GCSStorageLocationParamsRequest {
 	s := GCSStorageLocationParamsRequest{}
-	s.Name = name
 	s.StorageBaseUrl = storageBaseUrl
 	return &s
 }
@@ -176,12 +188,10 @@ func (s *ExternalVolumeGCSEncryptionRequest) WithKmsKeyId(kmsKeyId string) *Exte
 }
 
 func NewAzureStorageLocationParamsRequest(
-	name string,
 	azureTenantId string,
 	storageBaseUrl string,
 ) *AzureStorageLocationParamsRequest {
 	s := AzureStorageLocationParamsRequest{}
-	s.Name = name
 	s.AzureTenantId = azureTenantId
 	s.StorageBaseUrl = storageBaseUrl
 	return &s
@@ -193,12 +203,10 @@ func (s *AzureStorageLocationParamsRequest) WithUsePrivatelinkEndpoint(usePrivat
 }
 
 func NewS3CompatStorageLocationParamsRequest(
-	name string,
 	storageBaseUrl string,
 	storageEndpoint string,
 ) *S3CompatStorageLocationParamsRequest {
 	s := S3CompatStorageLocationParamsRequest{}
-	s.Name = name
 	s.StorageBaseUrl = storageBaseUrl
 	s.StorageEndpoint = storageEndpoint
 	return &s
@@ -214,6 +222,26 @@ func NewExternalVolumeS3CompatCredentialsRequest(
 	awsSecretKey string,
 ) *ExternalVolumeS3CompatCredentialsRequest {
 	s := ExternalVolumeS3CompatCredentialsRequest{}
+	s.AwsKeyId = awsKeyId
+	s.AwsSecretKey = awsSecretKey
+	return &s
+}
+
+func NewAlterExternalVolumeUpdateStorageLocationRequest(
+	storageLocation string,
+	credentials ExternalVolumeUpdateCredentialsRequest,
+) *AlterExternalVolumeUpdateStorageLocationRequest {
+	s := AlterExternalVolumeUpdateStorageLocationRequest{}
+	s.StorageLocation = storageLocation
+	s.Credentials = credentials
+	return &s
+}
+
+func NewExternalVolumeUpdateCredentialsRequest(
+	awsKeyId string,
+	awsSecretKey string,
+) *ExternalVolumeUpdateCredentialsRequest {
+	s := ExternalVolumeUpdateCredentialsRequest{}
 	s.AwsKeyId = awsKeyId
 	s.AwsSecretKey = awsSecretKey
 	return &s

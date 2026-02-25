@@ -2230,12 +2230,13 @@ func TestAcc_External_Volume_External_Changes(t *testing.T) {
 					testClient().ExternalVolume.Alter(
 						t,
 						sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(
-							*sdk.NewExternalVolumeStorageLocationRequest().WithS3StorageLocationParams(
-								*sdk.NewS3StorageLocationParamsRequest(
-									"externally-added-s3-storage-location",
-									"s3",
-									"arn:aws:iam::123456789012:role/externally-added-role",
-									"s3://externally-added-bucket",
+							*sdk.NewExternalVolumeStorageLocationItemRequest(
+								*sdk.NewExternalVolumeStorageLocationRequest("externally-added-s3-storage-location").WithS3StorageLocationParams(
+									*sdk.NewS3StorageLocationParamsRequest(
+										"s3",
+										"arn:aws:iam::123456789012:role/externally-added-role",
+										"s3://externally-added-bucket",
+									),
 								),
 							),
 						),

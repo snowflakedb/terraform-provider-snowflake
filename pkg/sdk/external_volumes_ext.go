@@ -3,18 +3,20 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"slices"
 	"strings"
 )
 
-// Returns a copy of the given storage location with a set name
+// CopySentinelStorageLocation creates a copy of the given storage location with a
+// sentinel name used for Terraform provider operations. This is useful for managing
+// storage location state without affecting user-visible names.
 func CopySentinelStorageLocation(
-	storageLocation ExternalVolumeStorageLocation,
-) (ExternalVolumeStorageLocation, error) {
-	storageProvider, err := GetStorageLocationStorageProvider(storageLocation)
+	storageLocationItem ExternalVolumeStorageLocationItem,
+) (ExternalVolumeStorageLocationItem, error) {
+	storageLocation := storageLocationItem.ExternalVolumeStorageLocation
+	storageProvider, err := GetStorageLocationStorageProvider(storageLocationItem)
 	if err != nil {
-		return ExternalVolumeStorageLocation{}, err
+		return ExternalVolumeStorageLocationItem{}, err
 	}
 
 	newName := "terraform_provider_sentinel_storage_location"
@@ -22,8 +24,8 @@ func CopySentinelStorageLocation(
 	switch storageProvider {
 	case StorageProviderS3, StorageProviderS3GOV:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			Name: newName,
 			S3StorageLocationParams: &S3StorageLocationParams{
-				Name:                     newName,
 				StorageProvider:          storageLocation.S3StorageLocationParams.StorageProvider,
 				StorageBaseUrl:           storageLocation.S3StorageLocationParams.StorageBaseUrl,
 				StorageAwsRoleArn:        storageLocation.S3StorageLocationParams.StorageAwsRoleArn,
@@ -35,16 +37,16 @@ func CopySentinelStorageLocation(
 		}
 	case StorageProviderGCS:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			Name: newName,
 			GCSStorageLocationParams: &GCSStorageLocationParams{
-				Name:           newName,
 				StorageBaseUrl: storageLocation.GCSStorageLocationParams.StorageBaseUrl,
 				Encryption:     storageLocation.GCSStorageLocationParams.Encryption,
 			},
 		}
 	case StorageProviderAzure:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			Name: newName,
 			AzureStorageLocationParams: &AzureStorageLocationParams{
-				Name:                   newName,
 				StorageBaseUrl:         storageLocation.AzureStorageLocationParams.StorageBaseUrl,
 				AzureTenantId:          storageLocation.AzureStorageLocationParams.AzureTenantId,
 				UsePrivatelinkEndpoint: storageLocation.AzureStorageLocationParams.UsePrivatelinkEndpoint,
@@ -52,50 +54,33 @@ func CopySentinelStorageLocation(
 		}
 	case StorageProviderS3Compatible:
 		tempNameStorageLocation = ExternalVolumeStorageLocation{
+			Name: newName,
 			S3CompatStorageLocationParams: &S3CompatStorageLocationParams{
-				Name:            newName,
 				StorageBaseUrl:  storageLocation.S3CompatStorageLocationParams.StorageBaseUrl,
 				StorageEndpoint: storageLocation.S3CompatStorageLocationParams.StorageEndpoint,
 				Credentials:     storageLocation.S3CompatStorageLocationParams.Credentials,
 			},
 		}
-	}
-
-	return tempNameStorageLocation, nil
-}
-
-func GetStorageLocationName(s ExternalVolumeStorageLocation) (string, error) {
-	switch {
-	case s.S3StorageLocationParams != nil && *s.S3StorageLocationParams != S3StorageLocationParams{}:
-		if len(s.S3StorageLocationParams.Name) == 0 {
-			return "", fmt.Errorf("Invalid S3 storage location - no name set")
-		}
-
-		return s.S3StorageLocationParams.Name, nil
-	case s.GCSStorageLocationParams != nil && *s.GCSStorageLocationParams != GCSStorageLocationParams{}:
-		if len(s.GCSStorageLocationParams.Name) == 0 {
-			return "", fmt.Errorf("Invalid GCS storage location - no name set")
-		}
-
-		return s.GCSStorageLocationParams.Name, nil
-	case s.AzureStorageLocationParams != nil && *s.AzureStorageLocationParams != AzureStorageLocationParams{}:
-		if len(s.AzureStorageLocationParams.Name) == 0 {
-			return "", fmt.Errorf("Invalid Azure storage location - no name set")
-		}
-
-		return s.AzureStorageLocationParams.Name, nil
-	case s.S3CompatStorageLocationParams != nil && *s.S3CompatStorageLocationParams != S3CompatStorageLocationParams{}:
-		if len(s.S3CompatStorageLocationParams.Name) == 0 {
-			return "", fmt.Errorf("Invalid S3Compatible storage location - no name set")
-		}
-
-		return s.S3CompatStorageLocationParams.Name, nil
 	default:
-		return "", fmt.Errorf("Invalid storage location")
+		return ExternalVolumeStorageLocationItem{}, fmt.Errorf("unsupported storage provider type: %s", storageProvider)
 	}
+
+	return ExternalVolumeStorageLocationItem{
+		ExternalVolumeStorageLocation: tempNameStorageLocation,
+	}, nil
 }
 
-func GetStorageLocationStorageProvider(s ExternalVolumeStorageLocation) (StorageProvider, error) {
+// GetStorageLocationName retrieves the name from a storage location configuration.
+// Returns an error if the storage location is invalid or the name is empty.
+func GetStorageLocationName(s ExternalVolumeStorageLocation) (string, error) {
+	if len(s.Name) == 0 {
+		return "", fmt.Errorf("Invalid storage location - no name set")
+	}
+	return s.Name, nil
+}
+
+func GetStorageLocationStorageProvider(i ExternalVolumeStorageLocationItem) (StorageProvider, error) {
+	s := i.ExternalVolumeStorageLocation
 	switch {
 	case s.S3StorageLocationParams != nil && *s.S3StorageLocationParams != S3StorageLocationParams{}:
 		return ToStorageProvider(string(s.S3StorageLocationParams.StorageProvider))
@@ -110,74 +95,49 @@ func GetStorageLocationStorageProvider(s ExternalVolumeStorageLocation) (Storage
 	}
 }
 
-// Returns the index of the last matching elements in the list
-// e.g. [1,2,3] [1,3,2] -> 0, [1,2,3] [1,2,4] -> 1
-// -1 is returned if there are no common prefixes in the list
-func CommonPrefixLastIndex(a []ExternalVolumeStorageLocation, b []ExternalVolumeStorageLocation) (int, error) {
-	commonPrefixLastIndex := 0
-
-	if len(a) == 0 || len(b) == 0 {
-		return -1, nil
-	}
-
-	if !reflect.DeepEqual(a[0], b[0]) {
-		return -1, nil
-	}
-
-	for i := 1; i < min(len(a), len(b)); i++ {
-		if !reflect.DeepEqual(a[i], b[i]) {
-			break
-		}
-
-		commonPrefixLastIndex = i
-	}
-
-	return commonPrefixLastIndex, nil
-}
-
-type ParsedExternalVolumeDescribed struct {
-	StorageLocations []ExternalVolumeStorageLocationJson
+type ExternalVolumeDetails struct {
+	StorageLocations []ExternalVolumeStorageLocationDetails
 	Active           string
 	Comment          string
 	AllowWrites      string
 }
 
-func ParseExternalVolumeDescribed(props []ExternalVolumeProperty) (ParsedExternalVolumeDescribed, error) {
-	parsedExternalVolumeDescribed := ParsedExternalVolumeDescribed{}
-	var storageLocations []ExternalVolumeStorageLocationJson
+func ParseExternalVolumeDescribed(props []ExternalVolumeProperty) (ExternalVolumeDetails, error) {
+	externalVolumeDetails := ExternalVolumeDetails{}
+	var storageLocations []ExternalVolumeStorageLocationDetails
 	for _, p := range props {
 		switch {
 		case p.Name == "COMMENT":
-			parsedExternalVolumeDescribed.Comment = p.Value
+			externalVolumeDetails.Comment = p.Value
 		case p.Name == "ACTIVE":
-			parsedExternalVolumeDescribed.Active = p.Value
+			externalVolumeDetails.Active = p.Value
 		case p.Name == "ALLOW_WRITES":
-			parsedExternalVolumeDescribed.AllowWrites = p.Value
+			externalVolumeDetails.AllowWrites = p.Value
 		case strings.Contains(p.Name, "STORAGE_LOCATION_"):
-			storageLocation := ExternalVolumeStorageLocationJson{}
+			storageLocation := ExternalVolumeStorageLocationDetails{}
 			err := json.Unmarshal([]byte(p.Value), &storageLocation)
 			if err != nil {
-				return ParsedExternalVolumeDescribed{}, err
+				return ExternalVolumeDetails{}, err
 			}
 			storageLocations = append(
 				storageLocations,
 				storageLocation,
 			)
 		default:
-			return ParsedExternalVolumeDescribed{}, fmt.Errorf("Unrecognized external volume property: %s", p.Name)
+			return ExternalVolumeDetails{}, fmt.Errorf("Unrecognized external volume property: %s", p.Name)
 		}
 	}
 
-	parsedExternalVolumeDescribed.StorageLocations = storageLocations
-	err := validateParsedExternalVolumeDescribed(parsedExternalVolumeDescribed)
+	externalVolumeDetails.StorageLocations = storageLocations
+	err := validateExternalVolumeDetails(externalVolumeDetails)
 	if err != nil {
-		return ParsedExternalVolumeDescribed{}, err
+		return ExternalVolumeDetails{}, err
 	}
 
-	return parsedExternalVolumeDescribed, nil
+	return externalVolumeDetails, nil
 }
 
-type ExternalVolumeStorageLocationJson struct {
+type ExternalVolumeStorageLocationDetails struct {
 	Name                     string `json:"NAME"`
 	StorageProvider          string `json:"STORAGE_PROVIDER"`
 	StorageBaseUrl           string `json:"STORAGE_BASE_URL"`
@@ -191,7 +151,7 @@ type ExternalVolumeStorageLocationJson struct {
 	AzureTenantId            string `json:"AZURE_TENANT_ID"`
 }
 
-func validateParsedExternalVolumeDescribed(p ParsedExternalVolumeDescribed) error {
+func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
 	if len(p.StorageLocations) == 0 {
 		return fmt.Errorf("No storage locations could be parsed from the external volume.")
 	}

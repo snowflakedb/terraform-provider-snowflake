@@ -20,25 +20,29 @@ type ExternalVolumes interface {
 
 // CreateExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-external-volume.
 type CreateExternalVolumeOptions struct {
-	create           bool                            `ddl:"static" sql:"CREATE"`
-	OrReplace        *bool                           `ddl:"keyword" sql:"OR REPLACE"`
-	externalVolume   bool                            `ddl:"static" sql:"EXTERNAL VOLUME"`
-	IfNotExists      *bool                           `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name             AccountObjectIdentifier         `ddl:"identifier"`
-	StorageLocations []ExternalVolumeStorageLocation `ddl:"parameter,parentheses" sql:"STORAGE_LOCATIONS"`
-	AllowWrites      *bool                           `ddl:"parameter" sql:"ALLOW_WRITES"`
-	Comment          *string                         `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create           bool                                `ddl:"static" sql:"CREATE"`
+	OrReplace        *bool                               `ddl:"keyword" sql:"OR REPLACE"`
+	externalVolume   bool                                `ddl:"static" sql:"EXTERNAL VOLUME"`
+	IfNotExists      *bool                               `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name             AccountObjectIdentifier             `ddl:"identifier"`
+	StorageLocations []ExternalVolumeStorageLocationItem `ddl:"parameter,parentheses" sql:"STORAGE_LOCATIONS"`
+	AllowWrites      *bool                               `ddl:"parameter" sql:"ALLOW_WRITES"`
+	Comment          *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type ExternalVolumeStorageLocationItem struct {
+	ExternalVolumeStorageLocation ExternalVolumeStorageLocation `ddl:"list,parentheses,no_comma"`
 }
 
 type ExternalVolumeStorageLocation struct {
-	S3StorageLocationParams       *S3StorageLocationParams       `ddl:"list,parentheses,no_comma"`
-	GCSStorageLocationParams      *GCSStorageLocationParams      `ddl:"list,parentheses,no_comma"`
-	AzureStorageLocationParams    *AzureStorageLocationParams    `ddl:"list,parentheses,no_comma"`
-	S3CompatStorageLocationParams *S3CompatStorageLocationParams `ddl:"list,parentheses,no_comma"`
+	Name                          string                         `ddl:"parameter,single_quotes" sql:"NAME"`
+	S3StorageLocationParams       *S3StorageLocationParams       `ddl:"list,no_comma"`
+	GCSStorageLocationParams      *GCSStorageLocationParams      `ddl:"list,no_comma"`
+	AzureStorageLocationParams    *AzureStorageLocationParams    `ddl:"list,no_comma"`
+	S3CompatStorageLocationParams *S3CompatStorageLocationParams `ddl:"list,no_comma"`
 }
 
 type S3StorageLocationParams struct {
-	Name                     string                      `ddl:"parameter,single_quotes" sql:"NAME"`
 	StorageProvider          S3StorageProvider           `ddl:"parameter,single_quotes" sql:"STORAGE_PROVIDER"`
 	StorageAwsRoleArn        string                      `ddl:"parameter,single_quotes" sql:"STORAGE_AWS_ROLE_ARN"`
 	StorageBaseUrl           string                      `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
@@ -54,7 +58,6 @@ type ExternalVolumeS3Encryption struct {
 }
 
 type GCSStorageLocationParams struct {
-	Name               string                       `ddl:"parameter,single_quotes" sql:"NAME"`
 	StorageProviderGcs string                       `ddl:"static" sql:"STORAGE_PROVIDER = 'GCS'"`
 	StorageBaseUrl     string                       `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
 	Encryption         *ExternalVolumeGCSEncryption `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
@@ -66,7 +69,6 @@ type ExternalVolumeGCSEncryption struct {
 }
 
 type AzureStorageLocationParams struct {
-	Name                   string `ddl:"parameter,single_quotes" sql:"NAME"`
 	StorageProviderAzure   string `ddl:"static" sql:"STORAGE_PROVIDER = 'AZURE'"`
 	AzureTenantId          string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
 	StorageBaseUrl         string `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
@@ -74,7 +76,6 @@ type AzureStorageLocationParams struct {
 }
 
 type S3CompatStorageLocationParams struct {
-	Name                    string                             `ddl:"parameter,single_quotes" sql:"NAME"`
 	StorageProviderS3Compat string                             `ddl:"static" sql:"STORAGE_PROVIDER = 'S3COMPAT'"`
 	StorageBaseUrl          string                             `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
 	StorageEndpoint         string                             `ddl:"parameter,single_quotes" sql:"STORAGE_ENDPOINT"`
@@ -88,18 +89,29 @@ type ExternalVolumeS3CompatCredentials struct {
 
 // AlterExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-external-volume.
 type AlterExternalVolumeOptions struct {
-	alter                 bool                           `ddl:"static" sql:"ALTER"`
-	externalVolume        bool                           `ddl:"static" sql:"EXTERNAL VOLUME"`
-	IfExists              *bool                          `ddl:"keyword" sql:"IF EXISTS"`
-	name                  AccountObjectIdentifier        `ddl:"identifier"`
-	RemoveStorageLocation *string                        `ddl:"parameter,single_quotes,no_equals" sql:"REMOVE STORAGE_LOCATION"`
-	Set                   *AlterExternalVolumeSet        `ddl:"keyword" sql:"SET"`
-	AddStorageLocation    *ExternalVolumeStorageLocation `ddl:"parameter" sql:"ADD STORAGE_LOCATION"`
+	alter                 bool                                      `ddl:"static" sql:"ALTER"`
+	externalVolume        bool                                      `ddl:"static" sql:"EXTERNAL VOLUME"`
+	IfExists              *bool                                     `ddl:"keyword" sql:"IF EXISTS"`
+	name                  AccountObjectIdentifier                   `ddl:"identifier"`
+	RemoveStorageLocation *string                                   `ddl:"parameter,single_quotes,no_equals" sql:"REMOVE STORAGE_LOCATION"`
+	Set                   *AlterExternalVolumeSet                   `ddl:"keyword" sql:"SET"`
+	AddStorageLocation    *ExternalVolumeStorageLocationItem        `ddl:"parameter" sql:"ADD STORAGE_LOCATION"`
+	UpdateStorageLocation *AlterExternalVolumeUpdateStorageLocation `ddl:"keyword" sql:"UPDATE"`
 }
 
 type AlterExternalVolumeSet struct {
 	AllowWrites *bool   `ddl:"parameter" sql:"ALLOW_WRITES"`
 	Comment     *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type AlterExternalVolumeUpdateStorageLocation struct {
+	StorageLocation string                          `ddl:"parameter,single_quotes,no_equals" sql:"STORAGE_LOCATION"`
+	Credentials     ExternalVolumeUpdateCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
+}
+
+type ExternalVolumeUpdateCredentials struct {
+	AwsKeyId     string `ddl:"parameter,single_quotes" sql:"AWS_KEY_ID"`
+	AwsSecretKey string `ddl:"parameter,single_quotes" sql:"AWS_SECRET_KEY"`
 }
 
 // DropExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-external-volume.

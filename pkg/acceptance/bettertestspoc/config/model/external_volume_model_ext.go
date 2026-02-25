@@ -12,7 +12,7 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 		switch {
 		case v.S3StorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
-				"storage_location_name": tfconfig.StringVariable(v.S3StorageLocationParams.Name),
+				"storage_location_name": tfconfig.StringVariable(v.Name),
 				"storage_provider":      tfconfig.StringVariable(string(v.S3StorageLocationParams.StorageProvider)),
 				"storage_aws_role_arn":  tfconfig.StringVariable(v.S3StorageLocationParams.StorageAwsRoleArn),
 				"storage_base_url":      tfconfig.StringVariable(v.S3StorageLocationParams.StorageBaseUrl),
@@ -29,7 +29,7 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 			maps[i] = tfconfig.MapVariable(m)
 		case v.GCSStorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
-				"storage_location_name": tfconfig.StringVariable(v.GCSStorageLocationParams.Name),
+				"storage_location_name": tfconfig.StringVariable(v.Name),
 				"storage_provider":      tfconfig.StringVariable(v.GCSStorageLocationParams.StorageProviderGcs),
 				"storage_base_url":      tfconfig.StringVariable(v.GCSStorageLocationParams.StorageBaseUrl),
 			}
@@ -42,7 +42,7 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 			maps[i] = tfconfig.MapVariable(m)
 		case v.AzureStorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
-				"storage_location_name": tfconfig.StringVariable(v.AzureStorageLocationParams.Name),
+				"storage_location_name": tfconfig.StringVariable(v.Name),
 				"storage_provider":      tfconfig.StringVariable(v.AzureStorageLocationParams.StorageProviderAzure),
 				"azure_tenant_id":       tfconfig.StringVariable(v.AzureStorageLocationParams.AzureTenantId),
 				"storage_base_url":      tfconfig.StringVariable(v.AzureStorageLocationParams.StorageBaseUrl),
