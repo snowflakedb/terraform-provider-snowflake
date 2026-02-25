@@ -10,7 +10,7 @@ import (
 // TODO(SNOW-1501905): Remove after complex non-list type overrides are handled
 func (d *DynamicTableModel) WithTargetLag(targetLag []sdk.TargetLag) *DynamicTableModel {
 	if len(targetLag) != 1 {
-		log.Fatalf("expected exactly one target lag, got %d", len(targetLag))
+		log.Panicf("expected exactly one target lag, got %d", len(targetLag))
 	}
 
 	if targetLag[0].MaximumDuration != nil {
@@ -25,6 +25,6 @@ func (d *DynamicTableModel) WithTargetLag(targetLag []sdk.TargetLag) *DynamicTab
 		}))
 	}
 
-	log.Fatalf("neither maximum_duration nor downstream is set in target lag: %+v", targetLag[0])
+	log.Panicf("neither maximum_duration nor downstream is set in target lag: %+v", targetLag[0])
 	return nil
 }

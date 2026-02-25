@@ -244,7 +244,7 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 func TestAcc_FunctionPython_DecfloatUnsupported(t *testing.T) {
 	funcName := "some_function"
 	argName := "x"
-	dataType := testdatatypes.DataTypeDecflaot
+	dataType := testdatatypes.DataTypeDecfloat
 
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
 

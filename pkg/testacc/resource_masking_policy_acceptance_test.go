@@ -1113,7 +1113,7 @@ func TestAcc_MaskingPolicy_Decfloat(t *testing.T) {
 					HasArguments([]sdk.TableColumnSignature{
 						{
 							Name: "A",
-							Type: testdatatypes.DataTypeDecflaot,
+							Type: testdatatypes.DataTypeDecfloat,
 						},
 					}),
 				),

@@ -13,7 +13,7 @@ var (
 	DataTypeVarchar_100, _  = datatypes.ParseDataType("VARCHAR(100)")
 	DataTypeVarchar_200, _  = datatypes.ParseDataType("VARCHAR(200)")
 	DataTypeVarchar, _      = datatypes.ParseDataType("VARCHAR")
-	DataTypeDecflaot, _     = datatypes.ParseDataType("DECFLOAT")
+	DataTypeDecfloat, _     = datatypes.ParseDataType("DECFLOAT")
 	DataTypeText, _         = datatypes.ParseDataType("TEXT")
 	DataTypeChar, _         = datatypes.ParseDataType("CHAR")
 	DataTypeString, _       = datatypes.ParseDataType("STRING")
