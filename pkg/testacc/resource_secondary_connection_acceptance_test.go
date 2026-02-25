@@ -25,6 +25,8 @@ import (
 
 func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed; also, different regions needed
+
+	// TODO: Unskip after adding necessary configs
 	t.Skipf("Skipped due to 003813 (23001): The connection cannot be failed over to an account in the same region")
 
 	// create primary connection

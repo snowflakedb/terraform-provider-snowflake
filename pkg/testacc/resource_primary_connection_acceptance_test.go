@@ -26,6 +26,8 @@ import (
 
 func TestAcc_PrimaryConnection_Basic(t *testing.T) {
 	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
+
+	// TODO: Unskip after adding necessary configs
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -150,6 +152,8 @@ func TestAcc_PrimaryConnection_Basic(t *testing.T) {
 
 func TestAcc_PrimaryConnection_ExternalChanges(t *testing.T) {
 	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
+
+	// TODO: Unskip after adding necessary configs
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
