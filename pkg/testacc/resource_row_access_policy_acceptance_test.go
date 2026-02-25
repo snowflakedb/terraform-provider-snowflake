@@ -1087,3 +1087,49 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeFewerArguments(t *testing.T)
 		},
 	})
 }
+
+func TestAcc_RowAccessPolicy_Decfloat(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	argument := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeDecfloat,
+		},
+	}
+
+	body := "case when current_role() in ('ANALYST') then true else false end"
+
+	basic := model.RowAccessPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name(), argument, body)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.RowAccessPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, basic),
+				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, basic.ResourceReference()).
+					HasNameString(id.Name()).
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasDatabaseString(id.DatabaseName()).
+					HasSchemaString(id.SchemaName()).
+					HasBodyString(body).
+					HasCommentString("").
+					HasArguments(argument),
+					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.name", "A")),
+					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DataTypeDecfloat.ToSql())),
+				),
+			},
+			{
+				Config:            accconfig.FromModels(t, basic),
+				ResourceName:      basic.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
