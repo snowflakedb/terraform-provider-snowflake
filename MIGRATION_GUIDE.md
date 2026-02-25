@@ -224,7 +224,7 @@ Reference: [#4403](https://github.com/snowflakedb/terraform-provider-snowflake/i
 
 ### *(bugfix)* Fixed allowed_accounts update in snowflake_failover_group
 
-Issue [#3946](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3946) has been resolved. Previously, updating the `allowed_accounts` field would fail due to swapped parameters in the SDK call. This has been fixed and `allowed_accounts` can now be updated correctly without requiring workarounds.
+Previously, updating the `allowed_accounts` field would fail because the constructed request was not correct. This has been fixed and `allowed_accounts` can now be updated correctly without requiring workarounds.
 
 No changes in the configuration are required.
 
