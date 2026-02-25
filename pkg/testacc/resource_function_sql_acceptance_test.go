@@ -181,7 +181,7 @@ func TestAcc_FunctionSql_InlineFull(t *testing.T) {
 
 func TestAcc_FunctionSql_Decfloat(t *testing.T) {
 	argName := "abc"
-	dataType := testdatatypes.DataTypeDecflaot
+	dataType := testdatatypes.DataTypeDecfloat
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
 
 	definition := testClient().Function.SampleSqlDefinitionWithArgument(t, argName)

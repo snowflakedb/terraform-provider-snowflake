@@ -191,7 +191,7 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 
 func TestAcc_ProcedureSql_DecfloatUnsupported(t *testing.T) {
 	argName := "x"
-	dataType := testdatatypes.DataTypeDecflaot
+	dataType := testdatatypes.DataTypeDecfloat
 
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
 
