@@ -50,7 +50,7 @@ type HybridTableColumn struct {
 }
 
 type HybridTableOutOfLineConstraint struct {
-	Name               *string              `ddl:"keyword,double_quotes" sql:"CONSTRAINT"`
+	Name               *string              `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
 	Type               ColumnConstraintType `ddl:"keyword"`
 	Columns            []string             `ddl:"keyword,double_quotes,parentheses"`
 	ForeignKey         *OutOfLineForeignKey `ddl:"keyword"`
@@ -118,12 +118,12 @@ type HybridTableConstraintActionAdd struct {
 type HybridTableConstraintActionRename struct {
 	renameConstraint bool   `ddl:"static" sql:"RENAME CONSTRAINT"`
 	OldName          string `ddl:"keyword,double_quotes"`
-	NewName          string `ddl:"keyword,double_quotes" sql:"TO"`
+	NewName          string `ddl:"parameter,no_equals,double_quotes" sql:"TO"`
 }
 
 type HybridTableConstraintActionDrop struct {
 	drop           bool     `ddl:"static" sql:"DROP"`
-	ConstraintName *string  `ddl:"keyword,double_quotes" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
@@ -196,7 +196,7 @@ type HybridTableUnsetProperties struct {
 	ChangeTracking             *bool   `ddl:"keyword" sql:"CHANGE_TRACKING"`
 	DefaultDdlCollation        *bool   `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
 	EnableSchemaEvolution      *bool   `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	ContactPurpose             *string `ddl:"keyword" sql:"CONTACT"`
+	ContactPurpose             *string `ddl:"parameter,no_equals" sql:"CONTACT"`
 	Comment                    *bool   `ddl:"keyword" sql:"COMMENT"`
 }
 

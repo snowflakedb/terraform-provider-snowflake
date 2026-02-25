@@ -16,7 +16,7 @@ var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
-	OptionalText("Name", g.KeywordOptions().DoubleQuotes().SQL("CONSTRAINT")).
+	OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.ColumnConstraintType](), g.KeywordOptions().Required()).
 	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes()).
 	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions()).
@@ -68,14 +68,14 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 		g.NewQueryStruct("HybridTableConstraintActionRename").
 			SQL("RENAME CONSTRAINT").
 			Text("OldName", g.KeywordOptions().Required().DoubleQuotes()).
-			Text("NewName", g.KeywordOptions().Required().DoubleQuotes().SQL("TO")),
+			AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().DoubleQuotes(), "NewName"),
 		g.KeywordOptions(),
 	).
 	OptionalQueryStructField(
 		"Drop",
 		g.NewQueryStruct("HybridTableConstraintActionDrop").
 			SQL("DROP").
-			OptionalText("ConstraintName", g.KeywordOptions().DoubleQuotes().SQL("CONSTRAINT")).
+			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "ConstraintName").
 			OptionalSQL("PRIMARY KEY").
 			OptionalSQL("UNIQUE").
 			OptionalSQL("FOREIGN KEY").
@@ -154,7 +154,7 @@ var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
 	OptionalSQL("CHANGE_TRACKING").
 	OptionalSQL("DEFAULT_DDL_COLLATION").
 	OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
-	OptionalText("ContactPurpose", g.KeywordOptions().SQL("CONTACT")).
+	OptionalAssignmentWithFieldName("CONTACT", "*string", g.ParameterOptions().NoEquals(), "ContactPurpose").
 	OptionalSQL("COMMENT").
 	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "ContactPurpose", "Comment")
 

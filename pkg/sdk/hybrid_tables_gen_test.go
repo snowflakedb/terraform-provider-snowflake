@@ -85,7 +85,7 @@ func TestHybridTables_Create(t *testing.T) {
 			},
 		}
 		opts.Comment = String("test comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY FOREIGN KEY REFERENCES other_table ("ID"), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY FOREIGN KEY REFERENCES other_table (ID), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("with columns and constraints", func(t *testing.T) {
