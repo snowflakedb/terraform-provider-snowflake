@@ -80,7 +80,7 @@ var storageLocationItemDef = g.NewQueryStruct("ExternalVolumeStorageLocationItem
 	QueryStructField(
 		"ExternalVolumeStorageLocation",
 		storageLocationDef,
-		g.ListOptions().Parentheses().NoComma(),
+		g.ListOptions().Parentheses().NoComma().Required(),
 	)
 
 var updateStorageLocationDef = g.NewQueryStruct("AlterExternalVolumeUpdateStorageLocation").

@@ -215,7 +215,6 @@ func ParseExternalVolumeDescribed(props []ExternalVolumeProperty) (ExternalVolum
 			externalVolumeDetails.Active = p.Value
 		case p.Name == "ALLOW_WRITES":
 			externalVolumeDetails.AllowWrites = p.Value
-		// TODO: don't assume the order is correct. Parse the location index from the name.
 		case strings.Contains(p.Name, "STORAGE_LOCATION_"):
 			var raw externalVolumeStorageLocationJsonRaw
 			err := json.Unmarshal([]byte(p.Value), &raw)
@@ -254,7 +253,7 @@ func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
 			return fmt.Errorf("A storage location's Name in this volume could not be parsed.")
 		}
 		if !slices.Contains(AsStringList(AllStorageProviderValuesInDescribe), s.StorageProvider) {
-			return fmt.Errorf("invalid storage provider parsed: %v", s)
+			return fmt.Errorf("invalid storage provider parsed: %s", s.StorageProvider)
 		}
 		if len(s.StorageBaseUrl) == 0 {
 			return fmt.Errorf("A storage location's StorageBaseUrl in this volume could not be parsed.")

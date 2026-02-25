@@ -57,4 +57,3 @@ func (e *ExternalVolumeDetailsAssert) HasAllowWrites(expected string) *ExternalV
 	})
 	return e
 }
-

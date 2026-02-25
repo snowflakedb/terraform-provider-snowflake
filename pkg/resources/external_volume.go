@@ -177,6 +177,7 @@ func ImportExternalVolume(ctx context.Context, d *schema.ResourceData, meta any)
 
 	storageLocations := make([]map[string]any, len(parsedExternalVolumeDescribed.StorageLocations))
 	for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
+		// TODO (next PRs): deduplicate with read and fill the rest of the fields.
 		m := map[string]any{
 			"storage_location_name": loc.Name,
 			"storage_provider":      loc.StorageProvider,
@@ -192,6 +193,8 @@ func ImportExternalVolume(ctx context.Context, d *schema.ResourceData, meta any)
 			m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
 		case loc.S3CompatStorageLocation != nil:
 			m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
+		case loc.GCSStorageLocation != nil:
+			m["encryption_kms_key_id"] = loc.GCSStorageLocation.EncryptionKmsKeyId
 		}
 		storageLocations[i] = m
 	}
@@ -295,6 +298,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 
 		storageLocations := make([]map[string]any, len(parsedExternalVolumeDescribed.StorageLocations))
 		for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
+			// TODO (next PRs): deduplicate with imports and fill the rest of the fields.
 			m := map[string]any{
 				"storage_location_name": loc.Name,
 				"storage_provider":      loc.StorageProvider,
@@ -310,6 +314,8 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 				m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
 			case loc.S3CompatStorageLocation != nil:
 				m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
+			case loc.GCSStorageLocation != nil:
+				m["encryption_kms_key_id"] = loc.GCSStorageLocation.EncryptionKmsKeyId
 			}
 			storageLocations[i] = m
 		}
