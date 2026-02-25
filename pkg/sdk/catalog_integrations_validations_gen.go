@@ -21,8 +21,8 @@ func (opts *CreateCatalogIntegrationOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateCatalogIntegrationOptions", "IfNotExists", "OrReplace"))
 	}
-	if !exactlyOneValueSet(opts.AwsGlueCatalogSourceParams, opts.ObjectStorageCatalogSourceParams, opts.PolarisCatalogSourceParams, opts.IcebergRestCatalogSourceParams, opts.SapBdcCatalogSourceParams) {
-		errs = append(errs, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "PolarisCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"))
+	if !exactlyOneValueSet(opts.AwsGlueCatalogSourceParams, opts.ObjectStorageCatalogSourceParams, opts.OpenCatalogCatalogSourceParams, opts.IcebergRestCatalogSourceParams, opts.SapBdcCatalogSourceParams) {
+		errs = append(errs, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"))
 	}
 	if valueSet(opts.IcebergRestCatalogSourceParams) {
 		if !exactlyOneValueSet(opts.IcebergRestCatalogSourceParams.OAuthRestAuthentication, opts.IcebergRestCatalogSourceParams.BearerRestAuthentication, opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication) {

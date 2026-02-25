@@ -8,8 +8,11 @@ type (
 	AutoEventLogging                                                    string
 	AvroCompression                                                     string
 	BinaryFormat                                                        string
+	CatalogIntegrationAccessDelegationMode                              string
+	CatalogIntegrationCatalogApiType                                    string
 	CatalogIntegrationCatalogSourceType                                 string
 	CatalogIntegrationRestAuthenticationType                            string
+	CatalogIntegrationTableFormat                                       string
 	ClientTypesOption                                                   string
 	ComputePoolInstanceFamily                                           string
 	CsvCompression                                                      string
@@ -75,18 +78,4 @@ const (
 const (
 	StorageProviderGCS   StorageProvider = "GCS"
 	StorageProviderAzure StorageProvider = "AZURE"
-)
-
-const (
-	CatalogSourceTypeAWSGlue              CatalogIntegrationCatalogSourceType = "GLUE"
-	CatalogSourceTypeObjectStorage        CatalogIntegrationCatalogSourceType = "OBJECT_STORE"
-	CatalogSourceTypePolaris              CatalogIntegrationCatalogSourceType = "POLARIS"
-	CatalogSourceTypeIcebergREST          CatalogIntegrationCatalogSourceType = "ICEBERG_REST"
-	CatalogSourceTypeSAPBusinessDataCloud CatalogIntegrationCatalogSourceType = "SAP_BDC"
-)
-
-const (
-	RestAuthenticationTypeOAuth  CatalogIntegrationRestAuthenticationType = "OAUTH"
-	RestAuthenticationTypeBearer CatalogIntegrationRestAuthenticationType = "BEARER"
-	RestAuthenticationTypeSigV4  CatalogIntegrationRestAuthenticationType = "SIGV4"
 )

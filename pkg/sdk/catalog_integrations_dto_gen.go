@@ -16,11 +16,10 @@ type CreateCatalogIntegrationRequest struct {
 	name                             AccountObjectIdentifier // required
 	AwsGlueCatalogSourceParams       *AwsGlueParamsRequest
 	ObjectStorageCatalogSourceParams *ObjectStorageParamsRequest
-	PolarisCatalogSourceParams       *PolarisParamsRequest
+	OpenCatalogCatalogSourceParams   *OpenCatalogParamsRequest
 	IcebergRestCatalogSourceParams   *IcebergRestParamsRequest
 	SapBdcCatalogSourceParams        *SapBdcParamsRequest
-	TableFormat                      string // required
-	Enabled                          bool   // required
+	Enabled                          bool // required
 	RefreshIntervalSeconds           *int
 	Comment                          *string
 }
@@ -33,19 +32,20 @@ type AwsGlueParamsRequest struct {
 }
 
 type ObjectStorageParamsRequest struct {
+	TableFormat CatalogIntegrationTableFormat // required
 }
 
-type PolarisParamsRequest struct {
+type OpenCatalogParamsRequest struct {
 	CatalogNamespace   *string
-	RestConfig         PolarisRestConfigRequest
+	RestConfig         OpenCatalogRestConfigRequest
 	RestAuthentication OAuthRestAuthenticationRequest
 }
 
-type PolarisRestConfigRequest struct {
+type OpenCatalogRestConfigRequest struct {
 	CatalogUri           string // required
-	CatalogApiType       *string
+	CatalogApiType       *CatalogIntegrationCatalogApiType
 	CatalogName          string // required
-	AccessDelegationMode *string
+	AccessDelegationMode *CatalogIntegrationAccessDelegationMode
 }
 
 type OAuthRestAuthenticationRequest struct {
@@ -67,8 +67,8 @@ type IcebergRestRestConfigRequest struct {
 	CatalogUri           string // required
 	Prefix               *string
 	CatalogName          *string
-	CatalogApiType       *string
-	AccessDelegationMode *string
+	CatalogApiType       *CatalogIntegrationCatalogApiType
+	AccessDelegationMode *CatalogIntegrationAccessDelegationMode
 }
 
 type BearerRestAuthenticationRequest struct {

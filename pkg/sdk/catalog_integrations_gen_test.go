@@ -8,23 +8,19 @@ import (
 
 // Added manually
 const (
-	glueAwsRoleArn         = "arn:aws:iam::123456789012:role/sqsAccess"
-	glueCatalogId          = "123456789012"
-	glueRegion             = "us-east-2"
-	catalogNamespace       = "myNamespace"
-	polarisCatalogUri      = "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
-	restCatalogUri         = "https://api.tabular.io/ws"
-	catalogName            = "my_catalog_name"
-	sapBdcInvitationLink   = "https://example.hanacloud.ondemand.com/?code=123e4567-e89b-12d3-a456-426614174000"
-	oAuthClientId          = "my_client_id"
-	oAuthClientSecret      = "my_client_secret"
-	oAuthAllowedScope      = "PRINCIPAL_ROLE:ALL"
-	oAuthTokenUri          = "https://api.tabular.io/ws/v1/oauth/tokens"
-	sigV4IamRole           = "arn:aws:iam::123456789012:role/my-role"
-	sigV4SignignRegion     = "us-west-2"
-	sigV4ExternalId        = "external_id"
-	refreshIntervalSeconds = 60
-	comment                = "test comment"
+	glueAwsRoleArn       = "arn:aws:iam::123456789012:role/sqsAccess"
+	glueCatalogId        = "123456789012"
+	glueRegion           = "us-east-2"
+	polarisCatalogUri    = "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
+	restCatalogUri       = "https://api.tabular.io/ws"
+	sapBdcInvitationLink = "https://example.hanacloud.ondemand.com/?code=123e4567-e89b-12d3-a456-426614174000"
+	oAuthClientId        = "my_client_id"
+	oAuthClientSecret    = "my_client_secret"
+	oAuthAllowedScope    = "PRINCIPAL_ROLE:ALL"
+	oAuthTokenUri        = "https://api.tabular.io/ws/v1/oauth/tokens"
+	sigV4IamRole         = "arn:aws:iam::123456789012:role/my-role"
+	sigV4SigningRegion   = "us-west-2"
+	sigV4ExternalId      = "external_id"
 )
 
 func TestCatalogIntegrations_Create(t *testing.T) {
@@ -39,29 +35,29 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 				GlueAwsRoleArn: glueAwsRoleArn,
 				GlueCatalogId:  glueCatalogId,
 			},
-			TableFormat: "ICEBERG",
-			Enabled:     true,
+			Enabled: true,
 		}
 	}
 
 	// Minimal valid CreateCatalogIntegrationOptions for object storage
 	defaultOptsObjectStorage := func() *CreateCatalogIntegrationOptions {
 		return &CreateCatalogIntegrationOptions{
-			name:                             id,
-			ObjectStorageCatalogSourceParams: new(ObjectStorageParams),
-			TableFormat:                      "DELTA",
-			Enabled:                          true,
+			name: id,
+			ObjectStorageCatalogSourceParams: &ObjectStorageParams{
+				TableFormat: CatalogIntegrationTableFormatDelta,
+			},
+			Enabled: true,
 		}
 	}
 
-	// Minimal valid CreateCatalogIntegrationOptions for Polaris
-	defaultOptsPolaris := func() *CreateCatalogIntegrationOptions {
+	// Minimal valid CreateCatalogIntegrationOptions for Open Catalog
+	defaultOptsOpenCatalog := func() *CreateCatalogIntegrationOptions {
 		return &CreateCatalogIntegrationOptions{
 			name: id,
-			PolarisCatalogSourceParams: &PolarisParams{
-				RestConfig: PolarisRestConfig{
+			OpenCatalogCatalogSourceParams: &OpenCatalogParams{
+				RestConfig: OpenCatalogRestConfig{
 					CatalogUri:  polarisCatalogUri,
-					CatalogName: catalogName,
+					CatalogName: "my_catalog_name",
 				},
 				RestAuthentication: OAuthRestAuthentication{
 					OauthClientId:      oAuthClientId,
@@ -69,8 +65,7 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 					OauthAllowedScopes: []StringListItemWrapper{{Value: oAuthAllowedScope}},
 				},
 			},
-			TableFormat: "ICEBERG",
-			Enabled:     true,
+			Enabled: true,
 		}
 	}
 
@@ -86,8 +81,7 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 					Sigv4IamRole: sigV4IamRole,
 				},
 			},
-			TableFormat: "ICEBERG",
-			Enabled:     true,
+			Enabled: true,
 		}
 	}
 
@@ -100,8 +94,7 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 					SapBdcInvitationLink: sapBdcInvitationLink,
 				},
 			},
-			TableFormat: "DELTA",
-			Enabled:     true,
+			Enabled: true,
 		}
 	}
 
@@ -125,18 +118,18 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateCatalogIntegrationOptions", "IfNotExists", "OrReplace"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AwsGlueCatalogSourceParams opts.ObjectStorageCatalogSourceParams opts.PolarisCatalogSourceParams opts.IcebergRestCatalogSourceParams opts.SapBdcCatalogSourceParams] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AwsGlueCatalogSourceParams opts.ObjectStorageCatalogSourceParams opts.OpenCatalogCatalogSourceParams opts.IcebergRestCatalogSourceParams opts.SapBdcCatalogSourceParams] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AwsGlueCatalogSourceParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "PolarisCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"))
 	})
 
 	// variant added manually
-	t.Run("validation: exactly one field from [opts.AwsGlueCatalogSourceParams opts.ObjectStorageCatalogSourceParams opts.PolarisCatalogSourceParams opts.IcebergRestCatalogSourceParams opts.SapBdcCatalogSourceParams] should be present - more present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AwsGlueCatalogSourceParams opts.ObjectStorageCatalogSourceParams opts.OpenCatalogCatalogSourceParams opts.IcebergRestCatalogSourceParams opts.SapBdcCatalogSourceParams] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AwsGlueCatalogSourceParams = new(AwsGlueParams)
 		opts.ObjectStorageCatalogSourceParams = new(ObjectStorageParams)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "PolarisCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions", "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"))
 	})
 
 	t.Run("validation: exactly one field from [opts.IcebergRestCatalogSourceParams.OAuthRestAuthentication opts.IcebergRestCatalogSourceParams.BearerRestAuthentication opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication] should be present", func(t *testing.T) {
@@ -153,9 +146,47 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCatalogIntegrationOptions.IcebergRestCatalogSourceParams", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"))
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	// Manually added basic for each variant
+	t.Run("basic - AWS GLue", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION %s CATALOG_SOURCE = GLUE GLUE_AWS_ROLE_ARN = '%s' GLUE_CATALOG_ID = '%s' TABLE_FORMAT = ICEBERG ENABLED = true", id.FullyQualifiedName(), glueAwsRoleArn, glueCatalogId)
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION %s CATALOG_SOURCE = GLUE TABLE_FORMAT = ICEBERG GLUE_AWS_ROLE_ARN = '%s' GLUE_CATALOG_ID = '%s' ENABLED = true", id.FullyQualifiedName(), glueAwsRoleArn, glueCatalogId)
+	})
+
+	t.Run("basic - object storage", func(t *testing.T) {
+		opts := defaultOptsObjectStorage()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION %s CATALOG_SOURCE = OBJECT_STORE TABLE_FORMAT = DELTA ENABLED = true", id.FullyQualifiedName())
+	})
+
+	t.Run("basic - Open Catalog", func(t *testing.T) {
+		opts := defaultOptsOpenCatalog()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION %s "+
+			"CATALOG_SOURCE = POLARIS "+
+			"TABLE_FORMAT = ICEBERG "+
+			"REST_CONFIG = (CATALOG_URI = '%s' CATALOG_NAME = 'my_catalog_name') "+
+			"REST_AUTHENTICATION = (TYPE = OAUTH OAUTH_CLIENT_ID = '%s' OAUTH_CLIENT_SECRET = '%s' OAUTH_ALLOWED_SCOPES = ('%s')) "+
+			"ENABLED = true",
+			id.FullyQualifiedName(), polarisCatalogUri, oAuthClientId, oAuthClientSecret, oAuthAllowedScope)
+	})
+
+	t.Run("basic - Iceberg REST", func(t *testing.T) {
+		opts := defaultOptsIcebergRest()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION %s "+
+			"CATALOG_SOURCE = ICEBERG_REST "+
+			"TABLE_FORMAT = ICEBERG "+
+			"REST_CONFIG = (CATALOG_URI = '%s') "+
+			"REST_AUTHENTICATION = (TYPE = SIGV4 SIGV4_IAM_ROLE = '%s') "+
+			"ENABLED = true",
+			id.FullyQualifiedName(), restCatalogUri, sigV4IamRole)
+	})
+
+	t.Run("basic - SAP Business Data Cloud", func(t *testing.T) {
+		opts := defaultOptsSapBdc()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION %s "+
+			"CATALOG_SOURCE = SAP_BDC "+
+			"TABLE_FORMAT = DELTA "+
+			"REST_CONFIG = (SAP_BDC_INVITATION_LINK = '%s') "+
+			"ENABLED = true",
+			id.FullyQualifiedName(), sapBdcInvitationLink)
 	})
 
 	// Manually added all options for each variant
@@ -163,62 +194,139 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 		opts := defaultOptsAws()
 		opts.IfNotExists = Bool(true)
 		opts.AwsGlueCatalogSourceParams.GlueRegion = String(glueRegion)
-		opts.AwsGlueCatalogSourceParams.CatalogNamespace = String(catalogNamespace)
+		opts.AwsGlueCatalogSourceParams.CatalogNamespace = String("myNamespace")
 		opts.Enabled = false
-		opts.RefreshIntervalSeconds = Int(refreshIntervalSeconds)
-		opts.Comment = String(comment)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s CATALOG_SOURCE = GLUE "+
-			"GLUE_AWS_ROLE_ARN = '%s' GLUE_CATALOG_ID = '%s' GLUE_REGION = '%s' CATALOG_NAMESPACE = '%s' "+
-			"TABLE_FORMAT = ICEBERG ENABLED = false REFRESH_INTERVAL_SECONDS = %d COMMENT = '%s'",
-			id.FullyQualifiedName(), glueAwsRoleArn, glueCatalogId, glueRegion, catalogNamespace, refreshIntervalSeconds, comment)
+		opts.RefreshIntervalSeconds = Int(60)
+		opts.Comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s "+
+			"CATALOG_SOURCE = GLUE "+
+			"TABLE_FORMAT = ICEBERG "+
+			"GLUE_AWS_ROLE_ARN = '%s' "+
+			"GLUE_CATALOG_ID = '%s' "+
+			"GLUE_REGION = '%s' "+
+			"CATALOG_NAMESPACE = 'myNamespace' "+
+			"ENABLED = false "+
+			"REFRESH_INTERVAL_SECONDS = 60 "+
+			"COMMENT = 'test comment'",
+			id.FullyQualifiedName(), glueAwsRoleArn, glueCatalogId, glueRegion)
 	})
 
 	t.Run("all options - object storage", func(t *testing.T) {
 		opts := defaultOptsObjectStorage()
 		opts.IfNotExists = Bool(true)
 		opts.Enabled = false
-		opts.RefreshIntervalSeconds = Int(refreshIntervalSeconds)
-		opts.Comment = String(comment)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s CATALOG_SOURCE = OBJECT_STORE "+
-			"TABLE_FORMAT = DELTA ENABLED = false REFRESH_INTERVAL_SECONDS = %d COMMENT = '%s'",
-			id.FullyQualifiedName(), refreshIntervalSeconds, comment)
+		opts.RefreshIntervalSeconds = Int(60)
+		opts.Comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s "+
+			"CATALOG_SOURCE = OBJECT_STORE "+
+			"TABLE_FORMAT = DELTA "+
+			"ENABLED = false "+
+			"REFRESH_INTERVAL_SECONDS = 60 "+
+			"COMMENT = 'test comment'",
+			id.FullyQualifiedName())
 	})
 
-	t.Run("all options - Polaris", func(t *testing.T) {
-		opts := defaultOptsPolaris()
+	t.Run("all options - Open Catalog", func(t *testing.T) {
+		opts := defaultOptsOpenCatalog()
 		opts.IfNotExists = Bool(true)
-		opts.PolarisCatalogSourceParams.CatalogNamespace = String(catalogNamespace)
-		opts.PolarisCatalogSourceParams.RestConfig.CatalogApiType = String("PUBLIC")
-		opts.PolarisCatalogSourceParams.RestConfig.AccessDelegationMode = String("VENDED_CREDENTIALS")
-		opts.PolarisCatalogSourceParams.RestAuthentication.OauthTokenUri = String(oAuthTokenUri)
+		opts.OpenCatalogCatalogSourceParams.CatalogNamespace = String("myNamespace")
+		opts.OpenCatalogCatalogSourceParams.RestConfig.CatalogApiType = Pointer(CatalogIntegrationCatalogApiTypePublic)
+		opts.OpenCatalogCatalogSourceParams.RestConfig.AccessDelegationMode = Pointer(CatalogIntegrationAccessDelegationModeVendedCredentials)
+		opts.OpenCatalogCatalogSourceParams.RestAuthentication.OauthTokenUri = String(oAuthTokenUri)
 		opts.Enabled = false
-		opts.RefreshIntervalSeconds = Int(refreshIntervalSeconds)
-		opts.Comment = String(comment)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s CATALOG_SOURCE = POLARIS "+
-			"CATALOG_NAMESPACE = '%s' REST_CONFIG = (CATALOG_URI = '%s' CATALOG_API_TYPE = PUBLIC CATALOG_NAME = '%s' ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS) "+
+		opts.RefreshIntervalSeconds = Int(60)
+		opts.Comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s "+
+			"CATALOG_SOURCE = POLARIS "+
+			"TABLE_FORMAT = ICEBERG "+
+			"CATALOG_NAMESPACE = 'myNamespace' "+
+			"REST_CONFIG = (CATALOG_URI = '%s' CATALOG_API_TYPE = %s CATALOG_NAME = 'my_catalog_name' ACCESS_DELEGATION_MODE = %s) "+
 			"REST_AUTHENTICATION = (TYPE = OAUTH OAUTH_TOKEN_URI = '%s' OAUTH_CLIENT_ID = '%s' OAUTH_CLIENT_SECRET = '%s' OAUTH_ALLOWED_SCOPES = ('%s')) "+
-			"TABLE_FORMAT = ICEBERG ENABLED = false REFRESH_INTERVAL_SECONDS = %d COMMENT = '%s'",
-			id.FullyQualifiedName(), catalogNamespace, polarisCatalogUri, catalogName, oAuthTokenUri, oAuthClientId, oAuthClientSecret, oAuthAllowedScope, refreshIntervalSeconds, comment)
+			"ENABLED = false "+
+			"REFRESH_INTERVAL_SECONDS = 60 "+
+			"COMMENT = 'test comment'",
+			id.FullyQualifiedName(), polarisCatalogUri, CatalogIntegrationCatalogApiTypePublic, CatalogIntegrationAccessDelegationModeVendedCredentials, oAuthTokenUri, oAuthClientId, oAuthClientSecret, oAuthAllowedScope)
 	})
 
-	t.Run("all options - Iceberg REST", func(t *testing.T) {
+	t.Run("all options - Iceberg REST with SigV4", func(t *testing.T) {
 		opts := defaultOptsIcebergRest()
 		opts.IfNotExists = Bool(true)
-		opts.IcebergRestCatalogSourceParams.CatalogNamespace = String(catalogNamespace)
+		opts.IcebergRestCatalogSourceParams.CatalogNamespace = String("myNamespace")
 		opts.IcebergRestCatalogSourceParams.RestConfig.Prefix = String("prefix")
-		opts.IcebergRestCatalogSourceParams.RestConfig.CatalogName = String(catalogName)
-		opts.IcebergRestCatalogSourceParams.RestConfig.CatalogApiType = String("AWS_API_GATEWAY")
-		opts.IcebergRestCatalogSourceParams.RestConfig.AccessDelegationMode = String("VENDED_CREDENTIALS")
+		opts.IcebergRestCatalogSourceParams.RestConfig.CatalogName = String("my_catalog_name")
+		opts.IcebergRestCatalogSourceParams.RestConfig.CatalogApiType = Pointer(CatalogIntegrationCatalogApiTypeAwsApiGateway)
+		opts.IcebergRestCatalogSourceParams.RestConfig.AccessDelegationMode = Pointer(CatalogIntegrationAccessDelegationModeVendedCredentials)
 		opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication.Sigv4ExternalId = String(sigV4ExternalId)
-		opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication.Sigv4SigningRegion = String(sigV4SignignRegion)
+		opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication.Sigv4SigningRegion = String(sigV4SigningRegion)
 		opts.Enabled = false
-		opts.RefreshIntervalSeconds = Int(refreshIntervalSeconds)
-		opts.Comment = String(comment)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s CATALOG_SOURCE = ICEBERG_REST "+
-			"CATALOG_NAMESPACE = '%s' REST_CONFIG = (CATALOG_URI = '%s' PREFIX = 'prefix' CATALOG_NAME = '%s' CATALOG_API_TYPE = AWS_API_GATEWAY ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS) "+
+		opts.RefreshIntervalSeconds = Int(60)
+		opts.Comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s "+
+			"CATALOG_SOURCE = ICEBERG_REST "+
+			"TABLE_FORMAT = ICEBERG "+
+			"CATALOG_NAMESPACE = 'myNamespace' "+
+			"REST_CONFIG = (CATALOG_URI = '%s' PREFIX = 'prefix' CATALOG_NAME = 'my_catalog_name' CATALOG_API_TYPE = %s ACCESS_DELEGATION_MODE = %s) "+
 			"REST_AUTHENTICATION = (TYPE = SIGV4 SIGV4_IAM_ROLE = '%s' SIGV4_SIGNING_REGION = '%s' SIGV4_EXTERNAL_ID = '%s') "+
-			"TABLE_FORMAT = ICEBERG ENABLED = false REFRESH_INTERVAL_SECONDS = %d COMMENT = '%s'",
-			id.FullyQualifiedName(), catalogNamespace, restCatalogUri, catalogName, sigV4IamRole, sigV4SignignRegion, sigV4ExternalId, refreshIntervalSeconds, comment)
+			"ENABLED = false "+
+			"REFRESH_INTERVAL_SECONDS = 60 "+
+			"COMMENT = 'test comment'",
+			id.FullyQualifiedName(), restCatalogUri, CatalogIntegrationCatalogApiTypeAwsApiGateway, CatalogIntegrationAccessDelegationModeVendedCredentials, sigV4IamRole, sigV4SigningRegion, sigV4ExternalId)
+	})
+
+	t.Run("all options - Iceberg REST with OAuth", func(t *testing.T) {
+		opts := defaultOptsIcebergRest()
+		opts.IfNotExists = Bool(true)
+		opts.IcebergRestCatalogSourceParams.CatalogNamespace = String("myNamespace")
+		opts.IcebergRestCatalogSourceParams.RestConfig.Prefix = String("prefix")
+		opts.IcebergRestCatalogSourceParams.RestConfig.CatalogName = String("my_catalog_name")
+		opts.IcebergRestCatalogSourceParams.RestConfig.CatalogApiType = Pointer(CatalogIntegrationCatalogApiTypeAwsApiGateway)
+		opts.IcebergRestCatalogSourceParams.RestConfig.AccessDelegationMode = Pointer(CatalogIntegrationAccessDelegationModeVendedCredentials)
+		opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication = nil
+		opts.IcebergRestCatalogSourceParams.OAuthRestAuthentication = &OAuthRestAuthentication{
+			OauthClientId:      oAuthClientId,
+			OauthClientSecret:  oAuthClientSecret,
+			OauthAllowedScopes: []StringListItemWrapper{{Value: oAuthAllowedScope}},
+		}
+		opts.Enabled = false
+		opts.RefreshIntervalSeconds = Int(60)
+		opts.Comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s "+
+			"CATALOG_SOURCE = ICEBERG_REST "+
+			"TABLE_FORMAT = ICEBERG "+
+			"CATALOG_NAMESPACE = 'myNamespace' "+
+			"REST_CONFIG = (CATALOG_URI = '%s' PREFIX = 'prefix' CATALOG_NAME = 'my_catalog_name' CATALOG_API_TYPE = %s ACCESS_DELEGATION_MODE = %s) "+
+			"REST_AUTHENTICATION = (TYPE = OAUTH OAUTH_CLIENT_ID = '%s' OAUTH_CLIENT_SECRET = '%s' OAUTH_ALLOWED_SCOPES = ('%s')) "+
+			"ENABLED = false "+
+			"REFRESH_INTERVAL_SECONDS = 60 "+
+			"COMMENT = 'test comment'",
+			id.FullyQualifiedName(), restCatalogUri, CatalogIntegrationCatalogApiTypeAwsApiGateway, CatalogIntegrationAccessDelegationModeVendedCredentials, oAuthClientId, oAuthClientSecret, oAuthAllowedScope)
+	})
+
+	t.Run("all options - Iceberg REST with bearer token", func(t *testing.T) {
+		opts := defaultOptsIcebergRest()
+		opts.IfNotExists = Bool(true)
+		opts.IcebergRestCatalogSourceParams.CatalogNamespace = String("myNamespace")
+		opts.IcebergRestCatalogSourceParams.RestConfig.Prefix = String("prefix")
+		opts.IcebergRestCatalogSourceParams.RestConfig.CatalogName = String("my_catalog_name")
+		opts.IcebergRestCatalogSourceParams.RestConfig.CatalogApiType = Pointer(CatalogIntegrationCatalogApiTypeAwsApiGateway)
+		opts.IcebergRestCatalogSourceParams.RestConfig.AccessDelegationMode = Pointer(CatalogIntegrationAccessDelegationModeVendedCredentials)
+		opts.IcebergRestCatalogSourceParams.SigV4RestAuthentication = nil
+		opts.IcebergRestCatalogSourceParams.BearerRestAuthentication = &BearerRestAuthentication{
+			BearerToken: "test-token",
+		}
+		opts.Enabled = false
+		opts.RefreshIntervalSeconds = Int(60)
+		opts.Comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s "+
+			"CATALOG_SOURCE = ICEBERG_REST "+
+			"TABLE_FORMAT = ICEBERG "+
+			"CATALOG_NAMESPACE = 'myNamespace' "+
+			"REST_CONFIG = (CATALOG_URI = '%s' PREFIX = 'prefix' CATALOG_NAME = 'my_catalog_name' CATALOG_API_TYPE = %s ACCESS_DELEGATION_MODE = %s) "+
+			"REST_AUTHENTICATION = (TYPE = BEARER BEARER_TOKEN = 'test-token') "+
+			"ENABLED = false "+
+			"REFRESH_INTERVAL_SECONDS = 60 "+
+			"COMMENT = 'test comment'",
+			id.FullyQualifiedName(), restCatalogUri, CatalogIntegrationCatalogApiTypeAwsApiGateway, CatalogIntegrationAccessDelegationModeVendedCredentials)
 	})
 
 	t.Run("all options - SAP Business Data Cloud", func(t *testing.T) {
@@ -226,12 +334,16 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 		opts.IfNotExists = Bool(true)
 		opts.SapBdcCatalogSourceParams.RestConfig.AccessDelegationMode = String("VENDED_CREDENTIALS")
 		opts.Enabled = false
-		opts.RefreshIntervalSeconds = Int(refreshIntervalSeconds)
-		opts.Comment = String(comment)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s CATALOG_SOURCE = SAP_BDC "+
+		opts.RefreshIntervalSeconds = Int(60)
+		opts.Comment = String("test comment")
+		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION IF NOT EXISTS %s "+
+			"CATALOG_SOURCE = SAP_BDC "+
+			"TABLE_FORMAT = DELTA "+
 			"REST_CONFIG = (SAP_BDC_INVITATION_LINK = '%s' ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS) "+
-			"TABLE_FORMAT = DELTA ENABLED = false REFRESH_INTERVAL_SECONDS = %d COMMENT = '%s'",
-			id.FullyQualifiedName(), sapBdcInvitationLink, refreshIntervalSeconds, comment)
+			"ENABLED = false "+
+			"REFRESH_INTERVAL_SECONDS = 60 "+
+			"COMMENT = 'test comment'",
+			id.FullyQualifiedName(), sapBdcInvitationLink)
 	})
 }
 
@@ -295,7 +407,8 @@ func TestCatalogIntegrations_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER CATALOG INTEGRATION %s SET ENABLED = true", id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
+	// Manually added all options for each allowed authentication type
+	t.Run("all options - Bearer token", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
 		opts.Set = &CatalogIntegrationSet{
@@ -303,12 +416,34 @@ func TestCatalogIntegrations_Alter(t *testing.T) {
 				BearerToken: "test-token",
 			},
 			Enabled:                Bool(true),
-			RefreshIntervalSeconds: Int(refreshIntervalSeconds),
-			Comment:                &StringAllowEmpty{Value: comment},
+			RefreshIntervalSeconds: Int(60),
+			Comment:                &StringAllowEmpty{Value: "test comment"},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER CATALOG INTEGRATION IF EXISTS %s SET "+
-			"REST_AUTHENTICATION = (BEARER_TOKEN = 'test-token') ENABLED = true REFRESH_INTERVAL_SECONDS = %d COMMENT = '%s'",
-			id.FullyQualifiedName(), refreshIntervalSeconds, comment)
+			"REST_AUTHENTICATION = (BEARER_TOKEN = 'test-token') "+
+			"ENABLED = true "+
+			"REFRESH_INTERVAL_SECONDS = %d "+
+			"COMMENT = '%s'",
+			id.FullyQualifiedName(), 60, "test comment")
+	})
+
+	t.Run("all options - OAuth", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.Set = &CatalogIntegrationSet{
+			SetOAuthRestAuthentication: &SetOAuthRestAuthentication{
+				OauthClientSecret: oAuthClientSecret,
+			},
+			Enabled:                Bool(true),
+			RefreshIntervalSeconds: Int(60),
+			Comment:                &StringAllowEmpty{Value: "test comment"},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER CATALOG INTEGRATION IF EXISTS %s SET "+
+			"REST_AUTHENTICATION = (OAUTH_CLIENT_SECRET = '%s') "+
+			"ENABLED = true "+
+			"REFRESH_INTERVAL_SECONDS = %d "+
+			"COMMENT = '%s'",
+			id.FullyQualifiedName(), oAuthClientSecret, 60, "test comment")
 	})
 }
 

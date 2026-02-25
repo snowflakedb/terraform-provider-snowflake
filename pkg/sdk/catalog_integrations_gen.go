@@ -28,17 +28,17 @@ type CreateCatalogIntegrationOptions struct {
 	name                             AccountObjectIdentifier `ddl:"identifier"`
 	AwsGlueCatalogSourceParams       *AwsGlueParams          `ddl:"keyword"`
 	ObjectStorageCatalogSourceParams *ObjectStorageParams    `ddl:"keyword"`
-	PolarisCatalogSourceParams       *PolarisParams          `ddl:"keyword"`
+	OpenCatalogCatalogSourceParams   *OpenCatalogParams      `ddl:"keyword"`
 	IcebergRestCatalogSourceParams   *IcebergRestParams      `ddl:"keyword"`
 	SapBdcCatalogSourceParams        *SapBdcParams           `ddl:"keyword"`
-	TableFormat                      string                  `ddl:"parameter,no_quotes" sql:"TABLE_FORMAT"`
 	Enabled                          bool                    `ddl:"parameter" sql:"ENABLED"`
 	RefreshIntervalSeconds           *int                    `ddl:"parameter,no_quotes" sql:"REFRESH_INTERVAL_SECONDS"`
 	Comment                          *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type AwsGlueParams struct {
-	catalogSource    string  `ddl:"static" sql:"CATALOG_SOURCE = GLUE"`
+	catalogSource    bool    `ddl:"static" sql:"CATALOG_SOURCE = GLUE"`
+	tableFormat      bool    `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
 	GlueAwsRoleArn   string  `ddl:"parameter,single_quotes" sql:"GLUE_AWS_ROLE_ARN"`
 	GlueCatalogId    string  `ddl:"parameter,single_quotes" sql:"GLUE_CATALOG_ID"`
 	GlueRegion       *string `ddl:"parameter,single_quotes" sql:"GLUE_REGION"`
@@ -46,25 +46,27 @@ type AwsGlueParams struct {
 }
 
 type ObjectStorageParams struct {
-	catalogSource string `ddl:"static" sql:"CATALOG_SOURCE = OBJECT_STORE"`
+	catalogSource bool                          `ddl:"static" sql:"CATALOG_SOURCE = OBJECT_STORE"`
+	TableFormat   CatalogIntegrationTableFormat `ddl:"parameter,no_quotes" sql:"TABLE_FORMAT"`
 }
 
-type PolarisParams struct {
-	catalogSource      string                  `ddl:"static" sql:"CATALOG_SOURCE = POLARIS"`
+type OpenCatalogParams struct {
+	catalogSource      bool                    `ddl:"static" sql:"CATALOG_SOURCE = POLARIS"`
+	tableFormat        bool                    `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
 	CatalogNamespace   *string                 `ddl:"parameter,single_quotes" sql:"CATALOG_NAMESPACE"`
-	RestConfig         PolarisRestConfig       `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
+	RestConfig         OpenCatalogRestConfig   `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
 	RestAuthentication OAuthRestAuthentication `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
 }
 
-type PolarisRestConfig struct {
-	CatalogUri           string  `ddl:"parameter,single_quotes" sql:"CATALOG_URI"`
-	CatalogApiType       *string `ddl:"parameter,no_quotes" sql:"CATALOG_API_TYPE"`
-	CatalogName          string  `ddl:"parameter,single_quotes" sql:"CATALOG_NAME"`
-	AccessDelegationMode *string `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
+type OpenCatalogRestConfig struct {
+	CatalogUri           string                                  `ddl:"parameter,single_quotes" sql:"CATALOG_URI"`
+	CatalogApiType       *CatalogIntegrationCatalogApiType       `ddl:"parameter,no_quotes" sql:"CATALOG_API_TYPE"`
+	CatalogName          string                                  `ddl:"parameter,single_quotes" sql:"CATALOG_NAME"`
+	AccessDelegationMode *CatalogIntegrationAccessDelegationMode `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
 }
 
 type OAuthRestAuthentication struct {
-	restAuthType       string                  `ddl:"static" sql:"TYPE = OAUTH"`
+	restAuthType       bool                    `ddl:"static" sql:"TYPE = OAUTH"`
 	OauthTokenUri      *string                 `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_URI"`
 	OauthClientId      string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_ID"`
 	OauthClientSecret  string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
@@ -72,7 +74,8 @@ type OAuthRestAuthentication struct {
 }
 
 type IcebergRestParams struct {
-	catalogSource            string                    `ddl:"static" sql:"CATALOG_SOURCE = ICEBERG_REST"`
+	catalogSource            bool                      `ddl:"static" sql:"CATALOG_SOURCE = ICEBERG_REST"`
+	tableFormat              bool                      `ddl:"static" sql:"TABLE_FORMAT = ICEBERG"`
 	CatalogNamespace         *string                   `ddl:"parameter,single_quotes" sql:"CATALOG_NAMESPACE"`
 	RestConfig               IcebergRestRestConfig     `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
 	OAuthRestAuthentication  *OAuthRestAuthentication  `ddl:"list,parentheses,no_comma" sql:"REST_AUTHENTICATION ="`
@@ -81,27 +84,28 @@ type IcebergRestParams struct {
 }
 
 type IcebergRestRestConfig struct {
-	CatalogUri           string  `ddl:"parameter,single_quotes" sql:"CATALOG_URI"`
-	Prefix               *string `ddl:"parameter,single_quotes" sql:"PREFIX"`
-	CatalogName          *string `ddl:"parameter,single_quotes" sql:"CATALOG_NAME"`
-	CatalogApiType       *string `ddl:"parameter,no_quotes" sql:"CATALOG_API_TYPE"`
-	AccessDelegationMode *string `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
+	CatalogUri           string                                  `ddl:"parameter,single_quotes" sql:"CATALOG_URI"`
+	Prefix               *string                                 `ddl:"parameter,single_quotes" sql:"PREFIX"`
+	CatalogName          *string                                 `ddl:"parameter,single_quotes" sql:"CATALOG_NAME"`
+	CatalogApiType       *CatalogIntegrationCatalogApiType       `ddl:"parameter,no_quotes" sql:"CATALOG_API_TYPE"`
+	AccessDelegationMode *CatalogIntegrationAccessDelegationMode `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
 }
 
 type BearerRestAuthentication struct {
-	restAuthType string `ddl:"static" sql:"TYPE = BEARER"`
+	restAuthType bool   `ddl:"static" sql:"TYPE = BEARER"`
 	BearerToken  string `ddl:"parameter,single_quotes" sql:"BEARER_TOKEN"`
 }
 
 type SigV4RestAuthentication struct {
-	restAuthType       string  `ddl:"static" sql:"TYPE = SIGV4"`
+	restAuthType       bool    `ddl:"static" sql:"TYPE = SIGV4"`
 	Sigv4IamRole       string  `ddl:"parameter,single_quotes" sql:"SIGV4_IAM_ROLE"`
 	Sigv4SigningRegion *string `ddl:"parameter,single_quotes" sql:"SIGV4_SIGNING_REGION"`
 	Sigv4ExternalId    *string `ddl:"parameter,single_quotes" sql:"SIGV4_EXTERNAL_ID"`
 }
 
 type SapBdcParams struct {
-	catalogSource string           `ddl:"static" sql:"CATALOG_SOURCE = SAP_BDC"`
+	catalogSource bool             `ddl:"static" sql:"CATALOG_SOURCE = SAP_BDC"`
+	tableFormat   bool             `ddl:"static" sql:"TABLE_FORMAT = DELTA"`
 	RestConfig    SapBdcRestConfig `ddl:"list,parentheses,no_comma" sql:"REST_CONFIG ="`
 }
 

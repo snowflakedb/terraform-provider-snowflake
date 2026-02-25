@@ -203,6 +203,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeWorkspace,
 	ObjectTypeProgrammaticAccessToken,
+	ObjectTypeCatalogIntegration,
 }
 
 // TODO(SNOW-1834370): use ToObjectType in other places with type conversion (instead of sdk.ObjectType)
@@ -295,6 +296,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeMcpServer:               PluralObjectTypeMcpServers,
 		ObjectTypeStorageLifecyclePolicy:  PluralObjectTypeStorageLifecyclePolicies,
 		ObjectTypeWorkspace:               PluralObjectTypeWorkspaces,
+		ObjectTypeCatalogIntegration:      PluralObjectTypeCatalogIntegrations,
 	}
 }
 
@@ -422,6 +424,7 @@ const (
 	PluralObjectTypeAgents                   PluralObjectType = "AGENTS"
 	PluralObjectTypeGateways                 PluralObjectType = "GATEWAYS"
 	PluralObjectTypeMcpServers               PluralObjectType = "MCP SERVERS"
+	PluralObjectTypeCatalogIntegrations      PluralObjectType = "CATALOG INTEGRATIONS"
 )
 
 func (p PluralObjectType) String() string {

@@ -1,43 +1,41 @@
 package defs
 
 import (
-	"fmt"
-
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var polarisRestConfigDef = g.NewQueryStruct("PolarisRestConfig").
+var openCatalogRestConfigDef = g.NewQueryStruct("OpenCatalogRestConfig").
 	TextAssignment("CATALOG_URI", g.ParameterOptions().SingleQuotes().Required()).
-	OptionalTextAssignment("CATALOG_API_TYPE", g.ParameterOptions().NoQuotes()).
+	OptionalAssignment("CATALOG_API_TYPE", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType](), g.ParameterOptions().NoQuotes()).
 	TextAssignment("CATALOG_NAME", g.ParameterOptions().SingleQuotes().Required()).
-	OptionalTextAssignment("ACCESS_DELEGATION_MODE", g.ParameterOptions().NoQuotes())
+	OptionalAssignment("ACCESS_DELEGATION_MODE", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode](), g.ParameterOptions().NoQuotes())
 
 var icebergRestRestConfigDef = g.NewQueryStruct("IcebergRestRestConfig").
 	TextAssignment("CATALOG_URI", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("PREFIX", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("CATALOG_NAME", g.ParameterOptions().SingleQuotes()).
-	OptionalTextAssignment("CATALOG_API_TYPE", g.ParameterOptions().NoQuotes()).
-	OptionalTextAssignment("ACCESS_DELEGATION_MODE", g.ParameterOptions().NoQuotes())
+	OptionalAssignment("CATALOG_API_TYPE", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType](), g.ParameterOptions().NoQuotes()).
+	OptionalAssignment("ACCESS_DELEGATION_MODE", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode](), g.ParameterOptions().NoQuotes())
 
 var sapBdcRestConfigDef = g.NewQueryStruct("SapBdcRestConfig").
 	TextAssignment("SAP_BDC_INVITATION_LINK", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("ACCESS_DELEGATION_MODE", g.ParameterOptions().NoQuotes())
 
 var oAuthRestAuthenticationDef = g.NewQueryStruct("OAuthRestAuthentication").
-	PredefinedQueryStructField("restAuthType", "string", g.StaticOptions().SQL(fmt.Sprintf("TYPE = %s", sdkcommons.RestAuthenticationTypeOAuth))).
+	SQLWithCustomFieldName("restAuthType", "TYPE = OAUTH").
 	OptionalTextAssignment("OAUTH_TOKEN_URI", g.ParameterOptions().SingleQuotes()).
 	TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("OAUTH_CLIENT_SECRET", g.ParameterOptions().SingleQuotes().Required()).
 	ListAssignment("OAUTH_ALLOWED_SCOPES", "StringListItemWrapper", g.ParameterOptions().Parentheses().Required())
 
 var bearerRestAuthenticationDef = g.NewQueryStruct("BearerRestAuthentication").
-	PredefinedQueryStructField("restAuthType", "string", g.StaticOptions().SQL(fmt.Sprintf("TYPE = %s", sdkcommons.RestAuthenticationTypeBearer))).
+	SQLWithCustomFieldName("restAuthType", "TYPE = BEARER").
 	TextAssignment("BEARER_TOKEN", g.ParameterOptions().SingleQuotes().Required())
 
 var sigV4RestAuthenticationDef = g.NewQueryStruct("SigV4RestAuthentication").
-	PredefinedQueryStructField("restAuthType", "string", g.StaticOptions().SQL(fmt.Sprintf("TYPE = %s", sdkcommons.RestAuthenticationTypeSigV4))).
+	SQLWithCustomFieldName("restAuthType", "TYPE = SIGV4").
 	TextAssignment("SIGV4_IAM_ROLE", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalTextAssignment("SIGV4_SIGNING_REGION", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SIGV4_EXTERNAL_ID", g.ParameterOptions().SingleQuotes())
@@ -58,7 +56,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"AwsGlueCatalogSourceParams",
 				g.NewQueryStruct("AwsGlueParams").
-					PredefinedQueryStructField("catalogSource", "string", g.StaticOptions().SQL(fmt.Sprintf("CATALOG_SOURCE = %s", sdkcommons.CatalogSourceTypeAWSGlue))).
+					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = GLUE").
+					SQLWithCustomFieldName("tableFormat", "TABLE_FORMAT = ICEBERG").
 					TextAssignment("GLUE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
 					TextAssignment("GLUE_CATALOG_ID", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalTextAssignment("GLUE_REGION", g.ParameterOptions().SingleQuotes()).
@@ -67,16 +66,18 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"ObjectStorageCatalogSourceParams",
 				g.NewQueryStruct("ObjectStorageParams").
-					PredefinedQueryStructField("catalogSource", "string", g.StaticOptions().SQL(fmt.Sprintf("CATALOG_SOURCE = %s", sdkcommons.CatalogSourceTypeObjectStorage))),
+					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = OBJECT_STORE").
+					Assignment("TABLE_FORMAT", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat](), g.ParameterOptions().NoQuotes().Required()),
 				g.KeywordOptions()).
 			OptionalQueryStructField(
-				"PolarisCatalogSourceParams",
-				g.NewQueryStruct("PolarisParams").
-					PredefinedQueryStructField("catalogSource", "string", g.StaticOptions().SQL(fmt.Sprintf("CATALOG_SOURCE = %s", sdkcommons.CatalogSourceTypePolaris))).
+				"OpenCatalogCatalogSourceParams",
+				g.NewQueryStruct("OpenCatalogParams").
+					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = POLARIS").
+					SQLWithCustomFieldName("tableFormat", "TABLE_FORMAT = ICEBERG").
 					OptionalTextAssignment("CATALOG_NAMESPACE", g.ParameterOptions().SingleQuotes()).
 					QueryStructField(
 						"RestConfig",
-						polarisRestConfigDef,
+						openCatalogRestConfigDef,
 						g.ListOptions().SQL("REST_CONFIG =").Parentheses().NoComma()).
 					QueryStructField(
 						"RestAuthentication",
@@ -86,7 +87,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"IcebergRestCatalogSourceParams",
 				g.NewQueryStruct("IcebergRestParams").
-					PredefinedQueryStructField("catalogSource", "string", g.StaticOptions().SQL(fmt.Sprintf("CATALOG_SOURCE = %s", sdkcommons.CatalogSourceTypeIcebergREST))).
+					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = ICEBERG_REST").
+					SQLWithCustomFieldName("tableFormat", "TABLE_FORMAT = ICEBERG").
 					OptionalTextAssignment("CATALOG_NAMESPACE", g.ParameterOptions().SingleQuotes()).
 					QueryStructField(
 						"RestConfig",
@@ -109,19 +111,19 @@ var catalogIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"SapBdcCatalogSourceParams",
 				g.NewQueryStruct("SapBdcParams").
-					PredefinedQueryStructField("catalogSource", "string", g.StaticOptions().SQL(fmt.Sprintf("CATALOG_SOURCE = %s", sdkcommons.CatalogSourceTypeSAPBusinessDataCloud))).
+					SQLWithCustomFieldName("catalogSource", "CATALOG_SOURCE = SAP_BDC").
+					SQLWithCustomFieldName("tableFormat", "TABLE_FORMAT = DELTA").
 					QueryStructField(
 						"RestConfig",
 						sapBdcRestConfigDef,
 						g.ListOptions().SQL("REST_CONFIG =").Parentheses().NoComma()),
 				g.KeywordOptions()).
-			TextAssignment("TABLE_FORMAT", g.ParameterOptions().NoQuotes().Required()).
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			OptionalNumberAssignment("REFRESH_INTERVAL_SECONDS", g.ParameterOptions().NoQuotes()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "IfNotExists", "OrReplace").
-			WithValidation(g.ExactlyOneValueSet, "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "PolarisCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"),
+			WithValidation(g.ExactlyOneValueSet, "AwsGlueCatalogSourceParams", "ObjectStorageCatalogSourceParams", "OpenCatalogCatalogSourceParams", "IcebergRestCatalogSourceParams", "SapBdcCatalogSourceParams"),
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-catalog-integration",

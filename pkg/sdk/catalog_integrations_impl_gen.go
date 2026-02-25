@@ -10,8 +10,10 @@ import (
 
 var _ CatalogIntegrations = (*catalogIntegrations)(nil)
 
-var _ convertibleRow[CatalogIntegration] = new(showCatalogIntegrationsDbRow)
-var _ convertibleRow[CatalogIntegrationProperty] = new(descCatalogIntegrationsDbRow)
+var (
+	_ convertibleRow[CatalogIntegration]         = new(showCatalogIntegrationsDbRow)
+	_ convertibleRow[CatalogIntegrationProperty] = new(descCatalogIntegrationsDbRow)
+)
 
 type catalogIntegrations struct {
 	client *Client
@@ -75,7 +77,6 @@ func (r *CreateCatalogIntegrationRequest) toOpts() *CreateCatalogIntegrationOpti
 		OrReplace:              r.OrReplace,
 		IfNotExists:            r.IfNotExists,
 		name:                   r.name,
-		TableFormat:            r.TableFormat,
 		Enabled:                r.Enabled,
 		RefreshIntervalSeconds: r.RefreshIntervalSeconds,
 		Comment:                r.Comment,
@@ -89,23 +90,25 @@ func (r *CreateCatalogIntegrationRequest) toOpts() *CreateCatalogIntegrationOpti
 		}
 	}
 	if r.ObjectStorageCatalogSourceParams != nil {
-		opts.ObjectStorageCatalogSourceParams = &ObjectStorageParams{}
+		opts.ObjectStorageCatalogSourceParams = &ObjectStorageParams{
+			TableFormat: r.ObjectStorageCatalogSourceParams.TableFormat,
+		}
 	}
-	if r.PolarisCatalogSourceParams != nil {
-		opts.PolarisCatalogSourceParams = &PolarisParams{
-			CatalogNamespace: r.PolarisCatalogSourceParams.CatalogNamespace,
+	if r.OpenCatalogCatalogSourceParams != nil {
+		opts.OpenCatalogCatalogSourceParams = &OpenCatalogParams{
+			CatalogNamespace: r.OpenCatalogCatalogSourceParams.CatalogNamespace,
 		}
-		opts.PolarisCatalogSourceParams.RestConfig = PolarisRestConfig{
-			CatalogUri:           r.PolarisCatalogSourceParams.RestConfig.CatalogUri,
-			CatalogApiType:       r.PolarisCatalogSourceParams.RestConfig.CatalogApiType,
-			CatalogName:          r.PolarisCatalogSourceParams.RestConfig.CatalogName,
-			AccessDelegationMode: r.PolarisCatalogSourceParams.RestConfig.AccessDelegationMode,
+		opts.OpenCatalogCatalogSourceParams.RestConfig = OpenCatalogRestConfig{
+			CatalogUri:           r.OpenCatalogCatalogSourceParams.RestConfig.CatalogUri,
+			CatalogApiType:       r.OpenCatalogCatalogSourceParams.RestConfig.CatalogApiType,
+			CatalogName:          r.OpenCatalogCatalogSourceParams.RestConfig.CatalogName,
+			AccessDelegationMode: r.OpenCatalogCatalogSourceParams.RestConfig.AccessDelegationMode,
 		}
-		opts.PolarisCatalogSourceParams.RestAuthentication = OAuthRestAuthentication{
-			OauthTokenUri:      r.PolarisCatalogSourceParams.RestAuthentication.OauthTokenUri,
-			OauthClientId:      r.PolarisCatalogSourceParams.RestAuthentication.OauthClientId,
-			OauthClientSecret:  r.PolarisCatalogSourceParams.RestAuthentication.OauthClientSecret,
-			OauthAllowedScopes: r.PolarisCatalogSourceParams.RestAuthentication.OauthAllowedScopes,
+		opts.OpenCatalogCatalogSourceParams.RestAuthentication = OAuthRestAuthentication{
+			OauthTokenUri:      r.OpenCatalogCatalogSourceParams.RestAuthentication.OauthTokenUri,
+			OauthClientId:      r.OpenCatalogCatalogSourceParams.RestAuthentication.OauthClientId,
+			OauthClientSecret:  r.OpenCatalogCatalogSourceParams.RestAuthentication.OauthClientSecret,
+			OauthAllowedScopes: r.OpenCatalogCatalogSourceParams.RestAuthentication.OauthAllowedScopes,
 		}
 	}
 	if r.IcebergRestCatalogSourceParams != nil {
@@ -193,8 +196,18 @@ func (r *ShowCatalogIntegrationRequest) toOpts() *ShowCatalogIntegrationOptions 
 }
 
 func (r showCatalogIntegrationsDbRow) convert() (*CatalogIntegration, error) {
-	// TODO: Mapping
-	return &CatalogIntegration{}, nil
+	// Added manually
+	s := &CatalogIntegration{
+		Name:      r.Name,
+		Enabled:   r.Enabled,
+		Type:      r.Type,
+		Category:  r.Category,
+		CreatedOn: r.CreatedOn,
+	}
+	if r.Comment.Valid {
+		s.Comment = r.Comment.String
+	}
+	return s, nil
 }
 
 func (r *DescribeCatalogIntegrationRequest) toOpts() *DescribeCatalogIntegrationOptions {
@@ -205,6 +218,11 @@ func (r *DescribeCatalogIntegrationRequest) toOpts() *DescribeCatalogIntegration
 }
 
 func (r descCatalogIntegrationsDbRow) convert() (*CatalogIntegrationProperty, error) {
-	// TODO: Mapping
-	return &CatalogIntegrationProperty{}, nil
+	// Added manually
+	return &CatalogIntegrationProperty{
+		Name:    r.Property,
+		Type:    r.PropertyType,
+		Value:   r.PropertyValue,
+		Default: r.PropertyDefault,
+	}, nil
 }

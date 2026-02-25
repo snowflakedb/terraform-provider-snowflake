@@ -4,12 +4,10 @@ package sdk
 
 func NewCreateCatalogIntegrationRequest(
 	name AccountObjectIdentifier,
-	tableFormat string,
 	enabled bool,
 ) *CreateCatalogIntegrationRequest {
 	s := CreateCatalogIntegrationRequest{}
 	s.name = name
-	s.TableFormat = tableFormat
 	s.Enabled = enabled
 	return &s
 }
@@ -34,8 +32,8 @@ func (s *CreateCatalogIntegrationRequest) WithObjectStorageCatalogSourceParams(o
 	return s
 }
 
-func (s *CreateCatalogIntegrationRequest) WithPolarisCatalogSourceParams(polarisCatalogSourceParams PolarisParamsRequest) *CreateCatalogIntegrationRequest {
-	s.PolarisCatalogSourceParams = &polarisCatalogSourceParams
+func (s *CreateCatalogIntegrationRequest) WithOpenCatalogCatalogSourceParams(openCatalogCatalogSourceParams OpenCatalogParamsRequest) *CreateCatalogIntegrationRequest {
+	s.OpenCatalogCatalogSourceParams = &openCatalogCatalogSourceParams
 	return s
 }
 
@@ -79,47 +77,50 @@ func (s *AwsGlueParamsRequest) WithCatalogNamespace(catalogNamespace string) *Aw
 	return s
 }
 
-func NewObjectStorageParamsRequest() *ObjectStorageParamsRequest {
+func NewObjectStorageParamsRequest(
+	tableFormat CatalogIntegrationTableFormat,
+) *ObjectStorageParamsRequest {
 	s := ObjectStorageParamsRequest{}
+	s.TableFormat = tableFormat
 	return &s
 }
 
-func NewPolarisParamsRequest() *PolarisParamsRequest {
-	s := PolarisParamsRequest{}
+func NewOpenCatalogParamsRequest() *OpenCatalogParamsRequest {
+	s := OpenCatalogParamsRequest{}
 	return &s
 }
 
-func (s *PolarisParamsRequest) WithCatalogNamespace(catalogNamespace string) *PolarisParamsRequest {
+func (s *OpenCatalogParamsRequest) WithCatalogNamespace(catalogNamespace string) *OpenCatalogParamsRequest {
 	s.CatalogNamespace = &catalogNamespace
 	return s
 }
 
-func (s *PolarisParamsRequest) WithRestConfig(restConfig PolarisRestConfigRequest) *PolarisParamsRequest {
+func (s *OpenCatalogParamsRequest) WithRestConfig(restConfig OpenCatalogRestConfigRequest) *OpenCatalogParamsRequest {
 	s.RestConfig = restConfig
 	return s
 }
 
-func (s *PolarisParamsRequest) WithRestAuthentication(restAuthentication OAuthRestAuthenticationRequest) *PolarisParamsRequest {
+func (s *OpenCatalogParamsRequest) WithRestAuthentication(restAuthentication OAuthRestAuthenticationRequest) *OpenCatalogParamsRequest {
 	s.RestAuthentication = restAuthentication
 	return s
 }
 
-func NewPolarisRestConfigRequest(
+func NewOpenCatalogRestConfigRequest(
 	catalogUri string,
 	catalogName string,
-) *PolarisRestConfigRequest {
-	s := PolarisRestConfigRequest{}
+) *OpenCatalogRestConfigRequest {
+	s := OpenCatalogRestConfigRequest{}
 	s.CatalogUri = catalogUri
 	s.CatalogName = catalogName
 	return &s
 }
 
-func (s *PolarisRestConfigRequest) WithCatalogApiType(catalogApiType string) *PolarisRestConfigRequest {
+func (s *OpenCatalogRestConfigRequest) WithCatalogApiType(catalogApiType CatalogIntegrationCatalogApiType) *OpenCatalogRestConfigRequest {
 	s.CatalogApiType = &catalogApiType
 	return s
 }
 
-func (s *PolarisRestConfigRequest) WithAccessDelegationMode(accessDelegationMode string) *PolarisRestConfigRequest {
+func (s *OpenCatalogRestConfigRequest) WithAccessDelegationMode(accessDelegationMode CatalogIntegrationAccessDelegationMode) *OpenCatalogRestConfigRequest {
 	s.AccessDelegationMode = &accessDelegationMode
 	return s
 }
@@ -189,12 +190,12 @@ func (s *IcebergRestRestConfigRequest) WithCatalogName(catalogName string) *Iceb
 	return s
 }
 
-func (s *IcebergRestRestConfigRequest) WithCatalogApiType(catalogApiType string) *IcebergRestRestConfigRequest {
+func (s *IcebergRestRestConfigRequest) WithCatalogApiType(catalogApiType CatalogIntegrationCatalogApiType) *IcebergRestRestConfigRequest {
 	s.CatalogApiType = &catalogApiType
 	return s
 }
 
-func (s *IcebergRestRestConfigRequest) WithAccessDelegationMode(accessDelegationMode string) *IcebergRestRestConfigRequest {
+func (s *IcebergRestRestConfigRequest) WithAccessDelegationMode(accessDelegationMode CatalogIntegrationAccessDelegationMode) *IcebergRestRestConfigRequest {
 	s.AccessDelegationMode = &accessDelegationMode
 	return s
 }

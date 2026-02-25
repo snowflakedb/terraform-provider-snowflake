@@ -30,6 +30,7 @@ type Client struct {
 	ApplicationRoles             ApplicationRoles
 	Applications                 Applications
 	AuthenticationPolicies       AuthenticationPolicies
+	CatalogIntegrations          CatalogIntegrations
 	Comments                     Comments
 	ComputePools                 ComputePools
 	Connections                  Connections
@@ -161,6 +162,7 @@ func (c *Client) initialize() {
 	c.ApplicationRoles = &applicationRoles{client: c}
 	c.Applications = &applications{client: c}
 	c.AuthenticationPolicies = &authenticationPolicies{client: c}
+	c.CatalogIntegrations = &catalogIntegrations{client: c}
 	c.Comments = &comments{client: c}
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
