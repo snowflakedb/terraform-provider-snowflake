@@ -302,9 +302,6 @@ resource "%[1]s" "%[2]s" {
 		})
 	})
 
-	// External change tests: simulate out-of-band modifications to the backing store (env var)
-	// and verify how Terraform detects (or fails to detect) the drift.
-
 	t.Run("external_change_removes_items_to_null", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: providerForSdkV2FunctionalTestsFactories,
