@@ -98,7 +98,7 @@ func ToColumnConstraintType(s string) (ColumnConstraintType, error) {
 }
 
 type InlineForeignKey struct {
-	TableName  string              `ddl:"keyword" sql:"REFERENCES"`
+	TableName  string              `ddl:"parameter,no_equals" sql:"REFERENCES"`
 	ColumnName []string            `ddl:"keyword,parentheses"`
 	Match      *MatchType          `ddl:"keyword" sql:"MATCH"`
 	On         *ForeignKeyOnAction `ddl:"keyword" sql:"ON"`
