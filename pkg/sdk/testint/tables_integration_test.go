@@ -25,7 +25,6 @@ type expectedColumn struct {
 	Type sdk.DataType
 }
 
-// TODO [SNOW-3151661]: test creation with DECFLOAT column
 func TestInt_Table(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
@@ -93,6 +92,30 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 
 		assertTable(t, table, id)
+	})
+
+	t.Run("create table: DECFLOAT", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("FIRST_COLUMN", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
+			*sdk.NewTableColumnRequest("SECOND_COLUMN", datatypes.DecfloatLegacyDataType),
+		}
+
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, columns))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(id))
+
+		table, err := client.Tables.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertTable(t, table, id)
+
+		returnedTableColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
+		expectedColumns := []expectedColumn{
+			{"FIRST_COLUMN", sdk.DataTypeNumber},
+			{"SECOND_COLUMN", datatypes.DecfloatLegacyDataType},
+		}
+		assertColumns(t, expectedColumns, returnedTableColumns)
 	})
 
 	t.Run("create table: complete optionals", func(t *testing.T) {
