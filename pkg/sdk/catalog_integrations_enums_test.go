@@ -170,7 +170,7 @@ func Test_ToCatalogIntegrationCatalogApiType(t *testing.T) {
 		{input: "AWS_API_GATEWAY", want: CatalogIntegrationCatalogApiTypeAwsApiGateway},
 		{input: "AWS_PRIVATE_API_GATEWAY", want: CatalogIntegrationCatalogApiTypeAwsPrivateApiGateway},
 		{input: "AWS_GLUE", want: CatalogIntegrationCatalogApiTypeAwsGlue},
-		{input: "AWS_PRIVATE_GLAUE", want: CatalogIntegrationCatalogApiTypeAwsPrivateGlue},
+		{input: "AWS_PRIVATE_GLUE", want: CatalogIntegrationCatalogApiTypeAwsPrivateGlue},
 	}
 
 	invalid := []test{

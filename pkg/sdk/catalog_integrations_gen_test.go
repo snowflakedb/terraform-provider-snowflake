@@ -332,7 +332,7 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 	t.Run("all options - SAP Business Data Cloud", func(t *testing.T) {
 		opts := defaultOptsSapBdc()
 		opts.IfNotExists = Bool(true)
-		opts.SapBdcCatalogSourceParams.RestConfig.AccessDelegationMode = String("VENDED_CREDENTIALS")
+		opts.SapBdcCatalogSourceParams.RestConfig.AccessDelegationMode = Pointer(CatalogIntegrationAccessDelegationModeVendedCredentials)
 		opts.Enabled = false
 		opts.RefreshIntervalSeconds = Int(60)
 		opts.Comment = String("test comment")

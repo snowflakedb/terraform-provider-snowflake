@@ -21,7 +21,7 @@ var icebergRestRestConfigDef = g.NewQueryStruct("IcebergRestRestConfig").
 
 var sapBdcRestConfigDef = g.NewQueryStruct("SapBdcRestConfig").
 	TextAssignment("SAP_BDC_INVITATION_LINK", g.ParameterOptions().SingleQuotes().Required()).
-	OptionalTextAssignment("ACCESS_DELEGATION_MODE", g.ParameterOptions().NoQuotes())
+	OptionalAssignment("ACCESS_DELEGATION_MODE", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode](), g.ParameterOptions().NoQuotes())
 
 var oAuthRestAuthenticationDef = g.NewQueryStruct("OAuthRestAuthentication").
 	SQLWithCustomFieldName("restAuthType", "TYPE = OAUTH").

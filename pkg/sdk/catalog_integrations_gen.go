@@ -110,8 +110,8 @@ type SapBdcParams struct {
 }
 
 type SapBdcRestConfig struct {
-	SapBdcInvitationLink string  `ddl:"parameter,single_quotes" sql:"SAP_BDC_INVITATION_LINK"`
-	AccessDelegationMode *string `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
+	SapBdcInvitationLink string                                  `ddl:"parameter,single_quotes" sql:"SAP_BDC_INVITATION_LINK"`
+	AccessDelegationMode *CatalogIntegrationAccessDelegationMode `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
 }
 
 // AlterCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-catalog-integration.

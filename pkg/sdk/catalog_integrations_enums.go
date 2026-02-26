@@ -77,7 +77,7 @@ func ToCatalogIntegrationRestAuthenticationType(s string) (CatalogIntegrationRes
 type CatalogIntegrationAccessDelegationMode string
 
 const (
-	CatalogIntegrationAccessDelegationModeVendedCredentials         CatalogIntegrationAccessDelegationMode = "VENDED_CREDENTIALS"
+	CatalogIntegrationAccessDelegationModeVendedCredentials         CatalogIntegrationAccessDelegationMode = "VENDED_CREDENTIALS" //nolint:gosec
 	CatalogIntegrationAccessDelegationModeExternalVolumeCredentials CatalogIntegrationAccessDelegationMode = "EXTERNAL_VOLUME_CREDENTIALS"
 )
 
@@ -102,7 +102,7 @@ const (
 	CatalogIntegrationCatalogApiTypeAwsApiGateway        CatalogIntegrationCatalogApiType = "AWS_API_GATEWAY"
 	CatalogIntegrationCatalogApiTypeAwsPrivateApiGateway CatalogIntegrationCatalogApiType = "AWS_PRIVATE_API_GATEWAY"
 	CatalogIntegrationCatalogApiTypeAwsGlue              CatalogIntegrationCatalogApiType = "AWS_GLUE"
-	CatalogIntegrationCatalogApiTypeAwsPrivateGlue       CatalogIntegrationCatalogApiType = "AWS_PRIVATE_GLAUE"
+	CatalogIntegrationCatalogApiTypeAwsPrivateGlue       CatalogIntegrationCatalogApiType = "AWS_PRIVATE_GLUE"
 )
 
 var AllCatalogIntegrationCatalogApiTypes = []CatalogIntegrationCatalogApiType{
