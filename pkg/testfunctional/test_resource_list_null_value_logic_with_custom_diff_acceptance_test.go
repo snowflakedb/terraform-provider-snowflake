@@ -12,13 +12,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TestAcc_SdkV2Functional_TestResource_ListNullValueLogicWithPresence tests that adding a
-// nullable_list_presence helper field with CustomizeDiff solves the null <-> empty limitation.
-// The helper field stores whether the config has null, empty, or items, and CustomizeDiff
-// forces a plan diff when the config presence diverges from state, triggering Update.
-func TestAcc_SdkV2Functional_TestResource_ListNullValueLogicWithPresence(t *testing.T) {
+// TestAcc_SdkV2Functional_TestResource_ListNullValueLogicWithHelperField tests that adding a
+// nullable_list_presence computed helper field with CustomizeDiff solves the null <-> empty
+// limitation demonstrated in TestAcc_SdkV2Functional_TestResource_ListNullValueLogic.
+//
+// The helper field stores the config's list presence (null, empty, or items) as a computed string.
+// CustomizeDiff compares the raw config presence against the state value and forces a plan diff
+// when they diverge, triggering Update even for null <-> empty transitions.
+//
+// Expected behavior with helper field (compare with base resource):
+//
+//	| Transition       | Base Resource | With Helper Field |
+//	|------------------|--------------|-------------------|
+//	| null  → empty    | Noop         | Update            |
+//	| empty → null     | Noop         | Update            |
+//	| null  → filled   | Update       | Update            |
+//	| empty → filled   | Update       | Update            |
+//	| filled → empty   | Update       | Update            |
+//	| filled → null    | Update       | Update            |
+//	| ext. null→empty  | Noop         | Update            |
+//	| ext. empty→null  | Noop         | Update            |
+func TestAcc_SdkV2Functional_TestResource_ListNullValueLogicWithHelperField(t *testing.T) {
 	envName := fmt.Sprintf("%s_%s", testenvs.TestResourceNullListHandlingEnv, strings.ToUpper(random.AlphaN(10)))
-	resourceType := "snowflake_test_resource_list_null_value_logic_with_presence"
+	resourceType := "snowflake_test_resource_list_null_value_logic_with_helper_field"
 	resourceName := "test"
 	ref := fmt.Sprintf("%s.%s", resourceType, resourceName)
 

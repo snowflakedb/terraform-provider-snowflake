@@ -11,45 +11,48 @@ import (
 )
 
 const (
-	listPresenceNull  = "null"
-	listPresenceEmpty = "empty"
-	listPresenceItems = "items"
+	listNullValueLogicHelperFieldNull  = "null"
+	listNullValueLogicHelperFieldEmpty = "empty"
+	listNullValueLogicHelperFieldItems = "items"
 )
 
-func listPresenceFromRawConfig(d *schema.ResourceDiff) string {
+func listNullValueLogicHelperFieldFromRawConfig(d *schema.ResourceDiff) string {
 	rawConfigValue := d.GetRawConfig().AsValueMap()["nullable_list"]
 	if rawConfigValue.IsNull() {
-		return listPresenceNull
+		return listNullValueLogicHelperFieldNull
 	}
 	if len(rawConfigValue.AsValueSlice()) == 0 {
-		return listPresenceEmpty
+		return listNullValueLogicHelperFieldEmpty
 	}
-	return listPresenceItems
+	return listNullValueLogicHelperFieldItems
 }
 
-// TestResourceListNullValueLogicWithPresence is the same resource as TestResourceListNullValueLogic,
-// but with an additional nullable_list_presence computed field and a CustomizeDiff that forces a plan
-// diff on null <-> empty transitions, proving that the helper field approach solves the limitation.
-func TestResourceListNullValueLogicWithPresence() *schema.Resource {
-	schemaWithPresence := map[string]*schema.Schema{}
+var testResourceListNullValueLogicWithHelperFieldSchema = func() map[string]*schema.Schema {
+	s := map[string]*schema.Schema{}
 	for k, v := range testResourceListNullValueLogicSchema {
-		schemaWithPresence[k] = v
+		s[k] = v
 	}
-	schemaWithPresence["nullable_list_presence"] = &schema.Schema{
+	s["nullable_list_presence"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	}
+	return s
+}()
 
+// TestResourceListNullValueLogicWithHelperField is the same resource as TestResourceListNullValueLogic,
+// but with an additional nullable_list_presence computed helper field and a CustomizeDiff that forces
+// a plan diff on null <-> empty transitions, proving that the helper field approach solves the limitation.
+func TestResourceListNullValueLogicWithHelperField() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: testResourceListNullValueLogicWithPresenceCreate,
-		UpdateContext: testResourceListNullValueLogicWithPresenceUpdate,
-		ReadContext:   testResourceListNullValueLogicWithPresenceRead,
+		CreateContext: testResourceListNullValueLogicWithHelperFieldCreate,
+		UpdateContext: testResourceListNullValueLogicWithHelperFieldUpdate,
+		ReadContext:   testResourceListNullValueLogicWithHelperFieldRead,
 		DeleteContext: testResourceListNullValueLogicDelete,
 
-		Schema: schemaWithPresence,
+		Schema: testResourceListNullValueLogicWithHelperFieldSchema,
 
 		CustomizeDiff: func(_ context.Context, d *schema.ResourceDiff, _ any) error {
-			configPresence := listPresenceFromRawConfig(d)
+			configPresence := listNullValueLogicHelperFieldFromRawConfig(d)
 			statePresence, _ := d.GetOk("nullable_list_presence")
 			if statePresence != configPresence {
 				log.Printf("[DEBUG] nullable_list_presence diff: state=%q config=%q, forcing new value", statePresence, configPresence)
@@ -60,7 +63,7 @@ func TestResourceListNullValueLogicWithPresence() *schema.Resource {
 	}
 }
 
-func observeAndStoreListWithPresence(d *schema.ResourceData, envName string) diag.Diagnostics {
+func observeAndStoreListWithHelperField(d *schema.ResourceData, envName string) diag.Diagnostics {
 	if diags := observeAndStoreList(d, envName); diags.HasError() {
 		return diags
 	}
@@ -71,11 +74,11 @@ func observeAndStoreListWithPresence(d *schema.ResourceData, envName string) dia
 	var presence string
 	switch {
 	case rawConfigValue.IsNull():
-		presence = listPresenceNull
+		presence = listNullValueLogicHelperFieldNull
 	case len(getResult) == 0:
-		presence = listPresenceEmpty
+		presence = listNullValueLogicHelperFieldEmpty
 	default:
-		presence = listPresenceItems
+		presence = listNullValueLogicHelperFieldItems
 	}
 	if err := d.Set("nullable_list_presence", presence); err != nil {
 		return diag.FromErr(err)
@@ -84,48 +87,48 @@ func observeAndStoreListWithPresence(d *schema.ResourceData, envName string) dia
 	return nil
 }
 
-func testResourceListNullValueLogicWithPresenceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func testResourceListNullValueLogicWithHelperFieldCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	envName := d.Get("env_name").(string)
-	log.Printf("[DEBUG] handling create (with presence) for %s", envName)
+	log.Printf("[DEBUG] handling create (with helper field) for %s", envName)
 
 	d.SetId(envName)
 
-	if diags := observeAndStoreListWithPresence(d, envName); diags.HasError() {
+	if diags := observeAndStoreListWithHelperField(d, envName); diags.HasError() {
 		return diags
 	}
 
-	return testResourceListNullValueLogicWithPresenceRead(ctx, d, meta)
+	return testResourceListNullValueLogicWithHelperFieldRead(ctx, d, meta)
 }
 
-func testResourceListNullValueLogicWithPresenceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func testResourceListNullValueLogicWithHelperFieldUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	envName := d.Id()
-	log.Printf("[DEBUG] handling update (with presence) for %s", envName)
+	log.Printf("[DEBUG] handling update (with helper field) for %s", envName)
 
-	if diags := observeAndStoreListWithPresence(d, envName); diags.HasError() {
+	if diags := observeAndStoreListWithHelperField(d, envName); diags.HasError() {
 		return diags
 	}
 
-	return testResourceListNullValueLogicWithPresenceRead(ctx, d, meta)
+	return testResourceListNullValueLogicWithHelperFieldRead(ctx, d, meta)
 }
 
-func testResourceListNullValueLogicWithPresenceRead(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+func testResourceListNullValueLogicWithHelperFieldRead(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
 	envName := d.Id()
 	value := oswrapper.Getenv(envName)
-	log.Printf("[DEBUG] handling read (with presence) for %s, env value: %s", envName, value)
+	log.Printf("[DEBUG] handling read (with helper field) for %s, env value: %s", envName, value)
 
 	switch {
 	case value == "" || value == listNullValueLogicEnvNull:
 		if err := d.Set("nullable_list", nil); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := d.Set("nullable_list_presence", listPresenceNull); err != nil {
+		if err := d.Set("nullable_list_presence", listNullValueLogicHelperFieldNull); err != nil {
 			return diag.FromErr(err)
 		}
 	case value == listNullValueLogicEnvEmpty:
 		if err := d.Set("nullable_list", []string{}); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := d.Set("nullable_list_presence", listPresenceEmpty); err != nil {
+		if err := d.Set("nullable_list_presence", listNullValueLogicHelperFieldEmpty); err != nil {
 			return diag.FromErr(err)
 		}
 	default:
@@ -133,7 +136,7 @@ func testResourceListNullValueLogicWithPresenceRead(_ context.Context, d *schema
 		if err := d.Set("nullable_list", items); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := d.Set("nullable_list_presence", listPresenceItems); err != nil {
+		if err := d.Set("nullable_list_presence", listNullValueLogicHelperFieldItems); err != nil {
 			return diag.FromErr(err)
 		}
 	}
