@@ -35,6 +35,9 @@ func TestInt_ExternalVolumes(t *testing.T) {
 
 	// Storage location structs for testing
 	// TODO(SNOW-2356128): Test use_privatelink_endpoint for azure
+	defaultAllowedLocation := func(baseUrl string) string {
+		return baseUrl + "/*"
+	}
 
 	s3StorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItem{
 		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
@@ -167,7 +170,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(s3StorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3)).
 			HasStorageBaseUrl(awsBaseUrl).
-			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(awsBaseUrl)).
 			HasEncryptionType(string(sdk.S3EncryptionNone)))
 
 		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
@@ -200,7 +203,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(s3StorageLocationsComplete[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3)).
 			HasStorageBaseUrl(awsBaseUrl).
-			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(awsBaseUrl)).
 			HasEncryptionType(string(sdk.S3EncryptionTypeSseKms)))
 
 		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
@@ -236,7 +239,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(s3GovStorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3GOV)).
 			HasStorageBaseUrl(s3GovBaseUrl).
-			HasStorageAllowedLocations(s3GovBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(s3GovBaseUrl)).
 			HasEncryptionType(string(sdk.S3EncryptionNone)))
 
 		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
@@ -273,7 +276,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(s3GovStorageLocationsComplete[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3GOV)).
 			HasStorageBaseUrl(s3GovBaseUrl).
-			HasStorageAllowedLocations(s3GovBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(s3GovBaseUrl)).
 			HasEncryptionType(string(sdk.S3EncryptionTypeSseKms)))
 
 		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
@@ -304,7 +307,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(gcsStorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderGCS)).
 			HasStorageBaseUrl(gcsBaseUrl).
-			HasStorageAllowedLocations(gcsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(gcsBaseUrl)).
 			HasEncryptionType(string(sdk.GCSEncryptionTypeNone)))
 
 		assertThatObject(t, objectassert.StorageLocationGcsDetailsFromObject(t, externalVolumeDetails.StorageLocations[0].GCSStorageLocation).
@@ -336,7 +339,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(gcsStorageLocationsComplete[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderGCS)).
 			HasStorageBaseUrl(gcsBaseUrl).
-			HasStorageAllowedLocations(gcsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(gcsBaseUrl)).
 			HasEncryptionType(string(sdk.GCSEncryptionTypeSseKms)))
 
 		assertThatObject(t, objectassert.StorageLocationGcsDetailsFromObject(t, externalVolumeDetails.StorageLocations[0].GCSStorageLocation).
@@ -368,7 +371,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(azureStorageLocations[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderAzure)).
 			HasStorageBaseUrl(azureBaseUrl).
-			HasStorageAllowedLocations(azureBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(azureBaseUrl)).
 			HasEncryptionType("NONE"))
 
 		assertThatObject(t, objectassert.StorageLocationAzureDetailsFromObject(t, externalVolumeDetails.StorageLocations[0].AzureStorageLocation).
@@ -398,7 +401,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasName(s3CompatStorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3Compatible)).
 			HasStorageBaseUrl(s3CompatBaseUrl).
-			HasStorageAllowedLocations(s3CompatBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(s3CompatBaseUrl)).
 			HasEncryptionType("NONE"))
 
 		assertThatObject(t, objectassert.StorageLocationS3CompatDetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3CompatStorageLocation).
@@ -431,7 +434,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
 			HasName(s3StorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3)).
-			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(awsBaseUrl)).
 			HasStorageBaseUrl(awsBaseUrl).
 			HasEncryptionType(string(sdk.S3EncryptionNone)))
 
@@ -518,7 +521,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
 			HasName(gcsStorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderGCS)).
-			HasStorageAllowedLocations(gcsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(gcsBaseUrl)).
 			HasStorageBaseUrl(gcsBaseUrl).
 			HasEncryptionType(string(sdk.GCSEncryptionTypeNone)))
 
@@ -530,7 +533,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[1]).
 			HasName(s3StorageLocationsComplete[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3)).
-			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(awsBaseUrl)).
 			HasStorageBaseUrl(awsBaseUrl).
 			HasEncryptionType(string(sdk.S3EncryptionTypeSseKms)))
 
@@ -580,7 +583,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
 			HasName(s3StorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3)).
-			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(awsBaseUrl)).
 			HasStorageBaseUrl(awsBaseUrl).
 			HasEncryptionType(string(sdk.S3EncryptionNone)))
 
@@ -593,7 +596,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[1]).
 			HasName(gcsStorageLocationsComplete[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderGCS)).
-			HasStorageAllowedLocations(gcsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(gcsBaseUrl)).
 			HasStorageBaseUrl(gcsBaseUrl).
 			HasEncryptionType(string(sdk.GCSEncryptionTypeSseKms)))
 
@@ -638,7 +641,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[0]).
 			HasName(s3StorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderS3)).
-			HasStorageAllowedLocations(awsBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(awsBaseUrl)).
 			HasStorageBaseUrl(awsBaseUrl).
 			HasEncryptionType(string(sdk.S3EncryptionNone)))
 
@@ -651,7 +654,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.ExternalVolumeStorageLocationDetailsFromObject(t, &externalVolumeDetails.StorageLocations[1]).
 			HasName(azureStorageLocations[0].ExternalVolumeStorageLocation.Name).
 			HasStorageProvider(string(sdk.StorageProviderAzure)).
-			HasStorageAllowedLocations(azureBaseUrl+"*").
+			HasStorageAllowedLocations(defaultAllowedLocation(azureBaseUrl)).
 			HasStorageBaseUrl(azureBaseUrl).
 			HasEncryptionType("NONE"))
 
