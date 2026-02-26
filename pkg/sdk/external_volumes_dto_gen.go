@@ -77,9 +77,9 @@ type AzureStorageLocationParamsRequest struct {
 }
 
 type S3CompatStorageLocationParamsRequest struct {
-	StorageBaseUrl  string // required
-	StorageEndpoint string // required
-	Credentials     *ExternalVolumeS3CompatCredentialsRequest
+	StorageBaseUrl  string                                   // required
+	StorageEndpoint string                                   // required
+	Credentials     ExternalVolumeS3CompatCredentialsRequest // required
 }
 
 type ExternalVolumeS3CompatCredentialsRequest struct {

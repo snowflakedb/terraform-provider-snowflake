@@ -180,6 +180,26 @@ var allStructs = []SdkObjectDef{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.NetworkRule{},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationS3Details{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationGcsDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationAzureDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationS3CompatDetails{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
