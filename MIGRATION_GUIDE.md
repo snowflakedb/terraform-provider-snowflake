@@ -28,7 +28,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 
-A new `TAG_ALLOWED_VALUES_BEHAVIOR_CHANGES` experimental feature was added. It improves how the `snowflake_tag` resource handles the `allowed_values` field by introducing a new `no_allowed_values` field. In Snowflake, a tag can be in one of three states regarding allowed values:
+A new `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experimental feature was added. It improves how the `snowflake_tag` resource handles the `allowed_values` field by introducing a new `no_allowed_values` field. In Snowflake, a tag can be in one of three states regarding allowed values:
 
 1. **Any value is allowed** (default) — the tag accepts any value. In previous versions, this was only possible when the tag was first created without `allowed_values`. Once you added allowed values and later removed them from the configuration, the tag would not return to this state — instead, it would end up in the "no value is allowed" state (see below). With the experimental flag enabled, removing `allowed_values` from the configuration now correctly restores the tag to this default state:
 
@@ -64,7 +64,7 @@ resource "snowflake_tag" "example" {
 ```
 
 It's not enabled by default and to use it, you have to enable this feature on the provider level
-by adding `TAG_ALLOWED_VALUES_BEHAVIOR_CHANGES` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
+by adding `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
 It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1),
 but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
 

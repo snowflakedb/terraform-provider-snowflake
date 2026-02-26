@@ -417,7 +417,7 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.TagAllowedValuesBehaviorChanges)
+		WithExperimentalFeaturesEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior)
 
 	basic := model.TagBase("test", id)
 	withAllowedValues := model.TagBase("test", id).WithAllowedValues("value1", "value2")
@@ -672,7 +672,7 @@ func TestAcc_Tag_TransitionToExperimentFlag_NullAllowedValues(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.TagAllowedValuesBehaviorChanges)
+		WithExperimentalFeaturesEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior)
 	basic := model.TagBase("test", id)
 
 	resource.Test(t, resource.TestCase{
@@ -722,7 +722,7 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValues(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.TagAllowedValuesBehaviorChanges)
+		WithExperimentalFeaturesEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior)
 	basic := model.TagBase("test", id)
 	withAllowedValues := model.TagBase("test", id).WithAllowedValues("v1", "v2")
 	withNoAllowedValues := model.TagBase("test", id).WithNoAllowedValues(true)

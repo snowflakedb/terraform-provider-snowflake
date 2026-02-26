@@ -18,8 +18,8 @@ const (
 	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
 	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
-	ParametersReducedOutput         ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
-	TagAllowedValuesBehaviorChanges ExperimentalFeature = "TAG_ALLOWED_VALUES_BEHAVIOR_CHANGES"
+	ParametersReducedOutput             ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	TagNewTriValueAllowedValuesBehavior ExperimentalFeature = "TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR"
 )
 
 type experimentalFeatureState string
@@ -98,7 +98,7 @@ var allExperiments = []Experiment{
 		),
 	},
 	{
-		TagAllowedValuesBehaviorChanges,
+		TagNewTriValueAllowedValuesBehavior,
 		ExperimentalFeatureStateActive,
 		joinWithDoubleNewline(
 			"Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.",

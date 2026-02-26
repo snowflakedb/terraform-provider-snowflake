@@ -189,7 +189,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAllowedValuesBehaviorChanges, providerCtx.EnabledExperiments) {
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
 		if v, ok := d.GetOk("no_allowed_values"); ok && v.(bool) {
 			// We have to temporarily add and remove allowed value for Snowflake to make the tag block any value.
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})); err != nil {
@@ -240,7 +240,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAllowedValuesBehaviorChanges, providerCtx.EnabledExperiments) {
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
 		if err := d.Set("no_allowed_values", reflect.DeepEqual(tag.AllowedValues, []string{})); err != nil {
 			return diag.FromErr(err)
 		}
@@ -307,7 +307,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAllowedValuesBehaviorChanges, providerCtx.EnabledExperiments) {
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
 		if d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
 			o, n := d.GetChange("allowed_values")
 			oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
