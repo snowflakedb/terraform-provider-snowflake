@@ -318,7 +318,7 @@ type ShowIndexesHybridTableOptions struct {
 	show       bool       `ddl:"static" sql:"SHOW"`
 	indexes    bool       `ddl:"static" sql:"INDEXES"`
 	Like       *Like      `ddl:"keyword" sql:"LIKE"`
-	In         *TableIn        `ddl:"keyword" sql:"IN"`
+	In         *TableIn   `ddl:"keyword" sql:"IN"`
 	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
