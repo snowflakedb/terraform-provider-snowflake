@@ -25,6 +25,7 @@ var sapBdcRestConfigDef = g.NewQueryStruct("SapBdcRestConfig").
 
 var oAuthRestAuthenticationDef = g.NewQueryStruct("OAuthRestAuthentication").
 	SQLWithCustomFieldName("restAuthType", "TYPE = OAUTH").
+	// TODO: Confirm that the OAUTH_TOKEN_URI property can be set while using private connectivity (when CATALOG_API_TYPE = PRIVATE)
 	OptionalTextAssignment("OAUTH_TOKEN_URI", g.ParameterOptions().SingleQuotes()).
 	TextAssignment("OAUTH_CLIENT_ID", g.ParameterOptions().SingleQuotes().Required()).
 	TextAssignment("OAUTH_CLIENT_SECRET", g.ParameterOptions().SingleQuotes().Required()).
