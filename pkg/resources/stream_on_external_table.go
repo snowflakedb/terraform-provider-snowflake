@@ -151,17 +151,7 @@ func ReadStreamOnExternalTable(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		externalTableId, err := sdk.ParseSchemaObjectIdentifier(*stream.TableName)
-		if err != nil {
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  "Failed to parse external table ID in Read.",
-					Detail:   fmt.Sprintf("stream name: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		if err := d.Set("external_table", externalTableId.FullyQualifiedName()); err != nil {
+		if err := d.Set("external_table", stream.TableName.FullyQualifiedName()); err != nil {
 			return diag.FromErr(err)
 		}
 		streamDescription, err := client.Streams.Describe(ctx, id)
