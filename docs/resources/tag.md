@@ -51,10 +51,10 @@ resource "snowflake_tag" "tag" {
 
 ### Optional
 
-- `allowed_values` (Set of String) Set of allowed values for the tag.
+- `allowed_values` (Set of String) Set of allowed values for the tag. When specified, only these values can be assigned. When the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values`.
 - `comment` (String) Specifies a comment for the tag.
 - `masking_policies` (Set of String) Set of masking policies for the tag. A tag can support one masking policy for each data type. If masking policies are assigned to the tag, before dropping the tag, the provider automatically unassigns them. For more information about this resource, see [docs](./masking_policy).
-- `no_allowed_values` (Boolean) Whenever its set, no value is allowed with this tag
+- `no_allowed_values` (Boolean) When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled. Conflicts with `allowed_values`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

@@ -51,13 +51,13 @@ var tagSchema = map[string]*schema.Schema{
 		Type:          schema.TypeSet,
 		Elem:          &schema.Schema{Type: schema.TypeString},
 		Optional:      true,
-		Description:   "Set of allowed values for the tag.",
+		Description:   "Set of allowed values for the tag. When specified, only these values can be assigned. When the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values`.",
 		ConflictsWith: []string{"no_allowed_values"},
 	},
 	"no_allowed_values": {
 		Type:          schema.TypeBool,
 		Optional:      true,
-		Description:   "Whenever its set, no value is allowed with this tag", // TODO: Adjust docs
+		Description:   "When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled. Conflicts with `allowed_values`.",
 		ConflictsWith: []string{"allowed_values"},
 	},
 	"masking_policies": {
@@ -202,7 +202,6 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 			// Drop can run without checking above command's status as Snowflake doesn't fail on dropped values that are not there.
 			// The value is also documented to be "reserved" by the provider in case customer would like to use it.
-			// TODO: Document
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})); err != nil {
 				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 					Severity: diag.Warning,
