@@ -36,7 +36,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 	// Storage location structs for testing
 	// TODO(SNOW-2356128): Test use_privatelink_endpoint for azure
 	defaultAllowedLocation := func(baseUrl string) string {
-		return baseUrl + "/*"
+		return baseUrl + "*"
 	}
 
 	s3StorageLocationsBasic := []sdk.ExternalVolumeStorageLocationItem{
