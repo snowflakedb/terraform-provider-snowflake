@@ -62,9 +62,9 @@ func (opts *AlterHybridTableOptions) validate() error {
 					errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction.NotNullConstraint", "SetNotNull", "DropNotNull"))
 				}
 			}
-    }
-  }
-  if valueSet(opts.ClusteringAction) {
+		}
+	}
+	if valueSet(opts.ClusteringAction) {
 		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.Recluster, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
 			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
 		}

@@ -26,12 +26,12 @@ func (c *HybridTableClient) Create(t *testing.T) (sdk.SchemaObjectIdentifier, fu
 	id := c.ids.RandomSchemaObjectIdentifier()
 	err := c.context.client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(
 		id,
-		sdk.HybridTableColumnsConstraintsAndIndexes{
-			Columns: []sdk.HybridTableColumn{
+		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+			Columns: []sdk.HybridTableColumnRequest{
 				{
 					Name: "id",
 					Type: sdk.DataType("INT"),
-					InlineConstraint: &sdk.HybridTableColumnInlineConstraint{
+					InlineConstraint: &sdk.ColumnInlineConstraint{
 						Type: sdk.ColumnConstraintTypePrimaryKey,
 					},
 				},

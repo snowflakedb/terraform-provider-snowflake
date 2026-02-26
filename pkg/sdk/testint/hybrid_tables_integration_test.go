@@ -34,12 +34,12 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Helper()
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-			Columns: []sdk.HybridTableColumn{
+		columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+			Columns: []sdk.HybridTableColumnRequest{
 				{
 					Name: "id",
 					Type: sdk.DataType("NUMBER(38,0)"),
-					InlineConstraint: &sdk.HybridTableColumnInlineConstraint{
+					InlineConstraint: &sdk.ColumnInlineConstraint{
 						Type: sdk.ColumnConstraintTypePrimaryKey,
 					},
 				},
@@ -82,12 +82,12 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			comment := "Test hybrid table with comment"
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
 					{
 						Name: "id",
 						Type: sdk.DataType("NUMBER(38,0)"),
-						InlineConstraint: &sdk.HybridTableColumnInlineConstraint{
+						InlineConstraint: &sdk.ColumnInlineConstraint{
 							Type: sdk.ColumnConstraintTypePrimaryKey,
 						},
 					},
@@ -114,13 +114,13 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("composite primary key", func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
 					{Name: "order_id", Type: sdk.DataType("NUMBER(38,0)")},
 					{Name: "line_item", Type: sdk.DataType("NUMBER(38,0)")},
 					{Name: "product", Type: sdk.DataType("VARCHAR(100)")},
 				},
-				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraint{
+				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
 					{
 						Type:    sdk.ColumnConstraintTypePrimaryKey,
 						Columns: []string{"order_id", "line_item"},
@@ -149,9 +149,9 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("column with DEFAULT", func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "status", Type: sdk.DataType("VARCHAR(50)"), DefaultValue: &sdk.ColumnDefaultValue{Expression: sdk.String("'PENDING'")}},
 					{Name: "created_at", Type: sdk.DataType("TIMESTAMP_NTZ"), DefaultValue: &sdk.ColumnDefaultValue{Expression: sdk.String("CURRENT_TIMESTAMP()")}},
 				},
@@ -180,9 +180,9 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 			notNullValue := true
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "required_field", Type: sdk.DataType("VARCHAR(100)"), NotNull: &notNullValue},
 				},
 			}
@@ -208,8 +208,8 @@ func TestInt_HybridTables(t *testing.T) {
 
 			startNum := 100
 			incrementNum := 10
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
 					{
 						Name: "id",
 						Type: sdk.DataType("NUMBER(38,0)"),
@@ -219,7 +219,7 @@ func TestInt_HybridTables(t *testing.T) {
 								Increment: incrementNum,
 							},
 						},
-						InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey},
+						InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey},
 					},
 					{Name: "data", Type: sdk.DataType("VARCHAR(100)")},
 				},
@@ -245,9 +245,9 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("multiple data types", func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "varchar_col", Type: sdk.DataType("VARCHAR(255)")},
 					{Name: "date_col", Type: sdk.DataType("DATE")},
 					{Name: "timestamp_col", Type: sdk.DataType("TIMESTAMP_NTZ")},
@@ -286,12 +286,12 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("out-of-line UNIQUE constraint", func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "email", Type: sdk.DataType("VARCHAR(255)")},
 				},
-				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraint{
+				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
 					{
 						Type:    sdk.ColumnConstraintTypeUnique,
 						Columns: []string{"email"},
@@ -318,9 +318,9 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("out-of-line FOREIGN KEY", func(t *testing.T) {
 			// Create parent table first
 			parentId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			parentColumns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			parentColumns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "name", Type: sdk.DataType("VARCHAR(100)")},
 				},
 			}
@@ -335,12 +335,12 @@ func TestInt_HybridTables(t *testing.T) {
 
 			// Create child table with foreign key
 			childId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			childColumns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			childColumns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "parent_id", Type: sdk.DataType("NUMBER(38,0)")},
 				},
-				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraint{
+				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
 					{
 						Type:    sdk.ColumnConstraintTypeForeignKey,
 						Columns: []string{"parent_id"},
@@ -373,9 +373,9 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("ALTER COLUMN SET COMMENT", func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "name", Type: sdk.DataType("VARCHAR(100)")},
 				},
 			}
@@ -391,8 +391,10 @@ func TestInt_HybridTables(t *testing.T) {
 			// Set column comment
 			columnComment := "Name column comment"
 			alterReq := sdk.NewAlterHybridTableRequest(id).
-				WithAlterColumnAction(*sdk.NewHybridTableAlterColumnActionRequest("NAME"). // Snowflake uses uppercase
-														WithComment(columnComment))
+				WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{
+					*sdk.NewHybridTableAlterColumnActionRequest("NAME"). // Snowflake uses uppercase
+												WithComment(columnComment),
+				})
 
 			err = client.HybridTables.Alter(ctx, alterReq)
 			require.NoError(t, err)
@@ -409,9 +411,9 @@ func TestInt_HybridTables(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 			commentValue := "Initial comment"
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "name", Type: sdk.DataType("VARCHAR(100)"), Comment: &commentValue},
 				},
 			}
@@ -426,8 +428,10 @@ func TestInt_HybridTables(t *testing.T) {
 
 			// Unset column comment
 			alterReq := sdk.NewAlterHybridTableRequest(id).
-				WithAlterColumnAction(*sdk.NewHybridTableAlterColumnActionRequest("NAME").
-					WithUnsetComment(true))
+				WithAlterColumnAction([]sdk.HybridTableAlterColumnActionRequest{
+					*sdk.NewHybridTableAlterColumnActionRequest("NAME").
+						WithUnsetComment(true),
+				})
 
 			err = client.HybridTables.Alter(ctx, alterReq)
 			require.NoError(t, err)
@@ -478,9 +482,9 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("UNSET COMMENT", func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 
@@ -512,31 +516,31 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("UNSET DATA_RETENTION_TIME_IN_DAYS", func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 
-      retentionDays := 7
-      req := sdk.NewCreateHybridTableRequest(id, columns)
+			retentionDays := 7
+			req := sdk.NewCreateHybridTableRequest(id, columns)
 
-      err := client.HybridTables.Create(ctx, req)
-      require.NoError(t, err)
+			err := client.HybridTables.Create(ctx, req)
+			require.NoError(t, err)
 
-      t.Cleanup(func() {
-        err := client.HybridTables.Drop(ctx, sdk.NewDropHybridTableRequest(id).WithIfExists(true))
-        require.NoError(t, err)
-      })
+			t.Cleanup(func() {
+				err := client.HybridTables.Drop(ctx, sdk.NewDropHybridTableRequest(id).WithIfExists(true))
+				require.NoError(t, err)
+			})
 
-      // DATA_RETENTION_TIME_IN_DAYS is not supported on CREATE, so set it via ALTER
-      setReq := sdk.NewAlterHybridTableRequest(id).
-        WithSet(*sdk.NewHybridTableSetPropertiesRequest().
-          WithDataRetentionTimeInDays(retentionDays))
-      err = client.HybridTables.Alter(ctx, setReq)
-      require.NoError(t, err)
+			// DATA_RETENTION_TIME_IN_DAYS is not supported on CREATE, so set it via ALTER
+			setReq := sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().
+					WithDataRetentionTimeInDays(retentionDays))
+			err = client.HybridTables.Alter(ctx, setReq)
+			require.NoError(t, err)
 
-      // Unset retention time
+			// Unset retention time
 			unsetReq := sdk.NewAlterHybridTableRequest(id).
 				WithUnset(*sdk.NewHybridTableUnsetPropertiesRequest().
 					WithDataRetentionTimeInDays(true))
@@ -554,12 +558,12 @@ func TestInt_HybridTables(t *testing.T) {
 	t.Run("index operations", func(t *testing.T) {
 		t.Run("CREATE INDEX basic", func(t *testing.T) {
 			tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			indexId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+			indexId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 			// Create hybrid table first
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "status", Type: sdk.DataType("VARCHAR(50)")},
 				},
 			}
@@ -573,15 +577,15 @@ func TestInt_HybridTables(t *testing.T) {
 			})
 
 			// Create index
-			indexReq := sdk.NewCreateHybridTableIndexRequest(indexId, tableId, []string{"status"})
+			indexReq := sdk.NewCreateIndexHybridTableRequest(indexId, tableId, []string{"status"})
 			err = client.HybridTables.CreateIndex(ctx, indexReq)
 			require.NoError(t, err)
 
 			// Validate via SHOW INDEXES
-			indexFilter := &sdk.ShowHybridTableIndexIn{
-				Table: &tableId,
+			indexFilter := &sdk.TableIn{
+				Table: tableId,
 			}
-			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowHybridTableIndexesRequest().WithIn(*indexFilter))
+			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowIndexesHybridTableRequest().WithIn(*indexFilter))
 			require.NoError(t, err)
 			require.NotEmpty(t, indexes)
 
@@ -595,17 +599,18 @@ func TestInt_HybridTables(t *testing.T) {
 			}
 			require.NotNil(t, found, "Created index not found in SHOW INDEXES")
 			require.Equal(t, indexId.Name(), found.Name)
-			require.Contains(t, found.Columns, "STATUS") // Snowflake returns uppercase
+			require.NotNil(t, found.Columns)
+			require.Contains(t, *found.Columns, "STATUS") // Snowflake returns uppercase
 		})
 
 		t.Run("CREATE INDEX with INCLUDE", func(t *testing.T) {
 			tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			indexId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+			indexId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 			// Create hybrid table
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "customer_id", Type: sdk.DataType("NUMBER(38,0)")},
 					{Name: "order_date", Type: sdk.DataType("DATE")},
 				},
@@ -620,16 +625,16 @@ func TestInt_HybridTables(t *testing.T) {
 			})
 
 			// Create index with INCLUDE
-			indexReq := sdk.NewCreateHybridTableIndexRequest(indexId, tableId, []string{"customer_id"}).
+			indexReq := sdk.NewCreateIndexHybridTableRequest(indexId, tableId, []string{"customer_id"}).
 				WithIncludeColumns([]string{"order_date"})
 			err = client.HybridTables.CreateIndex(ctx, indexReq)
 			require.NoError(t, err)
 
 			// Validate via SHOW INDEXES
-			indexFilter := &sdk.ShowHybridTableIndexIn{
-				Table: &tableId,
+			indexFilter := &sdk.TableIn{
+				Table: tableId,
 			}
-			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowHybridTableIndexesRequest().WithIn(*indexFilter))
+			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowIndexesHybridTableRequest().WithIn(*indexFilter))
 			require.NoError(t, err)
 
 			// Find our index
@@ -641,7 +646,8 @@ func TestInt_HybridTables(t *testing.T) {
 				}
 			}
 			require.NotNil(t, found)
-			require.Contains(t, found.Columns, "CUSTOMER_ID")
+			require.NotNil(t, found.Columns)
+			require.Contains(t, *found.Columns, "CUSTOMER_ID")
 			require.NotEmpty(t, found.IncludedColumns)
 			require.Contains(t, found.IncludedColumns, "ORDER_DATE")
 		})
@@ -649,12 +655,12 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("DROP INDEX", func(t *testing.T) {
 			tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			// For CREATE INDEX, use unqualified name (AccountObjectIdentifier)
-			indexName := testClientHelper().Ids.RandomAccountObjectIdentifier()
+			indexName := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 			// Create hybrid table and index
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "status", Type: sdk.DataType("VARCHAR(50)")},
 				},
 			}
@@ -667,20 +673,20 @@ func TestInt_HybridTables(t *testing.T) {
 				require.NoError(t, err)
 			})
 
-			indexReq := sdk.NewCreateHybridTableIndexRequest(indexName, tableId, []string{"status"})
+			indexReq := sdk.NewCreateIndexHybridTableRequest(indexName, tableId, []string{"status"})
 			err = client.HybridTables.CreateIndex(ctx, indexReq)
 			require.NoError(t, err)
 
 			// Drop index using standalone DROP INDEX command (needs table.index format)
-			dropReq := sdk.NewDropHybridTableIndexRequest(tableId, indexName.Name())
+			dropReq := sdk.NewDropIndexHybridTableRequest(indexName)
 			err = client.HybridTables.DropIndex(ctx, dropReq)
 			require.NoError(t, err)
 
 			// Verify index is gone
-			indexFilter := &sdk.ShowHybridTableIndexIn{
-				Table: &tableId,
+			indexFilter := &sdk.TableIn{
+				Table: tableId,
 			}
-			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowHybridTableIndexesRequest().WithIn(*indexFilter))
+			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowIndexesHybridTableRequest().WithIn(*indexFilter))
 			require.NoError(t, err)
 			for _, idx := range indexes {
 				require.NotEqual(t, indexName.Name(), idx.Name, "Index should be dropped")
@@ -689,12 +695,12 @@ func TestInt_HybridTables(t *testing.T) {
 
 		t.Run("SHOW INDEXES validates all columns", func(t *testing.T) {
 			tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			indexId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+			indexId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 			// Create hybrid table and index
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "status", Type: sdk.DataType("VARCHAR(50)")},
 				},
 			}
@@ -707,15 +713,15 @@ func TestInt_HybridTables(t *testing.T) {
 				require.NoError(t, err)
 			})
 
-			indexReq := sdk.NewCreateHybridTableIndexRequest(indexId, tableId, []string{"status"})
+			indexReq := sdk.NewCreateIndexHybridTableRequest(indexId, tableId, []string{"status"})
 			err = client.HybridTables.CreateIndex(ctx, indexReq)
 			require.NoError(t, err)
 
 			// Show indexes and validate ALL 10 columns
-			indexFilter := &sdk.ShowHybridTableIndexIn{
-				Table: &tableId,
+			indexFilter := &sdk.TableIn{
+				Table: tableId,
 			}
-			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowHybridTableIndexesRequest().WithIn(*indexFilter))
+			indexes, err := client.HybridTables.ShowIndexes(ctx, sdk.NewShowIndexesHybridTableRequest().WithIn(*indexFilter))
 			require.NoError(t, err)
 			require.NotEmpty(t, indexes)
 
@@ -732,8 +738,10 @@ func TestInt_HybridTables(t *testing.T) {
 			// Validate all 10 columns from SHOW INDEXES output
 			require.NotZero(t, found.CreatedOn)
 			require.Equal(t, indexId.Name(), found.Name)
-			require.False(t, found.IsUnique) // Basic index is not unique
-			require.NotEmpty(t, found.Columns)
+			require.NotNil(t, found.IsUnique)
+			require.False(t, *found.IsUnique) // Basic index is not unique
+			require.NotNil(t, found.Columns)
+			require.NotEmpty(t, *found.Columns)
 			// IncludedColumns may be empty for basic index
 			require.Equal(t, tableId.Name(), found.TableName)
 			require.Equal(t, tableId.DatabaseName(), found.DatabaseName)
@@ -750,9 +758,9 @@ func TestInt_HybridTables(t *testing.T) {
 
 			// Create two tables with distinct prefixes
 			for _, id := range []sdk.SchemaObjectIdentifier{id1, id2} {
-				columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-					Columns: []sdk.HybridTableColumn{
-						{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+					Columns: []sdk.HybridTableColumnRequest{
+						{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					},
 				}
 				err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns))
@@ -787,7 +795,7 @@ func TestInt_HybridTables(t *testing.T) {
 			id := createHybridTableBasic(t)
 
 			// SHOW with IN DATABASE filter
-			inClause := &sdk.In{Database: sdk.NewAccountObjectIdentifier(id.DatabaseName())}
+			inClause := &sdk.TableIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(id.DatabaseName())}}
 			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().WithIn(*inClause))
 			require.NoError(t, err)
 
@@ -806,7 +814,7 @@ func TestInt_HybridTables(t *testing.T) {
 			id := createHybridTableBasic(t)
 
 			// SHOW with IN SCHEMA filter
-			inClause := &sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName())}
+			inClause := &sdk.TableIn{In: sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName())}}
 			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().WithIn(*inClause))
 			require.NoError(t, err)
 
@@ -824,9 +832,9 @@ func TestInt_HybridTables(t *testing.T) {
 		t.Run("SHOW with STARTS WITH", func(t *testing.T) {
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("SWTEST")
 
-			columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-				Columns: []sdk.HybridTableColumn{
-					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 				},
 			}
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns))
@@ -860,9 +868,9 @@ func TestInt_HybridTables(t *testing.T) {
 				id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 				ids = append(ids, id)
 
-				columns := sdk.HybridTableColumnsConstraintsAndIndexes{
-					Columns: []sdk.HybridTableColumn{
-						{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.HybridTableColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+					Columns: []sdk.HybridTableColumnRequest{
+						{Name: "id", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					},
 				}
 				err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns))
