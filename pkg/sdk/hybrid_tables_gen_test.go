@@ -85,7 +85,7 @@ func TestHybridTables_Create(t *testing.T) {
 			},
 		}
 		opts.Comment = String("test comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY FOREIGN KEY REFERENCES other_table (ID), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE HYBRID TABLE %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE (NAME), INDEX "idx_name" (NAME) INCLUDE (ID)) COMMENT = 'test comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("with columns and constraints", func(t *testing.T) {
@@ -119,7 +119,7 @@ func TestHybridTables_Create(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("ID" NUMBER PRIMARY KEY, "NAME" VARCHAR NOT NULL COMMENT 'the name', UNIQUE ("NAME"), INDEX "idx_name" ("NAME"))`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("ID" NUMBER PRIMARY KEY, "NAME" VARCHAR NOT NULL COMMENT 'the name', UNIQUE (NAME), INDEX "idx_name" (NAME))`, id.FullyQualifiedName())
 	})
 }
 
@@ -331,7 +331,7 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.DropColumnAction = &HybridTableDropColumnAction{
 			Columns: []string{"column_to_drop"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP COLUMN "column_to_drop"`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP COLUMN column_to_drop`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop index", func(t *testing.T) {
@@ -354,7 +354,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD UNIQUE ("col1", "col2")`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD UNIQUE (col1, col2)`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: add constraint foreign key", func(t *testing.T) {
@@ -374,7 +374,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD CONSTRAINT "fk_ref" FOREIGN KEY ("ref_id") REFERENCES %s (id)`, id.FullyQualifiedName(), refTableId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD CONSTRAINT "fk_ref" FOREIGN KEY (ref_id) REFERENCES %s (id)`, id.FullyQualifiedName(), refTableId.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop constraint by name", func(t *testing.T) {
@@ -410,7 +410,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				Columns: []string{"col1"},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP UNIQUE ("col1")`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP UNIQUE (col1)`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop foreign key with cascade", func(t *testing.T) {
@@ -423,7 +423,7 @@ func TestHybridTables_Alter(t *testing.T) {
 				Cascade:    Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP FOREIGN KEY ("col1", "col2") CASCADE`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP FOREIGN KEY (col1, col2) CASCADE`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: rename constraint", func(t *testing.T) {
@@ -592,7 +592,7 @@ func TestHybridTables_Show(t *testing.T) {
 		opts := defaultOpts()
 		opts.Terse = Bool(true)
 		opts.Like = &Like{Pattern: String("some_pattern")}
-		opts.In = &In{Schema: NewDatabaseObjectIdentifier("db", "schema")}
+		opts.In = &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("db", "schema")}}
 		opts.StartsWith = String("prefix")
 		opts.Limit = &LimitFrom{Rows: Int(10)}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE HYBRID TABLES LIKE 'some_pattern' IN SCHEMA "db"."schema" STARTS WITH 'prefix' LIMIT 10`)
@@ -600,13 +600,13 @@ func TestHybridTables_Show(t *testing.T) {
 
 	t.Run("show with in database", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.In = &In{Database: NewAccountObjectIdentifier("test_db")}
+		opts.In = &TableIn{In: In{Database: NewAccountObjectIdentifier("test_db")}}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES IN DATABASE "test_db"`)
 	})
 
 	t.Run("show with in schema", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.In = &In{Schema: NewDatabaseObjectIdentifier("test_db", "test_schema")}
+		opts.In = &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("test_db", "test_schema")}}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW HYBRID TABLES IN SCHEMA "test_db"."test_schema"`)
 	})
 
@@ -692,7 +692,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 			TableName: tableID,
 			Columns:   []string{"col1"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE INDEX %s ON %s ("col1")`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE INDEX %s ON %s (col1)`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
@@ -703,7 +703,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 			Columns:        []string{"col1", "col2"},
 			IncludeColumns: []string{"col3"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE INDEX %s ON %s ("col1", "col2") INCLUDE ("col3")`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE INDEX %s ON %s (col1, col2) INCLUDE (col3)`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
 	})
 
 	t.Run("if not exists", func(t *testing.T) {
@@ -713,7 +713,7 @@ func TestHybridTables_CreateIndex(t *testing.T) {
 			TableName:   tableID,
 			Columns:     []string{"col1"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE INDEX IF NOT EXISTS %s ON %s ("col1")`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE INDEX IF NOT EXISTS %s ON %s (col1)`, id.FullyQualifiedName(), tableID.FullyQualifiedName())
 	})
 }
 
@@ -762,7 +762,7 @@ func TestHybridTables_ShowIndexes(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := &ShowIndexesHybridTableOptions{
 			Like:       &Like{Pattern: String("idx_pattern")},
-			In:         &In{Schema: NewDatabaseObjectIdentifier("db", "schema")},
+			In:         &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("db", "schema")}},
 			StartsWith: String("idx_"),
 			Limit:      &LimitFrom{Rows: Int(10)},
 		}
@@ -771,8 +771,141 @@ func TestHybridTables_ShowIndexes(t *testing.T) {
 
 	t.Run("in database", func(t *testing.T) {
 		opts := &ShowIndexesHybridTableOptions{
-			In: &In{Database: NewAccountObjectIdentifier("test_db")},
+			In: &TableIn{In: In{Database: NewAccountObjectIdentifier("test_db")}},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW INDEXES IN DATABASE "test_db"`)
+	})
+}
+
+func TestHybridTables_Create_AllOptions(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+
+	t.Run("create with columns and inline primary key", func(t *testing.T) {
+		opts := &CreateHybridTableOptions{
+			name: id,
+			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
+				Columns: []HybridTableColumn{
+					{
+						Name: "id",
+						Type: DataType("NUMBER(38,0)"),
+						InlineConstraint: &ColumnInlineConstraint{
+							Type: ColumnConstraintTypePrimaryKey,
+						},
+					},
+					{
+						Name:    "name",
+						Type:    DataType("VARCHAR(100)"),
+						NotNull: Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "name" VARCHAR(100) NOT NULL)`, id.FullyQualifiedName())
+	})
+
+	t.Run("create with out-of-line constraint and index", func(t *testing.T) {
+		opts := &CreateHybridTableOptions{
+			name: id,
+			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
+				Columns: []HybridTableColumn{
+					{
+						Name: "id",
+						Type: DataType("NUMBER(38,0)"),
+						InlineConstraint: &ColumnInlineConstraint{
+							Type: ColumnConstraintTypePrimaryKey,
+						},
+					},
+					{
+						Name: "email",
+						Type: DataType("VARCHAR(200)"),
+					},
+				},
+				OutOfLineConstraint: []HybridTableOutOfLineConstraint{
+					{
+						Type:    ColumnConstraintTypeUnique,
+						Columns: []string{"email"},
+					},
+				},
+				OutOfLineIndex: []HybridTableOutOfLineIndex{
+					{
+						Name:           "idx_email",
+						Columns:        []string{"email"},
+						IncludeColumns: []string{"id"},
+					},
+				},
+			},
+			Comment: String("test table"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "email" VARCHAR(200), UNIQUE (email), INDEX "idx_email" (email) INCLUDE (id)) COMMENT = 'test table'`, id.FullyQualifiedName())
+	})
+
+	t.Run("create with named inline constraint", func(t *testing.T) {
+		opts := &CreateHybridTableOptions{
+			name: id,
+			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
+				Columns: []HybridTableColumn{
+					{
+						Name: "id",
+						Type: DataType("NUMBER(38,0)"),
+						InlineConstraint: &ColumnInlineConstraint{
+							Name: String("pk_id"),
+							Type: ColumnConstraintTypePrimaryKey,
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("id" NUMBER(38,0) CONSTRAINT pk_id PRIMARY KEY)`, id.FullyQualifiedName())
+	})
+
+	t.Run("create with column comment and collate", func(t *testing.T) {
+		opts := &CreateHybridTableOptions{
+			name: id,
+			ColumnsAndConstraints: HybridTableColumnsConstraintsAndIndexes{
+				Columns: []HybridTableColumn{
+					{
+						Name: "id",
+						Type: DataType("NUMBER(38,0)"),
+						InlineConstraint: &ColumnInlineConstraint{
+							Type: ColumnConstraintTypePrimaryKey,
+						},
+					},
+					{
+						Name:    "name",
+						Type:    DataType("VARCHAR(100)"),
+						NotNull: Bool(true),
+						Collate: String("en-ci"),
+						Comment: String("name column"),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "name" VARCHAR(100) NOT NULL COLLATE 'en-ci' COMMENT 'name column')`, id.FullyQualifiedName())
+	})
+}
+
+func TestHybridTables_Alter_DropMultipleColumns(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+
+	t.Run("alter: drop multiple columns", func(t *testing.T) {
+		opts := &AlterHybridTableOptions{
+			name:     id,
+			IfExists: Bool(true),
+			DropColumnAction: &HybridTableDropColumnAction{
+				Columns: []string{"col1", "col2", "col3"},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP COLUMN col1, col2, col3`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter: drop column with if exists", func(t *testing.T) {
+		opts := &AlterHybridTableOptions{
+			name: id,
+			DropColumnAction: &HybridTableDropColumnAction{
+				IfExists: Bool(true),
+				Columns:  []string{"col1"},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP COLUMN IF EXISTS col1`, id.FullyQualifiedName())
 	})
 }

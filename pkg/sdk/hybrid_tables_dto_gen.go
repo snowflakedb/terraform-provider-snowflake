@@ -183,7 +183,7 @@ type DropHybridTableRequest struct {
 type ShowHybridTableRequest struct {
 	Terse      *bool
 	Like       *Like
-	In         *In
+	In         *TableIn
 	StartsWith *string
 	Limit      *LimitFrom
 }
@@ -208,7 +208,7 @@ type DropIndexHybridTableRequest struct {
 
 type ShowIndexesHybridTableRequest struct {
 	Like       *Like
-	In         *In
+	In         *TableIn
 	StartsWith *string
 	Limit      *LimitFrom
 }

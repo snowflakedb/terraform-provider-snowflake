@@ -2,12 +2,6 @@ package sdk
 
 import "context"
 
-// TableContact represents a CONTACT <purpose> = <contact_name> assignment.
-type TableContact struct {
-	Purpose string `ddl:"keyword"`
-	Contact string `ddl:"parameter,no_equals,single_quotes"`
-}
-
 func (r hybridTableRow) convert() (*HybridTable, error) {
 	ht := &HybridTable{
 		CreatedOn:    r.CreatedOn,

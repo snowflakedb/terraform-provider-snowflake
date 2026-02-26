@@ -52,7 +52,7 @@ type HybridTableColumn struct {
 type HybridTableOutOfLineConstraint struct {
 	Name               *string              `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
 	Type               ColumnConstraintType `ddl:"keyword"`
-	Columns            []string             `ddl:"keyword,double_quotes,parentheses"`
+	Columns            []string             `ddl:"keyword,parentheses"`
 	ForeignKey         *OutOfLineForeignKey `ddl:"keyword"`
 	Enforced           *bool                `ddl:"keyword" sql:"ENFORCED"`
 	NotEnforced        *bool                `ddl:"keyword" sql:"NOT ENFORCED"`
@@ -71,8 +71,8 @@ type HybridTableOutOfLineConstraint struct {
 type HybridTableOutOfLineIndex struct {
 	index          bool     `ddl:"static" sql:"INDEX"`
 	Name           string   `ddl:"keyword,double_quotes"`
-	Columns        []string `ddl:"keyword,double_quotes,parentheses"`
-	IncludeColumns []string `ddl:"keyword,double_quotes,parentheses" sql:"INCLUDE"`
+	Columns        []string `ddl:"keyword,parentheses"`
+	IncludeColumns []string `ddl:"keyword,parentheses" sql:"INCLUDE"`
 }
 
 // AlterHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-table.
@@ -127,7 +127,7 @@ type HybridTableConstraintActionDrop struct {
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
-	Columns        []string `ddl:"keyword,double_quotes,parentheses"`
+	Columns        []string `ddl:"keyword,parentheses"`
 	Cascade        *bool    `ddl:"keyword" sql:"CASCADE"`
 	Restrict       *bool    `ddl:"keyword" sql:"RESTRICT"`
 }
@@ -152,7 +152,7 @@ type HybridTableColumnNotNullConstraint struct {
 type HybridTableDropColumnAction struct {
 	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
 	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
-	Columns    []string `ddl:"keyword,double_quotes"`
+	Columns    []string `ddl:"keyword"`
 }
 
 type HybridTableDropIndexAction struct {
@@ -216,7 +216,7 @@ type ShowHybridTableOptions struct {
 	Terse        *bool      `ddl:"keyword" sql:"TERSE"`
 	hybridTables bool       `ddl:"static" sql:"HYBRID TABLES"`
 	Like         *Like      `ddl:"keyword" sql:"LIKE"`
-	In           *In        `ddl:"keyword" sql:"IN"`
+	In           *TableIn   `ddl:"keyword" sql:"IN"`
 	StartsWith   *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 	Limit        *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
@@ -301,8 +301,8 @@ type CreateIndexHybridTableOptions struct {
 	name           SchemaObjectIdentifier `ddl:"identifier"`
 	on             bool                   `ddl:"static" sql:"ON"`
 	TableName      SchemaObjectIdentifier `ddl:"identifier"`
-	Columns        []string               `ddl:"keyword,double_quotes,parentheses"`
-	IncludeColumns []string               `ddl:"keyword,double_quotes,parentheses" sql:"INCLUDE"`
+	Columns        []string               `ddl:"keyword,parentheses"`
+	IncludeColumns []string               `ddl:"keyword,parentheses" sql:"INCLUDE"`
 }
 
 // DropIndexHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-index.
@@ -318,7 +318,7 @@ type ShowIndexesHybridTableOptions struct {
 	show       bool       `ddl:"static" sql:"SHOW"`
 	indexes    bool       `ddl:"static" sql:"INDEXES"`
 	Like       *Like      `ddl:"keyword" sql:"LIKE"`
-	In         *In        `ddl:"keyword" sql:"IN"`
+	In         *TableIn        `ddl:"keyword" sql:"IN"`
 	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }

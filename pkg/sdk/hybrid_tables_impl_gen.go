@@ -50,7 +50,7 @@ func (v *hybridTables) Show(ctx context.Context, request *ShowHybridTableRequest
 func (v *hybridTables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*HybridTable, error) {
 	request := NewShowHybridTableRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(In{Schema: id.SchemaId()})
+		WithIn(TableIn{In: In{Schema: id.SchemaId()}})
 	hybridTables, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err

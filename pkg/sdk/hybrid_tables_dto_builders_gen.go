@@ -603,7 +603,7 @@ func (s *ShowHybridTableRequest) WithLike(like Like) *ShowHybridTableRequest {
 	return s
 }
 
-func (s *ShowHybridTableRequest) WithIn(in In) *ShowHybridTableRequest {
+func (s *ShowHybridTableRequest) WithIn(in TableIn) *ShowHybridTableRequest {
 	s.In = &in
 	return s
 }
@@ -676,7 +676,7 @@ func (s *ShowIndexesHybridTableRequest) WithLike(like Like) *ShowIndexesHybridTa
 	return s
 }
 
-func (s *ShowIndexesHybridTableRequest) WithIn(in In) *ShowIndexesHybridTableRequest {
+func (s *ShowIndexesHybridTableRequest) WithIn(in TableIn) *ShowIndexesHybridTableRequest {
 	s.In = &in
 	return s
 }

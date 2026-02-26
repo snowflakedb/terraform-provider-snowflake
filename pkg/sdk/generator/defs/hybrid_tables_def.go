@@ -18,7 +18,7 @@ var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
 	OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 	PredefinedQueryStructField("Type", g.KindOfT[sdkcommons.ColumnConstraintType](), g.KeywordOptions().Required()).
-	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes()).
+	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
 	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions()).
 	OptionalSQL("ENFORCED").
 	OptionalSQL("NOT ENFORCED").
@@ -36,8 +36,8 @@ var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConst
 var hybridTableOutOfLineIndex = g.NewQueryStruct("HybridTableOutOfLineIndex").
 	SQL("INDEX").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required().DoubleQuotes()).
-	PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes().SQL("INCLUDE"))
+	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required()).
+	PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().SQL("INCLUDE"))
 
 var hybridTableColumnsConstraintsAndIndexes = g.NewQueryStruct("HybridTableColumnsConstraintsAndIndexes").
 	ListQueryStructField("Columns", hybridTableColumn, g.KeywordOptions()).
@@ -79,7 +79,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 			OptionalSQL("PRIMARY KEY").
 			OptionalSQL("UNIQUE").
 			OptionalSQL("FOREIGN KEY").
-			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes()).
+			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
 			OptionalSQL("CASCADE").
 			OptionalSQL("RESTRICT").
 			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey").
@@ -110,7 +110,7 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
 	OptionalSQL("IF EXISTS").
-	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Required().DoubleQuotes())
+	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Required())
 
 var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	SQL("DROP INDEX").
@@ -315,8 +315,8 @@ var hybridTablesDef = g.NewInterface(
 		Name().
 		SQL("ON").
 		Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-		PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required().DoubleQuotes()).
-		PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().DoubleQuotes().SQL("INCLUDE")).
+		PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required()).
+		PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().SQL("INCLUDE")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "TableName").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
