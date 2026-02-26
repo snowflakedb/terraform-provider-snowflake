@@ -174,7 +174,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		if err != nil {
 			updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  "Failied to parse masking_policies",
+				Summary:  "Failed to parse masking_policies",
 				Detail:   fmt.Sprintf("Unable to parse masking policy identifiers for tag %s, err = %s", id.FullyQualifiedName(), err),
 			})
 		}
@@ -196,7 +196,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to set masking policies on the tag",
-					Detail:   fmt.Sprintf("Unable to alter tag %s, err = %s", id.FullyQualifiedName(), err),
+					Detail:   fmt.Sprintf("Unable to add temporary allowed value to tag %s, err = %s", id.FullyQualifiedName(), err),
 				})
 			}
 
@@ -206,7 +206,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Failed to set masking policies on the tag",
-					Detail:   fmt.Sprintf("Unable to alter tag %s, err = %s", id.FullyQualifiedName(), err),
+					Detail:   fmt.Sprintf("Unable to drop temporary allowed value from tag %s, err = %s", id.FullyQualifiedName(), err),
 				})
 			}
 		}
