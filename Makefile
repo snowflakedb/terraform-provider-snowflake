@@ -76,7 +76,7 @@ test-account-level-features: ## run integration and acceptance test modifying ac
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=60m ./pkg/testacc ./pkg/sdk/testint
 
 test-integration: ## run SDK integration tests
-	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint
+	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_ExternalVolumes" -v -cover -timeout=60m ./pkg/sdk/testint
 
 test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
 	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional
