@@ -21,7 +21,7 @@ type StreamAssert struct {
 func Stream(t *testing.T, id sdk.SchemaObjectIdentifier) *StreamAssert {
 	t.Helper()
 	return &StreamAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeStream, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stream, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("Stream"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stream, sdk.SchemaObjectIdentifier] {
 			return testClient.Stream.Show
 		}),
 	}
@@ -106,14 +106,11 @@ func (s *StreamAssert) HasComment(expected string) *StreamAssert {
 	return s
 }
 
-func (s *StreamAssert) HasTableName(expected string) *StreamAssert {
+func (s *StreamAssert) HasTableName(expected sdk.SchemaObjectIdentifier) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
-		if o.TableName == nil {
-			return fmt.Errorf("expected table name to have value; got: nil")
-		}
-		if *o.TableName != expected {
-			return fmt.Errorf("expected table name: %v; got: %v", expected, *o.TableName)
+		if o.TableName.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected table name: %v; got: %v", expected.FullyQualifiedName(), o.TableName.FullyQualifiedName())
 		}
 		return nil
 	})

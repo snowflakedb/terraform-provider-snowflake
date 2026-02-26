@@ -78,7 +78,6 @@ var DescribeStreamSchema = map[string]*schema.Schema{
 
 var _ = ShowStreamSchema
 
-// TODO(SNOW-1733130): Remove the logic for stage handling. Use schema object identifiers in the schema.
 func StreamDescriptionToSchema(stream sdk.Stream) map[string]any {
 	streamSchema := make(map[string]any)
 	streamSchema["created_on"] = stream.CreatedOn.String()
@@ -91,18 +90,7 @@ func StreamDescriptionToSchema(stream sdk.Stream) map[string]any {
 	if stream.Comment != nil {
 		streamSchema["comment"] = stream.Comment
 	}
-	if stream.TableName != nil {
-		if stream.SourceType != nil && *stream.SourceType == sdk.StreamSourceTypeStage {
-			streamSchema["table_name"] = *stream.TableName
-		} else {
-			tableId, err := sdk.ParseSchemaObjectIdentifier(*stream.TableName)
-			if err != nil {
-				log.Printf("[DEBUG] could not parse table ID: %v", err)
-			} else {
-				streamSchema["table_name"] = tableId.FullyQualifiedName()
-			}
-		}
-	}
+	streamSchema["table_name"] = stream.TableName.FullyQualifiedName()
 	if stream.SourceType != nil {
 		streamSchema["source_type"] = stream.SourceType
 	}

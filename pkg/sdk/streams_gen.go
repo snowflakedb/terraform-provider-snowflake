@@ -148,7 +148,7 @@ type showStreamsDbRow struct {
 	SchemaName    string         `db:"schema_name"`
 	Owner         sql.NullString `db:"owner"`
 	Comment       sql.NullString `db:"comment"`
-	TableName     sql.NullString `db:"table_name"`
+	TableName     string         `db:"table_name"`
 	SourceType    sql.NullString `db:"source_type"`
 	BaseTables    sql.NullString `db:"base_tables"`
 	Type          sql.NullString `db:"type"`
@@ -160,13 +160,14 @@ type showStreamsDbRow struct {
 }
 
 type Stream struct {
-	CreatedOn     time.Time
-	Name          string
-	DatabaseName  string
-	SchemaName    string
-	Owner         *string
-	Comment       *string
-	TableName     *string
+	CreatedOn    time.Time
+	Name         string
+	DatabaseName string
+	SchemaName   string
+	Owner        *string
+	Comment      *string
+	// TODO: Change in def
+	TableName     SchemaObjectIdentifier
 	SourceType    *StreamSourceType
 	BaseTables    []string
 	Type          *string

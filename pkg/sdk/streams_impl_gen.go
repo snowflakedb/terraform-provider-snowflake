@@ -6,6 +6,7 @@ package sdk
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -245,13 +246,19 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 	if r.Comment.Valid {
 		s.Comment = &r.Comment.String
 	}
-	if r.TableName.Valid {
-		s.TableName = &r.TableName.String
+	// TODO: Add integration test for it
+	if strings.Contains(r.TableName, "No privilege or table dropped") {
+		return nil, fmt.Errorf("the source object %s is dropped or you don't have permission to access it", r.TableName)
 	}
+	tableName, err := ParseSchemaObjectIdentifier(r.TableName)
+	if err != nil {
+		return nil, fmt.Errorf("error converting table name in show stream: %w", err)
+	}
+	s.TableName = tableName
 	if r.SourceType.Valid {
 		sourceType, err := ToStreamSourceType(r.SourceType.String)
 		if err != nil {
-			return nil, fmt.Errorf("error converting show stream: %w", err)
+			return nil, fmt.Errorf("error converting source type in show stream: %w", err)
 		} else {
 			s.SourceType = &sourceType
 		}
@@ -265,7 +272,7 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 	if r.Mode.Valid {
 		mode, err := ToStreamMode(r.Mode.String)
 		if err != nil {
-			return nil, fmt.Errorf("error converting show stream: %w", err)
+			return nil, fmt.Errorf("error converting mode in show stream: %w", err)
 		} else {
 			s.Mode = &mode
 		}
