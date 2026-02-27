@@ -181,8 +181,8 @@ type ResourceAssertion struct {
 	resourceAssertionType resourceAssertionType
 }
 
-// TODO [SNOW-3113138]: improve prefixing logic (so it works with resource, show_output, describe_output, and data sources)
 func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
+	// TODO [next PR]: remove additionalPrefix logic
 	assertion.fieldName = r.additionalPrefix + assertion.fieldName
 	r.assertions = append(r.assertions, assertion)
 }
