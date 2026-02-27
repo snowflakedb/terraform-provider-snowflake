@@ -16,7 +16,7 @@ type TableRowAccessPolicy struct {
 type ColumnInlineConstraint struct {
 	Name       *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
 	Type       ColumnConstraintType `ddl:"keyword"`
-	ForeignKey *InlineForeignKey    `ddl:"keyword" sql:"FOREIGN KEY"`
+	ForeignKey *InlineForeignKey    `ddl:"keyword"`
 
 	// optional
 	Enforced           *bool `ddl:"keyword" sql:"ENFORCED"`
@@ -98,7 +98,7 @@ func ToColumnConstraintType(s string) (ColumnConstraintType, error) {
 }
 
 type InlineForeignKey struct {
-	TableName  string              `ddl:"keyword" sql:"REFERENCES"`
+	TableName  string              `ddl:"parameter,no_equals" sql:"REFERENCES"`
 	ColumnName []string            `ddl:"keyword,parentheses"`
 	Match      *MatchType          `ddl:"keyword" sql:"MATCH"`
 	On         *ForeignKeyOnAction `ddl:"keyword" sql:"ON"`
@@ -179,4 +179,10 @@ func AsStringList[T ~string](input []T) []string {
 		output[i] = string(element)
 	}
 	return output
+}
+
+// TableContact represents a CONTACT <purpose> = <contact_name> assignment.
+type TableContact struct {
+	Purpose string `ddl:"keyword"`
+	Contact string `ddl:"parameter,no_equals,single_quotes"`
 }

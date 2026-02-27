@@ -48,6 +48,7 @@ type Client struct {
 	Functions                    Functions
 	GitRepositories              GitRepositories
 	Grants                       Grants
+	HybridTables                 HybridTables
 	ImageRepositories            ImageRepositories
 	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
@@ -181,6 +182,7 @@ func (c *Client) initialize() {
 	c.Functions = &functions{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
+	c.HybridTables = &hybridTables{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
 	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}

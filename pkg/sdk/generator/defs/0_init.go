@@ -26,6 +26,7 @@ func init() {
 		fileFormatsDef,
 		functionsDef,
 		gitRepositoriesDef,
+		hybridTablesDef,
 		imageRepositoriesDef,
 		listingsDef,
 		managedAccountsDef,
