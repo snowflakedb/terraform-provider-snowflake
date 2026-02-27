@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 // TODO [SNOW-2298294]: contents of this file may be potentially reused for both integration and acceptance tests setups

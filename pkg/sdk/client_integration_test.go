@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -68,6 +68,7 @@ func TestClient_NewClientDriverLoggingLevel(t *testing.T) {
 		} else {
 			expected = "error"
 		}
+		// TODO [this PR]: GetLogger should stay here but we need to verify after the logging-related changes on the gosnowflake team side
 		assert.Equal(t, expected, gosnowflake.GetLogger().GetLogLevel())
 	})
 

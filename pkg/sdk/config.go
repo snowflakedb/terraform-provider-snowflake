@@ -16,7 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/pelletier/go-toml/v2"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/youmark/pkcs8"
 	"golang.org/x/crypto/ssh"
 )
@@ -107,7 +107,6 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.Warehouse, &driverCfg.Warehouse)
 	pointerAttributeSet(c.Role, &driverCfg.Role)
 	pointerAttributeSet(c.Params, &driverCfg.Params)
-	pointerIpAttributeSet(c.ClientIp, &driverCfg.ClientIP)
 	pointerAttributeSet(c.Protocol, &driverCfg.Protocol)
 	pointerAttributeSet(c.Passcode, &driverCfg.Passcode)
 	pointerAttributeSet(c.Port, &driverCfg.Port)
@@ -130,7 +129,6 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 		driverCfg.Authenticator = authenticator
 	}
-	pointerAttributeSet(c.InsecureMode, &driverCfg.InsecureMode) //nolint:staticcheck
 	if c.OcspFailOpen != nil {
 		if *c.OcspFailOpen {
 			driverCfg.OCSPFailOpen = gosnowflake.OCSPFailOpenTrue
@@ -139,7 +137,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 	}
 	pointerAttributeSet(c.Token, &driverCfg.Token)
-	pointerAttributeSet(c.KeepSessionAlive, &driverCfg.KeepSessionAlive)
+	pointerAttributeSet(c.KeepSessionAlive, &driverCfg.ServerSessionKeepAlive)
 	if c.PrivateKey != nil {
 		passphrase := make([]byte, 0)
 		if c.PrivateKeyPassphrase != nil {
@@ -151,7 +149,9 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		}
 		driverCfg.PrivateKey = privKey
 	}
-	pointerAttributeSet(c.DisableTelemetry, &driverCfg.DisableTelemetry)
+	if c.DisableTelemetry != nil && *c.DisableTelemetry {
+		driverCfg.Params[ClientTelemetryEnableSessionParameter] = Pointer("false")
+	}
 	pointerConfigBoolAttributeSet(c.ValidateDefaultParameters, &driverCfg.ValidateDefaultParameters)
 	pointerConfigBoolAttributeSet(c.ClientRequestMfaToken, &driverCfg.ClientRequestMfaToken)
 	pointerConfigBoolAttributeSet(c.ClientStoreTemporaryCredential, &driverCfg.ClientStoreTemporaryCredential)
@@ -177,7 +177,20 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerAttributeSet(c.ProxyPassword, &driverCfg.ProxyPassword)
 	pointerAttributeSet(c.ProxyProtocol, &driverCfg.ProxyProtocol)
 	pointerAttributeSet(c.NoProxy, &driverCfg.NoProxy)
-	pointerAttributeSet(c.DisableOCSPChecks, &driverCfg.DisableOCSPChecks)
+	// Go driver in pre-v2 versions allowed setting both InsecureMode and DisableOCSPChecks.
+	// Setting any of them to true, used to turn the behavior on.
+	// In v2, there is no longer InsecureMode attribute, but we need to keep it in our provider configuration to avoid breaking changes.
+	// To mimic the behavior, we need to set DisableOCSPChecks value:
+	//  - if any of the two is present
+	//  - true should win over false if they are different
+	// This behavior will be removed with the removal of InsecureMode in the next major provider version.
+	if c.InsecureMode != nil || c.DisableOCSPChecks != nil {
+		var insecureMode bool
+		pointerAttributeSet(c.InsecureMode, &insecureMode) //nolint:staticcheck
+		var disableOcspChecks bool
+		pointerAttributeSet(c.DisableOCSPChecks, &disableOcspChecks)
+		driverCfg.DisableOCSPChecks = insecureMode || disableOcspChecks
+	}
 	err = pointerEnumSet(c.CertRevocationCheckMode, &driverCfg.CertRevocationCheckMode, ToCertRevocationCheckMode)
 	if err != nil {
 		return *EmptyDriverConfig(), err
@@ -221,9 +234,6 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if mergedMap := collections.MergeMaps(mergeConfig.Params, baseConfig.Params); len(mergedMap) > 0 {
 		baseConfig.Params = mergedMap
 	}
-	if baseConfig.ClientIP == nil {
-		baseConfig.ClientIP = mergeConfig.ClientIP
-	}
 	if baseConfig.Protocol == "" {
 		baseConfig.Protocol = mergeConfig.Protocol
 	}
@@ -266,23 +276,17 @@ func MergeConfig(baseConfig *gosnowflake.Config, mergeConfig *gosnowflake.Config
 	if baseConfig.MaxRetryCount == 0 {
 		baseConfig.MaxRetryCount = mergeConfig.MaxRetryCount
 	}
-	if !baseConfig.InsecureMode { //nolint:staticcheck
-		baseConfig.InsecureMode = mergeConfig.InsecureMode //nolint:staticcheck
-	}
 	if baseConfig.OCSPFailOpen == 0 {
 		baseConfig.OCSPFailOpen = mergeConfig.OCSPFailOpen
 	}
 	if baseConfig.Token == "" {
 		baseConfig.Token = mergeConfig.Token
 	}
-	if !baseConfig.KeepSessionAlive {
-		baseConfig.KeepSessionAlive = mergeConfig.KeepSessionAlive
+	if !baseConfig.ServerSessionKeepAlive {
+		baseConfig.ServerSessionKeepAlive = mergeConfig.ServerSessionKeepAlive
 	}
 	if baseConfig.PrivateKey == nil {
 		baseConfig.PrivateKey = mergeConfig.PrivateKey
-	}
-	if !baseConfig.DisableTelemetry {
-		baseConfig.DisableTelemetry = mergeConfig.DisableTelemetry
 	}
 	if baseConfig.Tracing == "" {
 		baseConfig.Tracing = mergeConfig.Tracing

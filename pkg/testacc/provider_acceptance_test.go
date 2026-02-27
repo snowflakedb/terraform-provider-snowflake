@@ -37,7 +37,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -209,7 +209,6 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 					assert.Equal(t, tmpServiceUser.WarehouseId.Name(), config.Warehouse)
 					assert.Equal(t, tmpServiceUser.RoleId.Name(), config.Role)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
-					assert.Equal(t, net.ParseIP("1.2.3.4"), config.ClientIP)
 					assert.Equal(t, "https", config.Protocol)
 					assert.Equal(t, fmt.Sprintf("%s.snowflakecomputing.com", tmpServiceUser.OrgAndAccount()), config.Host)
 					assert.Equal(t, 443, config.Port)
@@ -224,11 +223,10 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 					assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 					assert.Equal(t, 1, config.MaxRetryCount)
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
-					assert.True(t, config.InsecureMode) //nolint:staticcheck
+					assert.True(t, config.DisableOCSPChecks)
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					assert.True(t, config.KeepSessionAlive)
-					assert.True(t, config.DisableTelemetry)
+					assert.True(t, config.ServerSessionKeepAlive)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
@@ -238,6 +236,7 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
 						"foo": sdk.Pointer("bar"),
+						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 
@@ -278,7 +277,6 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, tmpServiceUser.WarehouseId.Name(), config.Warehouse)
 					assert.Equal(t, tmpServiceUser.RoleId.Name(), config.Role)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
-					assert.Equal(t, net.ParseIP("1.2.3.4"), config.ClientIP)
 					assert.Equal(t, "https", config.Protocol)
 					assert.Equal(t, fmt.Sprintf("%s.snowflakecomputing.com", tmpServiceUser.OrgAndAccount()), config.Host)
 					assert.Equal(t, 443, config.Port)
@@ -293,11 +291,9 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 					assert.Equal(t, 1, config.MaxRetryCount)
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
-					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					assert.True(t, config.KeepSessionAlive)
-					assert.True(t, config.DisableTelemetry)
+					assert.True(t, config.ServerSessionKeepAlive)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
@@ -307,6 +303,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
 						"foo": sdk.Pointer("bar"),
+						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
@@ -326,13 +323,95 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
 					assert.Equal(t, "https", config.ProxyProtocol)
 					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
-					assert.False(t, config.DisableOCSPChecks)
+					assert.True(t, config.DisableOCSPChecks)
 					assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
 					assert.False(t, config.CrlInMemoryCacheDisabled)
 					assert.True(t, config.CrlOnDiskCacheDisabled)
 					assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_DisableOcspChecks_atLeastOneSetToTrueInToml(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
+		return helpers.TomlConfigForServiceUserWithModifiers(t, profile, tmpServiceUser, func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO {
+			return cfg.
+				WithInsecureMode(true).
+				WithDisableOCSPChecks(false)
+		})
+	})
+
+	factory, p := providerFactoryWithoutCacheReturningProvider()
+
+	providerModelWithBothSetToFalse := providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).
+		WithInsecureMode(false).
+		WithDisableOcspChecks(false)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: factory,
+		PreCheck: func() {
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
+
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModelWithBothSetToFalse, datasourceModel()),
+				Check: func(s *terraform.State) error {
+					config := p.Meta().(*internalprovider.Context).Client.GetConfig()
+					assert.True(t, config.DisableOCSPChecks)
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_DisableOcspChecks_trueInTfNotOverriddenByFalseInToml(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
+		return helpers.TomlConfigForServiceUserWithModifiers(t, profile, tmpServiceUser, func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO {
+			return cfg.
+				WithInsecureMode(false).
+				WithDisableOCSPChecks(false)
+		})
+	})
+
+	factory, p := providerFactoryWithoutCacheReturningProvider()
+
+	providerModelWithBothSetToFalse := providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).
+		WithInsecureMode(true).
+		WithDisableOcspChecks(false)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: factory,
+		PreCheck: func() {
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
+
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModelWithBothSetToFalse, datasourceModel()),
+				Check: func(s *terraform.State) error {
+					config := p.Meta().(*internalprovider.Context).Client.GetConfig()
+					assert.True(t, config.DisableOCSPChecks)
 					return nil
 				},
 			},
@@ -496,7 +575,6 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.Role, tmpServiceUser.RoleId.Name())
 					t.Setenv(snowflakeenvs.Authenticator, "SNOWFLAKE_JWT")
 					t.Setenv(snowflakeenvs.ValidateDefaultParameters, "true")
-					t.Setenv(snowflakeenvs.ClientIp, "2.2.2.2")
 					t.Setenv(snowflakeenvs.Host, "")
 					t.Setenv(snowflakeenvs.Passcode, "")
 					t.Setenv(snowflakeenvs.PasscodeInPassword, "false")
@@ -553,7 +631,6 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, tmpServiceUser.WarehouseId.Name(), config.Warehouse)
 					assert.Equal(t, tmpServiceUser.RoleId.Name(), config.Role)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
-					assert.Equal(t, net.ParseIP("2.2.2.2"), config.ClientIP)
 					assert.Equal(t, "https", config.Protocol)
 					assert.Equal(t, fmt.Sprintf("%s.snowflakecomputing.com", tmpServiceUser.OrgAndAccount()), config.Host)
 					assert.Equal(t, 443, config.Port)
@@ -568,11 +645,9 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, 600*time.Second, config.ExternalBrowserTimeout)
 					assert.Equal(t, 2, config.MaxRetryCount)
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
-					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenFalse, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
-					assert.True(t, config.KeepSessionAlive)
-					assert.True(t, config.DisableTelemetry)
+					assert.True(t, config.ServerSessionKeepAlive)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, "../", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.ClientRequestMfaToken)
@@ -582,6 +657,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
 						"foo": sdk.Pointer("bar"),
+						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
@@ -648,7 +724,6 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.Token, "invalid")
 					t.Setenv(snowflakeenvs.Role, "invalid")
 					t.Setenv(snowflakeenvs.ValidateDefaultParameters, "false")
-					t.Setenv(snowflakeenvs.ClientIp, "2.2.2.2")
 					t.Setenv(snowflakeenvs.Host, "")
 					t.Setenv(snowflakeenvs.Authenticator, "invalid")
 					t.Setenv(snowflakeenvs.Passcode, "")
@@ -689,7 +764,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.ProxyPassword, "overridden")
 					t.Setenv(snowflakeenvs.ProxyProtocol, "overridden")
 					t.Setenv(snowflakeenvs.NoProxy, "overridden")
-					t.Setenv(snowflakeenvs.DisableOCSPChecks, "true")
+					t.Setenv(snowflakeenvs.DisableOCSPChecks, "false")
 					t.Setenv(snowflakeenvs.CertRevocationCheckMode, "overridden")
 					t.Setenv(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, "false")
 					t.Setenv(snowflakeenvs.CrlInMemoryCacheDisabled, "false")
@@ -706,7 +781,6 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, tmpServiceUser.WarehouseId.Name(), config.Warehouse)
 					assert.Equal(t, tmpServiceUser.RoleId.Name(), config.Role)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
-					assert.Equal(t, net.ParseIP("3.3.3.3"), config.ClientIP)
 					assert.Equal(t, "https", config.Protocol)
 					assert.Equal(t, fmt.Sprintf("%s.snowflakecomputing.com", tmpServiceUser.OrgAndAccount()), config.Host)
 					assert.Equal(t, 443, config.Port)
@@ -721,11 +795,9 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, 601*time.Second, config.ExternalBrowserTimeout)
 					assert.Equal(t, 3, config.MaxRetryCount)
 					assert.Equal(t, "terraform-provider-snowflake", config.Application)
-					assert.True(t, config.InsecureMode) //nolint:staticcheck
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "correct token", config.Token)
-					assert.True(t, config.KeepSessionAlive)
-					assert.True(t, config.DisableTelemetry)
+					assert.True(t, config.ServerSessionKeepAlive)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
 					assert.Equal(t, "../../", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
@@ -735,6 +807,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableConsoleLogin)
 					assert.Equal(t, map[string]*string{
 						"foo": sdk.Pointer("piyo"),
+						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
 					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
@@ -754,7 +827,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, "proxy_password", config.ProxyPassword)
 					assert.Equal(t, "https", config.ProxyProtocol)
 					assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
-					assert.False(t, config.DisableOCSPChecks)
+					assert.True(t, config.DisableOCSPChecks)
 					assert.Equal(t, gosnowflake.CertRevocationCheckAdvisory, config.CertRevocationCheckMode)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.CrlAllowCertificatesWithoutCrlURL)
 					assert.False(t, config.CrlInMemoryCacheDisabled)

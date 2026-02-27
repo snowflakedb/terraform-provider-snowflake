@@ -99,7 +99,7 @@ func FullInvalidTomlConfigForServiceUser(t *testing.T, profile string) string {
 		WithExternalBrowserTimeout(-1).
 		WithMaxRetryCount(-1).
 		WithAuthenticator("snowflake").
-		WithInsecureMode(true).
+		WithInsecureMode(false).
 		WithOcspFailOpen(true).
 		WithToken("token").
 		WithKeepSessionAlive(true).
