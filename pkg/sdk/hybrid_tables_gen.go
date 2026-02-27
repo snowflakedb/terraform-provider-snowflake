@@ -264,7 +264,7 @@ type hybridTableDetailsRow struct {
 	Name                  string         `db:"name"`
 	Type                  string         `db:"type"`
 	Kind                  string         `db:"kind"`
-	Null                  string         `db:"null"`
+	Null                  string         `db:"null?"`
 	Default               sql.NullString `db:"default"`
 	PrimaryKey            string         `db:"primary key"`
 	UniqueKey             string         `db:"unique key"`
