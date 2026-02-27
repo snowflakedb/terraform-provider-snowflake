@@ -179,11 +179,14 @@ type ResourceAssertion struct {
 	fieldName             string
 	expectedValue         string
 	resourceAssertionType resourceAssertionType
+
+	fullPath string
 }
 
 func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
 	// TODO [next PR]: remove additionalPrefix logic
 	assertion.fieldName = r.additionalPrefix + assertion.fieldName
+	assertion.fullPath = r.assertionPath + assertion.fieldName
 	r.assertions = append(r.assertions, assertion)
 }
 
@@ -331,24 +334,24 @@ func (r *ResourceAssert) ToTerraformTestCheckFunc(t *testing.T, _ *helpers.TestC
 		for i, a := range r.assertions {
 			switch a.resourceAssertionType {
 			case resourceAssertionTypeSetElem:
-				if err := resource.TestCheckTypeSetElemAttr(r.name, a.fieldName, a.expectedValue)(s); err != nil {
+				if err := resource.TestCheckTypeSetElemAttr(r.name, a.fullPath, a.expectedValue)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, r.prefix, i+1, len(r.assertions), errCut))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}
 			case resourceAssertionTypeValueSet:
-				if err := resource.TestCheckResourceAttr(r.name, a.fieldName, a.expectedValue)(s); err != nil {
+				if err := resource.TestCheckResourceAttr(r.name, a.fullPath, a.expectedValue)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, r.prefix, i+1, len(r.assertions), errCut))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}
 			case resourceAssertionTypeValueNotSet:
-				if err := resource.TestCheckNoResourceAttr(r.name, a.fieldName)(s); err != nil {
+				if err := resource.TestCheckNoResourceAttr(r.name, a.fullPath)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, r.prefix, i+1, len(r.assertions), errCut))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}
 			case resourceAssertionTypeValuePresent:
-				if err := resource.TestCheckResourceAttrSet(r.name, a.fieldName)(s); err != nil {
+				if err := resource.TestCheckResourceAttrSet(r.name, a.fullPath)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, r.prefix, i+1, len(r.assertions), errCut))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}
 			}
 		}
@@ -367,16 +370,16 @@ func (r *ResourceAssert) ToTerraformImportStateCheckFunc(t *testing.T, _ *helper
 		for i, a := range r.assertions {
 			switch a.resourceAssertionType {
 			case resourceAssertionTypeValueSet:
-				if err := importchecks.TestCheckResourceAttrInstanceState(r.id, a.fieldName, a.expectedValue)(s); err != nil {
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %w", r.id, r.prefix, i+1, len(r.assertions), err))
+				if err := importchecks.TestCheckResourceAttrInstanceState(r.id, a.fullPath, a.expectedValue)(s); err != nil {
+					result = append(result, fmt.Errorf("imported %s assertion (path: %s) [%d/%d]: failed with error: %w", r.id, a.fullPath, i+1, len(r.assertions), err))
 				}
 			case resourceAssertionTypeValueNotSet:
-				if err := importchecks.TestCheckResourceAttrNotInInstanceState(r.id, a.fieldName)(s); err != nil {
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %w", r.id, r.prefix, i+1, len(r.assertions), err))
+				if err := importchecks.TestCheckResourceAttrNotInInstanceState(r.id, a.fullPath)(s); err != nil {
+					result = append(result, fmt.Errorf("imported %s assertion (path: %s) [%d/%d]: failed with error: %w", r.id, a.fullPath, i+1, len(r.assertions), err))
 				}
 			case resourceAssertionTypeValuePresent:
-				if err := importchecks.TestCheckResourceAttrInstanceStateSet(r.id, a.fieldName)(s); err != nil {
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %w", r.id, r.prefix, i+1, len(r.assertions), err))
+				if err := importchecks.TestCheckResourceAttrInstanceStateSet(r.id, a.fullPath)(s); err != nil {
+					result = append(result, fmt.Errorf("imported %s assertion (path: %s) [%d/%d]: failed with error: %w", r.id, a.fullPath, i+1, len(r.assertions), err))
 				}
 			}
 		}
