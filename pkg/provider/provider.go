@@ -318,9 +318,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"disable_telemetry": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `true` to `params`. Disables telemetry in the driver.", snowflakeenvs.DisableTelemetry),
+			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`. Disables telemetry in the driver.", snowflakeenvs.DisableTelemetry),
 			Optional:    true,
-			Deprecated:  "This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `true` to `params`.",
+			Deprecated:  "This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableTelemetry, nil),
 		},
 		"client_request_mfa_token": {

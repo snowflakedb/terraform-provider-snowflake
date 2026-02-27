@@ -159,7 +159,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	},
 	"disable_telemetry": schema.BoolAttribute{
 		Description:        existingSchema["disable_telemetry"].Description,
-		DeprecationMessage: "This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `true` to `params`.", // edited manually
+		DeprecationMessage: "This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`.", // edited manually
 		Optional:           true,
 		Sensitive:          false,
 	},
