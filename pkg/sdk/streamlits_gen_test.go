@@ -128,7 +128,7 @@ func TestStreamlits_Alter(t *testing.T) {
 			RootLocation:               String("@test"),
 			MainFile:                   String("manifest.yml"),
 			QueryWarehouse:             &warehouse,
-			ExternalAccessIntegrations: &ExternalAccessIntegrations{[]AccountObjectIdentifier{integration}},
+			ExternalAccessIntegrations: &StreamlitExternalAccessIntegrations{[]AccountObjectIdentifier{integration}},
 			Comment:                    String("test"),
 			Title:                      String("foo"),
 		}

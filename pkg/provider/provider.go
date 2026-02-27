@@ -597,6 +597,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_dynamic_table":                                                resources.DynamicTable(),
 		"snowflake_email_notification_integration":                               resources.EmailNotificationIntegration(),
 		"snowflake_execute":                                                      resources.Execute(),
+		"snowflake_external_access_integration":                                  resources.ExternalAccessIntegration(),
 		"snowflake_stage_external_azure":                                         resources.ExternalAzureStage(),
 		"snowflake_external_function":                                            resources.ExternalFunction(),
 		"snowflake_stage_external_gcs":                                           resources.ExternalGcsStage(),
