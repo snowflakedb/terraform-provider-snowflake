@@ -441,8 +441,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			listClauses = append(listClauses, sClause)
 		} else {
 			// if it is not a struct, then it is a primitive type and can be added directly.
-			qm := b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier)
-			listClauses = append(listClauses, sqlStaticClause(qm.Modify(reflectedValue)))
+			listClauses = append(listClauses, sqlStaticClause(fmt.Sprintf("%v", reflectedValue)))
 		}
 	}
 	if len(listClauses) < 1 {
@@ -476,7 +475,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 	case "keyword":
 		return b.renderStaticClause(sqlKeywordClause{
 			key: sqlTag,
-			qm:  NoQuotes,
+			qm:  b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
 		}, sClause), nil
 	}
 	return sClause, nil
