@@ -16,7 +16,7 @@ func DatabaseResource(t *testing.T, name string) *DatabaseResourceAssert {
 	t.Helper()
 
 	return &DatabaseResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedDatabaseResource(t *testing.T, id string) *DatabaseResourceAssert {
 	t.Helper()
 
 	return &DatabaseResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 

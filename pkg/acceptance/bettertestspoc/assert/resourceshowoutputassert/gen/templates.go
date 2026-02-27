@@ -15,6 +15,7 @@ var (
 	DefinitionTemplate, _     = template.New("definitionTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
 		genhelpers.FirstLetterLowercase,
 		genhelpers.FirstLetter,
+		genhelpers.SnakeCase,
 		strings.TrimSuffix,
 	)).Parse(definitionTemplateContent)
 

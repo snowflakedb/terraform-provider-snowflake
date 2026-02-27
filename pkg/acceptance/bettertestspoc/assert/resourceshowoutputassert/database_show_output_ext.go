@@ -1,21 +1,8 @@
 package resourceshowoutputassert
 
 import (
-	"testing"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
-
-// DatabasesDatasourceShowOutput is a temporary workaround to have better show output assertions in data source acceptance tests.
-func DatabasesDatasourceShowOutput(t *testing.T, name string) *DatabaseShowOutputAssert {
-	t.Helper()
-
-	s := DatabaseShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert(name, "show_output", "databases.0."),
-	}
-	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &s
-}
 
 func (s *DatabaseShowOutputAssert) HasCreatedOnNotEmpty() *DatabaseShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValuePresent("created_on"))

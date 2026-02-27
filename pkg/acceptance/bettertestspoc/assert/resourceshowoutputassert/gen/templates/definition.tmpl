@@ -37,3 +37,21 @@ func Imported{{ $name }}{{ $outputType }}Output(t *testing.T, id string) *{{ $as
     {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ $outputTypeLowerCase }}_output.#", "1"))
     return &{{ $assertVar }}
 }
+
+{{ if .DataSourceName }}
+    func {{ .DataSourceName }}Datasource{{ $outputType }}Output(t *testing.T, name string) *{{ $assertName }} {
+    t.Helper()
+
+    return {{ .DataSourceName }}Datasource{{ $outputType }}OutputOnIdx(t, name, 0)
+    }
+
+    func {{ .DataSourceName }}Datasource{{ $outputType }}OutputOnIdx(t *testing.T, name string, idx int) *{{ $assertName }} {
+    t.Helper()
+
+    {{ $assertVar }} := {{ $assertName }}{
+    ResourceAssert: assert.NewDatasource{{ $outputType }}OutputAssert(name, "{{ SnakeCase .DataSourceName }}", idx),
+    }
+    {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ $outputTypeLowerCase }}_output.#", "1"))
+    return &{{ $assertVar }}
+    }
+{{ end }}

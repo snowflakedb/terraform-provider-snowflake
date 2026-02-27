@@ -18,7 +18,7 @@ func DatabaseShowOutput(t *testing.T, name string) *DatabaseShowOutputAssert {
 	t.Helper()
 
 	databaseAssert := DatabaseShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
 	databaseAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &databaseAssert
@@ -28,7 +28,23 @@ func ImportedDatabaseShowOutput(t *testing.T, id string) *DatabaseShowOutputAsse
 	t.Helper()
 
 	databaseAssert := DatabaseShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
+	}
+	databaseAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &databaseAssert
+}
+
+func DatabasesDatasourceShowOutput(t *testing.T, name string) *DatabaseShowOutputAssert {
+	t.Helper()
+
+	return DatabasesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func DatabasesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *DatabaseShowOutputAssert {
+	t.Helper()
+
+	databaseAssert := DatabaseShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "databases", idx),
 	}
 	databaseAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &databaseAssert
@@ -39,72 +55,72 @@ func ImportedDatabaseShowOutput(t *testing.T, id string) *DatabaseShowOutputAsse
 ////////////////////////////
 
 func (d *DatabaseShowOutputAssert) HasCreatedOn(expected time.Time) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	d.StringValueSet("created_on", expected.String())
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasName(expected string) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	d.StringValueSet("name", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasIsDefault(expected bool) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_default", expected))
+	d.BoolValueSet("is_default", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasIsCurrent(expected bool) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_current", expected))
+	d.BoolValueSet("is_current", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasOrigin(expected sdk.ObjectIdentifier) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("origin", expected.FullyQualifiedName()))
+	d.StringValueSet("origin", expected.FullyQualifiedName())
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasOwner(expected string) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	d.StringValueSet("owner", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasComment(expected string) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	d.StringValueSet("comment", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasOptions(expected string) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("options", expected))
+	d.StringValueSet("options", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasRetentionTime(expected int) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputIntValueSet("retention_time", expected))
+	d.IntValueSet("retention_time", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasResourceGroup(expected string) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("resource_group", expected))
+	d.StringValueSet("resource_group", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasDroppedOn(expected time.Time) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("dropped_on", expected.String()))
+	d.StringValueSet("dropped_on", expected.String())
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasTransient(expected bool) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueSet("transient", expected))
+	d.BoolValueSet("transient", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasKind(expected string) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	d.StringValueSet("kind", expected)
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasOwnerRoleType(expected string) *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	d.StringValueSet("owner_role_type", expected)
 	return d
 }
 
@@ -113,71 +129,71 @@ func (d *DatabaseShowOutputAssert) HasOwnerRoleType(expected string) *DatabaseSh
 ///////////////////////////////
 
 func (d *DatabaseShowOutputAssert) HasNoCreatedOn() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	d.ValueNotSet("created_on")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoName() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	d.ValueNotSet("name")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoIsDefault() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_default"))
+	d.ValueNotSet("is_default")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoIsCurrent() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_current"))
+	d.ValueNotSet("is_current")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoOrigin() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("origin"))
+	d.ValueNotSet("origin")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoOwner() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	d.ValueNotSet("owner")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoComment() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	d.ValueNotSet("comment")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoOptions() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
+	d.ValueNotSet("options")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoRetentionTime() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputIntValueNotSet("retention_time"))
+	d.ValueNotSet("retention_time")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoResourceGroup() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("resource_group"))
+	d.ValueNotSet("resource_group")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoDroppedOn() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("dropped_on"))
+	d.ValueNotSet("dropped_on")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoTransient() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("transient"))
+	d.ValueNotSet("transient")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoKind() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	d.ValueNotSet("kind")
 	return d
 }
 
 func (d *DatabaseShowOutputAssert) HasNoOwnerRoleType() *DatabaseShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	d.ValueNotSet("owner_role_type")
 	return d
 }

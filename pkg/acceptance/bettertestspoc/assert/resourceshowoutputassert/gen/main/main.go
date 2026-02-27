@@ -28,7 +28,7 @@ func main() {
 		RunAndHandleOsReturn()
 }
 
-func getFilename(_ genhelpers.SdkObjectDetails, model gen.ResourceShowOutputAssertionsModel) string {
+func getFilename(_ gen.SdkObjectShowOutputDetails, model gen.ResourceShowOutputAssertionsModel) string {
 	if model.IsDescribeOutput {
 		return strings.TrimSuffix(genhelpers.ToSnakeCase(model.Name), "_details") + "_desc_output" + "_gen.go"
 	}

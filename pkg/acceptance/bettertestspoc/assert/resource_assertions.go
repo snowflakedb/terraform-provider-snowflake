@@ -203,6 +203,10 @@ func ValueSet(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
 }
 
+func ValueNotSet(fieldName string) ResourceAssertion {
+	return ResourceAssertion{fieldName: fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
+}
+
 func (r *ResourceAssert) BoolValueSet(fieldName string, expected bool) {
 	r.AddAssertion(ValueSet(fieldName, strconv.FormatBool(expected)))
 }
@@ -217,6 +221,14 @@ func (r *ResourceAssert) FloatValueSet(fieldName string, expected float64) {
 
 func (r *ResourceAssert) StringValueSet(fieldName string, expected string) {
 	r.AddAssertion(ValueSet(fieldName, expected))
+}
+
+func (r *ResourceAssert) ValueSet(fieldName string, expected string) {
+	r.AddAssertion(ValueSet(fieldName, expected))
+}
+
+func (r *ResourceAssert) ValueNotSet(fieldName string) {
+	r.AddAssertion(ValueNotSet(fieldName))
 }
 
 // TODO [SNOW-3113138]: do we want to generate assertions for the length only?
@@ -274,10 +286,6 @@ func (r *ResourceAssert) ListContainsExactlyStringValuesInOrder(fieldName string
 	for idx, value := range expectedValues {
 		r.ListContainsElem(fieldName, idx, value)
 	}
-}
-
-func ValueNotSet(fieldName string) ResourceAssertion {
-	return ResourceAssertion{fieldName: fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
 }
 
 const (

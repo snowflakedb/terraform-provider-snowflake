@@ -11,11 +11,28 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+type SdkObjectShowOutputDetails struct {
+	dataSourceDef *dataSourceDef
+	genhelpers.SdkObjectDetails
+}
+
+var dataSourceMapping = map[any]dataSourceDef{
+	sdk.Database{}: {"Databases"},
+}
+
+type dataSourceDef struct {
+	pluralName string
+}
+
 // GetFilteredSdkObjectDetails is currently needed to filter out objects that are not resources because the same underlying list of objects is used.
-func GetFilteredSdkObjectDetails() []genhelpers.SdkObjectDetails {
+func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 	allDetails := objectassertgen.GetSdkObjectDetails()
-	return collections.Filter(allDetails, func(d genhelpers.SdkObjectDetails) bool {
+	filtered := collections.Filter(allDetails, func(d genhelpers.SdkObjectDetails) bool {
 		return !slices.Contains(objectNamesNotBeingResources, d.Name)
+	})
+	return collections.Map(filtered, func(d genhelpers.SdkObjectDetails) SdkObjectShowOutputDetails {
+		v, _ := dataSourceMappingNormalized[d.Name]
+		return SdkObjectShowOutputDetails{v, d}
 	})
 }
 
@@ -24,4 +41,11 @@ var (
 	objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {
 		return reflect.ValueOf(o).Type().String()
 	})
+	dataSourceMappingNormalized = map[string]*dataSourceDef{}
 )
+
+func init() {
+	for k, v := range dataSourceMapping {
+		dataSourceMappingNormalized[reflect.ValueOf(k).Type().String()] = &v
+	}
+}
