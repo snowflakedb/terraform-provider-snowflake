@@ -9,7 +9,7 @@ func {{ .Name }}Resource(t *testing.T, name string) *{{ $assertName }} {
     t.Helper()
 
     return &{{ $assertName }}{
-        ResourceAssert: assert.NewResourceAssert(name),
+        ResourceAssert: assert.NewResourceAssertTmp(name),
     }
 }
 
@@ -17,6 +17,6 @@ func Imported{{ .Name }}Resource(t *testing.T, id string) *{{ $assertName }} {
     t.Helper()
 
     return &{{ $assertName }}{
-        ResourceAssert: assert.NewImportedResourceAssert(id),
+        ResourceAssert: assert.NewImportedResourceAssertTmp(id),
     }
 }

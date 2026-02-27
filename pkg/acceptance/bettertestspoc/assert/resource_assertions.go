@@ -39,11 +39,19 @@ type ResourceAssert struct {
 }
 
 // NewResourceAssert creates a ResourceAssert where the resource name should be used as a key for assertions.
-// TODO [this PR]: adjust signature
 func NewResourceAssert(name string, prefix string) *ResourceAssert {
 	return &ResourceAssert{
 		name:       name,
 		prefix:     prefix,
+		assertions: make([]ResourceAssertion, 0),
+	}
+}
+
+// NewResourceAssertTmp creates a ResourceAssert where the resource name should be used as a key for assertions.
+// TODO [next PR]: rename to NewResourceAssert, remove the old NewResourceAssert
+func NewResourceAssertTmp(name string) *ResourceAssert {
+	return &ResourceAssert{
+		name:       name,
 		assertions: make([]ResourceAssertion, 0),
 	}
 }
@@ -76,11 +84,19 @@ func NewResourceParametersAssert(name string) *ResourceAssert {
 }
 
 // NewImportedResourceAssert creates a ResourceAssert where the resource id should be used as a key for assertions.
-// TODO [this PR]: adjust signature
 func NewImportedResourceAssert(id string, prefix string) *ResourceAssert {
 	return &ResourceAssert{
 		id:         id,
 		prefix:     prefix,
+		assertions: make([]ResourceAssertion, 0),
+	}
+}
+
+// NewImportedResourceAssertTmp creates a ResourceAssert where the resource id should be used as a key for assertions.
+// TODO [next PR]: rename to NewImportedResourceAssert, remove the old NewImportedResourceAssert
+func NewImportedResourceAssertTmp(id string) *ResourceAssert {
+	return &ResourceAssert{
+		id:         id,
 		assertions: make([]ResourceAssertion, 0),
 	}
 }
