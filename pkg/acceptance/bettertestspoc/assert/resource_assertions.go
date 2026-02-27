@@ -15,6 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+const (
+	describeOutputPath = "describe_output.0."
+	showOutputPath     = "show_output.0."
+	parametersPath     = "parameters.0."
+)
+
 var (
 	_ TestCheckFuncProvider        = (*ResourceAssert)(nil)
 	_ ImportStateCheckFuncProvider = (*ResourceAssert)(nil)
@@ -28,9 +34,12 @@ type ResourceAssert struct {
 	prefix           string
 	assertions       []ResourceAssertion
 	additionalPrefix string
+
+	assertionPath string
 }
 
 // NewResourceAssert creates a ResourceAssert where the resource name should be used as a key for assertions.
+// TODO [this PR]: adjust signature
 func NewResourceAssert(name string, prefix string) *ResourceAssert {
 	return &ResourceAssert{
 		name:       name,
@@ -39,7 +48,35 @@ func NewResourceAssert(name string, prefix string) *ResourceAssert {
 	}
 }
 
+// NewResourceShowOutputAssert TODO
+func NewResourceShowOutputAssert(name string) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: showOutputPath,
+	}
+}
+
+// NewResourceDescribeOutputAssert TODO
+func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: describeOutputPath,
+	}
+}
+
+// NewResourceParametersAssert TODO
+func NewResourceParametersAssert(name string) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: parametersPath,
+	}
+}
+
 // NewImportedResourceAssert creates a ResourceAssert where the resource id should be used as a key for assertions.
+// TODO [this PR]: adjust signature
 func NewImportedResourceAssert(id string, prefix string) *ResourceAssert {
 	return &ResourceAssert{
 		id:         id,
@@ -48,13 +85,68 @@ func NewImportedResourceAssert(id string, prefix string) *ResourceAssert {
 	}
 }
 
+// NewImportedResourceShowOutputAssert TODO
+func NewImportedResourceShowOutputAssert(id string) *ResourceAssert {
+	return &ResourceAssert{
+		id:            id,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: showOutputPath,
+	}
+}
+
+// NewImportedResourceDescribeOutputAssert TODO
+func NewImportedResourceDescribeOutputAssert(id string) *ResourceAssert {
+	return &ResourceAssert{
+		id:            id,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: describeOutputPath,
+	}
+}
+
+// NewImportedResourceParametersAssert TODO
+func NewImportedResourceParametersAssert(id string) *ResourceAssert {
+	return &ResourceAssert{
+		id:            id,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: parametersPath,
+	}
+}
+
 // NewDatasourceAssert creates a ResourceAssert for data sources.
+// TODO [this PR]: adjust signature
 func NewDatasourceAssert(name string, prefix string, additionalPrefix string) *ResourceAssert {
 	return &ResourceAssert{
 		name:             name,
 		prefix:           prefix,
 		assertions:       make([]ResourceAssertion, 0),
 		additionalPrefix: additionalPrefix,
+	}
+}
+
+// NewDatasourceShowOutputAssert TODO
+func NewDatasourceShowOutputAssert(name string, objectsPath string, idx int) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, showOutputPath),
+	}
+}
+
+// NewDatasourceDescribeOutputAssert TODO
+func NewDatasourceDescribeOutputAssert(name string, objectsPath string, idx int) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, describeOutputPath),
+	}
+}
+
+// NewDatasourceDescribeParametersAssert TODO
+func NewDatasourceDescribeParametersAssert(name string, objectsPath string, idx int) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, parametersPath),
 	}
 }
 
@@ -170,7 +262,6 @@ func ValueNotSet(fieldName string) ResourceAssertion {
 }
 
 const (
-	parametersPrefix            = "parameters.0."
 	parametersValueSuffix       = ".0.value"
 	parametersLevelSuffix       = ".0.level"
 	parametersKeySuffix         = ".0.key"
@@ -191,27 +282,27 @@ func ResourceParameterStringUnderlyingValueSet[T ~string, U ~string](parameterNa
 }
 
 func ResourceParameterValueSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ResourceAssertion{fieldName: parametersPrefix + strings.ToLower(string(parameterName)) + parametersValueSuffix, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
+	return ResourceAssertion{fieldName: parametersPath + strings.ToLower(string(parameterName)) + parametersValueSuffix, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
 }
 
 func ResourceParameterLevelSet[T ~string](parameterName T, parameterType sdk.ParameterType) ResourceAssertion {
-	return ResourceAssertion{fieldName: parametersPrefix + strings.ToLower(string(parameterName)) + parametersLevelSuffix, expectedValue: string(parameterType), resourceAssertionType: resourceAssertionTypeValueSet}
+	return ResourceAssertion{fieldName: parametersPath + strings.ToLower(string(parameterName)) + parametersLevelSuffix, expectedValue: string(parameterType), resourceAssertionType: resourceAssertionTypeValueSet}
 }
 
 func ResourceParameterKeySet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPrefix+strings.ToLower(string(parameterName))+parametersKeySuffix, expected)
+	return ValueSet(parametersPath+strings.ToLower(string(parameterName))+parametersKeySuffix, expected)
 }
 
 func ResourceParameterDefaultSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPrefix+strings.ToLower(string(parameterName))+parametersDefaultSuffix, expected)
+	return ValueSet(parametersPath+strings.ToLower(string(parameterName))+parametersDefaultSuffix, expected)
 }
 
 func ResourceParameterDescriptionSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPrefix+strings.ToLower(string(parameterName))+parametersDescriptionSuffix, expected)
+	return ValueSet(parametersPath+strings.ToLower(string(parameterName))+parametersDescriptionSuffix, expected)
 }
 
 func ResourceParameterDescriptionPresent[T ~string](parameterName T) ResourceAssertion {
-	return ValuePresent(parametersPrefix + strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
+	return ValuePresent(parametersPath + strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
 }
 
 // ToTerraformTestCheckFunc implements TestCheckFuncProvider to allow easier creation of new resource assertions.
