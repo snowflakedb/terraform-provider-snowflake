@@ -22,7 +22,7 @@ func {{ $name }}{{ $outputType }}Output(t *testing.T, name string) *{{ $assertNa
     t.Helper()
 
     {{ $assertVar }} := {{ $assertName }}{
-        ResourceAssert: assert.NewResourceAssert(name, "{{ $outputTypeLowerCase }}_output"),
+        ResourceAssert: assert.NewResource{{ $outputType }}OutputAssert(name),
     }
     {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ $outputTypeLowerCase }}_output.#", "1"))
     return &{{ $assertVar }}
@@ -32,7 +32,7 @@ func Imported{{ $name }}{{ $outputType }}Output(t *testing.T, id string) *{{ $as
     t.Helper()
 
     {{ $assertVar }} := {{ $assertName }}{
-        ResourceAssert: assert.NewImportedResourceAssert(id, "{{ $outputTypeLowerCase }}_output"),
+        ResourceAssert: assert.NewImportedResource{{ $outputType }}OutputAssert(id),
     }
     {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ $outputTypeLowerCase }}_output.#", "1"))
     return &{{ $assertVar }}
