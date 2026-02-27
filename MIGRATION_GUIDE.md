@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.13.x ➞ v2.14.0
+## v2.14.x ➞ v2.15.0
 
 ### *(improvement)* Go driver bumped to v2
 
@@ -59,6 +59,8 @@ No changes are required, but switch to `CLIENT_TELEMETRY_ENABLED` instead of the
 `KeepSessionAlive` was renamed to `ServerSessionKeepAlive` to align it with other drivers.
 
 No changes are required. `keep_session_alive` attribute will be renamed in the next major provider release.
+
+## v2.13.x ➞ v2.14.0
 
 ### *(new feature)* Added `DECFLOAT` support
 
