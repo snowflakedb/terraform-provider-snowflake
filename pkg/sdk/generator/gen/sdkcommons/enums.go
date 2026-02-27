@@ -8,6 +8,11 @@ type (
 	AutoEventLogging                                                    string
 	AvroCompression                                                     string
 	BinaryFormat                                                        string
+	CatalogIntegrationAccessDelegationMode                              string
+	CatalogIntegrationCatalogApiType                                    string
+	CatalogIntegrationCatalogSourceType                                 string
+	CatalogIntegrationRestAuthenticationType                            string
+	CatalogIntegrationTableFormat                                       string
 	ClientTypesOption                                                   string
 	ComputePoolInstanceFamily                                           string
 	CsvCompression                                                      string
