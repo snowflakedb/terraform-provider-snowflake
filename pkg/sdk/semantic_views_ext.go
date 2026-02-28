@@ -94,8 +94,11 @@ func (m *MetricDefinition) WithWindowFunctionMetricDefinition(windowFunc *Window
 	return m
 }
 
-func (f *FactDefinition) GetIsPrivate() *bool {
-	return f.isPrivate
+func (f *FactDefinition) GetIsPrivate() bool {
+	if f.isPrivate == nil {
+		return false
+	}
+	return *f.isPrivate
 }
 
 func (f *FactDefinition) WithIsPrivate(isPrivate bool) *FactDefinition {
