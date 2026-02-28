@@ -182,6 +182,13 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Description: externalChangesNotDetectedFieldDescription("The list of facts in the semantic view."),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"is_private": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          BooleanDefault,
+					ValidateDiagFunc: validateBooleanString,
+					Description:      "Specifies whether the fact is private.",
+				},
 				"qualified_expression_name": {
 					Type:     schema.TypeString,
 					Required: true,
@@ -259,9 +266,15 @@ var semanticViewsSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				// TODO [SNOW-2396311]: update the SDK with the newly added/updated fields for semantic expressions, then add them here
-				// TODO [SNOW-2396371]: add PUBLIC/PRIVATE field
 				// TODO [SNOW-2398097]: add table_alias
 				// TODO [SNOW-2398097]: add fact_or_metric
+				"is_private": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          BooleanDefault,
+					ValidateDiagFunc: validateBooleanString,
+					Description:      "Specifies whether the metric is private.",
+				},
 				"semantic_expression": {
 					Type:     schema.TypeList,
 					Optional: true,
@@ -431,14 +444,14 @@ func CreateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 		request.WithSemanticViewRelationships(relationshipsRequests)
 	}
 	if d.Get("facts") != nil {
-		factsRequests, err := getSemanticExpressionRequests(d.Get("facts").([]any))
+		factsRequests, err := getFactDefinitionRequests(d.Get("facts").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		request.WithSemanticViewFacts(factsRequests)
 	}
 	if d.Get("dimensions") != nil {
-		dimensionsRequests, err := getSemanticExpressionRequests(d.Get("dimensions").([]any))
+		dimensionsRequests, err := getDimensionDefinitionRequests(d.Get("dimensions").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -596,6 +609,13 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) {
 	c := from.(map[string]any)
 	metricDefinitionRequest := sdk.NewMetricDefinitionRequest()
+	if v := c["is_private"]; v != nil && v.(string) != BooleanDefault {
+		isPrivate, err := booleanStringToBool(v.(string))
+		if err != nil {
+			return nil, err
+		}
+		metricDefinitionRequest.WithIsPrivate(isPrivate)
+	}
 
 	switch {
 	case len(c["semantic_expression"].([]any)) > 0:
@@ -620,7 +640,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				semExpRequest = semExpRequest.WithSynonyms(sRequest)
 			}
 		}
-		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
+		metricDefinitionRequest.WithSemanticExpression(*semExpRequest)
 	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
@@ -644,10 +664,43 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				windowFuncRequest = windowFuncRequest.WithOverClause(*overClauseRequest)
 			}
 		}
-		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest), nil
+		metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest)
 	default:
-		return nil, fmt.Errorf("either semantic expression or window function is required")
+		return nil, fmt.Errorf("either semantic expression or window function is required in metric definition")
 	}
+
+	return metricDefinitionRequest, nil
+}
+
+func getFactDefinitionRequest(from any) (*sdk.FactDefinitionRequest, error) {
+	c := from.(map[string]any)
+
+	semExpRequest, err := getSemanticExpressionRequest(from)
+	if err != nil {
+		return nil, err
+	}
+
+	factDefinitionRequest := sdk.NewFactDefinitionRequest().
+		WithSemanticExpression(*semExpRequest)
+
+	if v := c["is_private"]; v != nil {
+		isPrivate, err := booleanStringToBool(c["is_private"].(string))
+		if err != nil {
+			return nil, err
+		}
+		return factDefinitionRequest.WithIsPrivate(isPrivate), nil
+	}
+	return factDefinitionRequest, nil
+}
+
+func getDimensionDefinitionRequest(from any) (*sdk.DimensionDefinitionRequest, error) {
+	semExpRequest, err := getSemanticExpressionRequest(from)
+	if err != nil {
+		return nil, err
+	}
+
+	return sdk.NewDimensionDefinitionRequest().
+		WithSemanticExpression(*semExpRequest), nil
 }
 
 func getSemanticExpressionRequest(from any) (*sdk.SemanticExpressionRequest, error) {
@@ -746,7 +799,7 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Logical Table Requests type, got %T", from)
 	}
 	to := make([]sdk.LogicalTableRequest, len(cols))
 	for i, c := range cols {
@@ -762,7 +815,7 @@ func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 func getMetricDefinitionRequests(from any) ([]sdk.MetricDefinitionRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Metric Definition Requests type, got %T", from)
 	}
 	to := make([]sdk.MetricDefinitionRequest, len(cols))
 	for i, c := range cols {
@@ -775,14 +828,14 @@ func getMetricDefinitionRequests(from any) ([]sdk.MetricDefinitionRequest, error
 	return to, nil
 }
 
-func getSemanticExpressionRequests(from any) ([]sdk.SemanticExpressionRequest, error) {
+func getRelationshipRequests(from any) ([]sdk.SemanticViewRelationshipRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Semantic View Relationship Requests type, got %T", from)
 	}
-	to := make([]sdk.SemanticExpressionRequest, len(cols))
+	to := make([]sdk.SemanticViewRelationshipRequest, len(cols))
 	for i, c := range cols {
-		cReq, err := getSemanticExpressionRequest(c)
+		cReq, err := getRelationshipRequest(c)
 		if err != nil {
 			return nil, err
 		}
@@ -791,14 +844,30 @@ func getSemanticExpressionRequests(from any) ([]sdk.SemanticExpressionRequest, e
 	return to, nil
 }
 
-func getRelationshipRequests(from any) ([]sdk.SemanticViewRelationshipRequest, error) {
+func getFactDefinitionRequests(from any) ([]sdk.FactDefinitionRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Fact Definition Requests type, got %T", from)
 	}
-	to := make([]sdk.SemanticViewRelationshipRequest, len(cols))
+	to := make([]sdk.FactDefinitionRequest, len(cols))
 	for i, c := range cols {
-		cReq, err := getRelationshipRequest(c)
+		cReq, err := getFactDefinitionRequest(c)
+		if err != nil {
+			return nil, err
+		}
+		to[i] = *cReq
+	}
+	return to, nil
+}
+
+func getDimensionDefinitionRequests(from any) ([]sdk.DimensionDefinitionRequest, error) {
+	cols, ok := from.([]any)
+	if !ok {
+		return nil, fmt.Errorf("failed to assert Dimension Definition Requests type, got %T", from)
+	}
+	to := make([]sdk.DimensionDefinitionRequest, len(cols))
+	for i, c := range cols {
+		cReq, err := getDimensionDefinitionRequest(c)
 		if err != nil {
 			return nil, err
 		}

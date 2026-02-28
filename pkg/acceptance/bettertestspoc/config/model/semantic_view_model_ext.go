@@ -173,15 +173,18 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 			}
 			m["window_function"] = tfconfig.ListVariable(tfconfig.ObjectVariable(windFuncVar))
 		}
+		m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
+
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
 	s.Metrics = tfconfig.ListVariable(maps...)
 	return s
 }
 
-func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticViewModel {
+func (s *SemanticViewModel) WithFacts(facts []sdk.FactDefinition) *SemanticViewModel {
 	maps := make([]tfconfig.Variable, len(facts))
-	for i, semExp := range facts {
+	for i, v := range facts {
+		semExp := v.GetSemanticExpression()
 		m := map[string]tfconfig.Variable{}
 		if semExp.Comment != nil {
 			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
@@ -202,15 +205,18 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.SemanticExpression) *SemanticV
 			}
 			m["synonym"] = tfconfig.SetVariable(syns...)
 		}
+		m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
+
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
 	s.Facts = tfconfig.ListVariable(maps...)
 	return s
 }
 
-func (s *SemanticViewModel) WithDimensions(dimensions []sdk.SemanticExpression) *SemanticViewModel {
+func (s *SemanticViewModel) WithDimensions(dimensions []sdk.DimensionDefinition) *SemanticViewModel {
 	maps := make([]tfconfig.Variable, len(dimensions))
-	for i, semExp := range dimensions {
+	for i, v := range dimensions {
+		semExp := v.GetSemanticExpression()
 		m := map[string]tfconfig.Variable{}
 		if semExp.Comment != nil {
 			m["comment"] = tfconfig.StringVariable(*semExp.Comment)
@@ -235,114 +241,4 @@ func (s *SemanticViewModel) WithDimensions(dimensions []sdk.SemanticExpression) 
 	}
 	s.Dimensions = tfconfig.ListVariable(maps...)
 	return s
-}
-
-func LogicalTableWithProps(
-	alias string,
-	tableName sdk.SchemaObjectIdentifier,
-	primaryKeys []sdk.SemanticViewColumn,
-	uniqueKeys [][]sdk.SemanticViewColumn,
-	synonyms []sdk.Synonym,
-	comment string,
-) *sdk.LogicalTable {
-	table := &sdk.LogicalTable{
-		TableName: tableName,
-		Comment:   &comment,
-	}
-	if alias != "" {
-		table.SetLogicalTableAlias(alias)
-	}
-	if primaryKeys != nil {
-		table.SetPrimaryKeys(primaryKeys)
-	}
-	if uniqueKeys != nil {
-		table.SetUniqueKeys(uniqueKeys)
-	}
-	if synonyms != nil {
-		table.SetSynonyms(synonyms)
-	}
-	return table
-}
-
-func SemanticExpressionWithProps(
-	qualifiedExpressionName string,
-	sqlExpression string,
-	synonyms []sdk.Synonym,
-	comment string,
-) *sdk.SemanticExpression {
-	semanticExpression := &sdk.SemanticExpression{
-		Comment: &comment,
-	}
-	if qualifiedExpressionName != "" {
-		semanticExpression.SetQualifiedExpressionName(qualifiedExpressionName)
-	}
-	if sqlExpression != "" {
-		semanticExpression.SetSqlExpression(sqlExpression)
-	}
-	if synonyms != nil {
-		semanticExpression.SetSynonyms(synonyms)
-	}
-
-	return semanticExpression
-}
-
-func WindowFunctionMetricDefinitionWithProps(
-	qualifiedExpressionName string,
-	sqlExpression string,
-	overClause sdk.WindowFunctionOverClause,
-) *sdk.WindowFunctionMetricDefinition {
-	windowFunctionMetricDefinition := &sdk.WindowFunctionMetricDefinition{
-		OverClause: &overClause,
-	}
-	if qualifiedExpressionName != "" {
-		windowFunctionMetricDefinition.SetQualifiedExpressionName(qualifiedExpressionName)
-	}
-	if sqlExpression != "" {
-		windowFunctionMetricDefinition.SetSqlExpression(sqlExpression)
-	}
-	return windowFunctionMetricDefinition
-}
-
-func MetricDefinitionWithProps(semExp *sdk.SemanticExpression, windowFunc *sdk.WindowFunctionMetricDefinition) *sdk.MetricDefinition {
-	metric := &sdk.MetricDefinition{}
-	if semExp != nil {
-		metric.SetSemanticExpression(semExp)
-	} else if windowFunc != nil {
-		metric.SetWindowFunctionMetricDefinition(windowFunc)
-	}
-
-	return metric
-}
-
-func RelationshipTableAliasWithProps(
-	alias string,
-	tableName sdk.SchemaObjectIdentifier,
-) *sdk.RelationshipTableAlias {
-	res := &sdk.RelationshipTableAlias{
-		RelationshipTableName:  &tableName,
-		RelationshipTableAlias: &alias,
-	}
-
-	return res
-}
-
-func RelationshipWithProps(
-	relationshipAlias string,
-	tableNameOrAlias sdk.RelationshipTableAlias,
-	relColumnNames []sdk.SemanticViewColumn,
-	refTableNameOrAlias sdk.RelationshipTableAlias,
-	relRefColumnNames []sdk.SemanticViewColumn,
-) *sdk.SemanticViewRelationship {
-	rel := &sdk.SemanticViewRelationship{}
-	rel.SetTableNameOrAlias(tableNameOrAlias)
-	rel.SetRelationshipColumnsNames(relColumnNames)
-	rel.SetRefTableNameOrAlias(refTableNameOrAlias)
-	if relRefColumnNames != nil {
-		rel.SetRelationshipRefColumnsNames(relRefColumnNames)
-	}
-	if relationshipAlias != "" {
-		rel.SetRelationshipAlias(relationshipAlias)
-	}
-
-	return rel
 }
