@@ -30,16 +30,28 @@ func TestAcc_SemanticViews_Basic(t *testing.T) {
 	})
 	t.Cleanup(table1Cleanup)
 
-	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, nil, "logical table 1")
-	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
+	logicalTable1 := sdk.LogicalTable{}
+	logicalTable1.WithLogicalTableAlias("lt1").
+		WithTableName(table1.ID()).
+		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
+		WithUniqueKeys([][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}).
+		WithComment("logical table 1")
 
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil, false)
+	semExp1 := sdk.SemanticExpression{}
+	semExp1.WithQualifiedExpressionName(`"lt1"."se1"`).
+		WithSqlExpression(`SUM("lt1"."a1")`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}).
+		WithComment("semantic expression 1")
+
+	metric1 := sdk.MetricDefinition{}
+	metric1.WithSemanticExpression(&semExp1).
+		WithIsPrivate(false)
 
 	semanticViewModel := model.SemanticViewWithMetrics(
 		"test",
 		id,
-		[]sdk.LogicalTable{*logicalTable1},
-		[]sdk.MetricDefinition{*metric1},
+		[]sdk.LogicalTable{logicalTable1},
+		[]sdk.MetricDefinition{metric1},
 	).WithComment(comment)
 
 	dataSourceModel := datasourcemodel.SemanticViews("test").
@@ -91,16 +103,51 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 	})
 	t.Cleanup(table3Cleanup)
 
-	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 1")
-	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 2")
-	logicalTable3 := model.LogicalTableWithProps("lt3", table3.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "logical table 3")
-	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
-	semExp2 := model.SemanticExpressionWithProps(`"lt2"."se1"`, `SUM("lt2"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
-	semExp3 := model.SemanticExpressionWithProps(`"lt3"."se1"`, `SUM("lt3"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
+	logicalTable1 := sdk.LogicalTable{}
+	logicalTable1.WithLogicalTableAlias("lt1").
+		WithTableName(table1.ID()).
+		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
+		WithComment("logical table 1")
 
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil, false)
-	metric2 := model.MetricDefinitionWithProps(semExp2, nil, true)
-	metric3 := model.MetricDefinitionWithProps(semExp3, nil, false)
+	logicalTable2 := sdk.LogicalTable{}
+	logicalTable2.WithLogicalTableAlias("lt2").
+		WithTableName(table2.ID()).
+		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
+		WithComment("logical table 2")
+
+	logicalTable3 := sdk.LogicalTable{}
+	logicalTable3.WithLogicalTableAlias("lt3").
+		WithTableName(table3.ID()).
+		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
+		WithComment("logical table 3")
+
+	semExp1 := sdk.SemanticExpression{}
+	semExp1.WithQualifiedExpressionName(`"lt1"."se1"`).
+		WithSqlExpression(`SUM("lt1"."a1")`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}).
+		WithComment("semantic expression 1")
+
+	semExp2 := sdk.SemanticExpression{}
+	semExp2.WithQualifiedExpressionName(`"lt2"."se1"`).
+		WithSqlExpression(`SUM("lt2"."a1")`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}).
+		WithComment("semantic expression 2")
+
+	semExp3 := sdk.SemanticExpression{}
+	semExp3.WithQualifiedExpressionName(`"lt3"."se1"`).
+		WithSqlExpression(`SUM("lt3"."a1")`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}).
+		WithComment("semantic expression 3")
+
+	metric1 := sdk.MetricDefinition{}
+	metric1.WithSemanticExpression(&semExp1).
+		WithIsPrivate(false)
+	metric2 := sdk.MetricDefinition{}
+	metric2.WithSemanticExpression(&semExp2).
+		WithIsPrivate(true)
+	metric3 := sdk.MetricDefinition{}
+	metric3.WithSemanticExpression(&semExp3).
+		WithIsPrivate(false)
 
 	prefix := random.AlphaUpperN(4)
 
@@ -108,9 +155,9 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id3 := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	model1 := model.SemanticViewWithMetrics("test1", id1, []sdk.LogicalTable{*logicalTable1}, []sdk.MetricDefinition{*metric1})
-	model2 := model.SemanticViewWithMetrics("test2", id2, []sdk.LogicalTable{*logicalTable2}, []sdk.MetricDefinition{*metric2})
-	model3 := model.SemanticViewWithMetrics("test3", id3, []sdk.LogicalTable{*logicalTable3}, []sdk.MetricDefinition{*metric3})
+	model1 := model.SemanticViewWithMetrics("test1", id1, []sdk.LogicalTable{logicalTable1}, []sdk.MetricDefinition{metric1})
+	model2 := model.SemanticViewWithMetrics("test2", id2, []sdk.LogicalTable{logicalTable2}, []sdk.MetricDefinition{metric2})
+	model3 := model.SemanticViewWithMetrics("test3", id3, []sdk.LogicalTable{logicalTable3}, []sdk.MetricDefinition{metric3})
 
 	dataSourceModelLikeFirstOne := datasourcemodel.SemanticViews("test").
 		WithLike(id1.Name()).

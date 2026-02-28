@@ -37,11 +37,34 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		*sdk.NewTableColumnRequest(`"a2"`, sdk.DataTypeNumber),
 	})
 	t.Cleanup(table2Cleanup)
-	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, []sdk.Synonym{{"orders"}, {"sales"}}, "logical table 1")
-	logicalTable2 := model.LogicalTableWithProps("lt2", table2.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, nil, nil, "")
-	semExp1 := model.SemanticExpressionWithProps(`"lt1"."m1"`, `SUM("lt1"."a1")`, []sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}, "semantic expression 1")
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil, true)
-	relTableAlias := model.RelationshipTableAliasWithProps("lt1", table1.ID())
+
+	logicalTable1 := sdk.LogicalTable{}
+	logicalTable1.WithLogicalTableAlias("lt1").
+		WithTableName(table1.ID()).
+		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
+		WithUniqueKeys([][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}).
+		WithSynonyms([]sdk.Synonym{{"orders"}, {"sales"}}).
+		WithComment("logical table 1")
+
+	logicalTable2 := sdk.LogicalTable{}
+	logicalTable2.WithLogicalTableAlias("lt2").
+		WithTableName(table2.ID()).
+		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}})
+
+	semExp1 := sdk.SemanticExpression{}
+	semExp1.WithQualifiedExpressionName(`"lt1"."m1"`).
+		WithSqlExpression(`SUM("lt1"."a1")`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "sem1"}, {Synonym: "baseSem"}}).
+		WithComment("semantic expression 1")
+
+	metric1 := sdk.MetricDefinition{}
+	metric1.WithSemanticExpression(&semExp1).
+		WithIsPrivate(true)
+
+	relTableAlias := sdk.RelationshipTableAlias{}
+	relTableAlias.WithRelationshipTableAlias("lt1").
+		WithRelationshipTableName(table1.ID())
+
 	relTableColumns := []sdk.SemanticViewColumn{
 		{
 			Name: "a1",
@@ -50,7 +73,10 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			Name: "a2",
 		},
 	}
-	refTableAlias := model.RelationshipTableAliasWithProps("lt2", table2.ID())
+
+	refTableAlias := sdk.RelationshipTableAlias{}
+	refTableAlias.WithRelationshipTableAlias("lt2").
+		WithRelationshipTableName(table2.ID())
 	refRelTableColumns := []sdk.SemanticViewColumn{
 		{
 			Name: "a1",
@@ -60,15 +86,36 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		},
 	}
 
-	rel1 := model.RelationshipWithProps("r1", *relTableAlias, relTableColumns, *refTableAlias, refRelTableColumns)
+	rel1 := sdk.SemanticViewRelationship{}
+	rel1.WithRelationshipAlias("r1").
+		WithTableNameOrAlias(relTableAlias).
+		WithRelationshipColumnsNames(relTableColumns).
+		WithRefTableNameOrAlias(refTableAlias).
+		WithRelationshipRefColumnsNames(refRelTableColumns)
 
-	factSemExp1 := model.SemanticExpressionWithProps(`"lt1"."f1"`, `"lt1"."a2"`, []sdk.Synonym{{Synonym: "fact1"}}, "fact 1")
-	fact1 := model.FactDefinitionWithProps(factSemExp1, false)
+	factSemExp1 := sdk.SemanticExpression{}
+	factSemExp1.WithQualifiedExpressionName(`"lt1"."f1"`).
+		WithSqlExpression(`"lt1"."a2"`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "fact1"}}).
+		WithComment("fact 1")
 
-	dimensionSemExp1 := model.SemanticExpressionWithProps(`"lt1"."d1"`, `"lt1"."a1"`, []sdk.Synonym{{Synonym: "dim1"}}, "dimension 1")
-	dimension1 := model.DimensionDefinitionWithProps(dimensionSemExp1)
+	fact1 := sdk.FactDefinition{}
+	fact1.WithSemanticExpression(&factSemExp1).
+		WithIsPrivate(false)
 
-	relTableAlias2 := model.RelationshipTableAliasWithProps("lt2", table1.ID())
+	dimensionSemExp1 := sdk.SemanticExpression{}
+	dimensionSemExp1.WithQualifiedExpressionName(`"lt1"."d1"`).
+		WithSqlExpression(`"lt1"."a1"`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "dim1"}}).
+		WithComment("dimension 1")
+
+	dimension1 := sdk.DimensionDefinition{}
+	dimension1.WithSemanticExpression(&dimensionSemExp1)
+
+	relTableAlias2 := sdk.RelationshipTableAlias{}
+	relTableAlias2.WithRelationshipTableAlias("lt2").
+		WithRelationshipTableName(table1.ID())
+
 	relTableColumns2 := []sdk.SemanticViewColumn{
 		{
 			Name: "a1",
@@ -77,7 +124,11 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			Name: "a2",
 		},
 	}
-	refTableAlias2 := model.RelationshipTableAliasWithProps("lt1", table2.ID())
+
+	refTableAlias2 := sdk.RelationshipTableAlias{}
+	refTableAlias2.WithRelationshipTableAlias("lt1").
+		WithRelationshipTableName(table2.ID())
+
 	refRelTableColumns2 := []sdk.SemanticViewColumn{
 		{
 			Name: "a1",
@@ -86,16 +137,41 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			Name: "a2",
 		},
 	}
-	rel2 := model.RelationshipWithProps("r2", *relTableAlias2, relTableColumns2, *refTableAlias2, refRelTableColumns2)
 
-	factSemExp2 := model.SemanticExpressionWithProps(`"lt1"."f2"`, `"lt1"."a1"`, []sdk.Synonym{{Synonym: "fact2"}}, "fact 2")
-	fact2 := model.FactDefinitionWithProps(factSemExp2, true)
+	rel2 := sdk.SemanticViewRelationship{}
+	rel2.WithRelationshipAlias("r2").
+		WithTableNameOrAlias(relTableAlias2).
+		WithRelationshipColumnsNames(relTableColumns2).
+		WithRefTableNameOrAlias(refTableAlias2).
+		WithRelationshipRefColumnsNames(refRelTableColumns2)
 
-	dimensionSemExp2 := model.SemanticExpressionWithProps(`"lt1"."d2"`, `"lt1"."a2"`, []sdk.Synonym{{Synonym: "dim2"}}, "dimension 2")
-	dimension2 := model.DimensionDefinitionWithProps(dimensionSemExp2)
+	factSemExp2 := sdk.SemanticExpression{}
+	factSemExp2.WithQualifiedExpressionName(`"lt1"."f2"`).
+		WithSqlExpression(`"lt1"."a1"`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "fact2"}}).
+		WithComment("fact 2")
 
-	windowFunc1 := model.WindowFunctionMetricDefinitionWithProps(`"lt1"."wf1"`, `SUM("lt1"."m1")`, sdk.WindowFunctionOverClause{PartitionBy: sdk.Pointer(`"lt1"."d2"`)})
-	metric2 := model.MetricDefinitionWithProps(nil, windowFunc1, false)
+	fact2 := sdk.FactDefinition{}
+	fact2.WithSemanticExpression(&factSemExp2).
+		WithIsPrivate(true)
+
+	dimensionSemExp2 := sdk.SemanticExpression{}
+	dimensionSemExp2.WithQualifiedExpressionName(`"lt1"."d2"`).
+		WithSqlExpression(`"lt1"."a2"`).
+		WithSynonyms([]sdk.Synonym{{Synonym: "dim2"}}).
+		WithComment("dimension 2")
+
+	dimension2 := sdk.DimensionDefinition{}
+	dimension2.WithSemanticExpression(&dimensionSemExp2)
+
+	windowFunc1 := sdk.WindowFunctionMetricDefinition{}
+	windowFunc1.WithQualifiedExpressionName(`"lt1"."wf1"`).
+		WithSqlExpression(`SUM("lt1"."m1")`).
+		WithOverClause(sdk.WindowFunctionOverClause{PartitionBy: sdk.Pointer(`"lt1"."d2"`)})
+
+	metric2 := sdk.MetricDefinition{}
+	metric2.WithWindowFunctionMetricDefinition(&windowFunc1).
+		WithIsPrivate(false)
 
 	lt1Request := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt1"})
 	lt2Request := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt2"})
@@ -109,29 +185,29 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	modelBasic := model.SemanticViewWithMetrics(
 		"test",
 		id,
-		[]sdk.LogicalTable{*logicalTable1},
-		[]sdk.MetricDefinition{*metric1},
+		[]sdk.LogicalTable{logicalTable1},
+		[]sdk.MetricDefinition{metric1},
 	)
 
 	modelComplete := model.SemanticViewWithMetrics(
 		"test",
 		id,
-		[]sdk.LogicalTable{*logicalTable1, *logicalTable2},
-		[]sdk.MetricDefinition{*metric1},
+		[]sdk.LogicalTable{logicalTable1, logicalTable2},
+		[]sdk.MetricDefinition{metric1},
 	).WithComment(comment).
-		WithRelationships([]sdk.SemanticViewRelationship{*rel1}).
-		WithFacts([]sdk.FactDefinition{*fact1}).
-		WithDimensions([]sdk.DimensionDefinition{*dimension1})
+		WithRelationships([]sdk.SemanticViewRelationship{rel1}).
+		WithFacts([]sdk.FactDefinition{fact1}).
+		WithDimensions([]sdk.DimensionDefinition{dimension1})
 
 	modelCompleteWithDifferentValues := model.SemanticViewWithMetrics(
 		"test",
 		id,
-		[]sdk.LogicalTable{*logicalTable1, *logicalTable2},
-		[]sdk.MetricDefinition{*metric1, *metric2},
+		[]sdk.LogicalTable{logicalTable1, logicalTable2},
+		[]sdk.MetricDefinition{metric1, metric2},
 	).WithComment(changedComment).
-		WithRelationships([]sdk.SemanticViewRelationship{*rel2}).
-		WithFacts([]sdk.FactDefinition{*fact2}).
-		WithDimensions([]sdk.DimensionDefinition{*dimension2})
+		WithRelationships([]sdk.SemanticViewRelationship{rel2}).
+		WithFacts([]sdk.FactDefinition{fact2}).
+		WithDimensions([]sdk.DimensionDefinition{dimension2})
 
 	t1Alias, t2Alias, dimensionName, factName, privateFactName, metricName, relationshipName := "lt1", "lt2", "d1", "f1", "f2", "m1", "r1"
 
@@ -439,36 +515,46 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 	})
 	t.Cleanup(table1Cleanup)
 
-	logicalTable1 := model.LogicalTableWithProps("lt1", table1.ID(), []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}}, []sdk.Synonym{}, "")
-	semExp1 := model.SemanticExpressionWithProps(`"lt1"."se1"`, `SUM("lt1"."a1")`, []sdk.Synonym{}, "")
-	metric1 := model.MetricDefinitionWithProps(semExp1, nil, false)
+	logicalTable1 := sdk.LogicalTable{}
+	logicalTable1.WithLogicalTableAlias("lt1").
+		WithTableName(table1.ID()).
+		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
+		WithUniqueKeys([][]sdk.SemanticViewColumn{{{Name: "a2"}}})
+
+	semExp1 := sdk.SemanticExpression{}
+	semExp1.WithQualifiedExpressionName(`"lt1"."se1"`).
+		WithSqlExpression(`SUM("lt1"."a1")`)
+
+	metric1 := sdk.MetricDefinition{}
+	metric1.WithSemanticExpression(&semExp1).
+		WithIsPrivate(false)
 
 	modelBasic := model.SemanticViewWithMetrics(
 		"test",
 		id,
-		[]sdk.LogicalTable{*logicalTable1},
-		[]sdk.MetricDefinition{*metric1},
+		[]sdk.LogicalTable{logicalTable1},
+		[]sdk.MetricDefinition{metric1},
 	).WithComment("old comment")
 
 	renamedAndChanged := model.SemanticViewWithMetrics(
 		"test",
 		newId,
-		[]sdk.LogicalTable{*logicalTable1},
-		[]sdk.MetricDefinition{*metric1},
+		[]sdk.LogicalTable{logicalTable1},
+		[]sdk.MetricDefinition{metric1},
 	).WithComment("new comment")
 
 	renamedDifferentSchema := model.SemanticViewWithMetrics(
 		"test",
 		newIdInDifferentSchema,
-		[]sdk.LogicalTable{*logicalTable1},
-		[]sdk.MetricDefinition{*metric1},
+		[]sdk.LogicalTable{logicalTable1},
+		[]sdk.MetricDefinition{metric1},
 	).WithComment("new comment")
 
 	renamedDifferentDatabase := model.SemanticViewWithMetrics(
 		"test",
 		newIdInDifferentDatabase,
-		[]sdk.LogicalTable{*logicalTable1},
-		[]sdk.MetricDefinition{*metric1},
+		[]sdk.LogicalTable{logicalTable1},
+		[]sdk.MetricDefinition{metric1},
 	).WithComment("new comment")
 
 	resource.Test(t, resource.TestCase{
@@ -542,14 +628,19 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 func TestAcc_SemanticView_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
-	logicalTable1 := model.LogicalTableWithProps("lt1", tableId, []sdk.SemanticViewColumn{{Name: "a1"}}, [][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}, []sdk.Synonym{}, "logical table 1")
+	logicalTable1 := sdk.LogicalTable{}
+	logicalTable1.WithLogicalTableAlias("lt1").
+		WithTableName(tableId).
+		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
+		WithUniqueKeys([][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}).
+		WithComment("logical table 1")
 
 	modelWithoutMetricNorDimension := model.SemanticView(
 		"test",
 		id.DatabaseName(),
 		id.SchemaName(),
 		id.Name(),
-		[]sdk.LogicalTable{*logicalTable1},
+		[]sdk.LogicalTable{logicalTable1},
 	)
 
 	resource.Test(t, resource.TestCase{
