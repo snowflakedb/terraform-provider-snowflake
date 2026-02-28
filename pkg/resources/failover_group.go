@@ -605,7 +605,7 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 			parts := strings.Split(v, ".")
 			organizationName := parts[0]
 			accountName := parts[1]
-			accountIdentifier := sdk.NewAccountIdentifier(accountName, organizationName)
+			accountIdentifier := sdk.NewAccountIdentifier(organizationName, accountName)
 			oldAllowedAccounts[i] = accountIdentifier
 		}
 		nad := expandStringList(n.(*schema.Set).List())
@@ -614,7 +614,7 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 			parts := strings.Split(v, ".")
 			organizationName := parts[0]
 			accountName := parts[1]
-			accountIdentifier := sdk.NewAccountIdentifier(accountName, organizationName)
+			accountIdentifier := sdk.NewAccountIdentifier(organizationName, accountName)
 			newAllowedAccounts[i] = accountIdentifier
 		}
 
