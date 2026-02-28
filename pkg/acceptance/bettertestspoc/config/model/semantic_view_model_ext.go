@@ -205,7 +205,7 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.FactDefinition) *SemanticViewM
 			}
 			m["synonym"] = tfconfig.SetVariable(syns...)
 		}
-		m["is_private"] = tfconfig.BoolVariable(*v.GetIsPrivate())
+		m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
 
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
