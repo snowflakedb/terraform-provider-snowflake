@@ -61,8 +61,11 @@ func (l *LogicalTable) WithComment(comment string) *LogicalTable {
 	return l
 }
 
-func (m *MetricDefinition) GetIsPrivate() *bool {
-	return m.isPrivate
+func (m *MetricDefinition) GetIsPrivate() bool {
+	if m.isPrivate == nil {
+		return false
+	}
+	return *m.isPrivate
 }
 
 func (m *MetricDefinition) GetSemanticExpression() *SemanticExpression {

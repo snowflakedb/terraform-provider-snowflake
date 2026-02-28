@@ -170,8 +170,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithOverClause(sdk.WindowFunctionOverClause{PartitionBy: sdk.Pointer(`"lt1"."d2"`)})
 
 	metric2 := sdk.MetricDefinition{}
-	metric2.WithWindowFunctionMetricDefinition(&windowFunc1).
-		WithIsPrivate(false)
+	metric2.WithWindowFunctionMetricDefinition(&windowFunc1)
 
 	lt1Request := sdk.NewLogicalTableRequest(table1.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt1"})
 	lt2Request := sdk.NewLogicalTableRequest(table2.ID()).WithLogicalTableAlias(sdk.LogicalTableAliasRequest{LogicalTableAlias: "lt2"})
