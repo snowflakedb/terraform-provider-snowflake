@@ -609,6 +609,13 @@ func getLogicalTableRequest(from any) (*sdk.LogicalTableRequest, error) {
 func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) {
 	c := from.(map[string]any)
 	metricDefinitionRequest := sdk.NewMetricDefinitionRequest()
+	if v := c["is_private"]; v != nil && v.(string) != BooleanDefault {
+		isPrivate, err := booleanStringToBool(v.(string))
+		if err != nil {
+			return nil, err
+		}
+		metricDefinitionRequest.WithIsPrivate(isPrivate)
+	}
 
 	switch {
 	case len(c["semantic_expression"].([]any)) > 0:
@@ -633,15 +640,7 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				semExpRequest = semExpRequest.WithSynonyms(sRequest)
 			}
 		}
-		if v := c["is_private"]; v != nil {
-			isPrivate, err := booleanStringToBool(c["is_private"].(string))
-			if err != nil {
-				return nil, err
-			}
-			return metricDefinitionRequest.WithSemanticExpression(*semExpRequest).
-				WithIsPrivate(isPrivate), nil
-		}
-		return metricDefinitionRequest.WithSemanticExpression(*semExpRequest), nil
+		metricDefinitionRequest.WithSemanticExpression(*semExpRequest)
 	case len(c["window_function"].([]any)) > 0:
 		windowFunctionDefinition := c["window_function"].([]any)[0].(map[string]any)
 		qualifiedExpNameRequest := sdk.NewQualifiedExpressionNameRequest().
@@ -665,18 +664,12 @@ func getMetricDefinitionRequest(from any) (*sdk.MetricDefinitionRequest, error) 
 				windowFuncRequest = windowFuncRequest.WithOverClause(*overClauseRequest)
 			}
 		}
-		if v := c["is_private"]; v != nil {
-			isPrivate, err := booleanStringToBool(c["is_private"].(string))
-			if err != nil {
-				return nil, err
-			}
-			return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest).
-				WithIsPrivate(isPrivate), nil
-		}
-		return metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest), nil
+		metricDefinitionRequest.WithWindowFunctionMetricDefinition(*windowFuncRequest)
 	default:
 		return nil, fmt.Errorf("either semantic expression or window function is required in metric definition")
 	}
+
+	return metricDefinitionRequest, nil
 }
 
 func getFactDefinitionRequest(from any) (*sdk.FactDefinitionRequest, error) {
@@ -806,7 +799,7 @@ func getRelationshipRequest(from any) (*sdk.SemanticViewRelationshipRequest, err
 func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Logical Table Requests type, got %T", from)
 	}
 	to := make([]sdk.LogicalTableRequest, len(cols))
 	for i, c := range cols {
@@ -822,7 +815,7 @@ func getLogicalTableRequests(from any) ([]sdk.LogicalTableRequest, error) {
 func getMetricDefinitionRequests(from any) ([]sdk.MetricDefinitionRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Metric Definition Requests type, got %T", from)
 	}
 	to := make([]sdk.MetricDefinitionRequest, len(cols))
 	for i, c := range cols {
@@ -835,26 +828,10 @@ func getMetricDefinitionRequests(from any) ([]sdk.MetricDefinitionRequest, error
 	return to, nil
 }
 
-func getSemanticExpressionRequests(from any) ([]sdk.SemanticExpressionRequest, error) {
-	cols, ok := from.([]any)
-	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
-	}
-	to := make([]sdk.SemanticExpressionRequest, len(cols))
-	for i, c := range cols {
-		cReq, err := getSemanticExpressionRequest(c)
-		if err != nil {
-			return nil, err
-		}
-		to[i] = *cReq
-	}
-	return to, nil
-}
-
 func getRelationshipRequests(from any) ([]sdk.SemanticViewRelationshipRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Semantic View Relationship Requests type, got %T", from)
 	}
 	to := make([]sdk.SemanticViewRelationshipRequest, len(cols))
 	for i, c := range cols {
@@ -870,7 +847,7 @@ func getRelationshipRequests(from any) ([]sdk.SemanticViewRelationshipRequest, e
 func getFactDefinitionRequests(from any) ([]sdk.FactDefinitionRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Fact Definition Requests type, got %T", from)
 	}
 	to := make([]sdk.FactDefinitionRequest, len(cols))
 	for i, c := range cols {
@@ -886,7 +863,7 @@ func getFactDefinitionRequests(from any) ([]sdk.FactDefinitionRequest, error) {
 func getDimensionDefinitionRequests(from any) ([]sdk.DimensionDefinitionRequest, error) {
 	cols, ok := from.([]any)
 	if !ok {
-		return nil, fmt.Errorf("type assertion failure")
+		return nil, fmt.Errorf("failed to assert Dimension Definition Requests type, got %T", from)
 	}
 	to := make([]sdk.DimensionDefinitionRequest, len(cols))
 	for i, c := range cols {
