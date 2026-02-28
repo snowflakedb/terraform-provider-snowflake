@@ -43,6 +43,7 @@ var (
 	functionsAndProceduresProviderFactory            = providerFactoryUsingCache("FunctionsAndProcedures")
 	viewsProviderFactory                             = providerFactoryUsingCache("Views")
 	tagsProviderFactory                              = providerFactoryUsingCache("Tags")
+	tagsWithExperimentFlagProviderFactory            = providerFactoryUsingCache("TagsWithExperimentFlag")
 	servicesProviderFactory                          = providerFactoryUsingCache("Services")
 	userPasswordPoliciesProviderFactory              = providerFactoryUsingCache("UserPasswordPolicies")
 	userAuthenticationPoliciesProviderFactory        = providerFactoryUsingCache("UserAuthenticationPolicies")

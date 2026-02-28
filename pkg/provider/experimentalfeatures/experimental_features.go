@@ -18,7 +18,8 @@ const (
 	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
 	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
-	ParametersReducedOutput ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	ParametersReducedOutput             ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	TagNewTriValueAllowedValuesBehavior ExperimentalFeature = "TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR"
 )
 
 type experimentalFeatureState string
@@ -94,6 +95,15 @@ var allExperiments = []Experiment{
 			"Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.",
 			"When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.",
 			fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsStrictPrivilegeManagement),
+		),
+	},
+	{
+		TagNewTriValueAllowedValuesBehavior,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.",
+			"When enabled, the three possible states in Snowflake for allowed values will be supported: `nil` (any value is allowed; whenever `allowed_values` are empty), `empty` (no value is allowed; handled by the `no_allowed_values` field), and `set` (all values defined in `allowed_values` are allowed).",
+			"Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).",
 		),
 	},
 }

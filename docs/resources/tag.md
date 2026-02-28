@@ -9,6 +9,8 @@ description: |-
 
 ~> **Current limitations** Recently, the tags propagation was introduced (check [2025-05-14-tag-propagation](https://docs.snowflake.com/en/release-notes/2025/other/2025-05-14-tag-propagation)). This resource is not currently supporting the `ON_CONFLICT` attribute and the tag allowed values ordering. If needed, use the [`snowflake_execute`](./execute) for the time-being. This limitation will be addressed in the next versions of the provider.
 
+~> **Note** A new `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experimental feature is available for this resource. When enabled, it improves how `allowed_values` are handled — removing `allowed_values` from the configuration correctly reverts the tag to accepting any value, and a new `no_allowed_values` field allows you to explicitly block any value from being set on the tag. Without the flag, the behavior is unchanged from previous versions and the `no_allowed_values` field has no effect. To enable it, add `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-improved-allowed_values-handling-in-snowflake_tag) for more details.
+
 # snowflake_tag (Resource)
 
 Resource used to manage tags. For more information, check [tag documentation](https://docs.snowflake.com/en/sql-reference/sql/create-tag). For assigning tags to Snowflake objects, see [tag_association resource](./tag_association).
@@ -49,9 +51,10 @@ resource "snowflake_tag" "tag" {
 
 ### Optional
 
-- `allowed_values` (Set of String) Set of allowed values for the tag.
+- `allowed_values` (Set of String) Set of allowed values for the tag. When specified, only these values can be assigned. When the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values`.
 - `comment` (String) Specifies a comment for the tag.
 - `masking_policies` (Set of String) Set of masking policies for the tag. A tag can support one masking policy for each data type. If masking policies are assigned to the tag, before dropping the tag, the provider automatically unassigns them. For more information about this resource, see [docs](./masking_policy).
+- `no_allowed_values` (Boolean) When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled. Conflicts with `allowed_values`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

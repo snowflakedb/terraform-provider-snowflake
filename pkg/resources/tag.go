@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -16,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+const tempTagAllowedValue = "SNOWFLAKE_TERRAFORM_TEMP_TAG_ALLOWED_VALUE"
 
 var tagSchema = map[string]*schema.Schema{
 	"name": {
@@ -44,10 +48,17 @@ var tagSchema = map[string]*schema.Schema{
 		Description: "Specifies a comment for the tag.",
 	},
 	"allowed_values": {
-		Type:        schema.TypeSet,
-		Elem:        &schema.Schema{Type: schema.TypeString},
-		Optional:    true,
-		Description: "Set of allowed values for the tag.",
+		Type:          schema.TypeSet,
+		Elem:          &schema.Schema{Type: schema.TypeString},
+		Optional:      true,
+		Description:   "Set of allowed values for the tag. When specified, only these values can be assigned. When the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values`.",
+		ConflictsWith: []string{"no_allowed_values"},
+	},
+	"no_allowed_values": {
+		Type:          schema.TypeBool,
+		Optional:      true,
+		Description:   "When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled. Conflicts with `allowed_values`.",
+		ConflictsWith: []string{"allowed_values"},
 	},
 	"masking_policies": {
 		Type: schema.TypeSet,
@@ -114,7 +125,7 @@ func Tag() *schema.Resource {
 		Description:   "Resource used to manage tags. For more information, check [tag documentation](https://docs.snowflake.com/en/sql-reference/sql/create-tag). For assigning tags to Snowflake objects, see [tag_association resource](./tag_association).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Tag, customdiff.All(
-			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values"),
+			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values", "no_allowed_values"),
 			ComputedIfAnyAttributeChanged(tagSchema, FullyQualifiedNameAttributeName, "name"),
 		)),
 
@@ -136,7 +147,9 @@ func Tag() *schema.Resource {
 }
 
 func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
 	name := d.Get("name").(string)
 	schemaName := d.Get("schema").(string)
 	database := d.Get("database").(string)
@@ -153,21 +166,59 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 	d.SetId(helpers.EncodeResourceIdentifier(id))
+
+	var updateAfterCreationDiags diag.Diagnostics
+
 	if v, ok := d.GetOk("masking_policies"); ok {
 		ids, err := parseSchemaObjectIdentifierSet(v)
 		if err != nil {
-			return diag.FromErr(err)
+			updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Failed to parse masking_policies",
+				Detail:   fmt.Sprintf("Unable to parse masking policy identifiers for tag %s, err = %s", id.FullyQualifiedName(), err),
+			})
 		}
+
 		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(sdk.NewTagSetRequest().WithMaskingPolicies(ids)))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error setting masking policies in tag %v err = %w", id.Name(), err))
+			updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Failed to set masking policies on the tag",
+				Detail:   fmt.Sprintf("Unable to alter tag %s, err = %s", id.FullyQualifiedName(), err),
+			})
 		}
 	}
-	return ReadContextTag(ctx, d, meta)
+
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
+		if v, ok := d.GetOk("no_allowed_values"); ok && v.(bool) {
+			// We have to temporarily add and remove allowed value for Snowflake to make the tag block any value.
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})); err != nil {
+				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to set masking policies on the tag",
+					Detail:   fmt.Sprintf("Unable to add temporary allowed value to tag %s, err = %s", id.FullyQualifiedName(), err),
+				})
+			}
+
+			// Drop can run without checking above command's status as Snowflake doesn't fail on dropped values that are not there.
+			// The value is also documented to be "reserved" by the provider in case customer would like to use it.
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})); err != nil {
+				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to set masking policies on the tag",
+					Detail:   fmt.Sprintf("Unable to drop temporary allowed value from tag %s, err = %s", id.FullyQualifiedName(), err),
+				})
+			}
+		}
+	}
+
+	return append(updateAfterCreationDiags, ReadContextTag(ctx, d, meta)...)
 }
 
 func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -187,6 +238,13 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 		return diag.FromErr(err)
 	}
+
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
+		if err := d.Set("no_allowed_values", reflect.DeepEqual(tag.AllowedValues, []string{})); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	errs := errors.Join(
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
@@ -214,11 +272,14 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 }
 
 func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
@@ -229,6 +290,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
+
 	if d.HasChange("comment") {
 		comment, ok := d.GetOk("comment")
 		if ok {
@@ -243,25 +305,74 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 		}
 	}
-	if d.HasChange("allowed_values") {
-		o, n := d.GetChange("allowed_values")
-		oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
-		newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
 
-		addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
+		if d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
+			o, n := d.GetChange("allowed_values")
+			oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
+			newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
+			addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
+			noAllowedValues := d.Get("no_allowed_values").(bool)
 
-		if len(addedItems) > 0 {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(addedItems)); err != nil {
-				return diag.FromErr(err)
+			if d.HasChange("no_allowed_values") && noAllowedValues {
+				if len(oldAllowedValues) == 0 {
+					// If no values where previously set, add a new temporary one and drop it to block any value on the Snowflake side
+					if err := errors.Join(
+						client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})),
+						client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})),
+					); err != nil {
+						return diag.FromErr(err)
+					}
+				} else {
+					// Otherwise drop values that were previously set
+					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
+						return diag.FromErr(err)
+					}
+				}
+			} else {
+				if len(addedItems) > 0 {
+					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(addedItems)); err != nil {
+						return diag.FromErr(err)
+					}
+				}
+
+				if len(removedItems) > 0 {
+					if len(newAllowedValues) == 0 {
+						// No values left, use UNSET to allow any value to be set with the tag
+						if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {
+							return diag.FromErr(err)
+						}
+					} else {
+						// Some values are still in the config, use DROP to avoid disrupting other users who depend on the remaining allowed values
+						if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
+							return diag.FromErr(err)
+						}
+					}
+				}
 			}
 		}
+	} else {
+		if d.HasChange("allowed_values") {
+			o, n := d.GetChange("allowed_values")
+			oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
+			newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
 
-		if len(removedItems) > 0 {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
-				return diag.FromErr(err)
+			addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
+
+			if len(addedItems) > 0 {
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(addedItems)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
+			if len(removedItems) > 0 {
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
+
 	if d.HasChange("masking_policies") {
 		o, n := d.GetChange("masking_policies")
 		oldAllowedValues := expandStringList(o.(*schema.Set).List())
@@ -299,6 +410,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			}
 		}
 	}
+
 	return ReadContextTag(ctx, d, meta)
 }
 
