@@ -97,6 +97,18 @@ func TestParseCommaSeparatedStringArray(t *testing.T) {
 			TrimQuotes: true,
 			Result:     []string{"one", "two", "three"},
 		},
+		{
+			Name:       "list with nested lists",
+			Value:      "['one', [['two'], 'three', 'four'], ['five']]",
+			TrimQuotes: true,
+			Result:     []string{"one", "[['two'], 'three', 'four']", "['five']"},
+		},
+		{
+			Name:       "list with single nested list",
+			Value:      "[['one', 'two', 'three']]",
+			TrimQuotes: true,
+			Result:     []string{"['one', 'two', 'three']"},
+		},
 	}
 
 	for _, tc := range testCases {
