@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -21,21 +20,24 @@ func NewHybridTableClient(context *TestClientContext, idsGenerator *IdsGenerator
 	}
 }
 
-func (c *HybridTableClient) exec(sql string) error {
-	ctx := context.Background()
-	_, err := c.context.client.ExecForTests(ctx, sql)
-	return err
-}
-
-// TODO(SNOW-999142): Use SDK implementation for Hybrid Table once it's available
 func (c *HybridTableClient) Create(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
 	t.Helper()
+	ctx := context.Background()
 	id := c.ids.RandomSchemaObjectIdentifier()
-	err := c.exec(fmt.Sprintf(`
-create hybrid table %s (
-  id INT AUTOINCREMENT PRIMARY KEY
-)
-`, id.FullyQualifiedName()))
+	err := c.context.client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(
+		id,
+		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+			Columns: []sdk.HybridTableColumnRequest{
+				{
+					Name: "id",
+					Type: sdk.DataType("INT"),
+					InlineConstraint: &sdk.ColumnInlineConstraint{
+						Type: sdk.ColumnConstraintTypePrimaryKey,
+					},
+				},
+			},
+		},
+	))
 	require.NoError(t, err)
 
 	return id, c.DropFunc(t, id)
@@ -45,7 +47,35 @@ func (c *HybridTableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier
 	t.Helper()
 
 	return func() {
-		err := c.exec(fmt.Sprintf(`drop table if exists %s`, id.FullyQualifiedName()))
+		ctx := context.Background()
+		err := c.context.client.HybridTables.Drop(ctx, sdk.NewDropHybridTableRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *HybridTableClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.HybridTable, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.context.client.HybridTables.ShowByID(ctx, id)
+}
+
+func (c *HybridTableClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) ([]sdk.HybridTableDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.context.client.HybridTables.Describe(ctx, id)
+}
+
+func (c *HybridTableClient) CreateWithColumns(t *testing.T, columns []sdk.HybridTableColumnRequest) (sdk.SchemaObjectIdentifier, func()) {
+	t.Helper()
+	return c.CreateWithRequest(t, c.ids.RandomSchemaObjectIdentifier(), sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+		Columns: columns,
+	})
+}
+
+func (c *HybridTableClient) CreateWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, columnsAndConstraints sdk.HybridTableColumnsConstraintsAndIndexesRequest) (sdk.SchemaObjectIdentifier, func()) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.context.client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columnsAndConstraints))
+	require.NoError(t, err)
+	return id, c.DropFunc(t, id)
 }

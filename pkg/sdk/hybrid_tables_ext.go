@@ -34,9 +34,9 @@ func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
 		Name:       r.Name,
 		Type:       r.Type,
 		Kind:       r.Kind,
-		IsNullable: r.Null,
-		PrimaryKey: r.PrimaryKey,
-		UniqueKey:  r.UniqueKey,
+		IsNullable: r.Null == "Y",
+		PrimaryKey: r.PrimaryKey == "Y",
+		UniqueKey:  r.UniqueKey == "Y",
 	}
 	if r.Default.Valid {
 		details.Default = r.Default.String
