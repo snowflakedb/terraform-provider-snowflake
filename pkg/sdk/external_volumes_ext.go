@@ -13,6 +13,11 @@ import (
 func CopySentinelStorageLocationItem(
 	storageLocationItem ExternalVolumeStorageLocationItem,
 ) (ExternalVolumeStorageLocationItem, error) {
+	// Validate that the storage location has a recognized provider before copying.
+	if _, err := GetStorageLocationStorageProvider(storageLocationItem); err != nil {
+		return ExternalVolumeStorageLocationItem{}, err
+	}
+
 	tempNameStorageLocation := ExternalVolumeStorageLocation{
 		Name:                          "terraform_provider_sentinel_storage_location",
 		S3StorageLocationParams:       storageLocationItem.ExternalVolumeStorageLocation.S3StorageLocationParams,

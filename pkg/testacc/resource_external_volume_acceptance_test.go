@@ -117,9 +117,12 @@ func externalVolumeMultiple(s3StorageLocations config.Variable, gcsStorageLocati
 
 // Test volume with s3 storage locations
 func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakePreProdGovEnvironment {
+		t.Skip("Skipping test - Snowflake error 393962 (42601): External volumes in government deployments cannot use non-government S3 storage locations. Storage type S3 is not allowed. Please use S3GOV instead.")
+	}
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	externalVolumeName := id.Name()
-	resourceId := helpers.EncodeResourceIdentifier(id)
+
 	ref := "snowflake_external_volume.complete"
 	comment := random.Comment()
 	comment2 := random.Comment()
@@ -167,6 +170,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						HasCommentEmpty().
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasCommentEmpty().
 						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -184,14 +188,12 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			},
 			// import
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, "", ""),
-				ResourceName:    "snowflake_external_volume.test",
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedExternalVolumeResource(t, resourceId).
-						HasNameString(externalVolumeName).
-						HasStorageLocationLength(1),
-				),
+				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:         externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, "", ""),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"allow_writes"},
 			},
 			// update the location to have all optional fields
 			{
@@ -218,6 +220,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						HasComment(comment).
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment).
 						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -267,6 +270,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						HasComment(comment2).
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment2).
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -333,6 +337,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						HasComment(comment2).
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment2).
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -374,6 +379,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						HasCommentEmpty().
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasCommentEmpty().
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -441,6 +447,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Gov(t *testing.T) {
 						HasCommentEmpty().
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasCommentEmpty().
 						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -464,7 +471,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Gov(t *testing.T) {
 func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	externalVolumeName := id.Name()
-	resourceId := helpers.EncodeResourceIdentifier(id)
+
 	ref := "snowflake_external_volume.complete"
 	comment := random.Comment()
 	comment2 := random.Comment()
@@ -511,6 +518,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						HasCommentEmpty().
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasCommentEmpty().
 						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -525,14 +533,12 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			},
 			// import
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, "", ""),
-				ResourceName:    "snowflake_external_volume.test",
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedExternalVolumeResource(t, resourceId).
-						HasNameString(externalVolumeName).
-						HasStorageLocationLength(1),
-				),
+				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:         externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, "", ""),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"allow_writes"},
 			},
 			// update the location to have all optional fields
 			{
@@ -559,6 +565,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						HasComment(comment).
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment).
 						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -607,6 +614,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						HasComment(comment2).
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment2).
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -667,6 +675,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						HasComment(comment2).
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment2).
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -707,6 +716,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						HasCommentEmpty().
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasCommentEmpty().
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -727,7 +737,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	externalVolumeName := id.Name()
-	resourceId := helpers.EncodeResourceIdentifier(id)
+
 	ref := "snowflake_external_volume.complete"
 	comment := random.Comment()
 	comment2 := random.Comment()
@@ -770,6 +780,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						HasCommentEmpty().
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasCommentEmpty().
 						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -787,14 +798,12 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			},
 			// import
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, "", ""),
-				ResourceName:    "snowflake_external_volume.test",
-				ImportStateCheck: assertThatImport(t,
-					resourceassert.ImportedExternalVolumeResource(t, resourceId).
-						HasNameString(externalVolumeName).
-						HasStorageLocationLength(1),
-				),
+				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:         externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, "", ""),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"allow_writes"},
 			},
 			// update the location to have all optional fields
 			{
@@ -821,6 +830,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						HasComment(comment).
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment).
 						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -869,6 +879,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						HasComment(comment2).
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment2).
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -933,6 +944,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						HasComment(comment2).
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasComment(comment2).
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -973,6 +985,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						HasCommentEmpty().
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasActiveEmpty().
 						HasCommentEmpty().
 						HasAllowWrites("false").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
@@ -995,6 +1008,9 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 // Test apply works when setting all optionals from the start
 // Other tests start without setting all optionals
 func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakePreProdGovEnvironment {
+		t.Skip("Skipping test - Snowflake error 393962 (42601): External volumes in government deployments cannot use non-government S3 storage locations. Storage type S3 is not allowed. Please use S3GOV instead.")
+	}
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	externalVolumeName := id.Name()
 	comment := random.Comment()
@@ -1120,6 +1136,9 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 // Test volume with multiple storage locations that span multiple providers
 // Test adding/removing storage locations at different positions in the storage_location list
 func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakePreProdGovEnvironment {
+		t.Skip("Skipping test - Snowflake error 393962 (42601): External volumes in government deployments cannot use non-government S3 storage locations. Storage type S3 is not allowed. Please use S3GOV instead.")
+	}
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	externalVolumeName := id.Name()
 	comment := random.Comment()

@@ -125,6 +125,11 @@ func (e *ExternalVolumeDescribeOutputAssert) HasNoActive() *ExternalVolumeDescri
 	return e
 }
 
+func (e *ExternalVolumeDescribeOutputAssert) HasActiveEmpty() *ExternalVolumeDescribeOutputAssert {
+	e.AddAssertion(assert.ResourceDescribeOutputValueSet("active", ""))
+	return e
+}
+
 func (e *ExternalVolumeDescribeOutputAssert) HasNoComment() *ExternalVolumeDescribeOutputAssert {
 	e.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
 	return e

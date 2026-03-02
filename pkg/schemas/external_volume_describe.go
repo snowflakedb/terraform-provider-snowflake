@@ -145,7 +145,7 @@ var DescribeExternalVolumeSchema = map[string]*schema.Schema{
 	},
 }
 
-func ExternalVolumeDetailsToSchema(details sdk.ExternalVolumeDetails) (map[string]any, error) {
+func ExternalVolumeDetailsToSchema(details sdk.ExternalVolumeDetails) map[string]any {
 	result := map[string]any{
 		"active":       details.Active,
 		"comment":      details.Comment,
@@ -199,5 +199,5 @@ func ExternalVolumeDetailsToSchema(details sdk.ExternalVolumeDetails) (map[strin
 	}
 
 	result["storage_locations"] = storageLocations
-	return result, nil
+	return result
 }

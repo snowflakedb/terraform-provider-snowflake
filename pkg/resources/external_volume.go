@@ -304,10 +304,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 
 		storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
 
-		detailsSchema, err := schemas.ExternalVolumeDetailsToSchema(parsedExternalVolumeDescribed)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		detailsSchema := schemas.ExternalVolumeDetailsToSchema(parsedExternalVolumeDescribed)
 
 		errs := errors.Join(
 			d.Set("comment", externalVolume.Comment),
