@@ -31,7 +31,7 @@ var (
 				Field("schema_name", "string").
 				Field("owner", "sql.NullString").
 				Field("comment", "sql.NullString").
-				Field("table_name", "sql.NullString").
+				Field("table_name", "string").
 				Field("source_type", "sql.NullString").
 				Field("base_tables", "sql.NullString").
 				Field("type", "sql.NullString").
@@ -48,7 +48,7 @@ var (
 				Field("SchemaName", "string").
 				Field("Owner", "*string").
 				Field("Comment", "*string").
-				Field("TableName", "*string").
+				Field("TableName", "SchemaObjectIdentifier").
 				Field("SourceType", "*StreamSourceType").
 				Field("BaseTables", "[]string").
 				Field("Type", "*string").

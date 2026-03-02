@@ -4,7 +4,10 @@ package testint
 
 import (
 	"fmt"
+	"log"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -56,7 +59,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeTable).
 			HasMode(sdk.StreamModeAppendOnly).
-			HasTableId(tableId),
+			HasTableName(tableId),
 		)
 
 		// at stream
@@ -131,7 +134,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeExternalTable).
 			HasMode(sdk.StreamModeInsertOnly).
-			HasTableId(externalTableId),
+			HasTableName(externalTableId),
 		)
 	})
 
@@ -152,7 +155,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeStage).
 			HasMode(sdk.StreamModeDefault).
-			HasTableId(stage.ID()).
+			HasTableName(stage.ID()).
 			HasBaseTables(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())),
 		)
 	})
@@ -180,7 +183,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeView).
 			HasMode(sdk.StreamModeAppendOnly).
-			HasTableId(view.ID()),
+			HasTableName(view.ID()),
 		)
 	})
 
@@ -206,7 +209,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeTable).
 			HasMode(sdk.StreamModeDefault).
-			HasTableId(table.ID()),
+			HasTableName(table.ID()),
 		)
 	})
 
@@ -323,7 +326,7 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeTable).
 			HasMode(sdk.StreamModeDefault).
-			HasTableId(table.ID()),
+			HasTableName(table.ID()),
 		)
 	})
 
@@ -414,8 +417,48 @@ func TestInt_Streams(t *testing.T) {
 			HasComment("some comment").
 			HasSourceType(sdk.StreamSourceTypeTable).
 			HasMode(sdk.StreamModeDefault).
-			HasTableId(table.ID()),
+			HasTableName(table.ID()),
 		)
+	})
+
+	t.Run("ShowByID - error when underlying table is dropped", func(t *testing.T) {
+		table, cleanupTable := testClientHelper().Table.CreateInSchema(t, schemaId)
+		t.Cleanup(cleanupTable)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		_, cleanupStream := testClientHelper().Stream.CreateOnTable(t, table.ID())
+		t.Cleanup(cleanupStream)
+
+		err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(table.ID()))
+		require.NoError(t, err)
+
+		assert.Eventually(t, func() bool {
+			streams, err := client.Streams.Show(ctx, sdk.NewShowStreamRequest().
+				WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
+
+			log.Println("!!! streams", streams)
+			return err != nil && strings.Contains(err.Error(), "is dropped or you don't have permission to access it")
+		}, time.Second*10, time.Second)
+	})
+
+	t.Run("ShowByID - error when no privilege on underlying table", func(t *testing.T) {
+		table, cleanupTable := testClientHelper().Table.CreateInSchema(t, schemaId)
+		t.Cleanup(cleanupTable)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, cleanupStream := testClientHelper().Stream.CreateOnTable(t, table.ID())
+		t.Cleanup(cleanupStream)
+
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		revertRole := testClientHelper().Role.UseRole(t, role.ID())
+		t.Cleanup(revertRole)
+
+		_, err := client.Streams.ShowByID(ctx, id)
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "is dropped or you don't have permission to access it")
 	})
 
 	t.Run("show by id - same name in different schemas", func(t *testing.T) {

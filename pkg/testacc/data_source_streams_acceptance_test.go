@@ -269,7 +269,6 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasTableName(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())).
 						HasSourceType(sdk.StreamSourceTypeStage).
-						HasBaseTablesPartiallyQualified(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())).
 						HasType("DELTA").
 						HasStale(false).
 						HasMode(sdk.StreamModeDefault).

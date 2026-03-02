@@ -246,7 +246,6 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 	if r.Comment.Valid {
 		s.Comment = &r.Comment.String
 	}
-	// TODO: Add integration test for it
 	if strings.Contains(r.TableName, "No privilege or table dropped") {
 		return nil, fmt.Errorf("the source object %s is dropped or you don't have permission to access it", r.TableName)
 	}
