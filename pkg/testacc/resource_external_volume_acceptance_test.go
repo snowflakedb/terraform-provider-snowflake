@@ -3,7 +3,6 @@
 package testacc
 
 // TODO Add test that includes Iceberg table creation, as this impacts the describe output (updates ACTIVE)
-// TODO Add S3Gov tests
 
 import (
 	"fmt"
@@ -15,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -149,7 +149,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, ref).
 						HasNameString(externalVolumeName).
-						HasCommentString("").
+						HasCommentEmpty().
 						HasAllowWritesString(r.BooleanDefault).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
@@ -164,11 +164,22 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
-						HasComment("").
+						HasCommentEmpty().
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasCommentEmpty().
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+						}),
 				),
 			},
 			// import
@@ -208,7 +219,19 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeSseKms,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn:  s3StorageAwsRoleArn,
+									EncryptionKmsKeyId: s3EncryptionKmsKeyId,
+								},
+							},
+						}),
 				),
 			},
 			// import
@@ -245,7 +268,19 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment2).
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeSseKms,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn:  s3StorageAwsRoleArn,
+									EncryptionKmsKeyId: s3EncryptionKmsKeyId2,
+								},
+							},
+						}),
 				),
 			},
 			// verify external changes
@@ -299,7 +334,19 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment2).
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeSseKms,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn:  s3StorageAwsRoleArn,
+									EncryptionKmsKeyId: s3EncryptionKmsKeyId2,
+								},
+							},
+						}),
 				),
 			},
 			// unset the optional parameters
@@ -309,7 +356,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, ref).
 						HasNameString(externalVolumeName).
-						HasCommentString("").
+						HasCommentEmpty().
 						HasAllowWritesString(r.BooleanDefault).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
@@ -324,11 +371,89 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
-						HasComment("").
+						HasCommentEmpty().
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasCommentEmpty().
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+						}),
+				),
+			},
+		},
+	})
+}
+
+// Test volume with s3gov storage locations. It's a very simple smoke test, as the main functionalities are tested in the S3 test.
+func TestAcc_ExternalVolume_BasicUseCase_S3Gov(t *testing.T) {
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakePreProdGovEnvironment {
+		t.Skip("Skipping S3Gov test, requires gov deployment")
+	}
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	externalVolumeName := id.Name()
+	ref := "snowflake_external_volume.complete"
+	s3GovStorageLocationName := "s3GovTest"
+	s3GovStorageProvider := "S3GOV"
+	s3GovStorageBaseUrl := "s3gov://my-example-bucket"
+	s3GovStorageAwsRoleArn := "arn:aws:iam::123456789012:role/myrole"
+	s3GovEncryptionTypeNone := "NONE"
+	s3GovStorageLocation := getS3StorageLocation(s3GovStorageLocationName, s3GovStorageProvider, s3GovStorageBaseUrl, s3GovStorageAwsRoleArn, s3GovEncryptionTypeNone, "")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
+		Steps: []resource.TestStep{
+			// create with a basic s3gov storage location
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables: externalVolume(config.ListVariable(s3GovStorageLocation), externalVolumeName, "", ""),
+				Check: assertThat(t,
+					resourceassert.ExternalVolumeResource(t, ref).
+						HasNameString(externalVolumeName).
+						HasCommentEmpty().
+						HasAllowWritesString(r.BooleanDefault).
+						HasStorageLocationLength(1).
+						HasStorageLocationAtIndex(
+							0,
+							s3GovStorageLocationName,
+							s3GovStorageProvider,
+							s3GovStorageBaseUrl,
+							s3GovStorageAwsRoleArn,
+							s3GovEncryptionTypeNone,
+							"",
+							"",
+						),
+					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
+						HasName(externalVolumeName).
+						HasCommentEmpty().
+						HasAllowWrites(true),
+					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasCommentEmpty().
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3GovStorageLocationName,
+								StorageProvider: s3GovStorageProvider,
+								StorageBaseUrl:  s3GovStorageBaseUrl,
+								EncryptionType:  s3GovEncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3GovStorageAwsRoleArn,
+								},
+							},
+						}),
 				),
 			},
 		},
@@ -368,7 +493,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, ref).
 						HasNameString(externalVolumeName).
-						HasCommentString("").
+						HasCommentEmpty().
 						HasAllowWritesString(r.BooleanDefault).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
@@ -383,11 +508,19 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
-						HasComment("").
+						HasCommentEmpty().
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasCommentEmpty().
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+						}),
 				),
 			},
 			// import
@@ -427,7 +560,18 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeSseKms,
+								GCSStorageLocation: &sdk.StorageLocationGcsDetails{
+									EncryptionKmsKeyId: gcsEncryptionKmsKeyId,
+								},
+							},
+						}),
 				),
 			},
 			// import
@@ -464,17 +608,25 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment2).
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeSseKms,
+								GCSStorageLocation: &sdk.StorageLocationGcsDetails{
+									EncryptionKmsKeyId: gcsEncryptionKmsKeyId2,
+								},
+							},
+						}),
 				),
 			},
 			// verify external changes
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithComment("external comment"),
-					))
-					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true),
+						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(
 						t,
@@ -516,7 +668,18 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment2).
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeSseKms,
+								GCSStorageLocation: &sdk.StorageLocationGcsDetails{
+									EncryptionKmsKeyId: gcsEncryptionKmsKeyId2,
+								},
+							},
+						}),
 				),
 			},
 			// unset the optional parameters
@@ -526,7 +689,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, ref).
 						HasNameString(externalVolumeName).
-						HasCommentString("").
+						HasCommentEmpty().
 						HasAllowWritesString(r.BooleanDefault).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
@@ -541,11 +704,19 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
-						HasComment("").
+						HasCommentEmpty().
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasCommentEmpty().
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+						}),
 				),
 			},
 		},
@@ -581,7 +752,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, ref).
 						HasNameString(externalVolumeName).
-						HasCommentString("").
+						HasCommentEmpty().
 						HasAllowWritesString(r.BooleanDefault).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
@@ -596,11 +767,22 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
-						HasComment("").
+						HasCommentEmpty().
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasCommentEmpty().
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// import
@@ -640,7 +822,18 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// import
@@ -677,7 +870,18 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment2).
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// verify external changes
@@ -730,7 +934,18 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasComment(comment2).
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// unset the optional parameters
@@ -740,7 +955,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.ExternalVolumeResource(t, ref).
 						HasNameString(externalVolumeName).
-						HasCommentString("").
+						HasCommentEmpty().
 						HasAllowWritesString(r.BooleanDefault).
 						HasStorageLocationLength(1).
 						HasStorageLocationAtIndex(
@@ -755,11 +970,22 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						),
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
-						HasComment("").
+						HasCommentEmpty().
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasCommentEmpty().
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 		},
@@ -847,7 +1073,37 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 						HasAllowWrites(false),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("false"),
+						HasAllowWrites("false").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeSseKms,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn:  s3StorageAwsRoleArn,
+									EncryptionKmsKeyId: s3EncryptionKmsKeyId,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeSseKms,
+								GCSStorageLocation: &sdk.StorageLocationGcsDetails{
+									EncryptionKmsKeyId: gcsEncryptionKmsKeyId,
+								},
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			{
@@ -952,7 +1208,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// import
@@ -1009,7 +1291,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl2,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// change back the s3 base url at position 0
@@ -1058,7 +1366,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// add new s3 storage location to position 0
@@ -1117,7 +1451,42 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName2,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// remove s3 storage location at position 0
@@ -1166,7 +1535,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// change the base url of the gcs storage location at position 1
@@ -1215,7 +1610,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl2,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// change back the encryption type of the gcs storage location at position 1
@@ -1264,7 +1685,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// add new s3 storage location to position 1
@@ -1323,7 +1770,42 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            s3StorageLocationName2,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// remove s3 storage location at position 1
@@ -1372,7 +1854,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// change the tenant id of the azure storage location at position 2
@@ -1421,7 +1929,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId2,
+								},
+							},
+						}),
 				),
 			},
 			// change back the tenant id of the azure storage location at position 2
@@ -1470,7 +2004,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// add new gcs storage location to position 2
@@ -1529,7 +2089,39 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            gcsStorageLocationName2,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// remove gcs storage location at position 2
@@ -1578,7 +2170,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// add new azure storage location to position 3
@@ -1637,7 +2255,42 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+							{
+								Name:            azureStorageLocationName2,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 			// remove azure storage location from position 3
@@ -1686,7 +2339,33 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, "snowflake_external_volume.complete").
 						HasComment(comment).
-						HasAllowWrites("true"),
+						HasAllowWrites("true").
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3StorageLocationName,
+								StorageProvider: s3StorageProvider,
+								StorageBaseUrl:  s3StorageBaseUrl,
+								EncryptionType:  s3EncryptionTypeNone,
+								S3StorageLocation: &sdk.StorageLocationS3Details{
+									StorageAwsRoleArn: s3StorageAwsRoleArn,
+								},
+							},
+							{
+								Name:            gcsStorageLocationName,
+								StorageProvider: gcsStorageProvider,
+								StorageBaseUrl:  gcsStorageBaseUrl,
+								EncryptionType:  gcsEncryptionTypeNone,
+							},
+							{
+								Name:            azureStorageLocationName,
+								StorageProvider: azureStorageProvider,
+								StorageBaseUrl:  azureStorageBaseUrl,
+								EncryptionType:  azureEncryptionTypeNone,
+								AzureStorageLocation: &sdk.StorageLocationAzureDetails{
+									AzureTenantId: azureTenantId,
+								},
+							},
+						}),
 				),
 			},
 		},

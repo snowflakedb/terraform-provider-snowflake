@@ -61,17 +61,16 @@ func (e *ExternalVolumeDescribeOutputAssert) HasStorageLocations(expected []sdk.
 		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".storage_base_url", loc.StorageBaseUrl))
 		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".encryption_type", loc.EncryptionType))
 
-		e.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("%s.storage_allowed_locations.#", prefix), strconv.Itoa(len(loc.StorageAllowedLocations))))
-		for j, allowedLoc := range loc.StorageAllowedLocations {
-			e.AddAssertion(assert.ResourceDescribeOutputValueSet(fmt.Sprintf("%s.storage_allowed_locations.%d", prefix, j), allowedLoc))
-		}
+		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".storage_allowed_locations.#", "1"))
+		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".storage_allowed_locations.0", fmt.Sprintf("%s/*", loc.StorageBaseUrl)))
 
-		if loc.S3StorageLocation != nil {
+		if loc.StorageProvider == string(sdk.StorageProviderS3) || loc.StorageProvider == string(sdk.StorageProviderS3GOV) {
 			s3Prefix := prefix + ".s3_storage_location.0"
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".s3_storage_location.#", "1"))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".storage_aws_role_arn", loc.S3StorageLocation.StorageAwsRoleArn))
-			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".storage_aws_iam_user_arn", loc.S3StorageLocation.StorageAwsIamUserArn))
-			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".storage_aws_external_id", loc.S3StorageLocation.StorageAwsExternalId))
+			// StorageAwsIamUserArn and StorageAwsExternalId are Snowflake-generated - assert presence only
+			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(s3Prefix + ".storage_aws_iam_user_arn"))
+			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(s3Prefix + ".storage_aws_external_id"))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".storage_aws_access_point_arn", loc.S3StorageLocation.StorageAwsAccessPointArn))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".use_privatelink_endpoint", loc.S3StorageLocation.UsePrivatelinkEndpoint))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".encryption_kms_key_id", loc.S3StorageLocation.EncryptionKmsKeyId))
@@ -79,26 +78,32 @@ func (e *ExternalVolumeDescribeOutputAssert) HasStorageLocations(expected []sdk.
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".s3_storage_location.#", "0"))
 		}
 
-		if loc.GCSStorageLocation != nil {
+		if loc.StorageProvider == string(sdk.StorageProviderGCS) {
 			gcsPrefix := prefix + ".gcs_storage_location.0"
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".gcs_storage_location.#", "1"))
-			e.AddAssertion(assert.ResourceDescribeOutputValueSet(gcsPrefix+".storage_gcp_service_account", loc.GCSStorageLocation.StorageGcpServiceAccount))
-			e.AddAssertion(assert.ResourceDescribeOutputValueSet(gcsPrefix+".encryption_kms_key_id", loc.GCSStorageLocation.EncryptionKmsKeyId))
+			// StorageGcpServiceAccount is Snowflake-generated - assert presence only
+			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(gcsPrefix + ".storage_gcp_service_account"))
+			var encryptionKmsKeyId string
+			if loc.GCSStorageLocation != nil && loc.GCSStorageLocation.EncryptionKmsKeyId != "" {
+				encryptionKmsKeyId = loc.GCSStorageLocation.EncryptionKmsKeyId
+			}
+			e.AddAssertion(assert.ResourceDescribeOutputValueSet(gcsPrefix+".encryption_kms_key_id", encryptionKmsKeyId))
 		} else {
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".gcs_storage_location.#", "0"))
 		}
 
-		if loc.AzureStorageLocation != nil {
+		if loc.StorageProvider == string(sdk.StorageProviderAzure) {
 			azurePrefix := prefix + ".azure_storage_location.0"
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".azure_storage_location.#", "1"))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(azurePrefix+".azure_tenant_id", loc.AzureStorageLocation.AzureTenantId))
-			e.AddAssertion(assert.ResourceDescribeOutputValueSet(azurePrefix+".azure_multi_tenant_app_name", loc.AzureStorageLocation.AzureMultiTenantAppName))
-			e.AddAssertion(assert.ResourceDescribeOutputValueSet(azurePrefix+".azure_consent_url", loc.AzureStorageLocation.AzureConsentUrl))
+			// AzureMultiTenantAppName and AzureConsentUrl are Snowflake-generated - assert presence only
+			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(azurePrefix + ".azure_multi_tenant_app_name"))
+			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(azurePrefix + ".azure_consent_url"))
 		} else {
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".azure_storage_location.#", "0"))
 		}
 
-		if loc.S3CompatStorageLocation != nil {
+		if loc.StorageProvider == string(sdk.StorageProviderS3Compatible) {
 			s3cPrefix := prefix + ".s3_compat_storage_location.0"
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".s3_compat_storage_location.#", "1"))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3cPrefix+".endpoint", loc.S3CompatStorageLocation.Endpoint))

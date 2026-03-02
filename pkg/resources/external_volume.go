@@ -13,10 +13,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/go-cty/cty"
 )
 
 var externalVolumeSchema = map[string]*schema.Schema{
@@ -155,6 +155,32 @@ func ExternalVolume() *schema.Resource {
 	}
 }
 
+func storageLocationDetailsToStateMaps(locations []sdk.ExternalVolumeStorageLocationDetails) []map[string]any {
+	result := make([]map[string]any, len(locations))
+	for i, loc := range locations {
+		m := map[string]any{
+			"storage_location_name": loc.Name,
+			"storage_provider":      loc.StorageProvider,
+			"storage_base_url":      loc.StorageBaseUrl,
+			"encryption_type":       loc.EncryptionType,
+		}
+		switch {
+		case loc.S3StorageLocation != nil:
+			m["storage_aws_role_arn"] = loc.S3StorageLocation.StorageAwsRoleArn
+			m["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+			m["encryption_kms_key_id"] = loc.S3StorageLocation.EncryptionKmsKeyId
+		case loc.AzureStorageLocation != nil:
+			m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
+		case loc.S3CompatStorageLocation != nil:
+			m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
+		case loc.GCSStorageLocation != nil:
+			m["encryption_kms_key_id"] = loc.GCSStorageLocation.EncryptionKmsKeyId
+		}
+		result[i] = m
+	}
+	return result
+}
+
 func ImportExternalVolume(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -185,29 +211,7 @@ func ImportExternalVolume(ctx context.Context, d *schema.ResourceData, meta any)
 		return nil, err
 	}
 
-	storageLocations := make([]map[string]any, len(parsedExternalVolumeDescribed.StorageLocations))
-	for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
-		// TODO (next PRs): deduplicate with read and fill the rest of the fields.
-		m := map[string]any{
-			"storage_location_name": loc.Name,
-			"storage_provider":      loc.StorageProvider,
-			"storage_base_url":      loc.StorageBaseUrl,
-			"encryption_type":       loc.EncryptionType,
-		}
-		switch {
-		case loc.S3StorageLocation != nil:
-			m["storage_aws_role_arn"] = loc.S3StorageLocation.StorageAwsRoleArn
-			m["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
-			m["encryption_kms_key_id"] = loc.S3StorageLocation.EncryptionKmsKeyId
-		case loc.AzureStorageLocation != nil:
-			m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
-		case loc.S3CompatStorageLocation != nil:
-			m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
-		case loc.GCSStorageLocation != nil:
-			m["encryption_kms_key_id"] = loc.GCSStorageLocation.EncryptionKmsKeyId
-		}
-		storageLocations[i] = m
-	}
+	storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
 
 	if err = d.Set("storage_location", storageLocations); err != nil {
 		return nil, err
@@ -229,16 +233,12 @@ func CreateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 
 	req := sdk.NewCreateExternalVolumeRequest(id, storageLocations)
 
-	if v, ok := d.GetOk("comment"); ok {
-		req.WithComment(v.(string))
-	}
-
-	if v := d.Get("allow_writes").(string); v != BooleanDefault {
-		parsed, err := booleanStringToBool(v)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithAllowWrites(parsed)
+	errs := errors.Join(
+		stringAttributeCreateBuilder(d, "comment", req.WithComment),
+		booleanStringAttributeCreateBuilder(d, "allow_writes", req.WithAllowWrites),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	err = client.ExternalVolumes.Create(ctx, req)
@@ -292,10 +292,6 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set("comment", externalVolume.Comment); err != nil {
-			return diag.FromErr(err)
-		}
-
 		externalVolumeDescribe, err := client.ExternalVolumes.Describe(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
@@ -306,33 +302,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		storageLocations := make([]map[string]any, len(parsedExternalVolumeDescribed.StorageLocations))
-		for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
-			// TODO (next PRs): deduplicate with imports and fill the rest of the fields.
-			m := map[string]any{
-				"storage_location_name": loc.Name,
-				"storage_provider":      loc.StorageProvider,
-				"storage_base_url":      loc.StorageBaseUrl,
-				"encryption_type":       loc.EncryptionType,
-			}
-			switch {
-			case loc.S3StorageLocation != nil:
-				m["storage_aws_role_arn"] = loc.S3StorageLocation.StorageAwsRoleArn
-				m["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
-				m["encryption_kms_key_id"] = loc.S3StorageLocation.EncryptionKmsKeyId
-			case loc.AzureStorageLocation != nil:
-				m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
-			case loc.S3CompatStorageLocation != nil:
-				m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
-			case loc.GCSStorageLocation != nil:
-				m["encryption_kms_key_id"] = loc.GCSStorageLocation.EncryptionKmsKeyId
-			}
-			storageLocations[i] = m
-		}
-
-		if err = d.Set("storage_location", storageLocations); err != nil {
-			return diag.FromErr(err)
-		}
+		storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
 
 		detailsSchema, err := schemas.ExternalVolumeDetailsToSchema(parsedExternalVolumeDescribed)
 		if err != nil {
@@ -340,6 +310,8 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 		}
 
 		errs := errors.Join(
+			d.Set("comment", externalVolume.Comment),
+			d.Set("storage_location", storageLocations),
 			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ExternalVolumeToSchema(externalVolume)}),
 		)
@@ -360,22 +332,12 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 
 	set := sdk.NewAlterExternalVolumeSetRequest()
 
-	if d.HasChange("comment") {
-		// not using d.GetOk as that doesn't let comments be reset to the empty string
-		set.WithComment(d.Get("comment").(string))
-	}
-
-	if d.HasChange("allow_writes") {
-		if v := d.Get("allow_writes").(string); v != BooleanDefault {
-			parsed, err := booleanStringToBool(v)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			set.WithAllowWrites(parsed)
-		} else {
-			// no way to unset allow writes - set to false as a default
-			set.WithAllowWrites(false)
-		}
+	errs := errors.Join(
+		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
+		booleanStringAttributeUnsetFallbackUpdate(d, "allow_writes", &set.AllowWrites, false),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	if (*set != sdk.AlterExternalVolumeSetRequest{}) {
@@ -427,7 +389,7 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 			// would otherwise be necessary as a minimum of 1 storage location per external volume is required.
 			// The alternative solution of adding volumes before removing them isn't possible as
 			// name must be unique for storage locations
-			tempStorageLocation, err := sdk.CopySentinelStorageLocation(removedLocations[0])
+			tempStorageLocation, err := sdk.CopySentinelStorageLocationItem(removedLocations[0])
 			if err != nil {
 				return diag.FromErr(err)
 			}

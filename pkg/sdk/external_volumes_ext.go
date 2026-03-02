@@ -7,62 +7,18 @@ import (
 	"strings"
 )
 
-// CopySentinelStorageLocation creates a copy of the given storage location with a
+// CopySentinelStorageLocationItem creates a copy of the given storage location with a
 // sentinel name used for Terraform provider operations. This is useful for managing
 // storage location state without affecting user-visible names.
-func CopySentinelStorageLocation(
+func CopySentinelStorageLocationItem(
 	storageLocationItem ExternalVolumeStorageLocationItem,
 ) (ExternalVolumeStorageLocationItem, error) {
-	storageLocation := storageLocationItem.ExternalVolumeStorageLocation
-	storageProvider, err := GetStorageLocationStorageProvider(storageLocationItem)
-	if err != nil {
-		return ExternalVolumeStorageLocationItem{}, err
-	}
-
-	newName := "terraform_provider_sentinel_storage_location"
-	var tempNameStorageLocation ExternalVolumeStorageLocation
-	switch storageProvider {
-	case StorageProviderS3, StorageProviderS3GOV:
-		tempNameStorageLocation = ExternalVolumeStorageLocation{
-			Name: newName,
-			S3StorageLocationParams: &S3StorageLocationParams{
-				StorageProvider:          storageLocation.S3StorageLocationParams.StorageProvider,
-				StorageBaseUrl:           storageLocation.S3StorageLocationParams.StorageBaseUrl,
-				StorageAwsRoleArn:        storageLocation.S3StorageLocationParams.StorageAwsRoleArn,
-				StorageAwsExternalId:     storageLocation.S3StorageLocationParams.StorageAwsExternalId,
-				StorageAwsAccessPointArn: storageLocation.S3StorageLocationParams.StorageAwsAccessPointArn,
-				UsePrivatelinkEndpoint:   storageLocation.S3StorageLocationParams.UsePrivatelinkEndpoint,
-				Encryption:               storageLocation.S3StorageLocationParams.Encryption,
-			},
-		}
-	case StorageProviderGCS:
-		tempNameStorageLocation = ExternalVolumeStorageLocation{
-			Name: newName,
-			GCSStorageLocationParams: &GCSStorageLocationParams{
-				StorageBaseUrl: storageLocation.GCSStorageLocationParams.StorageBaseUrl,
-				Encryption:     storageLocation.GCSStorageLocationParams.Encryption,
-			},
-		}
-	case StorageProviderAzure:
-		tempNameStorageLocation = ExternalVolumeStorageLocation{
-			Name: newName,
-			AzureStorageLocationParams: &AzureStorageLocationParams{
-				StorageBaseUrl:         storageLocation.AzureStorageLocationParams.StorageBaseUrl,
-				AzureTenantId:          storageLocation.AzureStorageLocationParams.AzureTenantId,
-				UsePrivatelinkEndpoint: storageLocation.AzureStorageLocationParams.UsePrivatelinkEndpoint,
-			},
-		}
-	case StorageProviderS3Compatible:
-		tempNameStorageLocation = ExternalVolumeStorageLocation{
-			Name: newName,
-			S3CompatStorageLocationParams: &S3CompatStorageLocationParams{
-				StorageBaseUrl:  storageLocation.S3CompatStorageLocationParams.StorageBaseUrl,
-				StorageEndpoint: storageLocation.S3CompatStorageLocationParams.StorageEndpoint,
-				Credentials:     storageLocation.S3CompatStorageLocationParams.Credentials,
-			},
-		}
-	default:
-		return ExternalVolumeStorageLocationItem{}, fmt.Errorf("unsupported storage provider type: %s", storageProvider)
+	tempNameStorageLocation := ExternalVolumeStorageLocation{
+		Name:                          "terraform_provider_sentinel_storage_location",
+		S3StorageLocationParams:       storageLocationItem.ExternalVolumeStorageLocation.S3StorageLocationParams,
+		GCSStorageLocationParams:      storageLocationItem.ExternalVolumeStorageLocation.GCSStorageLocationParams,
+		AzureStorageLocationParams:    storageLocationItem.ExternalVolumeStorageLocation.AzureStorageLocationParams,
+		S3CompatStorageLocationParams: storageLocationItem.ExternalVolumeStorageLocation.S3CompatStorageLocationParams,
 	}
 
 	return ExternalVolumeStorageLocationItem{
