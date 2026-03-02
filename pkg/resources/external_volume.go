@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/go-cty/cty"
 )
 
 var externalVolumeSchema = map[string]*schema.Schema{
@@ -125,6 +126,8 @@ func ExternalVolume() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingCreateWrapper(resources.ExternalVolume, CreateContextExternalVolume)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingReadWrapper(resources.ExternalVolume, ReadContextExternalVolume(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingUpdateWrapper(resources.ExternalVolume, UpdateContextExternalVolume)),
@@ -142,6 +145,13 @@ func ExternalVolume() *schema.Resource {
 			ComputedIfAnyAttributeChanged(externalVolumeSchema, DescribeOutputAttributeName, "name", "allow_writes", "comment", "storage_location"),
 		)),
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_ExternalVolumeStateUpgrader,
+			},
+		},
 	}
 }
 
@@ -323,11 +333,18 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 		if err = d.Set("storage_location", storageLocations); err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set(DescribeOutputAttributeName, schemas.ExternalVolumeDescriptionToSchema(externalVolumeDescribe)); err != nil {
+
+		detailsSchema, err := schemas.ExternalVolumeDetailsToSchema(parsedExternalVolumeDescribed)
+		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.ExternalVolumeToSchema(externalVolume)}); err != nil {
-			return diag.FromErr(err)
+
+		errs := errors.Join(
+			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ExternalVolumeToSchema(externalVolume)}),
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
 		}
 
 		return nil
