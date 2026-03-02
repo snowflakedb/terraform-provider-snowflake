@@ -19,7 +19,7 @@ const (
 	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
 	ParametersReducedOutput             ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
-	TagNewTriValueAllowedValuesBehavior ExperimentalFeature = "TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR"
+	TagsAllowEmptyAllowedValues ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
 )
 
 type experimentalFeatureState string
@@ -98,7 +98,7 @@ var allExperiments = []Experiment{
 		),
 	},
 	{
-		TagNewTriValueAllowedValuesBehavior,
+		TagsAllowEmptyAllowedValues,
 		ExperimentalFeatureStateActive,
 		joinWithDoubleNewline(
 			"Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.",

@@ -51,13 +51,13 @@ var tagSchema = map[string]*schema.Schema{
 		Type:          schema.TypeSet,
 		Elem:          &schema.Schema{Type: schema.TypeString},
 		Optional:      true,
-		Description:   "Set of allowed values for the tag. When specified, only these values can be assigned. When the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values`.",
+		Description:   "Set of allowed values for the tag. When specified, only these values can be assigned. When the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values`.",
 		ConflictsWith: []string{"no_allowed_values"},
 	},
 	"no_allowed_values": {
 		Type:          schema.TypeBool,
 		Optional:      true,
-		Description:   "When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAG_NEW_TRI_VALUE_ALLOWED_VALUES_BEHAVIOR` experiment is enabled. Conflicts with `allowed_values`.",
+		Description:   "When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled. Conflicts with `allowed_values`.",
 		ConflictsWith: []string{"allowed_values"},
 	},
 	"masking_policies": {
@@ -162,6 +162,9 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if v, ok := d.GetOk("allowed_values"); ok {
 		request.WithAllowedValues(expandStringListAllowEmpty(v.(*schema.Set).List()))
 	}
+	if d.Get("no_allowed_values").(bool) && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
+		return diag.FromErr(fmt.Errorf("no_allowed_values is not supported when the %s experiment is not enabled", experimentalfeatures.TagsAllowEmptyAllowedValues))
+	}
 	if err := client.Tags.Create(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
@@ -189,13 +192,13 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
-		if v, ok := d.GetOk("no_allowed_values"); ok && v.(bool) {
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
+		if d.Get("no_allowed_values").(bool) {
 			// We have to temporarily add and remove allowed value for Snowflake to make the tag block any value.
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})); err != nil {
 				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to set masking policies on the tag",
+					Summary:  "Failed to add temporary allowed value on the tag",
 					Detail:   fmt.Sprintf("Unable to add temporary allowed value to tag %s, err = %s", id.FullyQualifiedName(), err),
 				})
 			}
@@ -205,7 +208,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})); err != nil {
 				updateAfterCreationDiags = append(updateAfterCreationDiags, diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "Failed to set masking policies on the tag",
+					Summary:  "Failed to remove temporary allowed value on the tag",
 					Detail:   fmt.Sprintf("Unable to drop temporary allowed value from tag %s, err = %s", id.FullyQualifiedName(), err),
 				})
 			}
@@ -239,7 +242,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
 		if err := d.Set("no_allowed_values", reflect.DeepEqual(tag.AllowedValues, []string{})); err != nil {
 			return diag.FromErr(err)
 		}
@@ -306,7 +309,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior, providerCtx.EnabledExperiments) {
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
 		if d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
 			o, n := d.GetChange("allowed_values")
 			oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
@@ -328,6 +331,11 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
 						return diag.FromErr(err)
 					}
+				}
+				// TODO: Test this case
+			} else if d.HasChange("no_allowed_values") && !noAllowedValues && len(newAllowedValues) == 0 {
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {
+					return diag.FromErr(err)
 				}
 			} else {
 				if len(addedItems) > 0 {

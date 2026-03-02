@@ -337,7 +337,7 @@ func TestAcc_Tag_NoAllowedValues_WithoutExperimentFlag(t *testing.T) {
 						HasAllowedValuesEmpty(),
 				),
 			},
-			// Update - set no_allowed_values to true, but experiment is off so it should be ignored
+			// Update - remove no_allowed_values from the configuration (no infra change without the experiment flag)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -355,7 +355,7 @@ func TestAcc_Tag_NoAllowedValues_WithoutExperimentFlag(t *testing.T) {
 						HasAllowedValuesEmpty(),
 				),
 			},
-			// Update - set no_allowed_values to true, but experiment is off so it should be ignored
+			// Update - add no_allowed_values to the configuration (no infra change without the experiment flag)
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -417,7 +417,7 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior)
+		WithExperimentalFeaturesEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues)
 
 	basic := model.TagBase("test", id)
 	withAllowedValues := model.TagBase("test", id).WithAllowedValues("value1", "value2")
@@ -672,7 +672,7 @@ func TestAcc_Tag_TransitionToExperimentFlag_NullAllowedValues(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior)
+		WithExperimentalFeaturesEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues)
 	basic := model.TagBase("test", id)
 
 	resource.Test(t, resource.TestCase{
@@ -722,7 +722,7 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValues(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.TagNewTriValueAllowedValuesBehavior)
+		WithExperimentalFeaturesEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues)
 	basic := model.TagBase("test", id)
 	withAllowedValues := model.TagBase("test", id).WithAllowedValues("v1", "v2")
 	withNoAllowedValues := model.TagBase("test", id).WithNoAllowedValues(true)
