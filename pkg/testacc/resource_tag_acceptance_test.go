@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -325,25 +326,13 @@ func TestAcc_Tag_NoAllowedValues_WithoutExperimentFlag(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Tag),
 		Steps: []resource.TestStep{
+			// Create with no_allowed_values=true and flag disabled - should error
 			{
-				Config: config.FromModels(t, withNoAllowedValues),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasAllowedValuesNil(), // After initial creation, allowed values are null in Snowflake
-
-					resourceassert.TagResource(t, withNoAllowedValues.ResourceReference()).
-						HasNameString(id.Name()).
-						HasAllowedValuesEmpty(),
-				),
+				Config:      config.FromModels(t, withNoAllowedValues),
+				ExpectError: regexp.MustCompile("no_allowed_values is not supported"),
 			},
-			// Update - remove no_allowed_values from the configuration (no infra change without the experiment flag)
+			// Create basic tag (succeeds)
 			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
 				Config: config.FromModels(t, basic),
 				Check: assertThat(t,
 					objectassert.Tag(t, id).
@@ -355,23 +344,10 @@ func TestAcc_Tag_NoAllowedValues_WithoutExperimentFlag(t *testing.T) {
 						HasAllowedValuesEmpty(),
 				),
 			},
-			// Update - add no_allowed_values to the configuration (no infra change without the experiment flag)
+			// Update - try to set no_allowed_values=true without flag - should error
 			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, withNoAllowedValues),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasAllowedValuesNil(),
-
-					resourceassert.TagResource(t, withNoAllowedValues.ResourceReference()).
-						HasNameString(id.Name()).
-						HasAllowedValuesEmpty(),
-				),
+				Config:      config.FromModels(t, withNoAllowedValues),
+				ExpectError: regexp.MustCompile("no_allowed_values is not supported"),
 			},
 			// Update - add allowed_values (old behavior: add only)
 			{
@@ -396,6 +372,104 @@ func TestAcc_Tag_NoAllowedValues_WithoutExperimentFlag(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesEmpty(),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValuesEmpty(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Tag_ExternalChanges_WithoutExperimentFlag(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	allowedValues := []string{"value1", "value2"}
+	basic := model.TagBase("test", id)
+	withAllowedValues := model.TagBase("test", id).WithAllowedValues(allowedValues...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Create with allowed_values
+			{
+				Config: config.FromModels(t, withAllowedValues),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesUnordered(allowedValues...),
+
+					resourceassert.TagResource(t, withAllowedValues.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValues(allowedValues...),
+				),
+			},
+			// External change: drop all allowed values (tag enters blocking state).
+			// Provider detects the drift (config still expects values) and restores them.
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithDrop(allowedValues))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withAllowedValues.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withAllowedValues),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesUnordered(allowedValues...),
+
+					resourceassert.TagResource(t, withAllowedValues.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValues(allowedValues...),
+				),
+			},
+			// Destroy and recreate as basic tag to test the empty-config scenario
+			{
+				Destroy: true,
+				Config:  config.FromModels(t, withAllowedValues),
+			},
+			{
+				PreConfig: func() {
+					_, err := testClient().Tag.Show(t, id)
+					require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+				},
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesNil(),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValuesEmpty(),
+				),
+			},
+			// External change: add and drop a temp value to make allowed_values empty (blocking).
+			// Without the experiment flag, the provider cannot distinguish empty [] from null,
+			// so no drift is detected and the tag silently stays in blocking state.
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithAdd([]string{"temp_value"}))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithDrop([]string{"temp_value"}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
 				Config: config.FromModels(t, basic),
@@ -664,6 +738,25 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 						HasNoAllowedValuesString("true"),
 				),
 			},
+			// Update - transition from no_allowed_values back to allowing any value (UNSET allowed_values in Snowflake)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, providerModel, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesNil(),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValuesEmpty().
+						HasNoAllowedValuesString("false"),
+				),
+			},
 		},
 	})
 }
@@ -778,6 +871,121 @@ func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValues(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAllowedValuesEmpty().
 						HasNoAllowedValuesString("true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Tag_TransitionToExperimentFlag_EmptyAllowedValuesWithBasicConfig(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues)
+	basic := model.TagBase("test", id)
+	withAllowedValues := model.TagBase("test", id).WithAllowedValues("v1", "v2")
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Create with external provider v2.14.0 - with allowed_values
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				Config:            config.FromModels(t, withAllowedValues),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesUnordered("v1", "v2"),
+
+					resourceassert.TagResource(t, withAllowedValues.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValues("v1", "v2"),
+				),
+			},
+			// Remove allowed_values with v2.14.0 - old behavior uses DROP, leaving empty allowed_values (blocking) in Snowflake
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				Config:            config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesEmpty(),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValuesEmpty(),
+				),
+			},
+			// Transition to the current provider version with experiment flag - stayed on basic config.
+			// The new provider reads no_allowed_values=true from Snowflake (empty state; no values are allowed),
+			// but config says no_allowed_values=false, so an update is planned to UNSET (nil state; all values are allowed).
+			{
+				ProtoV6ProviderFactories: tagsWithExperimentFlagProviderFactory,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, providerModel, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesNil(),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValuesEmpty().
+						HasNoAllowedValuesString("false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Tag_NoAllowedValues_DisableExperimentFlag(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues)
+
+	basic := model.TagBase("test", id)
+	withNoAllowedValues := model.TagBase("test", id).WithNoAllowedValues(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Create with experiment flag enabled and no_allowed_values=true
+			{
+				ProtoV6ProviderFactories: tagsWithExperimentFlagProviderFactory,
+				Config:                   config.FromModels(t, providerModel, withNoAllowedValues),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesEmpty(),
+
+					resourceassert.TagResource(t, withNoAllowedValues.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValuesEmpty().
+						HasNoAllowedValuesString("true"),
+				),
+			},
+			// Update the experimantal flag to disabled and no_allowed_values=false without modifying the allowed_values
+			// The tag should stay in the blocking state and not go back to accepting any value.
+			{
+				ProtoV6ProviderFactories: tagsProviderFactory,
+				Config:                   config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasAllowedValuesEmpty(),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasAllowedValuesEmpty(),
 				),
 			},
 		},

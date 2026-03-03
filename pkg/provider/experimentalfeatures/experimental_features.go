@@ -18,7 +18,7 @@ const (
 	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
 	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
-	ParametersReducedOutput             ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	ParametersReducedOutput     ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
 	TagsAllowEmptyAllowedValues ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
 )
 
