@@ -509,7 +509,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 	})
 
-	setAndUnsetGenerationOld := func(t *testing.T, client *sdk.Client, testClientHelper func() *helpers.TestClient) {
+	t.Run("alter: set and unset generation (old resource constraint syntax)", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
@@ -546,13 +546,9 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, returnedWarehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
-	}
-
-	t.Run("alter: set and unset generation (old resource constraint syntax)", func(t *testing.T) {
-		setAndUnsetGenerationOld(t, client, testClientHelper)
 	})
 
-	setAndUnsetGeneration := func(t *testing.T, client *sdk.Client, testClientHelper func() *helpers.TestClient) {
+	t.Run("alter: set and unset generation (new generation syntax)", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
@@ -589,10 +585,6 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, returnedWarehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
-	}
-
-	t.Run("alter: set and unset generation (new generation syntax)", func(t *testing.T) {
-		setAndUnsetGeneration(t, client, testClientHelper)
 	})
 
 	t.Run("alter: set and unset generation (both at the same time)", func(t *testing.T) {
