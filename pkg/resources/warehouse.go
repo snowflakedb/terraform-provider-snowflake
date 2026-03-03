@@ -290,23 +290,35 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	if err = d.Set("warehouse_type", w.Type); err != nil {
 		return nil, err
 	}
-	if err = d.Set("warehouse_size", w.Size); err != nil {
-		return nil, err
+	if w.Size != nil {
+		if err = d.Set("warehouse_size", string(*w.Size)); err != nil {
+			return nil, err
+		}
 	}
-	if err = d.Set("max_cluster_count", w.MaxClusterCount); err != nil {
-		return nil, err
+	if w.MaxClusterCount != nil {
+		if err = d.Set("max_cluster_count", *w.MaxClusterCount); err != nil {
+			return nil, err
+		}
 	}
-	if err = d.Set("min_cluster_count", w.MinClusterCount); err != nil {
-		return nil, err
+	if w.MinClusterCount != nil {
+		if err = d.Set("min_cluster_count", *w.MinClusterCount); err != nil {
+			return nil, err
+		}
 	}
-	if err = d.Set("scaling_policy", w.ScalingPolicy); err != nil {
-		return nil, err
+	if w.ScalingPolicy != nil {
+		if err = d.Set("scaling_policy", string(*w.ScalingPolicy)); err != nil {
+			return nil, err
+		}
 	}
-	if err = d.Set("auto_suspend", w.AutoSuspend); err != nil {
-		return nil, err
+	if w.AutoSuspend != nil {
+		if err = d.Set("auto_suspend", *w.AutoSuspend); err != nil {
+			return nil, err
+		}
 	}
-	if err = d.Set("auto_resume", booleanStringFromBool(w.AutoResume)); err != nil {
-		return nil, err
+	if w.AutoResume != nil {
+		if err = d.Set("auto_resume", booleanStringFromBool(*w.AutoResume)); err != nil {
+			return nil, err
+		}
 	}
 	if err = d.Set("resource_monitor", w.ResourceMonitor.Name()); err != nil {
 		return nil, err
@@ -314,11 +326,15 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	if err = d.Set("comment", w.Comment); err != nil {
 		return nil, err
 	}
-	if err = d.Set("enable_query_acceleration", booleanStringFromBool(w.EnableQueryAcceleration)); err != nil {
-		return nil, err
+	if w.EnableQueryAcceleration != nil {
+		if err = d.Set("enable_query_acceleration", booleanStringFromBool(*w.EnableQueryAcceleration)); err != nil {
+			return nil, err
+		}
 	}
-	if err = d.Set("query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor); err != nil {
-		return nil, err
+	if w.QueryAccelerationMaxScaleFactor != nil {
+		if err = d.Set("query_acceleration_max_scale_factor", *w.QueryAccelerationMaxScaleFactor); err != nil {
+			return nil, err
+		}
 	}
 	if w.ResourceConstraint != nil {
 		if err = d.Set("resource_constraint", *w.ResourceConstraint); err != nil {
@@ -473,17 +489,57 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			if w.ResourceConstraint != nil {
 				resourceConstraint = string(*w.ResourceConstraint)
 			}
+			var sizeStr string
+			var sizeVal *sdk.WarehouseSize
+			if w.Size != nil {
+				sizeStr = string(*w.Size)
+				sizeVal = w.Size
+			}
+			var scalingPolicyStr string
+			var scalingPolicyVal any
+			if w.ScalingPolicy != nil {
+				scalingPolicyStr = string(*w.ScalingPolicy)
+				scalingPolicyVal = *w.ScalingPolicy
+			}
+			var autoResumeVal any
+			var autoResumeStr string
+			if w.AutoResume != nil {
+				autoResumeVal = *w.AutoResume
+				autoResumeStr = fmt.Sprintf("%t", *w.AutoResume)
+			}
+			var enableQAVal any
+			var enableQAStr string
+			if w.EnableQueryAcceleration != nil {
+				enableQAVal = *w.EnableQueryAcceleration
+				enableQAStr = fmt.Sprintf("%t", *w.EnableQueryAcceleration)
+			}
+			var maxClusterCount any
+			if w.MaxClusterCount != nil {
+				maxClusterCount = *w.MaxClusterCount
+			}
+			var minClusterCount any
+			if w.MinClusterCount != nil {
+				minClusterCount = *w.MinClusterCount
+			}
+			var autoSuspend any
+			if w.AutoSuspend != nil {
+				autoSuspend = *w.AutoSuspend
+			}
+			var queryAccelerationMaxScaleFactor any
+			if w.QueryAccelerationMaxScaleFactor != nil {
+				queryAccelerationMaxScaleFactor = *w.QueryAccelerationMaxScaleFactor
+			}
 			outputMappings := []outputMapping{
 				{"type", "warehouse_type", string(w.Type), w.Type, nil},
-				{"size", "warehouse_size", string(w.Size), w.Size, nil},
-				{"max_cluster_count", "max_cluster_count", w.MaxClusterCount, w.MaxClusterCount, nil},
-				{"min_cluster_count", "min_cluster_count", w.MinClusterCount, w.MinClusterCount, nil},
-				{"scaling_policy", "scaling_policy", string(w.ScalingPolicy), w.ScalingPolicy, nil},
-				{"auto_suspend", "auto_suspend", w.AutoSuspend, w.AutoSuspend, nil},
-				{"auto_resume", "auto_resume", w.AutoResume, fmt.Sprintf("%t", w.AutoResume), nil},
+				{"size", "warehouse_size", sizeStr, sizeVal, nil},
+				{"max_cluster_count", "max_cluster_count", maxClusterCount, maxClusterCount, nil},
+				{"min_cluster_count", "min_cluster_count", minClusterCount, minClusterCount, nil},
+				{"scaling_policy", "scaling_policy", scalingPolicyStr, scalingPolicyVal, nil},
+				{"auto_suspend", "auto_suspend", autoSuspend, autoSuspend, nil},
+				{"auto_resume", "auto_resume", autoResumeVal, autoResumeStr, nil},
 				{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
-				{"enable_query_acceleration", "enable_query_acceleration", w.EnableQueryAcceleration, fmt.Sprintf("%t", w.EnableQueryAcceleration), nil},
-				{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor, w.QueryAccelerationMaxScaleFactor, nil},
+				{"enable_query_acceleration", "enable_query_acceleration", enableQAVal, enableQAStr, nil},
+				{"query_acceleration_max_scale_factor", "query_acceleration_max_scale_factor", queryAccelerationMaxScaleFactor, queryAccelerationMaxScaleFactor, nil},
 				{"generation", "generation", generation, generation, nil},
 				{"resource_constraint", "resource_constraint", resourceConstraint, resourceConstraint, nil},
 			}

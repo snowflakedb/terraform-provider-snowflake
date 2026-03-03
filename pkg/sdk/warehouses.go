@@ -17,6 +17,7 @@ import (
 
 var (
 	_ validatable = new(CreateWarehouseOptions)
+	_ validatable = new(CreateAdaptiveWarehouseOptions)
 	_ validatable = new(AlterWarehouseOptions)
 	_ validatable = new(DropWarehouseOptions)
 	_ validatable = new(ShowWarehouseOptions)
@@ -27,6 +28,7 @@ var (
 
 type Warehouses interface {
 	Create(ctx context.Context, id AccountObjectIdentifier, opts *CreateWarehouseOptions) error
+	CreateAdaptive(ctx context.Context, id AccountObjectIdentifier, opts *CreateAdaptiveWarehouseOptions) error
 	Alter(ctx context.Context, id AccountObjectIdentifier, opts *AlterWarehouseOptions) error
 	Drop(ctx context.Context, id AccountObjectIdentifier, opts *DropWarehouseOptions) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
@@ -52,6 +54,7 @@ type WarehouseType string
 const (
 	WarehouseTypeStandard          WarehouseType = "STANDARD"
 	WarehouseTypeSnowparkOptimized WarehouseType = "SNOWPARK-OPTIMIZED"
+	WarehouseTypeAdaptive          WarehouseType = "ADAPTIVE"
 )
 
 func ToWarehouseType(s string) (WarehouseType, error) {
@@ -60,6 +63,8 @@ func ToWarehouseType(s string) (WarehouseType, error) {
 		return WarehouseTypeStandard, nil
 	case string(WarehouseTypeSnowparkOptimized):
 		return WarehouseTypeSnowparkOptimized, nil
+	case string(WarehouseTypeAdaptive):
+		return WarehouseTypeAdaptive, nil
 	default:
 		return "", fmt.Errorf("invalid warehouse type: %s", s)
 	}
@@ -261,6 +266,38 @@ func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceC
 	}
 }
 
+type TargetStatementSize string
+
+const (
+	TargetStatementSizeXSmall   TargetStatementSize = "XSMALL"
+	TargetStatementSizeSmall    TargetStatementSize = "SMALL"
+	TargetStatementSizeMedium   TargetStatementSize = "MEDIUM"
+	TargetStatementSizeLarge    TargetStatementSize = "LARGE"
+	TargetStatementSizeXLarge   TargetStatementSize = "XLARGE"
+	TargetStatementSizeXXLarge  TargetStatementSize = "XXLARGE"
+	TargetStatementSizeXXXLarge TargetStatementSize = "XXXLARGE"
+	TargetStatementSizeX4Large  TargetStatementSize = "X4LARGE"
+)
+
+var AllTargetStatementSizes = []string{
+	string(TargetStatementSizeXSmall),
+	string(TargetStatementSizeSmall),
+	string(TargetStatementSizeMedium),
+	string(TargetStatementSizeLarge),
+	string(TargetStatementSizeXLarge),
+	string(TargetStatementSizeXXLarge),
+	string(TargetStatementSizeXXXLarge),
+	string(TargetStatementSizeX4Large),
+}
+
+func ToTargetStatementSize(s string) (TargetStatementSize, error) {
+	s = strings.ToUpper(s)
+	if slices.Contains(AllTargetStatementSizes, s) {
+		return TargetStatementSize(s), nil
+	}
+	return "", fmt.Errorf("invalid target statement size: %s", s)
+}
+
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
 type CreateWarehouseOptions struct {
 	create      bool                    `ddl:"static" sql:"CREATE"`
@@ -312,6 +349,55 @@ func (opts *CreateWarehouseOptions) validate() error {
 func (c *warehouses) Create(ctx context.Context, id AccountObjectIdentifier, opts *CreateWarehouseOptions) error {
 	if opts == nil {
 		opts = &CreateWarehouseOptions{}
+	}
+	opts.name = id
+	if err := opts.validate(); err != nil {
+		return err
+	}
+	stmt, err := structToSQL(opts)
+	if err != nil {
+		return err
+	}
+	_, err = c.client.exec(ctx, stmt)
+	return err
+}
+
+// CreateAdaptiveWarehouseOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses
+type CreateAdaptiveWarehouseOptions struct {
+	create            bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace         *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	adaptiveWarehouse bool                    `ddl:"static" sql:"ADAPTIVE WAREHOUSE"`
+	IfNotExists       *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name              AccountObjectIdentifier `ddl:"identifier"`
+
+	// Object properties
+	Comment              *string              `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	TargetStatementSize  *TargetStatementSize `ddl:"parameter,single_quotes" sql:"TARGET_STATEMENT_SIZE"`
+	WarehouseCreditLimit *int                 `ddl:"parameter" sql:"WAREHOUSE_CREDIT_LIMIT"`
+
+	// Object params
+	StatementQueuedTimeoutInSeconds *int             `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds       *int             `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	Tag                             []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
+}
+
+func (opts *CreateAdaptiveWarehouseOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateAdaptiveWarehouseOptions", "OrReplace", "IfNotExists"))
+	}
+	return errors.Join(errs...)
+}
+
+func (c *warehouses) CreateAdaptive(ctx context.Context, id AccountObjectIdentifier, opts *CreateAdaptiveWarehouseOptions) error {
+	if opts == nil {
+		opts = &CreateAdaptiveWarehouseOptions{}
 	}
 	opts.name = id
 	if err := opts.validate(); err != nil {
@@ -581,16 +667,16 @@ type Warehouse struct {
 	Name                            string
 	State                           WarehouseState
 	Type                            WarehouseType
-	Size                            WarehouseSize
-	MinClusterCount                 int
-	MaxClusterCount                 int
-	StartedClusters                 int
-	Running                         int
-	Queued                          int
+	Size                            *WarehouseSize
+	MinClusterCount                 *int
+	MaxClusterCount                 *int
+	StartedClusters                 *int
+	Running                         *int
+	Queued                          *int
 	IsDefault                       bool
 	IsCurrent                       bool
-	AutoSuspend                     int
-	AutoResume                      bool
+	AutoSuspend                     *int
+	AutoResume                      *bool
 	Available                       float64
 	Provisioning                    float64
 	Quiescing                       float64
@@ -600,10 +686,10 @@ type Warehouse struct {
 	UpdatedOn                       time.Time
 	Owner                           string
 	Comment                         string
-	EnableQueryAcceleration         bool
-	QueryAccelerationMaxScaleFactor int
+	EnableQueryAcceleration         *bool
+	QueryAccelerationMaxScaleFactor *int
 	ResourceMonitor                 AccountObjectIdentifier
-	ScalingPolicy                   ScalingPolicy
+	ScalingPolicy                   *ScalingPolicy
 	OwnerRoleType                   string
 	ResourceConstraint              *WarehouseResourceConstraint
 	Generation                      *WarehouseGeneration
@@ -613,16 +699,16 @@ type warehouseDBRow struct {
 	Name                            string         `db:"name"`
 	State                           string         `db:"state"`
 	Type                            string         `db:"type"`
-	Size                            string         `db:"size"`
-	MinClusterCount                 int            `db:"min_cluster_count"`
-	MaxClusterCount                 int            `db:"max_cluster_count"`
-	StartedClusters                 int            `db:"started_clusters"`
-	Running                         int            `db:"running"`
-	Queued                          int            `db:"queued"`
+	Size                            sql.NullString `db:"size"`
+	MinClusterCount                 sql.NullInt64  `db:"min_cluster_count"`
+	MaxClusterCount                 sql.NullInt64  `db:"max_cluster_count"`
+	StartedClusters                 sql.NullInt64  `db:"started_clusters"`
+	Running                         sql.NullInt64  `db:"running"`
+	Queued                          sql.NullInt64  `db:"queued"`
 	IsDefault                       string         `db:"is_default"`
 	IsCurrent                       string         `db:"is_current"`
 	AutoSuspend                     sql.NullInt64  `db:"auto_suspend"`
-	AutoResume                      bool           `db:"auto_resume"`
+	AutoResume                      sql.NullBool   `db:"auto_resume"`
 	Available                       string         `db:"available"`
 	Provisioning                    string         `db:"provisioning"`
 	Quiescing                       string         `db:"quiescing"`
@@ -632,15 +718,15 @@ type warehouseDBRow struct {
 	UpdatedOn                       time.Time      `db:"updated_on"`
 	Owner                           string         `db:"owner"`
 	Comment                         string         `db:"comment"`
-	EnableQueryAcceleration         bool           `db:"enable_query_acceleration"`
-	QueryAccelerationMaxScaleFactor int            `db:"query_acceleration_max_scale_factor"`
+	EnableQueryAcceleration         sql.NullBool   `db:"enable_query_acceleration"`
+	QueryAccelerationMaxScaleFactor sql.NullInt64  `db:"query_acceleration_max_scale_factor"`
 	ResourceMonitor                 string         `db:"resource_monitor"`
 	Actives                         string         `db:"actives"`
 	Pendings                        string         `db:"pendings"`
 	Failed                          string         `db:"failed"`
 	Suspended                       string         `db:"suspended"`
 	UUID                            string         `db:"uuid"`
-	ScalingPolicy                   string         `db:"scaling_policy"`
+	ScalingPolicy                   sql.NullString `db:"scaling_policy"`
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
 	ResourceConstraint              sql.NullString `db:"resource_constraint"`
 	Generation                      sql.NullString `db:"generation"`
@@ -648,30 +734,57 @@ type warehouseDBRow struct {
 
 func (row warehouseDBRow) convert() (*Warehouse, error) {
 	wh := &Warehouse{
-		Name:                            row.Name,
-		State:                           WarehouseState(row.State),
-		Type:                            WarehouseType(row.Type),
-		MinClusterCount:                 row.MinClusterCount,
-		MaxClusterCount:                 row.MaxClusterCount,
-		StartedClusters:                 row.StartedClusters,
-		Running:                         row.Running,
-		Queued:                          row.Queued,
-		IsDefault:                       row.IsDefault == "Y",
-		IsCurrent:                       row.IsCurrent == "Y",
-		AutoResume:                      row.AutoResume,
-		CreatedOn:                       row.CreatedOn,
-		ResumedOn:                       row.ResumedOn,
-		UpdatedOn:                       row.UpdatedOn,
-		Owner:                           row.Owner,
-		Comment:                         row.Comment,
-		EnableQueryAcceleration:         row.EnableQueryAcceleration,
-		QueryAccelerationMaxScaleFactor: row.QueryAccelerationMaxScaleFactor,
-		ScalingPolicy:                   ScalingPolicy(row.ScalingPolicy),
+		Name:      row.Name,
+		State:     WarehouseState(row.State),
+		Type:      WarehouseType(row.Type),
+		IsDefault: row.IsDefault == "Y",
+		IsCurrent: row.IsCurrent == "Y",
+		CreatedOn: row.CreatedOn,
+		ResumedOn: row.ResumedOn,
+		UpdatedOn: row.UpdatedOn,
+		Owner:     row.Owner,
+		Comment:   row.Comment,
 	}
-	if size, err := ToWarehouseSize(row.Size); err != nil {
-		return nil, err
-	} else {
-		wh.Size = size
+	if row.MinClusterCount.Valid {
+		v := int(row.MinClusterCount.Int64)
+		wh.MinClusterCount = &v
+	}
+	if row.MaxClusterCount.Valid {
+		v := int(row.MaxClusterCount.Int64)
+		wh.MaxClusterCount = &v
+	}
+	if row.StartedClusters.Valid {
+		v := int(row.StartedClusters.Int64)
+		wh.StartedClusters = &v
+	}
+	if row.Running.Valid {
+		v := int(row.Running.Int64)
+		wh.Running = &v
+	}
+	if row.Queued.Valid {
+		v := int(row.Queued.Int64)
+		wh.Queued = &v
+	}
+	if row.AutoResume.Valid {
+		wh.AutoResume = &row.AutoResume.Bool
+	}
+	if row.EnableQueryAcceleration.Valid {
+		wh.EnableQueryAcceleration = &row.EnableQueryAcceleration.Bool
+	}
+	if row.QueryAccelerationMaxScaleFactor.Valid {
+		v := int(row.QueryAccelerationMaxScaleFactor.Int64)
+		wh.QueryAccelerationMaxScaleFactor = &v
+	}
+	if row.ScalingPolicy.Valid {
+		v := ScalingPolicy(row.ScalingPolicy.String)
+		wh.ScalingPolicy = &v
+	}
+	if row.Size.Valid {
+		if size, err := ToWarehouseSize(row.Size.String); err != nil {
+			return nil, err
+		} else {
+			wh.Size = &size
+		}
 	}
 	if available := strings.TrimSpace(row.Available); available != "" {
 		if val, err := strconv.ParseFloat(available, 64); err != nil {
@@ -702,7 +815,8 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 		}
 	}
 	if row.AutoSuspend.Valid {
-		wh.AutoSuspend = int(row.AutoSuspend.Int64)
+		v := int(row.AutoSuspend.Int64)
+		wh.AutoSuspend = &v
 	}
 	if row.OwnerRoleType.Valid {
 		wh.OwnerRoleType = row.OwnerRoleType.String
@@ -734,6 +848,8 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 			}
 		case WarehouseTypeSnowparkOptimized:
 			wh.ResourceConstraint = &resourceConstraint
+		case WarehouseTypeAdaptive:
+			// Adaptive warehouses don't use resource constraints; ignore.
 		default:
 			return nil, fmt.Errorf("invalid warehouse type: %s", wh.Type)
 		}

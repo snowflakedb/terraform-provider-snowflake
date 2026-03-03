@@ -29,6 +29,12 @@ func handleOptionalFieldWithBuilder[T any, U any](parameter *T, builder func(T) 
 	}
 }
 
+func handleIfNotNil[R, T any](value *R, builder func(R) *T) {
+	if value != nil {
+		builder(*value)
+	}
+}
+
 func handleIfNotEmpty[T any](value string, builder func(string) *T) {
 	if value != "" {
 		builder(value)

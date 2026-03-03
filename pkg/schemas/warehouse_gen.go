@@ -134,16 +134,40 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema["name"] = warehouse.Name
 	warehouseSchema["state"] = string(warehouse.State)
 	warehouseSchema["type"] = string(warehouse.Type)
-	warehouseSchema["size"] = string(warehouse.Size)
-	warehouseSchema["min_cluster_count"] = warehouse.MinClusterCount
-	warehouseSchema["max_cluster_count"] = warehouse.MaxClusterCount
-	warehouseSchema["started_clusters"] = warehouse.StartedClusters
-	warehouseSchema["running"] = warehouse.Running
-	warehouseSchema["queued"] = warehouse.Queued
+	// Adjusted manually
+	if warehouse.Size != nil {
+		warehouseSchema["size"] = string(*warehouse.Size)
+	}
+	// Adjusted manually
+	if warehouse.MinClusterCount != nil {
+		warehouseSchema["min_cluster_count"] = *warehouse.MinClusterCount
+	}
+	// Adjusted manually
+	if warehouse.MaxClusterCount != nil {
+		warehouseSchema["max_cluster_count"] = *warehouse.MaxClusterCount
+	}
+	// Adjusted manually
+	if warehouse.StartedClusters != nil {
+		warehouseSchema["started_clusters"] = *warehouse.StartedClusters
+	}
+	// Adjusted manually
+	if warehouse.Running != nil {
+		warehouseSchema["running"] = *warehouse.Running
+	}
+	// Adjusted manually
+	if warehouse.Queued != nil {
+		warehouseSchema["queued"] = *warehouse.Queued
+	}
 	warehouseSchema["is_default"] = warehouse.IsDefault
 	warehouseSchema["is_current"] = warehouse.IsCurrent
-	warehouseSchema["auto_suspend"] = warehouse.AutoSuspend
-	warehouseSchema["auto_resume"] = warehouse.AutoResume
+	// Adjusted manually
+	if warehouse.AutoSuspend != nil {
+		warehouseSchema["auto_suspend"] = *warehouse.AutoSuspend
+	}
+	// Adjusted manually
+	if warehouse.AutoResume != nil {
+		warehouseSchema["auto_resume"] = *warehouse.AutoResume
+	}
 	warehouseSchema["available"] = warehouse.Available
 	warehouseSchema["provisioning"] = warehouse.Provisioning
 	warehouseSchema["quiescing"] = warehouse.Quiescing
@@ -153,10 +177,19 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema["updated_on"] = warehouse.UpdatedOn.String()
 	warehouseSchema["owner"] = warehouse.Owner
 	warehouseSchema["comment"] = warehouse.Comment
-	warehouseSchema["enable_query_acceleration"] = warehouse.EnableQueryAcceleration
-	warehouseSchema["query_acceleration_max_scale_factor"] = warehouse.QueryAccelerationMaxScaleFactor
+	// Adjusted manually
+	if warehouse.EnableQueryAcceleration != nil {
+		warehouseSchema["enable_query_acceleration"] = *warehouse.EnableQueryAcceleration
+	}
+	// Adjusted manually
+	if warehouse.QueryAccelerationMaxScaleFactor != nil {
+		warehouseSchema["query_acceleration_max_scale_factor"] = *warehouse.QueryAccelerationMaxScaleFactor
+	}
 	warehouseSchema["resource_monitor"] = warehouse.ResourceMonitor.Name()
-	warehouseSchema["scaling_policy"] = string(warehouse.ScalingPolicy)
+	// Adjusted manually
+	if warehouse.ScalingPolicy != nil {
+		warehouseSchema["scaling_policy"] = string(*warehouse.ScalingPolicy)
+	}
 	warehouseSchema["owner_role_type"] = warehouse.OwnerRoleType
 	// Adjusted manually.
 	if warehouse.ResourceConstraint != nil {

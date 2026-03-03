@@ -33,6 +33,7 @@ var ValidWarehouseScalingPoliciesString = []string{
 var ValidWarehouseTypesString = []string{
 	string(WarehouseTypeStandard),
 	string(WarehouseTypeSnowparkOptimized),
+	string(WarehouseTypeAdaptive),
 }
 
 // WarehouseParameters is based on https://docs.snowflake.com/en/sql-reference/parameters#object-parameters

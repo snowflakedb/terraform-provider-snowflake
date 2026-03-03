@@ -75,7 +75,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(warehouses))
 		assert.Equal(t, precreatedWarehouseId.Name(), warehouses[0].Name)
-		assert.Equal(t, sdk.WarehouseSizeXSmall, warehouses[0].Size)
+		assert.Equal(t, sdk.Pointer(sdk.WarehouseSizeXSmall), warehouses[0].Size)
 		assert.Equal(t, "ROLE", warehouses[0].OwnerRoleType)
 	})
 
@@ -183,17 +183,17 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, id.Name(), warehouse.Name)
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouse.Type)
-		assert.Equal(t, sdk.WarehouseSizeSmall, warehouse.Size)
-		assert.Equal(t, 8, warehouse.MaxClusterCount)
-		assert.Equal(t, 2, warehouse.MinClusterCount)
-		assert.Equal(t, sdk.ScalingPolicyEconomy, warehouse.ScalingPolicy)
-		assert.Equal(t, 1000, warehouse.AutoSuspend)
-		assert.Equal(t, true, warehouse.AutoResume)
+		assert.Equal(t, sdk.Pointer(sdk.WarehouseSizeSmall), warehouse.Size)
+		assert.Equal(t, sdk.Pointer(8), warehouse.MaxClusterCount)
+		assert.Equal(t, sdk.Pointer(2), warehouse.MinClusterCount)
+		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyEconomy), warehouse.ScalingPolicy)
+		assert.Equal(t, sdk.Pointer(1000), warehouse.AutoSuspend)
+		assert.Equal(t, sdk.Pointer(true), warehouse.AutoResume)
 		assert.Contains(t, []sdk.WarehouseState{sdk.WarehouseStateResuming, sdk.WarehouseStateStarted}, warehouse.State)
 		assert.Equal(t, resourceMonitor.ID().Name(), warehouse.ResourceMonitor.Name())
 		assert.Equal(t, "comment", warehouse.Comment)
-		assert.Equal(t, true, warehouse.EnableQueryAcceleration)
-		assert.Equal(t, 90, warehouse.QueryAccelerationMaxScaleFactor)
+		assert.Equal(t, sdk.Pointer(true), warehouse.EnableQueryAcceleration)
+		assert.Equal(t, sdk.Pointer(90), warehouse.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, warehouse.ResourceConstraint)
 		assert.NotNil(t, warehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *warehouse.Generation)
@@ -234,16 +234,16 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, id.Name(), result.Name)
 		assert.Equal(t, sdk.WarehouseTypeStandard, result.Type)
-		assert.Equal(t, sdk.WarehouseSizeXSmall, result.Size)
-		assert.Equal(t, 1, result.MaxClusterCount)
-		assert.Equal(t, 1, result.MinClusterCount)
-		assert.Equal(t, sdk.ScalingPolicyStandard, result.ScalingPolicy)
-		assert.Equal(t, 600, result.AutoSuspend)
-		assert.Equal(t, true, result.AutoResume)
+		assert.Equal(t, sdk.Pointer(sdk.WarehouseSizeXSmall), result.Size)
+		assert.Equal(t, sdk.Pointer(1), result.MaxClusterCount)
+		assert.Equal(t, sdk.Pointer(1), result.MinClusterCount)
+		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), result.ScalingPolicy)
+		assert.Equal(t, sdk.Pointer(600), result.AutoSuspend)
+		assert.Equal(t, sdk.Pointer(true), result.AutoResume)
 		assert.Contains(t, []sdk.WarehouseState{sdk.WarehouseStateResuming, sdk.WarehouseStateStarted}, result.State)
 		assert.Equal(t, "", result.Comment)
-		assert.Equal(t, false, result.EnableQueryAcceleration)
-		assert.Equal(t, 8, result.QueryAccelerationMaxScaleFactor)
+		assert.Equal(t, sdk.Pointer(false), result.EnableQueryAcceleration)
+		assert.Equal(t, sdk.Pointer(8), result.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, result.ResourceConstraint)
 		assert.NotNil(t, result.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *result.Generation)
@@ -260,21 +260,52 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "", result.Comment)
 	})
 
+	t.Run("create adaptive: minimal", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Warehouses.CreateAdaptive(ctx, id, &sdk.CreateAdaptiveWarehouseOptions{})
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
+
+		warehouse, err := client.Warehouses.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, id.Name(), warehouse.Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, warehouse.Type)
+	})
+
+	t.Run("create adaptive: complete", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Warehouses.CreateAdaptive(ctx, id, &sdk.CreateAdaptiveWarehouseOptions{
+			Comment:                         sdk.String("test adaptive warehouse"),
+			TargetStatementSize:             sdk.Pointer(sdk.TargetStatementSizeMedium),
+			WarehouseCreditLimit:            sdk.Int(100),
+			StatementQueuedTimeoutInSeconds: sdk.Int(30),
+			StatementTimeoutInSeconds:       sdk.Int(60),
+		})
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
+
+		warehouse, err := client.Warehouses.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, id.Name(), warehouse.Name)
+		assert.Equal(t, sdk.WarehouseTypeAdaptive, warehouse.Type)
+		assert.Equal(t, "test adaptive warehouse", warehouse.Comment)
+	})
+
 	t.Run("alter: set and unset", func(t *testing.T) {
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
 
-		assert.Equal(t, sdk.WarehouseSizeXSmall, warehouse.Size)
-		assert.Equal(t, 1, warehouse.MaxClusterCount)
-		assert.Equal(t, 1, warehouse.MinClusterCount)
-		assert.Equal(t, sdk.ScalingPolicyStandard, warehouse.ScalingPolicy)
-		assert.Equal(t, 600, warehouse.AutoSuspend)
-		assert.Equal(t, true, warehouse.AutoResume)
+		assert.Equal(t, sdk.Pointer(sdk.WarehouseSizeXSmall), warehouse.Size)
+		assert.Equal(t, sdk.Pointer(1), warehouse.MaxClusterCount)
+		assert.Equal(t, sdk.Pointer(1), warehouse.MinClusterCount)
+		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), warehouse.ScalingPolicy)
+		assert.Equal(t, sdk.Pointer(600), warehouse.AutoSuspend)
+		assert.Equal(t, sdk.Pointer(true), warehouse.AutoResume)
 		assert.Equal(t, "", warehouse.ResourceMonitor.Name())
 		assert.Equal(t, "", warehouse.Comment)
-		assert.Equal(t, false, warehouse.EnableQueryAcceleration)
-		assert.Equal(t, 8, warehouse.QueryAccelerationMaxScaleFactor)
+		assert.Equal(t, sdk.Pointer(false), warehouse.EnableQueryAcceleration)
+		assert.Equal(t, sdk.Pointer(8), warehouse.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, warehouse.ResourceConstraint)
 		assert.NotNil(t, warehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouse.Generation)
@@ -301,16 +332,16 @@ func TestInt_Warehouses(t *testing.T) {
 
 		warehouseAfterSet, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assert.Equal(t, sdk.WarehouseSizeMedium, warehouseAfterSet.Size)
-		assert.Equal(t, 3, warehouseAfterSet.MaxClusterCount)
-		assert.Equal(t, 2, warehouseAfterSet.MinClusterCount)
-		assert.Equal(t, sdk.ScalingPolicyEconomy, warehouseAfterSet.ScalingPolicy)
-		assert.Equal(t, 1234, warehouseAfterSet.AutoSuspend)
-		assert.Equal(t, false, warehouseAfterSet.AutoResume)
+		assert.Equal(t, sdk.Pointer(sdk.WarehouseSizeMedium), warehouseAfterSet.Size)
+		assert.Equal(t, sdk.Pointer(3), warehouseAfterSet.MaxClusterCount)
+		assert.Equal(t, sdk.Pointer(2), warehouseAfterSet.MinClusterCount)
+		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyEconomy), warehouseAfterSet.ScalingPolicy)
+		assert.Equal(t, sdk.Pointer(1234), warehouseAfterSet.AutoSuspend)
+		assert.Equal(t, sdk.Pointer(false), warehouseAfterSet.AutoResume)
 		assert.Equal(t, resourceMonitor.ID().Name(), warehouseAfterSet.ResourceMonitor.Name())
 		assert.Equal(t, "new comment", warehouseAfterSet.Comment)
-		assert.Equal(t, true, warehouseAfterSet.EnableQueryAcceleration)
-		assert.Equal(t, 2, warehouseAfterSet.QueryAccelerationMaxScaleFactor)
+		assert.Equal(t, sdk.Pointer(true), warehouseAfterSet.EnableQueryAcceleration)
+		assert.Equal(t, sdk.Pointer(2), warehouseAfterSet.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, warehouseAfterSet.ResourceConstraint)
 		assert.NotNil(t, warehouseAfterSet.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterSet.Generation)
@@ -336,18 +367,18 @@ func TestInt_Warehouses(t *testing.T) {
 
 		warehouseAfterUnset, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, warehouseAfterUnset.MaxClusterCount)
-		assert.Equal(t, 1, warehouseAfterUnset.MinClusterCount)
+		assert.Equal(t, sdk.Pointer(1), warehouseAfterUnset.MaxClusterCount)
+		assert.Equal(t, sdk.Pointer(1), warehouseAfterUnset.MinClusterCount)
 		assert.Equal(t, "", warehouseAfterUnset.ResourceMonitor.Name())
 		assert.Equal(t, "", warehouseAfterUnset.Comment)
-		assert.Equal(t, false, warehouseAfterUnset.EnableQueryAcceleration)
-		assert.Equal(t, 8, warehouseAfterUnset.QueryAccelerationMaxScaleFactor)
+		assert.Equal(t, sdk.Pointer(false), warehouseAfterUnset.EnableQueryAcceleration)
+		assert.Equal(t, sdk.Pointer(8), warehouseAfterUnset.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, warehouseAfterUnset.ResourceConstraint)
 		assert.NotNil(t, warehouseAfterUnset.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterUnset.Generation)
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
-		assert.Equal(t, sdk.ScalingPolicyStandard, warehouseAfterUnset.ScalingPolicy)
-		assert.Equal(t, true, warehouseAfterUnset.AutoResume)
+		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), warehouseAfterUnset.ScalingPolicy)
+		assert.Equal(t, sdk.Pointer(true), warehouseAfterUnset.AutoResume)
 	})
 
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
@@ -653,8 +684,8 @@ func TestInt_Warehouses(t *testing.T) {
 		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
 		// TODO [SNOW-1473453]: change when UNSET starts working correctly (expecting to unset to default 600)
-		// assert.Equal(t, "600", returnedWarehouse.AutoSuspend)
-		assert.Equal(t, 0, returnedWarehouse.AutoSuspend)
+		// assert.Equal(t, sdk.Pointer(600), returnedWarehouse.AutoSuspend)
+		assert.Nil(t, returnedWarehouse.AutoSuspend)
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
@@ -771,8 +802,8 @@ func TestInt_Warehouses(t *testing.T) {
 		// Check that query is running
 		result, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, result.Running)
-		assert.Equal(t, 0, result.Queued)
+		assert.Equal(t, sdk.Pointer(1), result.Running)
+		assert.Equal(t, sdk.Pointer(0), result.Queued)
 
 		// Abort all queries
 		alterOptions := &sdk.AlterWarehouseOptions{
@@ -787,8 +818,8 @@ func TestInt_Warehouses(t *testing.T) {
 		// Check no query is running
 		result, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 0, result.Running)
-		assert.Equal(t, 0, result.Queued)
+		assert.Equal(t, sdk.Pointer(0), result.Running)
+		assert.Equal(t, sdk.Pointer(0), result.Queued)
 	})
 
 	t.Run("alter: suspend with a long running-query", func(t *testing.T) {
@@ -808,8 +839,8 @@ func TestInt_Warehouses(t *testing.T) {
 		// check the state - it seems that the warehouse is suspended despite having a running query on it
 		result, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assert.Equal(t, 1, result.Running)
-		assert.Equal(t, 0, result.Queued)
+		assert.Equal(t, sdk.Pointer(1), result.Running)
+		assert.Equal(t, sdk.Pointer(0), result.Queued)
 
 		condition := warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool { return r.State == sdk.WarehouseStateSuspended })
 		require.Eventually(t, condition, 10*time.Second, time.Second)
@@ -832,9 +863,9 @@ func TestInt_Warehouses(t *testing.T) {
 		result, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
 		assert.Contains(t, []sdk.WarehouseState{sdk.WarehouseStateResizing, sdk.WarehouseStateStarted}, result.State)
-		assert.Equal(t, sdk.WarehouseSizeMedium, result.Size)
-		assert.Equal(t, 1, result.Running)
-		assert.Equal(t, 0, result.Queued)
+		assert.Equal(t, sdk.Pointer(sdk.WarehouseSizeMedium), result.Size)
+		assert.Equal(t, sdk.Pointer(1), result.Running)
+		assert.Equal(t, sdk.Pointer(0), result.Queued)
 	})
 
 	t.Run("describe: when warehouse exists", func(t *testing.T) {
