@@ -30,6 +30,7 @@ var (
 
 // TODO [SNOW-1325306]: make logging level configurable
 // TODO [SNOW-1325306]: adjust during logger rework (e.g. use in model builders); maybe use log/slog
+// Hello
 var accTestLog = log.New(os.Stdout, "", log.LstdFlags)
 
 type acceptanceTestContext struct {
