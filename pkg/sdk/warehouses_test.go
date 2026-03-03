@@ -691,36 +691,3 @@ func Test_Warehouse_WarehouseGenerationToWarehouseResourceConstraint(t *testing.
 		})
 	}
 }
-
-func Test_Warehouse_WarehouseResourceConstraintToWarehouseGeneration(t *testing.T) {
-	type test struct {
-		input WarehouseResourceConstraint
-		want  WarehouseGeneration
-	}
-
-	valid := []test{
-		{input: WarehouseResourceConstraintStandardGen1, want: WarehouseGenerationStandardGen1},
-		{input: WarehouseResourceConstraintStandardGen2, want: WarehouseGenerationStandardGen2},
-	}
-
-	invalid := []string{
-		"",
-		"0",
-		"1",
-	}
-
-	for _, tc := range valid {
-		t.Run(string(tc.input), func(t *testing.T) {
-			got, err := tc.input.ToWarehouseGeneration()
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, in := range invalid {
-		t.Run(in, func(t *testing.T) {
-			_, err := WarehouseResourceConstraint(in).ToWarehouseGeneration()
-			require.Error(t, err)
-		})
-	}
-}

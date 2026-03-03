@@ -239,17 +239,6 @@ func IsWarehouseResourceConstraintForStandard(s WarehouseResourceConstraint) boo
 	return slices.Contains(AllWarehouseResourceConstraintsForStandardWarehouses, string(s))
 }
 
-func (s WarehouseResourceConstraint) ToWarehouseGeneration() (WarehouseGeneration, error) {
-	switch s {
-	case WarehouseResourceConstraintStandardGen1:
-		return WarehouseGenerationStandardGen1, nil
-	case WarehouseResourceConstraintStandardGen2:
-		return WarehouseGenerationStandardGen2, nil
-	default:
-		return "", fmt.Errorf("invalid resource constraint for generation: %s", s)
-	}
-}
-
 func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceConstraint, error) {
 	switch s {
 	case WarehouseGenerationStandardGen1:
@@ -723,15 +712,6 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 			return nil, err
 		}
 		switch wh.Type {
-		case WarehouseTypeStandard:
-			// Before BCR 2025_07, the generation column was not present, so we converted the resource constraint to generation.
-			if wh.Generation == nil {
-				generation, err := resourceConstraint.ToWarehouseGeneration()
-				if err != nil {
-					return nil, err
-				}
-				wh.Generation = &generation
-			}
 		case WarehouseTypeSnowparkOptimized:
 			wh.ResourceConstraint = &resourceConstraint
 		default:

@@ -17,7 +17,6 @@ import (
 
 func TestInt_Warehouses(t *testing.T) {
 	client := testClient(t)
-	secondaryClient := testSecondaryClient(t)
 	ctx := testContext(t)
 
 	prefix := random.StringN(6)
@@ -146,8 +145,8 @@ func TestInt_Warehouses(t *testing.T) {
 			MaxConcurrencyLevel:             sdk.Int(10),
 			StatementQueuedTimeoutInSeconds: sdk.Int(2000),
 			StatementTimeoutInSeconds:       sdk.Int(3000),
-			ResourceConstraint:              sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen1),
-			Generation:                      sdk.Pointer(sdk.WarehouseGenerationStandardGen1),
+			ResourceConstraint:              sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen2),
+			Generation:                      sdk.Pointer(sdk.WarehouseGenerationStandardGen2),
 			Tag: []sdk.TagAssociation{
 				{
 					Name:  tag.ID(),
@@ -177,7 +176,7 @@ func TestInt_Warehouses(t *testing.T) {
 			HasComment("comment").
 			HasEnableQueryAcceleration(true).
 			HasQueryAccelerationMaxScaleFactor(90).
-			HasGeneration(sdk.WarehouseGenerationStandardGen1).
+			HasGeneration(sdk.WarehouseGenerationStandardGen2).
 			HasNoResourceConstraint())
 
 		warehouse, err := client.Warehouses.ShowByID(ctx, id)
@@ -197,7 +196,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, 90, warehouse.QueryAccelerationMaxScaleFactor)
 		assert.Nil(t, warehouse.ResourceConstraint)
 		assert.NotNil(t, warehouse.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouse.Generation)
+		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *warehouse.Generation)
 
 		// we can also use the read object to initialize:
 		assertThatObject(t, objectassert.WarehouseFromObject(t, warehouse).
@@ -215,7 +214,7 @@ func TestInt_Warehouses(t *testing.T) {
 			HasEnableQueryAcceleration(true).
 			HasQueryAccelerationMaxScaleFactor(90).
 			HasNoResourceConstraint().
-			HasGeneration(sdk.WarehouseGenerationStandardGen1))
+			HasGeneration(sdk.WarehouseGenerationStandardGen2))
 
 		tag1Value, err := client.SystemFunctions.GetTag(ctx, tag.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
 		require.NoError(t, err)
@@ -223,23 +222,6 @@ func TestInt_Warehouses(t *testing.T) {
 		tag2Value, err := client.SystemFunctions.GetTag(ctx, tag2.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.Pointer("v2"), tag2Value)
-	})
-
-	t.Run("create: with generation - BCR 2025_07", func(t *testing.T) {
-		secondaryTestClientHelper().BcrBundles.EnableBcrBundle(t, "2025_07")
-		id := secondaryTestClientHelper().Ids.RandomAccountObjectIdentifier()
-
-		err := secondaryClient.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
-			Generation: sdk.Pointer(sdk.WarehouseGenerationStandardGen1),
-		})
-		require.NoError(t, err)
-
-		result, err := secondaryClient.Warehouses.ShowByID(ctx, id)
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseFromObject(t, result).
-			HasGeneration(sdk.WarehouseGenerationStandardGen1).
-			HasNoResourceConstraint(),
-		)
 	})
 
 	t.Run("create: no options", func(t *testing.T) {
@@ -570,11 +552,6 @@ func TestInt_Warehouses(t *testing.T) {
 		setAndUnsetGenerationOld(t, client, testClientHelper)
 	})
 
-	t.Run("alter: set and unset generation (old resource constraint syntax) - BCR 2025_07", func(t *testing.T) {
-		secondaryTestClientHelper().BcrBundles.EnableBcrBundle(t, "2025_07")
-		setAndUnsetGenerationOld(t, secondaryClient, secondaryTestClientHelper)
-	})
-
 	setAndUnsetGeneration := func(t *testing.T, client *sdk.Client, testClientHelper func() *helpers.TestClient) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose
@@ -616,11 +593,6 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("alter: set and unset generation (new generation syntax)", func(t *testing.T) {
 		setAndUnsetGeneration(t, client, testClientHelper)
-	})
-
-	t.Run("alter: set and unset generation (new generation syntax) - BCR 2025_07", func(t *testing.T) {
-		testClientHelper().BcrBundles.EnableBcrBundle(t, "2025_07")
-		setAndUnsetGeneration(t, secondaryClient, secondaryTestClientHelper)
 	})
 
 	t.Run("alter: set and unset generation (both at the same time)", func(t *testing.T) {
