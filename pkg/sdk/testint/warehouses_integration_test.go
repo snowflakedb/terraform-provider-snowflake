@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -266,10 +267,25 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		warehouse, err := client.Warehouses.ShowByID(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, id.Name(), warehouse.Name)
-		assert.Equal(t, sdk.WarehouseTypeAdaptive, warehouse.Type)
+		assertThatObject(t, objectassert.Warehouse(t, id).
+			HasName(id.Name()).
+			HasType(sdk.WarehouseTypeAdaptive).
+			HasComment("").
+			HasNoSize().
+			HasNoGeneration().
+			HasNoResourceConstraint().
+			HasNoMaxClusterCount().
+			HasNoMinClusterCount().
+			HasNoScalingPolicy().
+			HasNoAutoSuspend().
+			HasAutoResume(true).
+			HasNoEnableQueryAcceleration().
+			HasNoQueryAccelerationMaxScaleFactor(),
+		)
+		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
+			HasStatementQueuedTimeoutInSeconds(0).
+			HasStatementTimeoutInSeconds(172800),
+		)
 	})
 
 	t.Run("create adaptive: complete", func(t *testing.T) {
@@ -284,11 +300,25 @@ func TestInt_Warehouses(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		warehouse, err := client.Warehouses.ShowByID(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, id.Name(), warehouse.Name)
-		assert.Equal(t, sdk.WarehouseTypeAdaptive, warehouse.Type)
-		assert.Equal(t, "test adaptive warehouse", warehouse.Comment)
+		assertThatObject(t, objectassert.Warehouse(t, id).
+			HasName(id.Name()).
+			HasType(sdk.WarehouseTypeAdaptive).
+			HasComment("test adaptive warehouse").
+			HasNoSize().
+			HasNoGeneration().
+			HasNoResourceConstraint().
+			HasNoMaxClusterCount().
+			HasNoMinClusterCount().
+			HasNoScalingPolicy().
+			HasNoAutoSuspend().
+			HasAutoResume(true).
+			HasNoEnableQueryAcceleration().
+			HasNoQueryAccelerationMaxScaleFactor(),
+		)
+		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
+			HasStatementQueuedTimeoutInSeconds(30).
+			HasStatementTimeoutInSeconds(60),
+		)
 	})
 
 	t.Run("alter: set and unset", func(t *testing.T) {

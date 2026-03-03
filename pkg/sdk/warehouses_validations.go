@@ -36,6 +36,11 @@ var ValidWarehouseTypesString = []string{
 	string(WarehouseTypeAdaptive),
 }
 
+var ValidWarehouseTypesUserSettableString = []string{
+	string(WarehouseTypeStandard),
+	string(WarehouseTypeSnowparkOptimized),
+}
+
 // WarehouseParameters is based on https://docs.snowflake.com/en/sql-reference/parameters#object-parameters
 var WarehouseParameters = []ObjectParameter{
 	ObjectParameterMaxConcurrencyLevel,

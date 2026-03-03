@@ -74,6 +74,19 @@ func (e WarehouseType) FromString(s string) (WarehouseType, error) {
 	return ToWarehouseType(s)
 }
 
+// ToWarehouseTypeUserSettable parses a warehouse type string, excluding ADAPTIVE
+// which is not settable through the standard warehouse resource.
+func ToWarehouseTypeUserSettable(s string) (WarehouseType, error) {
+	switch strings.ToUpper(s) {
+	case string(WarehouseTypeStandard):
+		return WarehouseTypeStandard, nil
+	case string(WarehouseTypeSnowparkOptimized):
+		return WarehouseTypeSnowparkOptimized, nil
+	default:
+		return "", fmt.Errorf("invalid warehouse type: %s", s)
+	}
+}
+
 type WarehouseSize string
 
 const (
@@ -745,47 +758,16 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 		Owner:     row.Owner,
 		Comment:   row.Comment,
 	}
-	if row.MinClusterCount.Valid {
-		v := int(row.MinClusterCount.Int64)
-		wh.MinClusterCount = &v
-	}
-	if row.MaxClusterCount.Valid {
-		v := int(row.MaxClusterCount.Int64)
-		wh.MaxClusterCount = &v
-	}
-	if row.StartedClusters.Valid {
-		v := int(row.StartedClusters.Int64)
-		wh.StartedClusters = &v
-	}
-	if row.Running.Valid {
-		v := int(row.Running.Int64)
-		wh.Running = &v
-	}
-	if row.Queued.Valid {
-		v := int(row.Queued.Int64)
-		wh.Queued = &v
-	}
-	if row.AutoResume.Valid {
-		wh.AutoResume = &row.AutoResume.Bool
-	}
-	if row.EnableQueryAcceleration.Valid {
-		wh.EnableQueryAcceleration = &row.EnableQueryAcceleration.Bool
-	}
-	if row.QueryAccelerationMaxScaleFactor.Valid {
-		v := int(row.QueryAccelerationMaxScaleFactor.Int64)
-		wh.QueryAccelerationMaxScaleFactor = &v
-	}
-	if row.ScalingPolicy.Valid {
-		v := ScalingPolicy(row.ScalingPolicy.String)
-		wh.ScalingPolicy = &v
-	}
-	if row.Size.Valid {
-		if size, err := ToWarehouseSize(row.Size.String); err != nil {
-			return nil, err
-		} else {
-			wh.Size = &size
-		}
-	}
+	mapNullInt(&wh.MinClusterCount, row.MinClusterCount)
+	mapNullInt(&wh.MaxClusterCount, row.MaxClusterCount)
+	mapNullInt(&wh.StartedClusters, row.StartedClusters)
+	mapNullInt(&wh.Running, row.Running)
+	mapNullInt(&wh.Queued, row.Queued)
+	mapNullBool(&wh.AutoResume, row.AutoResume)
+	mapNullBool(&wh.EnableQueryAcceleration, row.EnableQueryAcceleration)
+	mapNullInt(&wh.QueryAccelerationMaxScaleFactor, row.QueryAccelerationMaxScaleFactor)
+	mapNullStringWithMapping(&wh.ScalingPolicy, row.ScalingPolicy, ToScalingPolicy)
+	mapNullStringWithMapping(&wh.Size, row.Size, ToWarehouseSize)
 	if available := strings.TrimSpace(row.Available); available != "" {
 		if val, err := strconv.ParseFloat(available, 64); err != nil {
 			return nil, fmt.Errorf(`row 'available' has incorrect value '%s', %w`, available, err)
@@ -814,23 +796,14 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 			wh.Other = val
 		}
 	}
-	if row.AutoSuspend.Valid {
-		v := int(row.AutoSuspend.Int64)
-		wh.AutoSuspend = &v
-	}
+	mapNullInt(&wh.AutoSuspend, row.AutoSuspend)
 	if row.OwnerRoleType.Valid {
 		wh.OwnerRoleType = row.OwnerRoleType.String
 	}
 	if row.ResourceMonitor != "null" {
 		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
 	}
-	if row.Generation.Valid {
-		generation, err := ToWarehouseGeneration(row.Generation.String)
-		if err != nil {
-			return nil, err
-		}
-		wh.Generation = &generation
-	}
+	mapNullStringWithMapping(&wh.Generation, row.Generation, ToWarehouseGeneration)
 	if row.ResourceConstraint.Valid {
 		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
 		if err != nil {

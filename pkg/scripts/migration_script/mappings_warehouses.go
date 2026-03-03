@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -25,13 +27,15 @@ func MapWarehouseToModel(warehouse WarehouseRepresentation) (accconfig.ResourceM
 			resourceModel.WithAutoResume(r.BooleanFalse)
 		}
 	}
+	if warehouse.Type == sdk.WarehouseTypeAdaptive {
+		return nil, nil, errors.New("adaptive warehouses are not supported")
+	}
 	resourceModel.WithWarehouseTypeEnum(warehouse.Type)
 	handleIfNotNil(warehouse.Size, resourceModel.WithWarehouseSizeEnum)
 	handleIfNotNil(warehouse.ScalingPolicy, resourceModel.WithScalingPolicyEnum)
 	handleIfNotNil(warehouse.AutoSuspend, resourceModel.WithAutoSuspend)
 	handleIfNotNil(warehouse.MinClusterCount, resourceModel.WithMinClusterCount)
 	handleIfNotNil(warehouse.MaxClusterCount, resourceModel.WithMaxClusterCount)
-	handleIfNotNil(warehouse.QueryAccelerationMaxScaleFactor, resourceModel.WithQueryAccelerationMaxScaleFactor)
 	handleIfNotNil(warehouse.QueryAccelerationMaxScaleFactor, resourceModel.WithQueryAccelerationMaxScaleFactor)
 	handleIfNotEmpty(warehouse.Comment, resourceModel.WithComment)
 	if warehouse.EnableQueryAcceleration != nil {

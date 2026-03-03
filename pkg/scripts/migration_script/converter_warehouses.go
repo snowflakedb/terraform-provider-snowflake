@@ -57,6 +57,13 @@ type WarehouseRepresentation struct {
 }
 
 func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
+	warehouseType, err := sdk.ToWarehouseType(row.Type)
+	if err != nil {
+		return nil, err
+	}
+	if warehouseType == sdk.WarehouseTypeAdaptive {
+		return nil, errors.New("adaptive warehouses are not supported")
+	}
 	autoSuspend, err := strconv.Atoi(row.AutoSuspend)
 	if err != nil {
 		return nil, err
@@ -85,7 +92,7 @@ func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
 			IsDefault:                       row.IsDefault == "Y",
 			Owner:                           row.Owner,
 			Comment:                         row.Comment,
-			Type:                            sdk.WarehouseType(row.Type),
+			Type:                            warehouseType,
 			Size:                            &size,
 			OwnerRoleType:                   row.OwnerRoleType,
 			State:                           sdk.WarehouseState(row.State),

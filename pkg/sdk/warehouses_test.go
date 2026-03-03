@@ -539,6 +539,45 @@ func Test_Warehouse_ToWarehouseType(t *testing.T) {
 	}
 }
 
+func Test_Warehouse_ToWarehouseTypeUserSettable(t *testing.T) {
+	type test struct {
+		input string
+		want  WarehouseType
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "standard", want: WarehouseTypeStandard},
+
+		// Supported Values
+		{input: "STANDARD", want: WarehouseTypeStandard},
+		{input: "SNOWPARK-OPTIMIZED", want: WarehouseTypeSnowparkOptimized},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+		// adaptive is not user-settable
+		{input: "ADAPTIVE"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToWarehouseTypeUserSettable(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToWarehouseTypeUserSettable(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
 func Test_Warehouse_ToScalingPolicy(t *testing.T) {
 	type test struct {
 		input string

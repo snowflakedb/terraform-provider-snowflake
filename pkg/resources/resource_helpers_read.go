@@ -76,6 +76,10 @@ func setOptionalValueWithMapping[T, R any](d *schema.ResourceData, key string, v
 }
 
 func setOptionalFromStringPtr(d *schema.ResourceData, key string, ptr *string) error {
+	return setOptionalValue(d, key, ptr)
+}
+
+func setOptionalValue[T any](d *schema.ResourceData, key string, ptr *T) error {
 	if ptr != nil {
 		if err := d.Set(key, *ptr); err != nil {
 			return err
