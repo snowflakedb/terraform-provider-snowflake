@@ -666,7 +666,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 			}
 			// Azure location doesn't support setting encryption, so we want to disallow it. However, Snowflake returns NONE for encryption_type.
 			// So, here we allow NONE, but it is not used in the request anyway.
-			encryptionTypeRaw, ok := storageLocationConfig["encryption_type"].(string)
+			encryptionTypeRaw, _ := storageLocationConfig["encryption_type"].(string)
 			if encryptionTypeRaw != "" {
 				_, err := sdk.ToAzureEncryptionType(encryptionTypeRaw)
 				if err != nil {
@@ -708,7 +708,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 			storageAwsSecretKey := storageLocationConfig["storage_aws_secret_key"].(string)
 			// s3compat location doesn't support setting encryption, so we want to disallow it. However, Snowflake returns NONE for encryption_type.
 			// So, here we allow NONE, but it is not used in the request anyway.
-			encryptionTypeRaw, ok := storageLocationConfig["encryption_type"].(string)
+			encryptionTypeRaw, _ := storageLocationConfig["encryption_type"].(string)
 			if encryptionTypeRaw != "" {
 				_, err := sdk.ToS3CompatEncryptionType(encryptionTypeRaw)
 				if err != nil {

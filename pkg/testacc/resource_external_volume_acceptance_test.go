@@ -795,7 +795,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 	comment2 := random.Comment()
 	gcsStorageLocationName := "gcsTest"
 	gcsStorageProvider := "GCS"
-	gcsStorageBaseUrl := "gcs://my-example-bucket"
+	gcsStorageBaseUrl := "gcs://my-example-bucket/"
 	gcsEncryptionTypeNone := "NONE"
 	gcsEncryptionTypeSseKms := "GCS_SSE_KMS"
 	gcsEncryptionKmsKeyId := "123456789"
@@ -1046,7 +1046,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 	comment2 := random.Comment()
 	azureStorageLocationName := "azureTest"
 	azureStorageProvider := "AZURE"
-	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container"
+	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container/"
 	azureTenantId := "123456789"
 	azureEncryptionTypeNone := "NONE"
 	azureStorageLocation := getAzureStorageLocation(azureStorageLocationName, azureStorageBaseUrl, azureTenantId)
@@ -1305,7 +1305,7 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 
 	s3StorageLocationName := "s3Test"
 	s3StorageProvider := "S3"
-	s3StorageBaseUrl := "s3://my-example-bucket"
+	s3StorageBaseUrl := "s3://my-example-bucket/"
 	s3StorageAwsRoleArn := "arn:aws:iam::123456789012:role/myrole"
 	s3EncryptionTypeSseKms := "AWS_SSE_KMS"
 	s3EncryptionKmsKeyId := "123456789"
@@ -1313,14 +1313,14 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 
 	gcsStorageLocationName := "gcsTest"
 	gcsStorageProvider := "GCS"
-	gcsStorageBaseUrl := "gcs://my-example-bucket"
+	gcsStorageBaseUrl := "gcs://my-example-bucket/"
 	gcsEncryptionTypeSseKms := "GCS_SSE_KMS"
 	gcsEncryptionKmsKeyId := "123456789"
 	gcsStorageLocationKmsEncryption := getGcsStorageLocation(gcsStorageLocationName, gcsStorageBaseUrl, gcsEncryptionTypeSseKms, gcsEncryptionKmsKeyId)
 
 	azureStorageLocationName := "azureTest"
 	azureStorageProvider := "AZURE"
-	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container"
+	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container/"
 	azureTenantId := "123456789"
 	azureEncryptionTypeNone := "NONE"
 	azureStorageLocation := getAzureStorageLocation(azureStorageLocationName, azureStorageBaseUrl, azureTenantId)
@@ -1428,8 +1428,8 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 	s3StorageLocationName := "s3Test"
 	s3StorageLocationName2 := "s3Test2"
 	s3StorageProvider := "S3"
-	s3StorageBaseUrl := "s3://my-example-bucket"
-	s3StorageBaseUrl2 := "s3://my-example-bucket2"
+	s3StorageBaseUrl := "s3://my-example-bucket/"
+	s3StorageBaseUrl2 := "s3://my-example-bucket2/"
 	s3StorageAwsRoleArn := "arn:aws:iam::123456789012:role/myrole"
 	s3EncryptionTypeNone := "NONE"
 	s3StorageLocation := getS3StorageLocation(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeNone, "")
@@ -1439,8 +1439,8 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 	gcsStorageLocationName := "gcsTest"
 	gcsStorageLocationName2 := "gcsTest2"
 	gcsStorageProvider := "GCS"
-	gcsStorageBaseUrl := "gcs://my-example-bucket"
-	gcsStorageBaseUrl2 := "gcs://my-example-bucket2"
+	gcsStorageBaseUrl := "gcs://my-example-bucket/"
+	gcsStorageBaseUrl2 := "gcs://my-example-bucket2/"
 	gcsEncryptionTypeNone := "NONE"
 	gcsStorageLocation := getGcsStorageLocation(gcsStorageLocationName, gcsStorageBaseUrl, gcsEncryptionTypeNone, "")
 	gcsStorageLocationUpdatedName := getGcsStorageLocation(gcsStorageLocationName2, gcsStorageBaseUrl, gcsEncryptionTypeNone, "")
@@ -1449,7 +1449,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 	azureStorageLocationName := "azureTest"
 	azureStorageLocationName2 := "azureTest2"
 	azureStorageProvider := "AZURE"
-	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container"
+	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container/"
 	azureTenantId := "123456789"
 	azureTenantId2 := "987654321"
 	azureEncryptionTypeNone := "NONE"
