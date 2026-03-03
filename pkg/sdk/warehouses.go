@@ -767,7 +767,13 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 	mapNullBool(&wh.EnableQueryAcceleration, row.EnableQueryAcceleration)
 	mapNullInt(&wh.QueryAccelerationMaxScaleFactor, row.QueryAccelerationMaxScaleFactor)
 	mapNullStringWithMapping(&wh.ScalingPolicy, row.ScalingPolicy, ToScalingPolicy)
-	mapNullStringWithMapping(&wh.Size, row.Size, ToWarehouseSize)
+	if row.Size.Valid {
+		if size, err := ToWarehouseSize(row.Size.String); err != nil {
+			return nil, err
+		} else {
+			wh.Size = &size
+		}
+	}
 	if available := strings.TrimSpace(row.Available); available != "" {
 		if val, err := strconv.ParseFloat(available, 64); err != nil {
 			return nil, fmt.Errorf(`row 'available' has incorrect value '%s', %w`, available, err)

@@ -97,3 +97,24 @@ func setRequiredFromStringPtr(d *schema.ResourceData, key string, ptr *string) e
 	}
 	return nil
 }
+
+func optionalStringOutputMapping[T ~string](value *T) (any, string) {
+	if value != nil {
+		return *value, string(*value)
+	}
+	return nil, ""
+}
+
+func optionalBooleanStringOutputMapping(value *bool) (any, string) {
+	if value != nil {
+		return *value, booleanStringFromBool(*value)
+	}
+	return nil, ""
+}
+
+func optionalIntOutputMapping[T ~int](value *T) any {
+	if value != nil {
+		return int(*value)
+	}
+	return nil
+}

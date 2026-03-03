@@ -448,46 +448,14 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			if w.ResourceConstraint != nil {
 				resourceConstraint = string(*w.ResourceConstraint)
 			}
-			var sizeStr string
-			var sizeVal *sdk.WarehouseSize
-			if w.Size != nil {
-				sizeStr = string(*w.Size)
-				sizeVal = w.Size
-			}
-			var scalingPolicyStr string
-			var scalingPolicyVal any
-			if w.ScalingPolicy != nil {
-				scalingPolicyStr = string(*w.ScalingPolicy)
-				scalingPolicyVal = *w.ScalingPolicy
-			}
-			var autoResumeVal any
-			var autoResumeStr string
-			if w.AutoResume != nil {
-				autoResumeVal = *w.AutoResume
-				autoResumeStr = booleanStringFromBool(*w.AutoResume)
-			}
-			var enableQAVal any
-			var enableQAStr string
-			if w.EnableQueryAcceleration != nil {
-				enableQAVal = *w.EnableQueryAcceleration
-				enableQAStr = booleanStringFromBool(*w.EnableQueryAcceleration)
-			}
-			var maxClusterCount any
-			if w.MaxClusterCount != nil {
-				maxClusterCount = *w.MaxClusterCount
-			}
-			var minClusterCount any
-			if w.MinClusterCount != nil {
-				minClusterCount = *w.MinClusterCount
-			}
-			var autoSuspend any
-			if w.AutoSuspend != nil {
-				autoSuspend = *w.AutoSuspend
-			}
-			var queryAccelerationMaxScaleFactor any
-			if w.QueryAccelerationMaxScaleFactor != nil {
-				queryAccelerationMaxScaleFactor = *w.QueryAccelerationMaxScaleFactor
-			}
+			sizeVal, sizeStr := optionalStringOutputMapping(w.Size)
+			scalingPolicyVal, scalingPolicyStr := optionalStringOutputMapping(w.ScalingPolicy)
+			autoResumeVal, autoResumeStr := optionalBooleanStringOutputMapping(w.AutoResume)
+			enableQAVal, enableQAStr := optionalBooleanStringOutputMapping(w.EnableQueryAcceleration)
+			maxClusterCount := optionalIntOutputMapping(w.MaxClusterCount)
+			minClusterCount := optionalIntOutputMapping(w.MinClusterCount)
+			autoSuspend := optionalIntOutputMapping(w.AutoSuspend)
+			queryAccelerationMaxScaleFactor := optionalIntOutputMapping(w.QueryAccelerationMaxScaleFactor)
 			outputMappings := []outputMapping{
 				{"type", "warehouse_type", string(w.Type), w.Type, nil},
 				{"size", "warehouse_size", sizeStr, sizeVal, nil},
