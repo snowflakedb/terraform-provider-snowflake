@@ -7,96 +7,109 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type commaSeparatedStringArrayTestCase struct {
+	Name       string
+	Value      string
+	TrimQuotes bool
+	Result     []string
+}
+
+var commaSeparatedStringArrayTestCases = []commaSeparatedStringArrayTestCase{
+	{
+		Name:   "empty list",
+		Value:  "[]",
+		Result: []string{},
+	},
+	{
+		Name:   "empty string",
+		Value:  "",
+		Result: []string{},
+	},
+	{
+		Name:   "one element in list",
+		Value:  "[one]",
+		Result: []string{"one"},
+	},
+	{
+		Name:       "one element in list - with quotes",
+		Value:      "['one']",
+		TrimQuotes: true,
+		Result:     []string{"one"},
+	},
+	{
+		Name:       "multiple elements in list - with quotes",
+		Value:      "['one', 'two', 'three']",
+		TrimQuotes: true,
+		Result:     []string{"one", "two", "three"},
+	},
+	{
+		Name:   "multiple elements in list",
+		Value:  "[one, two, three]",
+		Result: []string{"one", "two", "three"},
+	},
+	{
+		Name:   "multiple elements in list - packed",
+		Value:  "[one,two,three]",
+		Result: []string{"one", "two", "three"},
+	},
+	{
+		Name:   "multiple elements in list - additional spaces",
+		Value:  "[one    ,          two  ,three]",
+		Result: []string{"one", "two", "three"},
+	},
+	{
+		Name:   "list without brackets",
+		Value:  "one,two,three",
+		Result: []string{"one", "two", "three"},
+	},
+	{
+		Name:       "list without brackets - with single quotes",
+		Value:      "'one','two','three'",
+		TrimQuotes: true,
+		Result:     []string{"one", "two", "three"},
+	},
+	{
+		Name:       "list without brackets - with double quotes",
+		Value:      `"one","two","three"`,
+		TrimQuotes: true,
+		Result:     []string{"one", "two", "three"},
+	},
+	{
+		Name:       "list with brackets - with double quotes",
+		Value:      `"one","two","three"`,
+		TrimQuotes: true,
+		Result:     []string{"one", "two", "three"},
+	},
+	{
+		Name:       "list with brackets - with double quotes, no trimming",
+		Value:      `"one","two","three"`,
+		TrimQuotes: false,
+		Result:     []string{"\"one\"", "\"two\"", "\"three\""},
+	},
+	{
+		Name:       "list with brackets - with double quotes",
+		Value:      `["one","two","three"]`,
+		TrimQuotes: true,
+		Result:     []string{"one", "two", "three"},
+	},
+	{
+		Name:       "multiple quote types",
+		Value:      `['"'one'"',"'two",'"three'"]`,
+		TrimQuotes: true,
+		Result:     []string{"one", "two", "three"},
+	},
+}
+
 func TestParseCommaSeparatedStringArray(t *testing.T) {
-	testCases := []struct {
-		Name       string
-		Value      string
-		TrimQuotes bool
-		Result     []string
-	}{
-		{
-			Name:   "empty list",
-			Value:  "[]",
-			Result: []string{},
-		},
-		{
-			Name:   "empty string",
-			Value:  "",
-			Result: []string{},
-		},
-		{
-			Name:   "one element in list",
-			Value:  "[one]",
-			Result: []string{"one"},
-		},
-		{
-			Name:       "one element in list - with quotes",
-			Value:      "['one']",
-			TrimQuotes: true,
-			Result:     []string{"one"},
-		},
-		{
-			Name:       "multiple elements in list - with quotes",
-			Value:      "['one', 'two', 'three']",
-			TrimQuotes: true,
-			Result:     []string{"one", "two", "three"},
-		},
-		{
-			Name:   "multiple elements in list",
-			Value:  "[one, two, three]",
-			Result: []string{"one", "two", "three"},
-		},
-		{
-			Name:   "multiple elements in list - packed",
-			Value:  "[one,two,three]",
-			Result: []string{"one", "two", "three"},
-		},
-		{
-			Name:   "multiple elements in list - additional spaces",
-			Value:  "[one    ,          two  ,three]",
-			Result: []string{"one", "two", "three"},
-		},
-		{
-			Name:   "list without brackets",
-			Value:  "one,two,three",
-			Result: []string{"one", "two", "three"},
-		},
-		{
-			Name:       "list without brackets - with single quotes",
-			Value:      "'one','two','three'",
-			TrimQuotes: true,
-			Result:     []string{"one", "two", "three"},
-		},
-		{
-			Name:       "list without brackets - with double quotes",
-			Value:      `"one","two","three"`,
-			TrimQuotes: true,
-			Result:     []string{"one", "two", "three"},
-		},
-		{
-			Name:       "list with brackets - with double quotes",
-			Value:      `"one","two","three"`,
-			TrimQuotes: true,
-			Result:     []string{"one", "two", "three"},
-		},
-		{
-			Name:       "list with brackets - with double quotes, no trimming",
-			Value:      `"one","two","three"`,
-			TrimQuotes: false,
-			Result:     []string{"\"one\"", "\"two\"", "\"three\""},
-		},
-		{
-			Name:       "list with brackets - with double quotes",
-			Value:      `["one","two","three"]`,
-			TrimQuotes: true,
-			Result:     []string{"one", "two", "three"},
-		},
-		{
-			Name:       "multiple quote types",
-			Value:      `['"'one'"',"'two",'"three'"]`,
-			TrimQuotes: true,
-			Result:     []string{"one", "two", "three"},
-		},
+	for _, tc := range commaSeparatedStringArrayTestCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			assert.Equal(t, tc.Result, ParseCommaSeparatedStringArray(tc.Value, tc.TrimQuotes))
+		})
+	}
+}
+
+func TestParseOuterCommaSeparatedStringArray(t *testing.T) {
+	testCases := append(commaSeparatedStringArrayTestCases, []commaSeparatedStringArrayTestCase{
 		{
 			Name:       "list with nested lists",
 			Value:      "['one', [['two'], 'three', 'four'], ['five']]",
@@ -109,11 +122,29 @@ func TestParseCommaSeparatedStringArray(t *testing.T) {
 			TrimQuotes: true,
 			Result:     []string{"['one', 'two', 'three']"},
 		},
-	}
+		{
+			Name:       "opening bracket in the last element",
+			Value:      "['one', 'two', 'thr[ee']",
+			TrimQuotes: true,
+			Result:     []string{"one", "two", "thr[ee"},
+		},
+		{
+			Name:       "opening bracket in the middle element",
+			Value:      "['one', 'tw[o', 'three']",
+			TrimQuotes: true,
+			Result:     []string{"one", "tw[o', 'three"},
+		},
+		{
+			Name:       "closing brackets in the middle element",
+			Value:      "['one', 'tw]]]o', 'three']",
+			TrimQuotes: true,
+			Result:     []string{"one", "tw]]]o", "three"},
+		},
+	}...)
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			assert.Equal(t, tc.Result, ParseCommaSeparatedStringArray(tc.Value, tc.TrimQuotes))
+			assert.Equal(t, tc.Result, ParseOuterCommaSeparatedStringArray(tc.Value, tc.TrimQuotes))
 		})
 	}
 }

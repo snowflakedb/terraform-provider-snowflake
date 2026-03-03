@@ -275,7 +275,7 @@ func parseSigV4RestAuthenticationProperty(parts []string) (*SigV4RestAuthenticat
 func parseCommaSeparatedEnumMap(property CatalogIntegrationProperty) []string {
 	s := strings.TrimPrefix(property.Value, "{")
 	s = strings.TrimSuffix(s, "}")
-	return ParseCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
+	return ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
 }
 
 func emptyIfNull(s string) string {

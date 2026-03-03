@@ -49,20 +49,13 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		assert.Contains(t, details, sdk.CatalogIntegrationProperty{Name: "COMMENT", Type: "String", Value: comment, Default: ""})
 	}
 
-	cleanupCatalogIntegrationProvider := func(id sdk.AccountObjectIdentifier) func() {
-		return func() {
-			err := client.CatalogIntegrations.Drop(ctx, sdk.NewDropCatalogIntegrationRequest(id).WithIfExists(true))
-			require.NoError(t, err)
-		}
-	}
-
 	createCatalogIntegrationWithRequest := func(t *testing.T, request *sdk.CreateCatalogIntegrationRequest) *sdk.CatalogIntegration {
 		t.Helper()
 		id := request.GetName()
 
 		err := client.CatalogIntegrations.Create(ctx, request)
 		require.NoError(t, err)
-		t.Cleanup(cleanupCatalogIntegrationProvider(id))
+		t.Cleanup(testClientHelper().CatalogIntegration.DropFunc(t, id))
 
 		integration, err := client.CatalogIntegrations.ShowByID(ctx, id)
 		require.NoError(t, err)
