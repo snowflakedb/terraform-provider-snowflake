@@ -1,6 +1,8 @@
 package schemas
 
 import (
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -168,14 +170,17 @@ func ExternalVolumeDetailsToSchema(details sdk.ExternalVolumeDetails) map[string
 
 		switch {
 		case loc.S3StorageLocation != nil:
-			locMap["s3_storage_location"] = []any{map[string]any{
+			m := map[string]any{
 				"storage_aws_role_arn":         loc.S3StorageLocation.StorageAwsRoleArn,
 				"storage_aws_iam_user_arn":     loc.S3StorageLocation.StorageAwsIamUserArn,
 				"storage_aws_external_id":      loc.S3StorageLocation.StorageAwsExternalId,
 				"storage_aws_access_point_arn": loc.S3StorageLocation.StorageAwsAccessPointArn,
-				"use_privatelink_endpoint":     loc.S3StorageLocation.UsePrivatelinkEndpoint,
 				"encryption_kms_key_id":        loc.S3StorageLocation.EncryptionKmsKeyId,
-			}}
+			}
+			if loc.S3StorageLocation.UsePrivatelinkEndpoint != nil {
+				m["use_privatelink_endpoint"] = fmt.Sprintf("%t", *loc.S3StorageLocation.UsePrivatelinkEndpoint)
+			}
+			locMap["s3_storage_location"] = []any{m}
 		case loc.GCSStorageLocation != nil:
 			locMap["gcs_storage_location"] = []any{map[string]any{
 				"storage_gcp_service_account": loc.GCSStorageLocation.StorageGcpServiceAccount,
