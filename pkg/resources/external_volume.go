@@ -705,10 +705,16 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				return nil, fmt.Errorf("unable to extract storage location, storage_aws_key_id is required for s3compat storage location")
 			}
 			// storage_aws_secret_key is required, but it is not returned from Snowflake. That's why we don't validate it here.
-			storageAwsSecretKey := storageLocationConfig["storage_aws_secret_key"].(string)
+			storageAwsSecretKey, ok := storageLocationConfig["storage_aws_secret_key"].(string)
+			if !ok {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_secret_key is not a string")
+			}
 			// s3compat location doesn't support setting encryption, so we want to disallow it. However, Snowflake returns NONE for encryption_type.
 			// So, here we allow NONE, but it is not used in the request anyway.
-			encryptionTypeRaw, _ := storageLocationConfig["encryption_type"].(string)
+			encryptionTypeRaw, ok := storageLocationConfig["encryption_type"].(string)
+			if !ok {
+				return nil, fmt.Errorf("unable to extract storage location, encryption_type is not a string")
+			}
 			if encryptionTypeRaw != "" {
 				_, err := sdk.ToS3CompatEncryptionType(encryptionTypeRaw)
 				if err != nil {
