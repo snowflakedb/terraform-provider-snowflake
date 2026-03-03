@@ -22,7 +22,6 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	acchelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
@@ -3133,60 +3132,6 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T)
 	})
 }
 
-func funcTestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T,
-	providerModel *providermodel.SnowflakeModel,
-	testClient func() *acchelpers.TestClient,
-	factory ProviderFactory,
-) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-
-	warehouseModelStandard := model.Warehouse("test", id.Name()).
-		WithWarehouseSizeEnum(sdk.WarehouseSizeMedium).
-		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
-
-	resource.Test(t, resource.TestCase{
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Warehouse),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
-				Config:            config.FromModels(t, providerModel, warehouseModelStandard),
-				Check: assertThat(t,
-					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
-						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
-						HasNoResourceConstraint().
-						HasNoGeneration(),
-					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
-						HasType(sdk.WarehouseTypeStandard).
-						HasNoGeneration().
-						HasNoResourceConstraint(),
-				),
-			},
-			{
-				Config:                   config.FromModels(t, providerModel, warehouseModelStandard),
-				ProtoV6ProviderFactories: factory,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
-						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
-						HasNoGeneration().
-						HasNoResourceConstraint(),
-					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
-						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen1).
-						HasResourceConstraintEmpty(),
-				),
-			},
-		},
-	})
-}
-
 func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExternally(t *testing.T) {
 	providerModel := providermodel.SnowflakeProvider()
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -3221,63 +3166,6 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 				},
 				Config:                   accconfig.FromModels(t, providerModel, warehouseModelStandard),
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
-						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
-						HasNoGeneration().
-						HasNoResourceConstraint(),
-					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
-						HasType(sdk.WarehouseTypeStandard).
-						HasGeneration(sdk.WarehouseGenerationStandardGen2).
-						HasResourceConstraintEmpty(),
-				),
-			},
-		},
-	})
-}
-
-func funcTestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExternally(t *testing.T,
-	providerModel *providermodel.SnowflakeModel,
-	testClient func() *acchelpers.TestClient,
-	factory ProviderFactory,
-) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-
-	warehouseModelStandard := model.Warehouse("test", id.Name()).
-		WithWarehouseSizeEnum(sdk.WarehouseSizeMedium).
-		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
-
-	resource.Test(t, resource.TestCase{
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Warehouse),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
-				Config:            config.FromModels(t, providerModel, warehouseModelStandard),
-				Check: assertThat(t,
-					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
-						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
-						HasNoGeneration().
-						HasNoResourceConstraint(),
-					resourceshowoutputassert.WarehouseShowOutput(t, warehouseModelStandard.ResourceReference()).
-						HasType(sdk.WarehouseTypeStandard).
-						HasNoGeneration().
-						HasNoResourceConstraint(),
-				),
-			},
-			{
-				PreConfig: func() {
-					testClient().Warehouse.UpdateResourceConstraint(t, id, sdk.WarehouseResourceConstraintStandardGen2)
-				},
-				Config:                   config.FromModels(t, providerModel, warehouseModelStandard),
-				ProtoV6ProviderFactories: factory,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
