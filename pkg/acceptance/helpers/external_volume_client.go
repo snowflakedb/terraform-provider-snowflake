@@ -56,6 +56,14 @@ func (c *ExternalVolumeClient) Create(t *testing.T) (sdk.AccountObjectIdentifier
 	return id, c.DropFunc(t, id)
 }
 
+func (c *ExternalVolumeClient) CreateWithRequest(t *testing.T, req *sdk.CreateExternalVolumeRequest) (sdk.AccountObjectIdentifier, func()) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.client().Create(ctx, req)
+	require.NoError(t, err)
+	return req.GetName(), c.DropFunc(t, req.GetName())
+}
+
 func (c *ExternalVolumeClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ExternalVolume, error) {
 	t.Helper()
 	ctx := context.Background()

@@ -205,16 +205,13 @@ func (s *AzureStorageLocationParamsRequest) WithUsePrivatelinkEndpoint(usePrivat
 func NewS3CompatStorageLocationParamsRequest(
 	storageBaseUrl string,
 	storageEndpoint string,
+	credentials ExternalVolumeS3CompatCredentialsRequest,
 ) *S3CompatStorageLocationParamsRequest {
 	s := S3CompatStorageLocationParamsRequest{}
 	s.StorageBaseUrl = storageBaseUrl
 	s.StorageEndpoint = storageEndpoint
+	s.Credentials = credentials
 	return &s
-}
-
-func (s *S3CompatStorageLocationParamsRequest) WithCredentials(credentials ExternalVolumeS3CompatCredentialsRequest) *S3CompatStorageLocationParamsRequest {
-	s.Credentials = &credentials
-	return s
 }
 
 func NewExternalVolumeS3CompatCredentialsRequest(

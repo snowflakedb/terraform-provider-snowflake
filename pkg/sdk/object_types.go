@@ -107,9 +107,10 @@ const (
 	ObjectTypeSecurityIntegration ObjectType = "SECURITY INTEGRATION"
 	// TODO(SNOW-2683939): Remove in the following prs
 	ObjectTypeListingDetails ObjectType = "LISTING DETAILS"
-	// ObjectTypeApiIntegration is a pseudo-object, only used in object and invoke action assertions.
+	// ObjectTypeApiIntegration and ObjectTypeCatalogIntegration are pseudo-objects, only used in object and invoke action assertions.
 	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
-	ObjectTypeApiIntegration ObjectType = "API INTEGRATION"
+	ObjectTypeApiIntegration     ObjectType = "API INTEGRATION"
+	ObjectTypeCatalogIntegration ObjectType = "CATALOG INTEGRATION"
 )
 
 func (o ObjectType) String() string {
@@ -202,6 +203,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeWorkspace,
 	ObjectTypeProgrammaticAccessToken,
+	ObjectTypeCatalogIntegration,
 }
 
 // TODO(SNOW-1834370): use ToObjectType in other places with type conversion (instead of sdk.ObjectType)
@@ -294,6 +296,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeMcpServer:               PluralObjectTypeMcpServers,
 		ObjectTypeStorageLifecyclePolicy:  PluralObjectTypeStorageLifecyclePolicies,
 		ObjectTypeWorkspace:               PluralObjectTypeWorkspaces,
+		ObjectTypeCatalogIntegration:      PluralObjectTypeCatalogIntegrations,
 	}
 }
 
@@ -421,6 +424,7 @@ const (
 	PluralObjectTypeAgents                   PluralObjectType = "AGENTS"
 	PluralObjectTypeGateways                 PluralObjectType = "GATEWAYS"
 	PluralObjectTypeMcpServers               PluralObjectType = "MCP SERVERS"
+	PluralObjectTypeCatalogIntegrations      PluralObjectType = "CATALOG INTEGRATIONS"
 )
 
 func (p PluralObjectType) String() string {

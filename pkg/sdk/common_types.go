@@ -79,6 +79,11 @@ type ServiceIn struct {
 	ComputePool AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
 }
 
+type TableIn struct {
+	In
+	Table SchemaObjectIdentifier `ddl:"identifier" sql:"TABLE"`
+}
+
 type Like struct {
 	Pattern *string `ddl:"keyword,single_quotes"`
 }

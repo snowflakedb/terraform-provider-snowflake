@@ -76,10 +76,10 @@ type AzureStorageLocationParams struct {
 }
 
 type S3CompatStorageLocationParams struct {
-	StorageProviderS3Compat string                             `ddl:"static" sql:"STORAGE_PROVIDER = 'S3COMPAT'"`
-	StorageBaseUrl          string                             `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
-	StorageEndpoint         string                             `ddl:"parameter,single_quotes" sql:"STORAGE_ENDPOINT"`
-	Credentials             *ExternalVolumeS3CompatCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
+	StorageProviderS3Compat string                            `ddl:"static" sql:"STORAGE_PROVIDER = 'S3COMPAT'"`
+	StorageBaseUrl          string                            `ddl:"parameter,single_quotes" sql:"STORAGE_BASE_URL"`
+	StorageEndpoint         string                            `ddl:"parameter,single_quotes" sql:"STORAGE_ENDPOINT"`
+	Credentials             ExternalVolumeS3CompatCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
 }
 
 type ExternalVolumeS3CompatCredentials struct {

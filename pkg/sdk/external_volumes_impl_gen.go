@@ -140,11 +140,9 @@ func (r *AlterExternalVolumeRequest) toOpts() *AlterExternalVolumeOptions {
 				StorageBaseUrl:  r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.StorageBaseUrl,
 				StorageEndpoint: r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.StorageEndpoint,
 			}
-			if r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials != nil {
-				opts.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials = &ExternalVolumeS3CompatCredentials{
-					AwsKeyId:     r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials.AwsKeyId,
-					AwsSecretKey: r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials.AwsSecretKey,
-				}
+			opts.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials = ExternalVolumeS3CompatCredentials{
+				AwsKeyId:     r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials.AwsKeyId,
+				AwsSecretKey: r.AddStorageLocation.ExternalVolumeStorageLocation.S3CompatStorageLocationParams.Credentials.AwsSecretKey,
 			}
 		}
 	}

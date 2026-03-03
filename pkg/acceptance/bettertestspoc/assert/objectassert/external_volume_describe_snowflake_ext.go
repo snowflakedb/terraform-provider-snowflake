@@ -2,7 +2,6 @@ package objectassert
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -53,22 +52,6 @@ func (e *ExternalVolumeDetailsAssert) HasAllowWrites(expected string) *ExternalV
 		t.Helper()
 		if o.AllowWrites != expected {
 			return fmt.Errorf("expected allow writes: %v; got: %v", expected, o.AllowWrites)
-		}
-		return nil
-	})
-	return e
-}
-
-func (e *ExternalVolumeDetailsAssert) HasStorageLocations(expected ...sdk.ExternalVolumeStorageLocationDetails) *ExternalVolumeDetailsAssert {
-	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
-		t.Helper()
-		if len(o.StorageLocations) != len(expected) {
-			return fmt.Errorf("expected %d storage locations; got: %d\nexpected: %v\ngot: %v", len(expected), len(o.StorageLocations), expected, o.StorageLocations)
-		}
-		for i := range expected {
-			if !reflect.DeepEqual(o.StorageLocations[i], expected[i]) {
-				return fmt.Errorf("storage location at index %d differs:\nexpected: %v\ngot: %v", i, expected[i], o.StorageLocations[i])
-			}
 		}
 		return nil
 	})
