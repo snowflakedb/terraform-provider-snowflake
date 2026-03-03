@@ -680,7 +680,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 
 	t.Run("S3 storage location", func(t *testing.T) {
 		storageLocationInput := ExternalVolumeStorageLocation{Name: s3StorageLocationName, S3StorageLocationParams: &s3StorageLocationA}
-		copiedStorageLocationItem, err := CopySentinelStorageLocation(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocationInput})
+		copiedStorageLocationItem, err := CopySentinelStorageLocationItem(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocationInput})
 		require.NoError(t, err)
 		copiedStorageLocation := copiedStorageLocationItem.ExternalVolumeStorageLocation
 		assert.Equal(t, copiedStorageLocation.Name, tempStorageLocationName)
@@ -696,7 +696,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 
 	t.Run("GCS storage location", func(t *testing.T) {
 		storageLocationInput := ExternalVolumeStorageLocation{Name: gcsStorageLocationName, GCSStorageLocationParams: &gcsStorageLocationA}
-		copiedStorageLocationItem, err := CopySentinelStorageLocation(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocationInput})
+		copiedStorageLocationItem, err := CopySentinelStorageLocationItem(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocationInput})
 		copiedStorageLocation := copiedStorageLocationItem.ExternalVolumeStorageLocation
 		require.NoError(t, err)
 		assert.Equal(t, copiedStorageLocation.Name, tempStorageLocationName)
@@ -707,7 +707,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 
 	t.Run("Azure storage location", func(t *testing.T) {
 		storageLocationInput := ExternalVolumeStorageLocation{Name: azureStorageLocationName, AzureStorageLocationParams: &azureStorageLocationA}
-		copiedStorageLocationItem, err := CopySentinelStorageLocation(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocationInput})
+		copiedStorageLocationItem, err := CopySentinelStorageLocationItem(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocationInput})
 		copiedStorageLocation := copiedStorageLocationItem.ExternalVolumeStorageLocation
 		require.NoError(t, err)
 		assert.Equal(t, copiedStorageLocation.Name, tempStorageLocationName)
@@ -727,7 +727,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 
 	t.Run("S3Compatible storage location", func(t *testing.T) {
 		storageLocationInput := ExternalVolumeStorageLocation{Name: "s3compatTest", S3CompatStorageLocationParams: &s3CompatStorageLocationA}
-		copiedStorageLocationItem, err := CopySentinelStorageLocation(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocationInput})
+		copiedStorageLocationItem, err := CopySentinelStorageLocationItem(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocationInput})
 		copiedStorageLocation := copiedStorageLocationItem.ExternalVolumeStorageLocation
 		require.NoError(t, err)
 		assert.Equal(t, copiedStorageLocation.Name, tempStorageLocationName)
@@ -765,7 +765,7 @@ func Test_CopySentinelStorageLocation(t *testing.T) {
 
 	for _, tc := range invalidTestCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			_, err := CopySentinelStorageLocation(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: tc.StorageLocation})
+			_, err := CopySentinelStorageLocationItem(ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: tc.StorageLocation})
 			require.Error(t, err)
 		})
 	}
