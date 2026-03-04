@@ -73,11 +73,68 @@ Optional:
 
 Read-Only:
 
-- `default` (String)
+- `active` (String)
+- `allow_writes` (String)
+- `comment` (String)
+- `storage_locations` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_locations))
+
+<a id="nestedobjatt--describe_output--storage_locations"></a>
+### Nested Schema for `describe_output.storage_locations`
+
+Read-Only:
+
+- `azure_storage_location` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_locations--azure_storage_location))
+- `encryption_type` (String)
+- `gcs_storage_location` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_locations--gcs_storage_location))
 - `name` (String)
-- `parent` (String)
-- `type` (String)
-- `value` (String)
+- `s3_compat_storage_location` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_locations--s3_compat_storage_location))
+- `s3_storage_location` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--storage_locations--s3_storage_location))
+- `storage_allowed_locations` (List of String)
+- `storage_base_url` (String)
+- `storage_provider` (String)
+
+<a id="nestedobjatt--describe_output--storage_locations--azure_storage_location"></a>
+### Nested Schema for `describe_output.storage_locations.azure_storage_location`
+
+Read-Only:
+
+- `azure_consent_url` (String)
+- `azure_multi_tenant_app_name` (String)
+- `azure_tenant_id` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_locations--gcs_storage_location"></a>
+### Nested Schema for `describe_output.storage_locations.gcs_storage_location`
+
+Read-Only:
+
+- `encryption_kms_key_id` (String)
+- `storage_gcp_service_account` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_locations--s3_compat_storage_location"></a>
+### Nested Schema for `describe_output.storage_locations.s3_compat_storage_location`
+
+Read-Only:
+
+- `aws_access_key_id` (String)
+- `encryption_kms_key_id` (String)
+- `endpoint` (String)
+
+
+<a id="nestedobjatt--describe_output--storage_locations--s3_storage_location"></a>
+### Nested Schema for `describe_output.storage_locations.s3_storage_location`
+
+Read-Only:
+
+- `encryption_kms_key_id` (String)
+- `storage_aws_access_point_arn` (String)
+- `storage_aws_external_id` (String)
+- `storage_aws_iam_user_arn` (String)
+- `storage_aws_role_arn` (String)
+- `use_privatelink_endpoint` (String)
+
+
 
 
 <a id="nestedatt--show_output"></a>
