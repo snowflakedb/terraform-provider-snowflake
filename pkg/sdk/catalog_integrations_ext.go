@@ -46,11 +46,11 @@ func (v *catalogIntegrations) DescribeIcebergRestParams(ctx context.Context, id 
 }
 
 func (v *catalogIntegrations) DescribeSapBdcParams(ctx context.Context, id AccountObjectIdentifier) (*SapBdcParams, error) {
-	properties, err := v.Describe(ctx, id)
+	_, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return parseSapBdcProperties(properties)
+	return parseSapBdcProperties()
 }
 
 func parseAwsGlueProperties(properties []CatalogIntegrationProperty) (*AwsGlueParams, error) {
@@ -136,7 +136,7 @@ func parseIcebergRestProperties(properties []CatalogIntegrationProperty) (*Icebe
 	return params, errors.Join(errs...)
 }
 
-func parseSapBdcProperties(properties []CatalogIntegrationProperty) (*SapBdcParams, error) {
+func parseSapBdcProperties() (*SapBdcParams, error) {
 	params := &SapBdcParams{RestConfig: SapBdcRestConfig{}}
 	return params, nil
 }
@@ -216,7 +216,7 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAut
 					oAuthRestAuthentication = restAuth
 				}
 			case string(CatalogIntegrationRestAuthenticationTypeBearer):
-				if restAuth, err := parseBearerRestAuthenticationProperty(parts); err != nil {
+				if restAuth, err := parseBearerRestAuthenticationProperty(); err != nil {
 					errs = append(errs, err)
 				} else {
 					bearerRestAuthentication = restAuth
@@ -251,7 +251,7 @@ func parseOAuthRestAuthenticationProperty(parts []string) (*OAuthRestAuthenticat
 	return restAuthentication, nil
 }
 
-func parseBearerRestAuthenticationProperty(parts []string) (*BearerRestAuthentication, error) {
+func parseBearerRestAuthenticationProperty() (*BearerRestAuthentication, error) {
 	restAuthentication := &BearerRestAuthentication{}
 	return restAuthentication, nil
 }
