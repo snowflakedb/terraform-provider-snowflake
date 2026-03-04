@@ -24,7 +24,7 @@ var streamOnDirectoryTableSchema = func() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			Description:      relatedResourceDescription(blocklistedCharactersFieldDescription("Specifies an identifier for the stage the stream will monitor. Due to Snowflake limitations, the provider can not read the stage's database and schema. For stages, Snowflake returns only partially qualified name instead of fully qualified name. Please use stages located in the same schema as the stream."), resources.Stage),
-			DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("stage")),
+			DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, suppressPartiallyQualifiedSchemaObjectIdentifier, IgnoreChangeToCurrentSnowflakeValueInShow("stage")),
 			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		},
 	}

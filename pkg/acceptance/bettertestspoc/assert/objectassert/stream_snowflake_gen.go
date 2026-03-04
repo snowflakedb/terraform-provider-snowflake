@@ -109,8 +109,11 @@ func (s *StreamAssert) HasComment(expected string) *StreamAssert {
 func (s *StreamAssert) HasTableName(expected sdk.SchemaObjectIdentifier) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
-		if o.TableName.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected table name: %v; got: %v", expected.FullyQualifiedName(), o.TableName.FullyQualifiedName())
+		if o.TableName == nil {
+			return fmt.Errorf("expected table name to have value; got: nil")
+		}
+		if (*o.TableName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected table name: %v; got: %v", expected.FullyQualifiedName(), (*o.TableName).FullyQualifiedName())
 		}
 		return nil
 	})
