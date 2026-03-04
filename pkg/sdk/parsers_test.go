@@ -7,14 +7,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type commaSeparatedStringArrayTestCase struct {
+var commaSeparatedStringArrayTestCases = []struct {
 	Name       string
 	Value      string
 	TrimQuotes bool
 	Result     []string
-}
-
-var commaSeparatedStringArrayTestCases = []commaSeparatedStringArrayTestCase{
+}{
 	{
 		Name:   "empty list",
 		Value:  "[]",
@@ -109,7 +107,12 @@ func TestParseCommaSeparatedStringArray(t *testing.T) {
 }
 
 func TestParseOuterCommaSeparatedStringArray(t *testing.T) {
-	testCases := append(commaSeparatedStringArrayTestCases, []commaSeparatedStringArrayTestCase{
+	testCases := append(commaSeparatedStringArrayTestCases, []struct {
+		Name       string
+		Value      string
+		TrimQuotes bool
+		Result     []string
+	}{
 		{
 			Name:       "list with nested lists",
 			Value:      "['one', [['two'], 'three', 'four'], ['five']]",
