@@ -4,10 +4,17 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -373,17 +380,20 @@ resource "snowflake_failover_group" "fg" {
 `, randomCharacters, accountName, interval)
 }
 
-// TODO: secondary account?
-// Error: error removing allowed accounts for failover group BYPRYDAT_4DD10EDF_9310_FE23_A4E3_A969CE8A321E err = 003909 (55000): Disabling replication of the replication group to the account in which the primary currently resides is not allowed.
 func TestAcc_FailoverGroup_UpdateAllowedAccounts(t *testing.T) {
 	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	// providerModel := providermodel.SnowflakeProvider().
-	// 	WithPreviewFeaturesEnabled(string(previewfeatures.FailoverGroupResource))
+	// We need to use the secondary account to test the failover group. Otherwise, we will get an error:
+	// Error: error removing allowed accounts for failover group TEST err = 003909 (55000): Disabling replication of the replication group to the account in which the primary currently resides is not allowed.
+	accountIdentifier := testClient().Context.CurrentAccountIdentifier(t)
+
+	secondaryAccountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+	secondaryAccountIdentifier := sdk.NewAccountIdentifierFromFullyQualifiedName(secondaryAccountName)
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FailoverGroupResource))
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -391,84 +401,83 @@ func TestAcc_FailoverGroup_UpdateAllowedAccounts(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
-			// // Create with allowed_accounts using old provider version
-			// {
-			// 	ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
-			// 	Config:            config.FromModels(t, providerModel) + failoverGroupBasic(id.Name(), accountName, TestDatabaseName),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
-			// 		resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
-			// 		resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", accountName),
-			// 	),
-			// },
-			// // Remove allowed_accounts with old provider version - proves the bug
-			// {
-			// 	ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
-			// 	Config:            config.FromModels(t, providerModel) + failoverGroupWithRequiredFields(id.Name()),
-			// 	ExpectError:       regexp.MustCompile("error removing allowed accounts"),
-			// },
-			// // Add it back again - proves the bug
-			// {
-			// 	ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
-			// 	Config:            config.FromModels(t, providerModel) + failoverGroupBasic(id.Name(), accountName, TestDatabaseName),
-			// 	ExpectError:       regexp.MustCompile("error adding allowed accounts"),
-			// },
+			// Create with allowed_accounts using old provider version
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
+				Config:            config.FromModels(t, providerModel) + failoverGroupWithAccounts(id.Name(), TestDatabaseName, accountIdentifier, secondaryAccountIdentifier),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", accountIdentifier.Name()),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", secondaryAccountIdentifier.Name()),
+				),
+			},
+			// Remove an allowed account with old provider version - proves the bug
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
+				Config:            config.FromModels(t, providerModel) + failoverGroupWithAccounts(id.Name(), TestDatabaseName, accountIdentifier),
+				ExpectError:       regexp.MustCompile("error removing allowed accounts"),
+			},
+			// Remove it externally
+			{
+				PreConfig: func() {
+					testClient().FailoverGroup.RemoveAllowedAccounts(t, id, secondaryAccountIdentifier)
+				},
+				ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
+				Config:            config.FromModels(t, providerModel) + failoverGroupWithAccounts(id.Name(), TestDatabaseName, accountIdentifier),
+			},
+			// Add it back again - proves the bug
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
+				Config:            config.FromModels(t, providerModel) + failoverGroupWithAccounts(id.Name(), TestDatabaseName, accountIdentifier, secondaryAccountIdentifier),
+				ExpectError:       regexp.MustCompile("error adding allowed accounts"),
+			},
 			// Upgrade to current provider version
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   failoverGroupWithAccount(id.Name(), TestDatabaseName, accountName),
+				Config:                   failoverGroupWithAccounts(id.Name(), TestDatabaseName, accountIdentifier, secondaryAccountIdentifier),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", accountIdentifier.Name()),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", secondaryAccountIdentifier.Name()),
+				),
+			},
+			// Remove an allowed account with current provider version - proves the fix
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   failoverGroupWithAccounts(id.Name(), TestDatabaseName, accountIdentifier),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
-				),
-			},
-			// Remove allowed_accounts with current provider version - proves the fix
-			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   failoverGroupBare(id.Name(), TestDatabaseName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "0"),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", accountIdentifier.Name()),
 				),
 			},
 			// Add it back again - proves the fix
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   failoverGroupWithAccount(id.Name(), TestDatabaseName, accountName),
+				Config:                   failoverGroupWithAccounts(id.Name(), TestDatabaseName, accountIdentifier, secondaryAccountIdentifier),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", accountIdentifier.Name()),
+					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_accounts.*", secondaryAccountIdentifier.Name()),
 				),
 			},
 		},
 	})
 }
 
-func failoverGroupBare(name, databaseName string) string {
+func failoverGroupWithAccounts(name, databaseName string, accountIds ...sdk.AccountIdentifier) string {
+	accountNames := collections.Map(accountIds, func(account sdk.AccountIdentifier) string {
+		return fmt.Sprintf(`"%s"`, account.Name())
+	})
 	return fmt.Sprintf(`
-provider "snowflake" {
-	preview_features_enabled = ["snowflake_failover_group_resource"]
-}
-
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
 	object_types = ["DATABASES"]
 	allowed_databases = ["%s"]
+	allowed_accounts = [ %s ]
 }
-`, name, databaseName)
-}
-
-func failoverGroupWithAccount(name, databaseName, accountName string) string {
-	return fmt.Sprintf(`
-provider "snowflake" {
-	preview_features_enabled = ["snowflake_failover_group_resource"]
-}
-
-resource "snowflake_failover_group" "fg" {
-	name = "%s"
-	object_types = ["DATABASES"]
-	allowed_databases = ["%s"]
-	allowed_accounts = ["%s"]
-}
-`, name, databaseName, accountName)
+`, name, databaseName, strings.Join(accountNames, ", "))
 }
