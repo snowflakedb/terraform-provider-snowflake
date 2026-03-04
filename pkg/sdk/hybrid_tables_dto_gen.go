@@ -73,7 +73,6 @@ type AlterHybridTableRequest struct {
 	DropIndexAction   *HybridTableDropIndexActionRequest
 	ClusteringAction  *HybridTableClusteringActionRequest
 	Set               *HybridTableSetPropertiesRequest
-	Unset             *HybridTableUnsetPropertiesRequest
 }
 
 type HybridTableAddColumnActionRequest struct {
@@ -112,18 +111,12 @@ type HybridTableConstraintActionDropRequest struct {
 }
 
 type HybridTableAlterColumnActionRequest struct {
-	ColumnName        string // required
-	DropDefault       *bool
-	SetDefault        *SequenceName
-	NotNullConstraint *HybridTableColumnNotNullConstraintRequest
-	Type              *DataType
-	Comment           *string
-	UnsetComment      *bool
-}
-
-type HybridTableColumnNotNullConstraintRequest struct {
-	SetNotNull  *bool
-	DropNotNull *bool
+	ColumnName   string // required
+	DropDefault  *bool
+	SetDefault   *SequenceName
+	Type         *DataType
+	Comment      *string
+	UnsetComment *bool
 }
 
 type HybridTableDropColumnActionRequest struct {
@@ -155,22 +148,10 @@ type HybridTableReclusterChangeStateRequest struct {
 type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
-	ChangeTracking             *bool
-	DefaultDdlCollation        *string
 	EnableSchemaEvolution      *bool
 	Contact                    []TableContact
 	Comment                    *string
 	RowTimestamp               *bool
-}
-
-type HybridTableUnsetPropertiesRequest struct {
-	DataRetentionTimeInDays    *bool
-	MaxDataExtensionTimeInDays *bool
-	ChangeTracking             *bool
-	DefaultDdlCollation        *bool
-	EnableSchemaEvolution      *bool
-	ContactPurpose             *string
-	Comment                    *bool
 }
 
 type DropHybridTableRequest struct {

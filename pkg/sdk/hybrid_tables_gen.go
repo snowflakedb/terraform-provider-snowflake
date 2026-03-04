@@ -89,7 +89,6 @@ type AlterHybridTableOptions struct {
 	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
-	Unset             *HybridTableUnsetProperties    `ddl:"keyword" sql:"UNSET"`
 }
 
 type HybridTableAddColumnAction struct {
@@ -133,20 +132,14 @@ type HybridTableConstraintActionDrop struct {
 }
 
 type HybridTableAlterColumnAction struct {
-	alter             bool                                `ddl:"static" sql:"ALTER"`
-	column            bool                                `ddl:"static" sql:"COLUMN"`
-	ColumnName        string                              `ddl:"keyword,double_quotes"`
-	DropDefault       *bool                               `ddl:"keyword" sql:"DROP DEFAULT"`
-	SetDefault        *SequenceName                       `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
-	NotNullConstraint *HybridTableColumnNotNullConstraint `ddl:"keyword"`
-	Type              *DataType                           `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
-	Comment           *string                             `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-	UnsetComment      *bool                               `ddl:"keyword" sql:"UNSET COMMENT"`
-}
-
-type HybridTableColumnNotNullConstraint struct {
-	SetNotNull  *bool `ddl:"keyword" sql:"SET NOT NULL"`
-	DropNotNull *bool `ddl:"keyword" sql:"DROP NOT NULL"`
+	alter        bool          `ddl:"static" sql:"ALTER"`
+	column       bool          `ddl:"static" sql:"COLUMN"`
+	ColumnName   string        `ddl:"keyword,double_quotes"`
+	DropDefault  *bool         `ddl:"keyword" sql:"DROP DEFAULT"`
+	SetDefault   *SequenceName `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
+	Type         *DataType     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
+	Comment      *string       `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	UnsetComment *bool         `ddl:"keyword" sql:"UNSET COMMENT"`
 }
 
 type HybridTableDropColumnAction struct {
@@ -182,22 +175,10 @@ type HybridTableReclusterChangeState struct {
 type HybridTableSetProperties struct {
 	DataRetentionTimeInDays    *int           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool          `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *string        `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
 	EnableSchemaEvolution      *bool          `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
 	Contact                    []TableContact `ddl:"keyword" sql:"CONTACT"`
 	Comment                    *string        `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	RowTimestamp               *bool          `ddl:"parameter" sql:"ROW_TIMESTAMP"`
-}
-
-type HybridTableUnsetProperties struct {
-	DataRetentionTimeInDays    *bool   `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *bool   `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool   `ddl:"keyword" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *bool   `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
-	EnableSchemaEvolution      *bool   `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	ContactPurpose             *string `ddl:"parameter,no_equals" sql:"CONTACT"`
-	Comment                    *bool   `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.

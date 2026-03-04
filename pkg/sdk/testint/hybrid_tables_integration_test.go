@@ -366,33 +366,33 @@ func TestInt_HybridTables(t *testing.T) {
 			require.Equal(t, id.Name(), tables[0].Name)
 		})
 
-	t.Run("SHOW with IN SCHEMA", func(t *testing.T) {
-		// Create a table in the test schema
-		id1, cleanup1 := testClientHelper().HybridTable.Create(t)
-		t.Cleanup(cleanup1)
+		t.Run("SHOW with IN SCHEMA", func(t *testing.T) {
+			// Create a table in the test schema
+			id1, cleanup1 := testClientHelper().HybridTable.Create(t)
+			t.Cleanup(cleanup1)
 
-		// Create a second schema and a table with the same name in it
-		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
-		t.Cleanup(schemaCleanup)
+			// Create a second schema and a table with the same name in it
+			schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
+			t.Cleanup(schemaCleanup)
 
-		id2InOtherSchema := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(id1.Name(), schema.ID())
-		columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
-			Columns: []sdk.HybridTableColumnRequest{
-				{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-			},
-		}
-		_, cleanup2 := testClientHelper().HybridTable.CreateWithRequest(t, id2InOtherSchema, columns)
-		t.Cleanup(cleanup2)
+			id2InOtherSchema := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(id1.Name(), schema.ID())
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				},
+			}
+			_, cleanup2 := testClientHelper().HybridTable.CreateWithRequest(t, id2InOtherSchema, columns)
+			t.Cleanup(cleanup2)
 
-		// Show with IN SCHEMA should only return the table in the test schema
-		tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
-			WithIn(sdk.TableIn{In: sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(id1.DatabaseName(), id1.SchemaName())}}).
-			WithLike(sdk.Like{Pattern: sdk.String(id1.Name())}))
-		require.NoError(t, err)
-		require.Len(t, tables, 1)
-		require.Equal(t, id1.Name(), tables[0].Name)
-		require.Equal(t, id1.SchemaName(), tables[0].SchemaName)
-	})
+			// Show with IN SCHEMA should only return the table in the test schema
+			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
+				WithIn(sdk.TableIn{In: sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(id1.DatabaseName(), id1.SchemaName())}}).
+				WithLike(sdk.Like{Pattern: sdk.String(id1.Name())}))
+			require.NoError(t, err)
+			require.Len(t, tables, 1)
+			require.Equal(t, id1.Name(), tables[0].Name)
+			require.Equal(t, id1.SchemaName(), tables[0].SchemaName)
+		})
 
 		t.Run("SHOW with STARTS WITH", func(t *testing.T) {
 			prefix := "HTSWTEST"
@@ -430,34 +430,34 @@ func TestInt_HybridTables(t *testing.T) {
 			require.False(t, found2, "should not find table with non-matching prefix")
 		})
 
-	t.Run("SHOW with LIMIT", func(t *testing.T) {
-		prefix := "HTLIMTEST"
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-		id2 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+		t.Run("SHOW with LIMIT", func(t *testing.T) {
+			prefix := "HTLIMTEST"
+			id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+			id2 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 
-		columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
-			Columns: []sdk.HybridTableColumnRequest{
-				{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-			},
-		}
-		for _, id := range []sdk.SchemaObjectIdentifier{id1, id2} {
-			_, cleanup := testClientHelper().HybridTable.CreateWithRequest(t, id, columns)
-			t.Cleanup(cleanup)
-		}
+			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+				},
+			}
+			for _, id := range []sdk.SchemaObjectIdentifier{id1, id2} {
+				_, cleanup := testClientHelper().HybridTable.CreateWithRequest(t, id, columns)
+				t.Cleanup(cleanup)
+			}
 
-		// Without limit, both tables should be returned
-		allTables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
-			WithStartsWith(prefix))
-		require.NoError(t, err)
-		require.Len(t, allTables, 2)
+			// Without limit, both tables should be returned
+			allTables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
+				WithStartsWith(prefix))
+			require.NoError(t, err)
+			require.Len(t, allTables, 2)
 
-		// With limit, only one table should be returned
-		tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
-			WithStartsWith(prefix).
-			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
-		require.NoError(t, err)
-		require.Len(t, tables, 1)
-	})
+			// With limit, only one table should be returned
+			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
+				WithStartsWith(prefix).
+				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
+			require.NoError(t, err)
+			require.Len(t, tables, 1)
+		})
 
 		t.Run("SHOW TERSE", func(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.Create(t)
