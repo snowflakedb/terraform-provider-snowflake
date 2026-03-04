@@ -131,11 +131,11 @@ func (s *StreamAssert) HasSourceType(expected sdk.StreamSourceType) *StreamAsser
 	return s
 }
 
-func (s *StreamAssert) HasBaseTables(expected ...string) *StreamAssert {
+func (s *StreamAssert) HasBaseTables(expected ...sdk.SchemaObjectIdentifier) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
-		mapped := collections.Map(o.BaseTables, func(item string) any { return item })
-		mappedExpected := collections.Map(expected, func(item string) any { return item })
+		mapped := collections.Map(o.BaseTables, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
+		mappedExpected := collections.Map(expected, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected base tables: %v; got: %v", expected, o.BaseTables)
 		}

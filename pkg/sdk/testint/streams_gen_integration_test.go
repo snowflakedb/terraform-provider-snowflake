@@ -4,10 +4,7 @@ package testint
 
 import (
 	"fmt"
-	"log"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -156,7 +153,7 @@ func TestInt_Streams(t *testing.T) {
 			HasSourceType(sdk.StreamSourceTypeStage).
 			HasMode(sdk.StreamModeDefault).
 			HasTableName(stage.ID()).
-			HasBaseTables(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())),
+			HasBaseTables(stage.ID()),
 		)
 	})
 
@@ -427,37 +424,36 @@ func TestInt_Streams(t *testing.T) {
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		_, cleanupStream := testClientHelper().Stream.CreateOnTable(t, table.ID())
+		_, cleanupStream := testClientHelper().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
 		t.Cleanup(cleanupStream)
 
 		err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(table.ID()))
 		require.NoError(t, err)
 
-		assert.Eventually(t, func() bool {
-			streams, err := client.Streams.Show(ctx, sdk.NewShowStreamRequest().
-				WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
-
-			log.Println("!!! streams", streams)
-			return err != nil && strings.Contains(err.Error(), "is dropped or you don't have permission to access it")
-		}, time.Second*10, time.Second)
+		_, err = client.Streams.ShowByID(ctx, id)
+		assert.ErrorContains(t, err, "is dropped or you don't have permission to access it")
 	})
 
-	t.Run("ShowByID - error when no privilege on underlying table", func(t *testing.T) {
+	t.Run("ShowByID - error when used role has no access to the underlying table", func(t *testing.T) {
 		table, cleanupTable := testClientHelper().Table.CreateInSchema(t, schemaId)
 		t.Cleanup(cleanupTable)
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		_, cleanupStream := testClientHelper().Stream.CreateOnTable(t, table.ID())
+		_, cleanupStream := testClientHelper().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
 		t.Cleanup(cleanupStream)
 
-		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		role, roleCleanup := testClientHelper().Role.CreateRoleGrantedToCurrentUser(t)
 		t.Cleanup(roleCleanup)
 
-		revertRole := testClientHelper().Role.UseRole(t, role.ID())
-		t.Cleanup(revertRole)
+		// Grant necessary privileges to be able to query stream (no privilege for table)
+		testClientHelper().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), table.ID().DatabaseId(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}, false)
+		testClientHelper().Grant.GrantPrivilegesOnSchemaToAccountRole(t, role.ID(), table.ID().SchemaId(), []sdk.SchemaPrivilege{sdk.SchemaPrivilegeUsage}, false)
+		testClientHelper().Grant.GrantPrivilegesOnSchemaObjectToAccountRole(t, role.ID(), sdk.ObjectTypeStream, id, []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}, false)
+
+		// There's no other way to "hide" an object from the ACCOUNTADMIN role, so we have to use less privileged role.
+		t.Cleanup(testClientHelper().Role.UseRole(t, role.ID()))
 
 		_, err := client.Streams.ShowByID(ctx, id)
-		require.Error(t, err)
 		assert.ErrorContains(t, err, "is dropped or you don't have permission to access it")
 	})
 

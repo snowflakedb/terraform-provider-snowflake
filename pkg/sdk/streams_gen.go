@@ -160,16 +160,15 @@ type showStreamsDbRow struct {
 }
 
 type Stream struct {
-	CreatedOn    time.Time
-	Name         string
-	DatabaseName string
-	SchemaName   string
-	Owner        *string
-	Comment      *string
-	// TODO: Change in def
-	TableName     SchemaObjectIdentifier
+	CreatedOn     time.Time
+	Name          string
+	DatabaseName  string
+	SchemaName    string
+	Owner         *string
+	Comment       *string
+	TableName     *SchemaObjectIdentifier
 	SourceType    *StreamSourceType
-	BaseTables    []string
+	BaseTables    []SchemaObjectIdentifier
 	Type          *string
 	Stale         bool
 	Mode          *StreamMode
