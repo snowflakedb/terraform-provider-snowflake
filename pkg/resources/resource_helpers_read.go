@@ -109,7 +109,7 @@ func optionalBooleanStringOutputMapping(value *bool) (any, string) {
 	if value != nil {
 		return *value, booleanStringFromBool(*value)
 	}
-	return nil, ""
+	return nil, BooleanDefault
 }
 
 func optionalIntOutputMapping[T ~int](value *T) any {
@@ -117,4 +117,11 @@ func optionalIntOutputMapping[T ~int](value *T) any {
 		return int(*value)
 	}
 	return nil
+}
+
+func optionalIntOutputMappingIntDefault[T ~int](value *T) any {
+	if value != nil {
+		return int(*value)
+	}
+	return IntDefault
 }

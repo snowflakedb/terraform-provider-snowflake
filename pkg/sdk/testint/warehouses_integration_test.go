@@ -411,6 +411,67 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.Pointer(true), warehouseAfterUnset.AutoResume)
 	})
 
+	t.Run("alter adaptive: change warehouse type", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{
+			WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
+		})
+		t.Cleanup(warehouseCleanup)
+
+		// Wait for the warehouse to be started and confirm it's standard type
+		condition := warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool {
+			return r.State == sdk.WarehouseStateStarted && r.Type == sdk.WarehouseTypeStandard
+		})
+		require.Eventually(t, condition, 5*time.Second, time.Second)
+
+		// Change warehouse type from standard to adaptive
+		err := client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{WarehouseType: sdk.Pointer(sdk.WarehouseTypeAdaptive)},
+		})
+		require.NoError(t, err)
+
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+			HasType(sdk.WarehouseTypeAdaptive).
+			HasNoSize().
+			HasNoGeneration().
+			HasNoResourceConstraint().
+			HasNoMaxClusterCount().
+			HasNoMinClusterCount().
+			HasNoScalingPolicy().
+			HasNoAutoSuspend().
+			HasAutoResume(true).
+			HasNoEnableQueryAcceleration().
+			HasNoQueryAccelerationMaxScaleFactor(),
+		)
+
+		// Change warehouse type back from adaptive to standard
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{
+				WarehouseType: sdk.Pointer(sdk.WarehouseTypeStandard),
+				WarehouseSize: sdk.Pointer(sdk.WarehouseSizeMedium),
+			},
+		})
+		require.NoError(t, err)
+
+		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+			HasType(sdk.WarehouseTypeStandard).
+			HasSize(sdk.WarehouseSizeMedium).
+			HasGeneration(sdk.WarehouseGenerationStandardGen1).
+			HasNoResourceConstraint().
+			HasMaxClusterCount(1).
+			HasMinClusterCount(1).
+			HasScalingPolicy(sdk.ScalingPolicyStandard).
+			HasAutoSuspend(600).
+			HasAutoResume(true).
+			HasEnableQueryAcceleration(false).
+			HasQueryAccelerationMaxScaleFactor(8),
+		)
+	})
+
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)

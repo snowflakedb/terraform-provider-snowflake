@@ -455,7 +455,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			maxClusterCount := optionalIntOutputMapping(w.MaxClusterCount)
 			minClusterCount := optionalIntOutputMapping(w.MinClusterCount)
 			autoSuspend := optionalIntOutputMapping(w.AutoSuspend)
-			queryAccelerationMaxScaleFactor := optionalIntOutputMapping(w.QueryAccelerationMaxScaleFactor)
+			queryAccelerationMaxScaleFactor := optionalIntOutputMappingIntDefault(w.QueryAccelerationMaxScaleFactor)
 			outputMappings := []outputMapping{
 				{"type", "warehouse_type", string(w.Type), w.Type, nil},
 				{"size", "warehouse_size", sizeStr, sizeVal, nil},
