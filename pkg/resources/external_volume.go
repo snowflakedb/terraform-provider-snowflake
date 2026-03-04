@@ -342,6 +342,8 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 
 		storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
 
+		// We need to preserve the secret key for the storage location, because it is not returned by the API.
+		// This is a workaround to avoid the secret key being removed from the state.
 		oldSecretKeys := make(map[string]string)
 		for i := range d.Get("storage_location.#").(int) {
 			value := d.Get(fmt.Sprintf("storage_location.%d.storage_aws_secret_key", i))
