@@ -31,7 +31,7 @@ var (
 				Field("schema_name", "string").
 				Field("owner", "sql.NullString").
 				Field("comment", "sql.NullString").
-				Field("table_name", "string").
+				Field("table_name", "sql.NullString").
 				Field("source_type", "sql.NullString").
 				Field("base_tables", "sql.NullString").
 				Field("type", "sql.NullString").
@@ -46,7 +46,7 @@ var (
 				Field("Name", "string").
 				Field("DatabaseName", "string").
 				Field("SchemaName", "string").
-		// Below fields have to be nullable as they are not returned by SHOW TERSE streams (booleans like stale, can be an exception to the rule)
+		// Below fields have to be nullable as they are not returned by SHOW TERSE streams
 		Field("Owner", "*string").
 		Field("Comment", "*string").
 		Field("TableName", "*SchemaObjectIdentifier").

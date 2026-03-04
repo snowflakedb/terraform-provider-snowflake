@@ -148,7 +148,7 @@ type showStreamsDbRow struct {
 	SchemaName    string         `db:"schema_name"`
 	Owner         sql.NullString `db:"owner"`
 	Comment       sql.NullString `db:"comment"`
-	TableName     string         `db:"table_name"`
+	TableName     sql.NullString `db:"table_name"`
 	SourceType    sql.NullString `db:"source_type"`
 	BaseTables    sql.NullString `db:"base_tables"`
 	Type          sql.NullString `db:"type"`

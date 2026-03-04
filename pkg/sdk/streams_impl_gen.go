@@ -5,6 +5,7 @@ package sdk
 // imports adjusted manually
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -244,12 +245,13 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 	mapNullString(&s.InvalidReason, r.InvalidReason)
 	mapNullString(&s.OwnerRoleType, r.OwnerRoleType)
 
-	if strings.Contains(r.TableName, "No privilege or table dropped") {
-		return nil, fmt.Errorf("the source object %s is dropped or you don't have permission to access it", r.TableName)
-	}
+	if r.TableName.Valid {
+		if strings.Contains(r.TableName.String, "No privilege or table dropped") {
+			return nil, errors.New("the source object is dropped or you don't have permission to access it")
+		}
 
-	if r.TableName != "" {
-		tableName, err := ParseSchemaObjectIdentifier(r.TableName)
+		// TODO [SNOW-3108659] Use mapNullStringWithMapping
+		tableName, err := ParseSchemaObjectIdentifier(r.TableName.String)
 		if err != nil {
 			return nil, fmt.Errorf("error converting table name in show stream: %w", err)
 		}
