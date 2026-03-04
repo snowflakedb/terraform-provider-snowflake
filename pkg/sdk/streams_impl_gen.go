@@ -237,23 +237,26 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 		SchemaName:   r.SchemaName,
 		Stale:        r.Stale == "true",
 	}
-	if r.StaleAfter.Valid {
-		s.StaleAfter = &r.StaleAfter.Time
-	}
-	if r.Owner.Valid {
-		s.Owner = &r.Owner.String
-	}
-	if r.Comment.Valid {
-		s.Comment = &r.Comment.String
-	}
+	mapNullTime(&s.StaleAfter, r.StaleAfter)
+	mapNullString(&s.Owner, r.Owner)
+	mapNullString(&s.Comment, r.Comment)
+	mapNullString(&s.Type, r.Type)
+	mapNullString(&s.InvalidReason, r.InvalidReason)
+	mapNullString(&s.OwnerRoleType, r.OwnerRoleType)
+
 	if strings.Contains(r.TableName, "No privilege or table dropped") {
 		return nil, fmt.Errorf("the source object %s is dropped or you don't have permission to access it", r.TableName)
 	}
-	tableName, err := ParseSchemaObjectIdentifier(r.TableName)
-	if err != nil {
-		return nil, fmt.Errorf("error converting table name in show stream: %w", err)
+
+	if r.TableName != "" {
+		tableName, err := ParseSchemaObjectIdentifier(r.TableName)
+		if err != nil {
+			return nil, fmt.Errorf("error converting table name in show stream: %w", err)
+		}
+		s.TableName = &tableName
 	}
-	s.TableName = tableName
+
+	// TODO [SNOW-3108659] Use mapNullStringWithMapping
 	if r.SourceType.Valid {
 		sourceType, err := ToStreamSourceType(r.SourceType.String)
 		if err != nil {
@@ -262,12 +265,16 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 			s.SourceType = &sourceType
 		}
 	}
+
 	if r.BaseTables.Valid {
-		s.BaseTables = ParseCommaSeparatedStringArray(r.BaseTables.String, false)
+		baseTables, err := ParseCommaSeparatedSchemaObjectIdentifierArray(r.BaseTables.String)
+		if err != nil {
+			return nil, fmt.Errorf("error converting base tables in show stream: %w", err)
+		}
+		s.BaseTables = baseTables
 	}
-	if r.Type.Valid {
-		s.Type = &r.Type.String
-	}
+
+	// TODO [SNOW-3108659] Use mapNullStringWithMapping
 	if r.Mode.Valid {
 		mode, err := ToStreamMode(r.Mode.String)
 		if err != nil {
@@ -276,12 +283,7 @@ func (r showStreamsDbRow) convert() (*Stream, error) {
 			s.Mode = &mode
 		}
 	}
-	if r.InvalidReason.Valid {
-		s.InvalidReason = &r.InvalidReason.String
-	}
-	if r.OwnerRoleType.Valid {
-		s.OwnerRoleType = &r.OwnerRoleType.String
-	}
+
 	return s, nil
 }
 

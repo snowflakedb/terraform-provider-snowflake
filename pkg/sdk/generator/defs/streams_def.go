@@ -46,17 +46,18 @@ var (
 				Field("Name", "string").
 				Field("DatabaseName", "string").
 				Field("SchemaName", "string").
-				Field("Owner", "*string").
-				Field("Comment", "*string").
-				Field("TableName", "SchemaObjectIdentifier").
-				Field("SourceType", "*StreamSourceType").
-				Field("BaseTables", "[]string").
-				Field("Type", "*string").
-				Field("Stale", "bool").
-				Field("Mode", "*StreamMode").
-				Field("StaleAfter", "*time.Time").
-				Field("InvalidReason", "*string").
-				Field("OwnerRoleType", "*string")
+		// Below fields have to be nullable as they are not returned by SHOW TERSE streams (booleans like stale, can be an exception to the rule)
+		Field("Owner", "*string").
+		Field("Comment", "*string").
+		Field("TableName", "*SchemaObjectIdentifier").
+		Field("SourceType", "*StreamSourceType").
+		Field("BaseTables", "[]SchemaObjectIdentifier").
+		Field("Type", "*string").
+		Field("Stale", "bool").
+		Field("Mode", "*StreamMode").
+		Field("StaleAfter", "*time.Time").
+		Field("InvalidReason", "*string").
+		Field("OwnerRoleType", "*string")
 
 	streamsDef = g.NewInterface(
 		"Streams",
