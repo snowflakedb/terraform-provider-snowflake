@@ -865,54 +865,54 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 				// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 				),
 			},
-		// TODO: Re-enable once allowed_email_patterns and allowed_user_domains are fixed
-		// {
-		// 	Config:          accconfig.FromModels(t, withoutAllowedEmailPatternsModel, temporaryVariableModel),
-		// 	ConfigVariables: configVariables,
-		// 	ConfigPlanChecks: resource.ConfigPlanChecks{
-		// 		PreApply: []plancheck.PlanCheck{
-		// 			plancheck.ExpectResourceAction(withoutAllowedEmailPatternsModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-		// 		},
-		// 	},
-		// 	Check: resource.ComposeAggregateTestCheckFunc(
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "name", id.Name()),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_user_domains.#", "1"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_email_patterns.#", "0"),
-		//
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.#", "1"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[]"),
-		// 	),
-		// },
-		// {
-		// 	Config:          accconfig.FromModels(t, withoutAllowedUserDomainsModel, temporaryVariableModel),
-		// 	ConfigVariables: configVariables,
-		// 	ConfigPlanChecks: resource.ConfigPlanChecks{
-		// 		PreApply: []plancheck.PlanCheck{
-		// 			plancheck.ExpectResourceAction(withoutAllowedUserDomainsModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-		// 		},
-		// 	},
-		// 	Check: resource.ComposeAggregateTestCheckFunc(
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "name", id.Name()),
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "allowed_user_domains.#", "0"),
-		//
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.#", "1"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
-		// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[]"),
-		// 	),
-		// },
+			// TODO: Re-enable once allowed_email_patterns and allowed_user_domains are fixed
+			// {
+			// 	Config:          accconfig.FromModels(t, withoutAllowedEmailPatternsModel, temporaryVariableModel),
+			// 	ConfigVariables: configVariables,
+			// 	ConfigPlanChecks: resource.ConfigPlanChecks{
+			// 		PreApply: []plancheck.PlanCheck{
+			// 			plancheck.ExpectResourceAction(withoutAllowedEmailPatternsModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+			// 		},
+			// 	},
+			// 	Check: resource.ComposeAggregateTestCheckFunc(
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "name", id.Name()),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_user_domains.#", "1"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_user_domains.0", "example.com"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "allowed_email_patterns.#", "0"),
+			//
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.#", "1"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedEmailPatternsModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[]"),
+			// 	),
+			// },
+			// {
+			// 	Config:          accconfig.FromModels(t, withoutAllowedUserDomainsModel, temporaryVariableModel),
+			// 	ConfigVariables: configVariables,
+			// 	ConfigPlanChecks: resource.ConfigPlanChecks{
+			// 		PreApply: []plancheck.PlanCheck{
+			// 			plancheck.ExpectResourceAction(withoutAllowedUserDomainsModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+			// 		},
+			// 	},
+			// 	Check: resource.ComposeAggregateTestCheckFunc(
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "name", id.Name()),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_sp_initiated_login_page_label", "label"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_snowflake_issuer_url", issuerURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "saml2_snowflake_acs_url", acsURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "allowed_user_domains.#", "0"),
+			//
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.#", "1"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
+			// 		resource.TestCheckResourceAttr(withoutAllowedUserDomainsModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[]"),
+			// 	),
+			// },
 		},
 	})
 }
@@ -987,15 +987,15 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_force_authn", r.BooleanDefault),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_post_logout_redirect_url", ""),
 
-				resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.#", "1"),
-				resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.enabled", "false"),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.#", "1"),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.enabled", "false"),
 
-				resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
-				resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_post_logout_redirect_url.0.value", ""),
-				resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
-			),
-		},
-		// set to "non-zero" values
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_post_logout_redirect_url.0.value", ""),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_force_authn.0.value", "false"),
+				),
+			},
+			// set to "non-zero" values
 			{
 				Config:          accconfig.FromModels(t, withNonZeroValuesModel, temporaryVariableModel),
 				ConfigVariables: configVariables,
