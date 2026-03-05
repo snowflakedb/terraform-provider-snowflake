@@ -44,7 +44,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		t.Helper()
 		assert.Contains(t, details, sdk.CatalogIntegrationProperty{Name: "CATALOG_SOURCE", Type: "String", Value: string(catalogSource), Default: ""})
 		assert.Contains(t, details, sdk.CatalogIntegrationProperty{Name: "TABLE_FORMAT", Type: "String", Value: string(tableFormat), Default: ""})
-		assert.Contains(t, details, sdk.CatalogIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: fmt.Sprintf("%t", enabled), Default: "false"})
+		assert.Contains(t, details, sdk.CatalogIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: fmt.Sprintf("%t", enabled), Default: "true"})
 		assert.Contains(t, details, sdk.CatalogIntegrationProperty{Name: "REFRESH_INTERVAL_SECONDS", Type: "Integer", Value: fmt.Sprintf("%d", refreshIntervalSeconds), Default: "30"})
 		assert.Contains(t, details, sdk.CatalogIntegrationProperty{Name: "COMMENT", Type: "String", Value: comment, Default: ""})
 	}
@@ -353,14 +353,14 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 
 		err := client.CatalogIntegrations.Alter(ctx, sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*sdk.NewCatalogIntegrationSetRequest().
 			WithComment(sdk.StringAllowEmpty{Value: "new comment"}).
-			WithEnabled(true).
+			WithEnabled(false).
 			WithRefreshIntervalSeconds(120)))
 		require.NoError(t, err)
 
 		details, err := client.CatalogIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assertSharedProperties(t, details, sdk.CatalogIntegrationCatalogSourceTypeObjectStorage, sdk.CatalogIntegrationTableFormatDelta, true, 120, "new comment")
+		assertSharedProperties(t, details, sdk.CatalogIntegrationCatalogSourceTypeObjectStorage, sdk.CatalogIntegrationTableFormatDelta, false, 120, "new comment")
 	})
 
 	t.Run("alter catalog integration: bearer token", func(t *testing.T) {
