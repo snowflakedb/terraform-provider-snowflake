@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -33,26 +34,31 @@ var (
 var accTestLog = log.New(os.Stdout, "", log.LstdFlags)
 
 type acceptanceTestContext struct {
-	config              *gosnowflake.Config
+	config     *gosnowflake.Config
+	testClient *helpers.TestClient
+	client     *sdk.Client
+
 	secondaryConfig     *gosnowflake.Config
-	testClient          *helpers.TestClient
 	secondaryTestClient *helpers.TestClient
-	client              *sdk.Client
 	secondaryClient     *sdk.Client
 
-	database         *sdk.Database
-	databaseCleanup  func()
-	schema           *sdk.Schema
-	schemaCleanup    func()
-	warehouse        *sdk.Warehouse
-	warehouseCleanup func()
+	azureConfig     *gosnowflake.Config
+	azureTestClient *helpers.TestClient
+	azureClient     *sdk.Client
 
-	secondaryDatabase         *sdk.Database
-	secondaryDatabaseCleanup  func()
-	secondarySchema           *sdk.Schema
-	secondarySchemaCleanup    func()
-	secondaryWarehouse        *sdk.Warehouse
-	secondaryWarehouseCleanup func()
+	cleanups []func()
+
+	database  *sdk.Database
+	schema    *sdk.Schema
+	warehouse *sdk.Warehouse
+
+	secondaryDatabase  *sdk.Database
+	secondarySchema    *sdk.Schema
+	secondaryWarehouse *sdk.Warehouse
+
+	azureDatabase  *sdk.Database
+	azureSchema    *sdk.Schema
+	azureWarehouse *sdk.Warehouse
 }
 
 var atc acceptanceTestContext
@@ -97,93 +103,68 @@ func (atc *acceptanceTestContext) initialize() error {
 		return fmt.Errorf("test object suffix is required for this test run; set %s env", testenvs.TestObjectsSuffix)
 	}
 
-	defaultConfig, client, err := setUpSdkClient(testprofiles.Default, "acceptance")
-	if err != nil {
-		return err
-	}
-	atc.config = defaultConfig
-	atc.client = client
-	atc.testClient = helpers.NewTestClient(
-		client,
-		TestDatabaseName,
-		TestSchemaName,
-		TestWarehouseName,
-		acceptancetests.ObjectsSuffix,
-		testenvs.GetSnowflakeEnvironmentWithProdDefault(),
-	)
-
 	ctx := context.Background()
-	db, dbCleanup, err := testClient().CreateTestDatabase(ctx, false)
-	atc.databaseCleanup = dbCleanup
-	if err != nil {
-		return err
-	}
-	atc.database = db
 
-	sc, scCleanup, err := testClient().CreateTestSchema(ctx, false)
-	atc.schemaCleanup = scCleanup
-	if err != nil {
+	if err := atc.initializeSnowflakeEnvironment(
+		ctx,
+		testprofiles.Default,
+		&atc.config,
+		&atc.client,
+		&atc.testClient,
+		&atc.database,
+		&atc.schema,
+		&atc.warehouse,
+	); err != nil {
 		return err
 	}
-	atc.schema = sc
-
-	wh, whCleanup, err := testClient().CreateTestWarehouse(ctx, false)
-	atc.warehouseCleanup = whCleanup
-	if err != nil {
-		return err
-	}
-	atc.warehouse = wh
 
 	// TODO [SNOW-1763603]: what do we do with SimplifiedIntegrationTestsSetup
 	if os.Getenv(string(testenvs.SimplifiedIntegrationTestsSetup)) == "" {
-		secondaryConfig, secondaryClient, err := setUpSdkClient(testprofiles.Secondary, "acceptance")
-		if err != nil {
+		if err := atc.initializeSnowflakeEnvironment(
+			ctx,
+			testprofiles.Secondary,
+			&atc.secondaryConfig,
+			&atc.secondaryClient,
+			&atc.secondaryTestClient,
+			&atc.secondaryDatabase,
+			&atc.secondarySchema,
+			&atc.secondaryWarehouse,
+		); err != nil {
 			return err
 		}
-		atc.secondaryConfig = secondaryConfig
-		atc.secondaryClient = secondaryClient
-		atc.secondaryTestClient = helpers.NewTestClient(
-			secondaryClient,
-			TestDatabaseName,
-			TestSchemaName,
-			TestWarehouseName,
-			acceptancetests.ObjectsSuffix,
-			testenvs.GetSnowflakeEnvironmentWithProdDefault(),
-		)
 
-		if secondaryConfig.Account == defaultConfig.Account {
+		if atc.secondaryConfig.Account == atc.config.Account {
 			accTestLog.Printf("[WARN] Default and secondary configs are set to the same account; it may cause problems in tests requiring multiple accounts")
 		}
 
-		secondaryDb, secondaryDbCleanup, err := secondaryTestClient().CreateTestDatabase(ctx, true)
-		atc.secondaryDatabaseCleanup = secondaryDbCleanup
-		if err != nil {
-			return err
-		}
-		atc.secondaryDatabase = secondaryDb
-
-		secondarySchema, secondarySchemaCleanup, err := secondaryTestClient().CreateTestSchema(ctx, true)
-		atc.secondarySchemaCleanup = secondarySchemaCleanup
-		if err != nil {
-			return err
-		}
-		atc.secondarySchema = secondarySchema
-
-		secondaryWarehouse, secondaryWarehouseCleanup, err := secondaryTestClient().CreateTestWarehouse(ctx, true)
-		atc.secondaryWarehouseCleanup = secondaryWarehouseCleanup
-		if err != nil {
-			return err
-		}
-		atc.secondaryWarehouse = secondaryWarehouse
-
-		errs := errors.Join(
+		if errs := errors.Join(
 			testClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
-			secondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
 			testClient().EnsureEssentialRolesExist(ctx),
+
+			secondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
 			secondaryTestClient().EnsureEssentialRolesExist(ctx),
-		)
-		if errs != nil {
+		); errs != nil {
 			return errs
+		}
+
+		// TODO(SNOW-3198924): For now, tests on requiring multiple Snowflake instances on other clouds are done only on non-prod environments
+		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
+			if errs := errors.Join(
+				atc.initializeSnowflakeEnvironment(
+					ctx,
+					testprofiles.Azure,
+					&atc.azureConfig,
+					&atc.azureClient,
+					&atc.azureTestClient,
+					&atc.azureDatabase,
+					&atc.azureSchema,
+					&atc.azureWarehouse,
+				),
+				azureTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+				azureTestClient().EnsureEssentialRolesExist(ctx),
+			); errs != nil {
+				return errs
+			}
 		}
 	}
 
@@ -194,25 +175,61 @@ func (atc *acceptanceTestContext) initialize() error {
 	return nil
 }
 
+func (atc *acceptanceTestContext) initializeSnowflakeEnvironment(
+	ctx context.Context,
+	profile string,
+	configField **gosnowflake.Config,
+	clientField **sdk.Client,
+	testClientField **helpers.TestClient,
+	databaseField **sdk.Database,
+	schemaField **sdk.Schema,
+	warehouseField **sdk.Warehouse,
+) error {
+	config, client, err := setUpSdkClient(profile, "acceptance")
+	if err != nil {
+		return err
+	}
+	*configField = config
+	*clientField = client
+	*testClientField = helpers.NewTestClient(
+		client,
+		TestDatabaseName,
+		TestSchemaName,
+		TestWarehouseName,
+		acceptancetests.ObjectsSuffix,
+		testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+	)
+
+	database, databaseCleanup, err := (*testClientField).CreateTestDatabase(ctx, true)
+	if err != nil {
+		return err
+	}
+	atc.cleanups = append(atc.cleanups, databaseCleanup)
+	*databaseField = database
+
+	schema, schemaCleanup, err := (*testClientField).CreateTestSchema(ctx, true)
+	if err != nil {
+		return err
+	}
+	atc.cleanups = append(atc.cleanups, schemaCleanup)
+	*schemaField = schema
+
+	warehouse, warehouseCleanup, err := (*testClientField).CreateTestWarehouse(ctx, true)
+	if err != nil {
+		return err
+	}
+	atc.cleanups = append(atc.cleanups, warehouseCleanup)
+	*warehouseField = warehouse
+
+	return nil
+}
+
 func cleanup() {
 	accTestLog.Printf("[INFO] Running acceptance tests cleanup")
-	if atc.databaseCleanup != nil {
-		defer atc.databaseCleanup()
-	}
-	if atc.schemaCleanup != nil {
-		defer atc.schemaCleanup()
-	}
-	if atc.warehouseCleanup != nil {
-		defer atc.warehouseCleanup()
-	}
-	if atc.secondaryDatabaseCleanup != nil {
-		defer atc.secondaryDatabaseCleanup()
-	}
-	if atc.secondarySchemaCleanup != nil {
-		defer atc.secondarySchemaCleanup()
-	}
-	if atc.secondaryWarehouseCleanup != nil {
-		defer atc.secondaryWarehouseCleanup()
+	for _, cleanupFunc := range slices.Backward(atc.cleanups) {
+		if cleanupFunc != nil {
+			cleanupFunc()
+		}
 	}
 }
 
@@ -222,4 +239,8 @@ func testClient() *helpers.TestClient {
 
 func secondaryTestClient() *helpers.TestClient {
 	return atc.secondaryTestClient
+}
+
+func azureTestClient() *helpers.TestClient {
+	return atc.azureTestClient
 }

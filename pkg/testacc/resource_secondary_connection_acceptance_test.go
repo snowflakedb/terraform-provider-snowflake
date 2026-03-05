@@ -5,6 +5,7 @@ package testacc
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -24,10 +25,10 @@ import (
 // For the test that checks behavior for promoting secondary to primary, see `secondary_connection_promotion` manual test.
 
 func TestAcc_SecondaryConnection_Basic(t *testing.T) {
-	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed; also, different regions needed
-
-	// TODO: Unskip after adding necessary configs
-	t.Skipf("Skipped due to 003813 (23001): The connection cannot be failed over to an account in the same region")
+	testenvs.SkipTestIfValueIn(t, testenvs.SnowflakeTestingEnvironment, []string{
+		string(testenvs.SnowflakeProdEnvironment),
+		string(testenvs.SnowflakePreProdGovEnvironment),
+	}, "SNOW-3198924: Missing azure configuration on all testing environments")
 
 	// create primary connection
 	connection, connectionCleanup := secondaryTestClient().Connection.Create(t)
