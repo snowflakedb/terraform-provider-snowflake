@@ -55,20 +55,14 @@ output "ev_comment" {
 
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 
-A new `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experimental feature was added that gives you full control over which values a tag accepts. With this feature enabled, you can:
+Previously, removing `allowed_values` from your tag configuration did not revert the tag to accepting any value, and there was no way to explicitly block all values.
+The new `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experimental feature fixes both issues, giving you full control over which values a tag accepts:
+omit `allowed_values` to allow any value, specify a list to restrict to certain values, or set `no_allowed_values = true` to block all values entirely.
+The `allowed_values` and `no_allowed_values` fields are conflicting and cannot be set at the same time.
 
-1. **Restrict the tag to certain values** — use `allowed_values` to specify which values are permitted:
+Here are examples presenting all options for allowed values management:
 
-```terraform
-resource "snowflake_tag" "example" {
-  name           = "my_tag"
-  database       = "my_database"
-  schema         = "my_schema"
-  allowed_values = ["production", "staging", "development"]
-}
-```
-
-2. **Allow every value** (default) — omit `allowed_values` or set it to an empty list, and the tag will accept any value:
+1. Any value is allowed (`allowed_values` should be removed from the configuration or left empty)
 
 ```terraform
 resource "snowflake_tag" "example" {
@@ -79,7 +73,18 @@ resource "snowflake_tag" "example" {
 }
 ```
 
-3. **Accept no values** — set `no_allowed_values = true` to prevent any value from being assigned to the tag:
+2. Given values are allowed (`allowed_values` should be set to the desired values)
+
+```terraform
+resource "snowflake_tag" "example" {
+  name           = "my_tag"
+  database       = "my_database"
+  schema         = "my_schema"
+  allowed_values = ["production", "staging", "development"]
+}
+```
+
+3. No value is allowed (`no_allowed_values` field set to true)
 
 ```terraform
 resource "snowflake_tag" "example" {
@@ -90,12 +95,13 @@ resource "snowflake_tag" "example" {
 }
 ```
 
-To use this feature, enable it on the provider level
+It's not enabled by default and to use it, you have to enable this feature on the provider level
 by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
 
 **It's still considered a preview feature, even when applied to the stable resources.**
 
-Without the flag enabled, the behavior remains the same as in previous versions. No changes in configuration are required.
+No changes in configuration are required.
+Without the flag enabled, the behavior remains the same as in previous versions.
 
 ## v2.13.x ➞ v2.14.0
 
