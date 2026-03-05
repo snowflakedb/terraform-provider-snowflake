@@ -52,15 +52,15 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("foo")
-		// TODO: allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
-		// WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		// WithAllowedUserDomains("example.com")
+	// TODO(SNOW-3200188): allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
 	recreatesModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("foo")
-		// WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		// WithAllowedUserDomains("example.com")
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -560,9 +560,9 @@ func TestAcc_Saml2Integration_complete(t *testing.T) {
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SsoUrl(validUrl).
 		WithSaml2SpInitiatedLoginPageLabel("foo")
-		// TODO: allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
-		// WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		// WithAllowedUserDomains("example.com")
+	// TODO(SNOW-3200188): allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -730,28 +730,28 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("label")
-		// TODO: allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
-		// WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		// WithAllowedUserDomains("example.com")
+	// TODO(SNOW-3200188): allowed_user_domains and allowed_email_patterns temporarily disabled due to Snowflake-side changes
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
 	withoutLoginPageLabelModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("")
-		// WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		// WithAllowedUserDomains("example.com")
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
 	withoutSnowflakeIssuerUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl(acsURL).
 		WithSaml2SnowflakeIssuerUrl("").
 		WithSaml2SpInitiatedLoginPageLabel("label")
-		// WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		// WithAllowedUserDomains("example.com")
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
 	withoutAcsUrlModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 		WithSaml2SnowflakeAcsUrl("").
 		WithSaml2SnowflakeIssuerUrl(issuerURL).
 		WithSaml2SpInitiatedLoginPageLabel("label")
-		// WithAllowedEmailPatterns("^(.+dev)@example.com$").
-		// WithAllowedUserDomains("example.com")
-	// TODO: Re-enable once allowed_email_patterns and allowed_user_domains are fixed
+	// WithAllowedEmailPatterns("^(.+dev)@example.com$").
+	// WithAllowedUserDomains("example.com")
+	// TODO(SNOW-3200188): Re-enable once allowed_email_patterns and allowed_user_domains are fixed
 	// withoutAllowedEmailPatternsModel := model.Saml2SecurityIntegrationVar("test", id.Name(), issuer, string(sdk.Saml2SecurityIntegrationSaml2ProviderCustom), validUrl, temporaryVariableName).
 	// 	WithSaml2SnowflakeAcsUrl(acsURL).
 	// 	WithSaml2SnowflakeIssuerUrl(issuerURL).
@@ -809,8 +809,8 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", ""),
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
 					resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
-				// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-				// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(withoutLoginPageLabelModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 				),
 			},
 			{
@@ -835,8 +835,8 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", strings.ToLower(issuerURL)),
 					resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", acsURL),
-				// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-				// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(withoutSnowflakeIssuerUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 				),
 			},
 			{
@@ -861,11 +861,11 @@ func TestAcc_Saml2Integration_ForceNewIfEmpty(t *testing.T) {
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.saml2_sp_initiated_login_page_label.0.value", "label"),
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.saml2_snowflake_issuer_url.0.value", issuerURL),
 					resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.saml2_snowflake_acs_url.0.value", strings.ToLower(acsURL)),
-				// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
-				// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
+					// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_user_domains.0.value", "[example.com]"),
+					// resource.TestCheckResourceAttr(withoutAcsUrlModel.ResourceReference(), "describe_output.0.allowed_email_patterns.0.value", "[^(.+dev)@example.com$]"),
 				),
 			},
-			// TODO: Re-enable once allowed_email_patterns and allowed_user_domains are fixed
+			// TODO(SNOW-3200188): Re-enable once allowed_email_patterns and allowed_user_domains are fixed
 			// {
 			// 	Config:          accconfig.FromModels(t, withoutAllowedEmailPatternsModel, temporaryVariableModel),
 			// 	ConfigVariables: configVariables,
