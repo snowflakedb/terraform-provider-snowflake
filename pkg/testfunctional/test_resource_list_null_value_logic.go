@@ -100,17 +100,18 @@ func observeAndStoreList(d *schema.ResourceData, envName string) diag.Diagnostic
 	}
 
 	// Store list state in env var (simulates persisting to Snowflake)
-	if rawConfigValue.IsNull() {
+	switch {
+	case rawConfigValue.IsNull():
 		log.Printf("[DEBUG] storing %s in env %s (null list)", listNullValueLogicEnvNull, envName)
 		if err := os.Setenv(envName, listNullValueLogicEnvNull); err != nil {
 			return diag.FromErr(err)
 		}
-	} else if len(getResult) == 0 {
+	case len(getResult) == 0:
 		log.Printf("[DEBUG] storing %s in env %s (empty list)", listNullValueLogicEnvEmpty, envName)
 		if err := os.Setenv(envName, listNullValueLogicEnvEmpty); err != nil {
 			return diag.FromErr(err)
 		}
-	} else {
+	default:
 		items := make([]string, len(getResult))
 		for i, item := range getResult {
 			items[i] = item.(string)
