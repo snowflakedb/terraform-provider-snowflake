@@ -26,6 +26,33 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(enhancement)* Rework of `snowflake_external_volume` resource
+#### *(breaking change)* `snowflake_external_volume` resource `describe_output` schema changed
+
+The `describe_output` attribute on the `snowflake_external_volume` resource has been restructured.
+Previously it was a flat list of property rows with `parent`, `name`, `type`, `value`, and `default` fields.
+It is now a single structured object with `active`, `comment`, `allow_writes`, and `storage_locations` fields,
+where `storage_locations` contains typed, per-provider sub-objects (`s3_storage_location`, `gcs_storage_location`,
+`azure_storage_location`, `s3_compat_storage_location`).
+
+A state upgrader handles the migration automatically. No changes to your resource configuration are required,
+but if you reference `describe_output` in other parts of your Terraform config (e.g. `output` blocks or `local` values),
+you will need to update those references to match the new schema. For example:
+
+Before:
+```terraform
+output "ev_comment" {
+  value = [for p in snowflake_external_volume.test.describe_output : p.value if p.name == "COMMENT"][0]
+}
+```
+
+After:
+```terraform
+output "ev_comment" {
+  value = snowflake_external_volume.test.describe_output[0].comment
+}
+```
+
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 
 A new `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experimental feature was added that gives you full control over which values a tag accepts. With this feature enabled, you can:
@@ -75,7 +102,7 @@ Without the flag enabled, the behavior remains the same as in previous versions.
 ### *(new feature)* Added `DECFLOAT` support
 
 We added the [`DECFLOAT`](https://docs.snowflake.com/en/sql-reference/data-types-numeric#decfloat) data type support inside the provider.
-It applies to all resources and data sources, however, keep in mind that these are limited by the underlying Snowflake objects capabilities (check the [limitations section](https://docs.snowflake.com/en/sql-reference/data-types-numeric#limitations-for-the-decfloat-data-type) in Snowflake public docs), so e.g. it works correctly for `snowflake_function_sql` but nor for `snowflake_function_python`. 
+It applies to all resources and data sources, however, keep in mind that these are limited by the underlying Snowflake objects capabilities (check the [limitations section](https://docs.snowflake.com/en/sql-reference/data-types-numeric#limitations-for-the-decfloat-data-type) in Snowflake public docs), so e.g. it works correctly for `snowflake_function_sql` but nor for `snowflake_function_python`.
 
 No changes in configuration are required.
 
