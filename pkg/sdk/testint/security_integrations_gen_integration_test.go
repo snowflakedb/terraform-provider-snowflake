@@ -664,7 +664,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		details, err = client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})
 
@@ -715,7 +715,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		details, err = client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})
 
@@ -769,7 +769,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		details, err = client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})
 
@@ -829,7 +829,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		details, err = client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "EXTERNAL_OAUTH_AUDIENCE_LIST", Type: "List", Value: "", Default: "[]"})
 	})
 
@@ -880,7 +880,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		details, err = client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_USE_SECONDARY_ROLES", Type: "String", Value: "NONE", Default: "NONE"})
 	})
 
@@ -943,7 +943,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		details, err = client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_USE_SECONDARY_ROLES", Type: "String", Value: "NONE", Default: "NONE"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "NETWORK_POLICY", Type: "String", Value: "", Default: ""})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_CLIENT_RSA_PUBLIC_KEY_FP", Type: "String", Value: "", Default: ""})
