@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -21,22 +20,23 @@ func NewCatalogIntegrationClient(context *TestClientContext, idsGenerator *IdsGe
 	}
 }
 
+func (c *CatalogIntegrationClient) client() sdk.CatalogIntegrations {
+	return c.context.client.CatalogIntegrations
+}
+
 func (c *CatalogIntegrationClient) exec(sql string) error {
 	ctx := context.Background()
 	_, err := c.context.client.ExecForTests(ctx, sql)
 	return err
 }
 
-// TODO(SNOW-999142): Use SDK implementation for Catalog once it's available
 func (c *CatalogIntegrationClient) Create(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
+	ctx := context.Background()
 	id := c.ids.RandomAccountObjectIdentifier()
-	err := c.exec(fmt.Sprintf(`
-create catalog integration %s
-  catalog_source=object_store
-  table_format=iceberg
-  enabled=true
-`, id.FullyQualifiedName()))
+
+	err := c.client().Create(ctx, sdk.NewCreateCatalogIntegrationRequest(id, true).
+		WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatIceberg)))
 	require.NoError(t, err)
 
 	return id, c.DropFunc(t, id)
@@ -44,9 +44,53 @@ create catalog integration %s
 
 func (c *CatalogIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
+	ctx := context.Background()
 
 	return func() {
-		err := c.exec(fmt.Sprintf(`drop catalog integration if exists %s`, id.FullyQualifiedName()))
+		err := c.client().Drop(ctx, sdk.NewDropCatalogIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *CatalogIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegration, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().ShowByID(ctx, id)
+}
+
+func (c *CatalogIntegrationClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) ([]sdk.CatalogIntegrationProperty, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().Describe(ctx, id)
+}
+
+func (c *CatalogIntegrationClient) DescribeAwsGlue(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.AwsGlueParams, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeAwsGlueParams(ctx, id)
+}
+
+func (c *CatalogIntegrationClient) DescribeObjectStorage(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ObjectStorageParams, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeObjectStorageParams(ctx, id)
+}
+
+func (c *CatalogIntegrationClient) DescribeOpenCatalog(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.OpenCatalogParams, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeOpenCatalogParams(ctx, id)
+}
+
+func (c *CatalogIntegrationClient) DescribeIcebergRest(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.IcebergRestParams, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeIcebergRestParams(ctx, id)
+}
+
+func (c *CatalogIntegrationClient) DescribeSapBdc(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SapBdcParams, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeSapBdcParams(ctx, id)
 }
