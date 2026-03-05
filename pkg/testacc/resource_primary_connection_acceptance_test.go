@@ -34,7 +34,7 @@ func TestAcc_PrimaryConnection_Basic(t *testing.T) {
 	comment := random.Comment()
 
 	accountId := testClient().Account.GetAccountIdentifier(t)
-	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
+	secondaryAccountId := azureTestClient().Account.GetAccountIdentifier(t)
 	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(accountId, id)
 
 	connectionModel := model.PrimaryConnection("t", id.Name())
@@ -158,7 +158,7 @@ func TestAcc_PrimaryConnection_ExternalChanges(t *testing.T) {
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	accountId := testClient().Account.GetAccountIdentifier(t)
-	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
+	secondaryAccountId := azureTestClient().Account.GetAccountIdentifier(t)
 	primaryConnectionAsExternalId := sdk.NewExternalObjectIdentifier(accountId, id)
 
 	connectionModel := model.PrimaryConnection("t", id.Name()).WithComment("config comment")

@@ -147,7 +147,7 @@ func (atc *acceptanceTestContext) initialize() error {
 			return errs
 		}
 
-		// TODO(SNOW-3198924): For now, tests on requiring multiple Snowflake instances on other clouds are done only on non-prod environments
+		// TODO(SNOW-3198924): For now, tests requiring multiple Snowflake instances on other clouds are done only on non-prod environment
 		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
 			if errs := errors.Join(
 				atc.initializeSnowflakeEnvironment(
