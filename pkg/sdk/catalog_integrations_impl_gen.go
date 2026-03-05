@@ -147,7 +147,6 @@ func (r *CreateCatalogIntegrationRequest) toOpts() *CreateCatalogIntegrationOpti
 		opts.SapBdcCatalogSourceParams = &SapBdcParams{}
 		opts.SapBdcCatalogSourceParams.RestConfig = SapBdcRestConfig{
 			SapBdcInvitationLink: r.SapBdcCatalogSourceParams.RestConfig.SapBdcInvitationLink,
-			AccessDelegationMode: r.SapBdcCatalogSourceParams.RestConfig.AccessDelegationMode,
 		}
 	}
 	return opts

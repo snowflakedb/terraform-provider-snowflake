@@ -17,6 +17,17 @@ type CatalogIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]CatalogIntegrationProperty, error)
+
+	// DescribeAwsGlueParams is added manually
+	DescribeAwsGlueParams(ctx context.Context, id AccountObjectIdentifier) (*AwsGlueParams, error)
+	// DescribeObjectStorageParams is added manually
+	DescribeObjectStorageParams(ctx context.Context, id AccountObjectIdentifier) (*ObjectStorageParams, error)
+	// DescribeOpenCatalogParams is added manually
+	DescribeOpenCatalogParams(ctx context.Context, id AccountObjectIdentifier) (*OpenCatalogParams, error)
+	// DescribeIcebergRestParams is added manually
+	DescribeIcebergRestParams(ctx context.Context, id AccountObjectIdentifier) (*IcebergRestParams, error)
+	// DescribeSapBdcParams is added manually
+	DescribeSapBdcParams(ctx context.Context, id AccountObjectIdentifier) (*SapBdcParams, error)
 }
 
 // CreateCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration.
@@ -110,8 +121,8 @@ type SapBdcParams struct {
 }
 
 type SapBdcRestConfig struct {
-	SapBdcInvitationLink string                                  `ddl:"parameter,single_quotes" sql:"SAP_BDC_INVITATION_LINK"`
-	AccessDelegationMode *CatalogIntegrationAccessDelegationMode `ddl:"parameter,no_quotes" sql:"ACCESS_DELEGATION_MODE"`
+	SapBdcInvitationLink string `ddl:"parameter,single_quotes" sql:"SAP_BDC_INVITATION_LINK"`
+	accessDelegationMode bool   `ddl:"static" sql:"ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS"`
 }
 
 // AlterCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-catalog-integration.

@@ -244,11 +244,6 @@ func NewSapBdcRestConfigRequest(
 	return &s
 }
 
-func (s *SapBdcRestConfigRequest) WithAccessDelegationMode(accessDelegationMode CatalogIntegrationAccessDelegationMode) *SapBdcRestConfigRequest {
-	s.AccessDelegationMode = &accessDelegationMode
-	return s
-}
-
 func NewAlterCatalogIntegrationRequest(
 	name AccountObjectIdentifier,
 ) *AlterCatalogIntegrationRequest {
