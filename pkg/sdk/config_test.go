@@ -1224,3 +1224,13 @@ func TestConfigDTODriverConfig_insecureModeAndDisableOcspChecks(t *testing.T) {
 		})
 	}
 }
+
+func TestConfigDTODriverConfig_disableTelemetryWithoutParams(t *testing.T) {
+	cfg := NewConfigDTO().WithDisableTelemetry(true)
+
+	got, err := cfg.DriverConfig()
+
+	require.NoError(t, err)
+	require.NotNil(t, got.Params)
+	require.Equal(t, Pointer("false"), got.Params[ClientTelemetryEnableSessionParameter])
+}
