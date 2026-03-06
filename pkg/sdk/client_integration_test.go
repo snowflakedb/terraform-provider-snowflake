@@ -64,11 +64,10 @@ func TestClient_NewClientDriverLoggingLevel(t *testing.T) {
 
 		var expected string
 		if os.Getenv("GITHUB_ACTIONS") != "" {
-			expected = "fatal"
+			expected = "FATAL"
 		} else {
-			expected = "error"
+			expected = "ERROR"
 		}
-		// TODO [this PR]: GetLogger should stay here but we need to verify after the logging-related changes on the gosnowflake team side
 		assert.Equal(t, expected, gosnowflake.GetLogger().GetLogLevel())
 	})
 
@@ -78,6 +77,6 @@ func TestClient_NewClientDriverLoggingLevel(t *testing.T) {
 		_, err := NewClient(config)
 		require.NoError(t, err)
 
-		assert.Equal(t, "trace", gosnowflake.GetLogger().GetLogLevel())
+		assert.Equal(t, "TRACE", gosnowflake.GetLogger().GetLogLevel())
 	})
 }
