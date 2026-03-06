@@ -233,11 +233,6 @@ func (s *AlterHybridTableRequest) WithSet(set HybridTableSetPropertiesRequest) *
 	return s
 }
 
-func (s *AlterHybridTableRequest) WithUnset(unset HybridTableUnsetPropertiesRequest) *AlterHybridTableRequest {
-	s.Unset = &unset
-	return s
-}
-
 func NewHybridTableAddColumnActionRequest(
 	name string,
 	columnType DataType,
@@ -369,11 +364,6 @@ func (s *HybridTableAlterColumnActionRequest) WithSetDefault(setDefault Sequence
 	return s
 }
 
-func (s *HybridTableAlterColumnActionRequest) WithNotNullConstraint(notNullConstraint HybridTableColumnNotNullConstraintRequest) *HybridTableAlterColumnActionRequest {
-	s.NotNullConstraint = &notNullConstraint
-	return s
-}
-
 func (s *HybridTableAlterColumnActionRequest) WithType(dataType DataType) *HybridTableAlterColumnActionRequest {
 	s.Type = &dataType
 	return s
@@ -386,21 +376,6 @@ func (s *HybridTableAlterColumnActionRequest) WithComment(comment string) *Hybri
 
 func (s *HybridTableAlterColumnActionRequest) WithUnsetComment(unsetComment bool) *HybridTableAlterColumnActionRequest {
 	s.UnsetComment = &unsetComment
-	return s
-}
-
-func NewHybridTableColumnNotNullConstraintRequest() *HybridTableColumnNotNullConstraintRequest {
-	s := HybridTableColumnNotNullConstraintRequest{}
-	return &s
-}
-
-func (s *HybridTableColumnNotNullConstraintRequest) WithSetNotNull(setNotNull bool) *HybridTableColumnNotNullConstraintRequest {
-	s.SetNotNull = &setNotNull
-	return s
-}
-
-func (s *HybridTableColumnNotNullConstraintRequest) WithDropNotNull(dropNotNull bool) *HybridTableColumnNotNullConstraintRequest {
-	s.DropNotNull = &dropNotNull
 	return s
 }
 
@@ -495,16 +470,6 @@ func (s *HybridTableSetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxData
 	return s
 }
 
-func (s *HybridTableSetPropertiesRequest) WithChangeTracking(changeTracking bool) *HybridTableSetPropertiesRequest {
-	s.ChangeTracking = &changeTracking
-	return s
-}
-
-func (s *HybridTableSetPropertiesRequest) WithDefaultDdlCollation(defaultDdlCollation string) *HybridTableSetPropertiesRequest {
-	s.DefaultDdlCollation = &defaultDdlCollation
-	return s
-}
-
 func (s *HybridTableSetPropertiesRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *HybridTableSetPropertiesRequest {
 	s.EnableSchemaEvolution = &enableSchemaEvolution
 	return s
@@ -522,46 +487,6 @@ func (s *HybridTableSetPropertiesRequest) WithComment(comment string) *HybridTab
 
 func (s *HybridTableSetPropertiesRequest) WithRowTimestamp(rowTimestamp bool) *HybridTableSetPropertiesRequest {
 	s.RowTimestamp = &rowTimestamp
-	return s
-}
-
-func NewHybridTableUnsetPropertiesRequest() *HybridTableUnsetPropertiesRequest {
-	s := HybridTableUnsetPropertiesRequest{}
-	return &s
-}
-
-func (s *HybridTableUnsetPropertiesRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
-	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
-	return s
-}
-
-func (s *HybridTableUnsetPropertiesRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays bool) *HybridTableUnsetPropertiesRequest {
-	s.MaxDataExtensionTimeInDays = &maxDataExtensionTimeInDays
-	return s
-}
-
-func (s *HybridTableUnsetPropertiesRequest) WithChangeTracking(changeTracking bool) *HybridTableUnsetPropertiesRequest {
-	s.ChangeTracking = &changeTracking
-	return s
-}
-
-func (s *HybridTableUnsetPropertiesRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *HybridTableUnsetPropertiesRequest {
-	s.DefaultDdlCollation = &defaultDdlCollation
-	return s
-}
-
-func (s *HybridTableUnsetPropertiesRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *HybridTableUnsetPropertiesRequest {
-	s.EnableSchemaEvolution = &enableSchemaEvolution
-	return s
-}
-
-func (s *HybridTableUnsetPropertiesRequest) WithContactPurpose(contactPurpose string) *HybridTableUnsetPropertiesRequest {
-	s.ContactPurpose = &contactPurpose
-	return s
-}
-
-func (s *HybridTableUnsetPropertiesRequest) WithComment(comment bool) *HybridTableUnsetPropertiesRequest {
-	s.Comment = &comment
 	return s
 }
 

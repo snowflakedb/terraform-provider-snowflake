@@ -203,12 +203,6 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 				Comment:      v.Comment,
 				UnsetComment: v.UnsetComment,
 			}
-			if v.NotNullConstraint != nil {
-				s[i].NotNullConstraint = &HybridTableColumnNotNullConstraint{
-					SetNotNull:  v.NotNullConstraint.SetNotNull,
-					DropNotNull: v.NotNullConstraint.DropNotNull,
-				}
-			}
 		}
 		opts.AlterColumnAction = s
 	}
@@ -245,23 +239,10 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		opts.Set = &HybridTableSetProperties{
 			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
 			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
-			ChangeTracking:             r.Set.ChangeTracking,
-			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
 			EnableSchemaEvolution:      r.Set.EnableSchemaEvolution,
 			Contact:                    r.Set.Contact,
 			Comment:                    r.Set.Comment,
 			RowTimestamp:               r.Set.RowTimestamp,
-		}
-	}
-	if r.Unset != nil {
-		opts.Unset = &HybridTableUnsetProperties{
-			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
-			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
-			ChangeTracking:             r.Unset.ChangeTracking,
-			DefaultDdlCollation:        r.Unset.DefaultDdlCollation,
-			EnableSchemaEvolution:      r.Unset.EnableSchemaEvolution,
-			ContactPurpose:             r.Unset.ContactPurpose,
-			Comment:                    r.Unset.Comment,
 		}
 	}
 	return opts
