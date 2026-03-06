@@ -764,14 +764,14 @@ func Test_Provider_toDriverLogLevel(t *testing.T) {
 
 	valid := []test{
 		// Case insensitive.
-		{input: "WARNING", want: DriverLogLevelWarning},
+		{input: "WARN", want: DriverLogLevelWarn},
 
 		// Supported Values.
 		{input: "trace", want: DriverLogLevelTrace},
 		{input: "debug", want: DriverLogLevelDebug},
 		{input: "info", want: DriverLogLevelInfo},
 		{input: "print", want: DriverLogLevelPrint},
-		{input: "warning", want: DriverLogLevelWarning},
+		{input: "warn", want: DriverLogLevelWarn},
 		{input: "error", want: DriverLogLevelError},
 		{input: "fatal", want: DriverLogLevelFatal},
 		{input: "panic", want: DriverLogLevelPanic},

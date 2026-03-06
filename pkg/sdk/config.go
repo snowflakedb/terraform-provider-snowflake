@@ -598,14 +598,15 @@ type DriverLogLevel string
 
 const (
 	// these values are lower case on purpose to match gosnowflake case
-	DriverLogLevelTrace   DriverLogLevel = "trace"
-	DriverLogLevelDebug   DriverLogLevel = "debug"
-	DriverLogLevelInfo    DriverLogLevel = "info"
-	DriverLogLevelPrint   DriverLogLevel = "print"
-	DriverLogLevelWarning DriverLogLevel = "warning"
-	DriverLogLevelError   DriverLogLevel = "error"
-	DriverLogLevelFatal   DriverLogLevel = "fatal"
-	DriverLogLevelPanic   DriverLogLevel = "panic"
+	DriverLogLevelTrace DriverLogLevel = "trace"
+	DriverLogLevelDebug DriverLogLevel = "debug"
+	DriverLogLevelInfo  DriverLogLevel = "info"
+	DriverLogLevelPrint DriverLogLevel = "print"
+	DriverLogLevelWarn  DriverLogLevel = "warn"
+	DriverLogLevelError DriverLogLevel = "error"
+	DriverLogLevelFatal DriverLogLevel = "fatal"
+	DriverLogLevelPanic DriverLogLevel = "panic" //?
+	// TODO: add OFF, remove panic, and add mapping for it
 )
 
 var AllDriverLogLevels = []DriverLogLevel{
@@ -613,7 +614,7 @@ var AllDriverLogLevels = []DriverLogLevel{
 	DriverLogLevelDebug,
 	DriverLogLevelInfo,
 	DriverLogLevelPrint,
-	DriverLogLevelWarning,
+	DriverLogLevelWarn,
 	DriverLogLevelError,
 	DriverLogLevelFatal,
 	DriverLogLevelPanic,
@@ -626,7 +627,7 @@ func ToDriverLogLevel(s string) (DriverLogLevel, error) {
 		string(DriverLogLevelDebug),
 		string(DriverLogLevelInfo),
 		string(DriverLogLevelPrint),
-		string(DriverLogLevelWarning),
+		string(DriverLogLevelWarn),
 		string(DriverLogLevelError),
 		string(DriverLogLevelFatal),
 		string(DriverLogLevelPanic):

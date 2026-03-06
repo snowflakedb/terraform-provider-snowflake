@@ -227,7 +227,7 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
 					assert.True(t, config.ServerSessionKeepAlive)
-					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
@@ -238,7 +238,7 @@ func TestAcc_Provider_LegacyTomlConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
-					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), gosnowflake.GetLogger().GetLogLevel())
 
 					return nil
 				},
@@ -294,7 +294,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
 					assert.True(t, config.ServerSessionKeepAlive)
-					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), config.Tracing)
 					assert.Equal(t, ".", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
@@ -305,7 +305,7 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
-					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
 					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
 					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
@@ -594,7 +594,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.DisableQueryContextCache, "false")
 					t.Setenv(snowflakeenvs.IncludeRetryReason, "false")
 					t.Setenv(snowflakeenvs.MaxRetryCount, "2")
-					t.Setenv(snowflakeenvs.DriverTracing, string(sdk.DriverLogLevelWarning))
+					t.Setenv(snowflakeenvs.DriverTracing, string(sdk.DriverLogLevelWarn))
 					t.Setenv(snowflakeenvs.TmpDirectoryPath, "../")
 					t.Setenv(snowflakeenvs.DisableConsoleLogin, "false")
 					t.Setenv(snowflakeenvs.OauthClientId, "oauth_client_id")
@@ -648,7 +648,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.OCSPFailOpenFalse, config.OCSPFailOpen)
 					assert.Equal(t, "token", config.Token)
 					assert.True(t, config.ServerSessionKeepAlive)
-					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), config.Tracing)
 					assert.Equal(t, "../", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolFalse, config.ClientStoreTemporaryCredential)
@@ -659,7 +659,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 						"foo": sdk.Pointer("bar"),
 						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
-					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
 					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
 					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
@@ -798,7 +798,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 					assert.Equal(t, "correct token", config.Token)
 					assert.True(t, config.ServerSessionKeepAlive)
-					assert.Equal(t, string(sdk.DriverLogLevelWarning), config.Tracing)
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), config.Tracing)
 					assert.Equal(t, "../../", config.TmpDirPath)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
 					assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientStoreTemporaryCredential)
@@ -809,7 +809,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 						"foo": sdk.Pointer("piyo"),
 						sdk.ClientTelemetryEnableSessionParameter: sdk.Pointer(internalprovider.BooleanFalse),
 					}, config.Params)
-					assert.Equal(t, string(sdk.DriverLogLevelWarning), gosnowflake.GetLogger().GetLogLevel())
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), gosnowflake.GetLogger().GetLogLevel())
 					assert.Equal(t, "oauth_client_id", config.OauthClientID)
 					assert.Equal(t, "oauth_client_secret", config.OauthClientSecret)
 					assert.Equal(t, "oauth_token_request_url", config.OauthTokenRequestURL)
