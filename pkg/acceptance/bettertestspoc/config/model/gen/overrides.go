@@ -23,7 +23,7 @@ var multilineAttributesOverrides = map[string][]string{
 }
 
 var complexListAttributesOverrides = map[string]map[string]string{
-	"ExternalVolume":  {"storage_location": "sdk.ExternalVolumeStorageLocation"},
+	"ExternalVolume":  {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
 	"Listing":         {"manifest": "sdk.StageLocation"},
 	"MaskingPolicy":   {"argument": "sdk.TableColumnSignature"},
 	"RowAccessPolicy": {"argument": "sdk.TableColumnSignature"},
