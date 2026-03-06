@@ -4,13 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -123,6 +126,8 @@ func ExternalVolume() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingCreateWrapper(resources.ExternalVolume, CreateContextExternalVolume)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingReadWrapper(resources.ExternalVolume, ReadContextExternalVolume(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingUpdateWrapper(resources.ExternalVolume, UpdateContextExternalVolume)),
@@ -140,7 +145,40 @@ func ExternalVolume() *schema.Resource {
 			ComputedIfAnyAttributeChanged(externalVolumeSchema, DescribeOutputAttributeName, "name", "allow_writes", "comment", "storage_location"),
 		)),
 		Timeouts: defaultTimeouts,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_ExternalVolumeStateUpgrader,
+			},
+		},
 	}
+}
+
+func storageLocationDetailsToStateMaps(locations []sdk.ExternalVolumeStorageLocationDetails) []map[string]any {
+	result := make([]map[string]any, len(locations))
+	for i, loc := range locations {
+		m := map[string]any{
+			"storage_location_name": loc.Name,
+			"storage_provider":      loc.StorageProvider,
+			"storage_base_url":      loc.StorageBaseUrl,
+			"encryption_type":       loc.EncryptionType,
+		}
+		switch {
+		case loc.S3StorageLocation != nil:
+			m["storage_aws_role_arn"] = loc.S3StorageLocation.StorageAwsRoleArn
+			m["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+			m["encryption_kms_key_id"] = loc.S3StorageLocation.EncryptionKmsKeyId
+		case loc.AzureStorageLocation != nil:
+			m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
+		case loc.S3CompatStorageLocation != nil:
+			m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
+		case loc.GCSStorageLocation != nil:
+			m["encryption_kms_key_id"] = loc.GCSStorageLocation.EncryptionKmsKeyId
+		}
+		result[i] = m
+	}
+	return result
 }
 
 func ImportExternalVolume(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
@@ -173,19 +211,7 @@ func ImportExternalVolume(ctx context.Context, d *schema.ResourceData, meta any)
 		return nil, err
 	}
 
-	storageLocations := make([]map[string]any, len(parsedExternalVolumeDescribed.StorageLocations))
-	for i, storageLocation := range parsedExternalVolumeDescribed.StorageLocations {
-		storageLocations[i] = map[string]any{
-			"storage_location_name":   storageLocation.Name,
-			"storage_provider":        storageLocation.StorageProvider,
-			"storage_base_url":        storageLocation.StorageBaseUrl,
-			"storage_aws_role_arn":    storageLocation.StorageAwsRoleArn,
-			"storage_aws_external_id": storageLocation.StorageAwsExternalId,
-			"encryption_type":         storageLocation.EncryptionType,
-			"encryption_kms_key_id":   storageLocation.EncryptionKmsKeyId,
-			"azure_tenant_id":         storageLocation.AzureTenantId,
-		}
-	}
+	storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
 
 	if err = d.Set("storage_location", storageLocations); err != nil {
 		return nil, err
@@ -207,16 +233,12 @@ func CreateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 
 	req := sdk.NewCreateExternalVolumeRequest(id, storageLocations)
 
-	if v, ok := d.GetOk("comment"); ok {
-		req.WithComment(v.(string))
-	}
-
-	if v := d.Get("allow_writes").(string); v != BooleanDefault {
-		parsed, err := booleanStringToBool(v)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithAllowWrites(parsed)
+	errs := errors.Join(
+		stringAttributeCreateBuilder(d, "comment", req.WithComment),
+		booleanStringAttributeCreateBuilder(d, "allow_writes", req.WithAllowWrites),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	err = client.ExternalVolumes.Create(ctx, req)
@@ -270,10 +292,6 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		if err = d.Set("comment", externalVolume.Comment); err != nil {
-			return diag.FromErr(err)
-		}
-
 		externalVolumeDescribe, err := client.ExternalVolumes.Describe(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
@@ -284,28 +302,18 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		storageLocations := make([]map[string]any, len(parsedExternalVolumeDescribed.StorageLocations))
-		for i, storageLocation := range parsedExternalVolumeDescribed.StorageLocations {
-			storageLocations[i] = map[string]any{
-				"storage_location_name":   storageLocation.Name,
-				"storage_provider":        storageLocation.StorageProvider,
-				"storage_base_url":        storageLocation.StorageBaseUrl,
-				"storage_aws_role_arn":    storageLocation.StorageAwsRoleArn,
-				"storage_aws_external_id": storageLocation.StorageAwsExternalId,
-				"encryption_type":         storageLocation.EncryptionType,
-				"encryption_kms_key_id":   storageLocation.EncryptionKmsKeyId,
-				"azure_tenant_id":         storageLocation.AzureTenantId,
-			}
-		}
+		storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
 
-		if err = d.Set("storage_location", storageLocations); err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set(DescribeOutputAttributeName, schemas.ExternalVolumeDescriptionToSchema(externalVolumeDescribe)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.ExternalVolumeToSchema(externalVolume)}); err != nil {
-			return diag.FromErr(err)
+		detailsSchema := schemas.ExternalVolumeDetailsToSchema(parsedExternalVolumeDescribed)
+
+		errs := errors.Join(
+			d.Set("comment", externalVolume.Comment),
+			d.Set("storage_location", storageLocations),
+			d.Set(DescribeOutputAttributeName, []map[string]any{detailsSchema}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ExternalVolumeToSchema(externalVolume)}),
+		)
+		if errs != nil {
+			return diag.FromErr(errs)
 		}
 
 		return nil
@@ -321,22 +329,12 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 
 	set := sdk.NewAlterExternalVolumeSetRequest()
 
-	if d.HasChange("comment") {
-		// not using d.GetOk as that doesn't let comments be reset to the empty string
-		set.WithComment(d.Get("comment").(string))
-	}
-
-	if d.HasChange("allow_writes") {
-		if v := d.Get("allow_writes").(string); v != BooleanDefault {
-			parsed, err := booleanStringToBool(v)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			set.WithAllowWrites(parsed)
-		} else {
-			// no way to unset allow writes - set to false as a default
-			set.WithAllowWrites(false)
-		}
+	errs := errors.Join(
+		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
+		booleanStringAttributeUnsetFallbackUpdate(d, "allow_writes", &set.AllowWrites, false),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	if (*set != sdk.AlterExternalVolumeSetRequest{}) {
@@ -365,13 +363,12 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 		// can be added back. The storage locations lower than index 5 don't need to be modified.
 		// The removal process could be done without the above recreation, but it handles this case
 		// too so it's used for both actions.
-		commonPrefixLastIndex, err := sdk.CommonPrefixLastIndex(newLocations, oldLocations)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		commonPrefixLastIndex := collections.CommonPrefixLastIndex(newLocations, oldLocations, func(a, b sdk.ExternalVolumeStorageLocationItem) bool {
+			return reflect.DeepEqual(a, b)
+		})
 
-		var removedLocations []sdk.ExternalVolumeStorageLocation
-		var addedLocations []sdk.ExternalVolumeStorageLocation
+		var removedLocations []sdk.ExternalVolumeStorageLocationItem
+		var addedLocations []sdk.ExternalVolumeStorageLocationItem
 		if commonPrefixLastIndex == -1 {
 			removedLocations = oldLocations
 			addedLocations = newLocations
@@ -389,7 +386,7 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 			// would otherwise be necessary as a minimum of 1 storage location per external volume is required.
 			// The alternative solution of adding volumes before removing them isn't possible as
 			// name must be unique for storage locations
-			tempStorageLocation, err := sdk.CopySentinelStorageLocation(removedLocations[0])
+			tempStorageLocation, err := sdk.CopySentinelStorageLocationItem(removedLocations[0])
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -426,7 +423,7 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 	return ReadContextExternalVolume(false)(ctx, d, meta)
 }
 
-func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error) {
+func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, error) {
 	_, ok := v.([]any)
 	if !ok {
 		return nil, fmt.Errorf("unable to extract storage locations, input is either nil or non expected type (%T): %v", v, v)
@@ -480,7 +477,6 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error)
 			}
 
 			s3StorageLocation := &sdk.S3StorageLocationParams{
-				Name:              name,
 				StorageProvider:   s3StorageProvider,
 				StorageBaseUrl:    storageBaseUrl,
 				StorageAwsRoleArn: storageAwsRoleArn,
@@ -507,6 +503,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error)
 			}
 
 			storageLocation = sdk.ExternalVolumeStorageLocation{
+				Name:                    name,
 				S3StorageLocationParams: s3StorageLocation,
 			}
 		case sdk.StorageProviderGCS:
@@ -523,7 +520,6 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error)
 			}
 
 			gcsStorageLocation := &sdk.GCSStorageLocationParams{
-				Name:           name,
 				StorageBaseUrl: storageBaseUrl,
 			}
 			encryptionType, ok := storageLocationConfig["encryption_type"].(string)
@@ -546,6 +542,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error)
 			}
 
 			storageLocation = sdk.ExternalVolumeStorageLocation{
+				Name:                     name,
 				GCSStorageLocationParams: gcsStorageLocation,
 			}
 		case sdk.StorageProviderAzure:
@@ -571,8 +568,8 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error)
 			}
 
 			storageLocation = sdk.ExternalVolumeStorageLocation{
+				Name: name,
 				AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
-					Name:           name,
 					AzureTenantId:  azureTenantId,
 					StorageBaseUrl: storageBaseUrl,
 				},
@@ -580,16 +577,18 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocation, error)
 		}
 		storageLocations[i] = storageLocation
 	}
-	return storageLocations, nil
+	return collections.Map(storageLocations, func(storageLocation sdk.ExternalVolumeStorageLocation) sdk.ExternalVolumeStorageLocationItem {
+		return sdk.ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: storageLocation}
+	}), nil
 }
 
 func addStorageLocation(
-	addedLocation sdk.ExternalVolumeStorageLocation,
+	addedLocationItem sdk.ExternalVolumeStorageLocationItem,
 	client *sdk.Client,
 	ctx context.Context,
 	id sdk.AccountObjectIdentifier,
 ) error {
-	storageProvider, err := sdk.GetStorageLocationStorageProvider(addedLocation)
+	storageProvider, err := sdk.GetStorageLocationStorageProvider(addedLocationItem)
 	if err != nil {
 		return err
 	}
@@ -597,9 +596,8 @@ func addStorageLocation(
 	var newStorageLocationreq *sdk.ExternalVolumeStorageLocationRequest
 	switch storageProvider {
 	case sdk.StorageProviderS3, sdk.StorageProviderS3GOV:
-		addedLocation := addedLocation.S3StorageLocationParams
+		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.S3StorageLocationParams
 		s3ParamsRequest := sdk.NewS3StorageLocationParamsRequest(
-			addedLocation.Name,
 			addedLocation.StorageProvider,
 			addedLocation.StorageAwsRoleArn,
 			addedLocation.StorageBaseUrl,
@@ -613,11 +611,10 @@ func addStorageLocation(
 			s3ParamsRequest = s3ParamsRequest.WithEncryption(*encryptionRequest)
 		}
 
-		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest().WithS3StorageLocationParams(*s3ParamsRequest)
+		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithS3StorageLocationParams(*s3ParamsRequest)
 	case sdk.StorageProviderGCS:
-		addedLocation := addedLocation.GCSStorageLocationParams
+		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.GCSStorageLocationParams
 		gcsParamsRequest := sdk.NewGCSStorageLocationParamsRequest(
-			addedLocation.Name,
 			addedLocation.StorageBaseUrl,
 		)
 
@@ -630,32 +627,26 @@ func addStorageLocation(
 			gcsParamsRequest = gcsParamsRequest.WithEncryption(*encryptionRequest)
 		}
 
-		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest().WithGCSStorageLocationParams(*gcsParamsRequest)
+		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithGCSStorageLocationParams(*gcsParamsRequest)
 	case sdk.StorageProviderAzure:
-		addedLocation := addedLocation.AzureStorageLocationParams
+		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.AzureStorageLocationParams
 		azureParamsRequest := sdk.NewAzureStorageLocationParamsRequest(
-			addedLocation.Name,
 			addedLocation.AzureTenantId,
 			addedLocation.StorageBaseUrl,
 		)
-		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest().WithAzureStorageLocationParams(*azureParamsRequest)
+		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithAzureStorageLocationParams(*azureParamsRequest)
 	}
 
-	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(*newStorageLocationreq))
+	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(sdk.ExternalVolumeStorageLocationItemRequest{ExternalVolumeStorageLocation: *newStorageLocationreq}))
 }
 
 func removeStorageLocation(
-	removedLocation sdk.ExternalVolumeStorageLocation,
+	removedLocation sdk.ExternalVolumeStorageLocationItem,
 	client *sdk.Client,
 	ctx context.Context,
 	id sdk.AccountObjectIdentifier,
 ) error {
-	removedName, err := sdk.GetStorageLocationName(removedLocation)
-	if err != nil {
-		return err
-	}
-
-	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(removedName))
+	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(removedLocation.ExternalVolumeStorageLocation.Name))
 }
 
 // Process the removal / addition storage location requests.
@@ -663,8 +654,8 @@ func removeStorageLocation(
 // len(removedLocations) should be less than the total number
 // of storage locations the external volume has, else this function will fail.
 func updateStorageLocations(
-	removedLocations []sdk.ExternalVolumeStorageLocation,
-	addedLocations []sdk.ExternalVolumeStorageLocation,
+	removedLocations []sdk.ExternalVolumeStorageLocationItem,
+	addedLocations []sdk.ExternalVolumeStorageLocationItem,
 	client *sdk.Client,
 	ctx context.Context,
 	id sdk.AccountObjectIdentifier,

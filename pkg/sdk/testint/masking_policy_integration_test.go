@@ -230,11 +230,11 @@ func TestInt_MaskingPolicyCreate(t *testing.T) {
 		signature := []sdk.TableColumnSignature{
 			{
 				Name: "col1",
-				Type: testdatatypes.DataTypeDecflaot,
+				Type: testdatatypes.DataTypeDecfloat,
 			},
 		}
 		expression := "REPLACE('X', 1, 2)::DECFLOAT"
-		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeDecflaot, expression, nil)
+		err := client.MaskingPolicies.Create(ctx, id, signature, testdatatypes.DataTypeDecfloat, expression, nil)
 		require.NoError(t, err)
 		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, id)
 		require.NoError(t, err)

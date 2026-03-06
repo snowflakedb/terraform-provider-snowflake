@@ -73,7 +73,6 @@ resource "snowflake_table_constraint" "primary_key" {
   type     = "PRIMARY KEY"
   table_id = snowflake_table.t.fully_qualified_name
   columns  = ["col1"]
-  comment  = "hello world"
 }
 
 resource "snowflake_table_constraint" "foreign_key" {
@@ -81,16 +80,17 @@ resource "snowflake_table_constraint" "foreign_key" {
   type     = "FOREIGN KEY"
   table_id = snowflake_table.t.fully_qualified_name
   columns  = ["col2"]
+
   foreign_key_properties {
     references {
       table_id = snowflake_table.fk_t.fully_qualified_name
       columns  = ["fk_col1"]
     }
   }
+
   enforced   = false
   deferrable = false
   initially  = "IMMEDIATE"
-  comment    = "hello fk"
 }
 
 resource "snowflake_table_constraint" "unique" {
@@ -98,7 +98,6 @@ resource "snowflake_table_constraint" "unique" {
   type     = "UNIQUE"
   table_id = snowflake_table.t.fully_qualified_name
   columns  = ["col3"]
-  comment  = "hello unique"
 }
 ```
 
