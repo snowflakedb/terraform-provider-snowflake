@@ -87,7 +87,6 @@ type SapBdcParamsRequest struct {
 
 type SapBdcRestConfigRequest struct {
 	SapBdcInvitationLink string // required
-	AccessDelegationMode *CatalogIntegrationAccessDelegationMode
 }
 
 type AlterCatalogIntegrationRequest struct {
