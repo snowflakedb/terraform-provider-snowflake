@@ -61,10 +61,10 @@ func (c *SemanticViewClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (
 	return c.client().ShowByID(ctx, id)
 }
 
-func (c *SemanticViewClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) ([]sdk.SemanticViewDetails, error) {
+func (c *SemanticViewClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.SemanticViewDescribeDetails, error) {
 	t.Helper()
 	ctx := context.Background()
-	return c.client().Describe(ctx, id)
+	return c.client().DescribeSemanticViewDetails(ctx, id)
 }
 
 func (c *SemanticViewClient) Alter(t *testing.T, req *sdk.AlterSemanticViewRequest) {
