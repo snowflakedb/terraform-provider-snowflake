@@ -23,6 +23,13 @@ func mapNullStringWithMapping[T any](stringField **T, sqlValue sql.NullString, m
 	}
 }
 
+func mapNullInt(intField **int, sqlValue sql.NullInt64) {
+	if sqlValue.Valid {
+		v := int(sqlValue.Int64)
+		*intField = &v
+	}
+}
+
 func mapNullBool(boolField **bool, sqlValue sql.NullBool) {
 	if sqlValue.Valid {
 		*boolField = &sqlValue.Bool
