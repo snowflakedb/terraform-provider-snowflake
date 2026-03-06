@@ -770,17 +770,18 @@ func Test_Provider_toDriverLogLevel(t *testing.T) {
 		{input: "trace", want: DriverLogLevelTrace},
 		{input: "debug", want: DriverLogLevelDebug},
 		{input: "info", want: DriverLogLevelInfo},
-		{input: "print", want: DriverLogLevelPrint},
 		{input: "warn", want: DriverLogLevelWarn},
 		{input: "error", want: DriverLogLevelError},
 		{input: "fatal", want: DriverLogLevelFatal},
-		{input: "panic", want: DriverLogLevelPanic},
+		{input: "off", want: DriverLogLevelOff},
 	}
 
 	invalid := []test{
 		{input: ""},
 		{input: "foo"},
 		{input: "tracing"},
+		{input: "print"},
+		{input: "panic"},
 	}
 
 	for _, tc := range valid {
@@ -794,6 +795,57 @@ func Test_Provider_toDriverLogLevel(t *testing.T) {
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToDriverLogLevel(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_Provider_toDriverLogLevelWithDeprecatedMappings(t *testing.T) {
+	type test struct {
+		input string
+		want  DriverLogLevel
+	}
+
+	valid := []test{
+		// Standard values.
+		{input: "trace", want: DriverLogLevelTrace},
+		{input: "debug", want: DriverLogLevelDebug},
+		{input: "info", want: DriverLogLevelInfo},
+		{input: "warn", want: DriverLogLevelWarn},
+		{input: "error", want: DriverLogLevelError},
+		{input: "fatal", want: DriverLogLevelFatal},
+		{input: "off", want: DriverLogLevelOff},
+
+		// Case insensitive.
+		{input: "WARN", want: DriverLogLevelWarn},
+		{input: "OFF", want: DriverLogLevelOff},
+
+		// Deprecated values mapped to new ones.
+		{input: "warning", want: DriverLogLevelWarn},
+		{input: "WARNING", want: DriverLogLevelWarn},
+		{input: "panic", want: DriverLogLevelFatal},
+		{input: "PANIC", want: DriverLogLevelFatal},
+		{input: "print", want: DriverLogLevelInfo},
+		{input: "PRINT", want: DriverLogLevelInfo},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+		{input: "tracing"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToDriverLogLevelWithDeprecatedMappings(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToDriverLogLevelWithDeprecatedMappings(tc.input)
 			require.Error(t, err)
 		})
 	}

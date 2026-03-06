@@ -155,7 +155,13 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	pointerConfigBoolAttributeSet(c.ValidateDefaultParameters, &driverCfg.ValidateDefaultParameters)
 	pointerConfigBoolAttributeSet(c.ClientRequestMfaToken, &driverCfg.ClientRequestMfaToken)
 	pointerConfigBoolAttributeSet(c.ClientStoreTemporaryCredential, &driverCfg.ClientStoreTemporaryCredential)
-	pointerAttributeSet(c.DriverTracing, &driverCfg.Tracing)
+	if c.DriverTracing != nil {
+		level, err := ToDriverLogLevelWithDeprecatedMappings(*c.DriverTracing)
+		if err != nil {
+			return *EmptyDriverConfig(), err
+		}
+		driverCfg.Tracing = string(level)
+	}
 	pointerAttributeSet(c.TmpDirPath, &driverCfg.TmpDirPath)
 	pointerAttributeSet(c.DisableQueryContextCache, &driverCfg.DisableQueryContextCache)
 	pointerConfigBoolAttributeSet(c.IncludeRetryReason, &driverCfg.IncludeRetryReason)
@@ -601,23 +607,20 @@ const (
 	DriverLogLevelTrace DriverLogLevel = "trace"
 	DriverLogLevelDebug DriverLogLevel = "debug"
 	DriverLogLevelInfo  DriverLogLevel = "info"
-	DriverLogLevelPrint DriverLogLevel = "print"
 	DriverLogLevelWarn  DriverLogLevel = "warn"
 	DriverLogLevelError DriverLogLevel = "error"
 	DriverLogLevelFatal DriverLogLevel = "fatal"
-	DriverLogLevelPanic DriverLogLevel = "panic" //?
-	// TODO: add OFF, remove panic, and add mapping for it
+	DriverLogLevelOff   DriverLogLevel = "off"
 )
 
 var AllDriverLogLevels = []DriverLogLevel{
 	DriverLogLevelTrace,
 	DriverLogLevelDebug,
 	DriverLogLevelInfo,
-	DriverLogLevelPrint,
 	DriverLogLevelWarn,
 	DriverLogLevelError,
 	DriverLogLevelFatal,
-	DriverLogLevelPanic,
+	DriverLogLevelOff,
 }
 
 func ToDriverLogLevel(s string) (DriverLogLevel, error) {
@@ -626,14 +629,31 @@ func ToDriverLogLevel(s string) (DriverLogLevel, error) {
 	case string(DriverLogLevelTrace),
 		string(DriverLogLevelDebug),
 		string(DriverLogLevelInfo),
-		string(DriverLogLevelPrint),
 		string(DriverLogLevelWarn),
 		string(DriverLogLevelError),
 		string(DriverLogLevelFatal),
-		string(DriverLogLevelPanic):
+		string(DriverLogLevelOff):
 		return DriverLogLevel(lowerCase), nil
 	default:
 		return "", fmt.Errorf("invalid driver log level: %s", s)
+	}
+}
+
+// ToDriverLogLevelWithDeprecatedMappings maps deprecated driver log level values to their replacements
+// before delegating to ToDriverLogLevel. This provides backward compatibility for:
+// - "warning" -> "warn"
+// - "panic"   -> "fatal"
+// - "print"   -> "info"
+func ToDriverLogLevelWithDeprecatedMappings(s string) (DriverLogLevel, error) {
+	switch strings.ToLower(s) {
+	case "warning":
+		return DriverLogLevelWarn, nil
+	case "panic":
+		return DriverLogLevelFatal, nil
+	case "print":
+		return DriverLogLevelInfo, nil
+	default:
+		return ToDriverLogLevel(s)
 	}
 }
 

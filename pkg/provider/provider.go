@@ -362,7 +362,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the logging level to be used by the driver. Valid options are: %v.", docs.PossibleValuesListed(sdk.AllDriverLogLevels)), snowflakeenvs.DriverTracing),
 			Optional:         true,
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.DriverTracing, nil),
-			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToDriverLogLevel),
+			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToDriverLogLevelWithDeprecatedMappings),
 		},
 		"tmp_directory_path": {
 			Type:        schema.TypeString,
@@ -913,7 +913,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleBooleanStringAttribute(s, "include_retry_reason", &config.IncludeRetryReason),
 		handleIntAttribute(s, "max_retry_count", &config.MaxRetryCount),
 		handleFieldWithMappingIfSet(s, "driver_tracing", &config.Tracing, func(s string) (string, error) {
-			level, err := sdk.ToDriverLogLevel(s)
+			level, err := sdk.ToDriverLogLevelWithDeprecatedMappings(s)
 			return string(level), err
 		}),
 		handleStringField(s, "tmp_directory_path", &config.TmpDirPath),
