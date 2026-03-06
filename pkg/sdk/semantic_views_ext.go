@@ -1,5 +1,22 @@
 package sdk
 
+import (
+	"context"
+	"errors"
+	"fmt"
+)
+
+type SemanticViewDescribeDetails struct {
+	Id               SchemaObjectIdentifier
+	Tables           []SemanticViewDetails
+	Relationships    []SemanticViewDetails
+	Dimensions       []SemanticViewDetails
+	Facts            []SemanticViewDetails
+	Metrics          []SemanticViewDetails
+	Comment          string
+	DescribeRowCount int
+}
+
 func (s *CreateSemanticViewRequest) GetName() SchemaObjectIdentifier {
 	return s.name
 }
@@ -138,4 +155,52 @@ func (r *SemanticViewRelationship) GetRelationshipRefColumnsNames() []SemanticVi
 
 func (r *SemanticViewRelationship) SetRelationshipRefColumnsNames(keys []SemanticViewColumn) {
 	r.relationshipRefColumnNames = keys
+}
+
+func (v *semanticViews) DescribeSemanticViewDetails(ctx context.Context, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseSemanticViewDescribeOutput(properties, id)
+}
+
+func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error) {
+	details := &SemanticViewDescribeDetails{
+		Id:               id,
+		Tables:           []SemanticViewDetails{},
+		Relationships:    []SemanticViewDetails{},
+		Dimensions:       []SemanticViewDetails{},
+		Facts:            []SemanticViewDetails{},
+		Metrics:          []SemanticViewDetails{},
+		DescribeRowCount: 0,
+	}
+	var errs []error
+	for _, prop := range properties {
+		details.DescribeRowCount++
+		if prop.ObjectKind == nil {
+			if prop.Property == "COMMENT" {
+				details.Comment = prop.PropertyValue
+			} else {
+				err := errors.New(fmt.Sprintf("Unknown property in DESCRIBE %s", prop.Property))
+				errs = append(errs, err)
+			}
+			continue
+		}
+
+		switch *prop.ObjectKind {
+		case "TABLE":
+			details.Tables = append(details.Tables, prop)
+		case "RELATIONSHIP":
+			details.Relationships = append(details.Relationships, prop)
+		case "DIMENSION":
+			details.Dimensions = append(details.Dimensions, prop)
+		case "FACT":
+			details.Facts = append(details.Facts, prop)
+		case "METRIC":
+			details.Metrics = append(details.Metrics, prop)
+		}
+	}
+
+	return details, errors.Join(errs...)
 }
