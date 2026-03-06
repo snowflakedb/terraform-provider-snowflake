@@ -21,11 +21,10 @@ import (
 var streamOnDirectoryTableSchema = func() map[string]*schema.Schema {
 	streamOnDirectoryTable := map[string]*schema.Schema{
 		"stage": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: relatedResourceDescription(blocklistedCharactersFieldDescription("Specifies an identifier for the stage the stream will monitor. Due to Snowflake limitations, the provider can not read the stage's database and schema. For stages, Snowflake returns only partially qualified name instead of fully qualified name. Please use stages located in the same schema as the stream."), resources.Stage),
-			// TODO (SNOW-1733130): the returned value is not a fully qualified name
-			DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuotingPartiallyQualifiedName, IgnoreChangeToCurrentSnowflakeValueInShow("stage")),
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      relatedResourceDescription(blocklistedCharactersFieldDescription("Specifies an identifier for the stage the stream will monitor. Due to Snowflake limitations, the provider can not read the stage's database and schema. For stages, Snowflake returns only partially qualified name instead of fully qualified name. Please use stages located in the same schema as the stream."), resources.Stage),
+			DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, suppressPartiallyQualifiedSchemaObjectIdentifier, IgnoreChangeToCurrentSnowflakeValueInShow("stage")),
 			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		},
 	}
@@ -112,17 +111,7 @@ func ReadStreamOnDirectoryTable(withDirectoryChangesMarking bool) schema.ReadCon
 			}
 			return diag.FromErr(err)
 		}
-		// TODO (SNOW-1733130): the returned value is not a fully qualified name
-		if stream.TableName == nil {
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  "Could not parse stage id",
-					Detail:   fmt.Sprintf("stream name: %s", id.FullyQualifiedName()),
-				},
-			}
-		}
-		if err := d.Set("stage", *stream.TableName); err != nil {
+		if err := d.Set("stage", stream.TableName.FullyQualifiedName()); err != nil {
 			return diag.FromErr(err)
 		}
 		streamDescription, err := client.Streams.Describe(ctx, id)
