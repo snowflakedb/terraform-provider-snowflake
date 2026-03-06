@@ -26,6 +26,10 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* Private Facts and Metrics support in Semantic Views
+
+We have added support for Private Facts and Metrics in the Semantic Views resource.
+
 ### *(enhancement)* Rework of `snowflake_external_volume` resource
 #### *(breaking change)* `snowflake_external_volume` resource `describe_output` schema changed
 
@@ -64,6 +68,10 @@ No changes in the configuration are required.
 Reference: [#3946](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3946)
 
 ## v2.13.x ➞ v2.14.0
+
+### *(new feature)* Private Facts and Metrics support in Semantic Views
+
+We have added support for Private Facts and Metrics in the Semantic Views resource.
 
 ### *(new feature)* Added `DECFLOAT` support
 
