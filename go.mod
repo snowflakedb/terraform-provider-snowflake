@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/pelletier/go-toml/v2 v2.2.4
-	github.com/snowflakedb/gosnowflake/v2 v2.0.0-20260223074656-1b8f5e73f05d
+	github.com/snowflakedb/gosnowflake/v2 v2.0.0
 	github.com/stretchr/testify v1.11.1
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78
 	golang.org/x/crypto v0.45.0
@@ -101,7 +101,6 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
