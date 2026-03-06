@@ -23,6 +23,7 @@ const (
 	DynamicTable                                           resource = "snowflake_dynamic_table"
 	EmailNotificationIntegration                           resource = "snowflake_email_notification_integration"
 	Execute                                                resource = "snowflake_execute"
+	ExternalAccessIntegration                              resource = "snowflake_external_access_integration"
 	ExternalAzureStage                                     resource = "snowflake_stage_external_azure"
 	ExternalFunction                                       resource = "snowflake_external_function"
 	ExternalGcsStage                                       resource = "snowflake_stage_external_gcs"
