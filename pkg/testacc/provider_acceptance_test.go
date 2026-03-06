@@ -1280,6 +1280,57 @@ func TestAcc_Provider_invalidConfigurations(t *testing.T) {
 	})
 }
 
+func TestAcc_Provider_deprecatedDriverTracingValues(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+
+	factory, p := providerFactoryWithoutCacheReturningProvider()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: factory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck: func() {
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		Steps: []resource.TestStep{
+			// Deprecated value: warning (mapped to warn).
+			{
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithDriverTracing("warning"), datasourceModel()),
+				Check: func(s *terraform.State) error {
+					assert.Equal(t, string(sdk.DriverLogLevelWarn), p.Meta().(*internalprovider.Context).Client.GetConfig().Tracing)
+					return nil
+				},
+			},
+			// Deprecated value: panic (mapped to fatal).
+			{
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithDriverTracing("panic"), datasourceModel()),
+				Check: func(s *terraform.State) error {
+					assert.Equal(t, string(sdk.DriverLogLevelFatal), p.Meta().(*internalprovider.Context).Client.GetConfig().Tracing)
+					return nil
+				},
+			},
+			// Deprecated value: print (mapped to info).
+			{
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithDriverTracing("print"), datasourceModel()),
+				Check: func(s *terraform.State) error {
+					assert.Equal(t, string(sdk.DriverLogLevelInfo), p.Meta().(*internalprovider.Context).Client.GetConfig().Tracing)
+					return nil
+				},
+			},
+			// New value: off.
+			{
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithDriverTracing("off"), datasourceModel()),
+				Check: func(s *terraform.State) error {
+					assert.Equal(t, string(sdk.DriverLogLevelOff), p.Meta().(*internalprovider.Context).Client.GetConfig().Tracing)
+					return nil
+				},
+			},
+		},
+	})
+}
+
 func TestAcc_Provider_PreviewFeaturesEnabled(t *testing.T) {
 	t.Setenv(string(testenvs.EnableAllPreviewFeatures), "")
 

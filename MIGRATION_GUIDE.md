@@ -60,6 +60,17 @@ No changes are required, but switch to `CLIENT_TELEMETRY_ENABLED` instead of the
 
 No changes are required. `keep_session_alive` attribute will be renamed in the next major provider release.
 
+#### `DriverTracing` log levels changes on the driver side
+
+The driver changed the supported log levels. The `print` and `panic` levels no longer exist, and a new `off` level was added. The valid values are now: `trace`, `debug`, `info`, `warn`, `error`, `fatal`, `off`.
+
+For backward compatibility, the following deprecated values are still accepted and mapped automatically:
+- `warning` → `warn`
+- `panic` → `fatal`
+- `print` → `info`
+
+No changes are required, but switch to the new values, as the deprecated ones will be removed in the next major provider release.
+
 ### *(enhancement)* Rework of `snowflake_external_volume` resource
 #### *(breaking change)* `snowflake_external_volume` resource `describe_output` schema changed
 

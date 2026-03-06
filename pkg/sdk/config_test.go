@@ -1082,6 +1082,16 @@ func TestConfigDTODriverConfig(t *testing.T) {
 		},
 	}
 
+	deprecatedLoggingLevels := []struct {
+		name          string
+		input         string
+		expectedLevel string
+	}{
+		{name: "warning mapped to warn", input: "warning", expectedLevel: string(DriverLogLevelWarn)},
+		{name: "panic mapped to fatal", input: "panic", expectedLevel: string(DriverLogLevelFatal)},
+		{name: "print mapped to info", input: "print", expectedLevel: string(DriverLogLevelInfo)},
+	}
+
 	invalid := []struct {
 		name  string
 		input *ConfigDTO
@@ -1117,6 +1127,15 @@ func TestConfigDTODriverConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.input.DriverConfig()
 			tt.expected(t, got, err)
+		})
+	}
+
+	for _, tt := range deprecatedLoggingLevels {
+		t.Run(tt.name, func(t *testing.T) {
+			input := NewConfigDTO().WithDriverTracing(tt.input)
+			got, err := input.DriverConfig()
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedLevel, got.Tracing)
 		})
 	}
 
