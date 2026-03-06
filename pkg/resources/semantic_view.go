@@ -683,8 +683,8 @@ func getFactDefinitionRequest(from any) (*sdk.FactDefinitionRequest, error) {
 	factDefinitionRequest := sdk.NewFactDefinitionRequest().
 		WithSemanticExpression(*semExpRequest)
 
-	if v := c["is_private"]; v != nil {
-		isPrivate, err := booleanStringToBool(c["is_private"].(string))
+	if v := c["is_private"]; v != nil && v.(string) != BooleanDefault {
+		isPrivate, err := booleanStringToBool(v.(string))
 		if err != nil {
 			return nil, err
 		}

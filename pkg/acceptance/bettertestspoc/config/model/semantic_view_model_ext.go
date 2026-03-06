@@ -173,7 +173,10 @@ func (s *SemanticViewModel) WithMetrics(metrics []sdk.MetricDefinition) *Semanti
 			}
 			m["window_function"] = tfconfig.ListVariable(tfconfig.ObjectVariable(windFuncVar))
 		}
-		m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
+
+		if v.CheckIsPrivateIsNotNil() {
+			m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
+		}
 
 		maps[i] = tfconfig.ObjectVariable(m)
 	}
@@ -205,7 +208,10 @@ func (s *SemanticViewModel) WithFacts(facts []sdk.FactDefinition) *SemanticViewM
 			}
 			m["synonym"] = tfconfig.SetVariable(syns...)
 		}
-		m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
+
+		if v.CheckIsPrivateIsNotNil() {
+			m["is_private"] = tfconfig.BoolVariable(v.GetIsPrivate())
+		}
 
 		maps[i] = tfconfig.ObjectVariable(m)
 	}

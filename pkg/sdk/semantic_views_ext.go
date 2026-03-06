@@ -68,6 +68,10 @@ func (m *MetricDefinition) GetIsPrivate() bool {
 	return *m.isPrivate
 }
 
+func (m *MetricDefinition) CheckIsPrivateIsNotNil() bool {
+	return m.isPrivate != nil
+}
+
 func (m *MetricDefinition) GetSemanticExpression() *SemanticExpression {
 	return m.semanticExpression
 }
@@ -99,6 +103,10 @@ func (f *FactDefinition) GetIsPrivate() bool {
 		return false
 	}
 	return *f.isPrivate
+}
+
+func (f *FactDefinition) CheckIsPrivateIsNotNil() bool {
+	return f.isPrivate != nil
 }
 
 func (f *FactDefinition) WithIsPrivate(isPrivate bool) *FactDefinition {
