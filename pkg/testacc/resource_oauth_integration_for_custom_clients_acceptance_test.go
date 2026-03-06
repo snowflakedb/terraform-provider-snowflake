@@ -57,7 +57,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasIntegrationType("OAUTH - CUSTOM").
 			HasCategory("SECURITY").
-			HasEnabled(false).
+			HasEnabled(true).
 			HasComment(""),
 
 		resourceassert.OauthIntegrationForCustomClientsResource(t, basic.ResourceReference()).
@@ -79,13 +79,13 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasIntegrationType("OAUTH - CUSTOM").
 			HasCategory("SECURITY").
-			HasEnabled(false).
+			HasEnabled(true).
 			HasComment(""),
 
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.#", "1")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_client_type.0.value", "CONFIDENTIAL")),
 		assert.Check(resource.TestCheckNoResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "false")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
@@ -481,14 +481,14 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.name", id.Name()),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.integration_type", "OAUTH - CUSTOM"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.enabled", "false"),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.enabled", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.comment", ""),
 					resource.TestCheckResourceAttrSet(basicModel.ResourceReference(), "show_output.0.created_on"),
 
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeConfidential)),
 					resource.TestCheckNoResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_redirect_uri.0.value"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.enabled.0.value", "false"),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "false"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
