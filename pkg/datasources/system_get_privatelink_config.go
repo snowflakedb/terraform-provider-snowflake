@@ -23,16 +23,22 @@ var systemGetPrivateLinkConfigSchema = map[string]*schema.Schema{
 		Description: "The name of your Snowflake account.",
 	},
 
+	"account_principal": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The AWS principal ARN to allow for outbound private connections to your VPC endpoint services.",
+	},
+
 	"account_url": {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The URL used to connect to Snowflake through AWS PrivateLink or Azure Private Link.",
 	},
 
-	"ocsp_url": {
+	"app_service_url": {
 		Type:        schema.TypeString,
 		Computed:    true,
-		Description: "The OCSP URL corresponding to your Snowflake account that uses AWS PrivateLink or Azure Private Link.",
+		Description: "The wildcard URL required for routing Streamlit applications and Snowpark Container Services through AWS PrivateLink or Azure Private Link.",
 	},
 
 	"aws_vpce_id": {
@@ -47,28 +53,76 @@ var systemGetPrivateLinkConfigSchema = map[string]*schema.Schema{
 		Description: "The Azure Private Link Service ID for your account.",
 	},
 
-	"regionless_account_url": {
+	"client_redirect_urls": {
 		Type:        schema.TypeString,
 		Computed:    true,
-		Description: "The regionless URL to connect to your Snowflake account using AWS PrivateLink, Azure Private Link, or Google Cloud Private Service Connect.",
+		Description: "The client redirect connection URLs for your account using private connectivity.",
 	},
 
-	"regionless_snowsight_url": {
+	"dashed_duo_urls": {
 		Type:        schema.TypeString,
 		Computed:    true,
-		Description: "The URL for your organization to access Snowsight using Private Connectivity to the Snowflake Service.",
+		Description: "The dashed URLs for Duo integration using private connectivity.",
 	},
 
-	"snowsight_url": {
+	"gcp_service_attachment": {
 		Type:        schema.TypeString,
 		Computed:    true,
-		Description: "The URL containing the cloud region to access Snowsight and the Snowflake Marketplace using Private Connectivity to the Snowflake Service.",
+		Description: "The endpoint for the Snowflake service when using Google Cloud Private Service Connect.",
 	},
 
 	"internal_stage": {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The endpoint to connect to your Snowflake internal stage using AWS PrivateLink or Azure Private Link.",
+	},
+
+	"ocsp_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The OCSP URL corresponding to your Snowflake account that uses AWS PrivateLink or Azure Private Link.",
+	},
+
+	"openflow_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The OpenFlow URL to connect to Snowflake Openflow using AWS PrivateLink or Azure Private Link.",
+	},
+
+	"openflow_telemetry_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The OpenFlow telemetry URL to connect to Snowflake Openflow telemetry using AWS PrivateLink or Azure Private Link.",
+	},
+
+	"regionless_account_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The regionless URL to connect to your Snowflake account using AWS PrivateLink, Azure Private Link, or Google Cloud Private Service Connect.",
+	},
+
+	"regionless_ocsp_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The OCSP URL for your account identifier.",
+	},
+
+	"spcs_auth_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The Snowpark Container Services authentication URL using private connectivity.",
+	},
+
+	"spcs_registry_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The Snowpark Container Services registry URL using private connectivity.",
+	},
+
+	"snowsight_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The URL containing the cloud region to access Snowsight and the Snowflake Marketplace using Private Connectivity to the Snowflake Service.",
 	},
 }
 
@@ -103,17 +157,29 @@ func ReadSystemGetPrivateLinkConfig(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(config.AccountName)
+
 	accNameErr := d.Set("account_name", config.AccountName)
 	if accNameErr != nil {
 		return diag.FromErr(accNameErr)
 	}
+
+	if config.AccountPrincipal != "" {
+		accPrincipalErr := d.Set("account_principal", config.AccountPrincipal)
+		if accPrincipalErr != nil {
+			return diag.FromErr(accPrincipalErr)
+		}
+	}
+
 	accURLErr := d.Set("account_url", config.AccountURL)
 	if accURLErr != nil {
 		return diag.FromErr(accURLErr)
 	}
-	ocspURLErr := d.Set("ocsp_url", config.OCSPURL)
-	if ocspURLErr != nil {
-		return diag.FromErr(ocspURLErr)
+
+	if config.AppServiceURL != "" {
+		appServiceURLErr := d.Set("app_service_url", config.AppServiceURL)
+		if appServiceURLErr != nil {
+			return diag.FromErr(appServiceURLErr)
+		}
 	}
 
 	if config.AwsVpceID != "" {
@@ -130,6 +196,25 @@ func ReadSystemGetPrivateLinkConfig(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
+	if config.ConnectionURLs != "" {
+		connURLsErr := d.Set("client_redirect_connection_urls", config.ConnectionURLs)
+		if connURLsErr != nil {
+			return diag.FromErr(connURLsErr)
+		}
+	}
+
+	dashedDusURLsErr := d.Set("dashed_duo_urls", config.DashedDuoURLs)
+	if dashedDusURLsErr != nil {
+		return diag.FromErr(dashedDusURLsErr)
+	}
+
+	if config.GCPServiceAttachment != "" {
+		gcpSvcAttachErr := d.Set("gcp_service_attachment", config.GCPServiceAttachment)
+		if gcpSvcAttachErr != nil {
+			return diag.FromErr(gcpSvcAttachErr)
+		}
+	}
+
 	if config.InternalStage != "" {
 		intStgErr := d.Set("internal_stage", config.InternalStage)
 		if intStgErr != nil {
@@ -137,11 +222,37 @@ func ReadSystemGetPrivateLinkConfig(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	if config.SnowsightURL != "" {
-		snowSigURLErr := d.Set("snowsight_url", config.SnowsightURL)
-		if snowSigURLErr != nil {
-			return diag.FromErr(snowSigURLErr)
+	if config.OCSPURL != "" {
+		ocspURLErr := d.Set("ocsp_url", config.OCSPURL)
+		if ocspURLErr != nil {
+			return diag.FromErr(ocspURLErr)
 		}
+	}
+
+	if config.OpenflowURL != "" {
+		openflowURLErr := d.Set("openflow_url", config.OpenflowURL)
+		if openflowURLErr != nil {
+			return diag.FromErr(openflowURLErr)
+		}
+	}
+
+	if config.OpenflowTelemetryURL != "" {
+		openflowTelemetryURLErr := d.Set("openflow_telemetry_url", config.OpenflowTelemetryURL)
+		if openflowTelemetryURLErr != nil {
+			return diag.FromErr(openflowTelemetryURLErr)
+		}
+	}
+
+	if config.RegionlessAccountURL != "" {
+		reglssAccURLErr := d.Set("regionless_account_url", config.RegionlessAccountURL)
+		if reglssAccURLErr != nil {
+			return diag.FromErr(reglssAccURLErr)
+		}
+	}
+
+	reglssOCSPURLErr := d.Set("regionless_ocsp_url", config.RegionlessOCSPURL)
+	if reglssOCSPURLErr != nil {
+		return diag.FromErr(reglssOCSPURLErr)
 	}
 
 	if config.RegionlessSnowsightURL != "" {
@@ -150,11 +261,24 @@ func ReadSystemGetPrivateLinkConfig(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(reglssSnowURLErr)
 		}
 	}
+	if config.SnowparkCSAuthURL != "" {
+		spcsAuthURLErr := d.Set("spcs_auth_url", config.SnowparkCSAuthURL)
+		if spcsAuthURLErr != nil {
+			return diag.FromErr(spcsAuthURLErr)
+		}
+	}
 
-	if config.RegionlessAccountURL != "" {
-		reglssAccURLErr := d.Set("regionless_account_url", config.RegionlessAccountURL)
-		if reglssAccURLErr != nil {
-			return diag.FromErr(reglssAccURLErr)
+	if config.SnowparkCSRegistryURL != "" {
+		spcsRegURLErr := d.Set("spcs_registry_url", config.SnowparkCSRegistryURL)
+		if spcsRegURLErr != nil {
+			return diag.FromErr(spcsRegURLErr)
+		}
+	}
+
+	if config.SnowsightURL != "" {
+		snowSigURLErr := d.Set("snowsight_url", config.SnowsightURL)
+		if snowSigURLErr != nil {
+			return diag.FromErr(snowSigURLErr)
 		}
 	}
 
