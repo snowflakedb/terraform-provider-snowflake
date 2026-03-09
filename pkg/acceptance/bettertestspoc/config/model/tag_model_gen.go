@@ -18,6 +18,7 @@ type TagModel struct {
 	Comment            tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MaskingPolicies    tfconfig.Variable `json:"masking_policies,omitempty"`
+	NoAllowedValues    tfconfig.Variable `json:"no_allowed_values,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -111,6 +112,11 @@ func (t *TagModel) WithFullyQualifiedName(fullyQualifiedName string) *TagModel {
 
 // masking_policies attribute type is not yet supported, so WithMaskingPolicies can't be generated
 
+func (t *TagModel) WithNoAllowedValues(noAllowedValues bool) *TagModel {
+	t.NoAllowedValues = tfconfig.BoolVariable(noAllowedValues)
+	return t
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -147,5 +153,10 @@ func (t *TagModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *TagMode
 
 func (t *TagModel) WithMaskingPoliciesValue(value tfconfig.Variable) *TagModel {
 	t.MaskingPolicies = value
+	return t
+}
+
+func (t *TagModel) WithNoAllowedValuesValue(value tfconfig.Variable) *TagModel {
+	t.NoAllowedValues = value
 	return t
 }
