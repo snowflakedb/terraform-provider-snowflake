@@ -202,7 +202,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err := client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_KEY", Type: "String", Value: "☺☺☺", Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_AWS_ROLE_ARN", Type: "String", Value: otherRoleArn, Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_ALLOWED_PREFIXES", Type: "List", Value: awsOtherPrefix, Default: "[]"})
@@ -223,7 +223,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err = client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_KEY", Type: "String", Value: "", Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_AWS_ROLE_ARN", Type: "String", Value: otherRoleArn, Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_ALLOWED_PREFIXES", Type: "List", Value: awsOtherPrefix, Default: "[]"})
@@ -250,7 +250,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err := client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_KEY", Type: "String", Value: "☺☺☺", Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "AZURE_AD_APPLICATION_ID", Type: "String", Value: otherAdApplicationId, Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_ALLOWED_PREFIXES", Type: "List", Value: azureOtherPrefix, Default: "[]"})
@@ -271,7 +271,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err = client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_KEY", Type: "String", Value: "", Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "AZURE_AD_APPLICATION_ID", Type: "String", Value: otherAdApplicationId, Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_ALLOWED_PREFIXES", Type: "List", Value: azureOtherPrefix, Default: "[]"})
@@ -310,7 +310,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err := client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_ALLOWED_PREFIXES", Type: "List", Value: googleOtherPrefix, Default: "[]"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_BLOCKED_PREFIXES", Type: "List", Value: googlePrefix, Default: "[]"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "COMMENT", Type: "String", Value: "changed comment", Default: ""})
@@ -329,7 +329,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err = client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_ALLOWED_PREFIXES", Type: "List", Value: googleOtherPrefix, Default: "[]"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_BLOCKED_PREFIXES", Type: "List", Value: "", Default: "[]"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
@@ -403,7 +403,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err := client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_KEY", Type: "String", Value: "", Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_PROVIDER", Type: "String", Value: strings.ToUpper(string(sdk.ApiIntegrationAwsApiGateway)), Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_AWS_ROLE_ARN", Type: "String", Value: apiAwsRoleArn, Default: ""})
@@ -418,7 +418,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err := client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "AZURE_TENANT_ID", Type: "String", Value: azureTenantId, Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "AZURE_AD_APPLICATION_ID", Type: "String", Value: azureAdApplicationId, Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_KEY", Type: "String", Value: "", Default: ""})
@@ -434,7 +434,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		details, err := client.ApiIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_KEY", Type: "String", Value: "", Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "API_PROVIDER", Type: "String", Value: "GOOGLE_API_GATEWAY", Default: ""})
 		assert.Contains(t, details, sdk.ApiIntegrationProperty{Name: "GOOGLE_AUDIENCE", Type: "String", Value: googleAudience, Default: ""})
