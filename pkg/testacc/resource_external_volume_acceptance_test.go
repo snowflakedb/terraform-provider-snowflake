@@ -239,6 +239,11 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			},
 			// update the location to have all optional fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
 				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationComplete), externalVolumeName, comment, "true"),
 				Check: assertThat(t,
@@ -293,6 +298,11 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			},
 			// update the location to have changed fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
 				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocationCompleteUpdated), externalVolumeName, comment2, "false"),
 				Check: assertThat(t,
@@ -408,6 +418,11 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			},
 			// unset the optional parameters
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
 				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, "", ""),
 				Check: assertThat(t,
@@ -593,6 +608,11 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 			},
 			// update to have all optional fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
 				ConfigVariables: externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, comment, "true"),
 				Check: assertThat(t,
@@ -641,6 +661,11 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 			},
 			// update with changed fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
 				ConfigVariables: externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, comment2, "false"),
 				Check: assertThat(t,
@@ -744,6 +769,11 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 			},
 			// unset the optional parameters
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
 				ConfigVariables: externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, "", ""),
 				Check: assertThat(t,
@@ -857,6 +887,11 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			},
 			// update the location to have all optional fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
 				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationKmsEncryption), externalVolumeName, comment, "true"),
 				Check: assertThat(t,
@@ -903,6 +938,11 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			},
 			// update the location to have changed fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
 				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationKmsEncryptionUpdatedKey), externalVolumeName, comment2, "false"),
 				Check: assertThat(t,
@@ -999,6 +1039,11 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			},
 			// unset the optional parameters
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
 				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, "", ""),
 				Check: assertThat(t,
@@ -1107,6 +1152,11 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			},
 			// update the location to have all optional fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
 				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, "true"),
 				Check: assertThat(t,
@@ -1153,6 +1203,11 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			},
 			// update the location to have changed fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
 				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment2, "false"),
 				Check: assertThat(t,
@@ -1253,6 +1308,11 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			},
 			// unset the optional parameters
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
 				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, "", ""),
 				Check: assertThat(t,

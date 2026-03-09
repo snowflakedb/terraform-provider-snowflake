@@ -89,7 +89,7 @@ var externalVolumeSchema = map[string]*schema.Schema{
 					Optional:         true,
 					Default:          BooleanDefault,
 					ValidateDiagFunc: validateBooleanString,
-					Description:      booleanStringFieldDescription("Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3 and S3GOV storage providers."),
+					Description:      booleanStringFieldDescription("Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers."),
 					DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 						return oldValue == "" && newValue == BooleanDefault
 					},
@@ -443,26 +443,8 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 				return diag.FromErr(err)
 			}
 
-			addTempErr := addStorageLocation(tempStorageLocation, client, ctx, id)
-			if addTempErr != nil {
-				return diag.FromErr(addTempErr)
-			}
-
-			updateErr := updateStorageLocations(removedLocations, addedLocations, client, ctx, id)
-			// TODO use defer for the removal of the temp storage location
-			if updateErr != nil {
-				// Try to remove the temp location and then return with error
-				removeErr := removeStorageLocation(tempStorageLocation, client, ctx, id)
-				if removeErr != nil {
-					return diag.FromErr(errors.Join(updateErr, removeErr))
-				}
-
-				return diag.FromErr(updateErr)
-			}
-
-			removeErr := removeStorageLocation(tempStorageLocation, client, ctx, id)
-			if removeErr != nil {
-				return diag.FromErr(removeErr)
+			if err := updateStorageLocationsWithTemp(tempStorageLocation, removedLocations, addedLocations, client, ctx, id); err != nil {
+				return diag.FromErr(err)
 			}
 		} else {
 			updateErr := updateStorageLocations(removedLocations, addedLocations, client, ctx, id)
@@ -676,6 +658,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				}
 			}
 
+			// TODO: handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
 			storageLocation = sdk.ExternalVolumeStorageLocation{
 				Name: name,
 				AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
@@ -801,6 +784,7 @@ func addStorageLocation(
 			addedLocation.AzureTenantId,
 			addedLocation.StorageBaseUrl,
 		)
+		// TODO: handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
 		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithAzureStorageLocationParams(*azureParamsRequest)
 	case sdk.StorageProviderS3Compatible:
 		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.S3CompatStorageLocationParams
@@ -825,6 +809,28 @@ func removeStorageLocation(
 	id sdk.AccountObjectIdentifier,
 ) error {
 	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(removedLocation.ExternalVolumeStorageLocation.Name))
+}
+
+// updateStorageLocationsWithTemp adds a temporary storage location, performs the update, and ensures
+// the temporary location is always cleaned up. This is used when all existing storage locations
+// need to be replaced — because an external volume requires at least one storage location at all times.
+func updateStorageLocationsWithTemp(
+	tempStorageLocation sdk.ExternalVolumeStorageLocationItem,
+	removedLocations []sdk.ExternalVolumeStorageLocationItem,
+	addedLocations []sdk.ExternalVolumeStorageLocationItem,
+	client *sdk.Client,
+	ctx context.Context,
+	id sdk.AccountObjectIdentifier,
+) (err error) {
+	if err := addStorageLocation(tempStorageLocation, client, ctx, id); err != nil {
+		return err
+	}
+	defer func() {
+		removeErr := removeStorageLocation(tempStorageLocation, client, ctx, id)
+		err = errors.Join(err, removeErr)
+	}()
+
+	return updateStorageLocations(removedLocations, addedLocations, client, ctx, id)
 }
 
 // Process the removal / addition storage location requests.

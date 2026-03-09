@@ -28,9 +28,20 @@ resource "snowflake_external_volume" "s3_complete" {
   }
 }
 
-# GCS storage location
-resource "snowflake_external_volume" "gcs" {
+# Basic - GCS storage location with required fields only
+resource "snowflake_external_volume" "gcs_basic" {
   name = "my_gcs_external_volume"
+
+  storage_location {
+    storage_location_name = "my-gcs-location"
+    storage_provider      = "GCS"
+    storage_base_url      = "gcs://mybucket/"
+  }
+}
+
+# Complete - GCS with all optional fields
+resource "snowflake_external_volume" "gcs_complete" {
+  name = "my_gcs_external_volume_complete"
 
   storage_location {
     storage_location_name = "my-gcs-location"
@@ -41,8 +52,8 @@ resource "snowflake_external_volume" "gcs" {
   }
 }
 
-# Azure storage location
-resource "snowflake_external_volume" "azure" {
+# Basic - Azure storage location with required fields only
+resource "snowflake_external_volume" "azure_basic" {
   name = "my_azure_external_volume"
 
   storage_location {
@@ -50,6 +61,21 @@ resource "snowflake_external_volume" "azure" {
     storage_provider      = "AZURE"
     storage_base_url      = "azure://myaccount.blob.core.windows.net/mycontainer/"
     azure_tenant_id       = "123e4567-e89b-12d3-a456-426614174000"
+  }
+}
+
+# Complete - Azure with all optional fields
+resource "snowflake_external_volume" "azure_complete" {
+  name         = "my_azure_external_volume_complete"
+  comment      = "my azure external volume"
+  allow_writes = "true"
+
+  storage_location {
+    storage_location_name    = "my-azure-location"
+    storage_provider         = "AZURE"
+    storage_base_url         = "azure://myaccount.blob.core.windows.net/mycontainer/"
+    azure_tenant_id          = "123e4567-e89b-12d3-a456-426614174000"
+    use_privatelink_endpoint = "true"
   }
 }
 

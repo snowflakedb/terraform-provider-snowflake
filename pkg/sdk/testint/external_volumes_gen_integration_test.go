@@ -177,7 +177,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
 			HasStorageAwsRoleArn(awsRoleARN).
 			HasStorageAwsExternalIdNotEmpty().
-			HasUsePrivatelinkEndpointEmpty().
+			HasNoUsePrivatelinkEndpoint().
 			HasStorageAwsIamUserArnNotEmpty())
 	})
 

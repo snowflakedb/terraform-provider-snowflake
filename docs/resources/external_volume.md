@@ -44,9 +44,20 @@ resource "snowflake_external_volume" "s3_complete" {
   }
 }
 
-# GCS storage location
-resource "snowflake_external_volume" "gcs" {
+# Basic - GCS storage location with required fields only
+resource "snowflake_external_volume" "gcs_basic" {
   name = "my_gcs_external_volume"
+
+  storage_location {
+    storage_location_name = "my-gcs-location"
+    storage_provider      = "GCS"
+    storage_base_url      = "gcs://mybucket/"
+  }
+}
+
+# Complete - GCS with all optional fields
+resource "snowflake_external_volume" "gcs_complete" {
+  name = "my_gcs_external_volume_complete"
 
   storage_location {
     storage_location_name = "my-gcs-location"
@@ -57,8 +68,8 @@ resource "snowflake_external_volume" "gcs" {
   }
 }
 
-# Azure storage location
-resource "snowflake_external_volume" "azure" {
+# Basic - Azure storage location with required fields only
+resource "snowflake_external_volume" "azure_basic" {
   name = "my_azure_external_volume"
 
   storage_location {
@@ -66,6 +77,21 @@ resource "snowflake_external_volume" "azure" {
     storage_provider      = "AZURE"
     storage_base_url      = "azure://myaccount.blob.core.windows.net/mycontainer/"
     azure_tenant_id       = "123e4567-e89b-12d3-a456-426614174000"
+  }
+}
+
+# Complete - Azure with all optional fields
+resource "snowflake_external_volume" "azure_complete" {
+  name         = "my_azure_external_volume_complete"
+  comment      = "my azure external volume"
+  allow_writes = "true"
+
+  storage_location {
+    storage_location_name    = "my-azure-location"
+    storage_provider         = "AZURE"
+    storage_base_url         = "azure://myaccount.blob.core.windows.net/mycontainer/"
+    azure_tenant_id          = "123e4567-e89b-12d3-a456-426614174000"
+    use_privatelink_endpoint = "true"
   }
 }
 
@@ -126,7 +152,7 @@ Optional:
 - `storage_aws_role_arn` (String) Specifies the case-sensitive Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.
 - `storage_aws_secret_key` (String, Sensitive) Specifies the AWS secret key for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.
 - `storage_endpoint` (String) Specifies the endpoint for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.
-- `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3 and S3GOV storage providers. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 Read-Only:
 
