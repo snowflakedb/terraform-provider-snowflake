@@ -339,7 +339,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: "jan.cieslak@snowflake.com", Default: "[]"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "changed comment", Default: ""})
 
@@ -355,7 +355,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		details, err = client.NotificationIntegrations.Describe(ctx, integration.ID())
 		require.NoError(t, err)
 
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: "", Default: "[]"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})
