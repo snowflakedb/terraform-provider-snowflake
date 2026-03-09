@@ -359,7 +359,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"driver_tracing": {
 			Type:             schema.TypeString,
-			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the logging level to be used by the driver. Valid options are: %v. The following values are deprecated and will be removed in v3: `warning` (use `warn` instead), `print` (use `info` instead), `panic` (use `fatal` instead).", docs.PossibleValuesListed(sdk.AllDriverLogLevels)), snowflakeenvs.DriverTracing),
+			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the logging level to be used by the driver. Valid options are (case-insensitive): %v. The following values are deprecated and will be removed in v3: `WARNING` (uses `WARN` instead), `PRINT` (uses `INFO` instead), `PANIC` (uses `FATAL` instead).", docs.PossibleValuesListed(sdk.AllDriverLogLevels)), snowflakeenvs.DriverTracing),
 			Optional:         true,
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.DriverTracing, nil),
 			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToDriverLogLevelWithDeprecatedMappings),

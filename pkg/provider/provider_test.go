@@ -179,7 +179,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.False(t, config.DisableQueryContextCache)
 	assert.Equal(t, gosnowflake.ConfigBoolTrue, config.IncludeRetryReason)
 	assert.Equal(t, 5, config.MaxRetryCount)
-	assert.Equal(t, "info", config.Tracing)
+	assert.Equal(t, "INFO", config.Tracing)
 	assert.Equal(t, "/tmp/snowflake", config.TmpDirPath)
 	assert.Equal(t, gosnowflake.ConfigBoolFalse, config.DisableConsoleLogin)
 	assert.Equal(t, map[string]*string{"QUERY_TAG": sdk.Pointer("test_tag"), "TIMEZONE": sdk.Pointer("UTC")}, config.Params)

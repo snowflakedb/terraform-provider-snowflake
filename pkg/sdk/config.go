@@ -161,7 +161,8 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	if c.DriverTracing != nil {
 		level, err := ToDriverLogLevelWithDeprecatedMappings(*c.DriverTracing)
 		if err != nil {
-			return *EmptyDriverConfig(), err
+			// we log instead of failing for backwards compatibility
+			log.Printf("[WARN] Invalid driver tracing level: %s, using default level", *c.DriverTracing)
 		}
 		driverCfg.Tracing = string(level)
 	}
@@ -606,14 +607,13 @@ const GosnowflakeBoolConfigDefault = gosnowflake.ConfigBool(0)
 type DriverLogLevel string
 
 const (
-	// these values are lower case on purpose to match gosnowflake case
-	DriverLogLevelTrace DriverLogLevel = "trace"
-	DriverLogLevelDebug DriverLogLevel = "debug"
-	DriverLogLevelInfo  DriverLogLevel = "info"
-	DriverLogLevelWarn  DriverLogLevel = "warn"
-	DriverLogLevelError DriverLogLevel = "error"
-	DriverLogLevelFatal DriverLogLevel = "fatal"
-	DriverLogLevelOff   DriverLogLevel = "off"
+	DriverLogLevelTrace DriverLogLevel = "TRACE"
+	DriverLogLevelDebug DriverLogLevel = "DEBUG"
+	DriverLogLevelInfo  DriverLogLevel = "INFO"
+	DriverLogLevelWarn  DriverLogLevel = "WARN"
+	DriverLogLevelError DriverLogLevel = "ERROR"
+	DriverLogLevelFatal DriverLogLevel = "FATAL"
+	DriverLogLevelOff   DriverLogLevel = "OFF"
 )
 
 var AllDriverLogLevels = []DriverLogLevel{
@@ -627,7 +627,7 @@ var AllDriverLogLevels = []DriverLogLevel{
 }
 
 func ToDriverLogLevel(s string) (DriverLogLevel, error) {
-	lowerCase := strings.ToLower(s)
+	lowerCase := strings.ToUpper(s)
 	switch lowerCase {
 	case string(DriverLogLevelTrace),
 		string(DriverLogLevelDebug),
