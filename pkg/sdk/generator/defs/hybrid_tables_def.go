@@ -55,14 +55,10 @@ var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
+// NOTE: Hybrid tables do not support ALTER TABLE ADD UNIQUE or ADD FOREIGN KEY constraints
+// (Snowflake returns: "Unique and foreign-key constraints can only be defined at table creation time").
+// The Add action is omitted; only Rename and Drop are supported.
 var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction").
-	OptionalQueryStructField(
-		"Add",
-		g.NewQueryStruct("HybridTableConstraintActionAdd").
-			SQL("ADD").
-			QueryStructField("OutOfLineConstraint", hybridTableOutOfLineConstraint, g.KeywordOptions()),
-		g.KeywordOptions(),
-	).
 	OptionalQueryStructField(
 		"Rename",
 		g.NewQueryStruct("HybridTableConstraintActionRename").
@@ -86,26 +82,20 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 			WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
 		g.KeywordOptions(),
 	).
-	WithValidation(g.ExactlyOneValueSet, "Add", "Rename", "Drop")
+	WithValidation(g.ExactlyOneValueSet, "Rename", "Drop")
 
+// NOTE: Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL (discovered via integration testing against Snowflake).
+// Snowflake docs may suggest otherwise but the operation errors at runtime.
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
 	SQL("ALTER").
 	SQL("COLUMN").
 	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("DROP DEFAULT").
 	PredefinedQueryStructField("SetDefault", g.KindOfTPointer[sdkcommons.SequenceName](), g.ParameterOptions().NoEquals().SQL("SET DEFAULT")).
-	OptionalQueryStructField(
-		"NotNullConstraint",
-		g.NewQueryStruct("HybridTableColumnNotNullConstraint").
-			OptionalSQL("SET NOT NULL").
-			OptionalSQL("DROP NOT NULL").
-			WithValidation(g.ExactlyOneValueSet, "SetNotNull", "DropNotNull"),
-		g.KeywordOptions(),
-	).
 	PredefinedQueryStructField("Type", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
 	OptionalSQL("UNSET COMMENT").
-	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "NotNullConstraint", "Type", "Comment", "UnsetComment")
+	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment")
 
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
@@ -137,26 +127,20 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 	OptionalSQL("DROP CLUSTERING KEY").
 	WithValidation(g.ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
 
+// NOTE: Hybrid tables do not support CHANGE_TRACKING or DEFAULT_DDL_COLLATION in SET (discovered via integration testing against Snowflake).
+// Snowflake docs may suggest otherwise but the operation errors at runtime.
+// NOTE: Hybrid tables do not support ENABLE_SCHEMA_EVOLUTION, CONTACT, or ROW_TIMESTAMP
+// in ALTER TABLE SET (confirmed via Snowflake trunk: EntityProperty domain excludes hybrid
+// tables for schema evolution; CONTACT uses CREATE WITH CONTACT syntax; ROW_TIMESTAMP is
+// explicitly blocked in supportsFileTxnEndTime() for isKeyValue() tables).
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
-	OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
-	OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
-	OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
-	PredefinedQueryStructField("Contact", g.KindOfTSlice[sdkcommons.TableContact](), g.KeywordOptions().SQL("CONTACT")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-	OptionalBooleanAssignment("ROW_TIMESTAMP", g.ParameterOptions()).
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Contact", "Comment", "RowTimestamp")
+	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment")
 
-var hybridTableUnsetProperties = g.NewQueryStruct("HybridTableUnsetProperties").
-	OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
-	OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
-	OptionalSQL("CHANGE_TRACKING").
-	OptionalSQL("DEFAULT_DDL_COLLATION").
-	OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
-	OptionalAssignmentWithFieldName("CONTACT", "*string", g.ParameterOptions().NoEquals(), "ContactPurpose").
-	OptionalSQL("COMMENT").
-	WithValidation(g.AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "ContactPurpose", "Comment")
+// NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
+// Snowflake docs may suggest otherwise but the operation errors at runtime.
 
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
@@ -217,13 +201,8 @@ var hybridTablesDef = g.NewInterface(
 			hybridTableSetProperties,
 			g.KeywordOptions().SQL("SET"),
 		).
-		OptionalQueryStructField(
-			"Unset",
-			hybridTableUnsetProperties,
-			g.KeywordOptions().SQL("UNSET"),
-		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"),
+		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").
