@@ -153,27 +153,6 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 	}
 	if r.ConstraintAction != nil {
 		opts.ConstraintAction = &HybridTableConstraintAction{}
-		if r.ConstraintAction.Add != nil {
-			opts.ConstraintAction.Add = &HybridTableConstraintActionAdd{}
-			opts.ConstraintAction.Add.OutOfLineConstraint = HybridTableOutOfLineConstraint{
-				Name:               r.ConstraintAction.Add.OutOfLineConstraint.Name,
-				Type:               r.ConstraintAction.Add.OutOfLineConstraint.Type,
-				Columns:            r.ConstraintAction.Add.OutOfLineConstraint.Columns,
-				ForeignKey:         r.ConstraintAction.Add.OutOfLineConstraint.ForeignKey,
-				Enforced:           r.ConstraintAction.Add.OutOfLineConstraint.Enforced,
-				NotEnforced:        r.ConstraintAction.Add.OutOfLineConstraint.NotEnforced,
-				Deferrable:         r.ConstraintAction.Add.OutOfLineConstraint.Deferrable,
-				NotDeferrable:      r.ConstraintAction.Add.OutOfLineConstraint.NotDeferrable,
-				InitiallyDeferred:  r.ConstraintAction.Add.OutOfLineConstraint.InitiallyDeferred,
-				InitiallyImmediate: r.ConstraintAction.Add.OutOfLineConstraint.InitiallyImmediate,
-				Enable:             r.ConstraintAction.Add.OutOfLineConstraint.Enable,
-				Disable:            r.ConstraintAction.Add.OutOfLineConstraint.Disable,
-				Validate:           r.ConstraintAction.Add.OutOfLineConstraint.Validate,
-				Novalidate:         r.ConstraintAction.Add.OutOfLineConstraint.Novalidate,
-				Rely:               r.ConstraintAction.Add.OutOfLineConstraint.Rely,
-				Norely:             r.ConstraintAction.Add.OutOfLineConstraint.Norely,
-			}
-		}
 		if r.ConstraintAction.Rename != nil {
 			opts.ConstraintAction.Rename = &HybridTableConstraintActionRename{
 				OldName: r.ConstraintAction.Rename.OldName,
@@ -202,12 +181,6 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 				Type:         v.Type,
 				Comment:      v.Comment,
 				UnsetComment: v.UnsetComment,
-			}
-			if v.NotNullConstraint != nil {
-				s[i].NotNullConstraint = &HybridTableColumnNotNullConstraint{
-					SetNotNull:  v.NotNullConstraint.SetNotNull,
-					DropNotNull: v.NotNullConstraint.DropNotNull,
-				}
 			}
 		}
 		opts.AlterColumnAction = s
@@ -245,23 +218,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		opts.Set = &HybridTableSetProperties{
 			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
 			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
-			ChangeTracking:             r.Set.ChangeTracking,
-			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
-			EnableSchemaEvolution:      r.Set.EnableSchemaEvolution,
-			Contact:                    r.Set.Contact,
 			Comment:                    r.Set.Comment,
-			RowTimestamp:               r.Set.RowTimestamp,
-		}
-	}
-	if r.Unset != nil {
-		opts.Unset = &HybridTableUnsetProperties{
-			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
-			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
-			ChangeTracking:             r.Unset.ChangeTracking,
-			DefaultDdlCollation:        r.Unset.DefaultDdlCollation,
-			EnableSchemaEvolution:      r.Unset.EnableSchemaEvolution,
-			ContactPurpose:             r.Unset.ContactPurpose,
-			Comment:                    r.Unset.Comment,
 		}
 	}
 	return opts
