@@ -55,6 +55,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 			HasComment("").
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasSourceType(sdk.StreamSourceTypeStage).
+			HasBaseTables(stage.ID()).
 			HasType("DELTA").
 			HasStale(false).
 			HasStaleAfterNotEmpty().
@@ -97,6 +98,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasSourceType(sdk.StreamSourceTypeStage).
+			HasBaseTables(stage.ID()).
 			HasType("DELTA").
 			HasStale(false).
 			HasStaleAfterNotEmpty().
@@ -448,51 +450,6 @@ func TestAcc_StreamOnDirectoryTable_ExternalStreamTypeChange(t *testing.T) {
 }
 
 func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0(t *testing.T) {
-	stage, stageCleanup := testClient().Stage.CreateStageWithDirectory(t)
-	t.Cleanup(stageCleanup)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
-
-	resource.Test(t, resource.TestCase{
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.StreamOnDirectoryTable),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
-				Config:            config.FromModels(t, streamModel),
-				Check: assertThat(t,
-					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasStageString(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())),
-				),
-			},
-			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, streamModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
-					},
-				},
-				Check: assertThat(t,
-					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasStageString(stage.ID().FullyQualifiedName()),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0_NoPlanWithoutConfigChanges(t *testing.T) {
 	stage, stageCleanup := testClient().Stage.CreateStageWithDirectory(t)
 	t.Cleanup(stageCleanup)
 
