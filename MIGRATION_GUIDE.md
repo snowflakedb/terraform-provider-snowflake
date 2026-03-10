@@ -57,8 +57,6 @@ output "ev_comment" {
 }
 ```
 
-## v2.14.0 ➞ v2.14.1
-
 ### *(bugfix)* Fixed allowed_accounts update in snowflake_failover_group
 
 Previously, updating the `allowed_accounts` field would fail because the constructed request was not correct. This has been fixed and `allowed_accounts` can now be updated correctly without requiring workarounds.
@@ -116,6 +114,10 @@ by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabl
 
 No changes in configuration are required.
 Without the flag enabled, the behavior remains the same as in previous versions.
+
+### *(enhancement)* Improved identifier handling in `snowflake_stream_on_directory_table` resource
+
+Due to the changes in [BCR-2170](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_01/bcr-2170), we are now able to properly handle changes
 
 ## v2.13.x ➞ v2.14.0
 
