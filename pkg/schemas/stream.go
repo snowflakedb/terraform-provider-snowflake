@@ -88,7 +88,9 @@ func StreamDescriptionToSchema(stream sdk.Stream) map[string]any {
 	if stream.Comment != nil {
 		streamSchema["comment"] = stream.Comment
 	}
-	streamSchema["table_name"] = stream.TableName.FullyQualifiedName()
+	if stream.TableName != nil {
+		streamSchema["table_name"] = stream.TableName.FullyQualifiedName()
+	}
 	if stream.SourceType != nil {
 		streamSchema["source_type"] = stream.SourceType
 	}

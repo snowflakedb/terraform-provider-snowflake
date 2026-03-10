@@ -13,6 +13,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,8 +24,8 @@ var streamOnDirectoryTableSchema = func() map[string]*schema.Schema {
 		"stage": {
 			Type:             schema.TypeString,
 			Required:         true,
-			Description:      relatedResourceDescription(blocklistedCharactersFieldDescription("Specifies an identifier for the stage the stream will monitor. Due to Snowflake limitations, the provider can not read the stage's database and schema. For stages, Snowflake returns only partially qualified name instead of fully qualified name. Please use stages located in the same schema as the stream."), resources.Stage),
-			DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, suppressPartiallyQualifiedSchemaObjectIdentifier, IgnoreChangeToCurrentSnowflakeValueInShow("stage")),
+			Description:      relatedResourceDescription(blocklistedCharactersFieldDescription("Specifies an identifier for the stage the stream will monitor. Due to Snowflake limitations, the provider can not read the stage's database and schema. Please use stages located in the same schema as the stream."), resources.Stage),
+			DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("stage")),
 			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		},
 	}
@@ -51,6 +52,17 @@ func StreamOnDirectoryTable() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.StreamOnDirectoryTable, ImportName[sdk.SchemaObjectIdentifier]),
 		},
+
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+				Type:    cty.EmptyObject,
+				Upgrade: v2_14_0_StreamOnDirectoryTableStateUpgrader,
+			},
+		},
+
 		Timeouts: defaultTimeouts,
 	}
 }
