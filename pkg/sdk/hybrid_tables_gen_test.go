@@ -144,13 +144,13 @@ func TestHybridTables_Alter(t *testing.T) {
 
 	t.Run("validation: exactly one field from alter actions should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"))
 	})
 
-	t.Run("validation: constraint action - exactly one of Add, Rename, Drop required", func(t *testing.T) {
+	t.Run("validation: constraint action - exactly one of Rename, Drop required", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &HybridTableConstraintAction{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction", "Add", "Rename", "Drop"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction", "Rename", "Drop"))
 	})
 
 	t.Run("validation: drop constraint - exactly one constraint type required", func(t *testing.T) {
@@ -173,25 +173,14 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "Cascade", "Restrict"))
 	})
 
-	t.Run("validation: exactly one field from [opts.AlterColumnAction.DropDefault opts.AlterColumnAction.SetDefault opts.AlterColumnAction.NotNullConstraint opts.AlterColumnAction.Type opts.AlterColumnAction.Comment opts.AlterColumnAction.UnsetComment] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AlterColumnAction.DropDefault opts.AlterColumnAction.SetDefault opts.AlterColumnAction.Type opts.AlterColumnAction.Comment opts.AlterColumnAction.UnsetComment] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AlterColumnAction = []HybridTableAlterColumnAction{
 			{
 				ColumnName: "col1",
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "NotNullConstraint", "Type", "Comment", "UnsetComment"))
-	})
-
-	t.Run("validation: alter column not null constraint - exactly one", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AlterColumnAction = []HybridTableAlterColumnAction{
-			{
-				ColumnName:        "col1",
-				NotNullConstraint: &HybridTableColumnNotNullConstraint{},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction.NotNullConstraint", "SetNotNull", "DropNotNull"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment"))
 	})
 
 	t.Run("validation: clustering action - exactly one", func(t *testing.T) {
@@ -203,13 +192,7 @@ func TestHybridTables_Alter(t *testing.T) {
 	t.Run("validation: at least one of set fields", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &HybridTableSetProperties{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Contact", "Comment", "RowTimestamp"))
-	})
-
-	t.Run("validation: at least one of unset fields", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &HybridTableUnsetProperties{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterHybridTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "ContactPurpose", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment"))
 	})
 
 	t.Run("alter: set", func(t *testing.T) {
@@ -218,38 +201,9 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.Set = &HybridTableSetProperties{
 			DataRetentionTimeInDays:    Int(14),
 			MaxDataExtensionTimeInDays: Int(28),
-			ChangeTracking:             Bool(true),
-			DefaultDdlCollation:        String("en-ci"),
-			EnableSchemaEvolution:      Bool(true),
-			Contact: []TableContact{
-				{Purpose: "admin", Contact: "John"},
-			},
-			Comment:      String("updated comment"),
-			RowTimestamp: Bool(true),
+			Comment:                    String("updated comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 14 MAX_DATA_EXTENSION_TIME_IN_DAYS = 28 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en-ci' ENABLE_SCHEMA_EVOLUTION = true CONTACT admin 'John' COMMENT = 'updated comment' ROW_TIMESTAMP = true`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Unset = &HybridTableUnsetProperties{
-			DataRetentionTimeInDays:    Bool(true),
-			MaxDataExtensionTimeInDays: Bool(true),
-			ChangeTracking:             Bool(true),
-			DefaultDdlCollation:        Bool(true),
-			EnableSchemaEvolution:      Bool(true),
-			Comment:                    Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s UNSET DATA_RETENTION_TIME_IN_DAYS MAX_DATA_EXTENSION_TIME_IN_DAYS CHANGE_TRACKING DEFAULT_DDL_COLLATION ENABLE_SCHEMA_EVOLUTION COMMENT`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset contact", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &HybridTableUnsetProperties{
-			ContactPurpose: String("admin"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s UNSET CONTACT admin`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 14 MAX_DATA_EXTENSION_TIME_IN_DAYS = 28 COMMENT = 'updated comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: alter column set comment", func(t *testing.T) {
@@ -287,32 +241,6 @@ func TestHybridTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN "column1" DROP DEFAULT`, id.FullyQualifiedName())
 	})
 
-	t.Run("alter: alter column set not null", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AlterColumnAction = []HybridTableAlterColumnAction{
-			{
-				ColumnName: "column1",
-				NotNullConstraint: &HybridTableColumnNotNullConstraint{
-					SetNotNull: Bool(true),
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN "column1" SET NOT NULL`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: alter column drop not null", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AlterColumnAction = []HybridTableAlterColumnAction{
-			{
-				ColumnName: "column1",
-				NotNullConstraint: &HybridTableColumnNotNullConstraint{
-					DropNotNull: Bool(true),
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN "column1" DROP NOT NULL`, id.FullyQualifiedName())
-	})
-
 	t.Run("alter: alter column set data type", func(t *testing.T) {
 		dt := DataType("VARCHAR(200)")
 		opts := defaultOpts()
@@ -341,40 +269,6 @@ func TestHybridTables_Alter(t *testing.T) {
 			IndexName: "idx_name",
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP INDEX "idx_name"`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: add constraint unique", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.ConstraintAction = &HybridTableConstraintAction{
-			Add: &HybridTableConstraintActionAdd{
-				OutOfLineConstraint: HybridTableOutOfLineConstraint{
-					Type:    ColumnConstraintTypeUnique,
-					Columns: []string{"col1", "col2"},
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD UNIQUE (col1, col2)`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: add constraint foreign key", func(t *testing.T) {
-		refTableId := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.ConstraintAction = &HybridTableConstraintAction{
-			Add: &HybridTableConstraintActionAdd{
-				OutOfLineConstraint: HybridTableOutOfLineConstraint{
-					Name:    String("fk_ref"),
-					Type:    ColumnConstraintTypeForeignKey,
-					Columns: []string{"ref_id"},
-					ForeignKey: &OutOfLineForeignKey{
-						TableName:   refTableId,
-						ColumnNames: []string{"id"},
-					},
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s ADD CONSTRAINT "fk_ref" FOREIGN KEY (ref_id) REFERENCES %s (id)`, id.FullyQualifiedName(), refTableId.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop constraint by name", func(t *testing.T) {
