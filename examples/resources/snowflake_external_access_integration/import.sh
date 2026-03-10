@@ -1,0 +1,1 @@
+terraform import snowflake_external_access_integration.example name
