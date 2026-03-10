@@ -35,12 +35,12 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set, opts.Unset) {
-		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
+	if !exactlyOneValueSet(opts.NewName, opts.AddColumnAction, opts.ConstraintAction, opts.AlterColumnAction, opts.DropColumnAction, opts.DropIndexAction, opts.ClusteringAction, opts.Set) {
+		errs = append(errs, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set"))
 	}
 	if valueSet(opts.ConstraintAction) {
-		if !exactlyOneValueSet(opts.ConstraintAction.Add, opts.ConstraintAction.Rename, opts.ConstraintAction.Drop) {
-			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction", "Add", "Rename", "Drop"))
+		if !exactlyOneValueSet(opts.ConstraintAction.Rename, opts.ConstraintAction.Drop) {
+			errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction", "Rename", "Drop"))
 		}
 		if valueSet(opts.ConstraintAction.Drop) {
 			if !exactlyOneValueSet(opts.ConstraintAction.Drop.ConstraintName, opts.ConstraintAction.Drop.PrimaryKey, opts.ConstraintAction.Drop.Unique, opts.ConstraintAction.Drop.ForeignKey) {
@@ -54,13 +54,8 @@ func (opts *AlterHybridTableOptions) validate() error {
 	if valueSet(opts.AlterColumnAction) {
 		for i, action := range opts.AlterColumnAction {
 			_ = i
-			if !exactlyOneValueSet(action.DropDefault, action.SetDefault, action.NotNullConstraint, action.Type, action.Comment, action.UnsetComment) {
-				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "NotNullConstraint", "Type", "Comment", "UnsetComment"))
-			}
-			if valueSet(action.NotNullConstraint) {
-				if !exactlyOneValueSet(action.NotNullConstraint.SetNotNull, action.NotNullConstraint.DropNotNull) {
-					errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction.NotNullConstraint", "SetNotNull", "DropNotNull"))
-				}
+			if !exactlyOneValueSet(action.DropDefault, action.SetDefault, action.Type, action.Comment, action.UnsetComment) {
+				errs = append(errs, errExactlyOneOf("AlterHybridTableOptions.AlterColumnAction", "DropDefault", "SetDefault", "Type", "Comment", "UnsetComment"))
 			}
 		}
 	}
@@ -70,13 +65,8 @@ func (opts *AlterHybridTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.EnableSchemaEvolution, opts.Set.Contact, opts.Set.Comment, opts.Set.RowTimestamp) {
-			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Contact", "Comment", "RowTimestamp"))
-		}
-	}
-	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ChangeTracking, opts.Unset.DefaultDdlCollation, opts.Unset.EnableSchemaEvolution, opts.Unset.ContactPurpose, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "ContactPurpose", "Comment"))
+		if !anyValueSet(opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterHybridTableOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

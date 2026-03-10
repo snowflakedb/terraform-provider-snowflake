@@ -249,6 +249,10 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
 		IsDataSourceOutput: true,
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.HybridTable{},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
