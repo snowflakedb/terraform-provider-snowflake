@@ -27,3 +27,28 @@ func (t *TagAssert) HasAllowedValuesUnordered(expected ...string) *TagAssert {
 	})
 	return t
 }
+
+func (t *TagAssert) HasAllowedValuesNil() *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if o.AllowedValues != nil {
+			return fmt.Errorf("expected allowed values to be nil; got: %v", o.AllowedValues)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagAssert) HasAllowedValuesEmpty() *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if o.AllowedValues == nil {
+			return fmt.Errorf("expected allowed values to be empty (non-nil); got: nil")
+		}
+		if len(o.AllowedValues) != 0 {
+			return fmt.Errorf("expected allowed values to be empty; got: %v", o.AllowedValues)
+		}
+		return nil
+	})
+	return t
+}
