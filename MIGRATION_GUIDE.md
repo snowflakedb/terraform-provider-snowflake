@@ -27,6 +27,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ## v2.14.x ➞ v2.15.0
 
 ### *(enhancement)* Rework of `snowflake_external_volume` resource
+// TODO
 #### *(breaking change)* `snowflake_external_volume` resource `describe_output` schema changed
 
 The `describe_output` attribute on the `snowflake_external_volume` resource has been restructured.
