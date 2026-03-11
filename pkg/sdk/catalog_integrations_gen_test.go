@@ -184,7 +184,7 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "CREATE CATALOG INTEGRATION %s "+
 			"CATALOG_SOURCE = SAP_BDC "+
 			"TABLE_FORMAT = DELTA "+
-			"REST_CONFIG = (SAP_BDC_INVITATION_LINK = '%s') "+
+			"REST_CONFIG = (SAP_BDC_INVITATION_LINK = '%s' ACCESS_DELEGATION_MODE = VENDED_CREDENTIALS) "+
 			"ENABLED = true",
 			id.FullyQualifiedName(), sapBdcInvitationLink)
 	})
@@ -332,7 +332,6 @@ func TestCatalogIntegrations_Create(t *testing.T) {
 	t.Run("all options - SAP Business Data Cloud", func(t *testing.T) {
 		opts := defaultOptsSapBdc()
 		opts.IfNotExists = Bool(true)
-		opts.SapBdcCatalogSourceParams.RestConfig.AccessDelegationMode = Pointer(CatalogIntegrationAccessDelegationModeVendedCredentials)
 		opts.Enabled = false
 		opts.RefreshIntervalSeconds = Int(60)
 		opts.Comment = String("test comment")
