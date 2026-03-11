@@ -658,7 +658,7 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				}
 			}
 
-			// TODO: handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
+			// TODO(SNOW-2356128): handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
 			storageLocation = sdk.ExternalVolumeStorageLocation{
 				Name: name,
 				AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
@@ -784,7 +784,7 @@ func addStorageLocation(
 			addedLocation.AzureTenantId,
 			addedLocation.StorageBaseUrl,
 		)
-		// TODO: handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
+		// TODO(SNOW-2356128): handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
 		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithAzureStorageLocationParams(*azureParamsRequest)
 	case sdk.StorageProviderS3Compatible:
 		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.S3CompatStorageLocationParams
