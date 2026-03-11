@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -107,7 +108,7 @@ func TestParseCommaSeparatedStringArray(t *testing.T) {
 }
 
 func TestParseOuterCommaSeparatedStringArray(t *testing.T) {
-	testCases := append(commaSeparatedStringArrayTestCases, []struct {
+	testCases := slices.Concat(commaSeparatedStringArrayTestCases, []struct {
 		Name       string
 		Value      string
 		TrimQuotes bool
@@ -143,7 +144,7 @@ func TestParseOuterCommaSeparatedStringArray(t *testing.T) {
 			TrimQuotes: true,
 			Result:     []string{"one", "tw]]]o", "three"},
 		},
-	}...)
+	})
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
