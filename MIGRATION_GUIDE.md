@@ -76,7 +76,18 @@ No changes are required, but switch to the new values, as the deprecated ones wi
 We have added support for Private Facts and Metrics in the Semantic Views resource.
 
 ### *(enhancement)* Rework of `snowflake_external_volume` resource
-// TODO
+
+We have added support for S3-compatible (S3COMPAT) storage locations and several missing S3 fields to the `snowflake_external_volume` resource.
+
+New fields in `storage_location`:
+- `storage_aws_access_point_arn` - Access point ARN for S3/S3GOV storage locations.
+- `use_privatelink_endpoint` - Whether to use a privatelink endpoint (S3, S3GOV, and AZURE).
+- `storage_endpoint` - Endpoint for S3COMPAT storage locations.
+- `storage_aws_key_id` - AWS key ID for S3COMPAT storage locations.
+- `storage_aws_secret_key` - AWS secret key for S3COMPAT storage locations (sensitive).
+
+No changes to existing configurations are required. If you are using S3-compatible storage, you can now set `storage_provider = "S3COMPAT"` with the new fields above.
+
 #### *(breaking change)* `snowflake_external_volume` resource `describe_output` schema changed
 
 The `describe_output` attribute on the `snowflake_external_volume` resource has been restructured.
