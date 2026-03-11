@@ -451,7 +451,6 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			// TODO [SNOW-2852837]: Handle external changes
 			{
 				PreConfig: func() {
-
 					_, semanticViewCleanup := testClient().SemanticView.CreateWithRequest(t, sdk.NewCreateSemanticViewRequest(id, []sdk.LogicalTableRequest{*lt1Request, *lt2Request}).
 						WithSemanticViewMetrics([]sdk.MetricDefinitionRequest{*m1Request, *m2Request}).
 						WithSemanticViewDimensions([]sdk.DimensionDefinitionRequest{*d1Request}).
