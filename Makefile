@@ -17,6 +17,7 @@ dev-setup: ## setup development dependencies
 	cd tools && mkdir -p bin/
 	cd tools && env GOBIN=$$PWD/bin go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 	cd tools && env GOBIN=$$PWD/bin go install mvdan.cc/gofumpt
+	chmod +x bin/* tools/bin/*
 
 dev-cleanup: ## cleanup development dependencies
 	rm -rf bin/*
