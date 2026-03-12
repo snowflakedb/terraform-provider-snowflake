@@ -107,7 +107,8 @@ func TestParseCommaSeparatedStringArray(t *testing.T) {
 }
 
 func TestParseOuterCommaSeparatedStringArray(t *testing.T) {
-	testCases := append(commaSeparatedStringArrayTestCases, []struct {
+	testCases := commaSeparatedStringArrayTestCases
+	testCases = append(testCases, []struct {
 		Name       string
 		Value      string
 		TrimQuotes bool

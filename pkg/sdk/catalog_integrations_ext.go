@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -13,89 +14,157 @@ func (r *CreateCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }
 
-func (v *catalogIntegrations) DescribeAwsGlueParams(ctx context.Context, id AccountObjectIdentifier) (*AwsGlueParams, error) {
+func (v *catalogIntegrations) DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return parseAwsGlueProperties(properties)
+	return parseAwsGlueProperties(properties, id)
 }
 
-func (v *catalogIntegrations) DescribeObjectStorageParams(ctx context.Context, id AccountObjectIdentifier) (*ObjectStorageParams, error) {
+func (v *catalogIntegrations) DescribeObjectStorageDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return parseObjectStorageProperties(properties)
+	return parseObjectStorageProperties(properties, id)
 }
 
-func (v *catalogIntegrations) DescribeOpenCatalogParams(ctx context.Context, id AccountObjectIdentifier) (*OpenCatalogParams, error) {
+func (v *catalogIntegrations) DescribeOpenCatalogDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return parseOpenCatalogProperties(properties)
+	return parseOpenCatalogProperties(properties, id)
 }
 
-func (v *catalogIntegrations) DescribeIcebergRestParams(ctx context.Context, id AccountObjectIdentifier) (*IcebergRestParams, error) {
+func (v *catalogIntegrations) DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return parseIcebergRestProperties(properties)
+	return parseIcebergRestProperties(properties, id)
 }
 
-func (v *catalogIntegrations) DescribeSapBdcParams(ctx context.Context, id AccountObjectIdentifier) (*SapBdcParams, error) {
-	_, err := v.Describe(ctx, id)
+func (v *catalogIntegrations) DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error) {
+	properties, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return parseSapBdcProperties()
+	return parseSapBdcProperties(properties, id)
 }
 
-func parseAwsGlueProperties(properties []CatalogIntegrationProperty) (*AwsGlueParams, error) {
-	params := &AwsGlueParams{}
+type commonDetails struct {
+	CatalogSource          CatalogIntegrationCatalogSourceType
+	TableFormat            CatalogIntegrationTableFormat
+	Enabled                bool
+	RefreshIntervalSeconds int
+	Comment                string
+}
+
+func parseCommonProperties(properties []CatalogIntegrationProperty) (*commonDetails, error) {
+	commons := &commonDetails{}
+	var errs []error
+	for _, prop := range properties {
+		switch prop.Name {
+		case "CATALOG_SOURCE":
+			if catalogSource, err := ToCatalogIntegrationCatalogSourceType(prop.Value); err != nil {
+				errs = append(errs, err)
+			} else {
+				commons.CatalogSource = catalogSource
+			}
+		case "TABLE_FORMAT":
+			if tableFormat, err := ToCatalogIntegrationTableFormat(prop.Value); err != nil {
+				errs = append(errs, err)
+			} else {
+				commons.TableFormat = tableFormat
+			}
+		case "ENABLED":
+			if val, err := strconv.ParseBool(prop.Value); err != nil {
+				errs = append(errs, err)
+			} else {
+				commons.Enabled = val
+			}
+		case "REFRESH_INTERVAL_SECONDS":
+			if val, err := strconv.ParseInt(prop.Value, 10, 32); err != nil {
+				errs = append(errs, err)
+			} else {
+				commons.RefreshIntervalSeconds = int(val)
+			}
+		case "COMMENT":
+			commons.Comment = prop.Value
+		}
+	}
+	return commons, errors.Join(errs...)
+}
+
+func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
+	commons, err := parseCommonProperties(properties)
+	if err != nil {
+		return nil, err
+	}
+	details := &CatalogIntegrationAwsGlueDetails{
+		Id:                     id,
+		CatalogSource:          commons.CatalogSource,
+		TableFormat:            commons.TableFormat,
+		Enabled:                commons.Enabled,
+		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
+		Comment:                commons.Comment,
+	}
 	for _, prop := range properties {
 		switch prop.Name {
 		case "GLUE_AWS_ROLE_ARN":
-			params.GlueAwsRoleArn = prop.Value
+			details.GlueAwsRoleArn = prop.Value
 		case "GLUE_CATALOG_ID":
-			params.GlueCatalogId = prop.Value
+			details.GlueCatalogId = prop.Value
 		case "GLUE_REGION":
-			params.GlueRegion = String(prop.Value)
+			details.GlueRegion = prop.Value
 		case "CATALOG_NAMESPACE":
-			params.CatalogNamespace = String(prop.Value)
+			details.CatalogNamespace = prop.Value
 		}
 	}
-	return params, nil
+	return details, nil
 }
 
-func parseObjectStorageProperties(properties []CatalogIntegrationProperty) (*ObjectStorageParams, error) {
-	params := &ObjectStorageParams{}
-	for _, prop := range properties {
-		if prop.Name == "TABLE_FORMAT" {
-			tableFormat, err := ToCatalogIntegrationTableFormat(prop.Value)
-			if err != nil {
-				return nil, err
-			}
-			params.TableFormat = tableFormat
-		}
+func parseObjectStorageProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error) {
+	commons, err := parseCommonProperties(properties)
+	if err != nil {
+		return nil, err
 	}
-	return params, nil
+	details := &CatalogIntegrationObjectStorageDetails{
+		Id:                     id,
+		CatalogSource:          commons.CatalogSource,
+		TableFormat:            commons.TableFormat,
+		Enabled:                commons.Enabled,
+		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
+		Comment:                commons.Comment,
+	}
+	return details, nil
 }
 
-func parseOpenCatalogProperties(properties []CatalogIntegrationProperty) (*OpenCatalogParams, error) {
-	params := &OpenCatalogParams{}
+func parseOpenCatalogProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error) {
+	commons, err := parseCommonProperties(properties)
+	if err != nil {
+		return nil, err
+	}
+	details := &CatalogIntegrationOpenCatalogDetails{
+		Id:                     id,
+		CatalogSource:          commons.CatalogSource,
+		TableFormat:            commons.TableFormat,
+		Enabled:                commons.Enabled,
+		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
+		Comment:                commons.Comment,
+	}
 	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
 		case "CATALOG_NAMESPACE":
-			params.CatalogNamespace = String(prop.Value)
+			details.CatalogNamespace = prop.Value
 		case "REST_CONFIG":
 			if restConfig, err := parseOpenCatalogRestConfigProperty(prop); err != nil {
 				errs = append(errs, err)
 			} else {
-				params.RestConfig = restConfig
+				details.RestConfig = restConfig
 			}
 		case "REST_AUTHENTICATION":
 			if oAuthRestAuth, _, _, err := parseRestAuthenticationProperty(prop); err != nil {
@@ -103,41 +172,63 @@ func parseOpenCatalogProperties(properties []CatalogIntegrationProperty) (*OpenC
 			} else if oAuthRestAuth == nil {
 				errs = append(errs, errors.New("REST_AUTHENTICATION property is not of OAUTH type"))
 			} else {
-				params.RestAuthentication = *oAuthRestAuth
+				details.RestAuthentication = *oAuthRestAuth
 			}
 		}
 	}
-	return params, errors.Join(errs...)
+	return details, errors.Join(errs...)
 }
 
-func parseIcebergRestProperties(properties []CatalogIntegrationProperty) (*IcebergRestParams, error) {
-	params := &IcebergRestParams{}
+func parseIcebergRestProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error) {
+	commons, err := parseCommonProperties(properties)
+	if err != nil {
+		return nil, err
+	}
+	details := &CatalogIntegrationIcebergRestDetails{
+		Id:                     id,
+		CatalogSource:          commons.CatalogSource,
+		TableFormat:            commons.TableFormat,
+		Enabled:                commons.Enabled,
+		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
+		Comment:                commons.Comment,
+	}
 	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
 		case "CATALOG_NAMESPACE":
-			params.CatalogNamespace = String(prop.Value)
+			details.CatalogNamespace = prop.Value
 		case "REST_CONFIG":
 			if restConfig, err := parseIcebergRestRestConfigProperty(prop); err != nil {
 				errs = append(errs, err)
 			} else {
-				params.RestConfig = restConfig
+				details.RestConfig = restConfig
 			}
 		case "REST_AUTHENTICATION":
 			if oAuthRestAuth, bearerRestAuth, sigV4RestAuth, err := parseRestAuthenticationProperty(prop); err != nil {
 				errs = append(errs, err)
 			} else {
-				params.OAuthRestAuthentication = oAuthRestAuth
-				params.BearerRestAuthentication = bearerRestAuth
-				params.SigV4RestAuthentication = sigV4RestAuth
+				details.OAuthRestAuthentication = oAuthRestAuth
+				details.BearerRestAuthentication = bearerRestAuth
+				details.SigV4RestAuthentication = sigV4RestAuth
 			}
 		}
 	}
-	return params, errors.Join(errs...)
+	return details, errors.Join(errs...)
 }
 
-func parseSapBdcProperties() (*SapBdcParams, error) {
-	params := &SapBdcParams{RestConfig: SapBdcRestConfig{}}
+func parseSapBdcProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error) {
+	commons, err := parseCommonProperties(properties)
+	if err != nil {
+		return nil, err
+	}
+	params := &CatalogIntegrationSapBdcDetails{
+		Id:                     id,
+		CatalogSource:          commons.CatalogSource,
+		TableFormat:            commons.TableFormat,
+		Enabled:                commons.Enabled,
+		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
+		Comment:                commons.Comment,
+	}
 	return params, nil
 }
 

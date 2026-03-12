@@ -18,16 +18,16 @@ type CatalogIntegrations interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]CatalogIntegrationProperty, error)
 
-	// DescribeAwsGlueParams is added manually
-	DescribeAwsGlueParams(ctx context.Context, id AccountObjectIdentifier) (*AwsGlueParams, error)
-	// DescribeObjectStorageParams is added manually
-	DescribeObjectStorageParams(ctx context.Context, id AccountObjectIdentifier) (*ObjectStorageParams, error)
-	// DescribeOpenCatalogParams is added manually
-	DescribeOpenCatalogParams(ctx context.Context, id AccountObjectIdentifier) (*OpenCatalogParams, error)
-	// DescribeIcebergRestParams is added manually
-	DescribeIcebergRestParams(ctx context.Context, id AccountObjectIdentifier) (*IcebergRestParams, error)
-	// DescribeSapBdcParams is added manually
-	DescribeSapBdcParams(ctx context.Context, id AccountObjectIdentifier) (*SapBdcParams, error)
+	// DescribeAwsGlueDetails is added manually
+	DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error)
+	// DescribeObjectStorageDetails is added manually
+	DescribeObjectStorageDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error)
+	// DescribeOpenCatalogDetails is added manually
+	DescribeOpenCatalogDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationOpenCatalogDetails, error)
+	// DescribeIcebergRestDetails is added manually
+	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
+	// DescribeSapBdcDetails is added manually
+	DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error)
 }
 
 // CreateCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration.
@@ -212,4 +212,61 @@ type CatalogIntegrationProperty struct {
 	Type    string
 	Value   string
 	Default string
+}
+
+type CatalogIntegrationAwsGlueDetails struct {
+	Id                     AccountObjectIdentifier
+	CatalogSource          CatalogIntegrationCatalogSourceType
+	TableFormat            CatalogIntegrationTableFormat
+	Enabled                bool
+	RefreshIntervalSeconds int
+	Comment                string
+	GlueAwsRoleArn         string
+	GlueCatalogId          string
+	GlueRegion             string
+	CatalogNamespace       string
+}
+
+type CatalogIntegrationObjectStorageDetails struct {
+	Id                     AccountObjectIdentifier
+	CatalogSource          CatalogIntegrationCatalogSourceType
+	TableFormat            CatalogIntegrationTableFormat
+	Enabled                bool
+	RefreshIntervalSeconds int
+	Comment                string
+}
+
+type CatalogIntegrationOpenCatalogDetails struct {
+	Id                     AccountObjectIdentifier
+	CatalogSource          CatalogIntegrationCatalogSourceType
+	TableFormat            CatalogIntegrationTableFormat
+	Enabled                bool
+	RefreshIntervalSeconds int
+	Comment                string
+	CatalogNamespace       string
+	RestConfig             OpenCatalogRestConfig
+	RestAuthentication     OAuthRestAuthentication
+}
+
+type CatalogIntegrationIcebergRestDetails struct {
+	Id                       AccountObjectIdentifier
+	CatalogSource            CatalogIntegrationCatalogSourceType
+	TableFormat              CatalogIntegrationTableFormat
+	Enabled                  bool
+	RefreshIntervalSeconds   int
+	Comment                  string
+	CatalogNamespace         string
+	RestConfig               IcebergRestRestConfig
+	OAuthRestAuthentication  *OAuthRestAuthentication
+	BearerRestAuthentication *BearerRestAuthentication
+	SigV4RestAuthentication  *SigV4RestAuthentication
+}
+
+type CatalogIntegrationSapBdcDetails struct {
+	Id                     AccountObjectIdentifier
+	CatalogSource          CatalogIntegrationCatalogSourceType
+	TableFormat            CatalogIntegrationTableFormat
+	Enabled                bool
+	RefreshIntervalSeconds int
+	Comment                string
 }
