@@ -143,7 +143,7 @@ func parseCommonProperties(properties []CatalogIntegrationProperty) (*commonDeta
 				commons.Enabled = val
 			}
 		case "REFRESH_INTERVAL_SECONDS":
-			if val, err := strconv.ParseInt(prop.Value, 10, 64); err != nil {
+			if val, err := strconv.ParseInt(prop.Value, 10, 32); err != nil {
 				errs = append(errs, err)
 			} else {
 				commons.RefreshIntervalSeconds = int(val)
