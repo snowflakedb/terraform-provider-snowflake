@@ -38,14 +38,6 @@ func v2_14_0_ExternalVolumeStateUpgrader(ctx context.Context, rawState map[strin
 
 	rawState[DescribeOutputAttributeName] = []any{detailsSchema}
 
-	return rawState, nil
-}
-
-func v2_15_0_ExternalVolumeStateUpgrader(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
-	if rawState == nil {
-		return rawState, nil
-	}
-
 	// Clear storage_aws_external_id from storage_location entries.
 	// Previously this was a Computed field populated by SF; now it's Optional (user-configured only).
 	if storageLocations, ok := rawState["storage_location"].([]any); ok {

@@ -2711,6 +2711,11 @@ func TestAcc_ExternalVolume_Validations(t *testing.T) {
 	azureStorageBaseUrl := "azure://123456789.blob.core.windows.net/my_example_container"
 	azureTenantId := "123456789"
 
+	s3CompatStorageLocationName := "s3CompatTest"
+	s3CompatStorageProvider := "S3COMPAT"
+	s3CompatStorageBaseUrl := "s3compat://my-example-bucket/"
+	awsExternalId := "123456789"
+
 	externalVolumeName := id.Name()
 	s3StorageLocationInvalidStorageProvider := getS3StorageLocation(s3StorageLocationName, "invalid-storage-provider", s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeNone, "")
 	s3StorageLocationNoRoleArn := config.MapVariable(map[string]config.Variable{
@@ -2761,6 +2766,28 @@ func TestAcc_ExternalVolume_Validations(t *testing.T) {
 		"storage_base_url":      config.StringVariable(azureStorageBaseUrl),
 		"azure_tenant_id":       config.StringVariable(azureTenantId),
 		"encryption_type":       config.StringVariable(string(sdk.GCSEncryptionTypeSseKms)),
+	})
+	gcsStorageLocationWithAwsExternalId := config.MapVariable(map[string]config.Variable{
+		"storage_location_name":   config.StringVariable(gcsStorageLocationName),
+		"storage_provider":        config.StringVariable(gcsStorageProvider),
+		"storage_base_url":        config.StringVariable(gcsStorageBaseUrl),
+		"storage_aws_external_id": config.StringVariable(awsExternalId),
+	})
+	azureStorageLocationWithAwsExternalId := config.MapVariable(map[string]config.Variable{
+		"storage_location_name":   config.StringVariable(azureStorageLocationName),
+		"storage_provider":        config.StringVariable(azureStorageProvider),
+		"storage_base_url":        config.StringVariable(azureStorageBaseUrl),
+		"azure_tenant_id":         config.StringVariable(azureTenantId),
+		"storage_aws_external_id": config.StringVariable(awsExternalId),
+	})
+	s3CompatStorageLocationWithAwsExternalId := config.MapVariable(map[string]config.Variable{
+		"storage_location_name":   config.StringVariable(s3CompatStorageLocationName),
+		"storage_provider":        config.StringVariable(s3CompatStorageProvider),
+		"storage_base_url":        config.StringVariable(s3CompatStorageBaseUrl),
+		"storage_endpoint":        config.StringVariable("s3.us-west-2.amazonaws.com"),
+		"storage_aws_key_id":      config.StringVariable("AKIAIOSFODNN7EXAMPLE"),
+		"storage_aws_secret_key":  config.StringVariable("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"),
+		"storage_aws_external_id": config.StringVariable(awsExternalId),
 	})
 
 	resource.Test(t, resource.TestCase{
@@ -2830,78 +2857,29 @@ func TestAcc_ExternalVolume_Validations(t *testing.T) {
 				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocationWithEncryptionType), externalVolumeName, "", ""),
 				ExpectError:     regexp.MustCompile("unable to extract storage location, encryption_type is not supported for azure storage location"),
 			},
+			// storage_aws_external_id specified for gcs storage location
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocationWithAwsExternalId), externalVolumeName, "", ""),
+				ExpectError:     regexp.MustCompile("unable to extract storage location, storage_aws_external_id is not supported for gcs storage location"),
+			},
+			// storage_aws_external_id specified for azure storage location
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocationWithAwsExternalId), externalVolumeName, "", ""),
+				ExpectError:     regexp.MustCompile("unable to extract storage location, storage_aws_external_id is not supported for azure storage location"),
+			},
+			// storage_aws_external_id specified for s3compat storage location
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables: externalVolume(config.ListVariable(s3CompatStorageLocationWithAwsExternalId), externalVolumeName, "", ""),
+				ExpectError:     regexp.MustCompile("unable to extract storage location, storage_aws_external_id is not supported for s3compat storage location"),
+			},
 		},
 	})
 }
 
 func TestAcc_ExternalVolume_migrateFromVersion_2_14_0(t *testing.T) {
-	id := testClient().Ids.RandomAccountObjectIdentifier()
-
-	configWithProvider := fmt.Sprintf(`
-provider "snowflake" {
-  preview_features_enabled = ["%s"]
-}
-
-resource "snowflake_external_volume" "complete" {
-  name = "%s"
-  storage_location {
-    storage_location_name = "s3Test"
-    storage_provider      = "S3"
-    storage_base_url      = "s3://my-example-bucket"
-    storage_aws_role_arn  = "arn:aws:iam::123456789012:role/myrole"
-    encryption_type       = "NONE"
-  }
-}
-`, previewfeatures.ExternalVolumeResource, id.Name())
-
-	configWithoutProvider := fmt.Sprintf(`
-resource "snowflake_external_volume" "complete" {
-  name = "%s"
-  storage_location {
-    storage_location_name = "s3Test"
-    storage_provider      = "S3"
-    storage_base_url      = "s3://my-example-bucket"
-    storage_aws_role_arn  = "arn:aws:iam::123456789012:role/myrole"
-    encryption_type       = "NONE"
-  }
-}
-`, id.Name())
-
-	resource.Test(t, resource.TestCase{
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
-				Config:            configWithProvider,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "id", helpers.EncodeResourceIdentifier(id)),
-					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "name", id.Name()),
-				),
-			},
-			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   configWithoutProvider,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("snowflake_external_volume.complete", plancheck.ResourceActionNoop),
-					},
-				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "id", helpers.EncodeResourceIdentifier(id)),
-					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "describe_output.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "describe_output.0.storage_locations.#", "1"),
-					resource.TestCheckResourceAttrSet("snowflake_external_volume.complete", "describe_output.0.allow_writes"),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_ExternalVolume_migrateFromVersion_2_14_0_externalId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	externalVolumeName := id.Name()
 

@@ -157,7 +157,7 @@ func ExternalVolume() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		SchemaVersion: 2,
+		SchemaVersion: 1,
 
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingCreateWrapper(resources.ExternalVolume, CreateContextExternalVolume)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingReadWrapper(resources.ExternalVolume, ReadContextExternalVolume(true))),
@@ -182,11 +182,6 @@ func ExternalVolume() *schema.Resource {
 				Version: 0,
 				Type:    cty.EmptyObject,
 				Upgrade: v2_14_0_ExternalVolumeStateUpgrader,
-			},
-			{
-				Version: 1,
-				Type:    cty.EmptyObject,
-				Upgrade: v2_15_0_ExternalVolumeStateUpgrader,
 			},
 		},
 	}
@@ -345,40 +340,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
-
-		// Preserve fields not returned by the API (secret key) and user-configured fields
-		// not tracked from DESCRIBE output (external id) from the previous state.
-		oldSecretKeys := make(map[string]string)
-		oldExternalIds := make(map[string]string)
-		for i := range d.Get("storage_location.#").(int) {
-			name := d.Get(fmt.Sprintf("storage_location.%d.storage_location_name", i)).(string)
-			oldSecretKeys[name] = d.Get(fmt.Sprintf("storage_location.%d.storage_aws_secret_key", i)).(string)
-			oldExternalIds[name] = d.Get(fmt.Sprintf("storage_location.%d.storage_aws_external_id", i)).(string)
-		}
-		for i := range len(storageLocations) {
-			locName := storageLocations[i]["storage_location_name"].(string)
-			if v, ok := oldSecretKeys[locName]; ok {
-				storageLocations[i]["storage_aws_secret_key"] = v
-			}
-			if v, ok := oldExternalIds[locName]; ok {
-				storageLocations[i]["storage_aws_external_id"] = v
-			}
-		}
-
-		// Handle external changes for storage_aws_external_id in S3 storage locations.
-		// Compare previous describe_output with current SF value, adapted for nested list fields.
-		if withExternalChangesMarking {
-			for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
-				if loc.S3StorageLocation == nil || i >= len(storageLocations) {
-					continue
-				}
-				prevExternalId := d.Get(fmt.Sprintf("describe_output.0.storage_locations.%d.s3_storage_location.0.storage_aws_external_id", i))
-				if prevExternalId != loc.S3StorageLocation.StorageAwsExternalId {
-					storageLocations[i]["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
-				}
-			}
-		}
+		storageLocations := readStorageLocations(d, parsedExternalVolumeDescribed, withExternalChangesMarking)
 
 		detailsSchema := schemas.ExternalVolumeDetailsToSchema(parsedExternalVolumeDescribed)
 
@@ -394,6 +356,56 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 
 		return nil
 	}
+}
+
+func readStorageLocations(d *schema.ResourceData, parsedExternalVolumeDescribed sdk.ExternalVolumeDetails, withExternalChangesMarking bool) []map[string]any {
+	storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
+
+	// Preserve fields not returned by the API (secret key) and user-configured fields
+	// not tracked from DESCRIBE output (external id) from the previous state.
+	oldSecretKeys := make(map[string]string)
+	oldExternalIds := make(map[string]string)
+	for i := range d.Get("storage_location.#").(int) {
+		name := d.Get(fmt.Sprintf("storage_location.%d.storage_location_name", i)).(string)
+		oldSecretKeys[name] = d.Get(fmt.Sprintf("storage_location.%d.storage_aws_secret_key", i)).(string)
+		oldExternalIds[name] = d.Get(fmt.Sprintf("storage_location.%d.storage_aws_external_id", i)).(string)
+	}
+	for i := range len(storageLocations) {
+		locName := storageLocations[i]["storage_location_name"].(string)
+		if v, ok := oldSecretKeys[locName]; ok {
+			storageLocations[i]["storage_aws_secret_key"] = v
+		}
+		if v, ok := oldExternalIds[locName]; ok {
+			storageLocations[i]["storage_aws_external_id"] = v
+		}
+	}
+
+	// Handle external changes for storage_aws_external_id in S3 storage locations.
+	// Build a map from the previous describe_output keyed by location name, then compare
+	// against the current SF value to detect external changes. Using names instead of
+	// positional indexes avoids mismatches when locations are added/removed between reads.
+	if withExternalChangesMarking {
+		prevDescExternalIds := make(map[string]string)
+		for i := range d.Get("describe_output.0.storage_locations.#").(int) {
+			locName := d.Get(fmt.Sprintf("describe_output.0.storage_locations.%d.name", i)).(string)
+			s3Locs := d.Get(fmt.Sprintf("describe_output.0.storage_locations.%d.s3_storage_location", i)).([]any)
+			if len(s3Locs) > 0 {
+				if s3Map, ok := s3Locs[0].(map[string]any); ok {
+					prevDescExternalIds[locName] = s3Map["storage_aws_external_id"].(string)
+				}
+			}
+		}
+		for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
+			if loc.S3StorageLocation == nil || i >= len(storageLocations) {
+				continue
+			}
+			if prev, ok := prevDescExternalIds[loc.Name]; ok && prev != loc.S3StorageLocation.StorageAwsExternalId {
+				storageLocations[i]["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+			}
+		}
+	}
+
+	return storageLocations
 }
 
 func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -604,6 +616,10 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 			if ok && len(storageAwsRoleArn) > 0 {
 				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn is not supported for gcs storage location")
 			}
+			storageAwsExternalId, ok := storageLocationConfig["storage_aws_external_id"].(string)
+			if ok && len(storageAwsExternalId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_external_id is not supported for gcs storage location")
+			}
 			storageAwsAccessPointArn, ok := storageLocationConfig["storage_aws_access_point_arn"].(string)
 			if ok && len(storageAwsAccessPointArn) > 0 {
 				return nil, fmt.Errorf("unable to extract storage location, storage_aws_access_point_arn is not supported for gcs storage location")
@@ -653,6 +669,10 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 			if ok && len(storageAwsRolArn) > 0 {
 				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn is not supported for azure storage location")
 			}
+			storageAwsExternalId, ok := storageLocationConfig["storage_aws_external_id"].(string)
+			if ok && len(storageAwsExternalId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_external_id is not supported for azure storage location")
+			}
 			encryptionKmsKeyId, ok := storageLocationConfig["encryption_kms_key_id"].(string)
 			if ok && len(encryptionKmsKeyId) > 0 {
 				return nil, fmt.Errorf("unable to extract storage location, encryption_kms_key_id is not supported for azure storage location")
@@ -700,6 +720,10 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 			storageAwsRoleArn, ok := storageLocationConfig["storage_aws_role_arn"].(string)
 			if ok && len(storageAwsRoleArn) > 0 {
 				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn is not supported for s3compat storage location")
+			}
+			storageAwsExternalId, ok := storageLocationConfig["storage_aws_external_id"].(string)
+			if ok && len(storageAwsExternalId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_external_id is not supported for s3compat storage location")
 			}
 			azureTenantId, ok := storageLocationConfig["azure_tenant_id"].(string)
 			if ok && len(azureTenantId) > 0 {
