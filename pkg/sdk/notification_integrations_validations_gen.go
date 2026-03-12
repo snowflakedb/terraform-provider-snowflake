@@ -21,8 +21,8 @@ func (opts *CreateNotificationIntegrationOptions) validate() error {
 	if everyValueSet(opts.IfNotExists, opts.OrReplace) {
 		errs = append(errs, errOneOf("CreateNotificationIntegrationOptions", "IfNotExists", "OrReplace"))
 	}
-	if !exactlyOneValueSet(opts.AutomatedDataLoadsParams, opts.PushNotificationParams, opts.EmailParams) {
-		errs = append(errs, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams"))
+	if !exactlyOneValueSet(opts.AutomatedDataLoadsParams, opts.PushNotificationParams, opts.EmailParams, opts.WebhookParams) {
+		errs = append(errs, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"))
 	}
 	if valueSet(opts.AutomatedDataLoadsParams) {
 		if !exactlyOneValueSet(opts.AutomatedDataLoadsParams.GoogleAutoParams, opts.AutomatedDataLoadsParams.AzureAutoParams) {
@@ -45,15 +45,15 @@ func (opts *AlterNotificationIntegrationOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Set, opts.UnsetEmailParams, opts.SetTags, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "SetTags", "UnsetTags"))
+	if !exactlyOneValueSet(opts.Set, opts.UnsetEmailParams, opts.UnsetWebhookParams, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		if everyValueSet(opts.Set.SetPushParams, opts.Set.SetEmailParams) {
-			errs = append(errs, errOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams"))
+		if moreThanOneValueSet(opts.Set.SetPushParams, opts.Set.SetEmailParams, opts.Set.SetWebhookParams) {
+			errs = append(errs, errOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams", "SetWebhookParams"))
 		}
-		if !anyValueSet(opts.Set.Enabled, opts.Set.SetPushParams, opts.Set.SetEmailParams, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterNotificationIntegrationOptions.Set", "Enabled", "SetPushParams", "SetEmailParams", "Comment"))
+		if !anyValueSet(opts.Set.Enabled, opts.Set.SetPushParams, opts.Set.SetEmailParams, opts.Set.SetWebhookParams, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterNotificationIntegrationOptions.Set", "Enabled", "SetPushParams", "SetEmailParams", "SetWebhookParams", "Comment"))
 		}
 		if valueSet(opts.Set.SetPushParams) {
 			if !exactlyOneValueSet(opts.Set.SetPushParams.SetAmazonPush, opts.Set.SetPushParams.SetGooglePush, opts.Set.SetPushParams.SetAzurePush) {
@@ -69,6 +69,11 @@ func (opts *AlterNotificationIntegrationOptions) validate() error {
 	if valueSet(opts.UnsetEmailParams) {
 		if !anyValueSet(opts.UnsetEmailParams.AllowedRecipients, opts.UnsetEmailParams.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterNotificationIntegrationOptions.UnsetEmailParams", "AllowedRecipients", "Comment"))
+		}
+	}
+	if valueSet(opts.UnsetWebhookParams) {
+		if !anyValueSet(opts.UnsetWebhookParams.WebhookSecret, opts.UnsetWebhookParams.WebhookBodyTemplate, opts.UnsetWebhookParams.WebhookHeaders, opts.UnsetWebhookParams.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterNotificationIntegrationOptions.UnsetWebhookParams", "WebhookSecret", "WebhookBodyTemplate", "WebhookHeaders", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

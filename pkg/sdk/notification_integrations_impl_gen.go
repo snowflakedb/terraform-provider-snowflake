@@ -119,6 +119,23 @@ func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationInteg
 			AllowedRecipients: r.EmailParams.AllowedRecipients,
 		}
 	}
+	if r.WebhookParams != nil {
+		opts.WebhookParams = &WebhookParams{
+			WebhookUrl:          r.WebhookParams.WebhookUrl,
+			WebhookBodyTemplate: r.WebhookParams.WebhookBodyTemplate,
+		}
+		if r.WebhookParams.WebhookSecret != nil {
+			opts.WebhookParams.WebhookSecret = &WebhookSecretReference{
+				SecretId: *r.WebhookParams.WebhookSecret,
+			}
+		}
+		for _, h := range r.WebhookParams.WebhookHeaders {
+			opts.WebhookParams.WebhookHeaders = append(opts.WebhookParams.WebhookHeaders, WebhookHeader{
+				Header: h.Header,
+				Value:  h.Value,
+			})
+		}
+	}
 	return opts
 }
 
@@ -159,11 +176,36 @@ func (r *AlterNotificationIntegrationRequest) toOpts() *AlterNotificationIntegra
 				AllowedRecipients: r.Set.SetEmailParams.AllowedRecipients,
 			}
 		}
+		if r.Set.SetWebhookParams != nil {
+			opts.Set.SetWebhookParams = &SetWebhookParams{
+				WebhookUrl:          r.Set.SetWebhookParams.WebhookUrl,
+				WebhookBodyTemplate: r.Set.SetWebhookParams.WebhookBodyTemplate,
+			}
+			if r.Set.SetWebhookParams.WebhookSecret != nil {
+				opts.Set.SetWebhookParams.WebhookSecret = &WebhookSecretReference{
+					SecretId: *r.Set.SetWebhookParams.WebhookSecret,
+				}
+			}
+			for _, h := range r.Set.SetWebhookParams.WebhookHeaders {
+				opts.Set.SetWebhookParams.WebhookHeaders = append(opts.Set.SetWebhookParams.WebhookHeaders, WebhookHeader{
+					Header: h.Header,
+					Value:  h.Value,
+				})
+			}
+		}
 	}
 	if r.UnsetEmailParams != nil {
 		opts.UnsetEmailParams = &NotificationIntegrationUnsetEmailParams{
 			AllowedRecipients: r.UnsetEmailParams.AllowedRecipients,
 			Comment:           r.UnsetEmailParams.Comment,
+		}
+	}
+	if r.UnsetWebhookParams != nil {
+		opts.UnsetWebhookParams = &NotificationIntegrationUnsetWebhookParams{
+			WebhookSecret:       r.UnsetWebhookParams.WebhookSecret,
+			WebhookBodyTemplate: r.UnsetWebhookParams.WebhookBodyTemplate,
+			WebhookHeaders:      r.UnsetWebhookParams.WebhookHeaders,
+			Comment:             r.UnsetWebhookParams.Comment,
 		}
 	}
 	return opts

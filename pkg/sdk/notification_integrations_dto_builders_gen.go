@@ -37,6 +37,11 @@ func (s *CreateNotificationIntegrationRequest) WithEmailParams(emailParams Email
 	return s
 }
 
+func (s *CreateNotificationIntegrationRequest) WithWebhookParams(webhookParams WebhookParamsRequest) *CreateNotificationIntegrationRequest {
+	s.WebhookParams = &webhookParams
+	return s
+}
+
 func (s *CreateNotificationIntegrationRequest) WithComment(comment string) *CreateNotificationIntegrationRequest {
 	s.Comment = &comment
 	return s
@@ -133,6 +138,34 @@ func (s *EmailParamsRequest) WithAllowedRecipients(allowedRecipients []Notificat
 	return s
 }
 
+func NewWebhookParamsRequest(webhookUrl string) *WebhookParamsRequest {
+	s := WebhookParamsRequest{}
+	s.WebhookUrl = webhookUrl
+	return &s
+}
+
+func (s *WebhookParamsRequest) WithWebhookSecret(secretId SchemaObjectIdentifier) *WebhookParamsRequest {
+	s.WebhookSecret = &secretId
+	return s
+}
+
+func (s *WebhookParamsRequest) WithWebhookBodyTemplate(webhookBodyTemplate string) *WebhookParamsRequest {
+	s.WebhookBodyTemplate = &webhookBodyTemplate
+	return s
+}
+
+func (s *WebhookParamsRequest) WithWebhookHeaders(webhookHeaders []WebhookHeaderRequest) *WebhookParamsRequest {
+	s.WebhookHeaders = webhookHeaders
+	return s
+}
+
+func NewWebhookHeaderRequest(header string, value string) *WebhookHeaderRequest {
+	s := WebhookHeaderRequest{}
+	s.Header = header
+	s.Value = value
+	return &s
+}
+
 func NewAlterNotificationIntegrationRequest(
 	name AccountObjectIdentifier,
 ) *AlterNotificationIntegrationRequest {
@@ -153,6 +186,11 @@ func (s *AlterNotificationIntegrationRequest) WithSet(set NotificationIntegratio
 
 func (s *AlterNotificationIntegrationRequest) WithUnsetEmailParams(unsetEmailParams NotificationIntegrationUnsetEmailParamsRequest) *AlterNotificationIntegrationRequest {
 	s.UnsetEmailParams = &unsetEmailParams
+	return s
+}
+
+func (s *AlterNotificationIntegrationRequest) WithUnsetWebhookParams(unsetWebhookParams NotificationIntegrationUnsetWebhookParamsRequest) *AlterNotificationIntegrationRequest {
+	s.UnsetWebhookParams = &unsetWebhookParams
 	return s
 }
 
@@ -183,6 +221,11 @@ func (s *NotificationIntegrationSetRequest) WithSetPushParams(setPushParams SetP
 
 func (s *NotificationIntegrationSetRequest) WithSetEmailParams(setEmailParams SetEmailParamsRequest) *NotificationIntegrationSetRequest {
 	s.SetEmailParams = &setEmailParams
+	return s
+}
+
+func (s *NotificationIntegrationSetRequest) WithSetWebhookParams(setWebhookParams SetWebhookParamsRequest) *NotificationIntegrationSetRequest {
+	s.SetWebhookParams = &setWebhookParams
 	return s
 }
 
@@ -247,6 +290,31 @@ func NewSetEmailParamsRequest(
 	return &s
 }
 
+func NewSetWebhookParamsRequest() *SetWebhookParamsRequest {
+	s := SetWebhookParamsRequest{}
+	return &s
+}
+
+func (s *SetWebhookParamsRequest) WithWebhookUrl(webhookUrl string) *SetWebhookParamsRequest {
+	s.WebhookUrl = &webhookUrl
+	return s
+}
+
+func (s *SetWebhookParamsRequest) WithWebhookSecret(secretId SchemaObjectIdentifier) *SetWebhookParamsRequest {
+	s.WebhookSecret = &secretId
+	return s
+}
+
+func (s *SetWebhookParamsRequest) WithWebhookBodyTemplate(webhookBodyTemplate string) *SetWebhookParamsRequest {
+	s.WebhookBodyTemplate = &webhookBodyTemplate
+	return s
+}
+
+func (s *SetWebhookParamsRequest) WithWebhookHeaders(webhookHeaders []WebhookHeaderRequest) *SetWebhookParamsRequest {
+	s.WebhookHeaders = webhookHeaders
+	return s
+}
+
 func NewNotificationIntegrationUnsetEmailParamsRequest() *NotificationIntegrationUnsetEmailParamsRequest {
 	s := NotificationIntegrationUnsetEmailParamsRequest{}
 	return &s
@@ -258,6 +326,31 @@ func (s *NotificationIntegrationUnsetEmailParamsRequest) WithAllowedRecipients(a
 }
 
 func (s *NotificationIntegrationUnsetEmailParamsRequest) WithComment(comment bool) *NotificationIntegrationUnsetEmailParamsRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewNotificationIntegrationUnsetWebhookParamsRequest() *NotificationIntegrationUnsetWebhookParamsRequest {
+	s := NotificationIntegrationUnsetWebhookParamsRequest{}
+	return &s
+}
+
+func (s *NotificationIntegrationUnsetWebhookParamsRequest) WithWebhookSecret(webhookSecret bool) *NotificationIntegrationUnsetWebhookParamsRequest {
+	s.WebhookSecret = &webhookSecret
+	return s
+}
+
+func (s *NotificationIntegrationUnsetWebhookParamsRequest) WithWebhookBodyTemplate(webhookBodyTemplate bool) *NotificationIntegrationUnsetWebhookParamsRequest {
+	s.WebhookBodyTemplate = &webhookBodyTemplate
+	return s
+}
+
+func (s *NotificationIntegrationUnsetWebhookParamsRequest) WithWebhookHeaders(webhookHeaders bool) *NotificationIntegrationUnsetWebhookParamsRequest {
+	s.WebhookHeaders = &webhookHeaders
+	return s
+}
+
+func (s *NotificationIntegrationUnsetWebhookParamsRequest) WithComment(comment bool) *NotificationIntegrationUnsetWebhookParamsRequest {
 	s.Comment = &comment
 	return s
 }
