@@ -6,14 +6,14 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.ExternalVolumeStorageLocation) *ExternalVolumeModel {
+func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.ExternalVolumeStorageLocationRequest) *ExternalVolumeModel {
 	maps := make([]tfconfig.Variable, len(storageLocation))
 	for i, v := range storageLocation {
 		switch {
 		case v.S3StorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
 				"storage_location_name": tfconfig.StringVariable(v.Name),
-				"storage_provider":      tfconfig.StringVariable(string(v.S3StorageLocationParams.StorageProvider)),
+				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderS3)),
 				"storage_aws_role_arn":  tfconfig.StringVariable(v.S3StorageLocationParams.StorageAwsRoleArn),
 				"storage_base_url":      tfconfig.StringVariable(v.S3StorageLocationParams.StorageBaseUrl),
 			}
@@ -30,7 +30,7 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 		case v.GCSStorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
 				"storage_location_name": tfconfig.StringVariable(v.Name),
-				"storage_provider":      tfconfig.StringVariable(v.GCSStorageLocationParams.StorageProviderGcs),
+				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderGCS)),
 				"storage_base_url":      tfconfig.StringVariable(v.GCSStorageLocationParams.StorageBaseUrl),
 			}
 			if v.GCSStorageLocationParams.Encryption != nil {
@@ -43,9 +43,17 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 		case v.AzureStorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
 				"storage_location_name": tfconfig.StringVariable(v.Name),
-				"storage_provider":      tfconfig.StringVariable(v.AzureStorageLocationParams.StorageProviderAzure),
+				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderAzure)),
 				"azure_tenant_id":       tfconfig.StringVariable(v.AzureStorageLocationParams.AzureTenantId),
 				"storage_base_url":      tfconfig.StringVariable(v.AzureStorageLocationParams.StorageBaseUrl),
+			}
+			maps[i] = tfconfig.MapVariable(m)
+		case v.S3CompatStorageLocationParams != nil:
+			m := map[string]tfconfig.Variable{
+				"storage_location_name": tfconfig.StringVariable(v.Name),
+				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderS3Compatible)),
+				"storage_base_url":      tfconfig.StringVariable(v.S3CompatStorageLocationParams.StorageBaseUrl),
+				"storage_endpoint":      tfconfig.StringVariable(v.S3CompatStorageLocationParams.StorageEndpoint),
 			}
 			maps[i] = tfconfig.MapVariable(m)
 		}
