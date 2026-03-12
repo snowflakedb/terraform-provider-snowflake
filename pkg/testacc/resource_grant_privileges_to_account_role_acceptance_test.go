@@ -3430,8 +3430,6 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManage
 	})
 }
 
-// Proves that in v2.14.0 granting on AGENT produced a non-empty plan (CORTEX AGENT was mapped to MODEL);
-// step 1 uses provider 2.14.0 and expects non-empty plan; step 2 uses dev provider and expects empty plan.
 func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnObject_Agent_v2_14_0_NonEmptyPlan(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
