@@ -10,63 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-type CatalogIntegrationAwsGlueDetails struct {
-	Id                     AccountObjectIdentifier
-	CatalogSource          CatalogIntegrationCatalogSourceType
-	TableFormat            CatalogIntegrationTableFormat
-	Enabled                bool
-	RefreshIntervalSeconds int
-	Comment                string
-	GlueAwsRoleArn         string
-	GlueCatalogId          string
-	GlueRegion             string
-	CatalogNamespace       string
-}
-
-type CatalogIntegrationObjectStorageDetails struct {
-	Id                     AccountObjectIdentifier
-	CatalogSource          CatalogIntegrationCatalogSourceType
-	TableFormat            CatalogIntegrationTableFormat
-	Enabled                bool
-	RefreshIntervalSeconds int
-	Comment                string
-}
-
-type CatalogIntegrationOpenCatalogDetails struct {
-	Id                     AccountObjectIdentifier
-	CatalogSource          CatalogIntegrationCatalogSourceType
-	TableFormat            CatalogIntegrationTableFormat
-	Enabled                bool
-	RefreshIntervalSeconds int
-	Comment                string
-	CatalogNamespace       string
-	RestConfig             OpenCatalogRestConfig
-	RestAuthentication     OAuthRestAuthentication
-}
-
-type CatalogIntegrationIcebergRestDetails struct {
-	Id                       AccountObjectIdentifier
-	CatalogSource            CatalogIntegrationCatalogSourceType
-	TableFormat              CatalogIntegrationTableFormat
-	Enabled                  bool
-	RefreshIntervalSeconds   int
-	Comment                  string
-	CatalogNamespace         string
-	RestConfig               IcebergRestRestConfig
-	OAuthRestAuthentication  *OAuthRestAuthentication
-	BearerRestAuthentication *BearerRestAuthentication
-	SigV4RestAuthentication  *SigV4RestAuthentication
-}
-
-type CatalogIntegrationSapBdcDetails struct {
-	Id                     AccountObjectIdentifier
-	CatalogSource          CatalogIntegrationCatalogSourceType
-	TableFormat            CatalogIntegrationTableFormat
-	Enabled                bool
-	RefreshIntervalSeconds int
-	Comment                string
-}
-
 func (r *CreateCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }

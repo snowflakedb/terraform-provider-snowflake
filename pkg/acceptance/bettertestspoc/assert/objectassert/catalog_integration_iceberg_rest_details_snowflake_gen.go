@@ -27,7 +27,7 @@ func CatalogIntegrationIcebergRestDetails(t *testing.T, id sdk.AccountObjectIden
 func CatalogIntegrationIcebergRestDetailsFromObject(t *testing.T, catalogIntegrationIcebergRestDetails *sdk.CatalogIntegrationIcebergRestDetails) *CatalogIntegrationIcebergRestDetailsAssert {
 	t.Helper()
 	return &CatalogIntegrationIcebergRestDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationwIcebergRestDetails"), catalogIntegrationIcebergRestDetails.Id, catalogIntegrationIcebergRestDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationIcebergRestDetails"), catalogIntegrationIcebergRestDetails.Id, catalogIntegrationIcebergRestDetails),
 	}
 }
 
