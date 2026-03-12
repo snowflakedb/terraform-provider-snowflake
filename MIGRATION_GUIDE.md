@@ -86,7 +86,11 @@ New fields in `storage_location`:
 - `storage_aws_key_id` - AWS key ID for S3COMPAT storage locations.
 - `storage_aws_secret_key` - AWS secret key for S3COMPAT storage locations (sensitive).
 
-No changes to existing configurations are required. If you are using S3-compatible storage, you can now set `storage_provider = "S3COMPAT"` with the new fields above.
+#### *(breaking change)* `storage_aws_external_id` changed from computed to optional
+
+Previously, `storage_aws_external_id` in `storage_location` was a computed (read-only) field populated by Snowflake. It is now an optional user-configurable field. A state upgrader clears the previously computed value automatically, so no changes to existing configurations are required and `terraform plan` will show no drift after upgrading.
+
+If you previously referenced `storage_location.*.storage_aws_external_id` (e.g. in `output` blocks or `local` values), note that it will now be empty unless you explicitly set it. The Snowflake-generated external ID remains accessible via `describe_output.0.storage_locations.*.s3_storage_location.0.storage_aws_external_id`.
 
 #### *(breaking change)* `snowflake_external_volume` resource `describe_output` schema changed
 

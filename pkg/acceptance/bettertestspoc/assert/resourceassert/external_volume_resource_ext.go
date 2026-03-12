@@ -18,6 +18,7 @@ func (e *ExternalVolumeResourceAssert) HasS3StorageLocationAtIndex(
 	expectedName string,
 	expectedStorageBaseUrl string,
 	expectedStorageAwsRoleArn string,
+	expectedStorageAwsExternalId string,
 	expectedEncryptionType string,
 	expectedEncryptionKmsKeyId string,
 	expectedStorageAwsAccessPointArn string,
@@ -28,6 +29,7 @@ func (e *ExternalVolumeResourceAssert) HasS3StorageLocationAtIndex(
 	e.AddAssertion(assert.ValueSet(prefix+".storage_provider", expectedStorageProvider))
 	e.AddAssertion(assert.ValueSet(prefix+".storage_base_url", expectedStorageBaseUrl))
 	e.AddAssertion(assert.ValueSet(prefix+".storage_aws_role_arn", expectedStorageAwsRoleArn))
+	e.AddAssertion(assert.ValueSet(prefix+".storage_aws_external_id", expectedStorageAwsExternalId))
 	e.AddAssertion(assert.ValueSet(prefix+".encryption_type", expectedEncryptionType))
 	e.AddAssertion(assert.ValueSet(prefix+".encryption_kms_key_id", expectedEncryptionKmsKeyId))
 	e.AddAssertion(assert.ValueSet(prefix+".storage_aws_access_point_arn", expectedStorageAwsAccessPointArn))

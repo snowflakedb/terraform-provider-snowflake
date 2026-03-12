@@ -63,7 +63,7 @@ var externalVolumeSchema = map[string]*schema.Schema{
 				},
 				"storage_aws_external_id": {
 					Type:        schema.TypeString,
-					Computed:    true,
+					Optional:    true,
 					Description: "External ID that Snowflake uses to establish a trust relationship with AWS.",
 				},
 				"encryption_type": {
@@ -157,7 +157,7 @@ func ExternalVolume() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingCreateWrapper(resources.ExternalVolume, CreateContextExternalVolume)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingReadWrapper(resources.ExternalVolume, ReadContextExternalVolume(true))),
@@ -183,6 +183,11 @@ func ExternalVolume() *schema.Resource {
 				Type:    cty.EmptyObject,
 				Upgrade: v2_14_0_ExternalVolumeStateUpgrader,
 			},
+			{
+				Version: 1,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_15_0_ExternalVolumeStateUpgrader,
+			},
 		},
 	}
 }
@@ -199,7 +204,7 @@ func storageLocationDetailsToStateMaps(locations []sdk.ExternalVolumeStorageLoca
 		switch {
 		case loc.S3StorageLocation != nil:
 			m["storage_aws_role_arn"] = loc.S3StorageLocation.StorageAwsRoleArn
-			m["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+
 			m["storage_aws_access_point_arn"] = loc.S3StorageLocation.StorageAwsAccessPointArn
 			m["encryption_kms_key_id"] = loc.S3StorageLocation.EncryptionKmsKeyId
 			if loc.S3StorageLocation.UsePrivatelinkEndpoint != nil {
@@ -342,17 +347,36 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 
 		storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
 
-		// We need to preserve the secret key for the storage location, because it is not returned by the API.
-		// This is a workaround to avoid the secret key being removed from the state.
+		// Preserve fields not returned by the API (secret key) and user-configured fields
+		// not tracked from DESCRIBE output (external id) from the previous state.
 		oldSecretKeys := make(map[string]string)
+		oldExternalIds := make(map[string]string)
 		for i := range d.Get("storage_location.#").(int) {
-			value := d.Get(fmt.Sprintf("storage_location.%d.storage_aws_secret_key", i))
-			name := d.Get(fmt.Sprintf("storage_location.%d.storage_location_name", i))
-			oldSecretKeys[name.(string)] = value.(string)
+			name := d.Get(fmt.Sprintf("storage_location.%d.storage_location_name", i)).(string)
+			oldSecretKeys[name] = d.Get(fmt.Sprintf("storage_location.%d.storage_aws_secret_key", i)).(string)
+			oldExternalIds[name] = d.Get(fmt.Sprintf("storage_location.%d.storage_aws_external_id", i)).(string)
 		}
 		for i := range len(storageLocations) {
-			if v, ok := oldSecretKeys[storageLocations[i]["storage_location_name"].(string)]; ok {
+			locName := storageLocations[i]["storage_location_name"].(string)
+			if v, ok := oldSecretKeys[locName]; ok {
 				storageLocations[i]["storage_aws_secret_key"] = v
+			}
+			if v, ok := oldExternalIds[locName]; ok {
+				storageLocations[i]["storage_aws_external_id"] = v
+			}
+		}
+
+		// Handle external changes for storage_aws_external_id in S3 storage locations.
+		// Compare previous describe_output with current SF value, adapted for nested list fields.
+		if withExternalChangesMarking {
+			for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
+				if loc.S3StorageLocation == nil || i >= len(storageLocations) {
+					continue
+				}
+				prevExternalId := d.Get(fmt.Sprintf("describe_output.0.storage_locations.%d.s3_storage_location.0.storage_aws_external_id", i))
+				if prevExternalId != loc.S3StorageLocation.StorageAwsExternalId {
+					storageLocations[i]["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+				}
 			}
 		}
 
@@ -525,6 +549,11 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				StorageProvider:   s3StorageProvider,
 				StorageBaseUrl:    storageBaseUrl,
 				StorageAwsRoleArn: storageAwsRoleArn,
+			}
+
+			storageAwsExternalId, ok := storageLocationConfig["storage_aws_external_id"].(string)
+			if ok && len(storageAwsExternalId) > 0 {
+				s3StorageLocation.StorageAwsExternalId = &storageAwsExternalId
 			}
 
 			storageAwsAccessPointArn, ok := storageLocationConfig["storage_aws_access_point_arn"].(string)
@@ -751,6 +780,9 @@ func addStorageLocation(
 		}
 		if addedLocation.UsePrivatelinkEndpoint != nil {
 			s3ParamsRequest = s3ParamsRequest.WithUsePrivatelinkEndpoint(*addedLocation.UsePrivatelinkEndpoint)
+		}
+		if addedLocation.StorageAwsExternalId != nil {
+			s3ParamsRequest = s3ParamsRequest.WithStorageAwsExternalId(*addedLocation.StorageAwsExternalId)
 		}
 		if addedLocation.Encryption != nil {
 			encryptionRequest := sdk.NewExternalVolumeS3EncryptionRequest(addedLocation.Encryption.EncryptionType)

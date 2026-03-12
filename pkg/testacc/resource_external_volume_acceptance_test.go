@@ -58,6 +58,7 @@ func getS3StorageLocationWithExtras(
 	s3EncryptionKmsKeyId string,
 	accessPointArn string,
 	usePrivatelinkEndpoint string,
+	storageAwsExternalId string,
 ) config.Variable {
 	m := map[string]config.Variable{
 		"storage_location_name": config.StringVariable(locName),
@@ -74,6 +75,9 @@ func getS3StorageLocationWithExtras(
 	}
 	if len(usePrivatelinkEndpoint) > 0 {
 		m["use_privatelink_endpoint"] = config.StringVariable(usePrivatelinkEndpoint)
+	}
+	if len(storageAwsExternalId) > 0 {
+		m["storage_aws_external_id"] = config.StringVariable(storageAwsExternalId)
 	}
 	return config.MapVariable(m)
 }
@@ -173,11 +177,13 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 	s3EncryptionTypeSseKms := "AWS_SSE_KMS"
 	s3EncryptionKmsKeyId := "123456789"
 	s3EncryptionKmsKeyId2 := "987654321"
+	awsExternalId := "123456789"
+	awsExternalId2 := "987654321"
 	s3AccessPointArn := "arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point"
 	s3AccessPointArnUpdated := "arn:aws:s3:us-west-2:123456789012:accesspoint/my-access-point-updated"
 	s3StorageLocation := getS3StorageLocation(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeNone, "")
-	s3StorageLocationComplete := getS3StorageLocationWithExtras(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeSseKms, s3EncryptionKmsKeyId, s3AccessPointArn, "true")
-	s3StorageLocationCompleteUpdated := getS3StorageLocationWithExtras(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeSseKms, s3EncryptionKmsKeyId2, s3AccessPointArnUpdated, "true")
+	s3StorageLocationComplete := getS3StorageLocationWithExtras(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeSseKms, s3EncryptionKmsKeyId, s3AccessPointArn, "true", awsExternalId)
+	s3StorageLocationCompleteUpdated := getS3StorageLocationWithExtras(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeSseKms, s3EncryptionKmsKeyId2, s3AccessPointArnUpdated, "true", awsExternalId2)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -202,6 +208,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -235,7 +242,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"allow_writes"},
+				ImportStateVerifyIgnore: []string{"allow_writes", "storage_location.0.storage_aws_external_id"},
 			},
 			// update the location to have all optional fields
 			{
@@ -258,6 +265,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							awsExternalId,
 							s3EncryptionTypeSseKms,
 							s3EncryptionKmsKeyId,
 							s3AccessPointArn,
@@ -282,6 +290,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 									EncryptionKmsKeyId:       s3EncryptionKmsKeyId,
 									StorageAwsAccessPointArn: s3AccessPointArn,
 									UsePrivatelinkEndpoint:   sdk.Bool(true),
+									StorageAwsExternalId:     awsExternalId,
 								},
 							},
 						}),
@@ -294,7 +303,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"storage_location.0.use_privatelink_endpoint"},
+				ImportStateVerifyIgnore: []string{"storage_location.0.use_privatelink_endpoint", "storage_location.0.storage_aws_external_id"},
 			},
 			// update the location to have changed fields
 			{
@@ -317,6 +326,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							awsExternalId2,
 							s3EncryptionTypeSseKms,
 							s3EncryptionKmsKeyId2,
 							s3AccessPointArnUpdated,
@@ -341,6 +351,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 									EncryptionKmsKeyId:       s3EncryptionKmsKeyId2,
 									StorageAwsAccessPointArn: s3AccessPointArnUpdated,
 									UsePrivatelinkEndpoint:   sdk.Bool(true),
+									StorageAwsExternalId:     awsExternalId2,
 								},
 							},
 						}),
@@ -388,6 +399,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							awsExternalId2,
 							s3EncryptionTypeSseKms,
 							s3EncryptionKmsKeyId2,
 							s3AccessPointArnUpdated,
@@ -411,6 +423,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 									EncryptionKmsKeyId:       s3EncryptionKmsKeyId2,
 									StorageAwsAccessPointArn: s3AccessPointArnUpdated,
 									UsePrivatelinkEndpoint:   sdk.Bool(true),
+									StorageAwsExternalId:     awsExternalId2,
 								},
 							},
 						}),
@@ -437,6 +450,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -506,6 +520,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Gov(t *testing.T) {
 							s3GovStorageLocationName,
 							s3GovStorageBaseUrl,
 							s3GovStorageAwsRoleArn,
+							"",
 							s3GovEncryptionTypeNone,
 							"",
 							"",
@@ -1369,7 +1384,8 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 	s3StorageAwsRoleArn := "arn:aws:iam::123456789012:role/myrole"
 	s3EncryptionTypeSseKms := "AWS_SSE_KMS"
 	s3EncryptionKmsKeyId := "123456789"
-	s3StorageLocationKmsEncryption := getS3StorageLocation(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeSseKms, s3EncryptionKmsKeyId)
+	awsExternalId := "123456789"
+	s3StorageLocationKmsEncryption := getS3StorageLocationWithExtras(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeSseKms, s3EncryptionKmsKeyId, "", "", awsExternalId)
 
 	gcsStorageLocationName := "gcsTest"
 	gcsStorageProvider := "GCS"
@@ -1407,6 +1423,7 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							awsExternalId,
 							s3EncryptionTypeSseKms,
 							s3EncryptionKmsKeyId,
 							"",
@@ -1440,8 +1457,9 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 								StorageBaseUrl:  s3StorageBaseUrl,
 								EncryptionType:  s3EncryptionTypeSseKms,
 								S3StorageLocation: &sdk.StorageLocationS3Details{
-									StorageAwsRoleArn:  s3StorageAwsRoleArn,
-									EncryptionKmsKeyId: s3EncryptionKmsKeyId,
+									StorageAwsRoleArn:    s3StorageAwsRoleArn,
+									StorageAwsExternalId: awsExternalId,
+									EncryptionKmsKeyId:   s3EncryptionKmsKeyId,
 								},
 							},
 							{
@@ -1466,11 +1484,12 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 				),
 			},
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables:   externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "false"),
-				ResourceName:      "snowflake_external_volume.complete",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
+				ConfigVariables:         externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "false"),
+				ResourceName:            "snowflake_external_volume.complete",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"storage_location.0.storage_aws_external_id"},
 			},
 		},
 	})
@@ -1540,6 +1559,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -1596,11 +1616,12 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 			},
 			// import
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables:   externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "true"),
-				ResourceName:      "snowflake_external_volume.complete",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
+				ConfigVariables:         externalVolumeMultiple(config.ListVariable(s3StorageLocation), config.ListVariable(gcsStorageLocation), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "true"),
+				ResourceName:            "snowflake_external_volume.complete",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"storage_location.0.storage_aws_external_id"},
 			},
 			// change the s3 base url at position 0
 			{
@@ -1618,6 +1639,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl2,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -1688,6 +1710,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -1758,6 +1781,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName2,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -1769,6 +1793,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -1848,6 +1873,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -1918,6 +1944,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -1988,6 +2015,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2058,6 +2086,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2069,6 +2098,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName2,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2148,6 +2178,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2218,6 +2249,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2288,6 +2320,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2358,6 +2391,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2441,6 +2475,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2511,6 +2546,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2597,6 +2633,7 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 							s3StorageLocationName,
 							s3StorageBaseUrl,
 							s3StorageAwsRoleArn,
+							"",
 							s3EncryptionTypeNone,
 							"",
 							"",
@@ -2858,6 +2895,67 @@ resource "snowflake_external_volume" "complete" {
 					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "describe_output.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "describe_output.0.storage_locations.#", "1"),
 					resource.TestCheckResourceAttrSet("snowflake_external_volume.complete", "describe_output.0.allow_writes"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_ExternalVolume_migrateFromVersion_2_14_0_externalId(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	externalVolumeName := id.Name()
+
+	s3StorageLocation := getS3StorageLocation("s3Test", "S3", "s3://my-example-bucket", "arn:aws:iam::123456789012:role/myrole", "NONE", "")
+
+	// In 2.14.0, storage_aws_external_id was Computed: SF populated it automatically.
+	// Now it's Optional: the state upgrader clears the old SF-generated value so there's no drift.
+	configWithProvider := fmt.Sprintf(`
+provider "snowflake" {
+  preview_features_enabled = ["%s"]
+}
+
+resource "snowflake_external_volume" "complete" {
+  name = "%s"
+  storage_location {
+    storage_location_name = "s3Test"
+    storage_provider      = "S3"
+    storage_base_url      = "s3://my-example-bucket"
+    storage_aws_role_arn  = "arn:aws:iam::123456789012:role/myrole"
+    encryption_type       = "NONE"
+  }
+}
+`, previewfeatures.ExternalVolumeResource, externalVolumeName)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				Config:            configWithProvider,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "id", helpers.EncodeResourceIdentifier(id)),
+					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "name", externalVolumeName),
+					// In 2.14.0, storage_aws_external_id is Computed and populated by SF.
+					resource.TestCheckResourceAttrSet("snowflake_external_volume.complete", "storage_location.0.storage_aws_external_id"),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:          externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, "", ""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("snowflake_external_volume.complete", plancheck.ResourceActionNoop),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "id", helpers.EncodeResourceIdentifier(id)),
+					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "name", externalVolumeName),
+					// After the state upgrader, storage_aws_external_id should be cleared.
+					resource.TestCheckResourceAttr("snowflake_external_volume.complete", "storage_location.0.storage_aws_external_id", ""),
 				),
 			},
 		},
