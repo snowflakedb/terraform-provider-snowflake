@@ -18,7 +18,7 @@ type CatalogIntegrationIcebergRestDetailsAssert struct {
 func CatalogIntegrationIcebergRestDetails(t *testing.T, id sdk.AccountObjectIdentifier) *CatalogIntegrationIcebergRestDetailsAssert {
 	t.Helper()
 	return &CatalogIntegrationIcebergRestDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("CatalogIntegrationwIcebergRestDetails"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CatalogIntegrationIcebergRestDetails, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("CatalogIntegrationIcebergRestDetails"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CatalogIntegrationIcebergRestDetails, sdk.AccountObjectIdentifier] {
 			return testClient.CatalogIntegration.DescribeIcebergRest
 		}),
 	}
