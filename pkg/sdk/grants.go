@@ -242,6 +242,9 @@ func (row grantRow) convert() (*Grant, error) {
 	if row.GrantedOn == "CORTEX_AGENT" {
 		grantedOn = ObjectTypeAgent
 	}
+	if row.GrantedOn == "CORTEX_AGENT_SERVER" {
+		grantedOn = ObjectTypeMcpServer
+	}
 
 	var grantOn ObjectType
 	// true for future grants
@@ -256,6 +259,9 @@ func (row grantRow) convert() (*Grant, error) {
 	}
 	if row.GrantOn == "CORTEX_AGENT" {
 		grantOn = ObjectTypeAgent
+	}
+	if row.GrantOn == "CORTEX_AGENT_SERVER" {
+		grantOn = ObjectTypeMcpServer
 	}
 
 	var name ObjectIdentifier
