@@ -1,0 +1,1 @@
+terraform import snowflake_catalog_integration_aws_glue.example name

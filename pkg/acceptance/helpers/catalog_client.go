@@ -24,12 +24,6 @@ func (c *CatalogIntegrationClient) client() sdk.CatalogIntegrations {
 	return c.context.client.CatalogIntegrations
 }
 
-func (c *CatalogIntegrationClient) exec(sql string) error {
-	ctx := context.Background()
-	_, err := c.context.client.ExecForTests(ctx, sql)
-	return err
-}
-
 func (c *CatalogIntegrationClient) Create(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
 	ctx := context.Background()
@@ -50,6 +44,14 @@ func (c *CatalogIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectId
 		err := c.client().Drop(ctx, sdk.NewDropCatalogIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *CatalogIntegrationClient) Alter(t *testing.T, request *sdk.AlterCatalogIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, request)
+	require.NoError(t, err)
 }
 
 func (c *CatalogIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegration, error) {
