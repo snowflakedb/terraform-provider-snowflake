@@ -54,10 +54,11 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
 			Name: "s3_testing_storage_location_complete",
 			S3StorageLocationParams: &sdk.S3StorageLocationParams{
-				StorageProvider:      sdk.S3StorageProviderS3,
-				StorageAwsRoleArn:    awsRoleARN,
-				StorageBaseUrl:       awsBaseUrl,
-				StorageAwsExternalId: sdk.String(awsExternalId),
+				StorageProvider:        sdk.S3StorageProviderS3,
+				StorageAwsRoleArn:      awsRoleARN,
+				StorageBaseUrl:         awsBaseUrl,
+				StorageAwsExternalId:   sdk.String(awsExternalId),
+				UsePrivatelinkEndpoint: sdk.Bool(true),
 				Encryption: &sdk.ExternalVolumeS3Encryption{
 					EncryptionType: sdk.S3EncryptionTypeSseKms,
 					KmsKeyId:       &awsKmsKeyId,
@@ -176,6 +177,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 		assertThatObject(t, objectassert.StorageLocationS3DetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3StorageLocation).
 			HasStorageAwsRoleArn(awsRoleARN).
 			HasStorageAwsExternalIdNotEmpty().
+			HasUsePrivatelinkEndpointEmpty().
 			HasStorageAwsIamUserArnNotEmpty())
 	})
 
@@ -210,7 +212,8 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasStorageAwsRoleArn(awsRoleARN).
 			HasStorageAwsExternalId(awsExternalId).
 			HasEncryptionKmsKeyId(awsKmsKeyId).
-			HasStorageAwsIamUserArnNotEmpty())
+			HasStorageAwsIamUserArnNotEmpty().
+			HasUsePrivatelinkEndpoint(true))
 	})
 
 	t.Run("Create - S3Gov - basic", func(t *testing.T) {
