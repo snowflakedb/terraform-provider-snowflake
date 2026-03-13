@@ -1402,6 +1402,42 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnFutureModels_issue3050(t *testing.T
 	})
 }
 
+func TestAcc_GrantPrivilegesToDatabaseRole_OnFutureMcpServers(t *testing.T) {
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	configVariables := config.Variables{
+		"name":               config.StringVariable(databaseRole.ID().Name()),
+		"privileges":         config.ListVariable(config.StringVariable("USAGE")),
+		"database":           config.StringVariable(TestDatabaseName),
+		"object_type_plural": config.StringVariable(sdk.PluralObjectTypeMcpServers.String()),
+		"with_grant_option":  config.BoolVariable(false),
+	}
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy:             CheckDatabaseRolePrivilegesRevoked(t),
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnSchemaObject_OnFuture_InDatabase"),
+				ConfigVariables: configVariables,
+			},
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToDatabaseRole/OnSchemaObject_OnFuture_InDatabase"),
+				ConfigVariables: configVariables,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
 func grantPrivilegesToDatabaseRoleOnFutureInDatabaseConfig(databaseRoleId sdk.DatabaseObjectIdentifier, privileges []string, objectTypePlural sdk.PluralObjectType, databaseName string) string {
 	return fmt.Sprintf(`
 resource "snowflake_database_role" "test" {
