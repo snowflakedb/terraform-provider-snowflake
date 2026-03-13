@@ -48,7 +48,7 @@ lint-fix: ## Run linters and formatters. If linters or formatters support autofi
 	./bin/golangci-lint run -v --fix
 
 mod: ## add missing and remove unused modules
-	go mod tidy -compat=1.24.9
+	go mod tidy -compat=1.25.7
 
 mod-check: mod ## check if there are any missing/unused modules
 	git diff --exit-code -- go.mod go.sum

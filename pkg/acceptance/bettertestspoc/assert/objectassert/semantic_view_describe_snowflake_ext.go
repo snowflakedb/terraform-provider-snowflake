@@ -49,7 +49,7 @@ func (s *SemanticViewDetailsAssert) HasDetailsCount(expected int) *SemanticViewD
 func (s *SemanticViewDetailsAssert) ContainsDetail(expected sdk.SemanticViewDetails) *SemanticViewDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *SemanticViewDetailsCollection) error {
 		t.Helper()
-		found := false
+		var found bool
 		var detailType []sdk.SemanticViewDetails
 		if expected.ObjectKind == nil {
 			found = expected.Property == "COMMENT" &&
