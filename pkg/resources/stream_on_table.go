@@ -159,17 +159,7 @@ func ReadStreamOnTable(withExternalChangesMarking bool) schema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		tableId, err := sdk.ParseSchemaObjectIdentifier(*stream.TableName)
-		if err != nil {
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  "Failed to parse table ID in Read.",
-					Detail:   fmt.Sprintf("stream name: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		if err := d.Set("table", tableId.FullyQualifiedName()); err != nil {
+		if err := d.Set("table", stream.TableName.FullyQualifiedName()); err != nil {
 			return diag.FromErr(err)
 		}
 		streamDescription, err := client.Streams.Describe(ctx, id)
