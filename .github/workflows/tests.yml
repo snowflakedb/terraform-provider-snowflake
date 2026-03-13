@@ -41,7 +41,6 @@ jobs:
               - 'go.mod'
 
       - id: verify_sha_input
-        if: github.event_name == 'repository_dispatch'
         env:
           PR_HEAD_SHA: ${{ github.event.client_payload.pull_request.head.sha }}
           SLASH_SHA: ${{ github.event.client_payload.slash_command.args.named.sha }}
