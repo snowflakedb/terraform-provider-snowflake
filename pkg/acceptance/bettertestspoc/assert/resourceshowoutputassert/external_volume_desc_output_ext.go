@@ -9,6 +9,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+func ExternalVolumesDatasourceDescribeOutput(t *testing.T, datasourceReference string) *ExternalVolumeDescribeOutputAssert {
+	t.Helper()
+	s := ExternalVolumeDescribeOutputAssert{
+		ResourceAssert: assert.NewDatasourceAssert(datasourceReference, "describe_output", "external_volumes.0."),
+	}
+	s.AddAssertion(assert.ValueSet("describe_output.#", "1"))
+	return &s
+}
+
 type ExternalVolumeDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
