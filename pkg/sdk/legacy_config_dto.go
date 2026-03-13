@@ -2,7 +2,7 @@ package sdk
 
 import (
 	"github.com/pelletier/go-toml/v2"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 //go:generate go run ./dto-builder-generator/main.go

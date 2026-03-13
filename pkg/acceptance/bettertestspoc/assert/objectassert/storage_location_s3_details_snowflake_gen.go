@@ -67,10 +67,10 @@ func (s *StorageLocationS3DetailsAssert) HasStorageAwsAccessPointArn(expected st
 	return s
 }
 
-func (s *StorageLocationS3DetailsAssert) HasUsePrivatelinkEndpoint(expected string) *StorageLocationS3DetailsAssert {
+func (s *StorageLocationS3DetailsAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageLocationS3DetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
 		t.Helper()
-		if o.UsePrivatelinkEndpoint != expected {
+		if *o.UsePrivatelinkEndpoint != expected {
 			return fmt.Errorf("expected use privatelink endpoint: %v; got: %v", expected, o.UsePrivatelinkEndpoint)
 		}
 		return nil

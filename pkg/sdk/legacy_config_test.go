@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -314,9 +315,8 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, "password", config.Password)
 		assert.Equal(t, "warehouse", config.Warehouse)
 		assert.Equal(t, "role", config.Role)
-		assert.Equal(t, map[string]*string{"foo": Pointer("bar")}, config.Params)
+		assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, config.Params)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
-		assert.Equal(t, "1.1.1.1", config.ClientIP.String())
 		assert.Equal(t, "http", config.Protocol)
 		assert.Equal(t, "host", config.Host)
 		assert.Equal(t, 1, config.Port)
@@ -331,12 +331,10 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, 50*time.Second, config.JWTExpireTimeout)
 		assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 		assert.Equal(t, 1, config.MaxRetryCount)
-		assert.True(t, config.InsecureMode) //nolint:staticcheck
 		assert.Equal(t, "token", config.Token)
 		assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
-		assert.True(t, config.KeepSessionAlive)
+		assert.True(t, config.ServerSessionKeepAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
-		assert.True(t, config.DisableTelemetry)
 		assert.Equal(t, string(DriverLogLevelTrace), config.Tracing)
 		assert.Equal(t, ".", config.TmpDirPath)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
@@ -487,8 +485,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "host", got.Host)
 				assert.Equal(t, "wh", got.Warehouse)
 				assert.Equal(t, "role", got.Role)
-				assert.Equal(t, map[string]*string{"foo": Pointer("bar")}, got.Params)
-				assert.Equal(t, "1.2.3.4", got.ClientIP.String())
+				assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, got.Params)
 				assert.Equal(t, "https", got.Protocol)
 				assert.Equal(t, "code", got.Passcode)
 				assert.Equal(t, 1234, got.Port)
@@ -502,11 +499,9 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, 60*time.Second, got.ExternalBrowserTimeout)
 				assert.Equal(t, 2, got.MaxRetryCount)
 				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
-				assert.True(t, got.InsecureMode) // nolint:staticcheck
 				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
 				assert.Equal(t, "token", got.Token)
-				assert.True(t, got.KeepSessionAlive)
-				assert.True(t, got.DisableTelemetry)
+				assert.True(t, got.ServerSessionKeepAlive)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ValidateDefaultParameters)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientRequestMfaToken)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientStoreTemporaryCredential)
@@ -581,6 +576,84 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := tt.input.DriverConfig()
 			require.ErrorContains(t, err, tt.err.Error())
+		})
+	}
+}
+
+func TestLegacyConfigDTODriverConfig_insecureModeAndDisableOcspChecks(t *testing.T) {
+	tests := []struct {
+		insecureMode      *bool
+		disableOcspChecks *bool
+		expected          bool
+	}{
+		{
+			insecureMode:      nil,
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: nil,
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(false),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+	}
+
+	boolPtrToString := func(b *bool) string {
+		if b != nil {
+			return strconv.FormatBool(*b)
+		}
+		return "nil"
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("insecure mode: %s, disableOcspChecks: %s, expected: %v", boolPtrToString(tt.insecureMode), boolPtrToString(tt.disableOcspChecks), tt.expected), func(t *testing.T) {
+			cfg := NewLegacyConfigDTO()
+			if tt.insecureMode != nil {
+				cfg = cfg.WithInsecureMode(*tt.insecureMode)
+			}
+			if tt.disableOcspChecks != nil {
+				cfg = cfg.WithDisableOCSPChecks(*tt.disableOcspChecks)
+			}
+
+			got, err := cfg.DriverConfig()
+
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, got.DisableOCSPChecks)
 		})
 	}
 }

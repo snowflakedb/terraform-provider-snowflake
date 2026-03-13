@@ -97,9 +97,10 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Sensitive:   false,
 	},
 	"client_ip": schema.StringAttribute{
-		Description: existingSchema["client_ip"].Description,
-		Optional:    true,
-		Sensitive:   false,
+		Description:        existingSchema["client_ip"].Description,
+		DeprecationMessage: "This field is deprecated. It will be removed in the next major release. The driver was accepting this value in the previous versions but it had no impact. Setting this field causes no action on the provider side.", // edited manually
+		Optional:           true,
+		Sensitive:          false,
 	},
 	"client_request_mfa_token": schema.StringAttribute{
 		Description: existingSchema["client_request_mfa_token"].Description,
@@ -157,9 +158,10 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Sensitive:   false,
 	},
 	"disable_telemetry": schema.BoolAttribute{
-		Description: existingSchema["disable_telemetry"].Description,
-		Optional:    true,
-		Sensitive:   false,
+		Description:        existingSchema["disable_telemetry"].Description,
+		DeprecationMessage: "This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`.", // edited manually
+		Optional:           true,
+		Sensitive:          false,
 	},
 	"driver_tracing": schema.StringAttribute{
 		Description: existingSchema["driver_tracing"].Description,
@@ -194,7 +196,7 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	},
 	"insecure_mode": schema.BoolAttribute{
 		Description:        existingSchema["insecure_mode"].Description,
-		DeprecationMessage: "This field is deprecated. Use `disable_ocsp_checks` instead.", // edited manually
+		DeprecationMessage: "This field is deprecated. It will be removed in the next major release. Use `disable_ocsp_checks` instead. Setting this field sets `disable_ocsp_checks` in the underlying driver.", // edited manually
 		Optional:           true,
 		Sensitive:          false,
 	},
