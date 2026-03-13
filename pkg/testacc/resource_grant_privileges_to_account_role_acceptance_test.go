@@ -3429,3 +3429,82 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_StrictPrivilegeManage
 		},
 	})
 }
+
+func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnObject_Agent_v2_14_0_NonEmptyPlan(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	agentId := testClient().Ids.RandomSchemaObjectIdentifier()
+	agentCleanup := testClient().Agent.Create(t, agentId)
+	t.Cleanup(agentCleanup)
+
+	accountRoleName := role.ID().Name()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders:  ExternalProviderWithExactVersion("2.14.0"),
+				Config:             grantPrivilegesToAccountRoleOnSchemaObjectAgentConfig(accountRoleName, agentId),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   grantPrivilegesToAccountRoleOnSchemaObjectAgentConfig(accountRoleName, agentId),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
+
+func grantPrivilegesToAccountRoleOnSchemaObjectAgentConfig(accountRoleName string, agentIdentifier sdk.SchemaObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_grant_privileges_to_account_role" "test" {
+  account_role_name = "%[1]s"
+  privileges        = ["USAGE"]
+
+  on_schema_object {
+    object_type = "AGENT"
+    object_name = "\"%[2]s\".\"%[3]s\".\"%[4]s\""
+  }
+}
+`, accountRoleName, agentIdentifier.DatabaseName(), agentIdentifier.SchemaName(), agentIdentifier.Name())
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_Agents_InDatabase_v2_14_0_NonEmptyPlan(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	accountRoleName := role.ID().Name()
+	databaseName := testClient().Ids.DatabaseId().Name()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders:  ExternalProviderWithExactVersion("2.14.0"),
+				Config:             grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeAgents, databaseName),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"USAGE"}, sdk.PluralObjectTypeAgents, databaseName),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}

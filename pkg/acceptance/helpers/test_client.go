@@ -16,6 +16,7 @@ type TestClient struct {
 	AccountInformation
 
 	Account                      *AccountClient
+	Agent                        *AgentClient
 	AggregationPolicy            *AggregationPolicyClient
 	Alert                        *AlertClient
 	ApiIntegration               *ApiIntegrationClient
@@ -112,6 +113,7 @@ func NewTestClient(
 		AccountInformation: context.client,
 
 		Account:                      NewAccountClient(context, idsGenerator),
+		Agent:                        NewAgentClient(context, idsGenerator),
 		AggregationPolicy:            NewAggregationPolicyClient(context, idsGenerator),
 		Alert:                        NewAlertClient(context, idsGenerator),
 		ApiIntegration:               NewApiIntegrationClient(context, idsGenerator),
