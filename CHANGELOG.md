@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.15.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.14.0...v2.15.0) (2026-03-13)
+
+
+### 🎉 **What's new:**
+
+* Add catalog integrations to SDK ([#4483](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4483)) ([8666a98](https://github.com/snowflakedb/terraform-provider-snowflake/commit/8666a98fa1ce8215d448cdfcacd6302516040357))
+* Add S3-compatible storage, access point ARN, and privatelink support to external volume resource ([#4510](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4510)) ([6114a78](https://github.com/snowflakedb/terraform-provider-snowflake/commit/6114a781e2d2289e0b9c1a325067f9f46644a0d4))
+* Add SDK integration tests for catalog integrations ([#4505](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4505)) ([0a52e50](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0a52e50b2409637edc7b59ede4cce8d10bfc9c7e))
+* Add SDK support for hybrid tables ([#4454](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4454)) ([bfa93e3](https://github.com/snowflakedb/terraform-provider-snowflake/commit/bfa93e387ca1af96c4f41296acf1f8af135ebd12))
+* support private facts and metrics in semantic views ([#4380](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4380)) ([ed38cc6](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ed38cc6c9c1307d28abd00f4f479c0433cbf7e4c))
+
+
+### 🔧 **Misc**
+
+* adjust tests for BCR 2026_01 ([#4484](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4484)) ([4462a42](https://github.com/snowflakedb/terraform-provider-snowflake/commit/4462a426d4e7772cb94fb4f9686ed9bbdbf89204))
+* Bump go driver to v2 ([#4480](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4480)) ([0ffd380](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0ffd3806927423ea32cd8f3aac857c81bb851016))
+* Bump slash command dispatch version ([#4502](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4502)) ([62f4b1c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/62f4b1c43aec89138a6279f00d0c47c6b93d4378))
+* External volume resource adjustments ([#4504](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4504)) ([424a2e1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/424a2e1986b3a869a7960ca382df347a147894d5))
+* External volumes SDK part 2 ([#4482](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4482)) ([34e85cf](https://github.com/snowflakedb/terraform-provider-snowflake/commit/34e85cffd9b752d4fa28e9aee51cbd203c1035f9))
+* External volumes SDK part 3 ([#4488](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4488)) ([0bca06f](https://github.com/snowflakedb/terraform-provider-snowflake/commit/0bca06f61ead7dee351e918594231151d3e3d502))
+* Fix dev with pre-push ([#4513](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4513)) ([9827eeb](https://github.com/snowflakedb/terraform-provider-snowflake/commit/9827eebb13839ed320e56aa86ea1905cf6967ae6))
+* Fix minor issues after reviews ([#4497](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4497)) ([b5a299c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/b5a299ca9e587c32a244c4d9e38d6f79764fa2f0))
+* Introduce a new behavior for tags ([#4498](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4498)) ([a061db1](https://github.com/snowflakedb/terraform-provider-snowflake/commit/a061db11588fcee9d7abb69b4c12fe19528ae8fb)), closes [#4238](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4238)
+* Remove dedicated BCR 2025_07 test cases ([#4509](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4509)) ([2e3b9be](https://github.com/snowflakedb/terraform-provider-snowflake/commit/2e3b9be57c523d2e4ef7568c532e45ccb21377cd))
+* Rework catalog integration describe ([#4528](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4528)) ([c1526d0](https://github.com/snowflakedb/terraform-provider-snowflake/commit/c1526d0f2ac6268d93bf310c038c0549fb401160))
+* Test nullable lists in Terraform ([#4486](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4486)) ([3eede0b](https://github.com/snowflakedb/terraform-provider-snowflake/commit/3eede0ba2230114197c13316328b2d56292cec2a))
+* translate the semantic view describe output into a struct ([#4516](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4516)) ([310a6ba](https://github.com/snowflakedb/terraform-provider-snowflake/commit/310a6babf13d84d061052ff52866934864553c87))
+
+
+### 🐛 **Bug fixes:**
+
+* Fix allowed_accounts update in failover_group ([#4487](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4487)) ([7ff2873](https://github.com/snowflakedb/terraform-provider-snowflake/commit/7ff28733d72587c9fb47bb7eab05e835183ad8ca))
+
 ## [2.14.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.13.0...v2.14.0) (2026-02-25)
 
 
