@@ -55,7 +55,7 @@ jobs:
           changelog-types: ${{ steps.configure-changelog.outputs.result }}
           token: ${{ steps.create-token.outputs.token }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         if: ${{ steps.release.outputs.releases_created }}
         # we need to fetch all history and tags
         # so we build the proper version

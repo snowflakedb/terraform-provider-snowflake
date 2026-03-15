@@ -56,7 +56,7 @@ jobs:
       - name: Checkout Code (Repository Dispatch Event)
         id: checkout_dispatch
         if: (github.event_name == 'repository_dispatch')
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.client_payload.slash_command.args.named.sha }}
           persist-credentials: false
@@ -64,7 +64,7 @@ jobs:
       - name: Checkout Code (Pull Request Event)
         id: checkout_pr
         if: ${{ !cancelled() && (steps.changes.outputs.run_tests == 'true') && (github.event_name == 'pull_request') }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
 
