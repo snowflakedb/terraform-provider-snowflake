@@ -20,20 +20,20 @@ type Streamlits interface {
 
 // CreateStreamlitOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-streamlit.
 type CreateStreamlitOptions struct {
-	create                     bool                        `ddl:"static" sql:"CREATE"`
-	OrReplace                  *bool                       `ddl:"keyword" sql:"OR REPLACE"`
-	streamlit                  bool                        `ddl:"static" sql:"STREAMLIT"`
-	IfNotExists                *bool                       `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                       SchemaObjectIdentifier      `ddl:"identifier"`
-	RootLocation               string                      `ddl:"parameter,single_quotes" sql:"ROOT_LOCATION"`
-	MainFile                   string                      `ddl:"parameter,single_quotes" sql:"MAIN_FILE"`
-	QueryWarehouse             *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
-	ExternalAccessIntegrations *ExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
-	Title                      *string                     `ddl:"parameter,single_quotes" sql:"TITLE"`
-	Comment                    *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                     bool                                 `ddl:"static" sql:"CREATE"`
+	OrReplace                  *bool                                `ddl:"keyword" sql:"OR REPLACE"`
+	streamlit                  bool                                 `ddl:"static" sql:"STREAMLIT"`
+	IfNotExists                *bool                                `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                       SchemaObjectIdentifier               `ddl:"identifier"`
+	RootLocation               string                               `ddl:"parameter,single_quotes" sql:"ROOT_LOCATION"`
+	MainFile                   string                               `ddl:"parameter,single_quotes" sql:"MAIN_FILE"`
+	QueryWarehouse             *AccountObjectIdentifier             `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
+	ExternalAccessIntegrations *StreamlitExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	Title                      *string                              `ddl:"parameter,single_quotes" sql:"TITLE"`
+	Comment                    *string                              `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-type ExternalAccessIntegrations struct {
+type StreamlitExternalAccessIntegrations struct {
 	ExternalAccessIntegrations []AccountObjectIdentifier `ddl:"list,must_parentheses"`
 }
 
@@ -49,12 +49,12 @@ type AlterStreamlitOptions struct {
 }
 
 type StreamlitSet struct {
-	RootLocation               *string                     `ddl:"parameter,single_quotes" sql:"ROOT_LOCATION"`
-	MainFile                   *string                     `ddl:"parameter,single_quotes" sql:"MAIN_FILE"`
-	QueryWarehouse             *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
-	ExternalAccessIntegrations *ExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
-	Comment                    *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Title                      *string                     `ddl:"parameter,single_quotes" sql:"TITLE"`
+	RootLocation               *string                              `ddl:"parameter,single_quotes" sql:"ROOT_LOCATION"`
+	MainFile                   *string                              `ddl:"parameter,single_quotes" sql:"MAIN_FILE"`
+	QueryWarehouse             *AccountObjectIdentifier             `ddl:"identifier,equals" sql:"QUERY_WAREHOUSE"`
+	ExternalAccessIntegrations *StreamlitExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
+	Comment                    *string                              `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Title                      *string                              `ddl:"parameter,single_quotes" sql:"TITLE"`
 }
 
 type StreamlitUnset struct {
