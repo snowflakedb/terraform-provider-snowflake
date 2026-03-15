@@ -24,6 +24,7 @@ type CreateNotificationIntegrationRequest struct {
 type AutomatedDataLoadsParamsRequest struct {
 	GoogleAutoParams *GoogleAutoParamsRequest
 	AzureAutoParams  *AzureAutoParamsRequest
+	AmazonAutoParams *AmazonAutoParamsRequest
 }
 
 type GoogleAutoParamsRequest struct {
@@ -33,6 +34,10 @@ type GoogleAutoParamsRequest struct {
 type AzureAutoParamsRequest struct {
 	AzureStorageQueuePrimaryUri string // required
 	AzureTenantId               string // required
+}
+
+type AmazonAutoParamsRequest struct {
+	AwsSqsArn string // required
 }
 
 type PushNotificationParamsRequest struct {

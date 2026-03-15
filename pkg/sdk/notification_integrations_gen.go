@@ -41,6 +41,7 @@ type AutomatedDataLoadsParams struct {
 	notificationType string            `ddl:"static" sql:"TYPE = QUEUE"`
 	GoogleAutoParams *GoogleAutoParams `ddl:"keyword"`
 	AzureAutoParams  *AzureAutoParams  `ddl:"keyword"`
+	AmazonAutoParams *AmazonAutoParams `ddl:"keyword"`
 }
 
 type GoogleAutoParams struct {
@@ -52,6 +53,12 @@ type AzureAutoParams struct {
 	notificationProvider        string `ddl:"static" sql:"NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE"`
 	AzureStorageQueuePrimaryUri string `ddl:"parameter,single_quotes" sql:"AZURE_STORAGE_QUEUE_PRIMARY_URI"`
 	AzureTenantId               string `ddl:"parameter,single_quotes" sql:"AZURE_TENANT_ID"`
+}
+
+type AmazonAutoParams struct {
+	notificationProvider string `ddl:"static" sql:"NOTIFICATION_PROVIDER = AWS_SQS"`
+	direction            string `ddl:"static" sql:"DIRECTION = INBOUND"`
+	AwsSqsArn            string `ddl:"parameter,single_quotes" sql:"AWS_SQS_ARN"`
 }
 
 type PushNotificationParams struct {

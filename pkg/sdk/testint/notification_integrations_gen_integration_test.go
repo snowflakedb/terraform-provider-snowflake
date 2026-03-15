@@ -25,6 +25,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 	const awsSnsOtherTopicArn = "arn:aws:sns:us-east-2:123456789012:MyOtherTopic"
 	const awsSnsRoleArn = "arn:aws:iam::000000000001:/role/test"
 	const awsSnsOtherRoleArn = "arn:aws:iam::000000000001:/role/other"
+	const awsSqsArn = "arn:aws:sqs:us-east-2:123456789012:MyQueue"
 
 	assertNotificationIntegration := func(t *testing.T, s *sdk.NotificationIntegration, name sdk.AccountObjectIdentifier, notificationType string, comment string) {
 		t.Helper()
@@ -56,6 +57,14 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 
 		return sdk.NewCreateNotificationIntegrationRequest(id, true).
 			WithAutomatedDataLoadsParams(*sdk.NewAutomatedDataLoadsParamsRequest().WithAzureAutoParams(*sdk.NewAzureAutoParamsRequest(azureStorageQueuePrimaryUri, azureTenantId)))
+	}
+
+	createNotificationIntegrationAutoAmazonRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
+		t.Helper()
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
+		return sdk.NewCreateNotificationIntegrationRequest(id, true).
+			WithAutomatedDataLoadsParams(*sdk.NewAutomatedDataLoadsParamsRequest().WithAmazonAutoParams(*sdk.NewAmazonAutoParamsRequest(awsSqsArn)))
 	}
 
 	createNotificationIntegrationPushAmazonRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
@@ -115,6 +124,11 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		return createNotificationIntegrationWithRequest(t, createNotificationIntegrationAutoAzureRequest(t))
 	}
 
+	createNotificationIntegrationAutoAmazon := func(t *testing.T) *sdk.NotificationIntegration {
+		t.Helper()
+		return createNotificationIntegrationWithRequest(t, createNotificationIntegrationAutoAmazonRequest(t))
+	}
+
 	createNotificationIntegrationPushAmazon := func(t *testing.T) *sdk.NotificationIntegration {
 		t.Helper()
 		return createNotificationIntegrationWithRequest(t, createNotificationIntegrationPushAmazonRequest(t))
@@ -169,6 +183,28 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 
 		prop, err = collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
 			return property.Name == "AZURE_MULTI_TENANT_APP_NAME"
+		})
+		assert.NoError(t, err)
+		assert.NotEmpty(t, prop.Value)
+	})
+
+	t.Run("create and describe notification integration - auto amazon (AWS_SQS)", func(t *testing.T) {
+		request := createNotificationIntegrationAutoAmazonRequest(t)
+
+		integration := createNotificationIntegrationWithRequest(t, request)
+
+		assertNotificationIntegration(t, integration, request.GetName(), "QUEUE - AWS_SQS", "")
+
+		details, err := client.NotificationIntegrations.Describe(ctx, integration.ID())
+		require.NoError(t, err)
+
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "false"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "DIRECTION", Type: "String", Value: "INBOUND", Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "AWS_SQS_ARN", Type: "String", Value: awsSqsArn, Default: ""})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
+
+		prop, err := collections.FindFirst(details, func(property sdk.NotificationIntegrationProperty) bool {
+			return property.Name == "SF_AWS_IAM_USER_ARN"
 		})
 		assert.NoError(t, err)
 		assert.NotEmpty(t, prop.Value)
