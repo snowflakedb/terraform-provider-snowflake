@@ -21,10 +21,14 @@ func TestInt_HybridTables(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.Create(t)
 			t.Cleanup(cleanup)
 
+			role, err := client.ContextFunctions.CurrentRole(ctx)
+			require.NoError(t, err)
+
 			assertThatObject(t, objectassert.HybridTable(t, id).
 				HasName(id.Name()).
 				HasDatabaseName(id.DatabaseName()).
 				HasSchemaName(id.SchemaName()).
+				HasOwner(role.Name()).
 				HasComment("").
 				HasOwnerRoleType("ROLE"))
 		})
@@ -293,6 +297,23 @@ func TestInt_HybridTables(t *testing.T) {
 			require.Len(t, details, 2)
 			require.Equal(t, "ID", details[0].Name)
 			require.Equal(t, "EMAIL", details[1].Name)
+
+			// Test ADD COLUMN with Collate and DefaultValue
+			defaultVal := "'N/A'"
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithAddColumnAction(*sdk.NewHybridTableAddColumnActionRequest("NOTES", sdk.DataType("VARCHAR(200)")).
+					WithCollate("en-ci").
+					WithDefaultValue(sdk.ColumnDefaultValue{Expression: &defaultVal})))
+			require.NoError(t, err)
+
+			details, err = client.HybridTables.Describe(ctx, id)
+			require.NoError(t, err)
+			require.Len(t, details, 3)
+			require.Equal(t, "NOTES", details[2].Name)
+			require.NotEmpty(t, details[2].Default)
+
+			// NOTE: InlineConstraint on ADD COLUMN is not tested — hybrid tables reject
+			// adding UNIQUE/FK constraints post-creation (same limitation as ADD CONSTRAINT).
 		})
 
 		t.Run("alter column - set data type and comment", func(t *testing.T) {
@@ -389,7 +410,14 @@ func TestInt_HybridTables(t *testing.T) {
 					{Name: "CODE", Type: sdk.DataType("VARCHAR(50)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{Name: sdk.String("uq_code"), Type: sdk.ColumnConstraintTypeUnique, Columns: []string{"CODE"}},
+					{
+						Name:        sdk.String("uq_code"),
+						Type:        sdk.ColumnConstraintTypeUnique,
+						Columns:     []string{"CODE"},
+						NotEnforced: sdk.Bool(true),
+						Novalidate:  sdk.Bool(true),
+						Rely:        sdk.Bool(true),
+					},
 				},
 			}
 			_, cleanup := testClientHelper().HybridTable.CreateWithRequest(t, id, columns)
@@ -429,6 +457,7 @@ func TestInt_HybridTables(t *testing.T) {
 		})
 
 		t.Run("drop constraint - by type", func(t *testing.T) {
+			// Drop UNIQUE by type
 			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 			columns := sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 				Columns: []sdk.HybridTableColumnRequest{
@@ -450,6 +479,30 @@ func TestInt_HybridTables(t *testing.T) {
 			details, err := client.HybridTables.Describe(ctx, id)
 			require.NoError(t, err)
 			require.False(t, details[1].UniqueKey)
+
+			// Drop FOREIGN KEY by type
+			parentId, parentCleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
+				{Name: "PID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+			})
+			t.Cleanup(parentCleanup)
+
+			childId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+			_, childCleanup := testClientHelper().HybridTable.CreateWithRequest(t, childId, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+				Columns: []sdk.HybridTableColumnRequest{
+					{Name: "CID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
+					{Name: "PARENT_REF", Type: sdk.DataType("NUMBER(38,0)")},
+				},
+				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
+					{Type: sdk.ColumnConstraintTypeForeignKey, Columns: []string{"PARENT_REF"},
+						ForeignKey: &sdk.OutOfLineForeignKey{TableName: parentId, ColumnNames: []string{"PID"}}},
+				},
+			})
+			t.Cleanup(childCleanup)
+
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(childId).
+				WithConstraintAction(*sdk.NewHybridTableConstraintActionRequest().
+					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithForeignKey(true).WithColumns([]string{"PARENT_REF"}))))
+			require.NoError(t, err)
 		})
 
 		t.Run("clustering operations", func(t *testing.T) {
@@ -467,6 +520,25 @@ func TestInt_HybridTables(t *testing.T) {
 				return
 			}
 
+			// Suspend recluster
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
+					WithChangeReclusterState(*sdk.NewHybridTableReclusterChangeStateRequest().WithState(sdk.ReclusterStateSuspend))))
+			require.NoError(t, err)
+
+			// Resume recluster
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
+					WithChangeReclusterState(*sdk.NewHybridTableReclusterChangeStateRequest().WithState(sdk.ReclusterStateResume))))
+			require.NoError(t, err)
+
+			// Recluster
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
+					WithRecluster(*sdk.NewHybridTableReclusterActionRequest())))
+			require.NoError(t, err)
+
+			// Drop clustering key
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().WithDropClusteringKey(true)))
 			require.NoError(t, err)
@@ -721,7 +793,20 @@ func TestInt_HybridTables(t *testing.T) {
 		})
 	})
 
+	// NOTE: AlterColumn.SetDefault with a sequence is not tested — it's unclear whether hybrid
+	// tables support SET DEFAULT seq.NEXTVAL. This needs clarification with the Snowflake table team.
+
 	t.Run("known limitations - error cases", func(t *testing.T) {
+		t.Run("DROP PRIMARY KEY is not supported", func(t *testing.T) {
+			id, cleanup := testClientHelper().HybridTable.Create(t)
+			t.Cleanup(cleanup)
+
+			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithConstraintAction(*sdk.NewHybridTableConstraintActionRequest().
+					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithPrimaryKey(true))))
+			require.Error(t, err)
+		})
+
 		t.Run("ALTER TABLE UNSET is not supported", func(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.Create(t)
 			t.Cleanup(cleanup)
