@@ -84,8 +84,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 	).
 	WithValidation(g.ExactlyOneValueSet, "Rename", "Drop")
 
-// NOTE: Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL (discovered via integration testing against Snowflake).
-// Snowflake docs may suggest otherwise but the operation errors at runtime.
+// NOTE: Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL.
 var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnAction").
 	SQL("ALTER").
 	SQL("COLUMN").
@@ -127,12 +126,8 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 	OptionalSQL("DROP CLUSTERING KEY").
 	WithValidation(g.ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
 
-// NOTE: Hybrid tables do not support CHANGE_TRACKING or DEFAULT_DDL_COLLATION in SET (discovered via integration testing against Snowflake).
-// Snowflake docs may suggest otherwise but the operation errors at runtime.
-// NOTE: Hybrid tables do not support ENABLE_SCHEMA_EVOLUTION, CONTACT, or ROW_TIMESTAMP
-// in ALTER TABLE SET (confirmed via Snowflake trunk: EntityProperty domain excludes hybrid
-// tables for schema evolution; CONTACT uses CREATE WITH CONTACT syntax; ROW_TIMESTAMP is
-// explicitly blocked in supportsFileTxnEndTime() for isKeyValue() tables).
+// NOTE: Hybrid tables do not support CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION,
+// CONTACT, or ROW_TIMESTAMP in ALTER TABLE SET (per Snowflake documentation and runtime behavior).
 var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 	OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 	OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
@@ -268,10 +263,10 @@ var hybridTablesDef = g.NewInterface(
 		Text("Name").
 		Text("Type").
 		Text("Kind").
-		Text("IsNullable").
+		Bool("IsNullable").
 		Text("Default").
-		Text("PrimaryKey").
-		Text("UniqueKey").
+		Bool("PrimaryKey").
+		Bool("UniqueKey").
 		Text("Check").
 		Text("Expression").
 		Text("Comment").
