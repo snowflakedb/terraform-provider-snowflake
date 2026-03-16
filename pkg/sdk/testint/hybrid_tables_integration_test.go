@@ -316,6 +316,10 @@ func TestInt_HybridTables(t *testing.T) {
 			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithDataRetentionTimeInDays(7)))
 			require.NoError(t, err)
+
+			param, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterDataRetentionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeTable, Name: id})
+			require.NoError(t, err)
+			require.Equal(t, "7", param.Value)
 		})
 
 		t.Run("set max_data_extension_time_in_days", func(t *testing.T) {
@@ -325,6 +329,10 @@ func TestInt_HybridTables(t *testing.T) {
 			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithMaxDataExtensionTimeInDays(28)))
 			require.NoError(t, err)
+
+			param, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMaxDataExtensionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeTable, Name: id})
+			require.NoError(t, err)
+			require.Equal(t, "28", param.Value)
 		})
 
 		// NOTE: Hybrid tables do not support ALTER TABLE ADD UNIQUE or ADD FOREIGN KEY.
@@ -358,12 +366,13 @@ func TestInt_HybridTables(t *testing.T) {
 
 	t.Run("show filter operations", func(t *testing.T) {
 		t.Run("SHOW without filter", func(t *testing.T) {
-			_, cleanup := testClientHelper().HybridTable.Create(t)
+			id, cleanup := testClientHelper().HybridTable.Create(t)
 			t.Cleanup(cleanup)
 
-			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest())
+			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
+				WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
 			require.NoError(t, err)
-			require.GreaterOrEqual(t, len(tables), 1)
+			require.Len(t, tables, 1)
 		})
 
 		t.Run("SHOW with LIKE", func(t *testing.T) {
