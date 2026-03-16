@@ -19,6 +19,7 @@ const (
 	DynamicTables                  datasource = "snowflake_dynamic_tables"
 	ExternalFunctions              datasource = "snowflake_external_functions"
 	ExternalTables                 datasource = "snowflake_external_tables"
+	ExternalVolumes                datasource = "snowflake_external_volumes"
 	FailoverGroups                 datasource = "snowflake_failover_groups"
 	FileFormats                    datasource = "snowflake_file_formats"
 	Functions                      datasource = "snowflake_functions"

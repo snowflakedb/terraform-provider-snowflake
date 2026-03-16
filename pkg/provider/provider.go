@@ -707,6 +707,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_dynamic_tables":                     datasources.DynamicTables(),
 		"snowflake_external_functions":                 datasources.ExternalFunctions(),
 		"snowflake_external_tables":                    datasources.ExternalTables(),
+		"snowflake_external_volumes":                   datasources.ExternalVolumes(),
 		"snowflake_failover_groups":                    datasources.FailoverGroups(),
 		"snowflake_file_formats":                       datasources.FileFormats(),
 		"snowflake_functions":                          datasources.Functions(),

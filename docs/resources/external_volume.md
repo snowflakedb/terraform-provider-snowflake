@@ -148,15 +148,12 @@ Optional:
 - `encryption_kms_key_id` (String) Specifies the ID for the KMS-managed key used to encrypt files.
 - `encryption_type` (String) Specifies the encryption type used.
 - `storage_aws_access_point_arn` (String) Specifies the access point ARN for the S3 bucket containing your data files. Only applicable for S3 and S3GOV storage providers.
+- `storage_aws_external_id` (String) External ID that Snowflake uses to establish a trust relationship with AWS.
 - `storage_aws_key_id` (String) Specifies the AWS key ID for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.
 - `storage_aws_role_arn` (String) Specifies the case-sensitive Amazon Resource Name (ARN) of the AWS identity and access management (IAM) role that grants privileges on the S3 bucket containing your data files.
 - `storage_aws_secret_key` (String, Sensitive) Specifies the AWS secret key for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.
 - `storage_endpoint` (String) Specifies the endpoint for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.
 - `use_privatelink_endpoint` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-
-Read-Only:
-
-- `storage_aws_external_id` (String) External ID that Snowflake uses to establish a trust relationship with AWS.
 
 
 <a id="nestedblock--timeouts"></a>
