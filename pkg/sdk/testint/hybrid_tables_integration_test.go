@@ -473,7 +473,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithConstraintAction(*sdk.NewHybridTableConstraintActionRequest().
-					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithUnique(true).WithColumns([]string{"EMAIL"}))))
+					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithUnique(true).WithColumns([]string{"EMAIL"}).WithCascade(true))))
 			require.NoError(t, err)
 
 			details, err := client.HybridTables.Describe(ctx, id)
