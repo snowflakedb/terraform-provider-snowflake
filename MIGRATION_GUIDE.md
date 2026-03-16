@@ -75,6 +75,10 @@ No changes are required, but switch to the new values, as the deprecated ones wi
 
 We have added support for Private Facts and Metrics in the Semantic Views resource.
 
+### *(new feature)* New `snowflake_external_volumes` data source
+
+Added a new `snowflake_external_volumes` data source that allows querying existing external volumes. It supports `like` filtering and an optional `with_describe` flag (default `true`) to include `DESCRIBE EXTERNAL VOLUME` output. This data source is a preview feature and must be enabled by adding `snowflake_external_volumes_datasource` to `preview_features_enabled` in provider configuration.
+
 ### *(enhancement)* Rework of `snowflake_external_volume` resource
 
 We have added support for S3-compatible (S3COMPAT) storage locations and several missing S3 fields to the `snowflake_external_volume` resource.

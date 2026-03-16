@@ -46,6 +46,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_external_table_resource", want: ExternalTableResource},
 		{input: "snowflake_external_tables_datasource", want: ExternalTablesDatasource},
 		{input: "snowflake_external_volume_resource", want: ExternalVolumeResource},
+		{input: "snowflake_external_volumes_datasource", want: ExternalVolumesDatasource},
 		{input: "snowflake_failover_group_resource", want: FailoverGroupResource},
 		{input: "snowflake_failover_groups_datasource", want: FailoverGroupsDatasource},
 		{input: "snowflake_file_format_resource", want: FileFormatResource},

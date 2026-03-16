@@ -11,6 +11,7 @@
 - [snowflake_dynamic_tables](./docs/data-sources/dynamic_tables)
 - [snowflake_external_functions](./docs/data-sources/external_functions)
 - [snowflake_external_tables](./docs/data-sources/external_tables)
+- [snowflake_external_volumes](./docs/data-sources/external_volumes)
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)
