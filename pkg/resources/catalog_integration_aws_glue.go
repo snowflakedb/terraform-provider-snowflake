@@ -33,11 +33,12 @@ var catalogIntegrationAwsGlueSchema = map[string]*schema.Schema{
 			"`false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition."),
 	},
 	"refresh_interval_seconds": {
-		Type:         schema.TypeInt,
-		Optional:     true,
-		Default:      30,
-		Description:  "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh.",
-		ValidateFunc: validation.All(validation.IntAtLeast(30), validation.IntAtMost(86400)),
+		Type:             schema.TypeInt,
+		Optional:         true,
+		Default:          IntDefault,
+		Description:      "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh.",
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds"),
+		ValidateFunc:     validation.IntAtLeast(1),
 	},
 	"comment": {
 		Type:        schema.TypeString,
@@ -66,7 +67,7 @@ var catalogIntegrationAwsGlueSchema = map[string]*schema.Schema{
 		Description: joinWithSpace("Specifies the AWS region of your AWS Glue Data Catalog.",
 			"You must specify a value for this attribute if your Snowflake account is not hosted on AWS.",
 			"Otherwise, the default region is the Snowflake deployment region for the account."),
-		DiffSuppressFunc: IgnoreAfterCreation,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("glue_region"),
 		ValidateFunc:     validation.StringIsNotEmpty,
 	},
 	"catalog_namespace": {
@@ -105,7 +106,7 @@ func CatalogIntegrationAwsGlue() *schema.Resource {
 
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingCreateWrapper(resources.CatalogIntegrationAwsGlue, CreateCatalogIntegrationAwsGlue)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingReadWrapper(resources.CatalogIntegrationAwsGlue, ReadCatalogIntegrationAwsGlue)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingReadWrapper(resources.CatalogIntegrationAwsGlue, ReadCatalogIntegrationAwsGlueFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingUpdateWrapper(resources.CatalogIntegrationAwsGlue, UpdateCatalogIntegrationAwsGlue)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingDeleteWrapper(resources.CatalogIntegrationAwsGlue, deleteFunc)),
 		Description:   "Resource used to manage AWS Glue catalog integration objects. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue).",
@@ -117,7 +118,7 @@ func CatalogIntegrationAwsGlue() *schema.Resource {
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(catalogIntegrationAwsGlueSchema, ShowOutputAttributeName, "enabled", "comment"),
-			ComputedIfAnyAttributeChanged(catalogIntegrationAwsGlueSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment", "glue_aws_role_arn", "glue_catalog_id", "glue_region", "catalog_namespace"),
+			ComputedIfAnyAttributeChanged(catalogIntegrationAwsGlueSchema, DescribeOutputAttributeName, "enabled", "refresh_interval_seconds", "comment"),
 		),
 	}
 }
@@ -152,12 +153,14 @@ func CreateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 	awsGlueRequest := sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId)
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "glue_region", awsGlueRequest.WithGlueRegion),
 		stringAttributeCreateBuilder(d, "catalog_namespace", awsGlueRequest.WithCatalogNamespace),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
+	}
+	if v := d.Get("refresh_interval_seconds").(int); v != IntDefault {
+		request.WithRefreshIntervalSeconds(v)
 	}
 
 	if err := client.CatalogIntegrations.Create(ctx, request.WithAwsGlueCatalogSourceParams(*awsGlueRequest)); err != nil {
@@ -165,51 +168,62 @@ func CreateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-	return ReadCatalogIntegrationAwsGlue(ctx, d, meta)
+	return ReadCatalogIntegrationAwsGlueFunc(false)(ctx, d, meta)
 }
 
-func ReadCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		client := meta.(*provider.Context).Client
+		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	s, err := client.CatalogIntegrations.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query AWS Glue catalog integration. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("AWS Glue catalog integration id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
+		s, err := client.CatalogIntegrations.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query AWS Glue catalog integration. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("AWS Glue catalog integration id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
+		}
+
+		details, err := client.CatalogIntegrations.DescribeAwsGlueDetails(ctx, id)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("could not describe AWS Glue catalog integration (%s), err = %w", d.Id(), err))
+		}
+
+		if withExternalChangesMarking {
+			if err = handleExternalChangesToObjectInFlatDescribe(d,
+				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
+				outputMapping{"glue_region", "glue_region", details.GlueRegion, details.GlueRegion, nil},
+			); err != nil {
+				return diag.FromErr(err)
 			}
 		}
-		return diag.FromErr(err)
+
+		errs := errors.Join(
+			d.Set("name", details.Id.Name()),
+			d.Set("enabled", details.Enabled),
+			// not reading refresh_interval_seconds on purpose (handled as external change to describe output)
+			d.Set("comment", details.Comment),
+			d.Set("glue_aws_role_arn", details.GlueAwsRoleArn),
+			d.Set("glue_catalog_id", details.GlueCatalogId),
+			// not reading glue_region on purpose (handled as external change to describe output)
+			d.Set("catalog_namespace", details.CatalogNamespace),
+			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(s)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueDetailsToSchema(details)}),
+		)
+
+		return diag.FromErr(errs)
 	}
-
-	details, err := client.CatalogIntegrations.DescribeAwsGlueDetails(ctx, id)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("could not describe AWS Glue catalog integration (%s), err = %w", d.Id(), err))
-	}
-
-	errs := errors.Join(
-		d.Set("name", details.Id.Name()),
-		d.Set("enabled", details.Enabled),
-		d.Set("refresh_interval_seconds", details.RefreshIntervalSeconds),
-		d.Set("comment", details.Comment),
-		d.Set("glue_aws_role_arn", details.GlueAwsRoleArn),
-		d.Set("glue_catalog_id", details.GlueCatalogId),
-		d.Set("glue_region", details.GlueRegion),
-		d.Set("catalog_namespace", details.CatalogNamespace),
-		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-		d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(s)}),
-		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueDetailsToSchema(details)}),
-	)
-
-	return diag.FromErr(errs)
 }
 
 func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -223,11 +237,18 @@ func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 
 	errs := errors.Join(
 		booleanAttributeUpdateSetOnly(d, "enabled", &set.Enabled),
-		intAttributeUpdateSetOnly(d, "refresh_interval_seconds", &set.RefreshIntervalSeconds),
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
+	}
+	if d.HasChange("refresh_interval_seconds") {
+		if v := d.Get("refresh_interval_seconds").(int); v != IntDefault {
+			set.WithRefreshIntervalSeconds(v)
+		} else {
+			// TODO [SNOW-3243983]: UNSET not implemented
+			set.WithRefreshIntervalSeconds(30)
+		}
 	}
 
 	if !reflect.DeepEqual(*set, *sdk.NewCatalogIntegrationSetRequest()) {
@@ -236,5 +257,5 @@ func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 			return diag.FromErr(fmt.Errorf("error updating AWS Glue catalog integration (%s), err = %w", d.Id(), err))
 		}
 	}
-	return ReadCatalogIntegrationAwsGlue(ctx, d, meta)
+	return ReadCatalogIntegrationAwsGlueFunc(false)(ctx, d, meta)
 }

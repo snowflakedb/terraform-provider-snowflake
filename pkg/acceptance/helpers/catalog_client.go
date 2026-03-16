@@ -36,6 +36,17 @@ func (c *CatalogIntegrationClient) Create(t *testing.T) (sdk.AccountObjectIdenti
 	return id, c.DropFunc(t, id)
 }
 
+func (c *CatalogIntegrationClient) CreateFunc(t *testing.T, request *sdk.CreateCatalogIntegrationRequest) (sdk.AccountObjectIdentifier, func()) {
+	t.Helper()
+	ctx := context.Background()
+	id := request.GetName()
+
+	err := c.client().Create(ctx, request)
+	require.NoError(t, err)
+
+	return id, c.DropFunc(t, id)
+}
+
 func (c *CatalogIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

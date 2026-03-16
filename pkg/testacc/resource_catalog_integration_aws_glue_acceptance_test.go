@@ -16,10 +16,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -30,12 +28,11 @@ import (
 func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithPreviewFeaturesEnabled(string(previewfeatures.CatalogIntegrationAwsGlueResource))
-
 	glueAwsRoleArn := "arn:aws:iam::123456789012:role/sqsAccess"
 	newGlueAwsRoleArn := "arn:aws:iam::123456789012:role/fakeRole"
+	externalGlueAwsRoleArn := "arn:aws:iam::123456789012:role/fakeRole2"
 	glueCatalogId := random.NumericN(15)
+	externalGlueCatalogId := random.NumericN(15)
 
 	comment := random.Comment()
 	newComment := random.Comment()
@@ -46,7 +43,10 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 	externalRefreshIntervalSeconds := random.IntRange(30, 86400)
 
 	glueRegion := "us-east-1"
+	newGlueRegion := "eu-west-1"
+	externalGlueRegion := "eu-west-2"
 	catalogNamespace := random.AlphanumericN(15)
+	externalCatalogNamespace := random.AlphanumericN(15)
 
 	catalogIntegrationAwsGlueBasic := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId)
 
@@ -68,6 +68,13 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 
 	catalogIntegrationAwsGlueWithChangedForceNewAttributes := model.CatalogIntegrationAwsGlue("t", id.Name(), false, newGlueAwsRoleArn, glueCatalogId)
 
+	catalogIntegrationAwsGlueWithMoreChangedForceNewAttributes := model.CatalogIntegrationAwsGlue("t", id.Name(), false, newGlueAwsRoleArn, glueCatalogId).
+		WithGlueRegion(newGlueRegion)
+
+	catalogIntegrationAwsGlueWithMoreExternalChanges := model.CatalogIntegrationAwsGlue("t", id.Name(), false, externalGlueAwsRoleArn, externalGlueCatalogId).
+		WithGlueRegion(externalGlueRegion).
+		WithCatalogNamespace(externalCatalogNamespace)
+
 	ref := catalogIntegrationAwsGlueBasic.ResourceReference()
 
 	basicAssertions := []assert.TestCheckFuncProvider{
@@ -75,11 +82,10 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
-			HasRefreshIntervalSeconds(30).
+			HasRefreshIntervalSeconds(r.IntDefault).
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
-			// Don't check glue_region, as its default value depends on the current region name
-			HasGlueRegionNotEmpty().
+			HasNoGlueRegion().
 			HasCatalogNamespaceEmpty(),
 		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -87,7 +93,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasCategory("CATALOG").
 			HasEnabled(false).
 			HasComment(""),
-		resourceshowoutputassert.CatalogIntegrationAwsGlueDetailsShowOutput(t, ref).
+		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
 			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -108,9 +114,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(newRefreshIntervalSeconds).
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
-			HasGlueCatalogId(glueCatalogId).
-			// Don't check glue_region, as its default value depends on the current region name
-			HasGlueRegionNotEmpty().
+			HasNoGlueRegion().
 			HasCatalogNamespaceEmpty(),
 		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -118,7 +122,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasCategory("CATALOG").
 			HasEnabled(true).
 			HasComment(newComment),
-		resourceshowoutputassert.CatalogIntegrationAwsGlueDetailsShowOutput(t, ref).
+		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
 			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -147,7 +151,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasCategory("CATALOG").
 			HasEnabled(false).
 			HasComment(comment),
-		resourceshowoutputassert.CatalogIntegrationAwsGlueDetailsShowOutput(t, ref).
+		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
 			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -176,7 +180,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasCategory("CATALOG").
 			HasEnabled(true).
 			HasComment(externalComment),
-		resourceshowoutputassert.CatalogIntegrationAwsGlueDetailsShowOutput(t, ref).
+		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
 			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -194,11 +198,10 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
-			HasRefreshIntervalSeconds(30).
+			HasRefreshIntervalSeconds(r.IntDefault).
 			HasGlueAwsRoleArn(newGlueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
-			// Don't check glue_region, as its default value depends on the current region name
-			HasGlueRegionNotEmpty().
+			HasNoGlueRegion().
 			HasCatalogNamespaceEmpty(),
 		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -206,7 +209,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasCategory("CATALOG").
 			HasEnabled(false).
 			HasComment(""),
-		resourceshowoutputassert.CatalogIntegrationAwsGlueDetailsShowOutput(t, ref).
+		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
 			HasId(id).
 			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -217,6 +220,64 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasGlueCatalogId(glueCatalogId).
 			// Don't check glue_region, as its default value depends on the current region name
 			HasCatalogNamespace(""),
+	}
+
+	moreForceNewAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
+			HasName(id.Name()).
+			HasEnabledString(r.BooleanFalse).
+			HasCommentEmpty().
+			HasRefreshIntervalSeconds(r.IntDefault).
+			HasGlueAwsRoleArn(newGlueAwsRoleArn).
+			HasGlueCatalogId(glueCatalogId).
+			HasGlueRegion(newGlueRegion).
+			HasCatalogNamespaceEmpty(),
+		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
+			HasName(id.Name()).
+			HasType("CATALOG").
+			HasCategory("CATALOG").
+			HasEnabled(false).
+			HasComment(""),
+		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
+			HasId(id).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
+			HasEnabled(false).
+			HasRefreshIntervalSeconds(30).
+			HasComment("").
+			HasGlueAwsRoleArn(newGlueAwsRoleArn).
+			HasGlueCatalogId(glueCatalogId).
+			HasGlueRegion(newGlueRegion).
+			HasCatalogNamespace(""),
+	}
+
+	moreExternallyAlteredProperties := []assert.TestCheckFuncProvider{
+		resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
+			HasName(id.Name()).
+			HasEnabledString(r.BooleanFalse).
+			HasCommentEmpty().
+			HasRefreshIntervalSeconds(r.IntDefault).
+			HasGlueAwsRoleArn(externalGlueAwsRoleArn).
+			HasGlueCatalogId(externalGlueCatalogId).
+			HasGlueRegion(externalGlueRegion).
+			HasCatalogNamespace(externalCatalogNamespace),
+		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
+			HasName(id.Name()).
+			HasType("CATALOG").
+			HasCategory("CATALOG").
+			HasEnabled(false).
+			HasComment(""),
+		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
+			HasId(id).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
+			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
+			HasEnabled(false).
+			HasRefreshIntervalSeconds(30).
+			HasComment("").
+			HasGlueAwsRoleArn(externalGlueAwsRoleArn).
+			HasGlueCatalogId(externalGlueCatalogId).
+			HasGlueRegion(externalGlueRegion).
+			HasCatalogNamespace(externalCatalogNamespace),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -233,24 +294,25 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
 					},
 				},
-				Config: config.FromModels(t, providerModel, catalogIntegrationAwsGlueBasic),
+				Config: config.FromModels(t, catalogIntegrationAwsGlueBasic),
 				Check:  assertThat(t, basicAssertions...),
 			},
 			// Import
 			{
-				Config:            config.FromModels(t, providerModel, catalogIntegrationAwsGlueBasic),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, catalogIntegrationAwsGlueBasic),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"refresh_interval_seconds"},
 			},
-			// Change props
+			// Change alterable props
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, providerModel, catalogIntegrationAwsGlueAltered),
+				Config: config.FromModels(t, catalogIntegrationAwsGlueAltered),
 				Check:  assertThat(t, alteredProperties...),
 			},
 			// Unset
@@ -260,7 +322,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, providerModel, catalogIntegrationAwsGlueBasic),
+				Config: config.FromModels(t, catalogIntegrationAwsGlueBasic),
 				Check:  assertThat(t, basicAssertions...),
 			},
 			// Destroy
@@ -270,7 +332,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
 					},
 				},
-				Config:  config.FromModels(t, providerModel, catalogIntegrationAwsGlueBasic),
+				Config:  config.FromModels(t, catalogIntegrationAwsGlueBasic),
 				Destroy: true,
 			},
 			// Create with all attributes
@@ -280,10 +342,10 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
 					},
 				},
-				Config: config.FromModels(t, providerModel, catalogIntegrationAwsGlueAllAttributes),
+				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
 				Check:  assertThat(t, completeAssertions...),
 			},
-			// Change props externally
+			// Change alterable props externally
 			{
 				PreConfig: func() {
 					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*sdk.NewCatalogIntegrationSetRequest().
@@ -304,7 +366,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "refresh_interval_seconds", tfjson.ActionUpdate, sdk.String(strconv.Itoa(externalRefreshIntervalSeconds)), sdk.String(strconv.Itoa(refreshIntervalSeconds))),
 					},
 				},
-				Config: config.FromModels(t, providerModel, catalogIntegrationAwsGlueAllAttributes),
+				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
 			},
 			// Adjust config to the current Snowflake values
 			{
@@ -313,18 +375,63 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Config: config.FromModels(t, providerModel, catalogIntegrationAwsGlueAllAttributesWithExternalChanges),
+				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributesWithExternalChanges),
 				Check:  assertThat(t, externallyAlteredProperties...),
 			},
-			// Change force new prop
+			// Change force new "glue_aws_role_arn" prop
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config: config.FromModels(t, providerModel, catalogIntegrationAwsGlueWithChangedForceNewAttributes),
+				Config: config.FromModels(t, catalogIntegrationAwsGlueWithChangedForceNewAttributes),
 				Check:  assertThat(t, forceNewAssertions...),
+			},
+			// Change force new "glue_region" prop
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, catalogIntegrationAwsGlueWithMoreChangedForceNewAttributes),
+				Check:  assertThat(t, moreForceNewAssertions...),
+			},
+			// Change force new props externally
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+						WithOrReplace(true).
+						WithAwsGlueCatalogSourceParams(*sdk.NewAwsGlueParamsRequest(externalGlueAwsRoleArn, externalGlueCatalogId).
+							WithGlueRegion(externalGlueRegion).
+							WithCatalogNamespace(externalCatalogNamespace))
+					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(ref, "glue_aws_role_arn", sdk.String(newGlueAwsRoleArn), sdk.String(externalGlueAwsRoleArn)),
+						planchecks.ExpectDrift(ref, "glue_catalog_id", sdk.String(glueCatalogId), sdk.String(externalGlueCatalogId)),
+						planchecks.ExpectDrift(ref, "glue_region", sdk.String(newGlueRegion), sdk.String(externalGlueRegion)),
+						planchecks.ExpectDrift(ref, "catalog_namespace", sdk.String(""), sdk.String(externalCatalogNamespace)),
+						planchecks.ExpectChange(ref, "glue_aws_role_arn", tfjson.ActionDelete, sdk.String(externalGlueAwsRoleArn), sdk.String(newGlueAwsRoleArn)),
+						planchecks.ExpectChange(ref, "glue_catalog_id", tfjson.ActionDelete, sdk.String(externalGlueCatalogId), sdk.String(glueCatalogId)),
+						planchecks.ExpectChange(ref, "glue_region", tfjson.ActionDelete, sdk.String(externalGlueRegion), sdk.String(newGlueRegion)),
+						planchecks.ExpectChange(ref, "catalog_namespace", tfjson.ActionDelete, sdk.String(externalCatalogNamespace), nil),
+					},
+				},
+				Config: config.FromModels(t, catalogIntegrationAwsGlueWithMoreChangedForceNewAttributes),
+			},
+			// Adjust config to the current Snowflake values
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: config.FromModels(t, catalogIntegrationAwsGlueWithMoreExternalChanges),
+				Check:  assertThat(t, moreExternallyAlteredProperties...),
 			},
 		},
 	})
@@ -333,17 +440,14 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 func TestAcc_CatalogIntegrationAwsGlue_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithPreviewFeaturesEnabled(string(previewfeatures.CatalogIntegrationAwsGlueResource))
-
 	glueAwsRoleArn := "arn:aws:iam::123456789012:role/sqsAccess"
 	glueCatalogId := random.NumericN(15)
 
 	catalogIntegrationAwsGlueRefreshIntervalTooSmall := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId).
-		WithRefreshIntervalSeconds(10)
+		WithRefreshIntervalSeconds(0)
 
 	catalogIntegrationAwsGlueRefreshIntervalTooBig := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId).
-		WithRefreshIntervalSeconds(100000)
+		WithRefreshIntervalSeconds(-1)
 
 	catalogIntegrationAwsGlueEmptyAwsRoleArn := model.CatalogIntegrationAwsGlue("t", id.Name(), false, "", glueCatalogId)
 	catalogIntegrationAwsGlueEmptyCatalogId := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, "")
@@ -360,32 +464,32 @@ func TestAcc_CatalogIntegrationAwsGlue_Validations(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationAwsGlue),
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, providerModel, catalogIntegrationAwsGlueRefreshIntervalTooSmall),
+				Config:      config.FromModels(t, catalogIntegrationAwsGlueRefreshIntervalTooSmall),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected refresh_interval_seconds to be at least \(30\), got 10`),
+				ExpectError: regexp.MustCompile(`expected refresh_interval_seconds to be at least \(1\), got 0`),
 			},
 			{
-				Config:      config.FromModels(t, providerModel, catalogIntegrationAwsGlueRefreshIntervalTooBig),
+				Config:      config.FromModels(t, catalogIntegrationAwsGlueRefreshIntervalTooBig),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected refresh_interval_seconds to be at most \(86400\), got 100000`),
+				ExpectError: regexp.MustCompile(`expected refresh_interval_seconds to be at least \(1\), got -1`),
 			},
 			{
-				Config:      config.FromModels(t, providerModel, catalogIntegrationAwsGlueEmptyAwsRoleArn),
+				Config:      config.FromModels(t, catalogIntegrationAwsGlueEmptyAwsRoleArn),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected "glue_aws_role_arn" to not be an empty string`),
 			},
 			{
-				Config:      config.FromModels(t, providerModel, catalogIntegrationAwsGlueEmptyCatalogId),
+				Config:      config.FromModels(t, catalogIntegrationAwsGlueEmptyCatalogId),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected "glue_catalog_id" to not be an empty string`),
 			},
 			{
-				Config:      config.FromModels(t, providerModel, catalogIntegrationAwsGlueEmptyRegion),
+				Config:      config.FromModels(t, catalogIntegrationAwsGlueEmptyRegion),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected "glue_region" to not be an empty string`),
 			},
 			{
-				Config:      config.FromModels(t, providerModel, catalogIntegrationAwsGlueEmptyCatalogNamespace),
+				Config:      config.FromModels(t, catalogIntegrationAwsGlueEmptyCatalogNamespace),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected "catalog_namespace" to not be an empty string`),
 			},
@@ -394,9 +498,6 @@ func TestAcc_CatalogIntegrationAwsGlue_Validations(t *testing.T) {
 }
 
 func TestAcc_CatalogIntegrationAwsGlue_ImportValidation(t *testing.T) {
-	providerModel := providermodel.SnowflakeProvider().
-		WithPreviewFeaturesEnabled(string(previewfeatures.CatalogIntegrationAwsGlueResource))
-
 	glueAwsRoleArn := "arn:aws:iam::123456789012:role/sqsAccess"
 	glueCatalogId := random.NumericN(15)
 
@@ -418,7 +519,7 @@ func TestAcc_CatalogIntegrationAwsGlue_ImportValidation(t *testing.T) {
 		Steps: []resource.TestStep{
 			// import a different integration category
 			{
-				Config:        config.FromModels(t, providerModel, catalogIntegrationAwsGlue),
+				Config:        config.FromModels(t, catalogIntegrationAwsGlue),
 				ResourceName:  catalogIntegrationAwsGlue.ResourceReference(),
 				ImportState:   true,
 				ImportStateId: notificationIntegration.ID().Name(),
@@ -426,7 +527,7 @@ func TestAcc_CatalogIntegrationAwsGlue_ImportValidation(t *testing.T) {
 			},
 			// import a different catalog source type
 			{
-				Config:        config.FromModels(t, providerModel, catalogIntegrationAwsGlue2),
+				Config:        config.FromModels(t, catalogIntegrationAwsGlue2),
 				ResourceName:  catalogIntegrationAwsGlue2.ResourceReference(),
 				ImportState:   true,
 				ImportStateId: catalogIntegrationObjectStorage.Name(),
