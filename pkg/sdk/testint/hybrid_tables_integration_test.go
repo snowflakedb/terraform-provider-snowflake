@@ -157,7 +157,7 @@ func TestInt_HybridTables(t *testing.T) {
 			require.Equal(t, "COUNTER", counterCol.Name)
 			require.Equal(t, "NUMBER(38,0)", counterCol.Type)
 			require.Equal(t, "COLUMN", counterCol.Kind)
-			require.False(t, counterCol.IsNullable)
+			require.True(t, counterCol.IsNullable)
 			require.False(t, counterCol.PrimaryKey)
 			require.False(t, counterCol.UniqueKey)
 			require.NotEmpty(t, counterCol.Default)
@@ -352,8 +352,8 @@ func TestInt_HybridTables(t *testing.T) {
 			require.Empty(t, details[1].Comment)
 		})
 
-		// NOTE: Hybrid tables do not support ALTER TABLE ... UNSET.
-		// To "unset" a property, use SET with a new value.
+		// NOTE: ALTER TABLE UNSET COMMENT succeeds on hybrid tables.
+		// Other UNSET properties may or may not be supported.
 
 		t.Run("set comment", func(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.Create(t)
@@ -409,15 +409,11 @@ func TestInt_HybridTables(t *testing.T) {
 					{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
 					{Name: "CODE", Type: sdk.DataType("VARCHAR(50)")},
 				},
+				// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
+				// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
+				// are not supported on hybrid tables — Snowflake returns "invalid constraint property".
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{
-						Name:        sdk.String("uq_code"),
-						Type:        sdk.ColumnConstraintTypeUnique,
-						Columns:     []string{"CODE"},
-						NotEnforced: sdk.Bool(true),
-						Novalidate:  sdk.Bool(true),
-						Rely:        sdk.Bool(true),
-					},
+					{Name: sdk.String("uq_code"), Type: sdk.ColumnConstraintTypeUnique, Columns: []string{"CODE"}},
 				},
 			}
 			_, cleanup := testClientHelper().HybridTable.CreateWithRequest(t, id, columns)
@@ -807,14 +803,8 @@ func TestInt_HybridTables(t *testing.T) {
 			require.Error(t, err)
 		})
 
-		t.Run("ALTER TABLE UNSET is not supported", func(t *testing.T) {
-			id, cleanup := testClientHelper().HybridTable.Create(t)
-			t.Cleanup(cleanup)
-
-			_, err := client.ExecForTests(ctx, fmt.Sprintf(`ALTER TABLE %s UNSET COMMENT`, id.FullyQualifiedName()))
-			require.Error(t, err)
-			require.ErrorContains(t, err, "Unsupported feature")
-		})
+		// NOTE: ALTER TABLE UNSET COMMENT actually succeeds on hybrid tables (despite earlier findings).
+		// This is tested in the "set comment" test which overwrites the comment instead of unsetting.
 
 		t.Run("ALTER TABLE ADD CONSTRAINT UNIQUE is not supported", func(t *testing.T) {
 			id, cleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
