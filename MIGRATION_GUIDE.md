@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(bug fix)* snowflake_account: fix nil pointer dereference panics
+
+Previously, the `snowflake_account` resource could panic with a nil pointer dereference in the following scenarios:
+- During **import**, if some fields (`edition`, `is_org_admin`, `consumption_billing_entity`) were not returned by `SHOW ACCOUNTS`.
+- During **read** (plan/apply), if the same fields were missing from the Snowflake response.
+
+These panics are now replaced with proper nil checks and error messages.
+
+References: [#4101](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4101#issuecomment-4069319904).
+
 ### *(improvement)* Go driver bumped to v2
 
 There was a recent major release for the underlying Go Snowflake driver ([summary](https://github.com/snowflakedb/gosnowflake/issues/1586) and [v2.0.0 release notes](https://github.com/snowflakedb/gosnowflake/releases/tag/v2.0.0)). It introduced a few breaking changes but the provider adopted them in a non-breaking way - summary in the sections below. Keep in mind, that we will align the behavior with the driver in the next major release of the provider.
