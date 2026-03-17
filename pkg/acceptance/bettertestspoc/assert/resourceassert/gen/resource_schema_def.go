@@ -54,6 +54,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CatalogIntegrationAwsGlue().Schema,
 	},
 	{
+		name:   "CatalogIntegrationObjectStorage",
+		schema: resources.CatalogIntegrationObjectStorage().Schema,
+	},
+	{
 		name:   "ComputePool",
 		schema: resources.ComputePool().Schema,
 	},

@@ -314,11 +314,10 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Import
 			{
-				Config:                  config.FromModels(t, catalogIntegrationAwsGlueBasic),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"refresh_interval_seconds"},
+				Config:            config.FromModels(t, catalogIntegrationAwsGlueBasic),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// Change alterable props
 			{

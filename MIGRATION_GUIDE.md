@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* New snowflake_catalog_integration_object_storage resource
+
+We have added a new preview resource for managing catalog integrations for Apache Iceberg table files or Delta table files in object storage. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_catalog_integration_object_storage_resource` to `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* New snowflake_catalog_integration_aws_glue resource
 
 We have added a new preview resource for managing catalog integrations that use an AWS Glue catalog source. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue).
