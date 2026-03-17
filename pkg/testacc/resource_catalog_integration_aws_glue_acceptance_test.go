@@ -82,7 +82,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
-			HasRefreshIntervalSeconds(r.IntDefault).
+			HasNoRefreshIntervalSeconds().
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasNoGlueRegion().
@@ -105,6 +105,21 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			// Don't check glue_region, as its default value depends on the current region name
 			HasCatalogNamespace(""),
 	}
+
+	basicAssertionsWithRefreshIntervalZero := append(
+		[]assert.TestCheckFuncProvider{
+			resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
+				HasName(id.Name()).
+				HasEnabledString(r.BooleanFalse).
+				HasCommentEmpty().
+				HasRefreshIntervalSeconds(0).
+				HasGlueAwsRoleArn(glueAwsRoleArn).
+				HasGlueCatalogId(glueCatalogId).
+				HasNoGlueRegion().
+				HasCatalogNamespaceEmpty(),
+		},
+		basicAssertions[1:]...,
+	)
 
 	alteredProperties := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
@@ -198,7 +213,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
-			HasRefreshIntervalSeconds(r.IntDefault).
+			HasNoRefreshIntervalSeconds().
 			HasGlueAwsRoleArn(newGlueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasNoGlueRegion().
@@ -227,7 +242,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
-			HasRefreshIntervalSeconds(r.IntDefault).
+			HasNoRefreshIntervalSeconds().
 			HasGlueAwsRoleArn(newGlueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(newGlueRegion).
@@ -256,7 +271,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabledString(r.BooleanFalse).
 			HasCommentEmpty().
-			HasRefreshIntervalSeconds(r.IntDefault).
+			HasNoRefreshIntervalSeconds().
 			HasGlueAwsRoleArn(externalGlueAwsRoleArn).
 			HasGlueCatalogId(externalGlueCatalogId).
 			HasGlueRegion(externalGlueRegion).
@@ -323,7 +338,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, catalogIntegrationAwsGlueBasic),
-				Check:  assertThat(t, basicAssertions...),
+				Check:  assertThat(t, basicAssertionsWithRefreshIntervalZero...),
 			},
 			// Destroy
 			{

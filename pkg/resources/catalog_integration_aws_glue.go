@@ -35,7 +35,6 @@ var catalogIntegrationAwsGlueSchema = map[string]*schema.Schema{
 	"refresh_interval_seconds": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		Default:          IntDefault,
 		Description:      "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh.",
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("refresh_interval_seconds"),
 		ValidateFunc:     validation.IntAtLeast(1),
@@ -152,8 +151,8 @@ func CreateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 	request := sdk.NewCreateCatalogIntegrationRequest(id, enabled)
 	awsGlueRequest := sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId)
 	errs := errors.Join(
+		intAttributeCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		intAttributeWithSpecialDefaultCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "glue_region", awsGlueRequest.WithGlueRegion),
 		stringAttributeCreateBuilder(d, "catalog_namespace", awsGlueRequest.WithCatalogNamespace),
 	)
@@ -235,18 +234,12 @@ func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 
 	errs := errors.Join(
 		booleanAttributeUpdateSetOnly(d, "enabled", &set.Enabled),
+		// TODO [SNOW-3243983]: UNSET not implemented
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "refresh_interval_seconds", &set.RefreshIntervalSeconds, 30),
 		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
-	}
-	if d.HasChange("refresh_interval_seconds") {
-		if v := d.Get("refresh_interval_seconds").(int); v != IntDefault {
-			set.WithRefreshIntervalSeconds(v)
-		} else {
-			// TODO [SNOW-3243983]: UNSET not implemented
-			set.WithRefreshIntervalSeconds(30)
-		}
 	}
 
 	if !reflect.DeepEqual(*set, *sdk.NewCatalogIntegrationSetRequest()) {

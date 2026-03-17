@@ -55,7 +55,7 @@ resource "snowflake_catalog_integration_aws_glue" "complete" {
 - `catalog_namespace` (String) Specifies the default AWS Glue Data Catalog namespace for all Iceberg tables that you associate with the catalog integration.
 - `comment` (String) (Default: ``) Specifies a comment for the catalog integration.
 - `glue_region` (String) Specifies the AWS region of your AWS Glue Data Catalog. You must specify a value for this attribute if your Snowflake account is not hosted on AWS. Otherwise, the default region is the Snowflake deployment region for the account.
-- `refresh_interval_seconds` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh.
+- `refresh_interval_seconds` (Number) Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
