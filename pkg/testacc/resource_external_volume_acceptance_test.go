@@ -2795,7 +2795,7 @@ func TestAcc_ExternalVolume_Validations(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
 		Steps: []resource.TestStep{
 			// invalid storage provider test
 			{

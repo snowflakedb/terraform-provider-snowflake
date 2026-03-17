@@ -771,6 +771,8 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 					},
 				},
 			}
+		default:
+			return nil, fmt.Errorf("unsupported storage provider: %s", storageProvider)
 		}
 		storageLocations[i] = storageLocation
 	}
@@ -853,6 +855,8 @@ func addStorageLocation(
 			},
 		)
 		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithS3CompatStorageLocationParams(*s3CompatParamsRequest)
+	default:
+		return fmt.Errorf("unsupported storage provider: %s", storageProvider)
 	}
 
 	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(sdk.ExternalVolumeStorageLocationItemRequest{ExternalVolumeStorageLocation: *newStorageLocationreq}))
