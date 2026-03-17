@@ -30,7 +30,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 We have added a new preview resource for managing catalog integrations that use an AWS Glue catalog source. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue).
 
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_catalog_integration_aws_glue` to `preview_features_enabled` field in the provider configuration.
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_catalog_integration_aws_glue_resource` to `preview_features_enabled` field in the provider configuration.
+
+### *(bug fix)* snowflake_account: fix nil pointer dereference panics
+
+Previously, the `snowflake_account` resource could panic with a nil pointer dereference in the following scenarios:
+- During **import**, if some fields (`edition`, `is_org_admin`, `consumption_billing_entity`) were not returned by `SHOW ACCOUNTS`.
+- During **read** (plan/apply), if the same fields were missing from the Snowflake response.
+
+These panics are now replaced with proper nil checks and error messages.
+
+References: [#4101](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4101#issuecomment-4069319904).
 
 ### *(improvement)* Go driver bumped to v2
 
