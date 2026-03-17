@@ -443,11 +443,8 @@ func TestAcc_CatalogIntegrationAwsGlue_Validations(t *testing.T) {
 	glueAwsRoleArn := "arn:aws:iam::123456789012:role/sqsAccess"
 	glueCatalogId := random.NumericN(15)
 
-	catalogIntegrationAwsGlueRefreshIntervalTooSmall := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId).
+	catalogIntegrationAwsGlueRefreshIntervalNonPositive := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId).
 		WithRefreshIntervalSeconds(0)
-
-	catalogIntegrationAwsGlueRefreshIntervalTooBig := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId).
-		WithRefreshIntervalSeconds(-1)
 
 	catalogIntegrationAwsGlueEmptyAwsRoleArn := model.CatalogIntegrationAwsGlue("t", id.Name(), false, "", glueCatalogId)
 	catalogIntegrationAwsGlueEmptyCatalogId := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, "")
@@ -464,14 +461,9 @@ func TestAcc_CatalogIntegrationAwsGlue_Validations(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationAwsGlue),
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, catalogIntegrationAwsGlueRefreshIntervalTooSmall),
+				Config:      config.FromModels(t, catalogIntegrationAwsGlueRefreshIntervalNonPositive),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected refresh_interval_seconds to be at least \(1\), got 0`),
-			},
-			{
-				Config:      config.FromModels(t, catalogIntegrationAwsGlueRefreshIntervalTooBig),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected refresh_interval_seconds to be at least \(1\), got -1`),
 			},
 			{
 				Config:      config.FromModels(t, catalogIntegrationAwsGlueEmptyAwsRoleArn),

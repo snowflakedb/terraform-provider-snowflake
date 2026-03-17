@@ -153,14 +153,12 @@ func CreateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 	awsGlueRequest := sdk.NewAwsGlueParamsRequest(glueAwsRoleArn, glueCatalogId)
 	errs := errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+		intAttributeWithSpecialDefaultCreateBuilder(d, "refresh_interval_seconds", request.WithRefreshIntervalSeconds),
 		stringAttributeCreateBuilder(d, "glue_region", awsGlueRequest.WithGlueRegion),
 		stringAttributeCreateBuilder(d, "catalog_namespace", awsGlueRequest.WithCatalogNamespace),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
-	}
-	if v := d.Get("refresh_interval_seconds").(int); v != IntDefault {
-		request.WithRefreshIntervalSeconds(v)
 	}
 
 	if err := client.CatalogIntegrations.Create(ctx, request.WithAwsGlueCatalogSourceParams(*awsGlueRequest)); err != nil {
