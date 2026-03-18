@@ -139,7 +139,6 @@ func setAndUnsetAccountParametersTest(
 			RequireStorageIntegrationForStageOperation:               sdk.Bool(true),
 			RowTimestampDefault:                                      sdk.Bool(false),
 			RowsPerResultset:                                         sdk.Int(1000),
-			SamlIdentityProvider:                                     sdk.String(""),
 			SearchPath:                                               sdk.String("$current, $public"),
 			ServerlessTaskMaxStatementSize:                           sdk.Pointer(sdk.WarehouseSize("6X-LARGE")),
 			ServerlessTaskMinStatementSize:                           sdk.Pointer(sdk.WarehouseSizeSmall),
@@ -304,7 +303,6 @@ func setAndUnsetAccountParametersTest(
 			HasIcebergVersionDefault(2).
 			HasReadConsistencyMode("SESSION").
 			HasRowTimestampDefault(false).
-			HasSamlIdentityProvider("").
 			HasSqlTraceQueryText("OFF").
 			HasUseWorkspacesForSql("unset")
 

@@ -746,7 +746,6 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 			RowTimestampDefault:                                      Bool(true),
 			RowsPerResultset:                                         Bool(true),
 			S3StageVpceDnsName:                                       Bool(true),
-			SamlIdentityProvider:                                     Bool(true),
 			SearchPath:                                               Bool(true),
 			ServerlessTaskMaxStatementSize:                           Bool(true),
 			ServerlessTaskMinStatementSize:                           Bool(true),
