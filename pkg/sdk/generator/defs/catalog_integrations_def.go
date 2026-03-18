@@ -148,6 +148,7 @@ var catalogIntegrationsDef = g.NewInterface(
 							TextAssignment("BEARER_TOKEN", g.ParameterOptions().SingleQuotes().Required()),
 						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
+					// TODO(SNOW-3243983): use REFRESH_INTERVAL_SECONDS in unset
 					OptionalNumberAssignment("REFRESH_INTERVAL_SECONDS", g.ParameterOptions().NoQuotes()).
 					// TODO(SNOW-3121221): use COMMENT in unset and here use OptionalComment
 					OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
