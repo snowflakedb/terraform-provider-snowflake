@@ -14,6 +14,7 @@ func TestToParameterType(t *testing.T) {
 		Expected ParameterType
 		Error    string
 	}{
+		{Input: string(ParameterTypeSystem), Expected: ParameterTypeSystem},
 		{Input: string(ParameterTypeSnowflakeDefault), Expected: ParameterTypeSnowflakeDefault},
 		{Input: string(ParameterTypeAccount), Expected: ParameterTypeAccount},
 		{Input: string(ParameterTypeUser), Expected: ParameterTypeUser},

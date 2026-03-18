@@ -760,6 +760,22 @@ func CheckAccountParameterUnset(t *testing.T, paramName sdk.AccountParameter) fu
 	}
 }
 
+func CheckAccountParameterUnsetToDefaultLevel(t *testing.T, paramName sdk.AccountParameter, defaultLevel sdk.ParameterType) func(*terraform.State) error {
+	t.Helper()
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "snowflake_account_parameter" {
+				continue
+			}
+			parameter := testClient().Parameter.ShowAccountParameter(t, paramName)
+			if parameter.Level != defaultLevel {
+				return fmt.Errorf("expected parameter level %v, got %v", defaultLevel, parameter.Level)
+			}
+		}
+		return nil
+	}
+}
+
 func CheckUserProgrammaticAccessTokenDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
 	return func(s *terraform.State) error {

@@ -67,16 +67,26 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		},
 	}
 	switch parameter {
+	case AccountParameterAllowBindValuesAccess:
+		opts.Unset.LegacyParameters.AccountParameters.AllowBindValuesAccess = Pointer(true)
 	case AccountParameterAllowClientMFACaching:
 		opts.Unset.LegacyParameters.AccountParameters.AllowClientMFACaching = Pointer(true)
 	case AccountParameterAllowIDToken:
 		opts.Unset.LegacyParameters.AccountParameters.AllowIDToken = Pointer(true)
+	case AccountParameterAllowedSpcsWorkloadTypes:
+		opts.Unset.LegacyParameters.AccountParameters.AllowedSpcsWorkloadTypes = Pointer(true)
 	case AccountParameterClientEncryptionKeySize:
 		opts.Unset.LegacyParameters.AccountParameters.ClientEncryptionKeySize = Pointer(true)
 	case AccountParameterCortexEnabledCrossRegion:
 		opts.Unset.LegacyParameters.AccountParameters.CortexEnabledCrossRegion = Pointer(true)
+	case AccountParameterDefaultDbtVersion:
+		opts.Unset.LegacyParameters.AccountParameters.DefaultDbtVersion = Pointer(true)
 	case AccountParameterDisableUserPrivilegeGrants:
 		opts.Unset.LegacyParameters.AccountParameters.DisableUserPrivilegeGrants = Pointer(true)
+	case AccountParameterDisallowedSpcsWorkloadTypes:
+		opts.Unset.LegacyParameters.AccountParameters.DisallowedSpcsWorkloadTypes = Pointer(true)
+	case AccountParameterEnableBudgetEventLogging:
+		opts.Unset.LegacyParameters.AccountParameters.EnableBudgetEventLogging = Pointer(true)
 	case AccountParameterEnableIdentifierFirstLogin:
 		opts.Unset.LegacyParameters.AccountParameters.EnableIdentifierFirstLogin = Pointer(true)
 	case AccountParameterEnableInternalStagesPrivatelink:
@@ -87,6 +97,10 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		opts.Unset.LegacyParameters.AccountParameters.EnableTriSecretAndRekeyOptOutForSpcsBlockStorage = Pointer(true)
 	case AccountParameterEnablePersonalDatabase:
 		opts.Unset.LegacyParameters.AccountParameters.EnablePersonalDatabase = Pointer(true)
+	case AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement:
+		opts.Unset.LegacyParameters.AccountParameters.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = Pointer(true)
+	case AccountParameterEnableTagPropagationEventLogging:
+		opts.Unset.LegacyParameters.AccountParameters.EnableTagPropagationEventLogging = Pointer(true)
 	case AccountParameterEnableUnhandledExceptionsReporting:
 		opts.Unset.LegacyParameters.AccountParameters.EnableUnhandledExceptionsReporting = Pointer(true)
 	case AccountParameterEnableUnredactedQuerySyntaxError:
@@ -115,12 +129,18 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		opts.Unset.LegacyParameters.AccountParameters.PreventUnloadToInlineURL = Pointer(true)
 	case AccountParameterPreventUnloadToInternalStages:
 		opts.Unset.LegacyParameters.AccountParameters.PreventUnloadToInternalStages = Pointer(true)
+	case AccountParameterReadConsistencyMode:
+		opts.Unset.LegacyParameters.AccountParameters.ReadConsistencyMode = Pointer(true)
 	case AccountParameterRequireStorageIntegrationForStageCreation:
 		opts.Unset.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageCreation = Pointer(true)
 	case AccountParameterRequireStorageIntegrationForStageOperation:
 		opts.Unset.LegacyParameters.AccountParameters.RequireStorageIntegrationForStageOperation = Pointer(true)
+	case AccountParameterSqlTraceQueryText:
+		opts.Unset.LegacyParameters.AccountParameters.SqlTraceQueryText = Pointer(true)
 	case AccountParameterSsoLoginPage:
 		opts.Unset.LegacyParameters.AccountParameters.SSOLoginPage = Pointer(true)
+	case AccountParameterUseWorkspacesForSql:
+		opts.Unset.LegacyParameters.AccountParameters.UseWorkspacesForSql = Pointer(true)
 	default:
 		return v.UnsetSessionParameterOnAccount(ctx, SessionParameter(parameter))
 	}
@@ -258,6 +278,12 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 			return fmt.Errorf("USER_TASK_TIMEOUT_MS object parameter is an integer, got %v", value)
 		}
 		opts.Set.LegacyParameters.ObjectParameters.UserTaskTimeoutMs = Pointer(v)
+	case ObjectParameterEnableNotebookCreationInPersonalDb:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		opts.Set.LegacyParameters.ObjectParameters.EnableNotebookCreationInPersonalDb = b
 	case ObjectParameterEnableUnredactedQuerySyntaxError:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
@@ -266,6 +292,32 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 		opts.Set.LegacyParameters.ObjectParameters.EnableUnredactedQuerySyntaxError = b
 	case ObjectParameterCatalog:
 		opts.Set.LegacyParameters.ObjectParameters.Catalog = &value
+	case ObjectParameterDataMetricSchedule:
+		opts.Set.LegacyParameters.ObjectParameters.DataMetricSchedule = &value
+	case ObjectParameterEnableDataCompaction:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		opts.Set.LegacyParameters.ObjectParameters.EnableDataCompaction = b
+	case ObjectParameterEnableIcebergMergeOnRead:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		opts.Set.LegacyParameters.ObjectParameters.EnableIcebergMergeOnRead = b
+	case ObjectParameterIcebergVersionDefault:
+		v, err := strconv.Atoi(value)
+		if err != nil {
+			return fmt.Errorf("ICEBERG_VERSION_DEFAULT object parameter is an integer, got %v", value)
+		}
+		opts.Set.LegacyParameters.ObjectParameters.IcebergVersionDefault = Pointer(v)
+	case ObjectParameterRowTimestampDefault:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		opts.Set.LegacyParameters.ObjectParameters.RowTimestampDefault = b
 	default:
 		return fmt.Errorf("Invalid object parameter: %v", string(parameter))
 	}
@@ -315,8 +367,20 @@ func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, paramete
 		opts.Unset.LegacyParameters.ObjectParameters.UserTaskManagedInitialWarehouseSize = Pointer(true)
 	case ObjectParameterUserTaskTimeoutMs:
 		opts.Unset.LegacyParameters.ObjectParameters.UserTaskTimeoutMs = Pointer(true)
+	case ObjectParameterEnableNotebookCreationInPersonalDb:
+		opts.Unset.LegacyParameters.ObjectParameters.EnableNotebookCreationInPersonalDb = Pointer(true)
 	case ObjectParameterEnableUnredactedQuerySyntaxError:
 		opts.Unset.LegacyParameters.ObjectParameters.EnableUnredactedQuerySyntaxError = Pointer(true)
+	case ObjectParameterDataMetricSchedule:
+		opts.Unset.LegacyParameters.ObjectParameters.DataMetricSchedule = Pointer(true)
+	case ObjectParameterEnableDataCompaction:
+		opts.Unset.LegacyParameters.ObjectParameters.EnableDataCompaction = Pointer(true)
+	case ObjectParameterEnableIcebergMergeOnRead:
+		opts.Unset.LegacyParameters.ObjectParameters.EnableIcebergMergeOnRead = Pointer(true)
+	case ObjectParameterIcebergVersionDefault:
+		opts.Unset.LegacyParameters.ObjectParameters.IcebergVersionDefault = Pointer(true)
+	case ObjectParameterRowTimestampDefault:
+		opts.Unset.LegacyParameters.ObjectParameters.RowTimestampDefault = Pointer(true)
 	default:
 		return fmt.Errorf("invalid object parameter: %v", string(parameter))
 	}
@@ -650,6 +714,7 @@ const (
 	SessionParameterCsvTimestampFormat                       SessionParameter = "CSV_TIMESTAMP_FORMAT"
 	SessionParameterDateInputFormat                          SessionParameter = "DATE_INPUT_FORMAT"
 	SessionParameterDateOutputFormat                         SessionParameter = "DATE_OUTPUT_FORMAT"
+	SessionParameterEnableGetDdlUseDataTypeAlias             SessionParameter = "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"
 	SessionParameterEnableUnloadPhysicalTypeOptimization     SessionParameter = "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"
 	SessionParameterErrorOnNondeterministicMerge             SessionParameter = "ERROR_ON_NONDETERMINISTIC_MERGE"
 	SessionParameterErrorOnNondeterministicUpdate            SessionParameter = "ERROR_ON_NONDETERMINISTIC_UPDATE"
@@ -717,8 +782,13 @@ const (
 	ObjectParameterUserTaskManagedInitialWarehouseSize     ObjectParameter = "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"
 	ObjectParameterUserTaskTimeoutMs                       ObjectParameter = "USER_TASK_TIMEOUT_MS"
 	ObjectParameterCatalog                                 ObjectParameter = "CATALOG"
+	ObjectParameterDataMetricSchedule                      ObjectParameter = "DATA_METRIC_SCHEDULE"
+	ObjectParameterEnableDataCompaction                    ObjectParameter = "ENABLE_DATA_COMPACTION"
+	ObjectParameterEnableIcebergMergeOnRead                ObjectParameter = "ENABLE_ICEBERG_MERGE_ON_READ"
 	ObjectParameterExternalVolume                          ObjectParameter = "EXTERNAL_VOLUME"
+	ObjectParameterIcebergVersionDefault                   ObjectParameter = "ICEBERG_VERSION_DEFAULT"
 	ObjectParameterReplaceInvalidCharacters                ObjectParameter = "REPLACE_INVALID_CHARACTERS"
+	ObjectParameterRowTimestampDefault                     ObjectParameter = "ROW_TIMESTAMP_DEFAULT"
 	ObjectParameterStorageSerializationPolicy              ObjectParameter = "STORAGE_SERIALIZATION_POLICY"
 	ObjectParameterTaskAutoRetryAttempts                   ObjectParameter = "TASK_AUTO_RETRY_ATTEMPTS"
 	ObjectParameterUserTaskMinimumTriggerIntervalInSeconds ObjectParameter = "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"
@@ -727,7 +797,8 @@ const (
 	ObjectParameterEnableConsoleOutput                     ObjectParameter = "ENABLE_CONSOLE_OUTPUT"
 
 	// User Parameters
-	ObjectParameterEnableUnredactedQuerySyntaxError ObjectParameter = "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"
+	ObjectParameterEnableNotebookCreationInPersonalDb ObjectParameter = "ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB"
+	ObjectParameterEnableUnredactedQuerySyntaxError   ObjectParameter = "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"
 )
 
 type UserParameter string
@@ -1076,21 +1147,28 @@ var AllProcedureParameters = []ProcedureParameter{
 // LegacyAccountParameters is based on https://docs.snowflake.com/en/sql-reference/parameters.
 type LegacyAccountParameters struct {
 	// Account Parameters
-	AllowClientMFACaching                            *bool   `ddl:"parameter" sql:"ALLOW_CLIENT_MFA_CACHING"`
-	AllowIDToken                                     *bool   `ddl:"parameter" sql:"ALLOW_ID_TOKEN"`
-	ClientEncryptionKeySize                          *int    `ddl:"parameter" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
-	CortexEnabledCrossRegion                         *string `ddl:"parameter,single_quotes" sql:"CORTEX_ENABLED_CROSS_REGION"`
-	DisableUserPrivilegeGrants                       *bool   `ddl:"parameter" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
-	EnableIdentifierFirstLogin                       *bool   `ddl:"parameter" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
-	EnableInternalStagesPrivatelink                  *bool   `ddl:"parameter" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
-	EnablePersonalDatabase                           *bool   `ddl:"parameter" sql:"ENABLE_PERSONAL_DATABASE"`
-	EnableUnredactedQuerySyntaxError                 *bool   `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
-	EnableTriSecretAndRekeyOptOutForImageRepository  *bool   `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`
-	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage *bool   `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE"`
-	EnableUnhandledExceptionsReporting               *bool   `ddl:"parameter" sql:"ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"`
-	EnforceNetworkRulesForInternalStages             *bool   `ddl:"parameter" sql:"ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES"`
-	EventTable                                       *string `ddl:"parameter,single_quotes" sql:"EVENT_TABLE"`
-	ExternalOAuthAddPrivilegedRolesToBlockedList     *bool   `ddl:"parameter" sql:"EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
+	AllowBindValuesAccess                                    *bool   `ddl:"parameter" sql:"ALLOW_BIND_VALUES_ACCESS"`
+	AllowClientMFACaching                                    *bool   `ddl:"parameter" sql:"ALLOW_CLIENT_MFA_CACHING"`
+	AllowIDToken                                             *bool   `ddl:"parameter" sql:"ALLOW_ID_TOKEN"`
+	AllowedSpcsWorkloadTypes                                 *string `ddl:"parameter,single_quotes" sql:"ALLOWED_SPCS_WORKLOAD_TYPES"`
+	ClientEncryptionKeySize                                  *int    `ddl:"parameter" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
+	CortexEnabledCrossRegion                                 *string `ddl:"parameter,single_quotes" sql:"CORTEX_ENABLED_CROSS_REGION"`
+	DefaultDbtVersion                                        *string `ddl:"parameter,single_quotes" sql:"DEFAULT_DBT_VERSION"`
+	DisableUserPrivilegeGrants                               *bool   `ddl:"parameter" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
+	DisallowedSpcsWorkloadTypes                              *string `ddl:"parameter,single_quotes" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
+	EnableBudgetEventLogging                                 *bool   `ddl:"parameter" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
+	EnableIdentifierFirstLogin                               *bool   `ddl:"parameter" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
+	EnableInternalStagesPrivatelink                          *bool   `ddl:"parameter" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
+	EnablePersonalDatabase                                   *bool   `ddl:"parameter" sql:"ENABLE_PERSONAL_DATABASE"`
+	EnableUnredactedQuerySyntaxError                         *bool   `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	EnableTriSecretAndRekeyOptOutForImageRepository          *bool   `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`
+	EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement *bool   `ddl:"parameter" sql:"ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT"`
+	EnableTagPropagationEventLogging                         *bool   `ddl:"parameter" sql:"ENABLE_TAG_PROPAGATION_EVENT_LOGGING"`
+	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage         *bool   `ddl:"parameter" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE"`
+	EnableUnhandledExceptionsReporting                       *bool   `ddl:"parameter" sql:"ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"`
+	EnforceNetworkRulesForInternalStages                     *bool   `ddl:"parameter" sql:"ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES"`
+	EventTable                                               *string `ddl:"parameter,single_quotes" sql:"EVENT_TABLE"`
+	ExternalOAuthAddPrivilegedRolesToBlockedList             *bool   `ddl:"parameter" sql:"EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
 	// InitialReplicationSizeLimitInTB is a string because values like 3.0 get rounded to 3, resulting in an error in Snowflake.
 	// This is still validated below.
 	InitialReplicationSizeLimitInTB            *string      `ddl:"parameter" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
@@ -1102,9 +1180,12 @@ type LegacyAccountParameters struct {
 	PreventLoadFromInlineURL                   *bool        `ddl:"parameter" sql:"PREVENT_LOAD_FROM_INLINE_URL"`
 	PreventUnloadToInlineURL                   *bool        `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INLINE_URL"`
 	PreventUnloadToInternalStages              *bool        `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	ReadConsistencyMode                        *string      `ddl:"parameter,single_quotes" sql:"READ_CONSISTENCY_MODE"`
 	RequireStorageIntegrationForStageCreation  *bool        `ddl:"parameter" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION"`
 	RequireStorageIntegrationForStageOperation *bool        `ddl:"parameter" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION"`
+	SqlTraceQueryText                          *string      `ddl:"parameter,single_quotes" sql:"SQL_TRACE_QUERY_TEXT"`
 	SSOLoginPage                               *bool        `ddl:"parameter" sql:"SSO_LOGIN_PAGE"`
+	UseWorkspacesForSql                        *string      `ddl:"parameter,single_quotes" sql:"USE_WORKSPACES_FOR_SQL"`
 }
 
 func (v *LegacyAccountParameters) validate() error {
@@ -1267,33 +1348,43 @@ type AccountParameters struct {
 }
 
 type LegacyAccountParametersUnset struct {
-	AllowClientMFACaching                            *bool `ddl:"keyword" sql:"ALLOW_CLIENT_MFA_CACHING"`
-	AllowIDToken                                     *bool `ddl:"keyword" sql:"ALLOW_ID_TOKEN"`
-	ClientEncryptionKeySize                          *bool `ddl:"keyword" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
-	CortexEnabledCrossRegion                         *bool `ddl:"keyword" sql:"CORTEX_ENABLED_CROSS_REGION"`
-	DisableUserPrivilegeGrants                       *bool `ddl:"keyword" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
-	EnableIdentifierFirstLogin                       *bool `ddl:"keyword" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
-	EnableInternalStagesPrivatelink                  *bool `ddl:"keyword" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
-	EnablePersonalDatabase                           *bool `ddl:"keyword" sql:"ENABLE_PERSONAL_DATABASE"`
-	EnableTriSecretAndRekeyOptOutForImageRepository  *bool `ddl:"keyword" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`
-	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage *bool `ddl:"keyword" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE"`
-	EnableUnhandledExceptionsReporting               *bool `ddl:"keyword" sql:"ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"`
-	EventTable                                       *bool `ddl:"keyword" sql:"EVENT_TABLE"`
-	EnableUnredactedQuerySyntaxError                 *bool `ddl:"keyword" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
-	EnforceNetworkRulesForInternalStages             *bool `ddl:"keyword" sql:"ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES"`
-	ExternalOAuthAddPrivilegedRolesToBlockedList     *bool `ddl:"keyword" sql:"EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
-	InitialReplicationSizeLimitInTB                  *bool `ddl:"keyword" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
-	MinDataRetentionTimeInDays                       *bool `ddl:"keyword" sql:"MIN_DATA_RETENTION_TIME_IN_DAYS"`
-	MetricLevel                                      *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
-	NetworkPolicy                                    *bool `ddl:"keyword" sql:"NETWORK_POLICY"`
-	OAuthAddPrivilegedRolesToBlockedList             *bool `ddl:"keyword" sql:"OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
-	PeriodicDataRekeying                             *bool `ddl:"keyword" sql:"PERIODIC_DATA_REKEYING"`
-	PreventLoadFromInlineURL                         *bool `ddl:"keyword" sql:"PREVENT_LOAD_FROM_INLINE_URL"`
-	PreventUnloadToInlineURL                         *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INLINE_URL"`
-	PreventUnloadToInternalStages                    *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
-	RequireStorageIntegrationForStageCreation        *bool `ddl:"keyword" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION"`
-	RequireStorageIntegrationForStageOperation       *bool `ddl:"keyword" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION"`
-	SSOLoginPage                                     *bool `ddl:"keyword" sql:"SSO_LOGIN_PAGE"`
+	AllowBindValuesAccess                                    *bool `ddl:"keyword" sql:"ALLOW_BIND_VALUES_ACCESS"`
+	AllowClientMFACaching                                    *bool `ddl:"keyword" sql:"ALLOW_CLIENT_MFA_CACHING"`
+	AllowIDToken                                             *bool `ddl:"keyword" sql:"ALLOW_ID_TOKEN"`
+	AllowedSpcsWorkloadTypes                                 *bool `ddl:"keyword" sql:"ALLOWED_SPCS_WORKLOAD_TYPES"`
+	ClientEncryptionKeySize                                  *bool `ddl:"keyword" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
+	CortexEnabledCrossRegion                                 *bool `ddl:"keyword" sql:"CORTEX_ENABLED_CROSS_REGION"`
+	DefaultDbtVersion                                        *bool `ddl:"keyword" sql:"DEFAULT_DBT_VERSION"`
+	DisableUserPrivilegeGrants                               *bool `ddl:"keyword" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
+	DisallowedSpcsWorkloadTypes                              *bool `ddl:"keyword" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
+	EnableBudgetEventLogging                                 *bool `ddl:"keyword" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
+	EnableIdentifierFirstLogin                               *bool `ddl:"keyword" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
+	EnableInternalStagesPrivatelink                          *bool `ddl:"keyword" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
+	EnablePersonalDatabase                                   *bool `ddl:"keyword" sql:"ENABLE_PERSONAL_DATABASE"`
+	EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement *bool `ddl:"keyword" sql:"ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT"`
+	EnableTagPropagationEventLogging                         *bool `ddl:"keyword" sql:"ENABLE_TAG_PROPAGATION_EVENT_LOGGING"`
+	EnableTriSecretAndRekeyOptOutForImageRepository          *bool `ddl:"keyword" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_IMAGE_REPOSITORY"`
+	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage         *bool `ddl:"keyword" sql:"ENABLE_TRI_SECRET_AND_REKEY_OPT_OUT_FOR_SPCS_BLOCK_STORAGE"`
+	EnableUnhandledExceptionsReporting                       *bool `ddl:"keyword" sql:"ENABLE_UNHANDLED_EXCEPTIONS_REPORTING"`
+	EventTable                                               *bool `ddl:"keyword" sql:"EVENT_TABLE"`
+	EnableUnredactedQuerySyntaxError                         *bool `ddl:"keyword" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	EnforceNetworkRulesForInternalStages                     *bool `ddl:"keyword" sql:"ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES"`
+	ExternalOAuthAddPrivilegedRolesToBlockedList             *bool `ddl:"keyword" sql:"EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
+	InitialReplicationSizeLimitInTB                          *bool `ddl:"keyword" sql:"INITIAL_REPLICATION_SIZE_LIMIT_IN_TB"`
+	MinDataRetentionTimeInDays                               *bool `ddl:"keyword" sql:"MIN_DATA_RETENTION_TIME_IN_DAYS"`
+	MetricLevel                                              *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
+	NetworkPolicy                                            *bool `ddl:"keyword" sql:"NETWORK_POLICY"`
+	OAuthAddPrivilegedRolesToBlockedList                     *bool `ddl:"keyword" sql:"OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST"`
+	PeriodicDataRekeying                                     *bool `ddl:"keyword" sql:"PERIODIC_DATA_REKEYING"`
+	PreventLoadFromInlineURL                                 *bool `ddl:"keyword" sql:"PREVENT_LOAD_FROM_INLINE_URL"`
+	PreventUnloadToInlineURL                                 *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INLINE_URL"`
+	PreventUnloadToInternalStages                            *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	ReadConsistencyMode                                      *bool `ddl:"keyword" sql:"READ_CONSISTENCY_MODE"`
+	RequireStorageIntegrationForStageCreation                *bool `ddl:"keyword" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION"`
+	RequireStorageIntegrationForStageOperation               *bool `ddl:"keyword" sql:"REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION"`
+	SqlTraceQueryText                                        *bool `ddl:"keyword" sql:"SQL_TRACE_QUERY_TEXT"`
+	SSOLoginPage                                             *bool `ddl:"keyword" sql:"SSO_LOGIN_PAGE"`
+	UseWorkspacesForSql                                      *bool `ddl:"keyword" sql:"USE_WORKSPACES_FOR_SQL"`
 }
 
 type AccountParametersUnset struct {
@@ -1705,6 +1796,7 @@ type SessionParameters struct {
 	CsvTimestampFormat                       *string                           `ddl:"parameter,single_quotes" sql:"CSV_TIMESTAMP_FORMAT"`
 	DateInputFormat                          *string                           `ddl:"parameter,single_quotes" sql:"DATE_INPUT_FORMAT"`
 	DateOutputFormat                         *string                           `ddl:"parameter,single_quotes" sql:"DATE_OUTPUT_FORMAT"`
+	EnableGetDdlUseDataTypeAlias             *bool                             `ddl:"parameter" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
 	EnableUnloadPhysicalTypeOptimization     *bool                             `ddl:"parameter" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
 	ErrorOnNondeterministicMerge             *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
 	ErrorOnNondeterministicUpdate            *bool                             `ddl:"parameter" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
@@ -1843,6 +1935,7 @@ type SessionParametersUnset struct {
 	CsvTimestampFormat                       *bool `ddl:"keyword" sql:"CSV_TIMESTAMP_FORMAT"`
 	DateInputFormat                          *bool `ddl:"keyword" sql:"DATE_INPUT_FORMAT"`
 	DateOutputFormat                         *bool `ddl:"keyword" sql:"DATE_OUTPUT_FORMAT"`
+	EnableGetDdlUseDataTypeAlias             *bool `ddl:"keyword" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
 	EnableUnloadPhysicalTypeOptimization     *bool `ddl:"keyword" sql:"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION"`
 	ErrorOnNondeterministicMerge             *bool `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_MERGE"`
 	ErrorOnNondeterministicUpdate            *bool `ddl:"keyword" sql:"ERROR_ON_NONDETERMINISTIC_UPDATE"`
@@ -1891,8 +1984,8 @@ type SessionParametersUnset struct {
 }
 
 func (v *SessionParametersUnset) validate() error {
-	if !anyValueSet(v.AbortDetachedQuery, v.ActivePythonProfiler, v.Autocommit, v.BinaryInputFormat, v.BinaryOutputFormat, v.ClientEnableLogInfoStatementParameters, v.ClientMemoryLimit, v.ClientMetadataRequestUseConnectionCtx, v.ClientPrefetchThreads, v.ClientResultChunkSize, v.ClientResultColumnCaseInsensitive, v.ClientMetadataUseSessionDatabase, v.ClientSessionKeepAlive, v.ClientSessionKeepAliveHeartbeatFrequency, v.ClientTimestampTypeMapping, v.CsvTimestampFormat, v.DateInputFormat, v.DateOutputFormat, v.EnableUnloadPhysicalTypeOptimization, v.ErrorOnNondeterministicMerge, v.ErrorOnNondeterministicUpdate, v.GeographyOutputFormat, v.GeometryOutputFormat, v.HybridTableLockTimeout, v.JdbcTreatDecimalAsInt, v.JdbcTreatTimestampNtzAsUtc, v.JdbcUseSessionTimezone, v.JsonIndent, v.JsTreatIntegerAsBigInt, v.LockTimeout, v.LogLevel, v.MultiStatementCount, v.NoorderSequenceAsDefault, v.OdbcTreatDecimalAsInt, v.PythonProfilerModules, v.PythonProfilerTargetStage, v.QueryTag, v.QuotedIdentifiersIgnoreCase, v.RowsPerResultset, v.S3StageVpceDnsName, v.SearchPath, v.SimulatedDataSharingConsumer, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.StrictJsonOutput, v.TimestampDayIsAlways24h, v.TimestampInputFormat, v.TimestampLTZOutputFormat, v.TimestampNTZOutputFormat, v.TimestampOutputFormat, v.TimestampTypeMapping, v.TimestampTZOutputFormat, v.Timezone, v.TimeInputFormat, v.TimeOutputFormat, v.TraceLevel, v.TransactionAbortOnError, v.TransactionDefaultIsolationLevel, v.TwoDigitCenturyStart, v.UnsupportedDDLAction, v.UseCachedResult, v.WeekOfYearPolicy, v.WeekStart) {
-		return errors.Join(errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
+	if !anyValueSet(v.AbortDetachedQuery, v.ActivePythonProfiler, v.Autocommit, v.BinaryInputFormat, v.BinaryOutputFormat, v.ClientEnableLogInfoStatementParameters, v.ClientMemoryLimit, v.ClientMetadataRequestUseConnectionCtx, v.ClientPrefetchThreads, v.ClientResultChunkSize, v.ClientResultColumnCaseInsensitive, v.ClientMetadataUseSessionDatabase, v.ClientSessionKeepAlive, v.ClientSessionKeepAliveHeartbeatFrequency, v.ClientTimestampTypeMapping, v.CsvTimestampFormat, v.DateInputFormat, v.DateOutputFormat, v.EnableGetDdlUseDataTypeAlias, v.EnableUnloadPhysicalTypeOptimization, v.ErrorOnNondeterministicMerge, v.ErrorOnNondeterministicUpdate, v.GeographyOutputFormat, v.GeometryOutputFormat, v.HybridTableLockTimeout, v.JdbcTreatDecimalAsInt, v.JdbcTreatTimestampNtzAsUtc, v.JdbcUseSessionTimezone, v.JsonIndent, v.JsTreatIntegerAsBigInt, v.LockTimeout, v.LogLevel, v.MultiStatementCount, v.NoorderSequenceAsDefault, v.OdbcTreatDecimalAsInt, v.PythonProfilerModules, v.PythonProfilerTargetStage, v.QueryTag, v.QuotedIdentifiersIgnoreCase, v.RowsPerResultset, v.S3StageVpceDnsName, v.SearchPath, v.SimulatedDataSharingConsumer, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.StrictJsonOutput, v.TimestampDayIsAlways24h, v.TimestampInputFormat, v.TimestampLTZOutputFormat, v.TimestampNTZOutputFormat, v.TimestampOutputFormat, v.TimestampTypeMapping, v.TimestampTZOutputFormat, v.Timezone, v.TimeInputFormat, v.TimeOutputFormat, v.TraceLevel, v.TransactionAbortOnError, v.TransactionDefaultIsolationLevel, v.TwoDigitCenturyStart, v.UnsupportedDDLAction, v.UseCachedResult, v.WeekOfYearPolicy, v.WeekStart) {
+		return errors.Join(errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
 	}
 	return nil
 }
@@ -1900,14 +1993,20 @@ func (v *SessionParametersUnset) validate() error {
 // ObjectParameters is based on https://docs.snowflake.com/en/sql-reference/parameters#object-parameters.
 type ObjectParameters struct {
 	Catalog                                 *string        `ddl:"parameter" sql:"CATALOG"`
+	DataMetricSchedule                      *string        `ddl:"parameter,single_quotes" sql:"DATA_METRIC_SCHEDULE"`
 	DataRetentionTimeInDays                 *int           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	DefaultDDLCollation                     *string        `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	EnableDataCompaction                    *bool          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
+	EnableIcebergMergeOnRead                *bool          `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	EnableNotebookCreationInPersonalDb      *bool          `ddl:"parameter" sql:"ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB"`
 	EnableUnredactedQuerySyntaxError        *bool          `ddl:"parameter" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	IcebergVersionDefault                   *int           `ddl:"parameter" sql:"ICEBERG_VERSION_DEFAULT"`
 	LogLevel                                *LogLevel      `ddl:"parameter" sql:"LOG_LEVEL"`
 	MaxConcurrencyLevel                     *int           `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	MaxDataExtensionTimeInDays              *int           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	PipeExecutionPaused                     *bool          `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
 	PreventUnloadToInternalStages           *bool          `ddl:"parameter" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	RowTimestampDefault                     *bool          `ddl:"parameter" sql:"ROW_TIMESTAMP_DEFAULT"`
 	StatementQueuedTimeoutInSeconds         *int           `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds               *int           `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 	NetworkPolicy                           *string        `ddl:"parameter,single_quotes" sql:"NETWORK_POLICY"`
@@ -1973,14 +2072,20 @@ func (v *ObjectParameters) validate() error {
 
 type ObjectParametersUnset struct {
 	Catalog                             *bool `ddl:"keyword" sql:"CATALOG"`
+	DataMetricSchedule                  *bool `ddl:"keyword" sql:"DATA_METRIC_SCHEDULE"`
 	DataRetentionTimeInDays             *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	DefaultDDLCollation                 *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
+	EnableDataCompaction                *bool `ddl:"keyword" sql:"ENABLE_DATA_COMPACTION"`
+	EnableIcebergMergeOnRead            *bool `ddl:"keyword" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
+	EnableNotebookCreationInPersonalDb  *bool `ddl:"keyword" sql:"ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB"`
 	EnableUnredactedQuerySyntaxError    *bool `ddl:"keyword" sql:"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR"`
+	IcebergVersionDefault               *bool `ddl:"keyword" sql:"ICEBERG_VERSION_DEFAULT"`
 	LogLevel                            *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	MaxConcurrencyLevel                 *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
 	MaxDataExtensionTimeInDays          *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	PipeExecutionPaused                 *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`
 	PreventUnloadToInternalStages       *bool `ddl:"keyword" sql:"PREVENT_UNLOAD_TO_INTERNAL_STAGES"`
+	RowTimestampDefault                 *bool `ddl:"keyword" sql:"ROW_TIMESTAMP_DEFAULT"`
 	StatementQueuedTimeoutInSeconds     *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds           *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 	NetworkPolicy                       *bool `ddl:"keyword" sql:"NETWORK_POLICY"`
@@ -2045,6 +2150,7 @@ func (v *ParametersIn) validate() error {
 type ParameterType string
 
 const (
+	ParameterTypeSystem           ParameterType = "SYSTEM"
 	ParameterTypeSnowflakeDefault ParameterType = ""
 	ParameterTypeAccount          ParameterType = "ACCOUNT"
 	ParameterTypeUser             ParameterType = "USER"
@@ -2059,6 +2165,7 @@ const (
 )
 
 var AllParameterTypes = []ParameterType{
+	ParameterTypeSystem,
 	ParameterTypeAccount,
 	ParameterTypeUser,
 	ParameterTypeSession,
