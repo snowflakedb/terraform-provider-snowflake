@@ -359,7 +359,7 @@ func TestInt_Listings(t *testing.T) {
 
 		versions, err := client.Listings.ShowVersions(ctx, sdk.NewShowVersionsListingRequest(listing.ID()))
 		assert.NoError(t, err)
-		assert.Len(t, versions, 1)
+		require.Len(t, versions, 1)
 		assert.NotEmpty(t, versions[0].CreatedOn)
 		assert.NotEmpty(t, versions[0].Name)
 		assert.Equal(t, "v2", *versions[0].Alias)
@@ -501,7 +501,7 @@ func TestInt_Listings(t *testing.T) {
 		)
 
 		assert.NoError(t, err)
-		assert.Len(t, listings, 1)
+		require.Len(t, listings, 1)
 	})
 
 	t.Run("describe: default", func(t *testing.T) {
@@ -533,7 +533,7 @@ func TestInt_Listings(t *testing.T) {
 		assert.Equal(t, "subtitle", *listingDetails.Subtitle)
 		assert.Equal(t, "description", *listingDetails.Description)
 		assert.JSONEq(t, `{
-"type" : "OFFLINE"
+"type" : "STANDARD"
 }`, *listingDetails.ListingTerms)
 		assert.Equal(t, sdk.ListingStateDraft, listingDetails.State)
 		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
