@@ -241,6 +241,14 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, allAttributes),
 				Check:  assertThat(t, completeAssertions...),
 			},
+			// Import
+			{
+				Config:                  config.FromModels(t, allAttributes),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"refresh_interval_seconds"},
+			},
 			// Change alterable props externally
 			{
 				PreConfig: func() {

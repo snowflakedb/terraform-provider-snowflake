@@ -359,6 +359,14 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
 				Check:  assertThat(t, completeAssertions...),
 			},
+			// Import
+			{
+				Config:                  config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"refresh_interval_seconds", "glue_region"},
+			},
 			// Change alterable props externally
 			{
 				PreConfig: func() {
