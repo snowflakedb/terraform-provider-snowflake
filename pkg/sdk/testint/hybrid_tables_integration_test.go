@@ -167,7 +167,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			notesCol := details[4]
 			require.Equal(t, "NOTES", notesCol.Name)
-			require.Equal(t, "VARCHAR(200)", notesCol.Type)
+			require.Equal(t, "VARCHAR(200) COLLATE 'en-ci'", notesCol.Type)
 			require.Equal(t, "COLUMN", notesCol.Kind)
 			require.True(t, notesCol.IsNullable)
 			require.False(t, notesCol.PrimaryKey)

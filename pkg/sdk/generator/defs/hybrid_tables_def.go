@@ -137,6 +137,11 @@ var hybridTableSetProperties = g.NewQueryStruct("HybridTableSetProperties").
 // NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
 // Snowflake docs may suggest otherwise but the operation errors at runtime.
 
+// NOTE: After running make generate-sdk, the hybridTableDetailsRow.Null field in
+// hybrid_tables_gen.go will have tag db:"null" (the generator strips '?'). It must
+// be manually corrected back to db:"null?" because the DESCRIBE TABLE output column
+// is literally named "null?" in Snowflake. The convert() method in hybrid_tables_impl_gen.go
+// uses r.Null == "Y" to derive the IsNullable bool.
 var hybridTablesDef = g.NewInterface(
 	"HybridTables",
 	"HybridTable",
