@@ -1,6 +1,7 @@
 package defs
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
@@ -147,6 +148,7 @@ var catalogIntegrationsDef = g.NewInterface(
 							TextAssignment("BEARER_TOKEN", g.ParameterOptions().SingleQuotes().Required()),
 						g.ListOptions().SQL("REST_AUTHENTICATION =").Parentheses().NoComma()).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
+					// TODO(SNOW-3243983): use REFRESH_INTERVAL_SECONDS in unset
 					OptionalNumberAssignment("REFRESH_INTERVAL_SECONDS", g.ParameterOptions().NoQuotes()).
 					// TODO(SNOW-3121221): use COMMENT in unset and here use OptionalComment
 					OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
@@ -209,4 +211,52 @@ var catalogIntegrationsDef = g.NewInterface(
 			Describe().
 			SQL("CATALOG INTEGRATION").
 			Name().
-			WithValidation(g.ValidIdentifier, "name"))
+			WithValidation(g.ValidIdentifier, "name"),
+		g.PlainStruct("CatalogIntegrationAwsGlueDetails").
+			AccountObjectIdentifier().
+			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
+			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Bool("Enabled").
+			Number("RefreshIntervalSeconds").
+			Text("Comment").
+			Text("GlueAwsRoleArn").
+			Text("GlueCatalogId").
+			Text("GlueRegion").
+			Text("CatalogNamespace"),
+		g.PlainStruct("CatalogIntegrationObjectStorageDetails").
+			AccountObjectIdentifier().
+			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
+			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Bool("Enabled").
+			Number("RefreshIntervalSeconds").
+			Text("Comment"),
+		g.PlainStruct("CatalogIntegrationOpenCatalogDetails").
+			AccountObjectIdentifier().
+			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
+			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Bool("Enabled").
+			Number("RefreshIntervalSeconds").
+			Text("Comment").
+			Text("CatalogNamespace").
+			Field("RestConfig", g.KindOfT[sdk.OpenCatalogRestConfig]()).
+			Field("RestAuthentication", g.KindOfT[sdk.OAuthRestAuthentication]()),
+		g.PlainStruct("CatalogIntegrationIcebergRestDetails").
+			AccountObjectIdentifier().
+			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
+			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Bool("Enabled").
+			Number("RefreshIntervalSeconds").
+			Text("Comment").
+			Text("CatalogNamespace").
+			Field("RestConfig", g.KindOfT[sdk.IcebergRestRestConfig]()).
+			OptionalField("OAuthRestAuthentication", g.KindOfT[sdk.OAuthRestAuthentication]()).
+			OptionalField("BearerRestAuthentication", g.KindOfT[sdk.BearerRestAuthentication]()).
+			OptionalField("SigV4RestAuthentication", g.KindOfT[sdk.SigV4RestAuthentication]()),
+		g.PlainStruct("CatalogIntegrationSapBdcDetails").
+			AccountObjectIdentifier().
+			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
+			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Bool("Enabled").
+			Number("RefreshIntervalSeconds").
+			Text("Comment"),
+	)

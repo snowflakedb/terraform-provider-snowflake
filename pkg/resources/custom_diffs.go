@@ -116,6 +116,7 @@ func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
 // ComputedIfAnyAttributeChanged marks the given fields as computed if any of the listed fields changes.
 // It takes field-level diffSuppress into consideration based on the schema passed.
 // If the field is not found in the given schema, it continues without error. Only top level schema fields should be used.
+// If the field is a nested field, it may cause diffs eagerly. This happens because diff.HasChange returns true, even if a nested field diff is suppressed.
 func ComputedIfAnyAttributeChanged(resourceSchema map[string]*schema.Schema, key string, changedAttributeKeys ...string) schema.CustomizeDiffFunc {
 	return customdiff.ComputedIf(key, func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) bool {
 		var result bool

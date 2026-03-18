@@ -67,7 +67,7 @@ type StorageLocationS3Details struct {
 	StorageAwsIamUserArn     string
 	StorageAwsExternalId     string
 	StorageAwsAccessPointArn string
-	UsePrivatelinkEndpoint   string
+	UsePrivatelinkEndpoint   *bool
 	EncryptionKmsKeyId       string
 }
 
@@ -107,7 +107,7 @@ type externalVolumeStorageLocationJsonRaw struct {
 	StorageAwsExternalId     string   `json:"STORAGE_AWS_EXTERNAL_ID"`
 	StorageAwsAccessPointArn string   `json:"STORAGE_AWS_ACCESS_POINT_ARN"`
 	Endpoint                 string   `json:"ENDPOINT"`
-	UsePrivatelinkEndpoint   string   `json:"USE_PRIVATELINK_ENDPOINT"`
+	UsePrivatelinkEndpoint   *bool    `json:"USE_PRIVATELINK_ENDPOINT"`
 	EncryptionType           string   `json:"ENCRYPTION_TYPE"`
 	EncryptionKmsKeyId       string   `json:"ENCRYPTION_KMS_KEY_ID"`
 	AzureTenantId            string   `json:"AZURE_TENANT_ID"`
@@ -126,7 +126,7 @@ func (e externalVolumeStorageLocationJsonRaw) toStorageLocationDetails() (Extern
 		EncryptionType:          e.EncryptionType,
 	}
 
-	storageProvider, err := ToStorageProviderInDescribe(e.StorageProvider)
+	storageProvider, err := ToStorageProvider(e.StorageProvider)
 	if err != nil {
 		return ExternalVolumeStorageLocationDetails{}, err
 	}
@@ -213,7 +213,7 @@ func validateExternalVolumeDetails(p ExternalVolumeDetails) error {
 		if len(s.Name) == 0 {
 			return fmt.Errorf("A storage location's Name in this volume could not be parsed.")
 		}
-		if !slices.Contains(AsStringList(AllStorageProviderValuesInDescribe), s.StorageProvider) {
+		if !slices.Contains(AsStringList(AllStorageProviderValues), s.StorageProvider) {
 			return fmt.Errorf("invalid storage provider parsed: %s", s.StorageProvider)
 		}
 		if len(s.StorageBaseUrl) == 0 {

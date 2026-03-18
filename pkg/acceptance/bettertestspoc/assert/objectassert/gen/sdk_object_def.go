@@ -205,20 +205,29 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.CatalogIntegration{},
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.AwsGlueParams{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationAwsGlueDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.ObjectStorageParams{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationObjectStorageDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.OpenCatalogParams{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.IcebergRestParams{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationIcebergRestDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationSapBdcDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
