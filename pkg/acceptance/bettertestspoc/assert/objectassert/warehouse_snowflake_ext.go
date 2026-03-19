@@ -99,8 +99,8 @@ func (w *WarehouseAssert) HasNoAutoSuspend() *WarehouseAssert {
 func (w *WarehouseAssert) HasNoAutoResume() *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.AutoResume != nil {
-			return fmt.Errorf("expected auto resume to be empty; got: %t", *o.AutoResume)
+		if o.AutoResume {
+			return fmt.Errorf("expected auto resume to be false; got: %t", o.AutoResume)
 		}
 		return nil
 	})

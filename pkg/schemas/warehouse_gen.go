@@ -164,10 +164,7 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	if warehouse.AutoSuspend != nil {
 		warehouseSchema["auto_suspend"] = *warehouse.AutoSuspend
 	}
-	// Adjusted manually
-	if warehouse.AutoResume != nil {
-		warehouseSchema["auto_resume"] = *warehouse.AutoResume
-	}
+	warehouseSchema["auto_resume"] = warehouse.AutoResume
 	warehouseSchema["available"] = warehouse.Available
 	warehouseSchema["provisioning"] = warehouse.Provisioning
 	warehouseSchema["quiescing"] = warehouse.Quiescing

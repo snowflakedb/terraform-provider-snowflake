@@ -111,9 +111,7 @@ func warehousePocPrivateJsonFromWarehouse(warehouse *sdk.Warehouse) *WarehousePo
 	if warehouse.AutoSuspend != nil {
 		result.AutoSuspend = *warehouse.AutoSuspend
 	}
-	if warehouse.AutoResume != nil {
-		result.AutoResume = *warehouse.AutoResume
-	}
+	result.AutoResume = warehouse.AutoResume
 	if warehouse.EnableQueryAcceleration != nil {
 		result.EnableQueryAcceleration = *warehouse.EnableQueryAcceleration
 	}
@@ -431,9 +429,7 @@ func (r *WarehouseResource) ImportState(ctx context.Context, request resource.Im
 	if warehouse.AutoSuspend != nil {
 		data.AutoSuspend = types.Int64Value(int64(*warehouse.AutoSuspend))
 	}
-	if warehouse.AutoResume != nil {
-		data.AutoResume = types.BoolValue(*warehouse.AutoResume)
-	}
+	data.AutoResume = types.BoolValue(warehouse.AutoResume)
 	if warehouse.EnableQueryAcceleration != nil {
 		data.EnableQueryAcceleration = types.BoolValue(*warehouse.EnableQueryAcceleration)
 	}
@@ -649,8 +645,8 @@ func (r *WarehouseResource) read(ctx context.Context, data *warehousePocModelV0,
 		if warehouse.AutoSuspend != nil && *warehouse.AutoSuspend != prevValue.AutoSuspend {
 			data.AutoSuspend = types.Int64Value(int64(*warehouse.AutoSuspend))
 		}
-		if warehouse.AutoResume != nil && *warehouse.AutoResume != prevValue.AutoResume {
-			data.AutoResume = types.BoolValue(*warehouse.AutoResume)
+		if warehouse.AutoResume != prevValue.AutoResume {
+			data.AutoResume = types.BoolValue(warehouse.AutoResume)
 		}
 		if warehouse.ResourceMonitor.Name() != prevValue.ResourceMonitor {
 			data.ResourceMonitor = types.StringValue(warehouse.ResourceMonitor.Name())

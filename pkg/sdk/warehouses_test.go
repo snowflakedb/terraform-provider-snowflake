@@ -67,7 +67,7 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 		opts := &CreateAdaptiveWarehouseOptions{
 			name: NewAccountObjectIdentifier("mywarehouse"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE ADAPTIVE WAREHOUSE "mywarehouse"`)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE WAREHOUSE "mywarehouse" WAREHOUSE_TYPE = 'ADAPTIVE'`)
 	})
 
 	t.Run("with complete options", func(t *testing.T) {
@@ -94,7 +94,8 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE ADAPTIVE WAREHOUSE "myadaptivewh" COMMENT = 'adaptive warehouse' TARGET_STATEMENT_SIZE = 'MEDIUM' WAREHOUSE_CREDIT_LIMIT = 100 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60 TAG (%s = 'v1', %s = 'v2')`, tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' TARGET_STATEMENT_SIZE = 'MEDIUM' WAREHOUSE_CREDIT_LIMIT = 100 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60 TAG (%s = 'v1', %s = 'v2')`,
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 
 	t.Run("validation: nil options", func(t *testing.T) {

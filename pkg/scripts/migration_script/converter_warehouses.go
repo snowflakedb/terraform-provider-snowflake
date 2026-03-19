@@ -99,7 +99,7 @@ func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
 			ScalingPolicy:                   &scalingPolicy,
 			EnableQueryAcceleration:         &enableQueryAcceleration,
 			AutoSuspend:                     &autoSuspend,
-			AutoResume:                      &autoResume,
+			AutoResume:                      autoResume,
 			MinClusterCount:                 &minClusterCount,
 			MaxClusterCount:                 &maxClusterCount,
 			QueryAccelerationMaxScaleFactor: &queryAccelerationMaxScaleFactor,

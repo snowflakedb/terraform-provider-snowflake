@@ -6,7 +6,6 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -20,13 +19,7 @@ func MapWarehouseToModel(warehouse WarehouseRepresentation) (accconfig.ResourceM
 	resourceModel := model.Warehouse(resourceId, warehouse.Name)
 
 	// always include fields with default values
-	if warehouse.AutoResume != nil {
-		if *warehouse.AutoResume {
-			resourceModel.WithAutoResume(r.BooleanTrue)
-		} else {
-			resourceModel.WithAutoResume(r.BooleanFalse)
-		}
-	}
+	handleBooleanString(warehouse.AutoResume, resourceModel.WithAutoResume)
 	if warehouse.Type == sdk.WarehouseTypeAdaptive {
 		return nil, nil, errors.New("adaptive warehouses are not supported")
 	}

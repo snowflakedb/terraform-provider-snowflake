@@ -188,11 +188,8 @@ func (w *WarehouseAssert) HasAutoSuspend(expected int) *WarehouseAssert {
 func (w *WarehouseAssert) HasAutoResume(expected bool) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.AutoResume == nil {
-			return fmt.Errorf("expected auto resume to have value; got: nil")
-		}
-		if *o.AutoResume != expected {
-			return fmt.Errorf("expected auto resume: %v; got: %v", expected, *o.AutoResume)
+		if o.AutoResume != expected {
+			return fmt.Errorf("expected auto resume: %v; got: %v", expected, o.AutoResume)
 		}
 		return nil
 	})

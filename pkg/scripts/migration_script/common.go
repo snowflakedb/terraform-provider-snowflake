@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -44,6 +45,14 @@ func handleIfNotEmpty[T any](value string, builder func(string) *T) {
 func handleIf[T any](condition bool, builder func(string) *T) {
 	if condition {
 		builder("true")
+	}
+}
+
+func handleBooleanString[T any](condition bool, builder func(string) *T) {
+	if condition {
+		builder(r.BooleanTrue)
+	} else {
+		builder(r.BooleanFalse)
 	}
 }
 

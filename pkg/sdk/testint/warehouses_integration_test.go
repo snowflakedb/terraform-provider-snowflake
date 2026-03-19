@@ -189,7 +189,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.Pointer(2), warehouse.MinClusterCount)
 		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyEconomy), warehouse.ScalingPolicy)
 		assert.Equal(t, sdk.Pointer(1000), warehouse.AutoSuspend)
-		assert.Equal(t, sdk.Pointer(true), warehouse.AutoResume)
+		assert.True(t, warehouse.AutoResume)
 		assert.Contains(t, []sdk.WarehouseState{sdk.WarehouseStateResuming, sdk.WarehouseStateStarted}, warehouse.State)
 		assert.Equal(t, resourceMonitor.ID().Name(), warehouse.ResourceMonitor.Name())
 		assert.Equal(t, "comment", warehouse.Comment)
@@ -240,7 +240,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.Pointer(1), result.MinClusterCount)
 		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), result.ScalingPolicy)
 		assert.Equal(t, sdk.Pointer(600), result.AutoSuspend)
-		assert.Equal(t, sdk.Pointer(true), result.AutoResume)
+		assert.True(t, result.AutoResume)
 		assert.Contains(t, []sdk.WarehouseState{sdk.WarehouseStateResuming, sdk.WarehouseStateStarted}, result.State)
 		assert.Equal(t, "", result.Comment)
 		assert.Equal(t, sdk.Pointer(false), result.EnableQueryAcceleration)
@@ -331,7 +331,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.Pointer(1), warehouse.MinClusterCount)
 		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), warehouse.ScalingPolicy)
 		assert.Equal(t, sdk.Pointer(600), warehouse.AutoSuspend)
-		assert.Equal(t, sdk.Pointer(true), warehouse.AutoResume)
+		assert.True(t, warehouse.AutoResume)
 		assert.Equal(t, "", warehouse.ResourceMonitor.Name())
 		assert.Equal(t, "", warehouse.Comment)
 		assert.Equal(t, sdk.Pointer(false), warehouse.EnableQueryAcceleration)
@@ -367,7 +367,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.Pointer(2), warehouseAfterSet.MinClusterCount)
 		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyEconomy), warehouseAfterSet.ScalingPolicy)
 		assert.Equal(t, sdk.Pointer(1234), warehouseAfterSet.AutoSuspend)
-		assert.Equal(t, sdk.Pointer(false), warehouseAfterSet.AutoResume)
+		assert.False(t, warehouseAfterSet.AutoResume)
 		assert.Equal(t, resourceMonitor.ID().Name(), warehouseAfterSet.ResourceMonitor.Name())
 		assert.Equal(t, "new comment", warehouseAfterSet.Comment)
 		assert.Equal(t, sdk.Pointer(true), warehouseAfterSet.EnableQueryAcceleration)
@@ -408,7 +408,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterUnset.Generation)
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
 		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), warehouseAfterUnset.ScalingPolicy)
-		assert.Equal(t, sdk.Pointer(true), warehouseAfterUnset.AutoResume)
+		assert.True(t, warehouseAfterUnset.AutoResume)
 	})
 
 	t.Run("alter adaptive: change warehouse type", func(t *testing.T) {
@@ -430,9 +430,7 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasNoSize().
 			HasNoGeneration().
@@ -455,21 +453,9 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
-			HasType(sdk.WarehouseTypeStandard).
-			HasSize(sdk.WarehouseSizeMedium).
-			HasGeneration(sdk.WarehouseGenerationStandardGen1).
-			HasNoResourceConstraint().
-			HasMaxClusterCount(1).
-			HasMinClusterCount(1).
-			HasScalingPolicy(sdk.ScalingPolicyStandard).
-			HasAutoSuspend(600).
-			HasAutoResume(true).
-			HasEnableQueryAcceleration(false).
-			HasQueryAccelerationMaxScaleFactor(8),
-		)
+		assert.Equal(t, *warehouse, *returnedWarehouse)
 	})
 
 	t.Run("alter: set and unset parameters", func(t *testing.T) {

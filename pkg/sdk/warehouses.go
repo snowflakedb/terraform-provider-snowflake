@@ -377,11 +377,12 @@ func (c *warehouses) Create(ctx context.Context, id AccountObjectIdentifier, opt
 
 // CreateAdaptiveWarehouseOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses
 type CreateAdaptiveWarehouseOptions struct {
-	create            bool                    `ddl:"static" sql:"CREATE"`
-	OrReplace         *bool                   `ddl:"keyword" sql:"OR REPLACE"`
-	adaptiveWarehouse bool                    `ddl:"static" sql:"ADAPTIVE WAREHOUSE"`
-	IfNotExists       *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name              AccountObjectIdentifier `ddl:"identifier"`
+	create        bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace     *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	warehouse     bool                    `ddl:"static" sql:"WAREHOUSE"`
+	IfNotExists   *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name          AccountObjectIdentifier `ddl:"identifier"`
+	warehouseType bool                    `ddl:"static" sql:"WAREHOUSE_TYPE = 'ADAPTIVE'"`
 
 	// Object properties
 	Comment              *string              `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -689,7 +690,7 @@ type Warehouse struct {
 	IsDefault                       bool
 	IsCurrent                       bool
 	AutoSuspend                     *int
-	AutoResume                      *bool
+	AutoResume                      bool
 	Available                       float64
 	Provisioning                    float64
 	Quiescing                       float64
@@ -721,7 +722,7 @@ type warehouseDBRow struct {
 	IsDefault                       string         `db:"is_default"`
 	IsCurrent                       string         `db:"is_current"`
 	AutoSuspend                     sql.NullInt64  `db:"auto_suspend"`
-	AutoResume                      sql.NullBool   `db:"auto_resume"`
+	AutoResume                      bool           `db:"auto_resume"`
 	Available                       string         `db:"available"`
 	Provisioning                    string         `db:"provisioning"`
 	Quiescing                       string         `db:"quiescing"`
@@ -747,33 +748,27 @@ type warehouseDBRow struct {
 
 func (row warehouseDBRow) convert() (*Warehouse, error) {
 	wh := &Warehouse{
-		Name:      row.Name,
-		State:     WarehouseState(row.State),
-		Type:      WarehouseType(row.Type),
-		IsDefault: row.IsDefault == "Y",
-		IsCurrent: row.IsCurrent == "Y",
-		CreatedOn: row.CreatedOn,
-		ResumedOn: row.ResumedOn,
-		UpdatedOn: row.UpdatedOn,
-		Owner:     row.Owner,
-		Comment:   row.Comment,
+		Name:       row.Name,
+		State:      WarehouseState(row.State),
+		Type:       WarehouseType(row.Type),
+		IsDefault:  row.IsDefault == "Y",
+		IsCurrent:  row.IsCurrent == "Y",
+		CreatedOn:  row.CreatedOn,
+		ResumedOn:  row.ResumedOn,
+		UpdatedOn:  row.UpdatedOn,
+		Owner:      row.Owner,
+		Comment:    row.Comment,
+		AutoResume: row.AutoResume,
 	}
 	mapNullInt(&wh.MinClusterCount, row.MinClusterCount)
 	mapNullInt(&wh.MaxClusterCount, row.MaxClusterCount)
 	mapNullInt(&wh.StartedClusters, row.StartedClusters)
 	mapNullInt(&wh.Running, row.Running)
 	mapNullInt(&wh.Queued, row.Queued)
-	mapNullBool(&wh.AutoResume, row.AutoResume)
 	mapNullBool(&wh.EnableQueryAcceleration, row.EnableQueryAcceleration)
 	mapNullInt(&wh.QueryAccelerationMaxScaleFactor, row.QueryAccelerationMaxScaleFactor)
 	mapNullStringWithMapping(&wh.ScalingPolicy, row.ScalingPolicy, ToScalingPolicy)
-	if row.Size.Valid {
-		if size, err := ToWarehouseSize(row.Size.String); err != nil {
-			return nil, err
-		} else {
-			wh.Size = &size
-		}
-	}
+	mapNullStringWithMapping(&wh.Size, row.Size, ToWarehouseSize)
 	if available := strings.TrimSpace(row.Available); available != "" {
 		if val, err := strconv.ParseFloat(available, 64); err != nil {
 			return nil, fmt.Errorf(`row 'available' has incorrect value '%s', %w`, available, err)

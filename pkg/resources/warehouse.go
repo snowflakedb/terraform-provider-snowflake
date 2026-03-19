@@ -294,7 +294,7 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 		setOptionalValue(d, "min_cluster_count", w.MinClusterCount),
 		setOptionalValueWithMapping(d, "scaling_policy", w.ScalingPolicy, func(v *sdk.ScalingPolicy) string { return string(*v) }),
 		setOptionalValue(d, "auto_suspend", w.AutoSuspend),
-		setOptionalValueWithMapping(d, "auto_resume", w.AutoResume, func(v *bool) string { return booleanStringFromBool(*v) }),
+		d.Set("auto_resume", booleanStringFromBool(w.AutoResume)),
 		d.Set("resource_monitor", w.ResourceMonitor.Name()),
 		d.Set("comment", w.Comment),
 		setOptionalValueWithMapping(d, "enable_query_acceleration", w.EnableQueryAcceleration, func(v *bool) string { return booleanStringFromBool(*v) }),
@@ -450,7 +450,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			}
 			sizeVal, sizeStr := optionalStringOutputMapping(w.Size)
 			scalingPolicyVal, scalingPolicyStr := optionalStringOutputMapping(w.ScalingPolicy)
-			autoResumeVal, autoResumeStr := optionalBooleanStringOutputMapping(w.AutoResume)
+			autoResumeVal, autoResumeStr := w.AutoResume, booleanStringFromBool(w.AutoResume)
 			enableQAVal, enableQAStr := optionalBooleanStringOutputMapping(w.EnableQueryAcceleration)
 			maxClusterCount := optionalIntOutputMapping(w.MaxClusterCount)
 			minClusterCount := optionalIntOutputMapping(w.MinClusterCount)
