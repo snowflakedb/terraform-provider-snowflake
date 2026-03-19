@@ -304,7 +304,7 @@ func TestAcc_CatalogIntegrationObjectStorage_Validations(t *testing.T) {
 			{
 				Config:      config.FromModels(t, invalidTableFormat),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected table_format to be one of \["ICEBERG" "DELTA"], got INVALID`),
+				ExpectError: regexp.MustCompile(`invalid table format: INVALID`),
 			},
 		},
 	})

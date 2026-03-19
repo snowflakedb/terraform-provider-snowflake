@@ -62,7 +62,7 @@ func catalogIntegrationCommonSchema(describeSchema map[string]*schema.Schema) ma
 	}
 }
 
-func handleCatalogIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func handleCatalogIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta any) error {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

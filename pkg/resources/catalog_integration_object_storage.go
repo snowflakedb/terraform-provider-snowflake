@@ -15,17 +15,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var catalogIntegrationObjectStorageSchema = func() map[string]*schema.Schema {
 	objectStorageSchema := map[string]*schema.Schema{
 		"table_format": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			Description:  "Specifies the table format. Supported values: ICEBERG, DELTA.",
-			ValidateFunc: validation.StringInSlice([]string{string(sdk.CatalogIntegrationTableFormatIceberg), string(sdk.CatalogIntegrationTableFormatDelta)}, true),
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "Specifies the table format. Supported values: ICEBERG, DELTA.",
+			DiffSuppressFunc: NormalizeAndCompare(sdk.ToCatalogIntegrationTableFormat),
+			ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationTableFormat),
 		},
 	}
 	return collections.MergeMaps(
@@ -52,7 +52,7 @@ func CatalogIntegrationObjectStorage() *schema.Resource {
 	}
 }
 
-func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
@@ -70,10 +70,13 @@ func ImportCatalogIntegrationObjectStorage(ctx context.Context, d *schema.Resour
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	name := d.Get("name").(string)
-	id := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(name)
+	id, err := sdk.ParseAccountObjectIdentifier(name)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	enabled := d.Get("enabled").(bool)
 	tableFormat, err := sdk.ToCatalogIntegrationTableFormat(d.Get("table_format").(string))
 	if err != nil {
@@ -149,7 +152,7 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) sc
 	}
 }
 
-func UpdateCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateCatalogIntegrationObjectStorage(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if err := handleCatalogIntegrationUpdate(ctx, d, meta); err != nil {
 		return diag.FromErr(err)
 	}

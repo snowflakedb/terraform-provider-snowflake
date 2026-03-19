@@ -76,7 +76,7 @@ func CatalogIntegrationAwsGlue() *schema.Resource {
 	}
 }
 
-func ImportCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func ImportCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
@@ -94,10 +94,13 @@ func ImportCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	name := d.Get("name").(string)
-	id := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(name)
+	id, err := sdk.ParseAccountObjectIdentifier(name)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	enabled := d.Get("enabled").(bool)
 	glueAwsRoleArn := d.Get("glue_aws_role_arn").(string)
 	glueCatalogId := d.Get("glue_catalog_id").(string)
@@ -177,7 +180,7 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) schema.R
 	}
 }
 
-func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if err := handleCatalogIntegrationUpdate(ctx, d, meta); err != nil {
 		return diag.FromErr(err)
 	}
