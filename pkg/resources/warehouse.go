@@ -35,7 +35,7 @@ var warehouseSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseTypeUserSettable),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseTypeUserSettable), IgnoreChangeToCurrentSnowflakeValueInShow("type")),
-		Description:      fmt.Sprintf("Specifies warehouse type. Valid values are (case-insensitive): %s. Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed.", possibleValuesListed(sdk.ValidWarehouseTypesUserSettableString)),
+		Description:      fmt.Sprintf("Specifies warehouse type. Valid values are (case-insensitive): %s. Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed.", possibleValuesListed(sdk.ValidWarehouseTypesRegularString)),
 	},
 	"warehouse_size": {
 		Type:             schema.TypeString,

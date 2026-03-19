@@ -11,6 +11,14 @@ import (
 )
 
 func TestWarehouseCreate(t *testing.T) {
+	t.Run("validation: invalid warehouse type", func(t *testing.T) {
+		opts := &CreateWarehouseOptions{
+			name:          NewAccountObjectIdentifier("mywarehouse"),
+			WarehouseType: Pointer(WarehouseTypeAdaptive),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("only STANDARD, SNOWPARK-OPTIMIZED warehouses are supported, got ADAPTIVE"))
+	})
+
 	t.Run("only name", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name: AccountObjectIdentifier{

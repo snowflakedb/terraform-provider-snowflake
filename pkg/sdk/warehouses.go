@@ -356,6 +356,9 @@ func (opts *CreateWarehouseOptions) validate() error {
 	if valueSet(opts.QueryAccelerationMaxScaleFactor) && !validateIntInRangeInclusive(*opts.QueryAccelerationMaxScaleFactor, 0, 100) {
 		errs = append(errs, errIntBetween("CreateWarehouseOptions", "QueryAccelerationMaxScaleFactor", 0, 100))
 	}
+	if valueSet(opts.WarehouseType) && !slices.Contains(ValidWarehouseTypesRegularString, string(*opts.WarehouseType)) {
+		errs = append(errs, fmt.Errorf("only %s warehouses are supported, got %s", collections.JoinStrings(ValidWarehouseTypesRegularString, ", "), *opts.WarehouseType))
+	}
 	return errors.Join(errs...)
 }
 

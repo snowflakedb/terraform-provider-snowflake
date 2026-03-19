@@ -36,7 +36,7 @@ var ValidWarehouseTypesString = []string{
 	string(WarehouseTypeAdaptive),
 }
 
-var ValidWarehouseTypesUserSettableString = []string{
+var ValidWarehouseTypesRegularString = []string{
 	string(WarehouseTypeStandard),
 	string(WarehouseTypeSnowparkOptimized),
 }
