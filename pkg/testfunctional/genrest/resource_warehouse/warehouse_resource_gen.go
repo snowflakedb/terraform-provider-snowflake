@@ -325,7 +325,7 @@ type WarehouseModel struct {
 	StatementQueuedTimeoutInSeconds types.Int64  `tfsdk:"statement_queued_timeout_in_seconds"`
 	StatementTimeoutInSeconds       types.Int64  `tfsdk:"statement_timeout_in_seconds"`
 	Status                          types.String `tfsdk:"status"`
-	TargetStatementSize             types.String `tfsdk:"target_statement_size"`
+	MaxStatementSize                types.String `tfsdk:"max_statement_size"`
 	Type                            types.String `tfsdk:"type"`
 	UpdatedOn                       types.String `tfsdk:"updated_on"`
 	WaitForCompletion               types.String `tfsdk:"wait_for_completion"`

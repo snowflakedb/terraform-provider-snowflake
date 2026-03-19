@@ -279,36 +279,36 @@ func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceC
 	}
 }
 
-type TargetStatementSize string
+type MaxStatementSize string
 
 const (
-	TargetStatementSizeXSmall   TargetStatementSize = "XSMALL"
-	TargetStatementSizeSmall    TargetStatementSize = "SMALL"
-	TargetStatementSizeMedium   TargetStatementSize = "MEDIUM"
-	TargetStatementSizeLarge    TargetStatementSize = "LARGE"
-	TargetStatementSizeXLarge   TargetStatementSize = "XLARGE"
-	TargetStatementSizeXXLarge  TargetStatementSize = "XXLARGE"
-	TargetStatementSizeXXXLarge TargetStatementSize = "XXXLARGE"
-	TargetStatementSizeX4Large  TargetStatementSize = "X4LARGE"
+	MaxStatementSizeXSmall   MaxStatementSize = "XSMALL"
+	MaxStatementSizeSmall    MaxStatementSize = "SMALL"
+	MaxStatementSizeMedium   MaxStatementSize = "MEDIUM"
+	MaxStatementSizeLarge    MaxStatementSize = "LARGE"
+	MaxStatementSizeXLarge   MaxStatementSize = "XLARGE"
+	MaxStatementSizeXXLarge  MaxStatementSize = "XXLARGE"
+	MaxStatementSizeXXXLarge MaxStatementSize = "XXXLARGE"
+	MaxStatementSizeX4Large  MaxStatementSize = "X4LARGE"
 )
 
-var AllTargetStatementSizes = []string{
-	string(TargetStatementSizeXSmall),
-	string(TargetStatementSizeSmall),
-	string(TargetStatementSizeMedium),
-	string(TargetStatementSizeLarge),
-	string(TargetStatementSizeXLarge),
-	string(TargetStatementSizeXXLarge),
-	string(TargetStatementSizeXXXLarge),
-	string(TargetStatementSizeX4Large),
+var AllMaxStatementSizes = []string{
+	string(MaxStatementSizeXSmall),
+	string(MaxStatementSizeSmall),
+	string(MaxStatementSizeMedium),
+	string(MaxStatementSizeLarge),
+	string(MaxStatementSizeXLarge),
+	string(MaxStatementSizeXXLarge),
+	string(MaxStatementSizeXXXLarge),
+	string(MaxStatementSizeX4Large),
 }
 
-func ToTargetStatementSize(s string) (TargetStatementSize, error) {
+func ToMaxStatementSize(s string) (MaxStatementSize, error) {
 	s = strings.ToUpper(s)
-	if slices.Contains(AllTargetStatementSizes, s) {
-		return TargetStatementSize(s), nil
+	if slices.Contains(AllMaxStatementSizes, s) {
+		return MaxStatementSize(s), nil
 	}
-	return "", fmt.Errorf("invalid target statement size: %s", s)
+	return "", fmt.Errorf("invalid max statement size: %s", s)
 }
 
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
@@ -386,7 +386,7 @@ type CreateAdaptiveWarehouseOptions struct {
 
 	// Object properties
 	Comment              *string              `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	TargetStatementSize  *TargetStatementSize `ddl:"parameter,single_quotes" sql:"TARGET_STATEMENT_SIZE"`
+	MaxStatementSize  *MaxStatementSize `ddl:"parameter,single_quotes" sql:"MAX_STATEMENT_SIZE"`
 	WarehouseCreditLimit *int                 `ddl:"parameter" sql:"WAREHOUSE_CREDIT_LIMIT"`
 
 	// Object params

@@ -78,7 +78,7 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 			name:      NewAccountObjectIdentifier("myadaptivewh"),
 
 			Comment:              String("adaptive warehouse"),
-			TargetStatementSize:  Pointer(TargetStatementSizeMedium),
+			MaxStatementSize:  Pointer(MaxStatementSizeMedium),
 			WarehouseCreditLimit: Int(100),
 
 			StatementQueuedTimeoutInSeconds: Int(30),
@@ -94,7 +94,7 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' TARGET_STATEMENT_SIZE = 'MEDIUM' WAREHOUSE_CREDIT_LIMIT = 100 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60 TAG (%s = 'v1', %s = 'v2')`,
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_STATEMENT_SIZE = 'MEDIUM' WAREHOUSE_CREDIT_LIMIT = 100 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60 TAG (%s = 'v1', %s = 'v2')`,
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 
@@ -616,25 +616,25 @@ func Test_Warehouse_ToScalingPolicy(t *testing.T) {
 	}
 }
 
-func Test_Warehouse_ToTargetStatementSize(t *testing.T) {
+func Test_Warehouse_ToMaxStatementSize(t *testing.T) {
 	type test struct {
 		input string
-		want  TargetStatementSize
+		want  MaxStatementSize
 	}
 
 	valid := []test{
 		// case insensitive.
-		{input: "medium", want: TargetStatementSizeMedium},
+		{input: "medium", want: MaxStatementSizeMedium},
 
 		// Supported Values
-		{input: "XSMALL", want: TargetStatementSizeXSmall},
-		{input: "SMALL", want: TargetStatementSizeSmall},
-		{input: "MEDIUM", want: TargetStatementSizeMedium},
-		{input: "LARGE", want: TargetStatementSizeLarge},
-		{input: "XLARGE", want: TargetStatementSizeXLarge},
-		{input: "XXLARGE", want: TargetStatementSizeXXLarge},
-		{input: "XXXLARGE", want: TargetStatementSizeXXXLarge},
-		{input: "X4LARGE", want: TargetStatementSizeX4Large},
+		{input: "XSMALL", want: MaxStatementSizeXSmall},
+		{input: "SMALL", want: MaxStatementSizeSmall},
+		{input: "MEDIUM", want: MaxStatementSizeMedium},
+		{input: "LARGE", want: MaxStatementSizeLarge},
+		{input: "XLARGE", want: MaxStatementSizeXLarge},
+		{input: "XXLARGE", want: MaxStatementSizeXXLarge},
+		{input: "XXXLARGE", want: MaxStatementSizeXXXLarge},
+		{input: "X4LARGE", want: MaxStatementSizeX4Large},
 	}
 
 	invalid := []test{
@@ -646,7 +646,7 @@ func Test_Warehouse_ToTargetStatementSize(t *testing.T) {
 
 	for _, tc := range valid {
 		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToTargetStatementSize(tc.input)
+			got, err := ToMaxStatementSize(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})
@@ -654,7 +654,7 @@ func Test_Warehouse_ToTargetStatementSize(t *testing.T) {
 
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToTargetStatementSize(tc.input)
+			_, err := ToMaxStatementSize(tc.input)
 			require.Error(t, err)
 		})
 	}
