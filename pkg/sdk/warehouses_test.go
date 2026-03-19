@@ -77,9 +77,8 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 			OrReplace: Bool(true),
 			name:      NewAccountObjectIdentifier("myadaptivewh"),
 
-			Comment:              String("adaptive warehouse"),
-			MaxStatementSize:  Pointer(MaxStatementSizeMedium),
-			WarehouseCreditLimit: Int(100),
+			Comment:          String("adaptive warehouse"),
+			MaxStatementSize: Pointer(MaxStatementSizeMedium),
 
 			StatementQueuedTimeoutInSeconds: Int(30),
 			StatementTimeoutInSeconds:       Int(60),
@@ -94,7 +93,7 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_STATEMENT_SIZE = 'MEDIUM' WAREHOUSE_CREDIT_LIMIT = 100 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60 TAG (%s = 'v1', %s = 'v2')`,
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_STATEMENT_SIZE = 'MEDIUM' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60 TAG (%s = 'v1', %s = 'v2')`,
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 

@@ -292,8 +292,7 @@ func TestInt_Warehouses(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateAdaptive(ctx, id, &sdk.CreateAdaptiveWarehouseOptions{
 			Comment:                         sdk.String("test adaptive warehouse"),
-			MaxStatementSize:             sdk.Pointer(sdk.MaxStatementSizeMedium),
-			WarehouseCreditLimit:            sdk.Int(100),
+			MaxStatementSize: sdk.Pointer(sdk.MaxStatementSizeMedium),
 			StatementQueuedTimeoutInSeconds: sdk.Int(30),
 			StatementTimeoutInSeconds:       sdk.Int(60),
 		})

@@ -385,9 +385,8 @@ type CreateAdaptiveWarehouseOptions struct {
 	warehouseType bool                    `ddl:"static" sql:"WAREHOUSE_TYPE = 'ADAPTIVE'"`
 
 	// Object properties
-	Comment              *string              `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	MaxStatementSize  *MaxStatementSize `ddl:"parameter,single_quotes" sql:"MAX_STATEMENT_SIZE"`
-	WarehouseCreditLimit *int                 `ddl:"parameter" sql:"WAREHOUSE_CREDIT_LIMIT"`
+	Comment          *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	MaxStatementSize *MaxStatementSize `ddl:"parameter,single_quotes" sql:"MAX_STATEMENT_SIZE"`
 
 	// Object params
 	StatementQueuedTimeoutInSeconds *int             `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
