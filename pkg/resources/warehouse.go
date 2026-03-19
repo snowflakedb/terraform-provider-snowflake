@@ -5,12 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -287,10 +285,6 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	}
 	if err != nil {
 		return nil, err
-	}
-	supportedTypes := []sdk.WarehouseType{sdk.WarehouseTypeStandard, sdk.WarehouseTypeSnowparkOptimized}
-	if !slices.Contains(supportedTypes, w.Type) {
-		return nil, fmt.Errorf("only %s warehouses are supported, got %s", collections.JoinStrings(supportedTypes, ", "), w.Type)
 	}
 
 	err = errors.Join(

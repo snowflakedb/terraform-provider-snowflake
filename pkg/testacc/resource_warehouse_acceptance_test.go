@@ -3185,30 +3185,3 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 		},
 	})
 }
-
-func TestAcc_Warehouse_ImportAdaptiveWarehouseFails(t *testing.T) {
-	standardId := testClient().Ids.RandomAccountObjectIdentifier()
-	warehouseModel := model.Warehouse("test", standardId.Name())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			// First, create a standard warehouse so a resource exists in state.
-			{
-				Config: accconfig.FromModels(t, warehouseModel),
-			},
-			// Then, attempt to import the adaptive warehouse into the same resource.
-			{
-				PreConfig: func() {
-					testClient().Warehouse.UpdateWarehouseType(t, standardId, sdk.WarehouseTypeAdaptive)
-				},
-				ResourceName: warehouseModel.ResourceReference(),
-				ImportState:  true,
-				ExpectError:  regexp.MustCompile(`only STANDARD, SNOWPARK-OPTIMIZED warehouses are supported, got ADAPTIVE`),
-			},
-		},
-	})
-}
