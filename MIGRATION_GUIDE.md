@@ -26,11 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
-### *(new feature)* New snowflake_catalog_integration_aws_glue resource
+### *(new feature)* New catalog integration resources
 
-We have added a new preview resource for managing catalog integrations that use an AWS Glue catalog source. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue).
+We have added new preview resources for managing catalog integrations:
+- [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
+- [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
 
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_catalog_integration_aws_glue_resource` to `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add 
+- `snowflake_catalog_integration_aws_glue_resource`, or
+- `snowflake_catalog_integration_object_storage_resource`
+to the `preview_features_enabled` field in the provider configuration.
 
 ### *(bug fix)* snowflake_account: fix nil pointer dereference panics
 

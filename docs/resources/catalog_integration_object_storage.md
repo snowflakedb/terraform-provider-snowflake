@@ -1,15 +1,15 @@
 ---
-page_title: "snowflake_catalog_integration_aws_glue Resource - terraform-provider-snowflake"
+page_title: "snowflake_catalog_integration_object_storage Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage AWS Glue catalog integration objects. For more information, check catalog integration documentation https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue.
+  Resource used to manage catalog integration objects for Apache Iceberg™ table files or Delta table files in object storage. For more information, check catalog integration documentation https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
-# snowflake_catalog_integration_aws_glue (Resource)
+# snowflake_catalog_integration_object_storage (Resource)
 
-Resource used to manage AWS Glue catalog integration objects. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue).
+Resource used to manage catalog integration objects for Apache Iceberg™ table files or Delta table files in object storage. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage).
 
 ## Example Usage
 
@@ -18,23 +18,19 @@ Resource used to manage AWS Glue catalog integration objects. For more informati
 
 ```terraform
 # basic resource
-resource "snowflake_catalog_integration_aws_glue" "basic" {
-  name              = "example"
-  enabled           = false
-  glue_aws_role_arn = "arn:aws:iam::123456789012:role/testRole"
-  glue_catalog_id   = "123456789012"
+resource "snowflake_catalog_integration_object_storage" "basic" {
+  name         = "example"
+  enabled      = false
+  table_format = "DELTA"
 }
 
 # complete resource
-resource "snowflake_catalog_integration_aws_glue" "complete" {
+resource "snowflake_catalog_integration_object_storage" "complete" {
   name                     = "example_complete"
   enabled                  = true
   refresh_interval_seconds = 60
   comment                  = "Lorem ipsum"
-  glue_aws_role_arn        = "arn:aws:iam::123456789012:role/testRole"
-  glue_catalog_id          = "123456789012"
-  glue_region              = "us-east-1"
-  catalog_namespace        = "myNamespace"
+  table_format             = "ICEBERG"
 }
 ```
 
@@ -46,15 +42,12 @@ resource "snowflake_catalog_integration_aws_glue" "complete" {
 ### Required
 
 - `enabled` (Boolean) Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.
-- `glue_aws_role_arn` (String) Specifies the Amazon Resource Name (ARN) of the AWS Identity and Access Management (IAM) role to assume.
-- `glue_catalog_id` (String) Specifies the ID of your AWS account.
 - `name` (String) Specifies the identifier (i.e. name) of the catalog integration; must be unique in your account.
+- `table_format` (String) Specifies the table format. Supported values: ICEBERG, DELTA.
 
 ### Optional
 
-- `catalog_namespace` (String) Specifies the default AWS Glue Data Catalog namespace for all Iceberg tables that you associate with the catalog integration.
 - `comment` (String) (Default: ``) Specifies a comment for the catalog integration.
-- `glue_region` (String) Specifies the AWS region of your AWS Glue Data Catalog. You must specify a value for this attribute if your Snowflake account is not hosted on AWS. Otherwise, the default region is the Snowflake deployment region for the account.
 - `refresh_interval_seconds` (Number) Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -81,13 +74,9 @@ Optional:
 
 Read-Only:
 
-- `catalog_namespace` (String)
 - `catalog_source` (String)
 - `comment` (String)
 - `enabled` (Boolean)
-- `glue_aws_role_arn` (String)
-- `glue_catalog_id` (String)
-- `glue_region` (String)
 - `id` (String)
 - `refresh_interval_seconds` (Number)
 - `table_format` (String)
@@ -110,5 +99,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_catalog_integration_aws_glue.example '"<name>"'
+terraform import snowflake_catalog_integration_object_storage.example '"<name>"'
 ```
