@@ -385,7 +385,7 @@ type CreateAdaptiveWarehouseOptions struct {
 	warehouseType bool                    `ddl:"static" sql:"WAREHOUSE_TYPE = 'ADAPTIVE'"`
 
 	// Object properties
-	Comment          *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Comment          *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	MaxStatementSize *MaxStatementSize `ddl:"parameter,single_quotes" sql:"MAX_STATEMENT_SIZE"`
 
 	// Object params
@@ -767,7 +767,13 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 	mapNullBool(&wh.EnableQueryAcceleration, row.EnableQueryAcceleration)
 	mapNullInt(&wh.QueryAccelerationMaxScaleFactor, row.QueryAccelerationMaxScaleFactor)
 	mapNullStringWithMapping(&wh.ScalingPolicy, row.ScalingPolicy, ToScalingPolicy)
-	mapNullStringWithMapping(&wh.Size, row.Size, ToWarehouseSize)
+	if row.Size.Valid {
+		if size, err := ToWarehouseSize(row.Size.String); err != nil {
+			return nil, err
+		} else {
+			wh.Size = &size
+		}
+	}
 	if available := strings.TrimSpace(row.Available); available != "" {
 		if val, err := strconv.ParseFloat(available, 64); err != nil {
 			return nil, fmt.Errorf(`row 'available' has incorrect value '%s', %w`, available, err)
@@ -803,7 +809,13 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 	if row.ResourceMonitor != "null" {
 		wh.ResourceMonitor = NewAccountObjectIdentifierFromFullyQualifiedName(row.ResourceMonitor)
 	}
-	mapNullStringWithMapping(&wh.Generation, row.Generation, ToWarehouseGeneration)
+	if row.Generation.Valid {
+		generation, err := ToWarehouseGeneration(row.Generation.String)
+		if err != nil {
+			return nil, err
+		}
+		wh.Generation = &generation
+	}
 	if row.ResourceConstraint.Valid {
 		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
 		if err != nil {

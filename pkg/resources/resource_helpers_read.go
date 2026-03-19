@@ -84,11 +84,13 @@ func setOptionalFromStringPtr(d *schema.ResourceData, key string, ptr *string) e
 	return nil
 }
 
-func setOptionalValue[T any](d *schema.ResourceData, key string, ptr *T) error {
+func setOptionalFromPtr[T any](d *schema.ResourceData, key string, ptr *T) error {
 	if ptr != nil {
-		return d.Set(key, *ptr)
+		if err := d.Set(key, *ptr); err != nil {
+			return err
+		}
 	}
-	return d.Set(key, nil)
+	return nil
 }
 
 // TODO [SNOW-1348103]: return error if nil

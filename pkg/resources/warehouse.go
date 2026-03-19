@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -286,21 +288,25 @@ func ImportWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	if err != nil {
 		return nil, err
 	}
+	supportedTypes := []sdk.WarehouseType{sdk.WarehouseTypeStandard, sdk.WarehouseTypeSnowparkOptimized}
+	if !slices.Contains(supportedTypes, w.Type) {
+		return nil, fmt.Errorf("only %s warehouses are supported, got %s", collections.JoinStrings(supportedTypes, ", "), w.Type)
+	}
 
 	err = errors.Join(
 		d.Set("warehouse_type", w.Type),
 		setOptionalValueWithMapping(d, "warehouse_size", w.Size, func(v *sdk.WarehouseSize) string { return string(*v) }),
-		setOptionalValue(d, "max_cluster_count", w.MaxClusterCount),
-		setOptionalValue(d, "min_cluster_count", w.MinClusterCount),
+		d.Set("max_cluster_count", w.MaxClusterCount),
+		d.Set("min_cluster_count", w.MinClusterCount),
 		setOptionalValueWithMapping(d, "scaling_policy", w.ScalingPolicy, func(v *sdk.ScalingPolicy) string { return string(*v) }),
-		setOptionalValue(d, "auto_suspend", w.AutoSuspend),
+		d.Set("auto_suspend", w.AutoSuspend),
 		d.Set("auto_resume", booleanStringFromBool(w.AutoResume)),
 		d.Set("resource_monitor", w.ResourceMonitor.Name()),
 		d.Set("comment", w.Comment),
 		setOptionalValueWithMapping(d, "enable_query_acceleration", w.EnableQueryAcceleration, func(v *bool) string { return booleanStringFromBool(*v) }),
-		setOptionalValue(d, "query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor),
-		setOptionalValue(d, "resource_constraint", w.ResourceConstraint),
-		setOptionalValue(d, "generation", w.Generation),
+		d.Set("query_acceleration_max_scale_factor", w.QueryAccelerationMaxScaleFactor),
+		setOptionalFromPtr(d, "resource_constraint", w.ResourceConstraint),
+		setOptionalFromPtr(d, "generation", w.Generation),
 	)
 	if err != nil {
 		return nil, err
