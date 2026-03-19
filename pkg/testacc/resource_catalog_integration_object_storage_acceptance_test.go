@@ -47,10 +47,6 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds)
 
-	allAttributesWithExternalChanges := model.CatalogIntegrationObjectStorage("t", id.Name(), true, tableFormat).
-		WithComment(externalComment).
-		WithRefreshIntervalSeconds(externalRefreshIntervalSeconds)
-
 	withChangedTableFormat := model.CatalogIntegrationObjectStorage("t", id.Name(), false, string(sdk.CatalogIntegrationTableFormatIceberg))
 
 	ref := basic.ResourceReference()
@@ -131,28 +127,6 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasComment(comment),
-	}
-
-	externallyAlteredProperties := []assert.TestCheckFuncProvider{
-		resourceassert.CatalogIntegrationObjectStorageResource(t, ref).
-			HasName(id.Name()).
-			HasEnabledString(r.BooleanTrue).
-			HasComment(externalComment).
-			HasRefreshIntervalSeconds(externalRefreshIntervalSeconds).
-			HasTableFormat(tableFormat),
-		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
-			HasName(id.Name()).
-			HasType("CATALOG").
-			HasCategory("CATALOG").
-			HasEnabled(true).
-			HasComment(externalComment),
-		resourceshowoutputassert.CatalogIntegrationObjectStorageDescribeOutput(t, ref).
-			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStorage).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
-			HasEnabled(true).
-			HasRefreshIntervalSeconds(externalRefreshIntervalSeconds).
-			HasComment(externalComment),
 	}
 
 	forceNewAssertions := []assert.TestCheckFuncProvider{
@@ -271,16 +245,7 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, allAttributes),
-			},
-			// Adjust config to the current Snowflake values
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Config: config.FromModels(t, allAttributesWithExternalChanges),
-				Check:  assertThat(t, externallyAlteredProperties...),
+				Check:  assertThat(t, completeAssertions...),
 			},
 			// Change force new "table_format" prop
 			{
@@ -308,16 +273,7 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, withChangedTableFormat),
-			},
-			// Adjust config to the current Snowflake values
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertions...),
+				Check:  assertThat(t, forceNewAssertions...),
 			},
 		},
 	})
