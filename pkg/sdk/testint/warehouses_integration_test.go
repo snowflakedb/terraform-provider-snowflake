@@ -292,7 +292,7 @@ func TestInt_Warehouses(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateAdaptive(ctx, id, &sdk.CreateAdaptiveWarehouseOptions{
 			Comment:                         sdk.String("test adaptive warehouse"),
-			MaxStatementSize: sdk.Pointer(sdk.MaxStatementSizeMedium),
+			MaxStatementSize:                sdk.Pointer(sdk.MaxStatementSizeMedium),
 			StatementQueuedTimeoutInSeconds: sdk.Int(30),
 			StatementTimeoutInSeconds:       sdk.Int(60),
 		})
@@ -452,9 +452,19 @@ func TestInt_Warehouses(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assert.Equal(t, *warehouse, *returnedWarehouse)
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
+			HasType(sdk.WarehouseTypeStandard).
+			HasSize(sdk.WarehouseSizeMedium).
+			HasGeneration(sdk.WarehouseGenerationStandardGen1).
+			HasNoResourceConstraint().
+			HasMaxClusterCount(1).
+			HasMinClusterCount(1).
+			HasScalingPolicy(sdk.ScalingPolicyStandard).
+			HasAutoSuspend(600).
+			HasAutoResume(true).
+			HasEnableQueryAcceleration(false).
+			HasQueryAccelerationMaxScaleFactor(8),
+		)
 	})
 
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
