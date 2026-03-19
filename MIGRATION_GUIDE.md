@@ -146,15 +146,17 @@ No changes in the configuration are required.
 
 Reference: [#3946](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3946)
 
-### *(bugfix)* Fixed AGENT object type in grant resources (non-empty plan)
+### *(bugfix)* Fixed AGENT and MCP SERVER object types in grant resources (non-empty plan)
 
-In v2.14.0 we added support for the `AGENT` object type in privilege grant resources (e.g. `snowflake_grant_privileges_to_account_role`),
-but grants on agents or future agents produced perpetual non-empty plans because the provider did not match the object type Snowflake returns
-(for agents, Snowflake returns `CORTEX_AGENT` object type instead of `AGENT`).
+In v2.14.0 we added support for the `AGENT` and `MCP SERVER` object types in privilege grant resources (e.g. `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`),
+but grants on these objects or future objects of these types produced perpetual non-empty plans because the provider did not match the object types Snowflake returns in SHOW GRANTS / SHOW FUTURE GRANTS
+(for agents, Snowflake returns `CORTEX_AGENT` instead of `AGENT`; for MCP servers, Snowflake returns `CORTEX_AGENT_SERVER` instead of `MCP SERVER`).
 
-This has been fixed: grant resources can now be used with the `AGENT` object type without any unexpected plans.
+This has been fixed: grant resources can now be used with the `AGENT` and `MCP SERVER` object types without any unexpected plans.
 
 No changes in the configuration are required.
+
+Reference: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524)
 
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 
