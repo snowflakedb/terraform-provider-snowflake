@@ -95,6 +95,26 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("client_types", sdk.ToClientTypesOption),
 		Description:      fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): %s. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypes)),
 	},
+	"client_policy": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "Minimum allowed version per driver/client type (e.g. GO_DRIVER = '1.14.1'). Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"client_type": {
+					Type:             schema.TypeString,
+					Required:         true,
+					Description:      fmt.Sprintf("The client or driver type. Valid values (case-insensitive): %s.", possibleValuesListed(sdk.AllClientPolicyDriverTypes)),
+					ValidateDiagFunc: sdkValidation(sdk.ToClientPolicyDriverType),
+				},
+				"minimum_version": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Minimum allowed version for this client/driver type (e.g. '1.14.1').",
+				},
+			},
+		},
+	},
 	"security_integrations": {
 		Type: schema.TypeSet,
 		Elem: &schema.Schema{
@@ -159,6 +179,11 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 					DiffSuppressFunc: NormalizeAndCompare(sdk.ToNetworkPolicyEvaluationOption),
 					Description:      "Specifies the network policy evaluation for the PAT.",
 					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.network_policy_evaluation"},
+				},
+				"require_role_restriction_for_service_users": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role. Defaults to true.",
 				},
 			},
 		},
@@ -359,6 +384,29 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		req.WithClientTypes(clientTypes)
 	}
 
+	if v, ok := d.GetOk("client_policy"); ok {
+		clientPolicyList := v.([]any)
+		if len(clientPolicyList) > 0 {
+			// Validate: CLIENT_POLICY is only valid when client_types is empty, contains ALL, or contains DRIVERS.
+			if ctSet, ok := d.GetOk("client_types"); ok {
+				for _, ct := range ctSet.(*schema.Set).List() {
+					option, err := sdk.ToClientTypesOption(ct.(string))
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					if option != sdk.ClientTypesAll && option != sdk.ClientTypesDrivers {
+						return diag.Errorf("client_policy is only valid when client_types is empty, contains ALL, or contains DRIVERS; got %s", option)
+					}
+				}
+			}
+			entries, err := toClientPolicyEntries(clientPolicyList)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			req.WithClientPolicy(entries)
+		}
+	}
+
 	if err := errors.Join(
 		attributeMappedValueCreateBuilder(d, "security_integrations", req.WithSecurityIntegrations, ToSecurityIntegrationsRequest),
 		attributeMappedValueCreateBuilder(d, "mfa_enrollment", req.WithMfaEnrollment, sdk.ToMfaEnrollmentOption),
@@ -377,6 +425,30 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
 	return ReadContextAuthenticationPolicy(false)(ctx, d, meta)
+}
+
+func toClientPolicyEntries(rawList []any) ([]sdk.AuthenticationPolicyClientPolicyEntry, error) {
+	entries := make([]sdk.AuthenticationPolicyClientPolicyEntry, 0, len(rawList))
+	for _, raw := range rawList {
+		m, ok := raw.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("client_policy entry: expected map, got %T", raw)
+		}
+		clientType, err := sdk.ToClientPolicyDriverType(m["client_type"].(string))
+		if err != nil {
+			return nil, err
+		}
+		minVer := m["minimum_version"].(string)
+		var params *sdk.AuthenticationPolicyClientPolicyEntryParams
+		if minVer != "" {
+			params = &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: &minVer}
+		}
+		entries = append(entries, sdk.AuthenticationPolicyClientPolicyEntry{
+			ClientType: clientType,
+			Params:     params,
+		})
+	}
+	return entries, nil
 }
 
 func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionRequest, error) {
@@ -439,6 +511,12 @@ func ToPatPolicyRequest(value any) (sdk.AuthenticationPolicyPatPolicyRequest, er
 			return sdk.AuthenticationPolicyPatPolicyRequest{}, err
 		}
 		patPolicy.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
+	}
+	if v, ok := patConfig["require_role_restriction_for_service_users"]; ok {
+		patPolicy.WithRequireRoleRestrictionForServiceUsers(v.(bool))
+	} else {
+		// Default to true when pat_policy block is present but attribute unset (per Snowflake default).
+		patPolicy.WithRequireRoleRestrictionForServiceUsers(true)
 	}
 
 	return *patPolicy, nil
@@ -570,6 +648,7 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			"authentication_methods",
 			"mfa_enrollment",
 			"client_types",
+			"client_policy",
 			"security_integrations",
 			"mfa_authentication_methods",
 		}); err != nil {
@@ -655,6 +734,34 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 			set.WithClientTypes(clientTypesValues)
 		} else {
 			unset.WithClientTypes(true)
+		}
+	}
+
+	// change to client policy
+	if d.HasChange("client_policy") {
+		if v, ok := d.GetOk("client_policy"); ok {
+			clientPolicyList := v.([]any)
+			if len(clientPolicyList) > 0 {
+				// Validate: only valid when client_types is empty, ALL, or DRIVERS
+				if ctSet, ok := d.GetOk("client_types"); ok {
+					for _, ct := range ctSet.(*schema.Set).List() {
+						option, err := sdk.ToClientTypesOption(ct.(string))
+						if err != nil {
+							return diag.FromErr(err)
+						}
+						if option != sdk.ClientTypesAll && option != sdk.ClientTypesDrivers {
+							return diag.Errorf("client_policy is only valid when client_types is empty, contains ALL, or contains DRIVERS; got %s", option)
+						}
+					}
+				}
+				entries, err := toClientPolicyEntries(clientPolicyList)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				set.WithClientPolicy(entries)
+			}
+		} else {
+			unset.WithClientPolicy(true)
 		}
 	}
 
@@ -774,6 +881,13 @@ func ToPatPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 			req.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
 		} else {
 			req.WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationEnforcedRequired)
+		}
+	}
+	if d.HasChange("pat_policy.0.require_role_restriction_for_service_users") {
+		if v, ok := patConfig["require_role_restriction_for_service_users"]; ok {
+			req.WithRequireRoleRestrictionForServiceUsers(v.(bool))
+		} else {
+			req.WithRequireRoleRestrictionForServiceUsers(true)
 		}
 	}
 	if !reflect.DeepEqual(*req, *sdk.NewAuthenticationPolicyPatPolicyRequest()) {

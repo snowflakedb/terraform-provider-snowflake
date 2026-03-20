@@ -71,6 +71,7 @@ resource "snowflake_authentication_policy" "complete" {
 ### Optional
 
 - `authentication_methods` (Set of String) A list of authentication methods that are allowed during login. Valid values are (case-insensitive): `ALL` | `SAML` | `PASSWORD` | `OAUTH` | `KEYPAIR` | `PROGRAMMATIC_ACCESS_TOKEN` | `WORKLOAD_IDENTITY`.
+- `client_policy` (Block List) Minimum allowed version per driver/client type (e.g. GO_DRIVER = '1.14.1'). Only valid when `client_types` is empty, contains ALL, or contains DRIVERS. (see [below for nested schema](#nestedblock--client_policy))
 - `client_types` (Set of String) A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): `ALL` | `SNOWFLAKE_UI` | `DRIVERS` | `SNOWSQL` | `SNOWFLAKE_CLI`. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.
 - `comment` (String) Specifies a comment for the authentication policy.
 - `mfa_authentication_methods` (Set of String, Deprecated) A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are `ALL` | `SAML` | `PASSWORD`.
@@ -88,12 +89,21 @@ resource "snowflake_authentication_policy" "complete" {
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW AUTHENTICATION POLICIES` for the given policy. (see [below for nested schema](#nestedatt--show_output))
 
+<a id="nestedblock--client_policy"></a>
+### Nested Schema for `client_policy`
+
+Required:
+
+- `client_type` (String) The client or driver type. Valid values (case-insensitive): `JDBC_DRIVER` | `ODBC_DRIVER` | `PYTHON_DRIVER` | `JAVASCRIPT_DRIVER` | `C_DRIVER` | `GO_DRIVER` | `PHP_DRIVER` | `DOTNET_DRIVER` | `SQL_API` | `SNOWPIPE_STREAMING_CLIENT_SDK` | `PY_CORE` | `SPROC_PYTHON` | `PYTHON_SNOWPARK` | `SQL_ALCHEMY` | `SNOWPARK` | `SNOWFLAKE_CLIENT`.
+- `minimum_version` (String) Minimum allowed version for this client/driver type (e.g. '1.14.1').
+
+
 <a id="nestedblock--mfa_policy"></a>
 ### Nested Schema for `mfa_policy`
 
 Optional:
 
-- `allowed_methods` (Set of String) Specifies the allowed methods for the MFA policy. Valid values are: `ALL` | `PASSKEY` | `TOTP` | `DUO`. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.
+- `allowed_methods` (Set of String) Specifies the allowed methods for the MFA policy. Valid values are: `ALL` | `PASSKEY` | `TOTP` | `OTP` | `DUO`. These values are case-sensitive due to Terraform limitations (it's a nested field). Prefer using uppercased values.
 - `enforce_mfa_on_external_authentication` (String) Determines whether multi-factor authentication (MFA) is enforced on external authentication. Valid values are (case-insensitive): `ALL` | `NONE`.
 
 
@@ -105,6 +115,7 @@ Optional:
 - `default_expiry_in_days` (Number) Specifies the default expiration time (in days) for a programmatic access token.
 - `max_expiry_in_days` (Number) Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.
 - `network_policy_evaluation` (String) Specifies the network policy evaluation for the PAT.
+- `require_role_restriction_for_service_users` (Boolean) If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role. Defaults to true.
 
 
 <a id="nestedblock--timeouts"></a>
@@ -135,6 +146,7 @@ Optional:
 Read-Only:
 
 - `authentication_methods` (String)
+- `client_policy` (String)
 - `client_types` (String)
 - `comment` (String)
 - `mfa_authentication_methods` (String)

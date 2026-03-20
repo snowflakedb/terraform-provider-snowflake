@@ -112,6 +112,7 @@ const (
 	MfaPolicyAllowedMethodAll     MfaPolicyAllowedMethodsOption = "ALL"
 	MfaPolicyAllowedMethodPassKey MfaPolicyAllowedMethodsOption = "PASSKEY"
 	MfaPolicyAllowedMethodTotp    MfaPolicyAllowedMethodsOption = "TOTP"
+	MfaPolicyAllowedMethodOtp     MfaPolicyAllowedMethodsOption = "OTP"
 	MfaPolicyAllowedMethodDuo     MfaPolicyAllowedMethodsOption = "DUO"
 )
 
@@ -119,6 +120,7 @@ var AllMfaPolicyOptions = []MfaPolicyAllowedMethodsOption{
 	MfaPolicyAllowedMethodAll,
 	MfaPolicyAllowedMethodPassKey,
 	MfaPolicyAllowedMethodTotp,
+	MfaPolicyAllowedMethodOtp,
 	MfaPolicyAllowedMethodDuo,
 }
 

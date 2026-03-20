@@ -18,6 +18,7 @@ type CreateAuthenticationPolicyRequest struct {
 	MfaEnrollment          *MfaEnrollmentOption
 	MfaPolicy              *AuthenticationPolicyMfaPolicyRequest
 	ClientTypes            []ClientTypes
+	ClientPolicy           []AuthenticationPolicyClientPolicyEntry
 	SecurityIntegrations   *SecurityIntegrationsOptionRequest
 	PatPolicy              *AuthenticationPolicyPatPolicyRequest
 	WorkloadIdentityPolicy *AuthenticationPolicyWorkloadIdentityPolicyRequest
@@ -35,9 +36,10 @@ type SecurityIntegrationsOptionRequest struct {
 }
 
 type AuthenticationPolicyPatPolicyRequest struct {
-	DefaultExpiryInDays     *int
-	MaxExpiryInDays         *int
-	NetworkPolicyEvaluation *NetworkPolicyEvaluationOption
+	DefaultExpiryInDays                   *int
+	MaxExpiryInDays                       *int
+	NetworkPolicyEvaluation               *NetworkPolicyEvaluationOption
+	RequireRoleRestrictionForServiceUsers *bool
 }
 
 type AuthenticationPolicyWorkloadIdentityPolicyRequest struct {
@@ -60,6 +62,7 @@ type AuthenticationPolicySetRequest struct {
 	MfaEnrollment          *MfaEnrollmentOption
 	MfaPolicy              *AuthenticationPolicyMfaPolicyRequest
 	ClientTypes            []ClientTypes
+	ClientPolicy           []AuthenticationPolicyClientPolicyEntry
 	SecurityIntegrations   *SecurityIntegrationsOptionRequest
 	PatPolicy              *AuthenticationPolicyPatPolicyRequest
 	WorkloadIdentityPolicy *AuthenticationPolicyWorkloadIdentityPolicyRequest
@@ -68,6 +71,7 @@ type AuthenticationPolicySetRequest struct {
 
 type AuthenticationPolicyUnsetRequest struct {
 	ClientTypes            *bool
+	ClientPolicy           *bool
 	AuthenticationMethods  *bool
 	SecurityIntegrations   *bool
 	MfaEnrollment          *bool

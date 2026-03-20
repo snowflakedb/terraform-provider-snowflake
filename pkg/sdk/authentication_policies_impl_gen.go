@@ -4,9 +4,6 @@ package sdk
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -47,9 +44,6 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool {
-		return !row.DatabaseName.Valid || !row.SchemaName.Valid
-	})
 	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
@@ -87,6 +81,7 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 		AuthenticationMethods: r.AuthenticationMethods,
 		MfaEnrollment:         r.MfaEnrollment,
 		ClientTypes:           r.ClientTypes,
+		ClientPolicy:          r.ClientPolicy,
 		Comment:               r.Comment,
 	}
 	if r.MfaPolicy != nil {
@@ -103,9 +98,10 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 	}
 	if r.PatPolicy != nil {
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
-			DefaultExpiryInDays:     r.PatPolicy.DefaultExpiryInDays,
-			MaxExpiryInDays:         r.PatPolicy.MaxExpiryInDays,
-			NetworkPolicyEvaluation: r.PatPolicy.NetworkPolicyEvaluation,
+			DefaultExpiryInDays:                   r.PatPolicy.DefaultExpiryInDays,
+			MaxExpiryInDays:                       r.PatPolicy.MaxExpiryInDays,
+			NetworkPolicyEvaluation:               r.PatPolicy.NetworkPolicyEvaluation,
+			RequireRoleRestrictionForServiceUsers: r.PatPolicy.RequireRoleRestrictionForServiceUsers,
 		}
 	}
 	if r.WorkloadIdentityPolicy != nil {
@@ -130,6 +126,7 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 			AuthenticationMethods: r.Set.AuthenticationMethods,
 			MfaEnrollment:         r.Set.MfaEnrollment,
 			ClientTypes:           r.Set.ClientTypes,
+			ClientPolicy:          r.Set.ClientPolicy,
 			Comment:               r.Set.Comment,
 		}
 		if r.Set.MfaPolicy != nil {
@@ -146,9 +143,10 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 		}
 		if r.Set.PatPolicy != nil {
 			opts.Set.PatPolicy = &AuthenticationPolicyPatPolicy{
-				DefaultExpiryInDays:     r.Set.PatPolicy.DefaultExpiryInDays,
-				MaxExpiryInDays:         r.Set.PatPolicy.MaxExpiryInDays,
-				NetworkPolicyEvaluation: r.Set.PatPolicy.NetworkPolicyEvaluation,
+				DefaultExpiryInDays:                   r.Set.PatPolicy.DefaultExpiryInDays,
+				MaxExpiryInDays:                       r.Set.PatPolicy.MaxExpiryInDays,
+				NetworkPolicyEvaluation:               r.Set.PatPolicy.NetworkPolicyEvaluation,
+				RequireRoleRestrictionForServiceUsers: r.Set.PatPolicy.RequireRoleRestrictionForServiceUsers,
 			}
 		}
 		if r.Set.WorkloadIdentityPolicy != nil {
@@ -163,6 +161,7 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 	if r.Unset != nil {
 		opts.Unset = &AuthenticationPolicyUnset{
 			ClientTypes:            r.Unset.ClientTypes,
+			ClientPolicy:           r.Unset.ClientPolicy,
 			AuthenticationMethods:  r.Unset.AuthenticationMethods,
 			SecurityIntegrations:   r.Unset.SecurityIntegrations,
 			MfaEnrollment:          r.Unset.MfaEnrollment,
@@ -195,39 +194,8 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 }
 
 func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
-	// adjusted manually
-	policy := &AuthenticationPolicy{
-		Name:    r.Name,
-		Kind:    r.Kind,
-		Options: r.Options,
-		Comment: r.Comment,
-	}
-	var errs []error
-	if r.DatabaseName.Valid {
-		policy.DatabaseName = r.DatabaseName.String
-	} else {
-		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
-	}
-	if r.SchemaName.Valid {
-		policy.SchemaName = r.SchemaName.String
-	} else {
-		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
-	}
-	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
-	}
-
-	if r.CreatedOn.Valid {
-		policy.CreatedOn = r.CreatedOn.Time
-	}
-	if r.Owner.Valid {
-		policy.Owner = r.Owner.String
-	}
-	if r.OwnerRoleType.Valid {
-		policy.OwnerRoleType = r.OwnerRoleType.String
-	}
-
-	return policy, nil
+	// TODO: Mapping
+	return &AuthenticationPolicy{}, nil
 }
 
 func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPolicyOptions {
@@ -238,11 +206,6 @@ func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPo
 }
 
 func (r describeAuthenticationPolicyDBRow) convert() (*AuthenticationPolicyDescription, error) {
-	// adjusted manually
-	return &AuthenticationPolicyDescription{
-		Property:    r.Property,
-		Value:       r.Value,
-		Default:     r.Default,
-		Description: r.Description,
-	}, nil
+	// TODO: Mapping
+	return &AuthenticationPolicyDescription{}, nil
 }
