@@ -6,13 +6,66 @@ import (
 	"fmt"
 )
 
+type SemanticViewTableDetails struct {
+	TableNameOrAlias      string
+	BaseTableDatabaseName string
+	BaseTableSchemaName   string
+	BaseTableName         string
+	PrimaryKeys           string
+	UniqueKeys            string
+	Synonyms              string
+	Comment               string
+}
+
+type SemanticViewRelationshipDetails struct {
+	RelationshipAlias   string
+	TableNameOrAlias    string
+	ForeignKeys         string
+	RefTableNameOrAlias string
+	RefKeys             string
+	ParentEntity        string
+}
+
+type SemanticViewDimensionDetails struct {
+	DimensionAlias   string
+	TableNameOrAlias string
+	Expression       string
+	DataType         string
+	AccessModifier   string
+	Synonyms         string
+	Comment          string
+	ParentEntity     string
+}
+
+type SemanticViewFactDetails struct {
+	FactAlias        string
+	TableNameOrAlias string
+	Expression       string
+	DataType         string
+	AccessModifier   string
+	Synonyms         string
+	Comment          string
+	ParentEntity     string
+}
+
+type SemanticViewMetricDetails struct {
+	MetricAlias      string
+	TableNameOrAlias string
+	Expression       string
+	DataType         string
+	AccessModifier   string
+	Synonyms         string
+	Comment          string
+	ParentEntity     string
+}
+
 type SemanticViewDescribeDetails struct {
 	Id               SchemaObjectIdentifier
-	Tables           []SemanticViewDetails
-	Relationships    []SemanticViewDetails
-	Dimensions       []SemanticViewDetails
-	Facts            []SemanticViewDetails
-	Metrics          []SemanticViewDetails
+	Tables           []SemanticViewTableDetails
+	Relationships    []SemanticViewRelationshipDetails
+	Dimensions       []SemanticViewDimensionDetails
+	Facts            []SemanticViewFactDetails
+	Metrics          []SemanticViewMetricDetails
 	Comment          string
 	DescribeRowCount int
 }
@@ -289,13 +342,18 @@ func (v *semanticViews) DescribeSemanticViewDetails(ctx context.Context, id Sche
 func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error) {
 	details := &SemanticViewDescribeDetails{
 		Id:               id,
-		Tables:           []SemanticViewDetails{},
-		Relationships:    []SemanticViewDetails{},
-		Dimensions:       []SemanticViewDetails{},
-		Facts:            []SemanticViewDetails{},
-		Metrics:          []SemanticViewDetails{},
+		Tables:           []SemanticViewTableDetails{},
+		Relationships:    []SemanticViewRelationshipDetails{},
+		Dimensions:       []SemanticViewDimensionDetails{},
+		Facts:            []SemanticViewFactDetails{},
+		Metrics:          []SemanticViewMetricDetails{},
 		DescribeRowCount: 0,
 	}
+	//tableDetails := make([]SemanticViewTableDetails, 0)
+	//relationshipDetails := make([]SemanticViewRelationshipDetails, 0)
+	//dimensionDetails := make([]SemanticViewDimensionDetails, 0)
+	//factDetails := make([]SemanticViewFactDetails, 0)
+	//metricDetails := make([]SemanticViewMetricDetails, 0)
 	var errs []error
 	for _, prop := range properties {
 		details.DescribeRowCount++
@@ -311,15 +369,147 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 
 		switch *prop.ObjectKind {
 		case "TABLE":
-			details.Tables = append(details.Tables, prop)
+			var currentTable *SemanticViewTableDetails
+			for i := range details.Tables {
+				if details.Tables[i].TableNameOrAlias == *prop.ObjectName {
+					currentTable = &details.Tables[i]
+					break
+				}
+			}
+			if currentTable == nil {
+				details.Tables = append(details.Tables, SemanticViewTableDetails{
+					TableNameOrAlias: *prop.ObjectName,
+				})
+				currentTable = &details.Tables[len(details.Tables)-1]
+			}
+			switch prop.Property {
+			case "BASE_TABLE_DATABASE_NAME":
+				currentTable.BaseTableDatabaseName = prop.PropertyValue
+			case "BASE_TABLE_SCHEMA_NAME":
+				currentTable.BaseTableSchemaName = prop.PropertyValue
+			case "BASE_TABLE_NAME":
+				currentTable.BaseTableName = prop.PropertyValue
+			case "PRIMARY_KEY":
+				currentTable.PrimaryKeys = prop.PropertyValue
+			case "UNIQUE_KEY":
+				currentTable.UniqueKeys = prop.PropertyValue
+			case "SYNONYMS":
+				currentTable.Synonyms = prop.PropertyValue
+			case "COMMENT":
+				currentTable.Comment = prop.PropertyValue
+			}
 		case "RELATIONSHIP":
-			details.Relationships = append(details.Relationships, prop)
+			var currentRelationship *SemanticViewRelationshipDetails
+			for i := range details.Relationships {
+				if details.Relationships[i].RelationshipAlias == *prop.ObjectName {
+					currentRelationship = &details.Relationships[i]
+					break
+				}
+			}
+			if currentRelationship == nil {
+				details.Relationships = append(details.Relationships, SemanticViewRelationshipDetails{
+					RelationshipAlias: *prop.ObjectName,
+					ParentEntity:      *prop.ParentEntity,
+				})
+				currentRelationship = &details.Relationships[len(details.Relationships)-1]
+			}
+			switch prop.Property {
+			case "TABLE":
+				currentRelationship.TableNameOrAlias = prop.PropertyValue
+			case "FOREIGN_KEY":
+				currentRelationship.ForeignKeys = prop.PropertyValue
+			case "REF_TABLE":
+				currentRelationship.RefTableNameOrAlias = prop.PropertyValue
+			case "REF_KEY":
+				currentRelationship.RefKeys = prop.PropertyValue
+			}
 		case "DIMENSION":
-			details.Dimensions = append(details.Dimensions, prop)
+			var currentDimension *SemanticViewDimensionDetails
+			for i := range details.Dimensions {
+				if details.Dimensions[i].DimensionAlias == *prop.ObjectName {
+					currentDimension = &details.Dimensions[i]
+					break
+				}
+			}
+			if currentDimension == nil {
+				details.Dimensions = append(details.Dimensions, SemanticViewDimensionDetails{
+					DimensionAlias: *prop.ObjectName,
+					ParentEntity:   *prop.ParentEntity,
+				})
+				currentDimension = &details.Dimensions[len(details.Dimensions)-1]
+			}
+			switch prop.Property {
+			case "TABLE":
+				currentDimension.TableNameOrAlias = prop.PropertyValue
+			case "EXPRESSION":
+				currentDimension.Expression = prop.PropertyValue
+			case "DATA_TYPE":
+				currentDimension.DataType = prop.PropertyValue
+			case "ACCESS_MODIFIER":
+				currentDimension.AccessModifier = prop.PropertyValue
+			case "SYNONYMS":
+				currentDimension.Synonyms = prop.PropertyValue
+			case "COMMENT":
+				currentDimension.Comment = prop.PropertyValue
+			}
 		case "FACT":
-			details.Facts = append(details.Facts, prop)
+			var currentFact *SemanticViewFactDetails
+			for i := range details.Facts {
+				if details.Facts[i].FactAlias == *prop.ObjectName {
+					currentFact = &details.Facts[i]
+					break
+				}
+			}
+			if currentFact == nil {
+				details.Facts = append(details.Facts, SemanticViewFactDetails{
+					FactAlias:    *prop.ObjectName,
+					ParentEntity: *prop.ParentEntity,
+				})
+				currentFact = &details.Facts[len(details.Facts)-1]
+			}
+			switch prop.Property {
+			case "TABLE":
+				currentFact.TableNameOrAlias = prop.PropertyValue
+			case "EXPRESSION":
+				currentFact.Expression = prop.PropertyValue
+			case "DATA_TYPE":
+				currentFact.DataType = prop.PropertyValue
+			case "ACCESS_MODIFIER":
+				currentFact.AccessModifier = prop.PropertyValue
+			case "SYNONYMS":
+				currentFact.Synonyms = prop.PropertyValue
+			case "COMMENT":
+				currentFact.Comment = prop.PropertyValue
+			}
 		case "METRIC":
-			details.Metrics = append(details.Metrics, prop)
+			var currentMetric *SemanticViewMetricDetails
+			for i := range details.Metrics {
+				if details.Metrics[i].MetricAlias == *prop.ObjectName {
+					currentMetric = &details.Metrics[i]
+					break
+				}
+			}
+			if currentMetric == nil {
+				details.Metrics = append(details.Metrics, SemanticViewMetricDetails{
+					MetricAlias:  *prop.ObjectName,
+					ParentEntity: *prop.ParentEntity,
+				})
+				currentMetric = &details.Metrics[len(details.Metrics)-1]
+			}
+			switch prop.Property {
+			case "TABLE":
+				currentMetric.TableNameOrAlias = prop.PropertyValue
+			case "EXPRESSION":
+				currentMetric.Expression = prop.PropertyValue
+			case "DATA_TYPE":
+				currentMetric.DataType = prop.PropertyValue
+			case "ACCESS_MODIFIER":
+				currentMetric.AccessModifier = prop.PropertyValue
+			case "SYNONYMS":
+				currentMetric.Synonyms = prop.PropertyValue
+			case "COMMENT":
+				currentMetric.Comment = prop.PropertyValue
+			}
 		}
 	}
 
