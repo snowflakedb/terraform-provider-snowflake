@@ -75,4 +75,5 @@ var AdditionalStructs = []any{
 	sdk.StorageIntegrationGcsDetails{},
 	sdk.StorageIntegrationAllDetails{},
 	sdk.CatalogIntegrationAwsGlueDetails{},
+	sdk.CatalogIntegrationObjectStorageDetails{},
 }

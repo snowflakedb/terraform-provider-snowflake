@@ -51,6 +51,7 @@ type TestClient struct {
 	Listing                      *ListingClient
 	MaskingPolicy                *MaskingPolicyClient
 	MaterializedView             *MaterializedViewClient
+	McpServer                    *McpServerClient
 	NetworkPolicy                *NetworkPolicyClient
 	NetworkRule                  *NetworkRuleClient
 	Notebook                     *NotebookClient
@@ -148,6 +149,7 @@ func NewTestClient(
 		Listing:                      NewListingClient(context, idsGenerator),
 		MaskingPolicy:                NewMaskingPolicyClient(context, idsGenerator),
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),
+		McpServer:                    NewMcpServerClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
 		NetworkRule:                  NewNetworkRuleClient(context, idsGenerator),
 		Notebook:                     NewNotebookClient(context, idsGenerator),

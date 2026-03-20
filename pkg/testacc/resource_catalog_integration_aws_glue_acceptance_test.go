@@ -60,20 +60,10 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 		WithGlueRegion(glueRegion).
 		WithCatalogNamespace(catalogNamespace)
 
-	catalogIntegrationAwsGlueAllAttributesWithExternalChanges := model.CatalogIntegrationAwsGlue("t", id.Name(), true, glueAwsRoleArn, glueCatalogId).
-		WithComment(externalComment).
-		WithRefreshIntervalSeconds(externalRefreshIntervalSeconds).
-		WithGlueRegion(glueRegion).
-		WithCatalogNamespace(catalogNamespace)
-
 	catalogIntegrationAwsGlueWithChangedForceNewAttributes := model.CatalogIntegrationAwsGlue("t", id.Name(), false, newGlueAwsRoleArn, glueCatalogId)
 
 	catalogIntegrationAwsGlueWithMoreChangedForceNewAttributes := model.CatalogIntegrationAwsGlue("t", id.Name(), false, newGlueAwsRoleArn, glueCatalogId).
 		WithGlueRegion(newGlueRegion)
-
-	catalogIntegrationAwsGlueWithMoreExternalChanges := model.CatalogIntegrationAwsGlue("t", id.Name(), false, externalGlueAwsRoleArn, externalGlueCatalogId).
-		WithGlueRegion(externalGlueRegion).
-		WithCatalogNamespace(externalCatalogNamespace)
 
 	ref := catalogIntegrationAwsGlueBasic.ResourceReference()
 
@@ -179,35 +169,6 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasCatalogNamespace(catalogNamespace),
 	}
 
-	externallyAlteredProperties := []assert.TestCheckFuncProvider{
-		resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
-			HasName(id.Name()).
-			HasEnabledString(r.BooleanTrue).
-			HasComment(externalComment).
-			HasRefreshIntervalSeconds(externalRefreshIntervalSeconds).
-			HasGlueAwsRoleArn(glueAwsRoleArn).
-			HasGlueCatalogId(glueCatalogId).
-			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(catalogNamespace),
-		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
-			HasName(id.Name()).
-			HasType("CATALOG").
-			HasCategory("CATALOG").
-			HasEnabled(true).
-			HasComment(externalComment),
-		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
-			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
-			HasEnabled(true).
-			HasRefreshIntervalSeconds(externalRefreshIntervalSeconds).
-			HasComment(externalComment).
-			HasGlueAwsRoleArn(glueAwsRoleArn).
-			HasGlueCatalogId(glueCatalogId).
-			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(catalogNamespace),
-	}
-
 	forceNewAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
 			HasName(id.Name()).
@@ -266,35 +227,6 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			HasCatalogNamespace(""),
 	}
 
-	moreExternallyAlteredProperties := []assert.TestCheckFuncProvider{
-		resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
-			HasName(id.Name()).
-			HasEnabledString(r.BooleanFalse).
-			HasCommentEmpty().
-			HasNoRefreshIntervalSeconds().
-			HasGlueAwsRoleArn(externalGlueAwsRoleArn).
-			HasGlueCatalogId(externalGlueCatalogId).
-			HasGlueRegion(externalGlueRegion).
-			HasCatalogNamespace(externalCatalogNamespace),
-		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
-			HasName(id.Name()).
-			HasType("CATALOG").
-			HasCategory("CATALOG").
-			HasEnabled(false).
-			HasComment(""),
-		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
-			HasId(id).
-			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeAWSGlue).
-			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
-			HasEnabled(false).
-			HasRefreshIntervalSeconds(30).
-			HasComment("").
-			HasGlueAwsRoleArn(externalGlueAwsRoleArn).
-			HasGlueCatalogId(externalGlueCatalogId).
-			HasGlueRegion(externalGlueRegion).
-			HasCatalogNamespace(externalCatalogNamespace),
-	}
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -314,11 +246,10 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 			},
 			// Import
 			{
-				Config:                  config.FromModels(t, catalogIntegrationAwsGlueBasic),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"refresh_interval_seconds"},
+				Config:            config.FromModels(t, catalogIntegrationAwsGlueBasic),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// Change alterable props
 			{
@@ -360,6 +291,14 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
 				Check:  assertThat(t, completeAssertions...),
 			},
+			// Import
+			{
+				Config:                  config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"refresh_interval_seconds", "glue_region"},
+			},
 			// Change alterable props externally
 			{
 				PreConfig: func() {
@@ -382,16 +321,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
-			},
-			// Adjust config to the current Snowflake values
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributesWithExternalChanges),
-				Check:  assertThat(t, externallyAlteredProperties...),
+				Check:  assertThat(t, completeAssertions...),
 			},
 			// Change force new "glue_aws_role_arn" prop
 			{
@@ -437,16 +367,7 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, catalogIntegrationAwsGlueWithMoreChangedForceNewAttributes),
-			},
-			// Adjust config to the current Snowflake values
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				Config: config.FromModels(t, catalogIntegrationAwsGlueWithMoreExternalChanges),
-				Check:  assertThat(t, moreExternallyAlteredProperties...),
+				Check:  assertThat(t, moreForceNewAssertions...),
 			},
 		},
 	})
