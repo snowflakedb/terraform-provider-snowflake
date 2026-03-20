@@ -26,6 +26,29 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* snowflake_account_parameter: adding missing parameters
+
+The `snowflake_account_parameter` resource now supports the following additional parameters:
+- `ALLOW_BIND_VALUES_ACCESS`
+- `ALLOWED_SPCS_WORKLOAD_TYPES`
+- `DATA_METRIC_SCHEDULE`
+- `DEFAULT_DBT_VERSION`
+- `DISALLOWED_SPCS_WORKLOAD_TYPES`
+- `ENABLE_BUDGET_EVENT_LOGGING`
+- `ENABLE_DATA_COMPACTION`
+- `ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS`
+- `ENABLE_ICEBERG_MERGE_ON_READ`
+- `ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB`
+- `ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT`
+- `ENABLE_TAG_PROPAGATION_EVENT_LOGGING`
+- `ICEBERG_VERSION_DEFAULT`
+- `READ_CONSISTENCY_MODE`
+- `ROW_TIMESTAMP_DEFAULT`
+- `SQL_TRACE_QUERY_TEXT`
+- `USE_WORKSPACES_FOR_SQL`
+
+No changes are required for existing configurations.
+
 ### *(new feature)* New catalog integration resources
 
 We have added new preview resources for managing catalog integrations:
