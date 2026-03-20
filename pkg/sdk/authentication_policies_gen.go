@@ -17,6 +17,8 @@ type AuthenticationPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]AuthenticationPolicyDescription, error)
+	// DescribeDetails added manually; it returns converted describe output instead of generic list of properties that regular Describe returns.
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) ([]AuthenticationPolicyDescription, error)
 }
 
 // CreateAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy.

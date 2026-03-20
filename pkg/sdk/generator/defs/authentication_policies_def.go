@@ -180,4 +180,42 @@ var authenticationPoliciesDef = g.NewInterface(
 			SQL("AUTHENTICATION POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		g.PlainStruct("AuthenticationPolicyDetails").
+			OptionalField("Name", "AccountObjectIdentifier").
+			OptionalText("Owner").
+			OptionalText("Comment").
+			Field("AuthenticationMethods", g.KindOfTSlice[sdkcommons.AuthenticationMethodsOption]()).
+			Field("ClientTypes", g.KindOfTSlice[sdkcommons.ClientTypesOption]()).
+			Field("ClientPolicy", "ClientPolicyDetails").
+			Field("SecurityIntegrations", "SecurityIntegrationDetails").
+			Field("MfaEnrollment", g.KindOfTSlice[sdkcommons.MfaEnrollmentOption]()).
+			Field("MfaPolicy", "MfaPolicyDetails").
+			Field("PatPolicy", "PatPolicyDetails").
+			Field("WorkloadIdentityPolicy", "WorkloadIdentityPolicyDetails"),
+		g.PlainStruct("ClientPolicyDetails"),
+		g.PlainStruct("SecurityIntegrationDetails").
+			Bool("All").
+			Field("SecurityIntegrations", "[]AccountObjectIdentifier"),
+		g.PlainStruct("MfaPolicyDetails").
+			Field("AllowedMethods", g.KindOfTSlice[sdkcommons.MfaPolicyAllowedMethodsOption]()).
+			Field("EnforceMfaOnExternalAuthentication", g.KindOfT[sdkcommons.EnforceMfaOnExternalAuthenticationOption]()),
+		g.PlainStruct("PatPolicyDetails").
+			Number("DefaultExpiryInDays").
+			Number("MaxExpiryInDays").
+			Field("NetworkPolicyEvaluation", g.KindOfT[sdkcommons.NetworkPolicyEvaluationOption]()).
+			Bool("RequireRoleRestrictionForServiceUsers"),
+		g.PlainStruct("WorkloadIdentityPolicyDetails").
+			Field("AllowedProviders", g.KindOfTSlice[sdkcommons.AllowedProviderOption]()).
+			Field("AllowedAwsAccounts", "WorkloadIdentityPolicyAllowedAwsAccounts").
+			Field("AllowedAzureIssuers", "WorkloadIdentityPolicyAllowedAzureIssuers").
+			Field("AllowedOidcIssuers", "WorkloadIdentityPolicyAllowedOidcIssuers"),
+		g.PlainStruct("WorkloadIdentityPolicyAllowedAwsAccounts").
+			Bool("All").
+			StringList("AllowedAwsAccounts"),
+		g.PlainStruct("WorkloadIdentityPolicyAllowedAzureIssuers").
+			Bool("All").
+			StringList("AllowedAzureIssuers"),
+		g.PlainStruct("WorkloadIdentityPolicyAllowedOidcIssuers").
+			Bool("All").
+			StringList("AllowedOidcIssuers"),
 	)

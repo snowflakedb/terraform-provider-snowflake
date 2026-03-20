@@ -98,7 +98,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 	"client_policy": {
 		Type:        schema.TypeList,
 		Optional:    true,
-		Description: "Minimum allowed version per driver/client type (e.g. GO_DRIVER = '1.14.1'). Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
+		Description: "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"client_type": {
@@ -162,15 +162,25 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 					Type:             schema.TypeInt,
 					Optional:         true,
 					Description:      "Specifies the default expiration time (in days) for a programmatic access token.",
-					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.network_policy_evaluation"},
+					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
 					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 				},
 				"max_expiry_in_days": {
 					Type:             schema.TypeInt,
 					Optional:         true,
 					Description:      "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
-					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.network_policy_evaluation"},
+					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
 					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+				},
+				"require_role_restriction_for_service_users": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Description:      booleanStringFieldDescription("If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role. Defaults to true."),
+					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
+					Default:          BooleanDefault,
+					ValidateDiagFunc: validateBooleanString,
+					// TODO: Diff suppress
+					DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeListValueInDescribe("require_role_restriction_for_service_users"),
 				},
 				"network_policy_evaluation": {
 					Type:             schema.TypeString,
@@ -178,12 +188,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 					ValidateDiagFunc: sdkValidation(sdk.ToNetworkPolicyEvaluationOption),
 					DiffSuppressFunc: NormalizeAndCompare(sdk.ToNetworkPolicyEvaluationOption),
 					Description:      "Specifies the network policy evaluation for the PAT.",
-					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.network_policy_evaluation"},
-				},
-				"require_role_restriction_for_service_users": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Description: "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role. Defaults to true.",
+					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
 				},
 			},
 		},
@@ -315,7 +320,7 @@ func ImportAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return nil, err
 	}
-	authenticationPolicyDetails := sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptions)
+	authenticationPolicyDetails := sdk.AuthenticationPolicyDetailsLegacy(authenticationPolicyDescriptions)
 	authenticationMethods, err := authenticationPolicyDetails.GetAuthenticationMethods()
 	if err != nil {
 		return nil, err
@@ -604,7 +609,7 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		authenticationPolicyDescriptions := sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptionsRaw)
+		authenticationPolicyDescriptions := sdk.AuthenticationPolicyDetailsLegacy(authenticationPolicyDescriptionsRaw)
 		if withExternalChangesMarking {
 			authenticationMethods, err := authenticationPolicyDescriptions.GetAuthenticationMethods()
 			if err != nil {
