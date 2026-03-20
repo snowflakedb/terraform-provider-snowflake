@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 func (r *CreateCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
@@ -232,8 +230,8 @@ func parseSapBdcProperties(properties []CatalogIntegrationProperty, id AccountOb
 	return params, nil
 }
 
-func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (OpenCatalogRestConfig, error) {
-	restConfig := OpenCatalogRestConfig{}
+func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (OpenCatalogRestConfigDetails, error) {
+	restConfig := OpenCatalogRestConfigDetails{}
 	var errs []error
 	parts := parseCommaSeparatedEnumMap(property)
 	for _, part := range parts {
@@ -245,7 +243,7 @@ func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (Op
 			if catalogApiType, err := ToCatalogIntegrationCatalogApiType(v); err != nil {
 				errs = append(errs, err)
 			} else {
-				restConfig.CatalogApiType = Pointer(catalogApiType)
+				restConfig.CatalogApiType = catalogApiType
 			}
 		case "CATALOG_NAME":
 			restConfig.CatalogName = v
@@ -253,15 +251,15 @@ func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (Op
 			if accessDelegationMode, err := ToCatalogIntegrationAccessDelegationMode(v); err != nil {
 				errs = append(errs, err)
 			} else {
-				restConfig.AccessDelegationMode = Pointer(accessDelegationMode)
+				restConfig.AccessDelegationMode = accessDelegationMode
 			}
 		}
 	}
 	return restConfig, errors.Join(errs...)
 }
 
-func parseIcebergRestRestConfigProperty(property CatalogIntegrationProperty) (IcebergRestRestConfig, error) {
-	restConfig := IcebergRestRestConfig{}
+func parseIcebergRestRestConfigProperty(property CatalogIntegrationProperty) (IcebergRestRestConfigDetails, error) {
+	restConfig := IcebergRestRestConfigDetails{}
 	var errs []error
 	parts := parseCommaSeparatedEnumMap(property)
 	for _, part := range parts {
@@ -270,30 +268,30 @@ func parseIcebergRestRestConfigProperty(property CatalogIntegrationProperty) (Ic
 		case "CATALOG_URI":
 			restConfig.CatalogUri = v
 		case "PREFIX":
-			restConfig.Prefix = String(emptyIfNull(v))
+			restConfig.Prefix = emptyIfNull(v)
 		case "CATALOG_API_TYPE":
 			if catalogApiType, err := ToCatalogIntegrationCatalogApiType(v); err != nil {
 				errs = append(errs, err)
 			} else {
-				restConfig.CatalogApiType = Pointer(catalogApiType)
+				restConfig.CatalogApiType = catalogApiType
 			}
 		case "CATALOG_NAME":
-			restConfig.CatalogName = String(emptyIfNull(v))
+			restConfig.CatalogName = emptyIfNull(v)
 		case "ACCESS_DELEGATION_MODE":
 			if accessDelegationMode, err := ToCatalogIntegrationAccessDelegationMode(v); err != nil {
 				errs = append(errs, err)
 			} else {
-				restConfig.AccessDelegationMode = Pointer(accessDelegationMode)
+				restConfig.AccessDelegationMode = accessDelegationMode
 			}
 		}
 	}
 	return restConfig, errors.Join(errs...)
 }
 
-func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAuthRestAuthentication, *BearerRestAuthentication, *SigV4RestAuthentication, error) {
-	var oAuthRestAuthentication *OAuthRestAuthentication
-	var bearerRestAuthentication *BearerRestAuthentication
-	var sigV4RestAuthentication *SigV4RestAuthentication
+func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAuthRestAuthenticationDetails, *BearerRestAuthenticationDetails, *SigV4RestAuthenticationDetails, error) {
+	var oAuthRestAuthentication *OAuthRestAuthenticationDetails
+	var bearerRestAuthentication *BearerRestAuthenticationDetails
+	var sigV4RestAuthentication *SigV4RestAuthenticationDetails
 	var errs []error
 	parts := parseCommaSeparatedEnumMap(property)
 	for _, part := range parts {
@@ -324,31 +322,31 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*OAut
 	return oAuthRestAuthentication, bearerRestAuthentication, sigV4RestAuthentication, errors.Join(errs...)
 }
 
-func parseOAuthRestAuthenticationProperty(parts []string) (*OAuthRestAuthentication, error) {
-	restAuthentication := &OAuthRestAuthentication{}
+func parseOAuthRestAuthenticationProperty(parts []string) (*OAuthRestAuthenticationDetails, error) {
+	restAuthentication := &OAuthRestAuthenticationDetails{}
 	for _, part := range parts {
 		k, v, _ := strings.Cut(part, "=")
 		switch k {
 		case "OAUTH_TOKEN_URI":
 			// OAUTH_TOKEN_URI is always returned, even if unset
-			restAuthentication.OauthTokenUri = String(v)
+			restAuthentication.OauthTokenUri = v
 		case "OAUTH_CLIENT_ID":
 			restAuthentication.OauthClientId = v
 		case "OAUTH_ALLOWED_SCOPES":
-			restAuthentication.OauthAllowedScopes = collections.Map(ParseCommaSeparatedStringArray(v, false), func(s string) StringListItemWrapper { return StringListItemWrapper{s} })
+			restAuthentication.OauthAllowedScopes = ParseCommaSeparatedStringArray(v, false)
 		}
 		// OAUTH_CLIENT_SECRET not returned
 	}
 	return restAuthentication, nil
 }
 
-func parseBearerRestAuthenticationProperty() (*BearerRestAuthentication, error) {
-	restAuthentication := &BearerRestAuthentication{}
+func parseBearerRestAuthenticationProperty() (*BearerRestAuthenticationDetails, error) {
+	restAuthentication := &BearerRestAuthenticationDetails{}
 	return restAuthentication, nil
 }
 
-func parseSigV4RestAuthenticationProperty(parts []string) (*SigV4RestAuthentication, error) {
-	restAuthentication := &SigV4RestAuthentication{}
+func parseSigV4RestAuthenticationProperty(parts []string) (*SigV4RestAuthenticationDetails, error) {
+	restAuthentication := &SigV4RestAuthenticationDetails{}
 	for _, part := range parts {
 		k, v, _ := strings.Cut(part, "=")
 		switch k {
@@ -356,7 +354,7 @@ func parseSigV4RestAuthenticationProperty(parts []string) (*SigV4RestAuthenticat
 			restAuthentication.Sigv4IamRole = v
 		case "SIGV4_SIGNING_REGION":
 			// SIGV4_SIGNING_REGION is always returned, even if unset
-			restAuthentication.Sigv4SigningRegion = String(v)
+			restAuthentication.Sigv4SigningRegion = v
 		}
 		// SIGV4_EXTERNAL_ID not returned
 	}

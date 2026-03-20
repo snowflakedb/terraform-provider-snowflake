@@ -27,6 +27,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_authentication_policies_datasource", want: AuthenticationPoliciesDatasource},
 		{input: "snowflake_catalog_integration_aws_glue_resource", want: CatalogIntegrationAwsGlueResource},
 		{input: "snowflake_catalog_integration_object_storage_resource", want: CatalogIntegrationObjectStorageResource},
+		{input: "snowflake_catalog_integration_open_catalog_resource", want: CatalogIntegrationOpenCatalogResource},
 		{input: "snowflake_compute_pool_resource", want: ComputePoolResource},
 		{input: "snowflake_compute_pools_datasource", want: ComputePoolsDatasource},
 		{input: "snowflake_cortex_search_service_resource", want: CortexSearchServiceResource},
