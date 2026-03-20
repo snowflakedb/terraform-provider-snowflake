@@ -21,20 +21,19 @@ var (
 	AuthenticationPolicyPatPolicyDef         = g.NewQueryStruct("AuthenticationPolicyPatPolicy").
 							OptionalNumberAssignment("DEFAULT_EXPIRY_IN_DAYS", g.ParameterOptions().NoQuotes()).
 							OptionalNumberAssignment("MAX_EXPIRY_IN_DAYS", g.ParameterOptions().NoQuotes()).
+							OptionalBooleanAssignment("REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS", g.ParameterOptions()).
 							OptionalAssignment(
 			"NETWORK_POLICY_EVALUATION",
 			g.KindOfT[sdkcommons.NetworkPolicyEvaluationOption](),
 			g.ParameterOptions().NoQuotes(),
 		).
-		OptionalBooleanAssignment("REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS", g.ParameterOptions()).
-		WithValidation(g.AtLeastOneValueSet, "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation")
+		WithValidation(g.AtLeastOneValueSet, "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation")
 	AuthenticationPolicyAllowedProviderListItemDef = g.NewQueryStruct("AuthenticationPolicyAllowedProviderListItem").PredefinedQueryStructField("Provider", g.KindOfT[sdkcommons.AllowedProviderOption](), g.KeywordOptions().SingleQuotes().Required())
-	// CLIENT_POLICY entry: ClientType (keyword) + Params with SQL("=") prefix so entry renders as KEY = ( PARAMS ).
-	AuthenticationPolicyClientPolicyEntryParamsDef = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntryParams").
-							OptionalTextAssignment("MINIMUM_VERSION", g.ParameterOptions().SingleQuotes())
-	AuthenticationPolicyClientPolicyEntryDef = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntry").
+	AuthenticationPolicyClientPolicyEntryDef       = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntry").
 							PredefinedQueryStructField("ClientType", g.KindOfT[sdkcommons.ClientPolicyDriverType](), g.KeywordOptions().NoQuotes().Required()).
 							OptionalQueryStructField("Params", AuthenticationPolicyClientPolicyEntryParamsDef, g.ListOptions().SQL("=").Parentheses())
+	AuthenticationPolicyClientPolicyEntryParamsDef = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntryParams").
+							OptionalTextAssignment("MINIMUM_VERSION", g.ParameterOptions().SingleQuotes())
 	AuthenticationPolicyWorkloadIdentityPolicyDef = g.NewQueryStruct("AuthenticationPolicyWorkloadIdentityPolicy").
 							ListAssignment("ALLOWED_PROVIDERS", "AuthenticationPolicyAllowedProviderListItem", g.ParameterOptions().Parentheses()).
 							ListAssignment("ALLOWED_AWS_ACCOUNTS", "StringListItemWrapper", g.ParameterOptions().Parentheses()).

@@ -82,8 +82,8 @@ type AuthenticationPolicyWorkloadIdentityPolicy struct {
 type AuthenticationPolicyPatPolicy struct {
 	DefaultExpiryInDays                   *int                           `ddl:"parameter,no_quotes" sql:"DEFAULT_EXPIRY_IN_DAYS"`
 	MaxExpiryInDays                       *int                           `ddl:"parameter,no_quotes" sql:"MAX_EXPIRY_IN_DAYS"`
-	NetworkPolicyEvaluation               *NetworkPolicyEvaluationOption `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY_EVALUATION"`
 	RequireRoleRestrictionForServiceUsers *bool                          `ddl:"parameter" sql:"REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS"`
+	NetworkPolicyEvaluation               *NetworkPolicyEvaluationOption `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY_EVALUATION"`
 }
 
 // AlterAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-authentication-policy.

@@ -100,8 +100,8 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
 			DefaultExpiryInDays:                   r.PatPolicy.DefaultExpiryInDays,
 			MaxExpiryInDays:                       r.PatPolicy.MaxExpiryInDays,
-			NetworkPolicyEvaluation:               r.PatPolicy.NetworkPolicyEvaluation,
 			RequireRoleRestrictionForServiceUsers: r.PatPolicy.RequireRoleRestrictionForServiceUsers,
+			NetworkPolicyEvaluation:               r.PatPolicy.NetworkPolicyEvaluation,
 		}
 	}
 	if r.WorkloadIdentityPolicy != nil {
@@ -145,8 +145,8 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 			opts.Set.PatPolicy = &AuthenticationPolicyPatPolicy{
 				DefaultExpiryInDays:                   r.Set.PatPolicy.DefaultExpiryInDays,
 				MaxExpiryInDays:                       r.Set.PatPolicy.MaxExpiryInDays,
-				NetworkPolicyEvaluation:               r.Set.PatPolicy.NetworkPolicyEvaluation,
 				RequireRoleRestrictionForServiceUsers: r.Set.PatPolicy.RequireRoleRestrictionForServiceUsers,
+				NetworkPolicyEvaluation:               r.Set.PatPolicy.NetworkPolicyEvaluation,
 			}
 		}
 		if r.Set.WorkloadIdentityPolicy != nil {

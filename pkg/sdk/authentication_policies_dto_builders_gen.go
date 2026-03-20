@@ -110,13 +110,13 @@ func (s *AuthenticationPolicyPatPolicyRequest) WithMaxExpiryInDays(maxExpiryInDa
 	return s
 }
 
-func (s *AuthenticationPolicyPatPolicyRequest) WithNetworkPolicyEvaluation(networkPolicyEvaluation NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyRequest {
-	s.NetworkPolicyEvaluation = &networkPolicyEvaluation
+func (s *AuthenticationPolicyPatPolicyRequest) WithRequireRoleRestrictionForServiceUsers(requireRoleRestrictionForServiceUsers bool) *AuthenticationPolicyPatPolicyRequest {
+	s.RequireRoleRestrictionForServiceUsers = &requireRoleRestrictionForServiceUsers
 	return s
 }
 
-func (s *AuthenticationPolicyPatPolicyRequest) WithRequireRoleRestrictionForServiceUsers(requireRoleRestrictionForServiceUsers bool) *AuthenticationPolicyPatPolicyRequest {
-	s.RequireRoleRestrictionForServiceUsers = &requireRoleRestrictionForServiceUsers
+func (s *AuthenticationPolicyPatPolicyRequest) WithNetworkPolicyEvaluation(networkPolicyEvaluation NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyRequest {
+	s.NetworkPolicyEvaluation = &networkPolicyEvaluation
 	return s
 }
 

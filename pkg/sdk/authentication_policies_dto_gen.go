@@ -38,8 +38,8 @@ type SecurityIntegrationsOptionRequest struct {
 type AuthenticationPolicyPatPolicyRequest struct {
 	DefaultExpiryInDays                   *int
 	MaxExpiryInDays                       *int
-	NetworkPolicyEvaluation               *NetworkPolicyEvaluationOption
 	RequireRoleRestrictionForServiceUsers *bool
+	NetworkPolicyEvaluation               *NetworkPolicyEvaluationOption
 }
 
 type AuthenticationPolicyWorkloadIdentityPolicyRequest struct {
