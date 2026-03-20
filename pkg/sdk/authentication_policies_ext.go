@@ -1,20 +1,8 @@
 package sdk
 
 import (
-	"fmt"
-	"slices"
-	"strings"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
-
-func ToClientPolicyDriverType(s string) (ClientPolicyDriverType, error) {
-	u := strings.ToUpper(s)
-	if !slices.Contains(AllClientPolicyDriverTypes, ClientPolicyDriverType(u)) {
-		return "", fmt.Errorf("invalid client policy driver type: %s", s)
-	}
-	return ClientPolicyDriverType(u), nil
-}
 
 type AuthenticationPolicyDetails []AuthenticationPolicyDescription
 

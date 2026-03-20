@@ -256,6 +256,14 @@ func ToClientTypesOption(s string) (ClientTypesOption, error) {
 	return ClientTypesOption(s), nil
 }
 
+func ToClientPolicyDriverType(s string) (ClientPolicyDriverType, error) {
+	u := strings.ToUpper(s)
+	if !slices.Contains(AllClientPolicyDriverTypes, ClientPolicyDriverType(u)) {
+		return "", fmt.Errorf("invalid client policy driver type: %s", s)
+	}
+	return ClientPolicyDriverType(u), nil
+}
+
 func ToAllowedProviderOption(s string) (AllowedProviderOption, error) {
 	s = strings.ToUpper(s)
 	if !slices.Contains(AllAllowedProviderOptions, AllowedProviderOption(s)) {

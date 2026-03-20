@@ -61,6 +61,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
+		assertProperty(t, desc, "CLIENT_POLICY", "{}")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[ALL]")
 		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")
 		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")
@@ -115,7 +116,17 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
 					{Value: "https://example.com"},
 				}),
-			))
+			).
+			WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyEntry{
+				{
+					ClientType: sdk.ClientPolicyDriverTypeGoDriver,
+					Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.14.1")},
+				},
+				{
+					ClientType: sdk.ClientPolicyDriverTypeJdbcDriver,
+					Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("3.25.0")},
+				},
+			}))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().AuthenticationPolicy.DropFunc(t, id))
 
@@ -129,10 +140,27 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD, SAML, OIDC]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL]")
+		assertProperty(t, desc, "CLIENT_POLICY", "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
 		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")
 		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")
 		assertProperty(t, desc, "WORKLOAD_IDENTITY_POLICY", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")
+	})
+
+	t.Run("Create - CLIENT_POLICY rejected when CLIENT_TYPES is incompatible with Snowflake rules", func(t *testing.T) {
+		// Snowflake allows CLIENT_POLICY only when CLIENT_TYPES is empty, includes ALL, or includes DRIVERS.
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.AuthenticationPolicies.Create(ctx, sdk.NewCreateAuthenticationPolicyRequest(id).
+			WithClientTypes([]sdk.ClientTypes{{ClientType: sdk.ClientTypesSnowflakeUi}}).
+			WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyEntry{
+				{
+					ClientType: sdk.ClientPolicyDriverTypeGoDriver,
+					Params:     &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("1.0.0")},
+				},
+			}),
+		)
+		require.Error(t, err)
+		assert.EqualError(t, err, "004800 (22023): Authentication policy can not contain CLIENT_POLICY of 'GO_DRIVER' without including 'DRIVERS' in CLIENT_TYPES.")
 	})
 
 	t.Run("Alter - set and unset properties", func(t *testing.T) {
@@ -187,7 +215,11 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 					WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
 						{Value: "https://example.com"},
 					}),
-				)),
+				).
+				WithClientPolicy([]sdk.AuthenticationPolicyClientPolicyEntry{
+					{ClientType: sdk.ClientPolicyDriverTypeSqlAlchemy, Params: &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: sdk.String("2.0.0")}},
+				}),
+			),
 		)
 		require.NoError(t, err)
 
@@ -199,6 +231,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD, SAML, OIDC]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL, SNOWFLAKE_UI]")
+		assertProperty(t, desc, "CLIENT_POLICY", "{SQL_ALCHEMY={MINIMUM_VERSION=2.0.0}}")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
 		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")
 		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")
@@ -210,6 +243,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				WithMfaEnrollment(true).
 				WithSecurityIntegrations(true).
 				WithClientTypes(true).
+				WithClientPolicy(true).
 				WithAuthenticationMethods(true).
 				WithMfaPolicy(true).
 				WithPatPolicy(true).
@@ -225,6 +259,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		assertProperty(t, desc, "MFA_AUTHENTICATION_METHODS", "[PASSWORD]")
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
+		assertProperty(t, desc, "CLIENT_POLICY", "{}")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[ALL]")
 		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")
 		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")
@@ -360,7 +395,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		desc, err := client.AuthenticationPolicies.Describe(ctx, authenticationPolicy.ID())
 		require.NoError(t, err)
 
-		assert.GreaterOrEqual(t, len(desc), 9)
+		assert.GreaterOrEqual(t, len(desc), 10)
 		assert.Contains(t, desc, sdk.AuthenticationPolicyDescription{
 			Property:    "COMMENT",
 			Value:       "some_comment",
