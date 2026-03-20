@@ -188,7 +188,7 @@ var authenticationPoliciesDef = g.NewInterface(
 			Field("ClientTypes", g.KindOfTSlice[sdkcommons.ClientTypesOption]()).
 			Field("ClientPolicy", "ClientPolicyDetails").
 			Field("SecurityIntegrations", "SecurityIntegrationDetails").
-			Field("MfaEnrollment", g.KindOfTSlice[sdkcommons.MfaEnrollmentOption]()).
+			Field("MfaEnrollment", g.KindOfT[sdkcommons.MfaEnrollmentOption]()).
 			Field("MfaPolicy", "MfaPolicyDetails").
 			Field("PatPolicy", "PatPolicyDetails").
 			Field("WorkloadIdentityPolicy", "WorkloadIdentityPolicyDetails"),

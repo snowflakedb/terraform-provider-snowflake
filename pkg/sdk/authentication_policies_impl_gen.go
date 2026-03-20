@@ -4,9 +4,6 @@ package sdk
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -47,9 +44,6 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 	if err != nil {
 		return nil, err
 	}
-	dbRows = slices.DeleteFunc(dbRows, func(row showAuthenticationPolicyDBRow) bool {
-		return !row.DatabaseName.Valid || !row.SchemaName.Valid
-	})
 	return convertRows[showAuthenticationPolicyDBRow, AuthenticationPolicy](dbRows)
 }
 
@@ -200,32 +194,8 @@ func (r *ShowAuthenticationPolicyRequest) toOpts() *ShowAuthenticationPolicyOpti
 }
 
 func (r showAuthenticationPolicyDBRow) convert() (*AuthenticationPolicy, error) {
-	// adjusted manually
-	policy := &AuthenticationPolicy{
-		Name:    r.Name,
-		Kind:    r.Kind,
-		Options: r.Options,
-		Comment: r.Comment,
-	}
-
-	var errs []error
-	if !r.DatabaseName.Valid {
-		errs = append(errs, fmt.Errorf("Missing database name for authentication policy with name: %s", r.Name))
-	}
-	if !r.SchemaName.Valid {
-		errs = append(errs, fmt.Errorf("Missing schema name for authentication policy with name: %s", r.Name))
-	}
-	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
-	}
-
-	mapNullStringToNonNullableField(&policy.DatabaseName, r.DatabaseName)
-	mapNullStringToNonNullableField(&policy.SchemaName, r.SchemaName)
-	mapNullTimeToNonNullableField(&policy.CreatedOn, r.CreatedOn)
-	mapNullStringToNonNullableField(&policy.Owner, r.Owner)
-	mapNullStringToNonNullableField(&policy.OwnerRoleType, r.OwnerRoleType)
-
-	return policy, nil
+	// TODO: Mapping
+	return &AuthenticationPolicy{}, nil
 }
 
 func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPolicyOptions {
@@ -236,11 +206,6 @@ func (r *DescribeAuthenticationPolicyRequest) toOpts() *DescribeAuthenticationPo
 }
 
 func (r describeAuthenticationPolicyDBRow) convert() (*AuthenticationPolicyDescription, error) {
-	// adjusted manually
-	return &AuthenticationPolicyDescription{
-		Property:    r.Property,
-		Value:       r.Value,
-		Default:     r.Default,
-		Description: r.Description,
-	}, nil
+	// TODO: Mapping
+	return &AuthenticationPolicyDescription{}, nil
 }

@@ -18,7 +18,7 @@ type AuthenticationPolicies interface {
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]AuthenticationPolicyDescription, error)
 	// DescribeDetails added manually; it returns converted describe output instead of generic list of properties that regular Describe returns.
-	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) ([]AuthenticationPolicyDescription, error)
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicyDetails, error)
 }
 
 // CreateAuthenticationPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy.
@@ -193,4 +193,59 @@ type AuthenticationPolicyDescription struct {
 	Value       string
 	Default     string
 	Description string
+}
+
+type AuthenticationPolicyDetails struct {
+	Name                   *AccountObjectIdentifier
+	Owner                  *string
+	Comment                *string
+	AuthenticationMethods  []AuthenticationMethodsOption
+	ClientTypes            []ClientTypesOption
+	ClientPolicy           ClientPolicyDetails
+	SecurityIntegrations   SecurityIntegrationDetails
+	MfaEnrollment          MfaEnrollmentOption
+	MfaPolicy              MfaPolicyDetails
+	PatPolicy              PatPolicyDetails
+	WorkloadIdentityPolicy WorkloadIdentityPolicyDetails
+}
+
+type ClientPolicyDetails struct{}
+
+type SecurityIntegrationDetails struct {
+	All                  bool
+	SecurityIntegrations []AccountObjectIdentifier
+}
+
+type MfaPolicyDetails struct {
+	AllowedMethods                     []MfaPolicyAllowedMethodsOption
+	EnforceMfaOnExternalAuthentication EnforceMfaOnExternalAuthenticationOption
+}
+
+type PatPolicyDetails struct {
+	DefaultExpiryInDays                   int
+	MaxExpiryInDays                       int
+	NetworkPolicyEvaluation               NetworkPolicyEvaluationOption
+	RequireRoleRestrictionForServiceUsers bool
+}
+
+type WorkloadIdentityPolicyDetails struct {
+	AllowedProviders    []AllowedProviderOption
+	AllowedAwsAccounts  WorkloadIdentityPolicyAllowedAwsAccounts
+	AllowedAzureIssuers WorkloadIdentityPolicyAllowedAzureIssuers
+	AllowedOidcIssuers  WorkloadIdentityPolicyAllowedOidcIssuers
+}
+
+type WorkloadIdentityPolicyAllowedAwsAccounts struct {
+	All                bool
+	AllowedAwsAccounts []string
+}
+
+type WorkloadIdentityPolicyAllowedAzureIssuers struct {
+	All                 bool
+	AllowedAzureIssuers []string
+}
+
+type WorkloadIdentityPolicyAllowedOidcIssuers struct {
+	All                bool
+	AllowedOidcIssuers []string
 }
