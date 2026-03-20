@@ -55,10 +55,10 @@ func TestAuthenticationPolicies_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.PatPolicy.DefaultExpiryInDays opts.PatPolicy.MaxExpiryInDays opts.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.PatPolicy.DefaultExpiryInDays opts.PatPolicy.MaxExpiryInDays opts.PatPolicy.RequireRoleRestrictionForServiceUsers opts.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.PatPolicy = &AuthenticationPolicyPatPolicy{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.WorkloadIdentityPolicy.AllowedProviders opts.WorkloadIdentityPolicy.AllowedAwsAccounts opts.WorkloadIdentityPolicy.AllowedAzureIssuers opts.WorkloadIdentityPolicy.AllowedOidcIssuers] should be set", func(t *testing.T) {
@@ -205,12 +205,12 @@ func TestAuthenticationPolicies_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.PatPolicy.DefaultExpiryInDays opts.Set.PatPolicy.MaxExpiryInDays opts.Set.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.PatPolicy.DefaultExpiryInDays opts.Set.PatPolicy.MaxExpiryInDays opts.Set.PatPolicy.RequireRoleRestrictionForServiceUsers opts.Set.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AuthenticationPolicySet{
 			PatPolicy: &AuthenticationPolicyPatPolicy{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.WorkloadIdentityPolicy.AllowedProviders opts.Set.WorkloadIdentityPolicy.AllowedAwsAccounts opts.Set.WorkloadIdentityPolicy.AllowedAzureIssuers opts.Set.WorkloadIdentityPolicy.AllowedOidcIssuers] should be set", func(t *testing.T) {

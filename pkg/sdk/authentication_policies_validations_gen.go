@@ -32,8 +32,8 @@ func (opts *CreateAuthenticationPolicyOptions) validate() error {
 		}
 	}
 	if valueSet(opts.PatPolicy) {
-		if !anyValueSet(opts.PatPolicy.DefaultExpiryInDays, opts.PatPolicy.MaxExpiryInDays, opts.PatPolicy.NetworkPolicyEvaluation) {
-			errs = append(errs, errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation"))
+		if !anyValueSet(opts.PatPolicy.DefaultExpiryInDays, opts.PatPolicy.MaxExpiryInDays, opts.PatPolicy.RequireRoleRestrictionForServiceUsers, opts.PatPolicy.NetworkPolicyEvaluation) {
+			errs = append(errs, errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"))
 		}
 	}
 	if valueSet(opts.WorkloadIdentityPolicy) {
@@ -73,8 +73,8 @@ func (opts *AlterAuthenticationPolicyOptions) validate() error {
 			}
 		}
 		if valueSet(opts.Set.PatPolicy) {
-			if !anyValueSet(opts.Set.PatPolicy.DefaultExpiryInDays, opts.Set.PatPolicy.MaxExpiryInDays, opts.Set.PatPolicy.NetworkPolicyEvaluation) {
-				errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "NetworkPolicyEvaluation"))
+			if !anyValueSet(opts.Set.PatPolicy.DefaultExpiryInDays, opts.Set.PatPolicy.MaxExpiryInDays, opts.Set.PatPolicy.RequireRoleRestrictionForServiceUsers, opts.Set.PatPolicy.NetworkPolicyEvaluation) {
+				errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"))
 			}
 		}
 		if valueSet(opts.Set.WorkloadIdentityPolicy) {
