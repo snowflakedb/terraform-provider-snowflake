@@ -31,7 +31,7 @@ var (
 	AuthenticationPolicyAllowedProviderListItemDef = g.NewQueryStruct("AuthenticationPolicyAllowedProviderListItem").PredefinedQueryStructField("Provider", g.KindOfT[sdkcommons.AllowedProviderOption](), g.KeywordOptions().SingleQuotes().Required())
 	AuthenticationPolicyClientPolicyEntryDef       = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntry").
 							PredefinedQueryStructField("ClientType", g.KindOfT[sdkcommons.ClientPolicyDriverType](), g.KeywordOptions().NoQuotes().Required()).
-							OptionalQueryStructField("Params", AuthenticationPolicyClientPolicyEntryParamsDef, g.ListOptions().SQL("=").Parentheses())
+							OptionalQueryStructField("Params", AuthenticationPolicyClientPolicyEntryParamsDef, g.ListOptions().SQL("=").Parentheses().Required())
 	AuthenticationPolicyClientPolicyEntryParamsDef = g.NewQueryStruct("AuthenticationPolicyClientPolicyEntryParams").
 							OptionalTextAssignment("MINIMUM_VERSION", g.ParameterOptions().SingleQuotes())
 	AuthenticationPolicyWorkloadIdentityPolicyDef = g.NewQueryStruct("AuthenticationPolicyWorkloadIdentityPolicy").
