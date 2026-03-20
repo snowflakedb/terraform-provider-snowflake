@@ -42,6 +42,22 @@ var AllMfaAuthenticationMethods = []MfaAuthenticationMethodsOption{
 	MfaAuthenticationMethodsPassword,
 }
 
+type MfaAuthenticationMethodsReadOption string
+
+const (
+	MfaAuthenticationMethodsReadAll      MfaAuthenticationMethodsReadOption = "ALL"
+	MfaAuthenticationMethodsReadSaml     MfaAuthenticationMethodsReadOption = "SAML"
+	MfaAuthenticationMethodsReadPassword MfaAuthenticationMethodsReadOption = "PASSWORD"
+	MfaAuthenticationMethodsReadOidc     MfaAuthenticationMethodsReadOption = "OIDC"
+)
+
+var AllMfaAuthenticationMethodsReadOptions = []MfaAuthenticationMethodsReadOption{
+	MfaAuthenticationMethodsReadAll,
+	MfaAuthenticationMethodsReadSaml,
+	MfaAuthenticationMethodsReadPassword,
+	MfaAuthenticationMethodsReadOidc,
+}
+
 type MfaEnrollmentOption string
 
 const (
@@ -164,6 +180,14 @@ func ToMfaAuthenticationMethodsOption(s string) (MfaAuthenticationMethodsOption,
 		return "", fmt.Errorf("invalid MFA authentication method: %s", s)
 	}
 	return MfaAuthenticationMethodsOption(s), nil
+}
+
+func ToMfaAuthenticationMethodsReadOption(s string) (MfaAuthenticationMethodsReadOption, error) {
+	s = strings.ToUpper(s)
+	if !slices.Contains(AllMfaAuthenticationMethodsReadOptions, MfaAuthenticationMethodsReadOption(s)) {
+		return "", fmt.Errorf("invalid MFA authentication method read option: %s", s)
+	}
+	return MfaAuthenticationMethodsReadOption(s), nil
 }
 
 func ToMfaEnrollmentOption(s string) (MfaEnrollmentOption, error) {
