@@ -183,16 +183,6 @@ func (w *WarehouseShowOutputAssert) HasGeneration(expected sdk.WarehouseGenerati
 	return w
 }
 
-func (w *WarehouseShowOutputAssert) HasMaxStatementSize(expected sdk.MaxStatementSize) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("max_statement_size", expected))
-	return w
-}
-
-func (w *WarehouseShowOutputAssert) HasMaxBurstRateCredits(expected int) *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueSet("max_burst_rate_credits", expected))
-	return w
-}
-
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -339,15 +329,5 @@ func (w *WarehouseShowOutputAssert) HasNoResourceConstraint() *WarehouseShowOutp
 
 func (w *WarehouseShowOutputAssert) HasNoGeneration() *WarehouseShowOutputAssert {
 	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("generation"))
-	return w
-}
-
-func (w *WarehouseShowOutputAssert) HasNoMaxStatementSize() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("max_statement_size"))
-	return w
-}
-
-func (w *WarehouseShowOutputAssert) HasNoMaxBurstRateCredits() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_burst_rate_credits"))
 	return w
 }

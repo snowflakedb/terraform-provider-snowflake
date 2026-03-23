@@ -236,14 +236,6 @@ by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabl
 No changes in configuration are required.
 Without the flag enabled, the behavior remains the same as in previous versions.
 
-### *(new feature)* snowflake_warehouses data source: new show_output fields for adaptive warehouses
-
-The `show_output` of `snowflake_warehouses` data source now includes two additional fields:
-- `max_statement_size` - The maximum statement size for adaptive warehouses.
-- `max_burst_rate_credits` - The maximum burst rate credits for adaptive warehouses.
-
-Both fields are only populated for adaptive warehouses and will be empty for standard and Snowpark-optimized warehouses. No changes are required for existing configurations.
-
 ## v2.13.x ➞ v2.14.0
 
 ### *(new feature)* Private Facts and Metrics support in Semantic Views

@@ -134,25 +134,10 @@ var showWarehouseSchemaRegular = map[string]*schema.Schema{
 	},
 }
 
-// showWarehouseSchemaAdaptive contains fields only present for adaptive warehouses.
-var showWarehouseSchemaAdaptive = map[string]*schema.Schema{
-	"max_statement_size": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"max_burst_rate_credits": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-}
-
-// ShowWarehouseSchema contains all warehouse show output fields (used by the data source).
-var ShowWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaRegular, showWarehouseSchemaAdaptive)
-
-// ShowRegularWarehouseSchema contains common and regular fields (used by the regular warehouse resource).
+// ShowRegularWarehouseSchema contains common and regular fields (used by the warehouse resource and data source).
 var ShowRegularWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaRegular)
 
-var _ = ShowWarehouseSchema
+var _ = ShowRegularWarehouseSchema
 
 func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := make(map[string]any)
@@ -220,14 +205,6 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	// Adjusted manually.
 	if warehouse.Generation != nil {
 		warehouseSchema["generation"] = string(*warehouse.Generation)
-	}
-	// Adjusted manually.
-	if warehouse.MaxStatementSize != nil {
-		warehouseSchema["max_statement_size"] = string(*warehouse.MaxStatementSize)
-	}
-	// Adjusted manually.
-	if warehouse.MaxBurstRateCredits != nil {
-		warehouseSchema["max_burst_rate_credits"] = *warehouse.MaxBurstRateCredits
 	}
 	return warehouseSchema
 }

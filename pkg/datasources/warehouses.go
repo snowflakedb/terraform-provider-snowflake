@@ -42,7 +42,7 @@ var warehousesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of SHOW WAREHOUSES.",
 					Elem: &schema.Resource{
-						Schema: schemas.ShowWarehouseSchema,
+						Schema: schemas.ShowRegularWarehouseSchema,
 					},
 				},
 				resources.DescribeOutputAttributeName: {

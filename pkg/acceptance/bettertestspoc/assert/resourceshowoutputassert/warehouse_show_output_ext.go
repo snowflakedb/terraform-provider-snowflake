@@ -86,13 +86,3 @@ func (w *WarehouseShowOutputAssert) HasGenerationNotEmpty() *WarehouseShowOutput
 	w.AddAssertion(assert.ResourceShowOutputValuePresent("generation"))
 	return w
 }
-
-func (w *WarehouseShowOutputAssert) HasMaxStatementSizeEmpty() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("max_statement_size", ""))
-	return w
-}
-
-func (w *WarehouseShowOutputAssert) HasMaxBurstRateCreditsEmpty() *WarehouseShowOutputAssert {
-	w.AddAssertion(assert.ResourceShowOutputValueSet("max_burst_rate_credits", "0"))
-	return w
-}
