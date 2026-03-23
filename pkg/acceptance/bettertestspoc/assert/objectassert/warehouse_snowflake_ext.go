@@ -96,17 +96,6 @@ func (w *WarehouseAssert) HasNoAutoSuspend() *WarehouseAssert {
 	return w
 }
 
-func (w *WarehouseAssert) HasNoAutoResume() *WarehouseAssert {
-	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
-		t.Helper()
-		if o.AutoResume {
-			return fmt.Errorf("expected auto resume to be false; got: %t", o.AutoResume)
-		}
-		return nil
-	})
-	return w
-}
-
 func (w *WarehouseAssert) HasNoEnableQueryAcceleration() *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()

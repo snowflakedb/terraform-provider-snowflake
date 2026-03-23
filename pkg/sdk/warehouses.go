@@ -391,10 +391,12 @@ type CreateAdaptiveWarehouseOptions struct {
 	Comment          *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	MaxStatementSize *MaxStatementSize `ddl:"parameter,single_quotes" sql:"MAX_STATEMENT_SIZE"`
 
+	// Tags
+	Tag []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
+
 	// Object params
-	StatementQueuedTimeoutInSeconds *int             `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
-	StatementTimeoutInSeconds       *int             `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-	Tag                             []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
+	StatementQueuedTimeoutInSeconds *int `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds       *int `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 }
 
 func (opts *CreateAdaptiveWarehouseOptions) validate() error {
