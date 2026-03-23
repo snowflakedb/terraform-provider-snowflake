@@ -201,7 +201,7 @@ type AuthenticationPolicyDetails struct {
 	Comment                *string
 	AuthenticationMethods  []AuthenticationMethodsOption
 	ClientTypes            []ClientTypesOption
-	ClientPolicy           ClientPolicyDetails
+	ClientPolicy           map[ClientPolicyDriverType]*ClientPolicyDetails
 	SecurityIntegrations   SecurityIntegrationDetails
 	MfaEnrollment          MfaEnrollmentOption
 	MfaPolicy              MfaPolicyDetails
@@ -209,7 +209,9 @@ type AuthenticationPolicyDetails struct {
 	WorkloadIdentityPolicy WorkloadIdentityPolicyDetails
 }
 
-type ClientPolicyDetails struct{}
+type ClientPolicyDetails struct {
+	MinimumVersion string
+}
 
 type SecurityIntegrationDetails struct {
 	All                  bool

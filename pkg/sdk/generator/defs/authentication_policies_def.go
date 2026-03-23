@@ -186,13 +186,14 @@ var authenticationPoliciesDef = g.NewInterface(
 			OptionalText("Comment").
 			Field("AuthenticationMethods", g.KindOfTSlice[sdkcommons.AuthenticationMethodsOption]()).
 			Field("ClientTypes", g.KindOfTSlice[sdkcommons.ClientTypesOption]()).
-			Field("ClientPolicy", "ClientPolicyDetails").
+			Field("ClientPolicy", "map[ClientPolicyDriverType]ClientPolicyDetails").
 			Field("SecurityIntegrations", "SecurityIntegrationDetails").
 			Field("MfaEnrollment", g.KindOfT[sdkcommons.MfaEnrollmentOption]()).
 			Field("MfaPolicy", "MfaPolicyDetails").
 			Field("PatPolicy", "PatPolicyDetails").
 			Field("WorkloadIdentityPolicy", "WorkloadIdentityPolicyDetails"),
-		g.PlainStruct("ClientPolicyDetails"),
+		g.PlainStruct("ClientPolicyDetails").
+			Text("MinimumVersion"),
 		g.PlainStruct("SecurityIntegrationDetails").
 			Bool("All").
 			Field("SecurityIntegrations", "[]AccountObjectIdentifier"),

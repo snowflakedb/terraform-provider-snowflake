@@ -26,6 +26,10 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
+
+
+
 ### *(new feature)* snowflake_account_parameter: adding missing parameters
 
 The `snowflake_account_parameter` resource now supports the following additional parameters:

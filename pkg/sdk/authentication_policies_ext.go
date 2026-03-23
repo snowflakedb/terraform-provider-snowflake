@@ -15,7 +15,7 @@ func (v *authenticationPolicies) DescribeDetails(ctx context.Context, id SchemaO
 	if err != nil {
 		return nil, err
 	}
-	return parseAuthenticationPolicyProperties(properties, id)
+	return parseAuthenticationPolicyProperties(properties)
 }
 
 type AuthenticationPolicyDetailsLegacy []AuthenticationPolicyDescription
@@ -68,8 +68,21 @@ func (v AuthenticationPolicyDetailsLegacy) GetMfaAuthenticationMethods() ([]MfaA
 	return collections.MapErr(ParseCommaSeparatedStringArray(raw.Value, false), ToMfaAuthenticationMethodsReadOption)
 }
 
-func parseAuthenticationPolicyProperties(properties []AuthenticationPolicyDescription, id SchemaObjectIdentifier) (*AuthenticationPolicyDetails, error) {
+func parseAuthenticationPolicyProperties(properties []AuthenticationPolicyDescription) (*AuthenticationPolicyDetails, error) {
 	details := new(AuthenticationPolicyDetails)
+
+	// TODO: Take out as util (see catalog integration)
+	keyValueUtil := func(s string) map[string]string {
+		s = strings.TrimPrefix(s, "{")
+		s = strings.TrimSuffix(s, "}")
+		result := make(map[string]string)
+		for _, part := range ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false) {
+			key, value, _ := strings.Cut(part, "=")
+			result[key] = value
+		}
+		return result
+	}
+
 	var errs []error
 	for _, prop := range properties {
 		switch strings.ToUpper(prop.Property) {
@@ -131,16 +144,13 @@ func parseAuthenticationPolicyProperties(properties []AuthenticationPolicyDescri
 				details.MfaEnrollment = mfaEnrollment
 			}
 		case "MFA_POLICY":
-			// TODO: Take out as util (see catalog integration)
-			s := strings.TrimPrefix(prop.Value, "{")
-			s = strings.TrimSuffix(s, "}")
-			parts := ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
-			for _, part := range parts {
-				key, value, _ := strings.Cut(part, "=")
+			for key, value := range keyValueUtil(prop.Value) {
 				driverType, driverTypeErr := ToClientPolicyDriverType(key)
 				if driverTypeErr != nil {
 					errs = append(errs, driverTypeErr)
 				} else {
+					details.ClientPolicy[driverType] = new(ClientPolicyDetails)
+
 					s := strings.TrimPrefix(value, "{")
 					s = strings.TrimSuffix(s, "}")
 					parts := ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
@@ -148,28 +158,15 @@ func parseAuthenticationPolicyProperties(properties []AuthenticationPolicyDescri
 						key, value, _ := strings.Cut(part, "=")
 						switch key {
 						case "MINIMUM_VERSION":
-							minimumVersion, err := strconv.Atoi(value)
-							if err != nil {
-								errs = append(errs, err)
-							} else {
-								_ = driverType
-								_ = minimumVersion
-								// TODO: ClientPolicies are empty
-							}
+							details.ClientPolicy[driverType].MinimumVersion = value
 						}
 					}
 				}
 			}
 		case "PAT_POLICY":
-			// TODO: Take out as util (see catalog integration)
-			s := strings.TrimPrefix(prop.Value, "{")
-			s = strings.TrimSuffix(s, "}")
-			parts := ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
-			for _, part := range parts {
-				key, value, _ := strings.Cut(part, "=")
+			for key, value := range keyValueUtil(prop.Value) {
 				switch key {
 				case "DEFAULT_EXPIRY_IN_DAYS":
-					// TODO: Take out as util
 					defaultExpiryInDays, err := strconv.Atoi(value)
 					if err != nil {
 						errs = append(errs, err)
@@ -193,12 +190,7 @@ func parseAuthenticationPolicyProperties(properties []AuthenticationPolicyDescri
 				}
 			}
 		case "WORKLOAD_IDENTITY_POLICY":
-			// TODO: Take out as util (see catalog integration)
-			s := strings.TrimPrefix(prop.Value, "{")
-			s = strings.TrimSuffix(s, "}")
-			parts := ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false)
-			for _, part := range parts {
-				key, value, _ := strings.Cut(part, "=")
+			for key, value := range keyValueUtil(prop.Value) {
 				switch key {
 				case "ALLOWED_PROVIDERS":
 					for _, allowedProvider := range ParseCommaSeparatedStringArray(value, false) {
