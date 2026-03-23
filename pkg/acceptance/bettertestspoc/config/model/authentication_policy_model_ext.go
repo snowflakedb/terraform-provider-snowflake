@@ -36,6 +36,21 @@ func (a *AuthenticationPolicyModel) WithClientTypes(clientTypes ...sdk.ClientTyp
 	)
 }
 
+func (a *AuthenticationPolicyModel) WithClientPolicy(entries ...sdk.AuthenticationPolicyClientPolicyEntry) *AuthenticationPolicyModel {
+	blocks := make([]tfconfig.Variable, len(entries))
+	for i, e := range entries {
+		minVer := ""
+		if e.Params != nil && e.Params.MinimumVersion != nil {
+			minVer = *e.Params.MinimumVersion
+		}
+		blocks[i] = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"client_type":     tfconfig.StringVariable(string(e.ClientType)),
+			"minimum_version": tfconfig.StringVariable(minVer),
+		})
+	}
+	return a.WithClientPolicyValue(tfconfig.SetVariable(blocks...))
+}
+
 func (a *AuthenticationPolicyModel) WithSecurityIntegrations(securityIntegrations ...string) *AuthenticationPolicyModel {
 	return a.WithSecurityIntegrationsValue(
 		tfconfig.SetVariable(

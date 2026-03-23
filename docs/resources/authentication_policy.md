@@ -71,7 +71,7 @@ resource "snowflake_authentication_policy" "complete" {
 ### Optional
 
 - `authentication_methods` (Set of String) A list of authentication methods that are allowed during login. Valid values are (case-insensitive): `ALL` | `SAML` | `PASSWORD` | `OAUTH` | `KEYPAIR` | `PROGRAMMATIC_ACCESS_TOKEN` | `WORKLOAD_IDENTITY`.
-- `client_policy` (Block List) Minimum allowed version per driver/client type (e.g. GO_DRIVER = '1.14.1'). Only valid when `client_types` is empty, contains ALL, or contains DRIVERS. (see [below for nested schema](#nestedblock--client_policy))
+- `client_policy` (Block Set) Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS. (see [below for nested schema](#nestedblock--client_policy))
 - `client_types` (Set of String) A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): `ALL` | `SNOWFLAKE_UI` | `DRIVERS` | `SNOWSQL` | `SNOWFLAKE_CLI`. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.
 - `comment` (String) Specifies a comment for the authentication policy.
 - `mfa_authentication_methods` (Set of String, Deprecated) A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are `ALL` | `SAML` | `PASSWORD`.
@@ -115,7 +115,7 @@ Optional:
 - `default_expiry_in_days` (Number) Specifies the default expiration time (in days) for a programmatic access token.
 - `max_expiry_in_days` (Number) Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.
 - `network_policy_evaluation` (String) Specifies the network policy evaluation for the PAT.
-- `require_role_restriction_for_service_users` (Boolean) If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role. Defaults to true.
+- `require_role_restriction_for_service_users` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role. Defaults to true. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 
 <a id="nestedblock--timeouts"></a>

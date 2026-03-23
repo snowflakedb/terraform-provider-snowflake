@@ -15,6 +15,7 @@ type AuthenticationPolicyModel struct {
 	Schema                   tfconfig.Variable `json:"schema,omitempty"`
 	Name                     tfconfig.Variable `json:"name,omitempty"`
 	AuthenticationMethods    tfconfig.Variable `json:"authentication_methods,omitempty"`
+	ClientPolicy             tfconfig.Variable `json:"client_policy,omitempty"`
 	ClientTypes              tfconfig.Variable `json:"client_types,omitempty"`
 	Comment                  tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -105,6 +106,8 @@ func (a *AuthenticationPolicyModel) WithName(name string) *AuthenticationPolicyM
 
 // authentication_methods attribute type is not yet supported, so WithAuthenticationMethods can't be generated
 
+// client_policy attribute type is not yet supported, so WithClientPolicy can't be generated
+
 // client_types attribute type is not yet supported, so WithClientTypes can't be generated
 
 func (a *AuthenticationPolicyModel) WithComment(comment string) *AuthenticationPolicyModel {
@@ -153,6 +156,11 @@ func (a *AuthenticationPolicyModel) WithNameValue(value tfconfig.Variable) *Auth
 
 func (a *AuthenticationPolicyModel) WithAuthenticationMethodsValue(value tfconfig.Variable) *AuthenticationPolicyModel {
 	a.AuthenticationMethods = value
+	return a
+}
+
+func (a *AuthenticationPolicyModel) WithClientPolicyValue(value tfconfig.Variable) *AuthenticationPolicyModel {
+	a.ClientPolicy = value
 	return a
 }
 

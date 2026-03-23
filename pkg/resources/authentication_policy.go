@@ -96,7 +96,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		Description:      fmt.Sprintf("A list of clients that can authenticate with Snowflake. If a client tries to connect, and the client is not one of the valid `client_types`, then the login attempt fails. Valid values are (case-insensitive): %s. The `client_types` property of an authentication policy is a best effort method to block user logins based on specific clients. It should not be used as the sole control to establish a security boundary.", possibleValuesListed(sdk.AllClientTypes)),
 	},
 	"client_policy": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Optional:    true,
 		Description: "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
 		Elem: &schema.Resource{
@@ -390,20 +390,8 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if v, ok := d.GetOk("client_policy"); ok {
-		clientPolicyList := v.([]any)
+		clientPolicyList := v.(*schema.Set).List()
 		if len(clientPolicyList) > 0 {
-			// Validate: CLIENT_POLICY is only valid when client_types is empty, contains ALL, or contains DRIVERS.
-			if ctSet, ok := d.GetOk("client_types"); ok {
-				for _, ct := range ctSet.(*schema.Set).List() {
-					option, err := sdk.ToClientTypesOption(ct.(string))
-					if err != nil {
-						return diag.FromErr(err)
-					}
-					if option != sdk.ClientTypesAll && option != sdk.ClientTypesDrivers {
-						return diag.Errorf("client_policy is only valid when client_types is empty, contains ALL, or contains DRIVERS; got %s", option)
-					}
-				}
-			}
 			entries, err := toClientPolicyEntries(clientPolicyList)
 			if err != nil {
 				return diag.FromErr(err)
@@ -430,155 +418,6 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
 	return ReadContextAuthenticationPolicy(false)(ctx, d, meta)
-}
-
-func toClientPolicyEntries(rawList []any) ([]sdk.AuthenticationPolicyClientPolicyEntry, error) {
-	entries := make([]sdk.AuthenticationPolicyClientPolicyEntry, 0, len(rawList))
-	for _, raw := range rawList {
-		m, ok := raw.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("client_policy entry: expected map, got %T", raw)
-		}
-		clientType, err := sdk.ToClientPolicyDriverType(m["client_type"].(string))
-		if err != nil {
-			return nil, err
-		}
-		minVer := m["minimum_version"].(string)
-		var params *sdk.AuthenticationPolicyClientPolicyEntryParams
-		if minVer != "" {
-			params = &sdk.AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: &minVer}
-		}
-		entries = append(entries, sdk.AuthenticationPolicyClientPolicyEntry{
-			ClientType: clientType,
-			Params:     params,
-		})
-	}
-	return entries, nil
-}
-
-func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionRequest, error) {
-	raw := expandStringList(value.(*schema.Set).List())
-	securityIntegrations := make([]sdk.AccountObjectIdentifier, len(raw))
-	for i, v := range raw {
-		securityIntegrations[i] = sdk.NewAccountObjectIdentifier(v)
-	}
-	// ALL is handled as a single-elem list - a pseudoidentifier.
-	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
-}
-
-func ToMfaPolicyRequest(value any) (sdk.AuthenticationPolicyMfaPolicyRequest, error) {
-	mfaPolicyRaw, ok := value.([]any)
-	if !ok || len(mfaPolicyRaw) != 1 {
-		return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract mfa policy, input is either nil or non expected type (%T): %v", value, value)
-	}
-	mfaConfig := mfaPolicyRaw[0].(map[string]any)
-	mfaPolicy := sdk.NewAuthenticationPolicyMfaPolicyRequest()
-	if v := mfaConfig["enforce_mfa_on_external_authentication"]; v.(string) != "" {
-		enforceMfaOnExternalAuthentication, err := sdk.ToEnforceMfaOnExternalAuthenticationOption(v.(string))
-		if err != nil {
-			return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract enforce MFA on external authentication, input is either nil or non expected type (%T): %v", v, v)
-		}
-		mfaPolicy.WithEnforceMfaOnExternalAuthentication(enforceMfaOnExternalAuthentication)
-	}
-	if v := mfaConfig["allowed_methods"]; v != nil {
-		allowedMethods := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedMethods, func(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
-			enum, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
-			if err != nil {
-				return sdk.AuthenticationPolicyMfaPolicyListItem{}, err
-			}
-			return sdk.AuthenticationPolicyMfaPolicyListItem{Method: enum}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyMfaPolicyRequest{}, err
-		}
-		mfaPolicy.WithAllowedMethods(values)
-	}
-	return *mfaPolicy, nil
-}
-
-func ToPatPolicyRequest(value any) (sdk.AuthenticationPolicyPatPolicyRequest, error) {
-	patPolicyRaw, ok := value.([]any)
-	if !ok || len(patPolicyRaw) != 1 {
-		return sdk.AuthenticationPolicyPatPolicyRequest{}, fmt.Errorf("unable to extract pat policy, input is either nil or non expected type (%T): %v", value, value)
-	}
-	patConfig := patPolicyRaw[0].(map[string]any)
-	patPolicy := sdk.NewAuthenticationPolicyPatPolicyRequest()
-	if v := patConfig["default_expiry_in_days"]; v.(int) != 0 {
-		patPolicy.WithDefaultExpiryInDays(v.(int))
-	}
-	if v := patConfig["max_expiry_in_days"]; v.(int) != 0 {
-		patPolicy.WithMaxExpiryInDays(v.(int))
-	}
-	if v := patConfig["network_policy_evaluation"]; v.(string) != "" {
-		networkPolicyEvaluation, err := sdk.ToNetworkPolicyEvaluationOption(v.(string))
-		if err != nil {
-			return sdk.AuthenticationPolicyPatPolicyRequest{}, err
-		}
-		patPolicy.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
-	}
-	if v, ok := patConfig["require_role_restriction_for_service_users"]; ok {
-		patPolicy.WithRequireRoleRestrictionForServiceUsers(v.(bool))
-	} else {
-		// Default to true when pat_policy block is present but attribute unset (per Snowflake default).
-		patPolicy.WithRequireRoleRestrictionForServiceUsers(true)
-	}
-
-	return *patPolicy, nil
-}
-
-func ToWorkloadIdentityPolicyRequest(value any) (sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, error) {
-	workloadIdentityPolicyRaw, ok := value.([]any)
-	if !ok || len(workloadIdentityPolicyRaw) != 1 {
-		return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, fmt.Errorf("unable to extract workload identity policy, input is either nil or non expected type (%T): %v", value, value)
-	}
-	workloadIdentityPolicyConfig := workloadIdentityPolicyRaw[0].(map[string]any)
-	workloadIdentityPolicy := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
-	if v := workloadIdentityPolicyConfig["allowed_providers"]; v != nil {
-		allowedProviders := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedProviders, func(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
-			enum, err := sdk.ToAllowedProviderOption(v.(string))
-			if err != nil {
-				return sdk.AuthenticationPolicyAllowedProviderListItem{}, err
-			}
-			return sdk.AuthenticationPolicyAllowedProviderListItem{Provider: enum}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
-		}
-		workloadIdentityPolicy.WithAllowedProviders(values)
-	}
-	if v := workloadIdentityPolicyConfig["allowed_aws_accounts"]; v != nil {
-		allowedAwsAccounts := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedAwsAccounts, func(v any) (sdk.StringListItemWrapper, error) {
-			return sdk.StringListItemWrapper{Value: v.(string)}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
-		}
-		workloadIdentityPolicy.WithAllowedAwsAccounts(values)
-	}
-	if v := workloadIdentityPolicyConfig["allowed_azure_issuers"]; v != nil {
-		allowedAzureIssuers := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedAzureIssuers, func(v any) (sdk.StringListItemWrapper, error) {
-			return sdk.StringListItemWrapper{Value: v.(string)}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
-		}
-		workloadIdentityPolicy.WithAllowedAzureIssuers(values)
-	}
-	if v := workloadIdentityPolicyConfig["allowed_oidc_issuers"]; v != nil {
-		allowedOidcIssuers := v.(*schema.Set).List()
-		values, err := collections.MapErr(allowedOidcIssuers, func(v any) (sdk.StringListItemWrapper, error) {
-			return sdk.StringListItemWrapper{Value: v.(string)}, nil
-		})
-		if err != nil {
-			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
-		}
-		workloadIdentityPolicy.WithAllowedOidcIssuers(values)
-	}
-	return *workloadIdentityPolicy, nil
 }
 
 func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
@@ -723,7 +562,6 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	// change to client types
 	if d.HasChange("client_types") {
 		if v, ok := d.GetOk("client_types"); ok {
 			clientTypes := expandStringList(v.(*schema.Set).List())
@@ -742,31 +580,18 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	// change to client policy
 	if d.HasChange("client_policy") {
 		if v, ok := d.GetOk("client_policy"); ok {
-			clientPolicyList := v.([]any)
+			clientPolicyList := v.(*schema.Set).List()
 			if len(clientPolicyList) > 0 {
-				// Validate: only valid when client_types is empty, ALL, or DRIVERS
-				if ctSet, ok := d.GetOk("client_types"); ok {
-					for _, ct := range ctSet.(*schema.Set).List() {
-						option, err := sdk.ToClientTypesOption(ct.(string))
-						if err != nil {
-							return diag.FromErr(err)
-						}
-						if option != sdk.ClientTypesAll && option != sdk.ClientTypesDrivers {
-							return diag.Errorf("client_policy is only valid when client_types is empty, contains ALL, or contains DRIVERS; got %s", option)
-						}
-					}
-				}
 				entries, err := toClientPolicyEntries(clientPolicyList)
 				if err != nil {
 					return diag.FromErr(err)
 				}
 				set.WithClientPolicy(entries)
+			} else {
+				unset.WithClientPolicy(true)
 			}
-		} else {
-			unset.WithClientPolicy(true)
 		}
 	}
 
@@ -993,4 +818,152 @@ func ToWorkloadIdentityPolicyRequestUpdate(d *schema.ResourceData, set **sdk.Aut
 		*set = req
 	}
 	return nil
+}
+
+func ToSecurityIntegrationsRequest(value any) (sdk.SecurityIntegrationsOptionRequest, error) {
+	raw := expandStringList(value.(*schema.Set).List())
+	securityIntegrations := make([]sdk.AccountObjectIdentifier, len(raw))
+	for i, v := range raw {
+		securityIntegrations[i] = sdk.NewAccountObjectIdentifier(v)
+	}
+	// ALL is handled as a single-elem list - a pseudoidentifier.
+	return *sdk.NewSecurityIntegrationsOptionRequest().WithSecurityIntegrations(securityIntegrations), nil
+}
+
+func ToMfaPolicyRequest(value any) (sdk.AuthenticationPolicyMfaPolicyRequest, error) {
+	mfaPolicyRaw, ok := value.([]any)
+	if !ok || len(mfaPolicyRaw) != 1 {
+		return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract mfa policy, input is either nil or non expected type (%T): %v", value, value)
+	}
+	mfaConfig := mfaPolicyRaw[0].(map[string]any)
+	mfaPolicy := sdk.NewAuthenticationPolicyMfaPolicyRequest()
+	if v := mfaConfig["enforce_mfa_on_external_authentication"]; v.(string) != "" {
+		enforceMfaOnExternalAuthentication, err := sdk.ToEnforceMfaOnExternalAuthenticationOption(v.(string))
+		if err != nil {
+			return sdk.AuthenticationPolicyMfaPolicyRequest{}, fmt.Errorf("unable to extract enforce MFA on external authentication, input is either nil or non expected type (%T): %v", v, v)
+		}
+		mfaPolicy.WithEnforceMfaOnExternalAuthentication(enforceMfaOnExternalAuthentication)
+	}
+	if v := mfaConfig["allowed_methods"]; v != nil {
+		allowedMethods := v.(*schema.Set).List()
+		values, err := collections.MapErr(allowedMethods, func(v any) (sdk.AuthenticationPolicyMfaPolicyListItem, error) {
+			enum, err := sdk.ToMfaPolicyAllowedMethodsOption(v.(string))
+			if err != nil {
+				return sdk.AuthenticationPolicyMfaPolicyListItem{}, err
+			}
+			return sdk.AuthenticationPolicyMfaPolicyListItem{Method: enum}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyMfaPolicyRequest{}, err
+		}
+		mfaPolicy.WithAllowedMethods(values)
+	}
+	return *mfaPolicy, nil
+}
+
+func ToPatPolicyRequest(value any) (sdk.AuthenticationPolicyPatPolicyRequest, error) {
+	patPolicyRaw, ok := value.([]any)
+	if !ok || len(patPolicyRaw) != 1 {
+		return sdk.AuthenticationPolicyPatPolicyRequest{}, fmt.Errorf("unable to extract pat policy, input is either nil or non expected type (%T): %v", value, value)
+	}
+	patConfig := patPolicyRaw[0].(map[string]any)
+	patPolicy := sdk.NewAuthenticationPolicyPatPolicyRequest()
+	if v := patConfig["default_expiry_in_days"]; v.(int) != 0 {
+		patPolicy.WithDefaultExpiryInDays(v.(int))
+	}
+	if v := patConfig["max_expiry_in_days"]; v.(int) != 0 {
+		patPolicy.WithMaxExpiryInDays(v.(int))
+	}
+	if v := patConfig["network_policy_evaluation"]; v.(string) != "" {
+		networkPolicyEvaluation, err := sdk.ToNetworkPolicyEvaluationOption(v.(string))
+		if err != nil {
+			return sdk.AuthenticationPolicyPatPolicyRequest{}, err
+		}
+		patPolicy.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
+	}
+	if v, ok := patConfig["require_role_restriction_for_service_users"]; ok {
+		patPolicy.WithRequireRoleRestrictionForServiceUsers(v.(bool))
+	} else {
+		// Default to true when pat_policy block is present but attribute unset (per Snowflake default).
+		patPolicy.WithRequireRoleRestrictionForServiceUsers(true)
+	}
+
+	return *patPolicy, nil
+}
+
+func ToWorkloadIdentityPolicyRequest(value any) (sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest, error) {
+	workloadIdentityPolicyRaw, ok := value.([]any)
+	if !ok || len(workloadIdentityPolicyRaw) != 1 {
+		return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, fmt.Errorf("unable to extract workload identity policy, input is either nil or non expected type (%T): %v", value, value)
+	}
+	workloadIdentityPolicyConfig := workloadIdentityPolicyRaw[0].(map[string]any)
+	workloadIdentityPolicy := sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest()
+	if v := workloadIdentityPolicyConfig["allowed_providers"]; v != nil {
+		allowedProviders := v.(*schema.Set).List()
+		values, err := collections.MapErr(allowedProviders, func(v any) (sdk.AuthenticationPolicyAllowedProviderListItem, error) {
+			enum, err := sdk.ToAllowedProviderOption(v.(string))
+			if err != nil {
+				return sdk.AuthenticationPolicyAllowedProviderListItem{}, err
+			}
+			return sdk.AuthenticationPolicyAllowedProviderListItem{Provider: enum}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
+		}
+		workloadIdentityPolicy.WithAllowedProviders(values)
+	}
+	if v := workloadIdentityPolicyConfig["allowed_aws_accounts"]; v != nil {
+		allowedAwsAccounts := v.(*schema.Set).List()
+		values, err := collections.MapErr(allowedAwsAccounts, func(v any) (sdk.StringListItemWrapper, error) {
+			return sdk.StringListItemWrapper{Value: v.(string)}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
+		}
+		workloadIdentityPolicy.WithAllowedAwsAccounts(values)
+	}
+	if v := workloadIdentityPolicyConfig["allowed_azure_issuers"]; v != nil {
+		allowedAzureIssuers := v.(*schema.Set).List()
+		values, err := collections.MapErr(allowedAzureIssuers, func(v any) (sdk.StringListItemWrapper, error) {
+			return sdk.StringListItemWrapper{Value: v.(string)}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
+		}
+		workloadIdentityPolicy.WithAllowedAzureIssuers(values)
+	}
+	if v := workloadIdentityPolicyConfig["allowed_oidc_issuers"]; v != nil {
+		allowedOidcIssuers := v.(*schema.Set).List()
+		values, err := collections.MapErr(allowedOidcIssuers, func(v any) (sdk.StringListItemWrapper, error) {
+			return sdk.StringListItemWrapper{Value: v.(string)}, nil
+		})
+		if err != nil {
+			return sdk.AuthenticationPolicyWorkloadIdentityPolicyRequest{}, err
+		}
+		workloadIdentityPolicy.WithAllowedOidcIssuers(values)
+	}
+	return *workloadIdentityPolicy, nil
+}
+
+func toClientPolicyEntries(rawList []any) ([]sdk.AuthenticationPolicyClientPolicyEntry, error) {
+	entries := make([]sdk.AuthenticationPolicyClientPolicyEntry, 0, len(rawList))
+	for _, raw := range rawList {
+		m, ok := raw.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("client_policy entry: expected map, got %T", raw)
+		}
+
+		clientType, err := sdk.ToClientPolicyDriverType(m["client_type"].(string))
+		if err != nil {
+			return nil, err
+		}
+
+		entries = append(entries, sdk.AuthenticationPolicyClientPolicyEntry{
+			ClientType: clientType,
+			Params: &sdk.AuthenticationPolicyClientPolicyEntryParams{
+				MinimumVersion: sdk.Pointer(m["minimum_version"].(string)),
+			},
+		})
+	}
+	return entries, nil
 }
