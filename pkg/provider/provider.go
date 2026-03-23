@@ -743,6 +743,8 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_tables":                             datasources.Tables(),
 		"snowflake_tags":                               datasources.Tags(),
 		"snowflake_tasks":                              datasources.Tasks(),
+		"snowflake_trust_center_scanner_packages":      datasources.TrustCenterScannerPackages(),
+		"snowflake_trust_center_scanners":              datasources.TrustCenterScanners(),
 		"snowflake_users":                              datasources.Users(),
 		"snowflake_user_programmatic_access_tokens":    datasources.UserProgrammaticAccessTokens(),
 		"snowflake_views":                              datasources.Views(),
