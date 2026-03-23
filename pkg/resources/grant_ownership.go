@@ -405,7 +405,8 @@ func ReadGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any) d
 // TODO(SNOW-1229218): Make sdk.ObjectType + string objectName to sdk.ObjectIdentifier mapping available in the sdk (for all object types).
 func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.ObjectIdentifier, error) {
 	switch objectType {
-	case sdk.ObjectTypeAccount:
+	case sdk.ObjectTypeAccount,
+		sdk.ObjectTypeManagedAccount:
 		return sdk.ParseAccountIdentifier(objectName)
 	case sdk.ObjectTypeApplication,
 		sdk.ObjectTypeApplicationPackage,
@@ -418,8 +419,8 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 		sdk.ObjectTypeFailoverGroup,
 		sdk.ObjectTypeIntegration,
 		sdk.ObjectTypeListing,
-		sdk.ObjectTypeManagedAccount,
 		sdk.ObjectTypeNetworkPolicy,
+		sdk.ObjectTypeSessionPolicy,
 		sdk.ObjectTypeParameter,
 		sdk.ObjectTypeReplicationGroup,
 		sdk.ObjectTypeResourceMonitor,
@@ -472,10 +473,7 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 		sdk.ObjectTypeSemanticView,
 		sdk.ObjectTypeSequence,
 		sdk.ObjectTypeService,
-		sdk.ObjectTypeSessionPolicy,
 		sdk.ObjectTypeSnapshot,
-		sdk.ObjectTypeSnapshotPolicy,
-		sdk.ObjectTypeSnapshotSet,
 		sdk.ObjectTypeStage,
 		sdk.ObjectTypeStorageLifecyclePolicy,
 		sdk.ObjectTypeStream,
