@@ -43,7 +43,7 @@ func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasNoCreditQuota().
-						HasNotifyUsersLen(0).
+						HasNotifyUsers().
 						HasNoFrequency().
 						HasNoStartTimestamp().
 						HasNoEndTimestamp().
@@ -74,7 +74,7 @@ func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("0").
-						HasNotifyUsersLen(0).
+						HasNotifyUsers().
 						HasFrequencyString(string(sdk.FrequencyMonthly)).
 						HasStartTimestampNotEmpty().
 						HasEndTimestampString("").
@@ -116,14 +116,11 @@ func TestAcc_ResourceMonitor_Complete(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("10").
-						HasNotifyUsersLen(1).
-						HasNotifyUser(0, "JAN_CIESLAK").
+						HasNotifyUsers("JAN_CIESLAK").
 						HasFrequencyString(string(sdk.FrequencyWeekly)).
 						HasStartTimestampString(time.Now().Add(time.Hour*24*30).Format("2006-01-02 15:01")).
 						HasEndTimestampString(time.Now().Add(time.Hour*24*60).Format("2006-01-02 15:01")).
-						HasNotifyTriggersLen(2).
-						HasNotifyTrigger(0, 100).
-						HasNotifyTrigger(1, 110).
+						HasNotifyTriggers(100, 110).
 						HasSuspendTriggerString("120").
 						HasSuspendImmediateTriggerString("150"),
 					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
@@ -151,14 +148,11 @@ func TestAcc_ResourceMonitor_Complete(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("10").
-						HasNotifyUsersLen(1).
-						HasNotifyUser(0, "JAN_CIESLAK").
+						HasNotifyUsers("JAN_CIESLAK").
 						HasFrequencyString(string(sdk.FrequencyWeekly)).
 						HasStartTimestampNotEmpty().
 						HasEndTimestampNotEmpty().
-						HasNotifyTriggersLen(2).
-						HasNotifyTrigger(0, 100).
-						HasNotifyTrigger(1, 110).
+						HasNotifyTriggers(100, 110).
 						HasSuspendTriggerString("120").
 						HasSuspendImmediateTriggerString("150"),
 				),
@@ -215,11 +209,11 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasNoCreditQuota().
-						HasNotifyUsersLen(0).
+						HasNotifyUsers().
 						HasNoFrequency().
 						HasNoStartTimestamp().
 						HasNoEndTimestamp().
-						HasNotifyTriggersLen(0).
+						HasNotifyTriggers().
 						HasNoSuspendTrigger().
 						HasNoSuspendImmediateTrigger(),
 					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
@@ -246,14 +240,11 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("10").
-						HasNotifyUsersLen(1).
-						HasNotifyUser(0, "JAN_CIESLAK").
+						HasNotifyUsers("JAN_CIESLAK").
 						HasFrequencyString(string(sdk.FrequencyWeekly)).
 						HasStartTimestampString(time.Now().Add(time.Hour*24*30).Format("2006-01-02 15:01")).
 						HasEndTimestampString(time.Now().Add(time.Hour*24*60).Format("2006-01-02 15:01")).
-						HasNotifyTriggersLen(2).
-						HasNotifyTrigger(0, 100).
-						HasNotifyTrigger(1, 110).
+						HasNotifyTriggers(100, 110).
 						HasSuspendTriggerString("120").
 						HasSuspendImmediateTriggerString("150"),
 					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
@@ -280,15 +271,11 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("20").
-						HasNotifyUsersLen(2).
-						HasNotifyUser(0, "ARTUR_SAWICKI").
-						HasNotifyUser(1, "JAN_CIESLAK").
+						HasNotifyUsers("ARTUR_SAWICKI", "JAN_CIESLAK").
 						HasFrequencyString(string(sdk.FrequencyMonthly)).
 						HasStartTimestampString(time.Now().Add(time.Hour*24*40).Format("2006-01-02 15:01")).
 						HasEndTimestampString(time.Now().Add(time.Hour*24*70).Format("2006-01-02 15:01")).
-						HasNotifyTriggersLen(2).
-						HasNotifyTrigger(0, 110).
-						HasNotifyTrigger(1, 120).
+						HasNotifyTriggers(110, 120).
 						HasSuspendTriggerString("130").
 						HasSuspendImmediateTriggerString("160"),
 					resourceshowoutputassert.ResourceMonitorShowOutput(t, "snowflake_resource_monitor.test").
@@ -315,7 +302,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("0").
-						HasNotifyUsersLen(0).
+						HasNotifyUsers().
 						HasFrequencyString("").
 						HasStartTimestampString("").
 						HasEndTimestampString("").

@@ -114,6 +114,73 @@ func Test_ParseDataType_Number(t *testing.T) {
 	}
 }
 
+func Test_ParseDataType_Decfloat(t *testing.T) {
+	type test struct {
+		input                  string
+		expectedPrecision      int
+		expectedUnderlyingType string
+	}
+	defaults := func(input string) test {
+		return test{
+			input:                  input,
+			expectedPrecision:      DefaultDecfloatPrecision,
+			expectedUnderlyingType: strings.TrimSpace(strings.ToUpper(input)),
+		}
+	}
+	negative := func(input string) test {
+		return test{input: input}
+	}
+
+	positiveTestCases := []test{
+		{input: "DECFLOAT(4)", expectedPrecision: 4, expectedUnderlyingType: "DECFLOAT"},
+		{input: "decfloat(5)", expectedPrecision: 5, expectedUnderlyingType: "DECFLOAT"},
+		{input: "DECFLOAT(   2   )", expectedPrecision: 2, expectedUnderlyingType: "DECFLOAT"},
+		{input: "    DECFLOAT   (   7   )    ", expectedPrecision: 7, expectedUnderlyingType: "DECFLOAT"},
+		{input: fmt.Sprintf("DECFLOAT(%d)", DefaultDecfloatPrecision), expectedPrecision: DefaultDecfloatPrecision, expectedUnderlyingType: "DECFLOAT"},
+
+		defaults("   DECFLOAT   "),
+		defaults("DECFLOAT"),
+		defaults("decfloat"),
+		defaults("  decfloat \t "),
+	}
+
+	negativeTestCases := []test{
+		negative("DECFLOAT(38, 0)"),
+		negative("DECFLOAT(38, 2)"),
+		negative("DECFLOAT()"),
+		negative("D E C F L O A T"),
+		negative("other"),
+		negative("other(3)"),
+	}
+
+	for _, tc := range positiveTestCases {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			parsed, err := ParseDataType(tc.input)
+
+			require.NoError(t, err)
+			require.IsType(t, &DecfloatDataType{}, parsed)
+
+			assert.Equal(t, tc.expectedPrecision, parsed.(*DecfloatDataType).precision)
+			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*DecfloatDataType).underlyingType)
+
+			assert.Equal(t, DecfloatLegacyDataType, parsed.ToLegacyDataTypeSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*DecfloatDataType).underlyingType, parsed.(*DecfloatDataType).precision), parsed.ToSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", DecfloatLegacyDataType, parsed.(*DecfloatDataType).precision), parsed.Canonical())
+		})
+	}
+
+	for _, tc := range negativeTestCases {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			parsed, err := ParseDataType(tc.input)
+
+			require.Error(t, err)
+			require.Nil(t, parsed)
+		})
+	}
+}
+
 func Test_ParseDataType_Float(t *testing.T) {
 	type test struct {
 		input                  string
@@ -1202,6 +1269,10 @@ func Test_AreTheSame(t *testing.T) {
 		{d1: "", d2: "NUMBER", expectedOutcome: false},
 		{d1: "NUMBER", d2: "", expectedOutcome: false},
 
+		{d1: "DECFLOAT(20)", d2: "DECFLOAT(21)", expectedOutcome: false},
+		{d1: "DECFLOAT(38)", d2: "DECFLOAT(38)", expectedOutcome: true},
+		{d1: "DECFLOAT", d2: "DECFLOAT(38)", expectedOutcome: true},
+		{d1: "DECFLOAT", d2: fmt.Sprintf("DECFLOAT(%d)", DefaultDecfloatPrecision), expectedOutcome: true},
 		{d1: "NUMBER(20)", d2: "NUMBER(20, 2)", expectedOutcome: false},
 		{d1: "NUMBER(20, 1)", d2: "NUMBER(20, 2)", expectedOutcome: false},
 		{d1: "NUMBER", d2: "NUMBER(20, 2)", expectedOutcome: false},
@@ -1282,6 +1353,11 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "", d2: "NUMBER", expectedOutcome: true},
 		{d1: "NUMBER", d2: "", expectedOutcome: true},
 
+		{d1: "DECFLOAT(20)", d2: "DECFLOAT(21)", expectedOutcome: true},
+		{d1: "DECFLOAT(38)", d2: "DECFLOAT(38)", expectedOutcome: false},
+		{d1: "DECFLOAT", d2: "DECFLOAT(38)", expectedOutcome: false},
+		{d1: "DECFLOAT", d2: "DECFLOAT(34)", expectedOutcome: false},
+		{d1: "DECFLOAT", d2: fmt.Sprintf("DECFLOAT(%d)", DefaultDecfloatPrecision), expectedOutcome: false},
 		{d1: "NUMBER(20)", d2: "NUMBER(20, 2)", expectedOutcome: false},
 		{d1: "NUMBER(20, 1)", d2: "NUMBER(20, 2)", expectedOutcome: true},
 		{d1: "NUMBER", d2: "NUMBER(20, 2)", expectedOutcome: false},
@@ -1359,6 +1435,8 @@ func Test_ToSqlWithoutUnknowns(t *testing.T) {
 	}
 
 	testCases := []test{
+		{dt: "DECFLOAT"},
+		{dt: fmt.Sprintf("DECFLOAT(%d)", DefaultDecfloatPrecision)},
 		{dt: "NUMBER"},
 		{dt: "NUMBER(20)"},
 		{dt: "NUMBER(20, 4)"},

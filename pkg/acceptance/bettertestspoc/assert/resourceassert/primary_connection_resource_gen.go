@@ -28,6 +28,35 @@ func ImportedPrimaryConnectionResource(t *testing.T, id string) *PrimaryConnecti
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (p *PrimaryConnectionResourceAssert) HasName(expected string) *PrimaryConnectionResourceAssert {
+	p.StringValueSet("name", expected)
+	return p
+}
+
+func (p *PrimaryConnectionResourceAssert) HasComment(expected string) *PrimaryConnectionResourceAssert {
+	p.StringValueSet("comment", expected)
+	return p
+}
+
+func (p *PrimaryConnectionResourceAssert) HasEnableFailoverToAccounts(expected ...string) *PrimaryConnectionResourceAssert {
+	p.ListContainsExactlyStringValuesInOrder("enable_failover_to_accounts", expected...)
+	return p
+}
+
+func (p *PrimaryConnectionResourceAssert) HasFullyQualifiedName(expected string) *PrimaryConnectionResourceAssert {
+	p.StringValueSet("fully_qualified_name", expected)
+	return p
+}
+
+func (p *PrimaryConnectionResourceAssert) HasIsPrimary(expected bool) *PrimaryConnectionResourceAssert {
+	p.BoolValueSet("is_primary", expected)
+	return p
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -39,11 +68,6 @@ func (p *PrimaryConnectionResourceAssert) HasNameString(expected string) *Primar
 
 func (p *PrimaryConnectionResourceAssert) HasCommentString(expected string) *PrimaryConnectionResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
-	return p
-}
-
-func (p *PrimaryConnectionResourceAssert) HasEnableFailoverToAccountsString(expected string) *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("enable_failover_to_accounts", expected))
 	return p
 }
 

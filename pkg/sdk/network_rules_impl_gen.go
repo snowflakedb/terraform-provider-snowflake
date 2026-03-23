@@ -12,8 +12,10 @@ import (
 
 var _ NetworkRules = (*networkRules)(nil)
 
-var _ convertibleRow[NetworkRule] = new(ShowNetworkRulesRow)
-var _ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
+var (
+	_ convertibleRow[NetworkRule]        = new(ShowNetworkRulesRow)
+	_ convertibleRow[NetworkRuleDetails] = new(DescNetworkRulesRow)
+)
 
 type networkRules struct {
 	client *Client
@@ -126,15 +128,16 @@ func (r *ShowNetworkRuleRequest) toOpts() *ShowNetworkRuleOptions {
 func (r ShowNetworkRulesRow) convert() (*NetworkRule, error) {
 	// adjusted manually
 	return &NetworkRule{
-		CreatedOn:          r.CreatedOn,
-		Name:               r.Name,
-		DatabaseName:       r.DatabaseName,
-		SchemaName:         r.SchemaName,
-		Owner:              r.Owner,
-		Comment:            r.Comment,
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+		Owner:        r.Owner,
+		Comment:      r.Comment,
+		// TODO [SNOW-3108659]: use enum mapping instead
 		Type:               NetworkRuleType(r.Type),
 		Mode:               NetworkRuleMode(r.Mode),
-		EntriesInValueList: r.EntriesInValueList,
+		EntriesInValueList: r.EntriesInValuelist,
 		OwnerRoleType:      r.OwnerRoleType,
 	}, nil
 }

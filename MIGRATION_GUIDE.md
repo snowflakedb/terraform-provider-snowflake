@@ -24,7 +24,464 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.14.x ➞ v2.15.0
+
+### *(new feature)* snowflake_account_parameter: adding missing parameters
+
+The `snowflake_account_parameter` resource now supports the following additional parameters:
+- `ALLOW_BIND_VALUES_ACCESS`
+- `ALLOWED_SPCS_WORKLOAD_TYPES`
+- `DATA_METRIC_SCHEDULE`
+- `DEFAULT_DBT_VERSION`
+- `DISALLOWED_SPCS_WORKLOAD_TYPES`
+- `ENABLE_BUDGET_EVENT_LOGGING`
+- `ENABLE_DATA_COMPACTION`
+- `ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS`
+- `ENABLE_ICEBERG_MERGE_ON_READ`
+- `ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB`
+- `ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT`
+- `ENABLE_TAG_PROPAGATION_EVENT_LOGGING`
+- `ICEBERG_VERSION_DEFAULT`
+- `READ_CONSISTENCY_MODE`
+- `ROW_TIMESTAMP_DEFAULT`
+- `SQL_TRACE_QUERY_TEXT`
+- `USE_WORKSPACES_FOR_SQL`
+
+No changes are required for existing configurations.
+
+### *(new feature)* New catalog integration resources
+
+We have added new preview resources for managing catalog integrations:
+- [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
+- [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
+
+These features will be marked as stable in future releases. To use them, add 
+- `snowflake_catalog_integration_aws_glue_resource`, or
+- `snowflake_catalog_integration_object_storage_resource`
+to the `preview_features_enabled` field in the provider configuration.
+
+### *(bug fix)* snowflake_account: fix nil pointer dereference panics
+
+Previously, the `snowflake_account` resource could panic with a nil pointer dereference in the following scenarios:
+- During **import**, if some fields (`edition`, `is_org_admin`, `consumption_billing_entity`) were not returned by `SHOW ACCOUNTS`.
+- During **read** (plan/apply), if the same fields were missing from the Snowflake response.
+
+These panics are now replaced with proper nil checks and error messages.
+
+References: [#4101](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4101#issuecomment-4069319904).
+
+### *(improvement)* Go driver bumped to v2
+
+There was a recent major release for the underlying Go Snowflake driver ([summary](https://github.com/snowflakedb/gosnowflake/issues/1586) and [v2.0.0 release notes](https://github.com/snowflakedb/gosnowflake/releases/tag/v2.0.0)). It introduced a few breaking changes but the provider adopted them in a non-breaking way - summary in the sections below. Keep in mind, that we will align the behavior with the driver in the next major release of the provider.
+
+#### `ClientIP` configuration attribute removed from the driver
+
+`ClientIP` attribute was not used by the driver internally. It's still allowed to set this attribute on the provider configuration side, but:
+- it won't be passed to the driver;
+- it will be removed with the next major release.
+
+No changes are required, but because `client_ip` attribute is not affecting the configuration, you can safely remove it, to reduce the number of required changes in the next major provider release.
+
+#### `InsecureMode` configuration attribute removed from the driver
+
+`InsecureMode` attribute was deprecated both in the driver and the provider for a long time already. It's behavior was the same as using `DisableOCSPChecks`. We still allow to set it, but:
+- setting any of `insecure_mode` or `disable_ocsp_checks` to `true` sets the `DisableOCSPChecks` on the driver side (from every perspective: tf config, environment variable, TOML config).
+- `insecure_mode` will be removed with the next major release.
+
+No changes are required, but because `insecure_mode` will be removed in the next major version, switch to `disable_ocsp_checks`, to reduce the number of required changes in the next major provider release.
+
+#### `TelemetryDisabled` configuration attribute removed from the driver
+
+`TelemetryDisabled` was removed from the driver. To avoid making it a breaking change in the provider, setting it in your configuration will cause `CLIENT_TELEMETRY_ENABLED` with value `false` to be added to session parameters (`params` map). It shouldn't affect the existing configurations as:
+- in the previous Go driver versions, setting `CLIENT_TELEMETRY_ENABLED` parameter had no effect (only `TelemetryDisabled` mattered);
+- the parameter is by default set to `true`.
+
+No changes are required, but switch to `CLIENT_TELEMETRY_ENABLED` instead of the `telemetry_disabled` attribute, to reduce the number of required changes in the next major provider release.
+
+#### `KeepSessionAlive` configuration attribute renamed on the driver side
+
+`KeepSessionAlive` was renamed to `ServerSessionKeepAlive` to align it with other drivers.
+
+No changes are required. `keep_session_alive` attribute will be renamed in the next major provider release.
+
+#### `DriverTracing` log levels changes on the driver side
+
+The driver changed the supported log levels. The `print` and `panic` levels no longer exist, and a new `off` level was added. The valid values are now: `trace`, `debug`, `info`, `warn`, `error`, `fatal`, `off`.
+
+For backward compatibility, the following deprecated values are still accepted and mapped automatically:
+- `warning` → `warn`
+- `panic` → `fatal`
+- `print` → `info`
+
+No changes are required, but switch to the new values, as the deprecated ones will be removed in the next major provider release.
+
+### *(new feature)* Private Facts and Metrics support in Semantic Views
+
+We have added support for Private Facts and Metrics in the Semantic Views resource.
+
+### *(new feature)* New `snowflake_external_volumes` data source
+
+Added a new `snowflake_external_volumes` data source that allows querying existing external volumes. It supports `like` filtering and an optional `with_describe` flag (default `true`) to include `DESCRIBE EXTERNAL VOLUME` output. This data source is a preview feature and must be enabled by adding `snowflake_external_volumes_datasource` to `preview_features_enabled` in provider configuration.
+
+### *(enhancement)* Rework of `snowflake_external_volume` resource
+
+We have added support for S3-compatible (S3COMPAT) storage locations and several missing S3 fields to the `snowflake_external_volume` resource.
+
+New fields in `storage_location`:
+- `storage_aws_access_point_arn` - Access point ARN for S3/S3GOV storage locations.
+- `use_privatelink_endpoint` - Whether to use a privatelink endpoint (S3, S3GOV, and AZURE).
+- `storage_endpoint` - Endpoint for S3COMPAT storage locations.
+- `storage_aws_key_id` - AWS key ID for S3COMPAT storage locations.
+- `storage_aws_secret_key` - AWS secret key for S3COMPAT storage locations (sensitive).
+
+#### *(breaking change)* `storage_aws_external_id` changed from computed to optional
+
+Previously, `storage_aws_external_id` in `storage_location` was a computed (read-only) field populated by Snowflake. It is now an optional user-configurable field. A state upgrader clears the previously computed value automatically, so no changes to existing configurations are required and `terraform plan` will show no drift after upgrading.
+
+If you previously referenced `storage_location.*.storage_aws_external_id` (e.g. in `output` blocks or `local` values), note that it will now be empty unless you explicitly set it. The Snowflake-generated external ID remains accessible via `describe_output.0.storage_locations.*.s3_storage_location.0.storage_aws_external_id`.
+
+#### *(breaking change)* `snowflake_external_volume` resource `describe_output` schema changed
+
+The `describe_output` attribute on the `snowflake_external_volume` resource has been restructured.
+Previously it was a flat list of property rows with `parent`, `name`, `type`, `value`, and `default` fields.
+It is now a single structured object with `active`, `comment`, `allow_writes`, and `storage_locations` fields,
+where `storage_locations` contains typed, per-provider sub-objects (`s3_storage_location`, `gcs_storage_location`,
+`azure_storage_location`, `s3_compat_storage_location`).
+
+A state upgrader handles the migration automatically. No changes to your resource configuration are required,
+but if you reference `describe_output` in other parts of your Terraform config (e.g. `output` blocks or `local` values),
+you will need to update those references to match the new schema. For example:
+
+Before:
+```terraform
+output "ev_comment" {
+  value = [for p in snowflake_external_volume.test.describe_output : p.value if p.name == "COMMENT"][0]
+}
+```
+
+After:
+```terraform
+output "ev_comment" {
+  value = snowflake_external_volume.test.describe_output[0].comment
+}
+```
+
+### *(bugfix)* Fixed allowed_accounts update in snowflake_failover_group
+
+Previously, updating the `allowed_accounts` field would fail because the constructed request was not correct. This has been fixed and `allowed_accounts` can now be updated correctly without requiring workarounds.
+
+No changes in the configuration are required.
+
+Reference: [#3946](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3946)
+
+### *(bugfix)* Fixed AGENT and MCP SERVER object types in grant resources (non-empty plan)
+
+In v2.14.0 we added support for the `AGENT` and `MCP SERVER` object types in privilege grant resources (e.g. `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`),
+but grants on these objects or future objects of these types produced perpetual non-empty plans because the provider did not match the object types Snowflake returns in SHOW GRANTS / SHOW FUTURE GRANTS
+(for agents, Snowflake returns `CORTEX_AGENT` instead of `AGENT`; for MCP servers, Snowflake returns `CORTEX_AGENT_SERVER` instead of `MCP SERVER`).
+
+This has been fixed: grant resources can now be used with the `AGENT` and `MCP SERVER` object types without any unexpected plans.
+
+No changes in the configuration are required.
+
+Reference: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524)
+
+### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
+
+Previously, removing `allowed_values` from your tag configuration did not revert the tag to accepting any value, and there was no way to explicitly block all values.
+The new `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experimental feature fixes both issues, giving you full control over which values a tag accepts:
+omit `allowed_values` to allow any value, specify a list to restrict to certain values, or set `no_allowed_values = true` to block all values entirely.
+The `allowed_values` and `no_allowed_values` fields are conflicting and cannot be set at the same time.
+
+Here are examples presenting all options for allowed values management:
+
+1. Any value is allowed (`allowed_values` should be removed from the configuration or left empty)
+
+```terraform
+resource "snowflake_tag" "example" {
+  name     = "my_tag"
+  database = "my_database"
+  schema   = "my_schema"
+  # or allowed_values = []
+}
+```
+
+2. Given values are allowed (`allowed_values` should be set to the desired values)
+
+```terraform
+resource "snowflake_tag" "example" {
+  name           = "my_tag"
+  database       = "my_database"
+  schema         = "my_schema"
+  allowed_values = ["production", "staging", "development"]
+}
+```
+
+3. No value is allowed (`no_allowed_values` field set to true)
+
+```terraform
+resource "snowflake_tag" "example" {
+  name              = "my_tag"
+  database          = "my_database"
+  schema            = "my_schema"
+  no_allowed_values = true
+}
+```
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
+
+**It's still considered a preview feature, even when applied to the stable resources.**
+
+No changes in configuration are required.
+Without the flag enabled, the behavior remains the same as in previous versions.
+
+## v2.13.x ➞ v2.14.0
+
+### *(new feature)* Private Facts and Metrics support in Semantic Views
+
+We have added support for Private Facts and Metrics in the Semantic Views resource.
+
+### *(new feature)* Added `DECFLOAT` support
+
+We added the [`DECFLOAT`](https://docs.snowflake.com/en/sql-reference/data-types-numeric#decfloat) data type support inside the provider.
+It applies to all resources and data sources, however, keep in mind that these are limited by the underlying Snowflake objects capabilities (check the [limitations section](https://docs.snowflake.com/en/sql-reference/data-types-numeric#limitations-for-the-decfloat-data-type) in Snowflake public docs), so e.g. it works correctly for `snowflake_function_sql` but nor for `snowflake_function_python`.
+
+No changes in configuration are required.
+
+### *(new feature)* Added missing `object_types` in grant resources
+
+Previously, the `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources did not support all object types that Snowflake allows in GRANT statements.
+With this change, we added support for the following missing object types:
+
+- `AGENT` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `EXPERIMENT` object type in the `on_schema_object.object_type` field
+- `GATEWAY` object type in the `on_schema_object.object_type` field
+- `MCP SERVER` object type in the `on_schema_object.object_type`, `on_schema_object.all`, and `on_schema_object.future` fields
+- `NOTEBOOK PROJECT` object type in the `on_schema_object.object_type` field
+
+We also corrected the `on_schema_object.all` field validation to properly exclude `JOIN POLICY` object type, and the `on_schema_object.future` field validation to properly exclude `JOIN POLICY` and `SNAPSHOT` object types, which Snowflake does not support for bulk grants. The same restrictions apply to the newly added `GATEWAY` and `NOTEBOOK PROJECT` object types.
+
+No changes in configuration are required.
+
+### *(bugfix)* Fixed `snowflake_share` update failing when adding accounts to a share that already has a database granted
+
+Previously, updating the `accounts` field on the `snowflake_share` resource (e.g., adding consumer accounts after the initial creation) would fail with:
+```
+│ Error: error adding accounts to share: 003033 (0A000): SQL compilation error:
+│ Database 'TEMP_...' does not belong to the database that is being shared.
+```
+This happened because the provider always used an internal workaround that creates a temporary database and grants it to the share before adding accounts. When a real database was already granted to the share, Snowflake rejected the grant on the temporary database since only one database can be granted `USAGE` on a share at a time.
+
+After the fix, the provider now checks whether a database is already granted to the share before adding accounts. If a database is present, accounts are added directly via `ALTER SHARE ... ADD ACCOUNTS` without the temporary database workaround.
+
+No changes in configuration are required.
+
+References: [#4398](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4398).
+
+### *(enhancement)* Fixed external change detection in user resources (`snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`)
+
+The user resources were not able to detect external changes for some string fields that were null or empty on the Snowflake side.
+As an example, when you specified `email` in configuration like so:
+```terraform
+resource "snowflake_user" "test" {
+  ...
+  name = "SOME_USER"
+  email = "some@email.com"
+  ...
+}
+```
+
+and then removed it on the snowflake side with:
+```sql
+ALTER USER SOME_USER UNSET EMAIL;
+```
+
+The change wasn't detected in the user resource. Now, such changes are detected. Here's the list of affected fields:
+- `email`
+- `default_warehouse`
+- `default_role`
+- `rsa_public_key`
+- `rsa_public_key_2`
+- `comment`
+- Fields only for users with `type = PERSON`:
+    - `first_name`
+    - `middle_name`
+    - `last_name`
+
+No configuration changes are required.
+
+### *(enhancement)* `snowflake_network_rule` rework
+
+#### Changes in `type` and `mode` fields
+Previously, the `type` and `mode` fields on `snowflake_network_rule` required exact uppercase values (e.g. `IPV4`, `INGRESS`). Values in any other casing would be rejected by the provider validation.
+
+Additionally, two new `type` values are now supported:
+- `GCPPSCID` - for GCP Private Service Connect endpoint identifiers
+- `PRIVATE_HOST_PORT` - for private host port identifiers
+
+Two new `mode` values are now supported:
+- `POSTGRES_INGRESS` - for incoming traffic to Snowflake Postgres instances
+- `POSTGRES_EGRESS` - for outgoing traffic from Snowflake Postgres instances
+
+No configuration changes are required. Existing configurations will continue to work as before. If you were using workarounds to force uppercase values, those can be removed.
+
+#### Identifiers related changes
+Resource ID format was changed from pipe-separated to regular Snowflake identifiers (e.g. `<database_name>|<schema_name>|<network_rule_name>` -> `"<database_name>"."<schema_name>"."<network_rule_name>"`). Importing resources also needs to be adjusted:
+```shell
+terraform import snowflake_network_rule.example '"<database_name>"."<schema_name>"."<network_rule_name>"'
+```
+
+No change is required, the state will be migrated automatically.
+
+#### New `show_output` and `describe_output` attributes
+New computed attributes `show_output` and `describe_output` were added to the `snowflake_network_rule` resource. They contain the output of `SHOW NETWORK RULES` and `DESCRIBE NETWORK RULE` queries, respectively. They can be used to reference network rule properties in other parts of the configuration.
+
+No configuration changes are required.
+
+Reference: [#3956](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3956), [#4437](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4437)
+
+### snowflake_network_rule promoted to stable
+
+Since this version, this resource is stable and is enabled by default: enabling it in the provider configuration is no longer required. Please remove it from the `preview_features_enabled` list.
+
+Provider will issue a warning if a stable feature is still used on the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
+### *(new feature)* snowflake_network_rules data source
+Added a new preview data source for network rules. See reference [docs](https://docs.snowflake.com/en/sql-reference/sql/show-network-rules).
+
+This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_network_rules_datasource` to `preview_features_enabled` field in the provider configuration.
+
+### *(bugfix)* Fixed timestamp parsing in stage resources
+
+The new stage resources introduced in v2.13.0 parsed the `last_refreshed_on` timestamp column. However, due to flexibility of the time formats, this could fail with errors like
+```
+│ Error: parsing time "2026-02-15 23:59:47.000 Z" as "2006-01-02 15:04:05.000 -0700": cannot parse "Z" as "-0700"
+```
+
+This caused Terraform to detect a diff on the next plan and taint the resource, potentially leading to an unwanted recreation.
+
+This is now fixed - the provider does not parse the received timestamp. Additionally, this field can be now read in the `directory_table` schema in `describe_output`.
+
+The state is upgraded automatically.
+
+#### Important: untaint resources after the upgrade
+
+If Terraform has already tainted your resources before upgrading to this version, you should untaint them to avoid unnecessary recreation:
+
+```shell
+terraform untaint snowflake_external_s3_stage.example
+```
+
+After upgrading the provider to this version, the state upgrader will take care of populating `describe_output` and no further action is needed.
+
+Reference: [#4445](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4445).
+
+### *(new feature)* Import validation for `snowflake_grant_privileges_to_account_role`
+
+A new `GRANTS_IMPORT_VALIDATION` experimental feature was added. When enabled, importing a `snowflake_grant_privileges_to_account_role` resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
+
+It's not enabled by default and to use it, you have to enable this feature on the provider level
+by adding `GRANTS_IMPORT_VALIDATION` value to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field.
+It's similar to the existing [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1),
+but instead of enabling the use of the whole resources, it's meant to slightly alter the provider's behavior.
+
+**It's still considered a preview feature, even when applied to the stable resources.**
+
+This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
+
 ## v2.12.x ➞ v2.13.0
+
+### *(bugfix)* Fixed `snowflake_tag_association` usage with function or procedure object types
+
+Previously, after creating the `snowflake_tag_association` resource with functions or procedures,
+any modifications to the `object_identifiers` or `tag_value` fields would lead to the following error:
+
+```text
+Error: unable to read identifier: ABC, err = parse error on line 1, column 2: extraneous or missing " in quoted-field
+```
+
+Now, it's possible to use the `snowflake_tag_association` resource with functions and procedures.
+
+No changes in the configuration are required.
+
+Reference: [#4403](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4403)
+
+### *(new feature)* New stage resources
+
+To enhance clarity and functionality, the new resources
+- [snowflake_stage_internal](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/internal_stage),
+- [snowflake_stage_external_gcs](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_gcs_stage),
+- [snowflake_stage_external_azure](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_azure_stage),
+- [snowflake_stage_external_s3](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_s3_stage),
+- [snowflake_stage_external_s3_compatible](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_s3_compatible_stage), and
+have been introduced to replace the previous `snowflake_stage` for internal and external stages.
+Recognizing that the old resource carried multiple responsibilities within a single entity, we opted to divide it into more specialized resources.
+The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation, and adhere to our [new conventions](#general-changes).
+
+These features are in preview. To use them, add
+- `snowflake_stage_internal_resource`,
+- `snowflake_stage_external_gcs_resource`,
+- `snowflake_stage_external_azure_resource`,
+- `snowflake_stage_external_s3_resource`, or
+- `snowflake_stage_external_s3_compatible_resource`,
+to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
+
+The existing `snowflake_stage` resource remains available for both internal and external stages, but is now deprecated. The old resource will be removed in v3 version. The new resources are recommended for internal and external stages. See the resource documentation linked above for complete configuration details.
+
+To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
+
+References: [GitHub issues](https://github.com/snowflakedb/terraform-provider-snowflake/issues?q=is%3Aissue%20state%3Aopen%20label%3Aresource%3Astage).
+
+#### *(breaking change)* Stages data source
+
+Note: this data source was in preview allowing us to make breaking changes without bumping the major version (following [our docs](https://docs.snowflake.com/en/user-guide/terraform#preview-features)).
+
+Reworked existing datasource enabling querying and filtering all types of stages. Notes:
+- all results are stored in `stages` field.
+- `like` field enables stages filtering.
+- `SHOW STAGES` output is enclosed in `show_output` field inside `stages`.
+- Output from `DESC STAGE` (which can be turned off by declaring `with_describe = false`, **it's turned on by default**) is enclosed in `describe_output` field inside `stages`.
+  `DESC STAGE` returns different properties based on the stage and file format type. Consult the documentation to check which ones will be filled for which integration.
+  It's important to limit the records and calls to Snowflake to the minimum. That's why we recommend assessing which information you need from the data source and then providing strong filters and turning off additional fields for better plan performance.
+
+The data source is still in preview. To use it, add `snowflake_stages_datasource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
+
+### *(new feature)* Storage integrations reworked
+
+#### *(new feature/deprecation)* Storage integration resources
+
+Existing `snowflake_storage_integration` resource has been deprecated. It has been split into three new dedicated ones: `snowflake_storage_integration_aws`, `snowflake_storage_integration_azure`, and `snowflake_storage_integration_gcs`. These new resources have updated logic and manage only a single type of integration, simplifying the schemas (earlier, properties from all types were present in a single schema, making the resource management more complex).
+The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation, and adhere to our [new conventions](#general-changes).
+
+These resources are in preview. To use them, add `snowflake_storage_integration_aws_resource`, `snowflake_storage_integration_azure_resource`, or `snowflake_storage_integration_gcs_resource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
+
+Changes against the old `snowflake_storage_integration` resource:
+- `storage_allowed_locations` and `storage_blocked_locations` changed from lists to sets in all the new resources
+- `storage_provider` was not added to Azure and GCS resources
+- `type` was not used in any of the new resources
+- non-settable attributes moved to `show_output` or `describe_output`
+- `describe_output` was flattened (it does contain only attributes with values and not list of properties as before)
+- each type's schema contains only the attributes valid for the given type
+
+To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
+
+#### *(breaking change)* Storage integration data source
+
+Note: this data source was in preview allowing us to make breaking changes without bumping the major version (following [our docs](https://docs.snowflake.com/en/user-guide/terraform#preview-features)).
+
+Reworked existing datasource enabling querying and filtering all types of storage integrations. Notes:
+- all results are stored in `storage_integrations` field.
+- `like` field enables storage integrations filtering.
+- `SHOW STORAGE INTEGRATIONS` output is enclosed in `show_output` field inside `storage_integrations`.
+- Output from `DESC STORAGE INTEGRATION` (which can be turned off by declaring `with_describe = false`, **it's turned on by default**) is enclosed in `describe_output` field inside `storage_integrations`.
+  `DESC STORAGE INTEGRATION` returns different properties based on the integration type. Consult the documentation to check which ones will be filled for which integration.
+  The additional parameters call `DESC STORAGE INTEGRATION` (with `with_describe` turned on) **per storage integration** returned by `SHOW STORAGE INTEGRATIONS`.
+  It's important to limit the records and calls to Snowflake to the minimum. That's why we recommend assessing which information you need from the data source and then providing strong filters and turning off additional fields for better plan performance.
+
+The data source is still in preview. To use it, add `snowflake_storage_integrations_datasource` to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field.
 
 ### Enhanced region mappings in `current_account` datasource
 
@@ -108,6 +565,18 @@ Now, `UNSET` is available in Snowflake, and the provider uses this operation for
 Note: `auto_suspend` still uses `SET` with the default value (600) as a workaround, because `UNSET` returns 0 instead of the default.
 
 No changes in the configuration is required.
+
+### *(bugfix)* Fixed `snowflake_system_get_privatelink_config` and `snowflake_system_get_aws_sns_iam_policy` data sources with `QUOTED_IDENTIFIERS_IGNORE_CASE` enabled
+
+Previously, both data sources returned null values for all fields when an account had the `QUOTED_IDENTIFIERS_IGNORE_CASE` parameter set to `true`. This was caused by a case mismatch between the SQL column aliases and the internal struct field mappings.
+
+The data sources now work correctly regardless of the `QUOTED_IDENTIFIERS_IGNORE_CASE` setting.
+
+Note that these data sources are still in preview.
+
+No changes in configuration are required.
+
+References: [#1630](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1630)
 
 ### *(bugfix)* Fixed broken state after errors in `terraform apply` in the schema resource
 Previously, when the schema's `with_managed_access` value was changed during the apply, and the Terraform role did not have sufficient privileges, the operation resulted in a corrupted state. The value of such a field was set to `true` in the state, even though the operation returned an error. This behavior could also happen in other fields.

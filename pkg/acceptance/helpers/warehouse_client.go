@@ -168,3 +168,21 @@ func (c *WarehouseClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*s
 
 	return c.client().ShowByID(ctx, id)
 }
+
+func (c *WarehouseClient) CreateAdaptive(t *testing.T) (*sdk.Warehouse, func()) {
+	t.Helper()
+	return c.CreateAdaptiveWithOptions(t, c.ids.RandomAccountObjectIdentifier(), &sdk.CreateAdaptiveWarehouseOptions{})
+}
+
+func (c *WarehouseClient) CreateAdaptiveWithOptions(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.CreateAdaptiveWarehouseOptions) (*sdk.Warehouse, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().CreateAdaptive(ctx, id, opts)
+	require.NoError(t, err)
+
+	warehouse, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return warehouse, c.DropWarehouseFunc(t, id)
+}

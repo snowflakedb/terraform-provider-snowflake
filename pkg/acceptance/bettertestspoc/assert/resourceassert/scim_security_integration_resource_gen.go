@@ -28,6 +28,50 @@ func ImportedScimSecurityIntegrationResource(t *testing.T, id string) *ScimSecur
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *ScimSecurityIntegrationResourceAssert) HasName(expected string) *ScimSecurityIntegrationResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *ScimSecurityIntegrationResourceAssert) HasComment(expected string) *ScimSecurityIntegrationResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *ScimSecurityIntegrationResourceAssert) HasEnabled(expected bool) *ScimSecurityIntegrationResourceAssert {
+	s.BoolValueSet("enabled", expected)
+	return s
+}
+
+func (s *ScimSecurityIntegrationResourceAssert) HasFullyQualifiedName(expected string) *ScimSecurityIntegrationResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *ScimSecurityIntegrationResourceAssert) HasNetworkPolicy(expected string) *ScimSecurityIntegrationResourceAssert {
+	s.StringValueSet("network_policy", expected)
+	return s
+}
+
+func (s *ScimSecurityIntegrationResourceAssert) HasRunAsRole(expected string) *ScimSecurityIntegrationResourceAssert {
+	s.StringValueSet("run_as_role", expected)
+	return s
+}
+
+func (s *ScimSecurityIntegrationResourceAssert) HasScimClient(expected string) *ScimSecurityIntegrationResourceAssert {
+	s.StringValueSet("scim_client", expected)
+	return s
+}
+
+func (s *ScimSecurityIntegrationResourceAssert) HasSyncPassword(expected string) *ScimSecurityIntegrationResourceAssert {
+	s.StringValueSet("sync_password", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

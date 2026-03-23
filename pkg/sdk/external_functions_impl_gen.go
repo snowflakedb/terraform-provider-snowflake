@@ -13,8 +13,10 @@ import (
 
 var _ ExternalFunctions = (*externalFunctions)(nil)
 
-var _ convertibleRow[ExternalFunction] = new(externalFunctionRow)
-var _ convertibleRow[ExternalFunctionProperty] = new(externalFunctionPropertyRow)
+var (
+	_ convertibleRow[ExternalFunction]         = new(externalFunctionRow)
+	_ convertibleRow[ExternalFunctionProperty] = new(externalFunctionPropertyRow)
+)
 
 type externalFunctions struct {
 	client *Client

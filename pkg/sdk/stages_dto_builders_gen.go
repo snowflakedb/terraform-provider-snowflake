@@ -649,7 +649,7 @@ func (s *AlterInternalStageStageRequest) WithFileFormat(fileFormat StageFileForm
 	return s
 }
 
-func (s *AlterInternalStageStageRequest) WithComment(comment string) *AlterInternalStageStageRequest {
+func (s *AlterInternalStageStageRequest) WithComment(comment StringAllowEmpty) *AlterInternalStageStageRequest {
 	s.Comment = &comment
 	return s
 }
@@ -677,7 +677,7 @@ func (s *AlterExternalS3StageStageRequest) WithFileFormat(fileFormat StageFileFo
 	return s
 }
 
-func (s *AlterExternalS3StageStageRequest) WithComment(comment string) *AlterExternalS3StageStageRequest {
+func (s *AlterExternalS3StageStageRequest) WithComment(comment StringAllowEmpty) *AlterExternalS3StageStageRequest {
 	s.Comment = &comment
 	return s
 }
@@ -705,7 +705,7 @@ func (s *AlterExternalGCSStageStageRequest) WithFileFormat(fileFormat StageFileF
 	return s
 }
 
-func (s *AlterExternalGCSStageStageRequest) WithComment(comment string) *AlterExternalGCSStageStageRequest {
+func (s *AlterExternalGCSStageStageRequest) WithComment(comment StringAllowEmpty) *AlterExternalGCSStageStageRequest {
 	s.Comment = &comment
 	return s
 }
@@ -733,7 +733,7 @@ func (s *AlterExternalAzureStageStageRequest) WithFileFormat(fileFormat StageFil
 	return s
 }
 
-func (s *AlterExternalAzureStageStageRequest) WithComment(comment string) *AlterExternalAzureStageStageRequest {
+func (s *AlterExternalAzureStageStageRequest) WithComment(comment StringAllowEmpty) *AlterExternalAzureStageStageRequest {
 	s.Comment = &comment
 	return s
 }

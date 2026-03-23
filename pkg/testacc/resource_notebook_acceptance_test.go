@@ -44,7 +44,7 @@ func TestAcc_Notebook_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
-			HasNoFromString().
+			HasFromEmpty().
 			HasNoMainFile().
 			HasNoQueryWarehouse().
 			HasNoIdleAutoShutdownTimeSeconds().
@@ -75,7 +75,7 @@ func TestAcc_Notebook_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
-			HasNoFromString().
+			HasFromEmpty().
 			HasNoMainFile().
 			HasQueryWarehouseString("").
 			HasIdleAutoShutdownTimeSecondsString("0").
@@ -112,7 +112,7 @@ func TestAcc_Notebook_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
-			HasNoFromString().
+			HasFromEmpty().
 			HasNoMainFile().
 			HasQueryWarehouseString(queryWarehouse.ID().FullyQualifiedName()).
 			HasIdleAutoShutdownTimeSecondsString(strconv.Itoa(idleAutoShutdownTimeSeconds)).
@@ -272,7 +272,7 @@ func TestAcc_Notebook_CompleteUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasFromString("testdata/example.ipynb", stage.ID().FullyQualifiedName()).
+						HasFromPathAndStage("testdata/example.ipynb", stage.ID().FullyQualifiedName()).
 						HasMainFileString("example.ipynb").
 						HasQueryWarehouseString(queryWarehouse.ID().FullyQualifiedName()).
 						HasIdleAutoShutdownTimeSecondsString(strconv.Itoa(idleAutoShutdownTimeSeconds)).
@@ -319,7 +319,7 @@ func TestAcc_Notebook_CompleteUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasFromString("testdata/example.ipynb", changedStage.ID().FullyQualifiedName()).
+						HasFromPathAndStage("testdata/example.ipynb", changedStage.ID().FullyQualifiedName()).
 						HasMainFileString("example.ipynb").
 						HasQueryWarehouseString(changedQueryWarehouse.ID().FullyQualifiedName()).
 						HasIdleAutoShutdownTimeSecondsString(strconv.Itoa(changedIdleAutoShutdownTimeSeconds)).
@@ -395,7 +395,7 @@ func TestAcc_Notebook_SimultaneousWarehousesChange(t *testing.T) {
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasFromString("testdata/example.ipynb", stage.ID().FullyQualifiedName()).
+						HasFromPathAndStage("testdata/example.ipynb", stage.ID().FullyQualifiedName()).
 						HasMainFileString("example.ipynb").
 						HasQueryWarehouseString(queryWarehouse.ID().FullyQualifiedName()).
 						HasIdleAutoShutdownTimeSecondsString(strconv.Itoa(idleAutoShutdownTimeSeconds)).
@@ -434,7 +434,7 @@ func TestAcc_Notebook_SimultaneousWarehousesChange(t *testing.T) {
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasFromString("testdata/example.ipynb", stage.ID().FullyQualifiedName()).
+						HasFromPathAndStage("testdata/example.ipynb", stage.ID().FullyQualifiedName()).
 						HasMainFileString("example.ipynb").
 						HasIdleAutoShutdownTimeSecondsString(strconv.Itoa(idleAutoShutdownTimeSeconds)).
 						HasCommentString(comment).
@@ -483,7 +483,7 @@ func TestAcc_Notebook_Rename(t *testing.T) {
 						HasNameString("name").
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasNoFromString().
+						HasFromEmpty().
 						HasNoMainFile().
 						HasNoQueryWarehouse().
 						HasNoIdleAutoShutdownTimeSeconds().
@@ -521,7 +521,7 @@ func TestAcc_Notebook_Rename(t *testing.T) {
 						HasNameString("new_name").
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasNoFromString().
+						HasFromEmpty().
 						HasNoMainFile().
 						HasNoQueryWarehouse().
 						HasNoIdleAutoShutdownTimeSeconds().
@@ -573,7 +573,7 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasNoFromString().
+						HasFromEmpty().
 						HasNoMainFile().
 						HasNoQueryWarehouse().
 						HasNoIdleAutoShutdownTimeSeconds().
@@ -618,7 +618,7 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasNoFromString().
+						HasFromEmpty().
 						HasNoMainFile().
 						HasNoQueryWarehouse().
 						HasNoIdleAutoShutdownTimeSeconds().
@@ -671,7 +671,7 @@ func TestAcc_notebook_WarehouseSchemaLevelChange(t *testing.T) {
 			HasNameString(id.Name()).
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
-			HasNoFromString().
+			HasFromEmpty().
 			HasNoMainFile().
 			HasNoQueryWarehouse().
 			HasNoIdleAutoShutdownTimeSeconds().

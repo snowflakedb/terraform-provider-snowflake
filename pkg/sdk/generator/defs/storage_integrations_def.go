@@ -21,7 +21,7 @@ var storageIntegrationsDef = g.NewInterface(
 			SQL("STORAGE INTEGRATION").
 			IfNotExists().
 			Name().
-			PredefinedQueryStructField("externalStageType", "string", g.StaticOptions().SQL("TYPE = EXTERNAL_STAGE")).
+			SQLWithCustomFieldName("externalStageType", "TYPE = EXTERNAL_STAGE").
 			OptionalQueryStructField(
 				"S3StorageProviderParams",
 				g.NewQueryStruct("S3StorageParams").
@@ -35,17 +35,19 @@ var storageIntegrationsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"GCSStorageProviderParams",
 				g.NewQueryStruct("GCSStorageParams").
-					PredefinedQueryStructField("storageProvider", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'GCS'")),
+					SQLWithCustomFieldName("storageProvider", "STORAGE_PROVIDER = 'GCS'"),
 				g.KeywordOptions(),
 			).
 			OptionalQueryStructField(
 				"AzureStorageProviderParams",
 				g.NewQueryStruct("AzureStorageParams").
-					PredefinedQueryStructField("storageProvider", "string", g.StaticOptions().SQL("STORAGE_PROVIDER = 'AZURE'")).
-					OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
+					SQLWithCustomFieldName("storageProvider", "STORAGE_PROVIDER = 'AZURE'").
+					TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
 					OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).
+			// Enabled is required even though it can be UNSET. Not using it in create results in:
+			// 002029 (42601): SQL compilation error: Missing option(s): ENABLED
 			BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 			ListAssignment("STORAGE_ALLOWED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses().Required()).
 			ListAssignment("STORAGE_BLOCKED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses()).
@@ -68,34 +70,53 @@ var storageIntegrationsDef = g.NewInterface(
 					OptionalQueryStructField(
 						"S3Params",
 						g.NewQueryStruct("SetS3StorageParams").
-							TextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes().Required()).
+							OptionalTextAssignment("STORAGE_AWS_ROLE_ARN", g.ParameterOptions().SingleQuotes()).
 							OptionalTextAssignment("STORAGE_AWS_EXTERNAL_ID", g.ParameterOptions().SingleQuotes()).
 							OptionalTextAssignment("STORAGE_AWS_OBJECT_ACL", g.ParameterOptions().SingleQuotes()).
-							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
+							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
+							WithValidation(g.AtLeastOneValueSet, "StorageAwsRoleArn", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"),
 						g.KeywordOptions(),
 					).
 					OptionalQueryStructField(
 						"AzureParams",
 						g.NewQueryStruct("SetAzureStorageParams").
-							TextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes().Required()).
-							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()),
+							OptionalTextAssignment("AZURE_TENANT_ID", g.ParameterOptions().SingleQuotes()).
+							OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).
+							WithValidation(g.AtLeastOneValueSet, "AzureTenantId", "UsePrivatelinkEndpoint"),
 						g.KeywordOptions(),
 					).
 					OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 					ListAssignment("STORAGE_ALLOWED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses()).
 					ListAssignment("STORAGE_BLOCKED_LOCATIONS", "StorageLocation", g.ParameterOptions().Parentheses()).
-					OptionalComment(),
+					OptionalComment().
+					WithValidation(g.ConflictingFields, "S3Params", "AzureParams").
+					WithValidation(g.AtLeastOneValueSet, "S3Params", "AzureParams", "Enabled", "StorageAllowedLocations", "StorageBlockedLocations", "Comment"),
 				g.KeywordOptions().SQL("SET"),
 			).
 			OptionalQueryStructField(
 				"Unset",
 				g.NewQueryStruct("StorageIntegrationUnset").
-					OptionalSQL("STORAGE_AWS_EXTERNAL_ID").
-					OptionalSQL("STORAGE_AWS_OBJECT_ACL").
+					OptionalQueryStructField(
+						"S3Params",
+						g.NewQueryStruct("UnsetS3StorageParams").
+							OptionalSQL("STORAGE_AWS_EXTERNAL_ID").
+							OptionalSQL("STORAGE_AWS_OBJECT_ACL").
+							OptionalSQL("USE_PRIVATELINK_ENDPOINT").
+							WithValidation(g.AtLeastOneValueSet, "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"),
+						g.ListOptions(),
+					).
+					OptionalQueryStructField(
+						"AzureParams",
+						g.NewQueryStruct("UnsetAzureStorageParams").
+							OptionalSQL("USE_PRIVATELINK_ENDPOINT").
+							WithValidation(g.AtLeastOneValueSet, "UsePrivatelinkEndpoint"),
+						g.ListOptions(),
+					).
 					OptionalSQL("ENABLED").
 					OptionalSQL("STORAGE_BLOCKED_LOCATIONS").
 					OptionalSQL("COMMENT").
-					OptionalSQL("USE_PRIVATELINK_ENDPOINT"),
+					WithValidation(g.ConflictingFields, "S3Params", "AzureParams").
+					WithValidation(g.AtLeastOneValueSet, "S3Params", "AzureParams", "Enabled", "StorageBlockedLocations", "Comment"),
 				g.ListOptions().SQL("UNSET"),
 			).
 			OptionalSetTags().
@@ -155,4 +176,53 @@ var storageIntegrationsDef = g.NewInterface(
 			SQL("STORAGE INTEGRATION").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		g.PlainStruct("StorageIntegrationAwsDetails").
+			AccountObjectIdentifier().
+			Bool("Enabled").
+			// TODO [next PRs]: enum?
+			Text("Provider").
+			StringList("AllowedLocations").
+			StringList("BlockedLocations").
+			Text("Comment").
+			Bool("UsePrivatelinkEndpoint").
+			Text("IamUserArn").
+			Text("RoleArn").
+			Text("ObjectAcl").
+			Text("ExternalId"),
+		g.PlainStruct("StorageIntegrationAzureDetails").
+			AccountObjectIdentifier().
+			Bool("Enabled").
+			Text("Provider").
+			StringList("AllowedLocations").
+			StringList("BlockedLocations").
+			Text("Comment").
+			Bool("UsePrivatelinkEndpoint").
+			Text("TenantId").
+			Text("ConsentUrl").
+			Text("MultiTenantAppName"),
+		g.PlainStruct("StorageIntegrationGcsDetails").
+			AccountObjectIdentifier().
+			Bool("Enabled").
+			Text("Provider").
+			StringList("AllowedLocations").
+			StringList("BlockedLocations").
+			Text("Comment").
+			Bool("UsePrivatelinkEndpoint").
+			Text("ServiceAccount"),
+		g.PlainStruct("StorageIntegrationAllDetails").
+			AccountObjectIdentifier().
+			Bool("Enabled").
+			Text("Provider").
+			StringList("AllowedLocations").
+			StringList("BlockedLocations").
+			Text("Comment").
+			Bool("UsePrivatelinkEndpoint").
+			Text("IamUserArn").
+			Text("RoleArn").
+			Text("ObjectAcl").
+			Text("ExternalId").
+			Text("TenantId").
+			Text("ConsentUrl").
+			Text("MultiTenantAppName").
+			Text("ServiceAccount"),
 	)

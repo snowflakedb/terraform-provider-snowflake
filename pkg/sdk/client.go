@@ -8,7 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/jmoiron/sqlx"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 type Client struct {
@@ -30,6 +30,7 @@ type Client struct {
 	ApplicationRoles             ApplicationRoles
 	Applications                 Applications
 	AuthenticationPolicies       AuthenticationPolicies
+	CatalogIntegrations          CatalogIntegrations
 	Comments                     Comments
 	ComputePools                 ComputePools
 	Connections                  Connections
@@ -47,6 +48,7 @@ type Client struct {
 	Functions                    Functions
 	GitRepositories              GitRepositories
 	Grants                       Grants
+	HybridTables                 HybridTables
 	ImageRepositories            ImageRepositories
 	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
@@ -161,6 +163,7 @@ func (c *Client) initialize() {
 	c.ApplicationRoles = &applicationRoles{client: c}
 	c.Applications = &applications{client: c}
 	c.AuthenticationPolicies = &authenticationPolicies{client: c}
+	c.CatalogIntegrations = &catalogIntegrations{client: c}
 	c.Comments = &comments{client: c}
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
@@ -179,6 +182,7 @@ func (c *Client) initialize() {
 	c.Functions = &functions{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
+	c.HybridTables = &hybridTables{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
 	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}

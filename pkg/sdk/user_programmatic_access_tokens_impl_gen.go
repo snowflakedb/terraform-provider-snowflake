@@ -11,10 +11,12 @@ import (
 )
 
 // whitespace adjusted manually
-var _ UserProgrammaticAccessTokens = (*userProgrammaticAccessTokens)(nil)
-var _ convertibleRow[AddProgrammaticAccessTokenResult] = new(addProgrammaticAccessTokenResultDBRow)
-var _ convertibleRow[RotateProgrammaticAccessTokenResult] = new(rotateProgrammaticAccessTokenResultDBRow)
-var _ convertibleRow[ProgrammaticAccessToken] = new(programmaticAccessTokenResultDBRow)
+var (
+	_ UserProgrammaticAccessTokens                        = (*userProgrammaticAccessTokens)(nil)
+	_ convertibleRow[AddProgrammaticAccessTokenResult]    = new(addProgrammaticAccessTokenResultDBRow)
+	_ convertibleRow[RotateProgrammaticAccessTokenResult] = new(rotateProgrammaticAccessTokenResultDBRow)
+	_ convertibleRow[ProgrammaticAccessToken]             = new(programmaticAccessTokenResultDBRow)
+)
 
 type userProgrammaticAccessTokens struct {
 	client *Client

@@ -13,7 +13,7 @@ func SecretDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.Test
 	return newNonExistenceCheck(
 		sdk.ObjectTypeSecret,
 		id,
-		func(testClient *helpers.TestClient) showByIDFunc[*sdk.View, sdk.SchemaObjectIdentifier] {
-			return testClient.View.Show
+		func(testClient *helpers.TestClient) showByIDFunc[*sdk.Secret, sdk.SchemaObjectIdentifier] {
+			return testClient.Secret.Show
 		})
 }

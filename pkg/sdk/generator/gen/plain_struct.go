@@ -1,5 +1,7 @@
 package gen
 
+import "fmt"
+
 type plainStruct struct {
 	name   string
 	fields []plainField
@@ -23,6 +25,10 @@ func (v *plainStruct) Field(name string, kind string) *plainStruct {
 		kind: kind,
 	})
 	return v
+}
+
+func (v *plainStruct) OptionalField(name string, kind string) *plainStruct {
+	return v.Field(name, fmt.Sprintf("*%s", kind))
 }
 
 func (v *plainStruct) Text(name string) *plainStruct {
@@ -55,6 +61,14 @@ func (v *plainStruct) Number(dbName string) *plainStruct {
 
 func (v *plainStruct) OptionalNumber(dbName string) *plainStruct {
 	return v.Field(dbName, "*int")
+}
+
+func (v *plainStruct) StringList(dbName string) *plainStruct {
+	return v.Field(dbName, "[]string")
+}
+
+func (v *plainStruct) AccountObjectIdentifier() *plainStruct {
+	return v.Field("Id", "AccountObjectIdentifier")
 }
 
 func (v *plainStruct) IntoField() *Field {

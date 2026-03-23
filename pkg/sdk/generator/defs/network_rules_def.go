@@ -36,7 +36,7 @@ var networkRulesDef = g.NewInterface(
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("NetworkRuleSet").
-					ListAssignment("VALUE_LIST", "NetworkRuleValue", g.ParameterOptions().Required().Parentheses()).
+					ListAssignment("VALUE_LIST", "NetworkRuleValue", g.ParameterOptions().Parentheses()).
 					OptionalComment().
 					WithValidation(g.AtLeastOneValueSet, "ValueList", "Comment"),
 				g.ListOptions().SQL("SET"),

@@ -10,9 +10,11 @@ import (
 
 var _ Listings = (*listings)(nil)
 
-var _ convertibleRow[Listing] = new(listingDBRow)
-var _ convertibleRow[ListingDetails] = new(listingDetailsDBRow)
-var _ convertibleRow[ListingVersion] = new(listingVersionDBRow)
+var (
+	_ convertibleRow[Listing]        = new(listingDBRow)
+	_ convertibleRow[ListingDetails] = new(listingDetailsDBRow)
+	_ convertibleRow[ListingVersion] = new(listingVersionDBRow)
+)
 
 type listings struct {
 	client *Client
@@ -176,6 +178,7 @@ func (r listingDBRow) convert() (*Listing, error) {
 		IsApplication:  r.IsApplication,
 		IsTargeted:     r.IsTargeted,
 	}
+	// TODO [SNOW-3108659]: else return err?
 	if state, err := ToListingState(r.State); err == nil {
 		l.State = state
 	}

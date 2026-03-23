@@ -36,11 +36,9 @@ type InternalStageEncryptionRequest struct {
 	SnowflakeSse  *InternalStageEncryptionSnowflakeSseRequest
 }
 
-type InternalStageEncryptionSnowflakeFullRequest struct {
-}
+type InternalStageEncryptionSnowflakeFullRequest struct{}
 
-type InternalStageEncryptionSnowflakeSseRequest struct {
-}
+type InternalStageEncryptionSnowflakeSseRequest struct{}
 
 type InternalDirectoryTableOptionsRequest struct {
 	Enable      bool
@@ -91,15 +89,13 @@ type ExternalStageS3EncryptionAwsCseRequest struct {
 	MasterKey string // required
 }
 
-type ExternalStageS3EncryptionAwsSseS3Request struct {
-}
+type ExternalStageS3EncryptionAwsSseS3Request struct{}
 
 type ExternalStageS3EncryptionAwsSseKmsRequest struct {
 	KmsKeyId *string
 }
 
-type ExternalStageS3EncryptionNoneRequest struct {
-}
+type ExternalStageS3EncryptionNoneRequest struct{}
 
 type StageS3CommonDirectoryTableOptionsRequest struct {
 	Enable          bool
@@ -134,8 +130,7 @@ type ExternalStageGCSEncryptionGcsSseKmsRequest struct {
 	KmsKeyId *string
 }
 
-type ExternalStageGCSEncryptionNoneRequest struct {
-}
+type ExternalStageGCSEncryptionNoneRequest struct{}
 
 type ExternalGCSDirectoryTableOptionsRequest struct {
 	Enable                  bool
@@ -177,8 +172,7 @@ type ExternalStageAzureEncryptionAzureCseRequest struct {
 	MasterKey string // required
 }
 
-type ExternalStageAzureEncryptionNoneRequest struct {
-}
+type ExternalStageAzureEncryptionNoneRequest struct{}
 
 type ExternalAzureDirectoryTableOptionsRequest struct {
 	Enable                  bool
@@ -222,7 +216,7 @@ type AlterInternalStageStageRequest struct {
 	IfExists   *bool
 	name       SchemaObjectIdentifier // required
 	FileFormat *StageFileFormatRequest
-	Comment    *string
+	Comment    *StringAllowEmpty
 }
 
 type AlterExternalS3StageStageRequest struct {
@@ -230,7 +224,7 @@ type AlterExternalS3StageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalS3StageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	Comment             *string
+	Comment             *StringAllowEmpty
 }
 
 type AlterExternalGCSStageStageRequest struct {
@@ -238,7 +232,7 @@ type AlterExternalGCSStageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalGCSStageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	Comment             *string
+	Comment             *StringAllowEmpty
 }
 
 type AlterExternalAzureStageStageRequest struct {
@@ -246,7 +240,7 @@ type AlterExternalAzureStageStageRequest struct {
 	name                SchemaObjectIdentifier // required
 	ExternalStageParams *ExternalAzureStageParamsRequest
 	FileFormat          *StageFileFormatRequest
-	Comment             *string
+	Comment             *StringAllowEmpty
 }
 
 type AlterDirectoryTableStageRequest struct {

@@ -1,6 +1,7 @@
 package experimentalfeatures
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
@@ -15,8 +16,10 @@ const (
 	WarehouseShowImprovedPerformance               ExperimentalFeature = "WAREHOUSE_SHOW_IMPROVED_PERFORMANCE"
 	GrantsStrictPrivilegeManagement                ExperimentalFeature = "GRANTS_STRICT_PRIVILEGE_MANAGEMENT"
 	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
+	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
-	ParametersReducedOutput ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	ParametersReducedOutput     ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	TagsAllowEmptyAllowedValues ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
 )
 
 type experimentalFeatureState string
@@ -57,6 +60,7 @@ var allExperiments = []Experiment{
 			"The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.",
 			"It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.",
 			"Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.",
+			fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsImportValidation),
 		),
 	},
 	{
@@ -82,6 +86,24 @@ var allExperiments = []Experiment{
 		joinWithDoubleNewline(
 			"The new `default_workload_identity_federation` field was added to the `snowflake_legacy_service_user` and `snowflake_service_user` resources. This field allows for managing WIFs. Due to feature complexity, it requires enabling this experiment.",
 			"Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).",
+		),
+	},
+	{
+		GrantsImportValidation,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.",
+			"When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.",
+			fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsStrictPrivilegeManagement),
+		),
+	},
+	{
+		TagsAllowEmptyAllowedValues,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.",
+			"When enabled, the three possible states in Snowflake for allowed values will be supported: `nil` (any value is allowed; whenever `allowed_values` are empty), `empty` (no value is allowed; handled by the `no_allowed_values` field), and `set` (all values defined in `allowed_values` are allowed).",
+			"Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).",
 		),
 	},
 }

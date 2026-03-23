@@ -46,10 +46,10 @@ func (v AuthenticationPolicyDetails) GetSecurityIntegrations() ([]AccountObjectI
 	return ParseCommaSeparatedAccountObjectIdentifierArray(raw.Value)
 }
 
-func (v AuthenticationPolicyDetails) GetMfaAuthenticationMethods() ([]MfaAuthenticationMethodsOption, error) {
+func (v AuthenticationPolicyDetails) GetMfaAuthenticationMethods() ([]MfaAuthenticationMethodsReadOption, error) {
 	raw, err := collections.FindFirst(v, func(r AuthenticationPolicyDescription) bool { return r.Property == "MFA_AUTHENTICATION_METHODS" })
 	if err != nil {
 		return nil, err
 	}
-	return collections.MapErr(ParseCommaSeparatedStringArray(raw.Value, false), ToMfaAuthenticationMethodsOption)
+	return collections.MapErr(ParseCommaSeparatedStringArray(raw.Value, false), ToMfaAuthenticationMethodsReadOption)
 }

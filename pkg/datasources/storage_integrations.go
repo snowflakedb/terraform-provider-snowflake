@@ -2,42 +2,50 @@ package datasources
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var storageIntegrationsSchema = map[string]*schema.Schema{
+	"with_describe": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: "Runs DESC STORAGE INTEGRATION for each storage integration returned by SHOW STORAGE INTEGRATIONS. The output of describe is saved to the description field. By default this value is set to true.",
+	},
+	"like": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).",
+	},
 	"storage_integrations": {
 		Type:        schema.TypeList,
 		Computed:    true,
-		Description: "The storage integrations in the database",
+		Description: "Holds the aggregated output of all storage integrations details queries.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"name": {
-					Type:     schema.TypeString,
-					Computed: true,
+				resources.ShowOutputAttributeName: {
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "Holds the output of SHOW STORAGE INTEGRATIONS.",
+					Elem: &schema.Resource{
+						Schema: schemas.ShowStorageIntegrationSchema,
+					},
 				},
-				"type": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"comment": {
-					Type:     schema.TypeString,
-					Optional: true,
-					Computed: true,
-				},
-				"enabled": {
-					Type:     schema.TypeBool,
-					Optional: true,
-					Computed: true,
+				resources.DescribeOutputAttributeName: {
+					Type:        schema.TypeList,
+					Computed:    true,
+					Description: "Holds the aggregated output of DESCRIBE STORAGE INTEGRATIONS.",
+					Elem: &schema.Resource{
+						Schema: schemas.DescribeStorageIntegrationAllDetailsSchema,
+					},
 				},
 			},
 		},
@@ -48,42 +56,50 @@ func StorageIntegrations() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.StorageIntegrationsDatasource), TrackingReadWrapper(datasources.StorageIntegrations, ReadStorageIntegrations)),
 		Schema:      storageIntegrationsSchema,
+		Description: "Data source used to get details of filtered storage integrations. Filtering is aligned with the current possibilities for [SHOW STORAGE INTEGRATIONS](https://docs.snowflake.com/en/sql-reference/sql/show-integrations) query (only `like` is supported). The results of SHOW and DESCRIBE are encapsulated in one output collection `storage_integrations`.",
 	}
 }
 
 func ReadStorageIntegrations(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
+	showRequest := sdk.NewShowStorageIntegrationRequest()
 
-	account, err := client.ContextFunctions.CurrentAccount(ctx)
-	if err != nil {
-		d.SetId("")
-		return diag.FromErr(fmt.Errorf("[DEBUG] unable to retrieve current account"))
+	if likePattern, ok := d.GetOk("like"); ok {
+		showRequest.WithLike(sdk.Like{
+			Pattern: sdk.String(likePattern.(string)),
+		})
 	}
 
-	region, err := client.ContextFunctions.CurrentRegion(ctx)
+	storageIntegrations, err := client.StorageIntegrations.Show(ctx, showRequest)
 	if err != nil {
-		d.SetId("")
-		return diag.FromErr(fmt.Errorf("[DEBUG] unable to retrieve current region"))
+		return diag.FromErr(err)
 	}
+	d.SetId("storage_integrations_read")
 
-	d.SetId(fmt.Sprintf("%s.%s", account, region))
-
-	storageIntegrations, err := client.StorageIntegrations.Show(ctx, sdk.NewShowStorageIntegrationRequest())
-	if err != nil {
-		d.SetId("")
-		return diag.FromErr(fmt.Errorf("unable to retrieve storage integrations in account (%s), err = %w", d.Id(), err))
-	}
-
-	storageIntegrationMaps := make([]map[string]any, len(storageIntegrations))
+	flattenedStorageIntegrations := make([]map[string]any, len(storageIntegrations))
 
 	for i, storageIntegration := range storageIntegrations {
-		storageIntegrationMaps[i] = map[string]any{
-			"name":    storageIntegration.Name,
-			"type":    storageIntegration.StorageType,
-			"enabled": storageIntegration.Enabled,
-			"comment": storageIntegration.Comment,
+		storageIntegration := storageIntegration
+		var storageIntegrationDescriptions []map[string]any
+		if d.Get("with_describe").(bool) {
+			descriptions, err := client.StorageIntegrations.DescribeDetails(ctx, storageIntegration.ID())
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			storageIntegrationDescriptions = make([]map[string]any, 1)
+			storageIntegrationDescriptions[0] = schemas.StorageIntegrationAllDetailsToSchema(descriptions)
+		}
+
+		flattenedStorageIntegrations[i] = map[string]any{
+			resources.ShowOutputAttributeName:     []map[string]any{schemas.StorageIntegrationToSchema(&storageIntegration)},
+			resources.DescribeOutputAttributeName: storageIntegrationDescriptions,
 		}
 	}
 
-	return diag.FromErr(d.Set("storage_integrations", storageIntegrationMaps))
+	err = d.Set("storage_integrations", flattenedStorageIntegrations)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }

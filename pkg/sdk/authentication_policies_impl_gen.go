@@ -13,8 +13,10 @@ import (
 
 var _ AuthenticationPolicies = (*authenticationPolicies)(nil)
 
-var _ convertibleRow[AuthenticationPolicy] = new(showAuthenticationPolicyDBRow)
-var _ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
+var (
+	_ convertibleRow[AuthenticationPolicy]            = new(showAuthenticationPolicyDBRow)
+	_ convertibleRow[AuthenticationPolicyDescription] = new(describeAuthenticationPolicyDBRow)
+)
 
 type authenticationPolicies struct {
 	client *Client

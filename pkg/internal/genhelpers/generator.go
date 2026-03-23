@@ -165,6 +165,9 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 				filteredObjects = append(filteredObjects, o)
 			}
 		}
+		if len(filteredObjects) == 0 {
+			return fmt.Errorf("no objects found for the given filters: %s", filterObjects)
+		}
 		objects = filteredObjects
 	}
 

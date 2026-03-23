@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"slices"
 	"strings"
@@ -21,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 func init() {
@@ -131,8 +130,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"client_ip": {
 			Type:             schema.TypeString,
-			Description:      envNameFieldDescription("IP address for network checks.", snowflakeenvs.ClientIp),
+			Description:      envNameFieldDescription("This field is deprecated. It will be removed in the next major release. The driver was accepting this value in the previous versions but it had no impact. Setting this field causes no action on the provider side.", snowflakeenvs.ClientIp),
 			Optional:         true,
+			Deprecated:       "This field is deprecated. It will be removed in the next major release. The driver was accepting this value in the previous versions but it had no impact. Setting this field causes no action on the provider side.",
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.ClientIp, nil),
 			ValidateDiagFunc: validation.ToDiagFunc(validation.IsIPAddress),
 		},
@@ -229,9 +229,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"insecure_mode": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("This field is deprecated. Use `disable_ocsp_checks` instead. If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only.", snowflakeenvs.InsecureMode),
+			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. Use `disable_ocsp_checks` instead. Setting this field sets `disable_ocsp_checks` in the underlying driver. If true, bypass the Online Certificate Status Protocol (OCSP) certificate revocation check. IMPORTANT: Change the default value for testing or emergency situations only.", snowflakeenvs.InsecureMode),
 			Optional:    true,
-			Deprecated:  "This field is deprecated. Use `disable_ocsp_checks` instead.",
+			Deprecated:  "This field is deprecated. It will be removed in the next major release. Use `disable_ocsp_checks` instead. Setting this field sets `disable_ocsp_checks` in the underlying driver.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.InsecureMode, nil),
 		},
 		"ocsp_fail_open": {
@@ -318,8 +318,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"disable_telemetry": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("Disables telemetry in the driver.", snowflakeenvs.DisableTelemetry),
+			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`. Disables telemetry in the driver.", snowflakeenvs.DisableTelemetry),
 			Optional:    true,
+			Deprecated:  "This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.DisableTelemetry, nil),
 		},
 		"client_request_mfa_token": {
@@ -358,10 +359,10 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"driver_tracing": {
 			Type:             schema.TypeString,
-			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the logging level to be used by the driver. Valid options are: %v.", docs.PossibleValuesListed(sdk.AllDriverLogLevels)), snowflakeenvs.DriverTracing),
+			Description:      envNameFieldDescription(fmt.Sprintf("Specifies the logging level to be used by the driver. Valid options are (case-insensitive): %v. The following values are deprecated and will be removed in v3: `WARNING` (uses `WARN` instead), `PRINT` (uses `INFO` instead), `PANIC` (uses `FATAL` instead).", docs.PossibleValuesListed(sdk.AllDriverLogLevels)), snowflakeenvs.DriverTracing),
 			Optional:         true,
 			DefaultFunc:      schema.EnvDefaultFunc(snowflakeenvs.DriverTracing, nil),
-			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToDriverLogLevel),
+			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToDriverLogLevelWithDeprecatedMappings),
 		},
 		"tmp_directory_path": {
 			Type:        schema.TypeString,
@@ -588,6 +589,8 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_api_authentication_integration_with_jwt_bearer":               resources.ApiAuthenticationIntegrationWithJwtBearer(),
 		"snowflake_api_integration":                                              resources.APIIntegration(),
 		"snowflake_authentication_policy":                                        resources.AuthenticationPolicy(),
+		"snowflake_catalog_integration_aws_glue":                                 resources.CatalogIntegrationAwsGlue(),
+		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
 		"snowflake_compute_pool":                                                 resources.ComputePool(),
 		"snowflake_cortex_search_service":                                        resources.CortexSearchService(),
 		"snowflake_current_account":                                              resources.CurrentAccount(),
@@ -597,8 +600,12 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_dynamic_table":                                                resources.DynamicTable(),
 		"snowflake_email_notification_integration":                               resources.EmailNotificationIntegration(),
 		"snowflake_execute":                                                      resources.Execute(),
+		"snowflake_stage_external_azure":                                         resources.ExternalAzureStage(),
 		"snowflake_external_function":                                            resources.ExternalFunction(),
+		"snowflake_stage_external_gcs":                                           resources.ExternalGcsStage(),
+		"snowflake_stage_external_s3_compatible":                                 resources.ExternalS3CompatibleStage(),
 		"snowflake_external_oauth_integration":                                   resources.ExternalOauthIntegration(),
+		"snowflake_stage_external_s3":                                            resources.ExternalS3Stage(),
 		"snowflake_external_table":                                               resources.ExternalTable(),
 		"snowflake_external_volume":                                              resources.ExternalVolume(),
 		"snowflake_failover_group":                                               resources.FailoverGroup(),
@@ -617,6 +624,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_grant_privileges_to_share":                                    resources.GrantPrivilegesToShare(),
 		"snowflake_git_repository":                                               resources.GitRepository(),
 		"snowflake_image_repository":                                             resources.ImageRepository(),
+		"snowflake_stage_internal":                                               resources.InternalStage(),
 		"snowflake_job_service":                                                  resources.JobService(),
 		"snowflake_legacy_service_user":                                          resources.LegacyServiceUser(),
 		"snowflake_listing":                                                      resources.Listing(),
@@ -658,6 +666,9 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_shared_database":                                              resources.SharedDatabase(),
 		"snowflake_stage":                                                        resources.Stage(),
 		"snowflake_storage_integration":                                          resources.StorageIntegration(),
+		"snowflake_storage_integration_aws":                                      resources.StorageIntegrationAws(),
+		"snowflake_storage_integration_azure":                                    resources.StorageIntegrationAzure(),
+		"snowflake_storage_integration_gcs":                                      resources.StorageIntegrationGcs(),
 		"snowflake_stream_on_directory_table":                                    resources.StreamOnDirectoryTable(),
 		"snowflake_stream_on_external_table":                                     resources.StreamOnExternalTable(),
 		"snowflake_stream_on_table":                                              resources.StreamOnTable(),
@@ -697,6 +708,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_dynamic_tables":                     datasources.DynamicTables(),
 		"snowflake_external_functions":                 datasources.ExternalFunctions(),
 		"snowflake_external_tables":                    datasources.ExternalTables(),
+		"snowflake_external_volumes":                   datasources.ExternalVolumes(),
 		"snowflake_failover_groups":                    datasources.FailoverGroups(),
 		"snowflake_file_formats":                       datasources.FileFormats(),
 		"snowflake_functions":                          datasources.Functions(),
@@ -707,6 +719,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_masking_policies":                   datasources.MaskingPolicies(),
 		"snowflake_materialized_views":                 datasources.MaterializedViews(),
 		"snowflake_network_policies":                   datasources.NetworkPolicies(),
+		"snowflake_network_rules":                      datasources.NetworkRules(),
 		"snowflake_notebooks":                          datasources.Notebooks(),
 		"snowflake_parameters":                         datasources.Parameters(),
 		"snowflake_pipes":                              datasources.Pipes(),
@@ -847,13 +860,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "role", &config.Role),
 		handleBooleanStringAttribute(s, "validate_default_parameters", &config.ValidateDefaultParameters),
 		// params are handled below
-		// client ip
-		func() error {
-			if v, ok := s.GetOk("client_ip"); ok && v.(string) != "" {
-				config.ClientIP = net.ParseIP(v.(string))
-			}
-			return nil
-		}(),
+		// client ip is not handled (deprecated and noop in driver)
 		// protocol
 		func() error {
 			if v, ok := s.GetOk("protocol"); ok && v.(string) != "" {
@@ -884,7 +891,6 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleDurationInSecondsAttribute(s, "client_timeout", &config.ClientTimeout),
 		handleDurationInSecondsAttribute(s, "jwt_client_timeout", &config.JWTClientTimeout),
 		handleDurationInSecondsAttribute(s, "external_browser_timeout", &config.ExternalBrowserTimeout),
-		handleBoolField(s, "insecure_mode", &config.InsecureMode), //nolint:staticcheck
 		// ocsp fail open
 		func() error {
 			if v := s.Get("ocsp_fail_open").(string); v != provider.BooleanDefault {
@@ -901,16 +907,16 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 			return nil
 		}(),
 		// token accessor is handled below
-		handleBoolField(s, "keep_session_alive", &config.KeepSessionAlive),
+		handleBoolField(s, "keep_session_alive", &config.ServerSessionKeepAlive),
 		// private key and private key passphrase are handled below
-		handleBoolField(s, "disable_telemetry", &config.DisableTelemetry),
+		// disable telemetry is handled below by setting session parameter as DisableTelemetry was removed in v2 of Go driver
 		handleBooleanStringAttribute(s, "client_request_mfa_token", &config.ClientRequestMfaToken),
 		handleBooleanStringAttribute(s, "client_store_temporary_credential", &config.ClientStoreTemporaryCredential),
 		handleBoolField(s, "disable_query_context_cache", &config.DisableQueryContextCache),
 		handleBooleanStringAttribute(s, "include_retry_reason", &config.IncludeRetryReason),
 		handleIntAttribute(s, "max_retry_count", &config.MaxRetryCount),
 		handleFieldWithMappingIfSet(s, "driver_tracing", &config.Tracing, func(s string) (string, error) {
-			level, err := sdk.ToDriverLogLevel(s)
+			level, err := sdk.ToDriverLogLevelWithDeprecatedMappings(s)
 			return string(level), err
 		}),
 		handleStringField(s, "tmp_directory_path", &config.TmpDirPath),
@@ -933,6 +939,8 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		handleStringField(s, "proxy_password", &config.ProxyPassword),
 		handleStringField(s, "proxy_protocol", &config.ProxyProtocol),
 		handleStringField(s, "no_proxy", &config.NoProxy),
+		// if any of the insecure_mode and disable_ocsp_checks is true, then it sets DisableOCSPChecks (mimicking the pre-v2 driver behavior)
+		handleBoolField(s, "insecure_mode", &config.DisableOCSPChecks),
 		handleBoolField(s, "disable_ocsp_checks", &config.DisableOCSPChecks),
 		handleFieldWithMappingIfSet(s, "cert_revocation_check_mode", &config.CertRevocationCheckMode, sdk.ToCertRevocationCheckMode),
 		handleBooleanStringAttribute(s, "crl_allow_certificates_without_crl_url", &config.CrlAllowCertificatesWithoutCrlURL),
@@ -961,6 +969,10 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 	for key, value := range m {
 		strValue := value.(string)
 		params[key] = &strValue
+	}
+	// disable telemetry is handled by setting session parameter as DisableTelemetry was removed in v2 of Go driver
+	if _, ok := s.GetOk("disable_telemetry"); ok {
+		params[sdk.ClientTelemetryEnableSessionParameter] = sdk.Pointer(provider.BooleanFalse)
 	}
 	config.Params = params
 

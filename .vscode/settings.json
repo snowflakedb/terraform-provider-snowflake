@@ -9,7 +9,7 @@
         "-v",
         "--tags=account_level_tests,non_account_level_tests"
     ],
-    "go.testTimeout": "600s",
+    "go.testTimeout": "1800s",
     "go.lintTool": "golangci-lint",
     "go.lintFlags": [
         "--fast"

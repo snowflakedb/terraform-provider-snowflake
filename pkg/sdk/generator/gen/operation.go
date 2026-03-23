@@ -144,16 +144,24 @@ func (i *Interface) newOperationWithDBMapping(
 	resourceRepresentation *plainStruct,
 	queryStruct *QueryStruct,
 	addMappingFunc func(op *Operation, from, to *Field),
+	helperStructs ...IntoField,
 ) *Operation {
 	db := dbRepresentation.IntoField()
 	res := resourceRepresentation.IntoField()
 	if queryStruct.identifierField != nil {
 		queryStruct.identifierField.Kind = i.IdentifierKind
 	}
+	f := make([]*Field, len(helperStructs))
+	if len(f) > 0 {
+		for i, hs := range helperStructs {
+			f[i] = hs.IntoField()
+		}
+	}
 	op := newOperation(kind, doc).
 		withHelperStruct(db).
 		withHelperStruct(res).
-		withOptionsStruct(queryStruct.IntoField())
+		withOptionsStruct(queryStruct.IntoField()).
+		withHelperStructs(f...)
 	addMappingFunc(op, db, res)
 	i.Operations = append(i.Operations, op)
 	return op
@@ -212,8 +220,8 @@ func (i *Interface) ShowByIdOperationWithFiltering(filter ShowByIDFilteringKind,
 	return i
 }
 
-func (i *Interface) DescribeOperation(describeKind DescriptionMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct) *Interface {
-	op := i.newOperationWithDBMapping(string(OperationKindDescribe), doc, dbRepresentation, resourceRepresentation, queryStruct, addDescriptionMapping)
+func (i *Interface) DescribeOperation(describeKind DescriptionMappingKind, doc string, dbRepresentation *dbStruct, resourceRepresentation *plainStruct, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
+	op := i.newOperationWithDBMapping(string(OperationKindDescribe), doc, dbRepresentation, resourceRepresentation, queryStruct, addDescriptionMapping, helperStructs...)
 	op.DescribeKind = &describeKind
 	return i
 }

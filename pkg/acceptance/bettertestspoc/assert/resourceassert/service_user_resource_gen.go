@@ -28,6 +28,382 @@ func ImportedServiceUserResource(t *testing.T, id string) *ServiceUserResourceAs
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *ServiceUserResourceAssert) HasName(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasAbortDetachedQuery(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("abort_detached_query", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasAutocommit(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("autocommit", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasBinaryInputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("binary_input_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasBinaryOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("binary_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientMemoryLimit(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("client_memory_limit", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("client_metadata_request_use_connection_ctx", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientPrefetchThreads(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("client_prefetch_threads", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientResultChunkSize(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("client_result_chunk_size", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientResultColumnCaseInsensitive(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("client_result_column_case_insensitive", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientSessionKeepAlive(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("client_session_keep_alive", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientSessionKeepAliveHeartbeatFrequency(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("client_session_keep_alive_heartbeat_frequency", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasClientTimestampTypeMapping(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("client_timestamp_type_mapping", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasComment(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDateInputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("date_input_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDateOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("date_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDaysToExpiry(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("days_to_expiry", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultNamespace(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("default_namespace", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultRole(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("default_role", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultSecondaryRolesOption(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("default_secondary_roles_option", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDefaultWarehouse(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("default_warehouse", expected)
+	return s
+}
+
+// typed assert for "default_workload_identity" (type: List, subtype: Map) is not currently supported
+
+func (s *ServiceUserResourceAssert) HasDisabled(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("disabled", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasDisplayName(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("display_name", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasEmail(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("email", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("enable_unload_physical_type_optimization", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasEnableUnredactedQuerySyntaxError(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("enable_unredacted_query_syntax_error", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasErrorOnNondeterministicMerge(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("error_on_nondeterministic_merge", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasErrorOnNondeterministicUpdate(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("error_on_nondeterministic_update", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasFullyQualifiedName(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasGeographyOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("geography_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasGeometryOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("geometry_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasJdbcTreatDecimalAsInt(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("jdbc_treat_decimal_as_int", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("jdbc_treat_timestamp_ntz_as_utc", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasJdbcUseSessionTimezone(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("jdbc_use_session_timezone", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasJsonIndent(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("json_indent", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLockTimeout(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("lock_timeout", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLogLevel(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("log_level", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasLoginName(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("login_name", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasMinsToUnlock(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("mins_to_unlock", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasMultiStatementCount(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("multi_statement_count", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNetworkPolicy(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("network_policy", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasNoorderSequenceAsDefault(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("noorder_sequence_as_default", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasOdbcTreatDecimalAsInt(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("odbc_treat_decimal_as_int", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasPreventUnloadToInternalStages(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("prevent_unload_to_internal_stages", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasQueryTag(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("query_tag", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("quoted_identifiers_ignore_case", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRowsPerResultset(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("rows_per_resultset", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("rsa_public_key", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasRsaPublicKey2(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("rsa_public_key_2", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasS3StageVpceDnsName(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("s3_stage_vpce_dns_name", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasSearchPath(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("search_path", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasSimulatedDataSharingConsumer(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("simulated_data_sharing_consumer", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasStatementQueuedTimeoutInSeconds(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("statement_queued_timeout_in_seconds", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasStatementTimeoutInSeconds(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("statement_timeout_in_seconds", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasStrictJsonOutput(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("strict_json_output", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimeInputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("time_input_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimeOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("time_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampDayIsAlways24h(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("timestamp_day_is_always_24h", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampInputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("timestamp_input_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampLtzOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("timestamp_ltz_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampNtzOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("timestamp_ntz_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("timestamp_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampTypeMapping(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("timestamp_type_mapping", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimestampTzOutputFormat(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("timestamp_tz_output_format", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTimezone(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("timezone", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTraceLevel(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("trace_level", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTransactionAbortOnError(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("transaction_abort_on_error", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTransactionDefaultIsolationLevel(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("transaction_default_isolation_level", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasTwoDigitCenturyStart(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("two_digit_century_start", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasUnsupportedDdlAction(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("unsupported_ddl_action", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasUseCachedResult(expected bool) *ServiceUserResourceAssert {
+	s.BoolValueSet("use_cached_result", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasUserType(expected string) *ServiceUserResourceAssert {
+	s.StringValueSet("user_type", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasWeekOfYearPolicy(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("week_of_year_policy", expected)
+	return s
+}
+
+func (s *ServiceUserResourceAssert) HasWeekStart(expected int) *ServiceUserResourceAssert {
+	s.IntValueSet("week_start", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -134,11 +510,6 @@ func (s *ServiceUserResourceAssert) HasDefaultSecondaryRolesOptionString(expecte
 
 func (s *ServiceUserResourceAssert) HasDefaultWarehouseString(expected string) *ServiceUserResourceAssert {
 	s.AddAssertion(assert.ValueSet("default_warehouse", expected))
-	return s
-}
-
-func (s *ServiceUserResourceAssert) HasDefaultWorkloadIdentityString(expected string) *ServiceUserResourceAssert {
-	s.AddAssertion(assert.ValueSet("default_workload_identity", expected))
 	return s
 }
 

@@ -1146,3 +1146,147 @@ func Test_RecreateWhenResourceBoolFieldChangedExternally(t *testing.T) {
 		})
 	}
 }
+
+func Test_RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage(t *testing.T) {
+	testSchema := map[string]*schema.Schema{
+		"credentials": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"azure_sas_token": {
+						Type: schema.TypeString,
+					},
+				},
+			},
+		},
+		"storage_integration": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+	}
+
+	tests := []struct {
+		name           string
+		stateValue     map[string]string
+		rawConfigValue map[string]any
+		wantForceNew   bool
+	}{
+		{
+			name: "no change - storage integration only",
+			stateValue: map[string]string{
+				"storage_integration": "INT1",
+			},
+			rawConfigValue: map[string]any{
+				"storage_integration": "INT1",
+			},
+			wantForceNew: false,
+		},
+		{
+			name: "no change - credentials only",
+			stateValue: map[string]string{
+				"credentials.#":                 "1",
+				"credentials.0.azure_sas_token": "token1",
+			},
+			rawConfigValue: map[string]any{
+				"credentials": []any{
+					map[string]any{
+						"azure_sas_token": "token1",
+					},
+				},
+			},
+			wantForceNew: false,
+		},
+		{
+			name: "storage_integration to credentials - ForceNew on credentials",
+			stateValue: map[string]string{
+				"storage_integration": "INT1",
+			},
+			rawConfigValue: map[string]any{
+				"credentials": []any{
+					map[string]any{
+						"azure_sas_token": "token1",
+					},
+				},
+			},
+			wantForceNew: true,
+		},
+		{
+			name: "credentials to storage_integration - ForceNew on storage_integration",
+			stateValue: map[string]string{
+				"credentials.#":                 "1",
+				"credentials.0.azure_sas_token": "token1",
+			},
+			rawConfigValue: map[string]any{
+				"storage_integration": "INT1",
+			},
+			wantForceNew: true,
+		},
+		{
+			name: "update storage_integration value - no ForceNew",
+			stateValue: map[string]string{
+				"storage_integration": "INT1",
+			},
+			rawConfigValue: map[string]any{
+				"storage_integration": "INT2",
+			},
+			wantForceNew: false,
+		},
+		{
+			name: "update credentials value - no ForceNew",
+			stateValue: map[string]string{
+				"credentials.#":                 "1",
+				"credentials.0.azure_sas_token": "token1",
+			},
+			rawConfigValue: map[string]any{
+				"credentials": []any{
+					map[string]any{
+						"azure_sas_token": "token2",
+					},
+				},
+			},
+			wantForceNew: false,
+		},
+		{
+			name:           "both empty - no ForceNew",
+			stateValue:     map[string]string{},
+			rawConfigValue: map[string]any{},
+			wantForceNew:   false,
+		},
+		{
+			name:       "add storage_integration when no credentials existed - no ForceNew",
+			stateValue: map[string]string{},
+			rawConfigValue: map[string]any{
+				"storage_integration": "INT1",
+			},
+			wantForceNew: false,
+		},
+		{
+			name:       "add credentials when no storage_integration existed - no ForceNew",
+			stateValue: map[string]string{},
+			rawConfigValue: map[string]any{
+				"credentials": []any{
+					map[string]any{
+						"azure_sas_token": "token1",
+					},
+				},
+			},
+			wantForceNew: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			customDiff := resources.RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage()
+			testProvider := createProviderWithCustomSchemaAndCustomDiff(t, testSchema, customDiff)
+			diff := calculateDiffFromAttributes(
+				t,
+				testProvider,
+				tt.stateValue,
+				tt.rawConfigValue,
+			)
+			assert.Equal(t, tt.wantForceNew, diff.RequiresNew())
+		})
+	}
+}

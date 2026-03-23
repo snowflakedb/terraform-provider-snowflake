@@ -108,6 +108,8 @@ func Stage() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		DeprecationMessage: deprecatedResourceDescription(string(resources.InternalStage), string(resources.ExternalS3Stage), string(resources.ExternalS3CompatibleStage), string(resources.ExternalGcsStage), string(resources.ExternalAzureStage)),
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StageResource), TrackingCreateWrapper(resources.Stage, CreateStage)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StageResource), TrackingReadWrapper(resources.Stage, ReadStage)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StageResource), TrackingUpdateWrapper(resources.Stage, UpdateStage)),

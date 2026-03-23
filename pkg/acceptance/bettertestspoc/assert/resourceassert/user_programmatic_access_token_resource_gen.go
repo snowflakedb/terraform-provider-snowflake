@@ -28,6 +28,65 @@ func ImportedUserProgrammaticAccessTokenResource(t *testing.T, id string) *UserP
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasName(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.StringValueSet("name", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasComment(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.StringValueSet("comment", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasDaysToExpiry(expected int) *UserProgrammaticAccessTokenResourceAssert {
+	u.IntValueSet("days_to_expiry", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasDisabled(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.StringValueSet("disabled", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHours(expected int) *UserProgrammaticAccessTokenResourceAssert {
+	u.IntValueSet("expire_rotated_token_after_hours", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeper(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.StringValueSet("keeper", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicyRequirement(expected int) *UserProgrammaticAccessTokenResourceAssert {
+	u.IntValueSet("mins_to_bypass_network_policy_requirement", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasRoleRestriction(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.StringValueSet("role_restriction", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasRotatedTokenName(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.StringValueSet("rotated_token_name", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasToken(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.StringValueSet("token", expected)
+	return u
+}
+
+func (u *UserProgrammaticAccessTokenResourceAssert) HasUser(expected string) *UserProgrammaticAccessTokenResourceAssert {
+	u.StringValueSet("user", expected)
+	return u
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

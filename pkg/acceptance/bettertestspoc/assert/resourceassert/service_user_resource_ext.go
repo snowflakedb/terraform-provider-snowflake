@@ -7,12 +7,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (u *ServiceUserResourceAssert) HasDisabled(expected bool) *ServiceUserResourceAssert {
+func (u *ServiceUserResourceAssert) HasDisabledBool(expected bool) *ServiceUserResourceAssert {
 	u.AddAssertion(assert.ValueSet("disabled", strconv.FormatBool(expected)))
 	return u
 }
 
-func (u *ServiceUserResourceAssert) HasDefaultSecondaryRolesOption(expected sdk.SecondaryRolesOption) *ServiceUserResourceAssert {
+func (u *ServiceUserResourceAssert) HasDefaultSecondaryRolesOptionEnum(expected sdk.SecondaryRolesOption) *ServiceUserResourceAssert {
 	return u.HasDefaultSecondaryRolesOptionString(string(expected))
 }
 

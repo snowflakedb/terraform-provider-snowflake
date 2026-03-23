@@ -61,6 +61,11 @@ func (c *StageClient) CreateStage(t *testing.T) (*sdk.Stage, func()) {
 	return c.CreateStageInSchema(t, c.ids.SchemaId())
 }
 
+func (c *StageClient) CreateInternalStageWithId(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Stage, func()) {
+	t.Helper()
+	return c.CreateStageWithRequest(t, sdk.NewCreateInternalStageRequest(id))
+}
+
 func (c *StageClient) CreateStageInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.Stage, func()) {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifierInSchema(schemaId)
@@ -84,6 +89,12 @@ func (c *StageClient) CreateStageOnS3(t *testing.T, awsBucketUrl string) (*sdk.S
 	t.Helper()
 
 	id := c.ids.RandomSchemaObjectIdentifier()
+
+	return c.CreateStageOnS3WithId(t, id, awsBucketUrl)
+}
+
+func (c *StageClient) CreateStageOnS3WithId(t *testing.T, id sdk.SchemaObjectIdentifier, awsBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
 
 	s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
 		WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
@@ -121,9 +132,13 @@ func (c *StageClient) CreateStageOnS3WithRequest(t *testing.T, request *sdk.Crea
 
 func (c *StageClient) CreateStageOnGCS(t *testing.T, gcsBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	id := c.ids.RandomSchemaObjectIdentifier()
+	return c.CreateStageOnGCSWithId(t, id, gcsBucketUrl)
+}
+
+func (c *StageClient) CreateStageOnGCSWithId(t *testing.T, id sdk.SchemaObjectIdentifier, gcsBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
 
 	gcsReq := sdk.NewExternalGCSStageParamsRequest(gcsBucketUrl).
 		WithStorageIntegration(ids.PrecreatedGcpStorageIntegration)
@@ -140,14 +155,41 @@ func (c *StageClient) CreateStageOnGCS(t *testing.T, gcsBucketUrl string) (*sdk.
 
 func (c *StageClient) CreateStageOnAzure(t *testing.T, azureBucketUrl string) (*sdk.Stage, func()) {
 	t.Helper()
-	ctx := context.Background()
-
 	id := c.ids.RandomSchemaObjectIdentifier()
+	return c.CreateStageOnAzureWithId(t, id, azureBucketUrl)
+}
+
+func (c *StageClient) CreateStageOnAzureWithId(t *testing.T, id sdk.SchemaObjectIdentifier, azureBucketUrl string) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
 
 	azureReq := sdk.NewExternalAzureStageParamsRequest(azureBucketUrl)
 	request := sdk.NewCreateOnAzureStageRequest(id, *azureReq)
 
 	err := c.client().CreateOnAzure(ctx, request)
+	require.NoError(t, err)
+
+	stage, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return stage, c.DropStageFunc(t, id)
+}
+
+func (c *StageClient) CreateStageOnS3Compatible(t *testing.T, url string, endpoint string, awsKeyId string, awsSecretKey string) (*sdk.Stage, func()) {
+	t.Helper()
+	id := c.ids.RandomSchemaObjectIdentifier()
+	return c.CreateStageOnS3CompatibleWithId(t, id, url, endpoint, awsKeyId, awsSecretKey)
+}
+
+func (c *StageClient) CreateStageOnS3CompatibleWithId(t *testing.T, id sdk.SchemaObjectIdentifier, url string, endpoint string, awsKeyId string, awsSecretKey string) (*sdk.Stage, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	s3CompatReq := sdk.NewExternalS3CompatibleStageParamsRequest(url, endpoint).
+		WithCredentials(*sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey))
+	request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq)
+
+	err := c.client().CreateOnS3Compatible(ctx, request)
 	require.NoError(t, err)
 
 	stage, err := c.client().ShowByID(ctx, id)
@@ -316,4 +358,44 @@ func (c *StageClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.St
 	ctx := context.Background()
 
 	return c.client().ShowByID(ctx, id)
+}
+
+func (c *StageClient) AlterInternalStage(t *testing.T, req *sdk.AlterInternalStageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterInternalStage(ctx, req)
+	require.NoError(t, err)
+}
+
+func (c *StageClient) AlterExternalAzureStage(t *testing.T, req *sdk.AlterExternalAzureStageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterExternalAzureStage(ctx, req)
+	require.NoError(t, err)
+}
+
+func (c *StageClient) AlterExternalS3Stage(t *testing.T, req *sdk.AlterExternalS3StageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterExternalS3Stage(ctx, req)
+	require.NoError(t, err)
+}
+
+func (c *StageClient) AlterExternalGCSStage(t *testing.T, req *sdk.AlterExternalGCSStageStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterExternalGCSStage(ctx, req)
+	require.NoError(t, err)
+}
+
+func (c *StageClient) AlterDirectoryTable(t *testing.T, req *sdk.AlterDirectoryTableStageRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterDirectoryTable(ctx, req)
+	require.NoError(t, err)
 }

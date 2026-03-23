@@ -12,8 +12,10 @@ import (
 
 var _ Services = (*services)(nil)
 
-var _ convertibleRow[Service] = new(servicesRow)
-var _ convertibleRow[ServiceDetails] = new(serviceDescRow)
+var (
+	_ convertibleRow[Service]        = new(servicesRow)
+	_ convertibleRow[ServiceDetails] = new(serviceDescRow)
+)
 
 type services struct {
 	client *Client

@@ -102,6 +102,12 @@ func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *grants) RevokePrivilegesFromAccountRoleSafely(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
+	return SafeRevokePrivileges(func() error {
+		return v.RevokePrivilegesFromAccountRole(ctx, privileges, on, role, opts)
+	})
+}
+
 func (v *grants) GrantPrivilegesToDatabaseRole(ctx context.Context, privileges *DatabaseRoleGrantPrivileges, on *DatabaseRoleGrantOn, role DatabaseObjectIdentifier, opts *GrantPrivilegesToDatabaseRoleOptions) error {
 	if opts == nil {
 		opts = &GrantPrivilegesToDatabaseRoleOptions{}

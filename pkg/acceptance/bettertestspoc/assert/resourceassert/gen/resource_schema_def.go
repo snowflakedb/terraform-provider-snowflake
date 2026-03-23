@@ -50,6 +50,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AuthenticationPolicy().Schema,
 	},
 	{
+		name:   "CatalogIntegrationAwsGlue",
+		schema: resources.CatalogIntegrationAwsGlue().Schema,
+	},
+	{
+		name:   "CatalogIntegrationObjectStorage",
+		schema: resources.CatalogIntegrationObjectStorage().Schema,
+	},
+	{
 		name:   "ComputePool",
 		schema: resources.ComputePool().Schema,
 	},
@@ -74,12 +82,24 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Execute().Schema,
 	},
 	{
-		name:   "ExternalVolume",
-		schema: resources.ExternalVolume().Schema,
+		name:   "ExternalAzureStage",
+		schema: resources.ExternalAzureStage().Schema,
 	},
 	{
-		name:   "ImageRepository",
-		schema: resources.ImageRepository().Schema,
+		name:   "ExternalGcsStage",
+		schema: resources.ExternalGcsStage().Schema,
+	},
+	{
+		name:   "ExternalS3Stage",
+		schema: resources.ExternalS3Stage().Schema,
+	},
+	{
+		name:   "ExternalS3CompatibleStage",
+		schema: resources.ExternalS3CompatibleStage().Schema,
+	},
+	{
+		name:   "ExternalVolume",
+		schema: resources.ExternalVolume().Schema,
 	},
 	{
 		name:   "ExternalOauthSecurityIntegration",
@@ -110,6 +130,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.GitRepository().Schema,
 	},
 	{
+		name:   "ImageRepository",
+		schema: resources.ImageRepository().Schema,
+	},
+	{
+		name:   "InternalStage",
+		schema: resources.InternalStage().Schema,
+	},
+	{
 		name:   "JobService",
 		schema: resources.JobService().Schema,
 	},
@@ -117,15 +145,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "LegacyServiceUser",
 		schema: resources.LegacyServiceUser().Schema,
 	},
-	// TODO(SNOW-1501905): Support required object types (commented because it's blocking model generator)
-	// Manifest field (required object type) is not supported by the model generator.
-	// Current overrides are not sufficient to generate the model with the required attribute that would use tfconfig.Variable type.
-	// The WithManifestValue method should be used in the constructors as WithManifest is not generated at all (another generator limitation, but not that important in this case).
-	// Once it's supported, uncomment this and remove the manually written model.
-	// {
-	//	name:   "Listing",
-	//	schema: resources.Listing().Schema,
-	// },
+	{
+		name:   "Listing",
+		schema: resources.Listing().Schema,
+	},
 	{
 		name:   "ManagedAccount",
 		schema: resources.ManagedAccount().Schema,
@@ -239,6 +262,18 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Streamlit().Schema,
 	},
 	{
+		name:   "StorageIntegrationAws",
+		schema: resources.StorageIntegrationAws().Schema,
+	},
+	{
+		name:   "StorageIntegrationAzure",
+		schema: resources.StorageIntegrationAzure().Schema,
+	},
+	{
+		name:   "StorageIntegrationGcs",
+		schema: resources.StorageIntegrationGcs().Schema,
+	},
+	{
 		name:   "StreamOnDirectoryTable",
 		schema: resources.StreamOnDirectoryTable().Schema,
 	},
@@ -321,5 +356,9 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "DynamicTable",
 		schema: resources.DynamicTable().Schema,
+	},
+	{
+		name:   "NetworkRule",
+		schema: resources.NetworkRule().Schema,
 	},
 }

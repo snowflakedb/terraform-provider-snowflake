@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -12,6 +13,13 @@ func stringAttributeUpdate(d *schema.ResourceData, key string, setField **string
 		} else {
 			*unsetField = sdk.Bool(true)
 		}
+	}
+	return nil
+}
+
+func stringAttributeUpdateSetOnlyNotEmpty(d *schema.ResourceData, key string, setField **string) error {
+	if d.HasChange(key) {
+		*setField = sdk.String(d.Get(key).(string))
 	}
 	return nil
 }
@@ -65,6 +73,24 @@ func intAttributeUnsetFallbackUpdateWithZeroDefault(d *schema.ResourceData, key 
 	return nil
 }
 
+func booleanAttributeUpdate(d *schema.ResourceData, key string, setField **bool, unsetField **bool) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			*setField = sdk.Bool(v.(bool))
+		} else {
+			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+func booleanAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **bool) error {
+	if d.HasChange(key) {
+		*setField = sdk.Bool(d.Get(key).(bool))
+	}
+	return nil
+}
+
 func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField **bool, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(string); v != BooleanDefault {
@@ -75,6 +101,19 @@ func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField *
 			*setField = sdk.Bool(parsed)
 		} else {
 			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+func booleanStringAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField **bool) error {
+	if d.HasChange(key) {
+		if v := d.Get(key).(string); v != BooleanDefault {
+			parsed, err := booleanStringToBool(v)
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Bool(parsed)
 		}
 	}
 	return nil
@@ -186,9 +225,70 @@ func attributeMappedValueUpdate[T, R any](d *schema.ResourceData, key string, se
 	return nil
 }
 
-func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, setField **R, unsetField **bool, mapper func(T) (R, error)) error {
+func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
+	if d.HasChange(key) {
+		v := d.Get(key)
+		mappedValue, err := collections.MapErr(v.(*schema.Set).List(), mapper)
+		if err != nil {
+			return err
+		}
+
+		if len(mappedValue) > 0 {
+			*setField = mappedValue
+		} else {
+			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
+func attributeMappedValueUpdateSetOnly[T, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) (R, error)) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {
+			mappedValue, err := mapper(v.(T))
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(mappedValue)
+		}
+	}
+	return nil
+}
+
+func attributeMappedValueUpdateSetOnlyFallback[T, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) (R, error), fallbackValue R) error {
+	if d.HasChange(key) {
+		if v, ok := d.GetOk(key); ok {
+			mappedValue, err := mapper(v.(T))
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(mappedValue)
+		} else {
+			*setField = sdk.Pointer(fallbackValue)
+		}
+	}
+	return nil
+}
+
+func attributeMappedValueUpdateSetOnlyFallbackNested[R any](d *schema.ResourceData, key string, setField **R, mapper func(*schema.ResourceData) (R, error), fallbackValue R) error {
+	if d.HasChange(key) {
+		if _, ok := d.GetOk(key); ok {
+			mappedValue, err := mapper(d)
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(mappedValue)
+		} else {
+			*setField = sdk.Pointer(fallbackValue)
+		}
+	}
+	return nil
+}
+
+func attributeMappedValueUpdateIf[T, R any](d *schema.ResourceData, key string, setField **R, unsetField **bool, condition func(T) bool, mapper func(T) (R, error)) error {
+	if d.HasChange(key) {
+		v := d.Get(key)
+		if condition(v.(T)) {
 			mappedValue, err := mapper(v.(T))
 			if err != nil {
 				return err

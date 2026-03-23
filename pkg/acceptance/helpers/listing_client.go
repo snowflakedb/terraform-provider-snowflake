@@ -129,7 +129,7 @@ func (c *ListingClient) basicManifest(t *testing.T, titleSuffix string, subtitle
 subtitle: "%s"
 description: "description"
 listing_terms:
-  type: "OFFLINE"
+  type: "STANDARD"
 `, title, subtitle), title
 }
 
@@ -140,7 +140,7 @@ func (c *ListingClient) basicManifestWithUnquotedValues(t *testing.T, titleSuffi
 subtitle: %s
 description: description
 listing_terms:
-  type: OFFLINE
+  type: STANDARD
 `, title, subtitle), title
 }
 
@@ -154,7 +154,7 @@ func (c *ListingClient) basicManifestWithTargetAccount(t *testing.T, titleSuffix
 subtitle: "%s"
 description: "description"
 listing_terms:
-  type: "OFFLINE"
+  type: "STANDARD"
 targets:
   accounts: [%s]
 `, title, subtitle, collections.JoinStrings(mappedTargetAccounts, ", ")), title
@@ -170,7 +170,7 @@ func (c *ListingClient) basicManifestWithUnquotedValuesAndTargetAccount(t *testi
 subtitle: %s
 description: description
 listing_terms:
-  type: OFFLINE
+  type: STANDARD
 targets:
   accounts: [%s]
 `, title, subtitle, collections.JoinStrings(mappedTargetAccounts, ", ")), title

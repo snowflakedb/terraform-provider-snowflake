@@ -91,23 +91,52 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--filter-generation-part-names=
 make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 ```
 
-##### Known issues
+##### Known issues/limitations
+- The generator was added after parts of the SDK were implemented manually. Some objects don't have the generator definitions which make it harder to keep the up-to-date. All of them should be gradually migrated to the definition-based generation implementation.
 - The implementation of nested fields causes problems when reusing nested definitions (the same `[]Fields` slice is reused causing parent redefinition and incorrect mapping; the root cause being the lack of separation between the definition and model structs). It's currently validated programmatically and the panic is raised (`Field <field> already has a parent`). When it happens, create a function wrapper instead of directly creating a `var` with a definition.
+- Currently, multiple `convert` method signatures are generated when multiple interface methods use the same object pairs. They are manually removed but such situations should be recognized automatically.
 
-[//]: # (TODO [next PRs]: update this section)
-### Next steps
+##### High-priority Improvements
 
-> ⚠️ **Disclaimer**: This section may contain the deprecated essentials/improvements/known issues. It will be cleaned up shortly.
+This section aims mostly at reducing the manual labor when using the generator in its current state.
 
-##### High-priority improvements/changes
+- Generate `ID()` methods for `Request` structs as already done for the `Opts` structs.
+- Allow overriding the `ObjectType()` method returned `ObjectType`.
+- Generate `convert` function body.
+  - General implementation considerations:
+    - For simpler generation implementation, consider always initiating an empty struct and setting all the fields using mappers.
+    - There are existing helpers for convert mappings like `mapNullString`. There is also a separate file with `handleNullableBoolString`. Consider unifying and reusing them in the generated code for more compactness.
+    - Optional trimming (e.g. `strings.Trim(row.MetricDatabaseName, "\"")`); this should probably be a setting for each mapping.
+  - Simple conversions (required with no type change). Use this as default.
+  - Additional predefined conversions, like:
+    - string to bool `r.IsDefault == "Y"`
+    - additional checks for string value (e.g. `r.Value.String != "null"`)
+    - optional with `.Valid` for different types
+    - enum conversion
+    - identifier parsing
+    - datatype parsing (e.g. `datatypes.ParseDataType(row.Type)`); remember about `LegacyDataTypeFrom`.
+    - type conversions (e.g. `ParseBool`)
+    - list with simple type (e.g. `strings.Split(r.AttributeColumns.String, ",")` or `ParseCommaSeparatedStringArray`)
+    - list with complex type conversion (e.g. `ParseCommaSeparatedAccountIdentifierArray`)
+    - json unmarshaling (e.g. `json.Unmarshal([]byte(row.RefArguments), &x.RefArguments)`)
+  - (optionally - if needed) Custom conversion/custom conversion hooks, like:
+    - function and procedure argument parsing
+    - custom checks for string value (e.g. `r.AutomaticClustering == "ON"` or `row.Origin.String != "<revoked>"`)
+    - additional adjustment with list conversion (e.g. in `DescNetworkRulesRow`)
+    - tracking the metadata (e.g. `tracking.TrimMetadata(r.Text)`)
+    - analyze conversions for `failoverGroupDBRow`
+    - analyze conversions for `grantRow`
+    - analyze conversions for `shareRow`
+    - analyze conversions for `userWorkloadIdentityAuthenticationMethodsDBRow`
+    - warehouse generation custom logic
+    - task predecessors custom logic
 
-This section was introduced after more than 1.5 year of using this generator for development.
-It aims to be the up-to-date section covering the next changes that should be applied in this generator.
-Most of the topics listed here aim to reduce the manual work needed after the generation.
-- Generate ID() methods for `Request` structs as already done for the `Opts` structs.
-- Fully generate `convert` function body (from objectDBRow to object) as it needs to be added manually.
-  - Start with 1-to-1 conversion
-  - Support custom mappers (for lists or identifiers)
+[//]: # (TODO [next PRs]: update next sections)
+
+> ⚠️ **Disclaimer**: The following sections may contain the deprecated information. They will be cleaned up shortly.
+
+##### Old High-priority improvements/changes
+
 - Improve lists handling
   - wrong generated validations for `validIdentifierIfSet` for cases like
     ```go
@@ -129,10 +158,6 @@ Most of the topics listed here aim to reduce the manual work needed after the ge
   - Add new template injected to interface.tmpl creating mappings functions
   - Generate unit tests for the enum type converters
   - Handle synonyms (e.g. [`ToWarehouseSize`](https://github.com/snowflakedb/terraform-provider-snowflake/blob/5bdcd127d9288212b10ea7b138bebc0cb770c5b9/pkg/sdk/warehouses.go#L77))
-- Move manually added changes to the separate `_ext.go` files (e.g. [`procedures_ext.go`](https://github.com/snowflakedb/terraform-provider-snowflake/blob/5bdcd127d9288212b10ea7b138bebc0cb770c5b9/pkg/sdk/procedures_ext.go#L19))
-- Add definitions for the objects that were written by hand before the generator was created
-- In dto builder generator, use first letter lowercase for method arguments (e.g. [`OrReplace`](https://github.com/snowflakedb/terraform-provider-snowflake/blob/5bdcd127d9288212b10ea7b138bebc0cb770c5b9/pkg/sdk/procedures_dto_builders_gen.go#L26) -> `orReplace`)
-- Reuse existing `genhelpers.NewGenerator()` or other useful tools from the `genhelpers` package (to e.g. allow running it with command line arguments to regenerate only the chosen files)
 - Refresh the example
 
 ##### Essentials
@@ -199,6 +224,3 @@ find a better solution to solve the issue (add more logic to the templates ?)
 - add more context to validated identifiers, so that error contains the affected field
 - add custom identifier wrapping, like it's used in security integrations' network policies
 - Generate nested Request structs for fields that use slices of Opt objects (see the following fields Create operation in semantic_view.def: LogicalTables, semanticViewRelationships, etc.)
-
-##### Known issues
-- generating two converts when Show and Desc use the same data structure

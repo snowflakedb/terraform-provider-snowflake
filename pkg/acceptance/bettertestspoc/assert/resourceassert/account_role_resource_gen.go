@@ -28,6 +28,25 @@ func ImportedAccountRoleResource(t *testing.T, id string) *AccountRoleResourceAs
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (a *AccountRoleResourceAssert) HasName(expected string) *AccountRoleResourceAssert {
+	a.StringValueSet("name", expected)
+	return a
+}
+
+func (a *AccountRoleResourceAssert) HasComment(expected string) *AccountRoleResourceAssert {
+	a.StringValueSet("comment", expected)
+	return a
+}
+
+func (a *AccountRoleResourceAssert) HasFullyQualifiedName(expected string) *AccountRoleResourceAssert {
+	a.StringValueSet("fully_qualified_name", expected)
+	return a
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

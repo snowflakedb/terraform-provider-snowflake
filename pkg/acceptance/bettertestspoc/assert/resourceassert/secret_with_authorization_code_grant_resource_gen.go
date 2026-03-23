@@ -28,6 +28,55 @@ func ImportedSecretWithAuthorizationCodeGrantResource(t *testing.T, id string) *
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasDatabase(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasSchema(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasName(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasApiAuthentication(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("api_authentication", expected)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasComment(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasFullyQualifiedName(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasOauthRefreshToken(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("oauth_refresh_token", expected)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasOauthRefreshTokenExpiryTime(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("oauth_refresh_token_expiry_time", expected)
+	return s
+}
+
+func (s *SecretWithAuthorizationCodeGrantResourceAssert) HasSecretType(expected string) *SecretWithAuthorizationCodeGrantResourceAssert {
+	s.StringValueSet("secret_type", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

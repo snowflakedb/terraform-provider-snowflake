@@ -11,7 +11,7 @@ description: |-
 
 # snowflake_stage (Resource)
 
-
+~> **Deprecation** This resource is deprecated and will be removed in a future major version release. Please use one of the new resources instead: `snowflake_stage_internal` | `snowflake_stage_external_s3` | `snowflake_stage_external_s3_compatible` | `snowflake_stage_external_gcs` | `snowflake_stage_external_azure`. <deprecation>
 
 ## Example Usage
 

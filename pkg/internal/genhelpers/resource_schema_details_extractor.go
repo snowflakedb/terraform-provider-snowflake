@@ -73,3 +73,26 @@ func getComplexAttributeSubType(s *schema.Schema) schema.ValueType {
 	}
 	return s.Type
 }
+
+// TODO [SNOW-1501905]: create a type-safe type abstraction and reuse inside generators
+func ResourceSchemaTypeToString(t schema.ValueType) (stringType string) {
+	switch t {
+	case schema.TypeInvalid:
+		stringType = "Invalid"
+	case schema.TypeBool:
+		stringType = "Bool"
+	case schema.TypeInt:
+		stringType = "Int"
+	case schema.TypeFloat:
+		stringType = "Float"
+	case schema.TypeString:
+		stringType = "String"
+	case schema.TypeList:
+		stringType = "List"
+	case schema.TypeMap:
+		stringType = "Map"
+	case schema.TypeSet:
+		stringType = "Set"
+	}
+	return
+}

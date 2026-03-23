@@ -28,6 +28,55 @@ func ImportedStreamOnDirectoryTableResource(t *testing.T, id string) *StreamOnDi
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (s *StreamOnDirectoryTableResourceAssert) HasDatabase(expected string) *StreamOnDirectoryTableResourceAssert {
+	s.StringValueSet("database", expected)
+	return s
+}
+
+func (s *StreamOnDirectoryTableResourceAssert) HasSchema(expected string) *StreamOnDirectoryTableResourceAssert {
+	s.StringValueSet("schema", expected)
+	return s
+}
+
+func (s *StreamOnDirectoryTableResourceAssert) HasName(expected string) *StreamOnDirectoryTableResourceAssert {
+	s.StringValueSet("name", expected)
+	return s
+}
+
+func (s *StreamOnDirectoryTableResourceAssert) HasComment(expected string) *StreamOnDirectoryTableResourceAssert {
+	s.StringValueSet("comment", expected)
+	return s
+}
+
+func (s *StreamOnDirectoryTableResourceAssert) HasCopyGrants(expected bool) *StreamOnDirectoryTableResourceAssert {
+	s.BoolValueSet("copy_grants", expected)
+	return s
+}
+
+func (s *StreamOnDirectoryTableResourceAssert) HasFullyQualifiedName(expected string) *StreamOnDirectoryTableResourceAssert {
+	s.StringValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *StreamOnDirectoryTableResourceAssert) HasStage(expected string) *StreamOnDirectoryTableResourceAssert {
+	s.StringValueSet("stage", expected)
+	return s
+}
+
+func (s *StreamOnDirectoryTableResourceAssert) HasStale(expected bool) *StreamOnDirectoryTableResourceAssert {
+	s.BoolValueSet("stale", expected)
+	return s
+}
+
+func (s *StreamOnDirectoryTableResourceAssert) HasStreamType(expected string) *StreamOnDirectoryTableResourceAssert {
+	s.StringValueSet("stream_type", expected)
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////

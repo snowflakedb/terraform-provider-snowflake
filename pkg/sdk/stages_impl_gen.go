@@ -544,14 +544,22 @@ func (r stageShowRow) convert() (*Stage, error) {
 		HasEncryptionKey: r.HasEncryptionKey == "Y",
 		Owner:            r.Owner,
 		Comment:          r.Comment,
-		Type:             r.Type,
 		DirectoryEnabled: r.DirectoryEnabled == "Y",
 	}
+	stageType, err := ToStageType(r.Type)
+	if err != nil {
+		return nil, err
+	}
+	stage.Type = stageType
 	if r.Region.Valid {
 		stage.Region = &r.Region.String
 	}
 	if r.Cloud.Valid {
-		stage.Cloud = &r.Cloud.String
+		cloud, err := ToStageCloud(r.Cloud.String)
+		if err != nil {
+			return nil, err
+		}
+		stage.Cloud = &cloud
 	}
 	if r.StorageIntegration.Valid {
 		id, err := ParseAccountObjectIdentifier(r.StorageIntegration.String)
