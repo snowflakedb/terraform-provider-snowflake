@@ -104,24 +104,21 @@ func parseAuthenticationPolicyProperties(properties []AuthenticationPolicyDescri
 				details.Comment = String(prop.Value)
 			}
 		case "AUTHENTICATION_METHODS":
-			for _, authMethod := range ParseCommaSeparatedStringArray(prop.Value, false) {
-				authMethodEnum, err := ToAuthenticationMethodsOption(authMethod)
-				if err != nil {
-					errs = append(errs, err)
-				} else {
-					details.AuthenticationMethods = append(details.AuthenticationMethods, authMethodEnum)
-				}
+			if authenticationMethods, err := collections.MapErr(ParseCommaSeparatedStringArray(prop.Value, false), ToAuthenticationMethodsOption); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.AuthenticationMethods = authenticationMethods
 			}
 		case "CLIENT_TYPES":
-			for _, clientType := range ParseCommaSeparatedStringArray(prop.Value, false) {
-				clientTypeEnum, err := ToClientTypesOption(clientType)
-				if err != nil {
-					errs = append(errs, err)
-				} else {
-					details.ClientTypes = append(details.ClientTypes, clientTypeEnum)
-				}
+			if clientTypes, err := collections.MapErr(ParseCommaSeparatedStringArray(prop.Value, false), ToClientTypesOption); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.ClientTypes = clientTypes
 			}
 		case "CLIENT_POLICY":
+			for key, value := range keyValueUtil(prop.Value) {
+
+			}
 		case "SECURITY_INTEGRATIONS":
 			if strings.ToUpper(prop.Value) == "[ALL]" {
 				details.SecurityIntegrations.All = true
