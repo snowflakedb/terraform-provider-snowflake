@@ -121,7 +121,7 @@ func (o ObjectType) IsWithArguments() bool {
 	return slices.Contains([]ObjectType{ObjectTypeExternalFunction, ObjectTypeFunction, ObjectTypeProcedure}, o)
 }
 
-var allObjectTypes = []ObjectType{
+var AllObjectTypes = []ObjectType{
 	ObjectTypeAccount,
 	ObjectTypeManagedAccount,
 	ObjectTypeUser,
@@ -209,7 +209,7 @@ var allObjectTypes = []ObjectType{
 // TODO(SNOW-1834370): use ToObjectType in other places with type conversion (instead of sdk.ObjectType)
 func ToObjectType(s string) (ObjectType, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(allObjectTypes, ObjectType(s)) {
+	if !slices.Contains(AllObjectTypes, ObjectType(s)) {
 		return "", fmt.Errorf("invalid object type: %s", s)
 	}
 	return ObjectType(s), nil
