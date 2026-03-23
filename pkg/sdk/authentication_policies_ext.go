@@ -52,6 +52,30 @@ func (v AuthenticationPolicyDetailsLegacy) GetClientTypes() ([]ClientTypesOption
 	return collections.MapErr(ParseCommaSeparatedStringArray(raw.Value, false), ToClientTypesOption)
 }
 
+func (v AuthenticationPolicyDetailsLegacy) GetClientPolicies() ([]ClientTypesOption, error) {
+	raw, err := collections.FindFirst(v, func(r AuthenticationPolicyDescription) bool { return r.Property == "CLIENT_POLICIES" })
+	if err != nil {
+		return nil, err
+	}
+
+	//keyValueUtil := func(s string) map[string]string {
+	//	s = strings.TrimPrefix(s, "{")
+	//	s = strings.TrimSuffix(s, "}")
+	//	result := make(map[string]string)
+	//	for _, part := range ParseOuterCommaSeparatedStringArray(fmt.Sprintf("[%s]", s), false) {
+	//		key, value, _ := strings.Cut(part, "=")
+	//		result[key] = value
+	//	}
+	//	return result
+	//}
+
+	//for driverTypeRaw, driverPoliciesRaw := range keyValueUtil(raw.Value) {
+	//	// TODO:
+	//}
+
+	return collections.MapErr(ParseCommaSeparatedStringArray(raw.Value, false), ToClientTypesOption)
+}
+
 func (v AuthenticationPolicyDetailsLegacy) GetSecurityIntegrations() ([]AccountObjectIdentifier, error) {
 	raw, err := collections.FindFirst(v, func(r AuthenticationPolicyDescription) bool { return r.Property == "SECURITY_INTEGRATIONS" })
 	if err != nil {
@@ -116,9 +140,9 @@ func parseAuthenticationPolicyProperties(properties []AuthenticationPolicyDescri
 				details.ClientTypes = clientTypes
 			}
 		case "CLIENT_POLICY":
-			for key, value := range keyValueUtil(prop.Value) {
-
-			}
+			//for key, value := range keyValueUtil(prop.Value) {
+			//
+			//}
 		case "SECURITY_INTEGRATIONS":
 			if strings.ToUpper(prop.Value) == "[ALL]" {
 				details.SecurityIntegrations.All = true
