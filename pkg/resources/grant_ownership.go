@@ -421,7 +421,6 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 		sdk.ObjectTypeManagedAccount,
 		sdk.ObjectTypeNetworkPolicy,
 		sdk.ObjectTypeParameter,
-		sdk.ObjectTypeProgrammaticAccessToken,
 		sdk.ObjectTypeReplicationGroup,
 		sdk.ObjectTypeResourceMonitor,
 		sdk.ObjectTypeRole,
