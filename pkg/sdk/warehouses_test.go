@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -10,6 +11,14 @@ import (
 )
 
 func TestWarehouseCreate(t *testing.T) {
+	t.Run("validation: invalid warehouse type", func(t *testing.T) {
+		opts := &CreateWarehouseOptions{
+			name:          NewAccountObjectIdentifier("mywarehouse"),
+			WarehouseType: Pointer(WarehouseTypeAdaptive),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("only STANDARD, SNOWPARK-OPTIMIZED warehouses are supported, got ADAPTIVE"))
+	})
+
 	t.Run("only name", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{
 			name: AccountObjectIdentifier{
@@ -58,6 +67,63 @@ func TestWarehouseCreate(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE IF NOT EXISTS "completewarehouse" WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'STANDARD_GEN_1' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`, resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	})
+}
+
+func TestWarehouseCreateAdaptive(t *testing.T) {
+	t.Run("only name", func(t *testing.T) {
+		opts := &CreateAdaptiveWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE WAREHOUSE "mywarehouse" WAREHOUSE_TYPE = 'ADAPTIVE'`)
+	})
+
+	t.Run("with complete options", func(t *testing.T) {
+		tagId1 := randomSchemaObjectIdentifier()
+		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
+		opts := &CreateAdaptiveWarehouseOptions{
+			OrReplace: Bool(true),
+			name:      NewAccountObjectIdentifier("myadaptivewh"),
+
+			Comment:          String("adaptive warehouse"),
+			MaxStatementSize: Pointer(MaxStatementSizeMedium),
+
+			StatementQueuedTimeoutInSeconds: Int(30),
+			StatementTimeoutInSeconds:       Int(60),
+			Tag: []TagAssociation{
+				{
+					Name:  tagId1,
+					Value: "v1",
+				},
+				{
+					Name:  tagId2,
+					Value: "v2",
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_STATEMENT_SIZE = 'MEDIUM' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60 TAG (%s = 'v1', %s = 'v2')`,
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	})
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *CreateAdaptiveWarehouseOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: invalid identifier", func(t *testing.T) {
+		opts := &CreateAdaptiveWarehouseOptions{
+			name: emptyAccountObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: conflicting OrReplace and IfNotExists", func(t *testing.T) {
+		opts := &CreateAdaptiveWarehouseOptions{
+			name:        NewAccountObjectIdentifier("mywarehouse"),
+			OrReplace:   Bool(true),
+			IfNotExists: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateAdaptiveWarehouseOptions", "OrReplace", "IfNotExists"))
 	})
 }
 
@@ -452,6 +518,7 @@ func Test_Warehouse_ToWarehouseType(t *testing.T) {
 		// Supported Values
 		{input: "STANDARD", want: WarehouseTypeStandard},
 		{input: "SNOWPARK-OPTIMIZED", want: WarehouseTypeSnowparkOptimized},
+		{input: "ADAPTIVE", want: WarehouseTypeAdaptive},
 	}
 
 	invalid := []test{
@@ -475,6 +542,45 @@ func Test_Warehouse_ToWarehouseType(t *testing.T) {
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToWarehouseType(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_Warehouse_ToWarehouseTypeUserSettable(t *testing.T) {
+	type test struct {
+		input string
+		want  WarehouseType
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "standard", want: WarehouseTypeStandard},
+
+		// Supported Values
+		{input: "STANDARD", want: WarehouseTypeStandard},
+		{input: "SNOWPARK-OPTIMIZED", want: WarehouseTypeSnowparkOptimized},
+	}
+
+	invalid := []test{
+		// bad values
+		{input: ""},
+		{input: "foo"},
+		// adaptive is not user-settable
+		{input: "ADAPTIVE"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToWarehouseTypeUserSettable(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToWarehouseTypeUserSettable(tc.input)
 			require.Error(t, err)
 		})
 	}
@@ -517,17 +623,61 @@ func Test_Warehouse_ToScalingPolicy(t *testing.T) {
 	}
 }
 
+func Test_Warehouse_ToMaxStatementSize(t *testing.T) {
+	type test struct {
+		input string
+		want  MaxStatementSize
+	}
+
+	valid := []test{
+		// case insensitive.
+		{input: "medium", want: MaxStatementSizeMedium},
+
+		// Supported Values
+		{input: "XSMALL", want: MaxStatementSizeXSmall},
+		{input: "SMALL", want: MaxStatementSizeSmall},
+		{input: "MEDIUM", want: MaxStatementSizeMedium},
+		{input: "LARGE", want: MaxStatementSizeLarge},
+		{input: "XLARGE", want: MaxStatementSizeXLarge},
+		{input: "XXLARGE", want: MaxStatementSizeXXLarge},
+		{input: "XXXLARGE", want: MaxStatementSizeXXXLarge},
+		{input: "X4LARGE", want: MaxStatementSizeX4Large},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo"},
+		{input: "X5LARGE"},
+		{input: "X6LARGE"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToMaxStatementSize(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToMaxStatementSize(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
 func Test_Warehouse_Convert(t *testing.T) {
 	correctRow := func() warehouseDBRow {
 		return warehouseDBRow{
-			Size:      string(WarehouseSizeXSmall),
+			Size:      sql.NullString{String: string(WarehouseSizeXSmall), Valid: true},
 			Available: "100",
 		}
 	}
 
 	t.Run("convert error: size invalid", func(t *testing.T) {
 		row := correctRow()
-		row.Size = "INCORRECT_SIZE"
+		row.Size = sql.NullString{String: "INCORRECT_SIZE", Valid: true}
 
 		wh, err := row.convert()
 
@@ -552,7 +702,7 @@ func Test_Warehouse_Convert(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, wh)
-		assert.Equal(t, WarehouseSizeXSmall, wh.Size)
+		assert.Equal(t, Pointer(WarehouseSizeXSmall), wh.Size)
 		assert.InDelta(t, 100.0, wh.Available, testvars.FloatEpsilon)
 	})
 
@@ -565,6 +715,19 @@ func Test_Warehouse_Convert(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, wh)
 		assert.InDelta(t, 0.0, wh.Available, testvars.FloatEpsilon)
+	})
+
+	t.Run("convert correct: adaptive warehouse skips size parsing", func(t *testing.T) {
+		row := correctRow()
+		row.Type = string(WarehouseTypeAdaptive)
+		row.Size = sql.NullString{Valid: false}
+
+		wh, err := row.convert()
+
+		require.NoError(t, err)
+		require.NotNil(t, wh)
+		assert.Equal(t, WarehouseTypeAdaptive, wh.Type)
+		assert.Nil(t, wh.Size)
 	})
 }
 
