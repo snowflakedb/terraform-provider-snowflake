@@ -349,11 +349,6 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 		Metrics:          []SemanticViewMetricDetails{},
 		DescribeRowCount: 0,
 	}
-	//tableDetails := make([]SemanticViewTableDetails, 0)
-	//relationshipDetails := make([]SemanticViewRelationshipDetails, 0)
-	//dimensionDetails := make([]SemanticViewDimensionDetails, 0)
-	//factDetails := make([]SemanticViewFactDetails, 0)
-	//metricDetails := make([]SemanticViewMetricDetails, 0)
 	var errs []error
 	for _, prop := range properties {
 		details.DescribeRowCount++
