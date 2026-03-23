@@ -239,7 +239,7 @@ func TestInt_SemanticView(t *testing.T) {
 			TableNameOrAlias: t1Alias,
 			Expression:       dimensionExpressionRaw,
 			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
-			DataType:       "VARCHAR(134217728)",
+			DataType:       "VARCHAR(16777216)",
 			Synonyms:       `["D1"]`,
 			Comment:        "dimension comment",
 			AccessModifier: "PUBLIC",
@@ -251,7 +251,7 @@ func TestInt_SemanticView(t *testing.T) {
 			TableNameOrAlias: t1Alias,
 			Expression:       `"first_c"`,
 			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
-			DataType:       "VARCHAR(134217728)",
+			DataType:       "VARCHAR(16777216)",
 			Synonyms:       `["F1"]`,
 			Comment:        "fact comment",
 			AccessModifier: "PUBLIC",
