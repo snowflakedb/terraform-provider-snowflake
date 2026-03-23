@@ -117,3 +117,25 @@ func (w *WarehouseAssert) HasNoQueryAccelerationMaxScaleFactor() *WarehouseAsser
 	})
 	return w
 }
+
+func (w *WarehouseAssert) HasNoMaxStatementSize() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxStatementSize != nil {
+			return fmt.Errorf("expected max statement size to be empty; got: %s", *o.MaxStatementSize)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasNoMaxBurstRateCredits() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxBurstRateCredits != nil {
+			return fmt.Errorf("expected max burst rate credits to be empty; got: %d", *o.MaxBurstRateCredits)
+		}
+		return nil
+	})
+	return w
+}

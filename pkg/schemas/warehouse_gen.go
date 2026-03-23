@@ -3,12 +3,15 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// ShowWarehouseSchema represents output of SHOW query for the single Warehouse.
-var ShowWarehouseSchema = map[string]*schema.Schema{
+// Adjusted manually: split into common, regular, and adaptive schemas.
+
+// showWarehouseSchemaCommon contains fields present for all warehouse types.
+var showWarehouseSchemaCommon = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -19,22 +22,6 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 	},
 	"type": {
 		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"size": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"min_cluster_count": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"max_cluster_count": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"started_clusters": {
-		Type:     schema.TypeInt,
 		Computed: true,
 	},
 	"running": {
@@ -51,10 +38,6 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 	},
 	"is_current": {
 		Type:     schema.TypeBool,
-		Computed: true,
-	},
-	"auto_suspend": {
-		Type:     schema.TypeInt,
 		Computed: true,
 	},
 	"auto_resume": {
@@ -97,6 +80,38 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"resource_monitor": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"owner_role_type": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+}
+
+// showWarehouseSchemaRegular contains fields only present for standard and snowpark-optimized warehouses.
+var showWarehouseSchemaRegular = map[string]*schema.Schema{
+	"size": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"min_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"max_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"started_clusters": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"auto_suspend": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
 	"enable_query_acceleration": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -105,15 +120,7 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-	"resource_monitor": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
 	"scaling_policy": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -126,6 +133,24 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 		Computed: true,
 	},
 }
+
+// showWarehouseSchemaAdaptive contains fields only present for adaptive warehouses.
+var showWarehouseSchemaAdaptive = map[string]*schema.Schema{
+	"max_statement_size": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"max_burst_rate_credits": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+}
+
+// ShowWarehouseSchema contains all warehouse show output fields (used by the data source).
+var ShowWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaRegular, showWarehouseSchemaAdaptive)
+
+// ShowRegularWarehouseSchema contains common and regular fields (used by the regular warehouse resource).
+var ShowRegularWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaRegular)
 
 var _ = ShowWarehouseSchema
 
@@ -195,6 +220,14 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	// Adjusted manually.
 	if warehouse.Generation != nil {
 		warehouseSchema["generation"] = string(*warehouse.Generation)
+	}
+	// Adjusted manually.
+	if warehouse.MaxStatementSize != nil {
+		warehouseSchema["max_statement_size"] = string(*warehouse.MaxStatementSize)
+	}
+	// Adjusted manually.
+	if warehouse.MaxBurstRateCredits != nil {
+		warehouseSchema["max_burst_rate_credits"] = *warehouse.MaxBurstRateCredits
 	}
 	return warehouseSchema
 }

@@ -116,8 +116,9 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 			HasResourceMonitorEmpty().
 			HasScalingPolicy(sdk.ScalingPolicyStandard).
 			HasOwnerRoleTypeNotEmpty().
-			HasResourceConstraintEmpty()
-
+			HasResourceConstraintEmpty().
+			HasMaxStatementSizeEmpty().
+			HasMaxBurstRateCreditsEmpty()
 		if testClient().SnowflakeDefaults.WarehouseGenerationEmptyByDefault(t) {
 			assert = assert.HasGenerationEmpty()
 		} else {
