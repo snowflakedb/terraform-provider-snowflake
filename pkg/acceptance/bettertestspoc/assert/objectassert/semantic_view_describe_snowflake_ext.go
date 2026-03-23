@@ -112,9 +112,6 @@ func (s *SemanticViewDetailsAssert) ContainsMetric(expected sdk.SemanticViewMetr
 	s.AddAssertion(func(t *testing.T, o *SemanticViewDetailsCollection) error {
 		t.Helper()
 		if !slices.ContainsFunc(o.Details.Metrics, func(d sdk.SemanticViewMetricDetails) bool {
-			fmt.Printf("o.Details.Metrics: %+v\n", d)
-			fmt.Printf("expected: %+v\n", expected)
-
 			return reflect.DeepEqual(d, expected)
 		}) {
 			return fmt.Errorf("expected semantic view to contain metric %+v", expected)
