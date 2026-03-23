@@ -143,7 +143,7 @@ type HybridTableReclusterChangeStateRequest struct {
 }
 
 // NOTE: Hybrid tables do not support CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION,
-// CONTACT, or ROW_TIMESTAMP in SET (discovered via integration testing and Snowflake trunk).
+// CONTACT, or ROW_TIMESTAMP in ALTER TABLE SET (per Snowflake documentation and runtime behavior).
 type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
