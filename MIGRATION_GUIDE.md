@@ -28,7 +28,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
 
+#### Resource `snowflake_authentication_policy`
+- **New optional block `client_policy`** — Sets minimum allowed versions per client or driver type (Snowflake `CLIENT_POLICY`). Each block requires `client_type` and `minimum_version`. The block is only valid when `client_types` is empty, contains `ALL`, or contains **`DRIVERS`**. See the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy#nestedblock--client_policy) for allowed `client_type` values.
+- **`client_types`** — Added **`DRIVERS`** as an allowed value (alongside values such as `ALL`, `SNOWFLAKE_UI`, `SNOWSQL`, and `SNOWFLAKE_CLI`).
+- **`describe_output`** — Added read-only **`client_policy`** (string), populated from the `CLIENT_POLICY` column returned by `DESCRIBE AUTHENTICATION POLICY`.
 
+#### Data source `snowflake_authentication_policies`
+- **`authentication_policies.*.describe_output`** — Added **`client_policy`** (string) when [`with_describe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/authentication_policies#schema) is enabled (default: `true`), consistent with the resource’s describe output.
+
+State is upgraded automatically when you apply with the new provider version. No changes are required to existing configurations unless you want to adopt `client_policy` or `DRIVERS`.
 
 ### *(new feature)* snowflake_account_parameter: adding missing parameters
 
