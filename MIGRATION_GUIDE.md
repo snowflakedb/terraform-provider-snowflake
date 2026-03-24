@@ -29,14 +29,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
 
 #### Resource `snowflake_authentication_policy`
-- **New optional block `client_policy`** — Sets minimum allowed versions per client or driver type (Snowflake `CLIENT_POLICY`). Each block requires `client_type` and `minimum_version`. The block is only valid when `client_types` is empty, contains `ALL`, or contains **`DRIVERS`**. See the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy#nestedblock--client_policy) for allowed `client_type` values.
+- New optional block **`client_policy`** — for now, allows setting minimum usable version for speficied driver type (Snowflake `CLIENT_POLICY`). Each block requires `client_type` and `minimum_version`. The block is only valid when `client_types` is empty, contains `ALL`, or contains **`DRIVERS`**. See the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy) for more information.
 - **`client_types`** — Added **`DRIVERS`** as an allowed value (alongside values such as `ALL`, `SNOWFLAKE_UI`, `SNOWSQL`, and `SNOWFLAKE_CLI`).
+- **`mfa_policy.allowed_methods`** — Added **`OTP`** as an allowed method.
 - **`describe_output`** — Added read-only **`client_policy`** (string), populated from the `CLIENT_POLICY` column returned by `DESCRIBE AUTHENTICATION POLICY`.
 
 #### Data source `snowflake_authentication_policies`
-- **`authentication_policies.*.describe_output`** — Added **`client_policy`** (string) when [`with_describe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/authentication_policies#schema) is enabled (default: `true`), consistent with the resource’s describe output.
+- **`authentication_policies.0.describe_output`** — Added **`client_policy`** (string), populated from the `CLIENT_POLICY` column returned by `DESCRIBE AUTHENTICATION POLICY`, when [`with_describe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/authentication_policies#schema) is enabled.
 
-State is upgraded automatically when you apply with the new provider version. No changes are required to existing configurations unless you want to adopt `client_policy` or `DRIVERS`.
+No changes are required to existing configurations unless you want to adopt any of the newly introduced features.
 
 ### *(new feature)* snowflake_account_parameter: adding missing parameters
 
@@ -67,7 +68,7 @@ We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
 - [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
 
-These features will be marked as stable in future releases. To use them, add 
+These features will be marked as stable in future releases. To use them, add
 - `snowflake_catalog_integration_aws_glue_resource`, or
 - `snowflake_catalog_integration_object_storage_resource`
 to the `preview_features_enabled` field in the provider configuration.

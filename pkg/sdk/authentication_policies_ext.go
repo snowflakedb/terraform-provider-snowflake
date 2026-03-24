@@ -4,7 +4,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-// AuthenticationPolicyDetails wraps DESCRIBE output rows with helpers for common fields.
 type AuthenticationPolicyDetails []AuthenticationPolicyDescription
 
 func (v AuthenticationPolicyDetails) GetAuthenticationMethods() ([]AuthenticationMethodsOption, error) {
