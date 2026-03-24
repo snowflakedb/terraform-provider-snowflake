@@ -61,8 +61,6 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 		sessionParameters.DateInputFormat = &value
 	case SessionParameterDateOutputFormat:
 		sessionParameters.DateOutputFormat = &value
-	case SessionParameterEnableCortexAnalyst:
-		err = setBooleanValue(parameter, value, &sessionParameters.EnableCortexAnalyst)
 	case SessionParameterEnableGetDdlUseDataTypeAlias:
 		err = setBooleanValue(parameter, value, &sessionParameters.EnableGetDdlUseDataTypeAlias)
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
@@ -211,8 +209,6 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 		unsetField = &sessionParametersUnset.DateInputFormat
 	case SessionParameterDateOutputFormat:
 		unsetField = &sessionParametersUnset.DateOutputFormat
-	case SessionParameterEnableCortexAnalyst:
-		unsetField = &sessionParametersUnset.EnableCortexAnalyst
 	case SessionParameterEnableGetDdlUseDataTypeAlias:
 		unsetField = &sessionParametersUnset.EnableGetDdlUseDataTypeAlias
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
@@ -366,6 +362,13 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.EnableBudgetEventLogging = b
+	case AccountParameterEnableCortexAnalyst:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableCortexAnalyst = b
 	case AccountParameterEnableIdentifierFirstLogin:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)

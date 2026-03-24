@@ -36,7 +36,7 @@ func TestAcc_AccountParameter(t *testing.T) {
 		{sdk.AccountParameterDisallowedSpcsWorkloadTypes, "", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableBudgetEventLogging, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCortexModelsAllowlist, "All", sdk.ParameterTypeSnowflakeDefault},
-		{sdk.AccountParameterEnableCortexAnalyst, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterEnableCortexAnalyst, "true", sdk.ParameterTypeSystem},
 		{sdk.AccountParameterEnableDataCompaction, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableGetDdlUseDataTypeAlias, "false", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableIcebergMergeOnRead, "true", sdk.ParameterTypeSnowflakeDefault},
