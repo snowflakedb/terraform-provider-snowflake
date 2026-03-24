@@ -157,7 +157,7 @@ func TestInt_TrustCenter_ShowScanners(t *testing.T) {
 
 	t.Run("with like filter", func(t *testing.T) {
 		like := "MFA%"
-		scanners, err := client.TrustCenter.ShowScanners(ctx, &sdk.ShowScannersRequest{Like: &like})
+		_, err := client.TrustCenter.ShowScanners(ctx, &sdk.ShowScannersRequest{Like: &like})
 		require.NoError(t, err)
 		// May or may not find results depending on naming, just check no error
 	})
