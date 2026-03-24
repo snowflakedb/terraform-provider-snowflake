@@ -72,6 +72,7 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
 			WithDefaultExpiryInDays(1).
 			WithMaxExpiryInDays(30).
+			WithRequireRoleRestrictionForServiceUsers(false).
 			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
 		).
 		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
@@ -104,6 +105,7 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
 			WithDefaultExpiryInDays(2).
 			WithMaxExpiryInDays(40).
+			WithRequireRoleRestrictionForServiceUsers(true).
 			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationEnforcedNotRequired),
 		).
 		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
@@ -132,15 +134,16 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 			// create with empty optionals
 			{
 				Config: accconfig.FromModels(t, basicModel),
-				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, basicModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasCommentString("").
-					HasAuthenticationMethodsEmpty().
-					HasNoMfaEnrollment().
-					HasClientTypesEmpty().
-					HasSecurityIntegrationsEmpty(),
+				Check: assertThat(t,
+					resourceassert.AuthenticationPolicyResource(t, basicModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString("").
+						HasAuthenticationMethodsEmpty().
+						HasNoMfaEnrollment().
+						HasClientTypesEmpty().
+						HasSecurityIntegrationsEmpty(),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, basicModel.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -226,7 +229,7 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_enrollment", "REQUIRED")),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_authentication_methods", "[PASSWORD, SAML, OIDC]")),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")),
-					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")),
+					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=false}")),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")),
 					assert.Check(resource.TestCheckResourceAttr(completeModel.ResourceReference(), "describe_output.0.client_policy", "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}")),
 				),

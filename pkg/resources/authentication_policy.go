@@ -175,12 +175,10 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 				"require_role_restriction_for_service_users": {
 					Type:             schema.TypeString,
 					Optional:         true,
-					Description:      booleanStringFieldDescription("If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role. Defaults to true."),
+					Description:      booleanStringFieldDescription("If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role."),
 					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
 					Default:          BooleanDefault,
 					ValidateDiagFunc: validateBooleanString,
-					// TODO: Diff suppress
-					DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeListValueInDescribe("require_role_restriction_for_service_users"),
 				},
 				"network_policy_evaluation": {
 					Type:             schema.TypeString,
@@ -320,7 +318,7 @@ func ImportAuthenticationPolicy(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return nil, err
 	}
-	authenticationPolicyDetails := sdk.AuthenticationPolicyDetailsLegacy(authenticationPolicyDescriptions)
+	authenticationPolicyDetails := sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptions)
 	authenticationMethods, err := authenticationPolicyDetails.GetAuthenticationMethods()
 	if err != nil {
 		return nil, err
@@ -448,7 +446,7 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		authenticationPolicyDescriptions := sdk.AuthenticationPolicyDetailsLegacy(authenticationPolicyDescriptionsRaw)
+		authenticationPolicyDescriptions := sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptionsRaw)
 		if withExternalChangesMarking {
 			authenticationMethods, err := authenticationPolicyDescriptions.GetAuthenticationMethods()
 			if err != nil {

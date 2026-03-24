@@ -101,6 +101,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 			WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
 				WithDefaultExpiryInDays(1).
 				WithMaxExpiryInDays(30).
+				WithRequireRoleRestrictionForServiceUsers(false).
 				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationNotEnforced),
 			).
 			WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
@@ -143,7 +144,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		assertProperty(t, desc, "CLIENT_POLICY", "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}")
 		assertProperty(t, desc, "AUTHENTICATION_METHODS", "[PASSWORD, SAML]")
 		assertProperty(t, desc, "MFA_POLICY", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")
-		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true}")
+		assertProperty(t, desc, "PAT_POLICY", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=false}")
 		assertProperty(t, desc, "WORKLOAD_IDENTITY_POLICY", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")
 	})
 
