@@ -81,7 +81,7 @@ The following attributes are exported, depending on the Snowflake account config
 - `account_principal` (String) The AWS principal ARN to allow for outbound private connections to your VPC endpoint services.
 - `account_url` (String) The URL used to connect to Snowflake through private connectivity.
 - `app_service_url` (String) Wildcard DNS record required for routing Streamlit applications and/or Snowpark Container Services through private connectivity.
-- `aws_vpce_id` (String) Private connectivity endpoint ID for your account when on AWS.
+- `aws_vpce_id` (String) The AWS VPCE ID for your account.
 - `azure_pls_id` (String) Private connectivity service ID for your account when on Azure.
 - `client_redirect_urls` (String) The client redirect connection URLs for your account using private connectivity when using client redirect.
 - `gcp_service_attachment` (String) The endpoint for the Snowflake service when using Google Cloud Private Service Connect.
@@ -95,4 +95,3 @@ The following attributes are exported, depending on the Snowflake account config
 - `spcs_auth_url` (String) The Snowpark Container Services authentication URL using private connectivity.
 - `spcs_registry_url` (String) The Snowpark Container Services registry URL using private connectivity.
 - `snowsight_url` (String) The URL containing the cloud region to access Snowsight and the Snowflake Marketplace using private connectivity.
-- `vpce_id` (String) The AWS VPCE ID for your account identifier.

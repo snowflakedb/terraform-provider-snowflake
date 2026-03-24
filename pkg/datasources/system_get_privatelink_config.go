@@ -35,7 +35,7 @@ var systemGetPrivateLinkConfigSchema = map[string]*schema.Schema{
 		Description: "The URL used to connect to Snowflake through AWS PrivateLink or Azure Private Link.",
 	},
 
-	"app_service_url": {
+	"app_service_privatelink_url": {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The wildcard URL required for routing Streamlit applications and Snowpark Container Services through AWS PrivateLink or Azure Private Link.",
@@ -51,6 +51,12 @@ var systemGetPrivateLinkConfigSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The Azure Private Link Service ID for your account.",
+	},
+
+	"regionless_snowsight_url": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "The URL for your organization to access Snowsight using Private Connectivity to the Snowflake Service.",
 	},
 
 	"client_redirect_urls": {
@@ -83,18 +89,6 @@ var systemGetPrivateLinkConfigSchema = map[string]*schema.Schema{
 		Description: "The OCSP URL corresponding to your Snowflake account that uses AWS PrivateLink or Azure Private Link.",
 	},
 
-	"openflow_url": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The OpenFlow URL to connect to Snowflake Openflow using AWS PrivateLink or Azure Private Link.",
-	},
-
-	"openflow_telemetry_url": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The OpenFlow telemetry URL to connect to Snowflake Openflow telemetry using AWS PrivateLink or Azure Private Link.",
-	},
-
 	"regionless_account_url": {
 		Type:        schema.TypeString,
 		Computed:    true,
@@ -105,18 +99,6 @@ var systemGetPrivateLinkConfigSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The OCSP URL for your account identifier.",
-	},
-
-	"spcs_auth_url": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The Snowpark Container Services authentication URL using private connectivity.",
-	},
-
-	"spcs_registry_url": {
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "The Snowpark Container Services registry URL using private connectivity.",
 	},
 
 	"snowsight_url": {
@@ -197,15 +179,15 @@ func ReadSystemGetPrivateLinkConfig(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if config.ConnectionURLs != "" {
-		connURLsErr := d.Set("client_redirect_connection_urls", config.ConnectionURLs)
+		connURLsErr := d.Set("privatelink_connection_urls", config.ConnectionURLs)
 		if connURLsErr != nil {
 			return diag.FromErr(connURLsErr)
 		}
 	}
 
-	dashedDusURLsErr := d.Set("dashed_duo_urls", config.DashedDuoURLs)
-	if dashedDusURLsErr != nil {
-		return diag.FromErr(dashedDusURLsErr)
+	dashedDuoURLsErr := d.Set("dashed_duo_urls", config.DashedDuoURLs)
+	if dashedDuoURLsErr != nil {
+		return diag.FromErr(dashedDuoURLsErr)
 	}
 
 	if config.GCPServiceAttachment != "" {
