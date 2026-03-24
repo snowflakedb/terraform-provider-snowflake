@@ -61,6 +61,8 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 		sessionParameters.DateInputFormat = &value
 	case SessionParameterDateOutputFormat:
 		sessionParameters.DateOutputFormat = &value
+	case SessionParameterEnableCortexAnalyst:
+		err = setBooleanValue(parameter, value, &sessionParameters.EnableCortexAnalyst)
 	case SessionParameterEnableGetDdlUseDataTypeAlias:
 		err = setBooleanValue(parameter, value, &sessionParameters.EnableGetDdlUseDataTypeAlias)
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
@@ -209,6 +211,8 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 		unsetField = &sessionParametersUnset.DateInputFormat
 	case SessionParameterDateOutputFormat:
 		unsetField = &sessionParametersUnset.DateOutputFormat
+	case SessionParameterEnableCortexAnalyst:
+		unsetField = &sessionParametersUnset.EnableCortexAnalyst
 	case SessionParameterEnableGetDdlUseDataTypeAlias:
 		unsetField = &sessionParametersUnset.EnableGetDdlUseDataTypeAlias
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
@@ -342,6 +346,8 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 		legacyAccountParameters.ClientEncryptionKeySize = Pointer(v)
 	case AccountParameterCortexEnabledCrossRegion:
 		legacyAccountParameters.CortexEnabledCrossRegion = &value
+	case AccountParameterCortexModelsAllowlist:
+		legacyAccountParameters.CortexModelsAllowlist = &value
 	case AccountParameterDefaultDbtVersion:
 		legacyAccountParameters.DefaultDbtVersion = &value
 	case AccountParameterDisableUserPrivilegeGrants:

@@ -35,6 +35,8 @@ The `snowflake_account_parameter` resource now supports the following additional
 - `DEFAULT_DBT_VERSION`
 - `DISALLOWED_SPCS_WORKLOAD_TYPES`
 - `ENABLE_BUDGET_EVENT_LOGGING`
+- `CORTEX_MODELS_ALLOWLIST`
+- `ENABLE_CORTEX_ANALYST`
 - `ENABLE_DATA_COMPACTION`
 - `ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS`
 - `ENABLE_ICEBERG_MERGE_ON_READ`
@@ -55,7 +57,7 @@ We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
 - [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
 
-These features will be marked as stable in future releases. To use them, add 
+These features will be marked as stable in future releases. To use them, add
 - `snowflake_catalog_integration_aws_glue_resource`, or
 - `snowflake_catalog_integration_object_storage_resource`
 to the `preview_features_enabled` field in the provider configuration.
