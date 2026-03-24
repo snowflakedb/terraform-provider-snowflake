@@ -13,7 +13,7 @@ description: |-
 
 -> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
 
-~> **Note** A new `IMPORT_BOOLEAN_DEFAULT` experimental feature is available for this resource. When enabled, fields using special default values (like `"default"`) are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`), preventing unavoidable diffs on every plan after import. Without the flag, the import behavior is unchanged from previous versions and consistent with other resources. To enable it, add `IMPORT_BOOLEAN_DEFAULT` to the [`experimental_features_enabled`](../#experimental_features_enabled-1) provider field. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#bugfix-importing-boolean-fields-in-stage-resources) for more details.
+~> **Note** If you experience persistent diffs after importing this resource, enable the `IMPORT_BOOLEAN_DEFAULT` [experimental feature](../#experimental_features_enabled-1) to fix it. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#bugfix-importing-boolean-fields-in-stage-resources) for details.
 
 # snowflake_stage_external_gcs (Resource)
 
