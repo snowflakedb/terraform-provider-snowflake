@@ -24,6 +24,31 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.14.0 ➞ v2.14.1
+
+### *(breaking change)* `snowflake_authentication_policy` and `snowflake_authentication_policies`
+
+Due to recent faulty Snowflake release changing the `DESC AUTHENTICATION POLICY` output,
+the authentication_policy resource started to fail trying to parse changed format.
+
+The errors may look similar to the following:
+```
+╷
+│ Error: object does not exist
+│ 
+│ 
+│   with snowflake_authentication_policy.test,
+│   on test.tf line 3, in resource "snowflake_authentication_policy" "test":
+│    3: resource "snowflake_authentication_policy" "test" {
+│ 
+```
+
+This version adjusts the describe output parsing and **removes** already deprecated `mfa_authentication_methods` field.
+If you were using this field before, you need to remove it during the version upgrade.
+Other than that no configuration changes are necessary.
+
+References: [#4457](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557)
+
 ## v2.13.x ➞ v2.14.0
 
 ### *(new feature)* Added `DECFLOAT` support

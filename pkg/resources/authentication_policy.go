@@ -544,10 +544,6 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			mfaAuthenticationMethods, err := authenticationPolicyDescriptions.GetMfaAuthenticationMethods()
-			if err != nil {
-				return diag.FromErr(err)
-			}
 			var securityIntegrationsStrings []string
 			if securityIntegrations != nil {
 				securityIntegrationsStrings = make([]string, len(securityIntegrations))
@@ -560,7 +556,6 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 				outputMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
 				outputMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
 				outputMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
-				outputMapping{"mfa_authentication_methods", "mfa_authentication_methods", authenticationPolicyDescriptions.Raw("MFA_AUTHENTICATION_METHODS"), mfaAuthenticationMethods, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -571,7 +566,6 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			"mfa_enrollment",
 			"client_types",
 			"security_integrations",
-			"mfa_authentication_methods",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
