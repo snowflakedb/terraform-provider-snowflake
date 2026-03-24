@@ -138,14 +138,16 @@ func (s *EmailParamsRequest) WithAllowedRecipients(allowedRecipients []Notificat
 	return s
 }
 
-func NewWebhookParamsRequest(webhookUrl string) *WebhookParamsRequest {
+func NewWebhookParamsRequest(
+	webhookUrl string,
+) *WebhookParamsRequest {
 	s := WebhookParamsRequest{}
 	s.WebhookUrl = webhookUrl
 	return &s
 }
 
-func (s *WebhookParamsRequest) WithWebhookSecret(secretId SchemaObjectIdentifier) *WebhookParamsRequest {
-	s.WebhookSecret = &secretId
+func (s *WebhookParamsRequest) WithWebhookSecret(webhookSecret SchemaObjectIdentifier) *WebhookParamsRequest {
+	s.WebhookSecret = &webhookSecret
 	return s
 }
 
@@ -159,7 +161,10 @@ func (s *WebhookParamsRequest) WithWebhookHeaders(webhookHeaders []WebhookHeader
 	return s
 }
 
-func NewWebhookHeaderRequest(header string, value string) *WebhookHeaderRequest {
+func NewWebhookHeaderRequest(
+	header string,
+	value string,
+) *WebhookHeaderRequest {
 	s := WebhookHeaderRequest{}
 	s.Header = header
 	s.Value = value
@@ -300,8 +305,8 @@ func (s *SetWebhookParamsRequest) WithWebhookUrl(webhookUrl string) *SetWebhookP
 	return s
 }
 
-func (s *SetWebhookParamsRequest) WithWebhookSecret(secretId SchemaObjectIdentifier) *SetWebhookParamsRequest {
-	s.WebhookSecret = &secretId
+func (s *SetWebhookParamsRequest) WithWebhookSecret(webhookSecret SchemaObjectIdentifier) *SetWebhookParamsRequest {
+	s.WebhookSecret = &webhookSecret
 	return s
 }
 

@@ -122,12 +122,8 @@ func (r *CreateNotificationIntegrationRequest) toOpts() *CreateNotificationInteg
 	if r.WebhookParams != nil {
 		opts.WebhookParams = &WebhookParams{
 			WebhookUrl:          r.WebhookParams.WebhookUrl,
+			WebhookSecret:       r.WebhookParams.WebhookSecret,
 			WebhookBodyTemplate: r.WebhookParams.WebhookBodyTemplate,
-		}
-		if r.WebhookParams.WebhookSecret != nil {
-			opts.WebhookParams.WebhookSecret = &WebhookSecretReference{
-				SecretId: *r.WebhookParams.WebhookSecret,
-			}
 		}
 		for _, h := range r.WebhookParams.WebhookHeaders {
 			opts.WebhookParams.WebhookHeaders = append(opts.WebhookParams.WebhookHeaders, WebhookHeader{
@@ -179,12 +175,8 @@ func (r *AlterNotificationIntegrationRequest) toOpts() *AlterNotificationIntegra
 		if r.Set.SetWebhookParams != nil {
 			opts.Set.SetWebhookParams = &SetWebhookParams{
 				WebhookUrl:          r.Set.SetWebhookParams.WebhookUrl,
+				WebhookSecret:       r.Set.SetWebhookParams.WebhookSecret,
 				WebhookBodyTemplate: r.Set.SetWebhookParams.WebhookBodyTemplate,
-			}
-			if r.Set.SetWebhookParams.WebhookSecret != nil {
-				opts.Set.SetWebhookParams.WebhookSecret = &WebhookSecretReference{
-					SecretId: *r.Set.SetWebhookParams.WebhookSecret,
-				}
 			}
 			for _, h := range r.Set.SetWebhookParams.WebhookHeaders {
 				opts.Set.SetWebhookParams.WebhookHeaders = append(opts.Set.SetWebhookParams.WebhookHeaders, WebhookHeader{

@@ -38,6 +38,12 @@ type NotificationIntegrationAllowedRecipient struct {
 	Email string `ddl:"keyword,single_quotes"`
 }
 
+type WebhookHeader struct {
+	Header string `ddl:"keyword,single_quotes"`
+	equals bool   `ddl:"static" sql:"="`
+	Value  string `ddl:"keyword,single_quotes"`
+}
+
 type AutomatedDataLoadsParams struct {
 	notificationType string            `ddl:"static" sql:"TYPE = QUEUE"`
 	GoogleAutoParams *GoogleAutoParams `ddl:"keyword"`
@@ -85,38 +91,25 @@ type EmailParams struct {
 	AllowedRecipients []NotificationIntegrationAllowedRecipient `ddl:"parameter,parentheses" sql:"ALLOWED_RECIPIENTS"`
 }
 
-// WebhookParams is based on https://docs.snowflake.com/en/sql-reference/sql/create-notification-integration-webhooks.
 type WebhookParams struct {
 	webhookType         bool                    `ddl:"static" sql:"TYPE = WEBHOOK"`
 	WebhookUrl          string                  `ddl:"parameter,single_quotes" sql:"WEBHOOK_URL"`
-	WebhookSecret       *WebhookSecretReference `ddl:"keyword"`
+	WebhookSecret       *SchemaObjectIdentifier `ddl:"identifier,equals" sql:"WEBHOOK_SECRET"`
 	WebhookBodyTemplate *string                 `ddl:"parameter,single_quotes" sql:"WEBHOOK_BODY_TEMPLATE"`
 	WebhookHeaders      []WebhookHeader         `ddl:"parameter,parentheses" sql:"WEBHOOK_HEADERS"`
 }
 
-type WebhookSecretReference struct {
-	webhookSecret bool                   `ddl:"static" sql:"WEBHOOK_SECRET"`
-	equals        bool                   `ddl:"static" sql:"="`
-	SecretId      SchemaObjectIdentifier `ddl:"identifier"`
-}
-
-type WebhookHeader struct {
-	Header string `ddl:"keyword,single_quotes"`
-	equals bool   `ddl:"static" sql:"="`
-	Value  string `ddl:"keyword,single_quotes"`
-}
-
 // AlterNotificationIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-notification-integration.
 type AlterNotificationIntegrationOptions struct {
-	alter                    bool                                      `ddl:"static" sql:"ALTER"`
-	notificationIntegration  bool                                      `ddl:"static" sql:"NOTIFICATION INTEGRATION"`
-	IfExists                 *bool                                     `ddl:"keyword" sql:"IF EXISTS"`
-	name                     AccountObjectIdentifier                   `ddl:"identifier"`
-	Set                      *NotificationIntegrationSet               `ddl:"keyword" sql:"SET"`
-	UnsetEmailParams         *NotificationIntegrationUnsetEmailParams  `ddl:"list,no_parentheses" sql:"UNSET"`
-	UnsetWebhookParams       *NotificationIntegrationUnsetWebhookParams `ddl:"list,no_parentheses" sql:"UNSET"`
-	SetTags                  []TagAssociation                          `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags                []ObjectIdentifier                        `ddl:"keyword" sql:"UNSET TAG"`
+	alter                   bool                                       `ddl:"static" sql:"ALTER"`
+	notificationIntegration bool                                       `ddl:"static" sql:"NOTIFICATION INTEGRATION"`
+	IfExists                *bool                                      `ddl:"keyword" sql:"IF EXISTS"`
+	name                    AccountObjectIdentifier                    `ddl:"identifier"`
+	Set                     *NotificationIntegrationSet                `ddl:"keyword" sql:"SET"`
+	UnsetEmailParams        *NotificationIntegrationUnsetEmailParams   `ddl:"list,no_parentheses" sql:"UNSET"`
+	UnsetWebhookParams      *NotificationIntegrationUnsetWebhookParams `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTags                 []TagAssociation                           `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags               []ObjectIdentifier                         `ddl:"keyword" sql:"UNSET TAG"`
 }
 
 type NotificationIntegrationSet struct {
@@ -153,7 +146,7 @@ type SetEmailParams struct {
 
 type SetWebhookParams struct {
 	WebhookUrl          *string                 `ddl:"parameter,single_quotes" sql:"WEBHOOK_URL"`
-	WebhookSecret       *WebhookSecretReference `ddl:"keyword"`
+	WebhookSecret       *SchemaObjectIdentifier `ddl:"identifier,equals" sql:"WEBHOOK_SECRET"`
 	WebhookBodyTemplate *string                 `ddl:"parameter,single_quotes" sql:"WEBHOOK_BODY_TEMPLATE"`
 	WebhookHeaders      []WebhookHeader         `ddl:"parameter,parentheses" sql:"WEBHOOK_HEADERS"`
 }

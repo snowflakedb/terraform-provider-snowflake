@@ -190,7 +190,7 @@ func TestNotificationIntegrations_Create(t *testing.T) {
 		opts := defaultOptsWebhook()
 		opts.IfNotExists = Bool(true)
 		opts.Comment = String("slack webhook")
-		opts.WebhookParams.WebhookSecret = &WebhookSecretReference{SecretId: secretId}
+		opts.WebhookParams.WebhookSecret = &secretId
 		opts.WebhookParams.WebhookBodyTemplate = String("SNOWFLAKE_WEBHOOK_MESSAGE")
 		opts.WebhookParams.WebhookHeaders = []WebhookHeader{
 			{Header: "Content-Type", Value: "application/json"},
@@ -376,7 +376,7 @@ func TestNotificationIntegrations_Alter(t *testing.T) {
 			Enabled: Bool(true),
 			SetWebhookParams: &SetWebhookParams{
 				WebhookUrl: String(webhookUrl),
-				WebhookSecret: &WebhookSecretReference{SecretId: secretId},
+				WebhookSecret: &secretId,
 				WebhookBodyTemplate: String("SNOWFLAKE_WEBHOOK_MESSAGE"),
 				WebhookHeaders: []WebhookHeader{
 					{Header: "Content-Type", Value: "application/json"},
@@ -391,9 +391,11 @@ func TestNotificationIntegrations_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.UnsetWebhookParams = &NotificationIntegrationUnsetWebhookParams{
 			WebhookSecret: Bool(true),
+			WebhookBodyTemplate: Bool(true),
+			WebhookHeaders: Bool(true),
 			Comment:       Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s UNSET WEBHOOK_SECRET, COMMENT", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s UNSET WEBHOOK_SECRET, WEBHOOK_BODY_TEMPLATE, WEBHOOK_HEADERS, COMMENT", id.FullyQualifiedName())
 	})
 
 	t.Run("unset single", func(t *testing.T) {
