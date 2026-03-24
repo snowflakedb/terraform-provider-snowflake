@@ -798,7 +798,7 @@ func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[
 	}
 
 	if details.FileFormatCsv != nil {
-		csvSchema := stageCsvFileFormatToSchema(details.FileFormatCsv)
+		csvSchema := stageCsvFileFormatToSchema(details.FileFormatCsv, setDefaults)
 		return []map[string]any{
 			{
 				"csv": []map[string]any{csvSchema},
@@ -816,7 +816,7 @@ func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[
 	}
 
 	if details.FileFormatAvro != nil {
-		avroSchema := stageAvroFileFormatToSchema(details.FileFormatAvro)
+		avroSchema := stageAvroFileFormatToSchema(details.FileFormatAvro, setDefaults)
 		return []map[string]any{
 			{
 				"avro": []map[string]any{avroSchema},
@@ -825,7 +825,7 @@ func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[
 	}
 
 	if details.FileFormatOrc != nil {
-		orcSchema := stageOrcFileFormatToSchema(details.FileFormatOrc)
+		orcSchema := stageOrcFileFormatToSchema(details.FileFormatOrc, setDefaults)
 		return []map[string]any{
 			{
 				"orc": []map[string]any{orcSchema},
@@ -834,7 +834,7 @@ func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[
 	}
 
 	if details.FileFormatParquet != nil {
-		parquetSchema := stageParquetFileFormatToSchema(details.FileFormatParquet)
+		parquetSchema := stageParquetFileFormatToSchema(details.FileFormatParquet, setDefaults)
 		return []map[string]any{
 			{
 				"parquet": []map[string]any{parquetSchema},
@@ -843,7 +843,7 @@ func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[
 	}
 
 	if details.FileFormatXml != nil {
-		xmlSchema := stageXmlFileFormatToSchema(details.FileFormatXml)
+		xmlSchema := stageXmlFileFormatToSchema(details.FileFormatXml, setDefaults)
 		return []map[string]any{
 			{
 				"xml": []map[string]any{xmlSchema},
@@ -855,31 +855,43 @@ func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[
 }
 
 // stageCsvFileFormatToSchema converts the SDK details for a CSV file format to a Terraform schema.
-func stageCsvFileFormatToSchema(csv *sdk.FileFormatCsv) map[string]any {
-	return map[string]any{
-		"record_delimiter":               csv.RecordDelimiter,
-		"field_delimiter":                csv.FieldDelimiter,
-		"file_extension":                 csv.FileExtension,
-		"skip_header":                    csv.SkipHeader,
-		"parse_header":                   booleanStringFromBool(csv.ParseHeader),
-		"date_format":                    csv.DateFormat,
-		"time_format":                    csv.TimeFormat,
-		"timestamp_format":               csv.TimestampFormat,
-		"binary_format":                  csv.BinaryFormat,
-		"escape":                         csv.Escape,
-		"escape_unenclosed_field":        csv.EscapeUnenclosedField,
-		"trim_space":                     booleanStringFromBool(csv.TrimSpace),
-		"field_optionally_enclosed_by":   csv.FieldOptionallyEnclosedBy,
-		"null_if":                        collections.Map(csv.NullIf, func(v string) any { return v }),
-		"compression":                    csv.Compression,
-		"error_on_column_count_mismatch": booleanStringFromBool(csv.ErrorOnColumnCountMismatch),
-		"skip_blank_lines":               booleanStringFromBool(csv.SkipBlankLines),
-		"replace_invalid_characters":     booleanStringFromBool(csv.ReplaceInvalidCharacters),
-		"empty_field_as_null":            booleanStringFromBool(csv.EmptyFieldAsNull),
-		"skip_byte_order_mark":           booleanStringFromBool(csv.SkipByteOrderMark),
-		"encoding":                       csv.Encoding,
-		"multi_line":                     booleanStringFromBool(csv.MultiLine),
+func stageCsvFileFormatToSchema(csv *sdk.FileFormatCsv, setDefaults bool) map[string]any {
+	state := map[string]any{
+		"record_delimiter":             csv.RecordDelimiter,
+		"field_delimiter":              csv.FieldDelimiter,
+		"file_extension":               csv.FileExtension,
+		"skip_header":                  csv.SkipHeader,
+		"date_format":                  csv.DateFormat,
+		"time_format":                  csv.TimeFormat,
+		"timestamp_format":             csv.TimestampFormat,
+		"binary_format":                csv.BinaryFormat,
+		"escape":                       csv.Escape,
+		"escape_unenclosed_field":      csv.EscapeUnenclosedField,
+		"field_optionally_enclosed_by": csv.FieldOptionallyEnclosedBy,
+		"null_if":                      collections.Map(csv.NullIf, func(v string) any { return v }),
+		"compression":                  csv.Compression,
+		"encoding":                     csv.Encoding,
 	}
+	if setDefaults {
+		state["parse_header"] = BooleanDefault
+		state["trim_space"] = BooleanDefault
+		state["error_on_column_count_mismatch"] = BooleanDefault
+		state["skip_blank_lines"] = BooleanDefault
+		state["replace_invalid_characters"] = BooleanDefault
+		state["empty_field_as_null"] = BooleanDefault
+		state["skip_byte_order_mark"] = BooleanDefault
+		state["multi_line"] = BooleanDefault
+	} else {
+		state["parse_header"] = booleanStringFromBool(csv.ParseHeader)
+		state["trim_space"] = booleanStringFromBool(csv.TrimSpace)
+		state["error_on_column_count_mismatch"] = booleanStringFromBool(csv.ErrorOnColumnCountMismatch)
+		state["skip_blank_lines"] = booleanStringFromBool(csv.SkipBlankLines)
+		state["replace_invalid_characters"] = booleanStringFromBool(csv.ReplaceInvalidCharacters)
+		state["empty_field_as_null"] = booleanStringFromBool(csv.EmptyFieldAsNull)
+		state["skip_byte_order_mark"] = booleanStringFromBool(csv.SkipByteOrderMark)
+		state["multi_line"] = booleanStringFromBool(csv.MultiLine)
+	}
+	return state
 }
 
 // stageJsonFileFormatToSchema converts the SDK details for a JSON file format to a Terraform schema.
@@ -918,48 +930,79 @@ func stageJsonFileFormatToSchema(json *sdk.FileFormatJson, setDefaults bool) map
 }
 
 // stageAvroFileFormatToSchema converts the SDK details for an AVRO file format to a Terraform schema.
-func stageAvroFileFormatToSchema(avro *sdk.FileFormatAvro) map[string]any {
-	return map[string]any{
-		"compression":                avro.Compression,
-		"trim_space":                 booleanStringFromBool(avro.TrimSpace),
-		"replace_invalid_characters": booleanStringFromBool(avro.ReplaceInvalidCharacters),
-		"null_if":                    collections.Map(avro.NullIf, func(v string) any { return v }),
+func stageAvroFileFormatToSchema(avro *sdk.FileFormatAvro, setDefaults bool) map[string]any {
+	state := map[string]any{
+		"compression": avro.Compression,
+		"null_if":     collections.Map(avro.NullIf, func(v string) any { return v }),
 	}
+	if setDefaults {
+		state["trim_space"] = BooleanDefault
+		state["replace_invalid_characters"] = BooleanDefault
+	} else {
+		state["trim_space"] = booleanStringFromBool(avro.TrimSpace)
+		state["replace_invalid_characters"] = booleanStringFromBool(avro.ReplaceInvalidCharacters)
+	}
+	return state
 }
 
 // stageOrcFileFormatToSchema converts the SDK details for an ORC file format to a Terraform schema.
-func stageOrcFileFormatToSchema(orc *sdk.FileFormatOrc) map[string]any {
-	return map[string]any{
-		"trim_space":                 booleanStringFromBool(orc.TrimSpace),
-		"replace_invalid_characters": booleanStringFromBool(orc.ReplaceInvalidCharacters),
-		"null_if":                    collections.Map(orc.NullIf, func(v string) any { return v }),
+func stageOrcFileFormatToSchema(orc *sdk.FileFormatOrc, setDefaults bool) map[string]any {
+	state := map[string]any{
+		"null_if": collections.Map(orc.NullIf, func(v string) any { return v }),
 	}
+	if setDefaults {
+		state["trim_space"] = BooleanDefault
+		state["replace_invalid_characters"] = BooleanDefault
+	} else {
+		state["trim_space"] = booleanStringFromBool(orc.TrimSpace)
+		state["replace_invalid_characters"] = booleanStringFromBool(orc.ReplaceInvalidCharacters)
+	}
+	return state
 }
 
 // stageParquetFileFormatToSchema converts the SDK details for a Parquet file format to a Terraform schema.
-func stageParquetFileFormatToSchema(parquet *sdk.FileFormatParquet) map[string]any {
-	return map[string]any{
-		"compression":                parquet.Compression,
-		"binary_as_text":             booleanStringFromBool(parquet.BinaryAsText),
-		"use_logical_type":           booleanStringFromBool(parquet.UseLogicalType),
-		"trim_space":                 booleanStringFromBool(parquet.TrimSpace),
-		"use_vectorized_scanner":     booleanStringFromBool(parquet.UseVectorizedScanner),
-		"replace_invalid_characters": booleanStringFromBool(parquet.ReplaceInvalidCharacters),
-		"null_if":                    collections.Map(parquet.NullIf, func(v string) any { return v }),
+func stageParquetFileFormatToSchema(parquet *sdk.FileFormatParquet, setDefaults bool) map[string]any {
+	state := map[string]any{
+		"compression": parquet.Compression,
+		"null_if":     collections.Map(parquet.NullIf, func(v string) any { return v }),
 	}
+	if setDefaults {
+		state["binary_as_text"] = BooleanDefault
+		state["use_logical_type"] = BooleanDefault
+		state["trim_space"] = BooleanDefault
+		state["use_vectorized_scanner"] = BooleanDefault
+		state["replace_invalid_characters"] = BooleanDefault
+	} else {
+		state["binary_as_text"] = booleanStringFromBool(parquet.BinaryAsText)
+		state["use_logical_type"] = booleanStringFromBool(parquet.UseLogicalType)
+		state["trim_space"] = booleanStringFromBool(parquet.TrimSpace)
+		state["use_vectorized_scanner"] = booleanStringFromBool(parquet.UseVectorizedScanner)
+		state["replace_invalid_characters"] = booleanStringFromBool(parquet.ReplaceInvalidCharacters)
+	}
+	return state
 }
 
 // stageXmlFileFormatToSchema converts the SDK details for an XML file format to a Terraform schema.
-func stageXmlFileFormatToSchema(xml *sdk.FileFormatXml) map[string]any {
-	return map[string]any{
-		"compression":                xml.Compression,
-		"ignore_utf8_errors":         booleanStringFromBool(xml.IgnoreUtf8Errors),
-		"preserve_space":             booleanStringFromBool(xml.PreserveSpace),
-		"strip_outer_element":        booleanStringFromBool(xml.StripOuterElement),
-		"disable_auto_convert":       booleanStringFromBool(xml.DisableAutoConvert),
-		"replace_invalid_characters": booleanStringFromBool(xml.ReplaceInvalidCharacters),
-		"skip_byte_order_mark":       booleanStringFromBool(xml.SkipByteOrderMark),
+func stageXmlFileFormatToSchema(xml *sdk.FileFormatXml, setDefaults bool) map[string]any {
+	state := map[string]any{
+		"compression": xml.Compression,
 	}
+	if setDefaults {
+		state["ignore_utf8_errors"] = BooleanDefault
+		state["preserve_space"] = BooleanDefault
+		state["strip_outer_element"] = BooleanDefault
+		state["disable_auto_convert"] = BooleanDefault
+		state["replace_invalid_characters"] = BooleanDefault
+		state["skip_byte_order_mark"] = BooleanDefault
+	} else {
+		state["ignore_utf8_errors"] = booleanStringFromBool(xml.IgnoreUtf8Errors)
+		state["preserve_space"] = booleanStringFromBool(xml.PreserveSpace)
+		state["strip_outer_element"] = booleanStringFromBool(xml.StripOuterElement)
+		state["disable_auto_convert"] = booleanStringFromBool(xml.DisableAutoConvert)
+		state["replace_invalid_characters"] = booleanStringFromBool(xml.ReplaceInvalidCharacters)
+		state["skip_byte_order_mark"] = booleanStringFromBool(xml.SkipByteOrderMark)
+	}
+	return state
 }
 
 func handleStageFileFormatRead(d *schema.ResourceData, details *sdk.StageDetails) error {

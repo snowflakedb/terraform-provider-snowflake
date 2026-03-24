@@ -259,17 +259,21 @@ func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 	if err != nil {
 		return nil, err
 	}
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
 	if details.DirectoryTable != nil {
+		autoRefreshValue := booleanStringFromBool(details.DirectoryTable.AutoRefresh)
+		if setDefaults {
+			autoRefreshValue = BooleanDefault
+		}
 		if err := d.Set("directory", []map[string]any{
 			{
 				"enable":       details.DirectoryTable.Enable,
-				"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
+				"auto_refresh": autoRefreshValue,
 			},
 		}); err != nil {
 			return nil, err
 		}
 	}
-	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
 	if fileFormat := stageFileFormatToSchema(details, setDefaults); fileFormat != nil {
 		if err := d.Set("file_format", fileFormat); err != nil {
 			return nil, err

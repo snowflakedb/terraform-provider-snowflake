@@ -103,7 +103,7 @@ var allExperiments = []Experiment{
 		joinWithDoubleNewline(
 			"Changes import behavior for fields using special default values, like \"default\" or -1.",
 			"When enabled, fields using special default values are set to `\"default\"` during import instead of the actual Snowflake value (e.g., `\"false\"`). This prevents unavoidable diffs on every plan after import.",
-			"Currently only affects JSON file format fields and `use_privatelink_endpoint` on `snowflake_stage_external_s3`.",
+			"Note: this is supported only on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`).",
 		),
 	},
 }

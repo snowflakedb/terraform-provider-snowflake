@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -137,7 +138,8 @@ func ExternalS3CompatibleStage() *schema.Resource {
 }
 
 func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
@@ -158,11 +160,16 @@ func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 	if err != nil {
 		return nil, err
 	}
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
 	if details.DirectoryTable != nil {
+		autoRefreshValue := booleanStringFromBool(details.DirectoryTable.AutoRefresh)
+		if setDefaults {
+			autoRefreshValue = BooleanDefault
+		}
 		if err := d.Set("directory", []map[string]any{
 			{
 				"enable":       details.DirectoryTable.Enable,
-				"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
+				"auto_refresh": autoRefreshValue,
 			},
 		}); err != nil {
 			return nil, err
@@ -176,7 +183,7 @@ func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 			return nil, err
 		}
 	}
-	if fileFormat := stageFileFormatToSchema(details, false); fileFormat != nil {
+	if fileFormat := stageFileFormatToSchema(details, setDefaults); fileFormat != nil {
 		if err := d.Set("file_format", fileFormat); err != nil {
 			return nil, err
 		}
