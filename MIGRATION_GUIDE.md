@@ -29,13 +29,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
 
 #### Resource `snowflake_authentication_policy`
-- New optional block **`client_policy`** — for now, allows setting minimum usable version for speficied driver type (Snowflake `CLIENT_POLICY`). Each block requires `client_type` and `minimum_version`. The block is only valid when `client_types` is empty, contains `ALL`, or contains **`DRIVERS`**. See the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy) for more information.
-- **`client_types`** — Added **`DRIVERS`** as an allowed value (alongside values such as `ALL`, `SNOWFLAKE_UI`, `SNOWSQL`, and `SNOWFLAKE_CLI`).
-- **`mfa_policy.allowed_methods`** — Added **`OTP`** as an allowed method.
-- **`describe_output`** — Added read-only **`client_policy`** (string), populated from the `CLIENT_POLICY` column returned by `DESCRIBE AUTHENTICATION POLICY`.
+- New optional block **`client_policy`**.
+- New field **`pat_policy.require_role_restriction_for_service_users`**.
+- New **`OTP`** option added to `mfa_policy.allowed_methods`.
+- New field **`client_policy`** added to **`describe_output`**.
 
 #### Data source `snowflake_authentication_policies`
-- **`authentication_policies.0.describe_output`** — Added **`client_policy`** (string), populated from the `CLIENT_POLICY` column returned by `DESCRIBE AUTHENTICATION POLICY`, when [`with_describe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/authentication_policies#schema) is enabled.
+- New field **`client_policy`** added to **`describe_output`**.
+
+For more details about added features head over to the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy) or [Terraform Registry documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy).
 
 No changes are required to existing configurations unless you want to adopt any of the newly introduced features.
 
