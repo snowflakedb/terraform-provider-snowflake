@@ -36,6 +36,9 @@ func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 	if row.GrantedOn == "MODULE" {
 		grantedOn = sdk.ObjectTypeModel
 	}
+	if row.GrantedOn == "CORTEX_AGENT_SERVER" {
+		grantedOn = sdk.ObjectTypeMcpServer
+	}
 
 	var grantOn sdk.ObjectType
 	// true for future grants
@@ -47,6 +50,9 @@ func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 	}
 	if row.GrantOn == "MODULE" {
 		grantOn = sdk.ObjectTypeModel
+	}
+	if row.GrantOn == "CORTEX_AGENT_SERVER" {
+		grantOn = sdk.ObjectTypeMcpServer
 	}
 
 	var name sdk.ObjectIdentifier
