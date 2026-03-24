@@ -225,7 +225,7 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 	if err := d.Set("url", stage.Url); err != nil {
 		return nil, err
 	}
-	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
+	if fileFormat := stageFileFormatToSchema(details, false); fileFormat != nil {
 		if err := d.Set("file_format", fileFormat); err != nil {
 			return nil, err
 		}

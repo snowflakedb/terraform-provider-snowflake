@@ -19,6 +19,7 @@ const (
 	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
 	ParametersReducedOutput ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	ImportBooleanDefault    ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
 )
 
 type experimentalFeatureState string
@@ -94,6 +95,15 @@ var allExperiments = []Experiment{
 			"Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.",
 			"When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.",
 			fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsStrictPrivilegeManagement),
+		),
+	},
+	{
+		ImportBooleanDefault,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Changes import behavior for fields using special default values, like \"default\" or -1.",
+			"When enabled, fields using special default values are set to `\"default\"` during import instead of the actual Snowflake value (e.g., `\"false\"`). This prevents unavoidable diffs on every plan after import.",
+			"Currently only affects JSON file format fields and `use_privatelink_endpoint` on `snowflake_stage_external_s3`.",
 		),
 	},
 }

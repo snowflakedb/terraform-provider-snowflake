@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -236,7 +237,8 @@ func ExternalS3Stage() *schema.Resource {
 }
 
 func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
@@ -267,13 +269,18 @@ func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any
 			return nil, err
 		}
 	}
-	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+	if fileFormat := stageFileFormatToSchema(details, setDefaults); fileFormat != nil {
 		if err := d.Set("file_format", fileFormat); err != nil {
 			return nil, err
 		}
 	}
 	if details.PrivateLink != nil {
-		if err := d.Set("use_privatelink_endpoint", booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)); err != nil {
+		usePrivatelinkEndpointValue := booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)
+		if setDefaults {
+			usePrivatelinkEndpointValue = BooleanDefault
+		}
+		if err := d.Set("use_privatelink_endpoint", usePrivatelinkEndpointValue); err != nil {
 			return nil, err
 		}
 	}

@@ -784,7 +784,7 @@ func parseStageFileFormatStringOrAuto(v string) *sdk.StageFileFormatStringOrAuto
 }
 
 // stageFileFormatToSchema converts the SDK details to a Terraform schema.
-func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
+func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[string]any {
 	if details == nil {
 		return nil
 	}
@@ -807,7 +807,7 @@ func stageFileFormatToSchema(details *sdk.StageDetails) []map[string]any {
 	}
 
 	if details.FileFormatJson != nil {
-		jsonSchema := stageJsonFileFormatToSchema(details.FileFormatJson)
+		jsonSchema := stageJsonFileFormatToSchema(details.FileFormatJson, setDefaults)
 		return []map[string]any{
 			{
 				"json": []map[string]any{jsonSchema},
@@ -883,25 +883,38 @@ func stageCsvFileFormatToSchema(csv *sdk.FileFormatCsv) map[string]any {
 }
 
 // stageJsonFileFormatToSchema converts the SDK details for a JSON file format to a Terraform schema.
-func stageJsonFileFormatToSchema(json *sdk.FileFormatJson) map[string]any {
-	return map[string]any{
-		"compression":                json.Compression,
-		"date_format":                json.DateFormat,
-		"time_format":                json.TimeFormat,
-		"timestamp_format":           json.TimestampFormat,
-		"binary_format":              json.BinaryFormat,
-		"trim_space":                 booleanStringFromBool(json.TrimSpace),
-		"multi_line":                 booleanStringFromBool(json.MultiLine),
-		"null_if":                    collections.Map(json.NullIf, func(v string) any { return v }),
-		"file_extension":             json.FileExtension,
-		"enable_octal":               booleanStringFromBool(json.EnableOctal),
-		"allow_duplicate":            booleanStringFromBool(json.AllowDuplicate),
-		"strip_outer_array":          booleanStringFromBool(json.StripOuterArray),
-		"strip_null_values":          booleanStringFromBool(json.StripNullValues),
-		"replace_invalid_characters": booleanStringFromBool(json.ReplaceInvalidCharacters),
-		"ignore_utf8_errors":         booleanStringFromBool(json.IgnoreUtf8Errors),
-		"skip_byte_order_mark":       booleanStringFromBool(json.SkipByteOrderMark),
+func stageJsonFileFormatToSchema(json *sdk.FileFormatJson, setDefaults bool) map[string]any {
+	state := map[string]any{
+		"compression":      json.Compression,
+		"date_format":      json.DateFormat,
+		"time_format":      json.TimeFormat,
+		"timestamp_format": json.TimestampFormat,
+		"binary_format":    json.BinaryFormat,
+		"null_if":          collections.Map(json.NullIf, func(v string) any { return v }),
+		"file_extension":   json.FileExtension,
 	}
+	if setDefaults {
+		state["ignore_utf8_errors"] = BooleanDefault
+		state["skip_byte_order_mark"] = BooleanDefault
+		state["trim_space"] = BooleanDefault
+		state["multi_line"] = BooleanDefault
+		state["allow_duplicate"] = BooleanDefault
+		state["strip_outer_array"] = BooleanDefault
+		state["strip_null_values"] = BooleanDefault
+		state["replace_invalid_characters"] = BooleanDefault
+		state["enable_octal"] = BooleanDefault
+	} else {
+		state["ignore_utf8_errors"] = booleanStringFromBool(json.IgnoreUtf8Errors)
+		state["skip_byte_order_mark"] = booleanStringFromBool(json.SkipByteOrderMark)
+		state["trim_space"] = booleanStringFromBool(json.TrimSpace)
+		state["multi_line"] = booleanStringFromBool(json.MultiLine)
+		state["allow_duplicate"] = booleanStringFromBool(json.AllowDuplicate)
+		state["strip_outer_array"] = booleanStringFromBool(json.StripOuterArray)
+		state["strip_null_values"] = booleanStringFromBool(json.StripNullValues)
+		state["replace_invalid_characters"] = booleanStringFromBool(json.ReplaceInvalidCharacters)
+		state["enable_octal"] = booleanStringFromBool(json.EnableOctal)
+	}
+	return state
 }
 
 // stageAvroFileFormatToSchema converts the SDK details for an AVRO file format to a Terraform schema.
@@ -957,7 +970,7 @@ func handleStageFileFormatRead(d *schema.ResourceData, details *sdk.StageDetails
 	fileFormatToCompare := collections.Map(fileFormatSchema["file_format"].([]map[string]any), func(v map[string]any) any {
 		return v
 	})
-	fileFormatToSet := stageFileFormatToSchema(details)
+	fileFormatToSet := stageFileFormatToSchema(details, false)
 	return handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
 		outputMapping{"file_format", "file_format", fileFormatToCompare, fileFormatToSet, nil},
 	)
