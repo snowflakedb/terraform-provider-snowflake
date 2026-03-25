@@ -53,7 +53,7 @@ Although the field remains for now, it may be removed in a future release.
 Please remove any `mfa_authentication_methods` references from your `snowflake_authentication_policy` resources.
 Other than that, no configuration changes are necessary.
 
-References: [#4457](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557)
+References: [#4557](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557)
 
 ## v2.13.x ➞ v2.14.0
 
