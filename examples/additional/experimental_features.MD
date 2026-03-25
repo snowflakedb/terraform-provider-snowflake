@@ -44,4 +44,11 @@ When enabled, importing a grant resource with a fixed set of privileges (`privil
 
 This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
 
+#### IMPORT_BOOLEAN_DEFAULT
+Changes import behavior for boolean fields using the special `"default"` value.
+
+When enabled, boolean fields using the special `"default"` value are set to `"default"` during import instead of the actual Snowflake value (e.g., `"false"`). This prevents unavoidable diffs on every plan after import.
+
+Note: this is supported only on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`).
+
 

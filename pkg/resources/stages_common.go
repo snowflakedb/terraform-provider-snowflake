@@ -148,3 +148,28 @@ func directoryTableOutputMapping(directoryTable sdk.StageDirectoryTable) outputM
 		"directory_table", "directory", directoryTableToCompare(directoryTable), directoryTableToSet(directoryTable), nil,
 	}
 }
+
+func importStageCommonFields(d *schema.ResourceData, details *sdk.StageDetails, setDefaults bool) error {
+	if details.DirectoryTable != nil {
+		autoRefreshValue := booleanStringFromBool(details.DirectoryTable.AutoRefresh)
+		if setDefaults {
+			autoRefreshValue = BooleanDefault
+		}
+		if err := d.Set("directory", []map[string]any{
+			{
+				"enable":       details.DirectoryTable.Enable,
+				"auto_refresh": autoRefreshValue,
+			},
+		}); err != nil {
+			return err
+		}
+	}
+
+	if fileFormat := stageFileFormatToSchema(details, setDefaults); fileFormat != nil {
+		if err := d.Set("file_format", fileFormat); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
