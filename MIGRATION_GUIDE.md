@@ -43,9 +43,15 @@ The errors may look similar to the following:
 │ 
 ```
 
-This version adjusts the describe output parsing and **removes** already deprecated `mfa_authentication_methods` field.
-If you were using this field before, you need to remove it during the version upgrade.
-Other than that no configuration changes are necessary.
+This version updates the `describe_output` parsing and **removes** the already deprecated `mfa_authentication_methods` field from the `describe_output` computed field.
+This affects the `describe_output` in the `snowflake_authentication_policy` resource as well as `snowflake_authentication_policies` data source.
+
+For compatibility, the top-level settable `mfa_authentication_methods` attribute will be turned into a no-op. 
+The field will still exist in the schema, but it will no longer be populated by the resource, and any configuration changes to it will have no effect.
+
+Although the field remains for now, it may be removed in a future release.
+Please remove any `mfa_authentication_methods` references from your `snowflake_authentication_policy` resources.
+Other than that, no configuration changes are necessary.
 
 References: [#4457](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557)
 
