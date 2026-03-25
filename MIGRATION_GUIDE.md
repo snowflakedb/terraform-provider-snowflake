@@ -43,6 +43,10 @@ The errors may look similar to the following:
 │ 
 ```
 
+What changed on the Snowflake side:
+- The row with `MFA_AUTHENTICATION_METHODS` is no longer returned (main root cause of the above error).
+- For default `MFA_ENROLLMENT` value (`OPTIONAL`) Snowflake now returns `REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY`, instead of `REQUIRED_PASSWORD_ONLY`.
+
 Because of this change, every provider version is potentially affected, and version bump to v2.14.1 is required to fix above error.
 
 This change updates the `describe_output` parsing and **removes** the already deprecated `mfa_authentication_methods` field from the `describe_output` computed field.

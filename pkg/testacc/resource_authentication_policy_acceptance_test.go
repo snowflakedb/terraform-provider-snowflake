@@ -8,7 +8,9 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	acchelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -763,6 +765,36 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelInvalidAllowedProviders),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`invalid allowed provider: INVALID`),
+			},
+		},
+	})
+}
+
+// proves the fix for https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557
+func TestAcc_AuthenticationPolicy_migrateFromV2_14_0(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	completeModel := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name())
+	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.AuthenticationPolicyResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.AuthenticationPolicy),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				Config:            accconfig.FromModels(t, providerModel, completeModel),
+				ExpectError:       regexp.MustCompile("Error: object does not exist"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(completeModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, completeModel),
 			},
 		},
 	})
