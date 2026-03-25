@@ -49,6 +49,7 @@ func (opts *AlterNotificationIntegrationOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
+		// Adjusted manually: moreThanOneValueSet for 3+ conflicting fields (generator produces everyValueSet which only catches all-three-set)
 		if moreThanOneValueSet(opts.Set.SetPushParams, opts.Set.SetEmailParams, opts.Set.SetWebhookParams) {
 			errs = append(errs, errOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams", "SetWebhookParams"))
 		}
