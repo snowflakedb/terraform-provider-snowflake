@@ -375,8 +375,8 @@ func TestNotificationIntegrations_Alter(t *testing.T) {
 		opts.Set = &NotificationIntegrationSet{
 			Enabled: Bool(true),
 			SetWebhookParams: &SetWebhookParams{
-				WebhookUrl: String(webhookUrl),
-				WebhookSecret: &secretId,
+				WebhookUrl:          String(webhookUrl),
+				WebhookSecret:       &secretId,
 				WebhookBodyTemplate: String("SNOWFLAKE_WEBHOOK_MESSAGE"),
 				WebhookHeaders: []WebhookHeader{
 					{Header: "Content-Type", Value: "application/json"},
@@ -390,10 +390,10 @@ func TestNotificationIntegrations_Alter(t *testing.T) {
 	t.Run("unset webhook", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.UnsetWebhookParams = &NotificationIntegrationUnsetWebhookParams{
-			WebhookSecret: Bool(true),
+			WebhookSecret:       Bool(true),
 			WebhookBodyTemplate: Bool(true),
-			WebhookHeaders: Bool(true),
-			Comment:       Bool(true),
+			WebhookHeaders:      Bool(true),
+			Comment:             Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s UNSET WEBHOOK_SECRET, WEBHOOK_BODY_TEMPLATE, WEBHOOK_HEADERS, COMMENT", id.FullyQualifiedName())
 	})
