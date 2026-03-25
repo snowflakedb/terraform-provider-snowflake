@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.14.1](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.14.0...v2.14.1) (2026-03-25)
+
+
+### 🐛 **Bug fixes:**
+
+* Add IMPORT_BOOLEAN_DEFAULT experiment to fix post-import permadiff on stage resources ([#4560](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4560)) ([ee4a87c](https://github.com/snowflakedb/terraform-provider-snowflake/commit/ee4a87c9a720eac02ed03fa40951a0c8a234dbd6)), closes [#4549](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4549)
+* authentication policy behavior ([#4562](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4562)) ([97d0462](https://github.com/snowflakedb/terraform-provider-snowflake/commit/97d04625315951160d06d869fe622cc4da577057))
+
 ## [2.14.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.13.0...v2.14.0) (2026-02-25)
 
 
