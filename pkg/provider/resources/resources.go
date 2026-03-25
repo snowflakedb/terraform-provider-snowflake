@@ -17,6 +17,7 @@ const (
 	CatalogIntegrationAwsGlue                              resource = "snowflake_catalog_integration_aws_glue"
 	CatalogIntegrationObjectStorage                        resource = "snowflake_catalog_integration_object_storage"
 	CatalogIntegrationOpenCatalog                          resource = "snowflake_catalog_integration_open_catalog"
+	CatalogIntegrationIcebergRest                          resource = "snowflake_catalog_integration_iceberg_rest"
 	ComputePool                                            resource = "snowflake_compute_pool"
 	CortexSearchService                                    resource = "snowflake_cortex_search_service"
 	CurrentAccount                                         resource = "snowflake_current_account"

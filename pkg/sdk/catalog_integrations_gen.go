@@ -300,4 +300,5 @@ type BearerRestAuthenticationDetails struct {
 type SigV4RestAuthenticationDetails struct {
 	Sigv4IamRole       string
 	Sigv4SigningRegion string
+	Sigv4ExternalId    string
 }
