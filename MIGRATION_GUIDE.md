@@ -26,9 +26,9 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.0 ➞ v2.14.1
 
-### *(breaking change)* `snowflake_authentication_policy` and `snowflake_authentication_policies`
+### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
 
-Due to recent faulty Snowflake release changing the `DESC AUTHENTICATION POLICY` output,
+Due to recent Snowflake release changing the `DESC AUTHENTICATION POLICY` output,
 the authentication_policy resource started to fail trying to parse changed format.
 
 The errors may look similar to the following:
@@ -43,14 +43,18 @@ The errors may look similar to the following:
 │ 
 ```
 
-This version updates the `describe_output` parsing and **removes** the already deprecated `mfa_authentication_methods` field from the `describe_output` computed field.
+Because of this change, every provider version is potentially affected, and version bump to v2.14.1 is required to fix above error.
+
+This change updates the `describe_output` parsing and **removes** the already deprecated `mfa_authentication_methods` field from the `describe_output` computed field.
 This affects the `describe_output` in the `snowflake_authentication_policy` resource as well as `snowflake_authentication_policies` data source.
 
-For compatibility, the top-level settable `mfa_authentication_methods` attribute will be turned into a no-op. 
-The field will still exist in the schema, but it will no longer be populated by the resource, and any configuration changes to it will have no effect.
+For compatibility, the top-level settable `mfa_authentication_methods` attribute will stay, but now, won't be populated by the provider's Read operation,
+and still any configuration changes to it will have no effect. Although the field remains for now, it may be removed in a future release as both,
+`snowflake_authentication_policy` resource and `snowflake_authentication_policies` data source, are still preview features.
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
 
-Although the field remains for now, it may be removed in a future release.
-Please remove any `mfa_authentication_methods` references from your `snowflake_authentication_policy` resources.
+After upgrading to the latest provider version,
+please remove any `mfa_authentication_methods` references from your `snowflake_authentication_policy` resources just in case.
 Other than that, no configuration changes are necessary.
 
 References: [#4557](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557)
