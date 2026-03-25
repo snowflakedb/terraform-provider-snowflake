@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -116,35 +117,33 @@ func InternalStage() *schema.Resource {
 }
 
 func ImportInternalStage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
+		return nil, err
+	}
+
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
 	}
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](ctx, d, nil); err != nil {
-		return nil, err
-	}
-	stageDetails, err := client.Stages.Describe(ctx, id)
+
+	stageProperties, err := client.Stages.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	details, err := sdk.ParseStageDetails(stageDetails)
+	details, err := sdk.ParseStageDetails(stageProperties)
 	if err != nil {
 		return nil, err
 	}
-	if err := d.Set("directory", []map[string]any{
-		{
-			"enable":       details.DirectoryTable.Enable,
-			"auto_refresh": booleanStringFromBool(details.DirectoryTable.AutoRefresh),
-		},
-	}); err != nil {
+
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+
+	if err := importStageCommonFields(d, details, setDefaults); err != nil {
 		return nil, err
 	}
-	if fileFormat := stageFileFormatToSchema(details); fileFormat != nil {
-		if err := d.Set("file_format", fileFormat); err != nil {
-			return nil, err
-		}
-	}
+
 	return []*schema.ResourceData{d}, nil
 }
 
