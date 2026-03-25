@@ -17,7 +17,7 @@ description: |-
 
 -> **Note** This resource is meant only for S3 stages, not S3-compatible stages. For S3-compatible stages, use the `snowflake_stage_external_s3_compatible` resource instead. Do not use this resource with `s3compat://` URLs.
 
-~> **Note** If you experience persistent diffs after importing this resource, enable the `IMPORT_BOOLEAN_DEFAULT` [experimental feature](../#experimental_features_enabled-1) to fix it. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#bugfix-importing-boolean-fields-in-stage-resources) for details.
+~> **Note** If you experience persistent diffs after importing this resource, enable the `IMPORT_BOOLEAN_DEFAULT` [experimental feature](../#experimental_features_enabled-1) and reimport the resource for the fix to take effect. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#bugfix-importing-boolean-fields-in-stage-resources) for details.
 
 # snowflake_stage_external_s3 (Resource)
 

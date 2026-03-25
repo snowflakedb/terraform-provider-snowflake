@@ -17,7 +17,7 @@ description: |-
 
 -> **Note** Due to Snowflake limitations, when `directory.auto_refresh` is set to a new value in the configuration, the resource is recreated. When it is unset, the provider alters the whole `directory` field with the `enable` value from the configuration.
 
-~> **Note** If you experience persistent diffs after importing this resource, enable the `IMPORT_BOOLEAN_DEFAULT` [experimental feature](../#experimental_features_enabled-1) to fix it. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#bugfix-importing-boolean-fields-in-stage-resources) for details.
+~> **Note** If you experience persistent diffs after importing this resource, enable the `IMPORT_BOOLEAN_DEFAULT` [experimental feature](../#experimental_features_enabled-1) and reimport the resource for the fix to take effect. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#bugfix-importing-boolean-fields-in-stage-resources) for details.
 
 # {{.Name}} ({{.Type}})
 

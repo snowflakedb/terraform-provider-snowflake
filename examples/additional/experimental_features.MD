@@ -51,3 +51,4 @@ When enabled, boolean fields using the special `"default"` value are set to `"de
 
 Note: this is supported only on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`).
 
+
