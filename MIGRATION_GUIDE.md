@@ -28,7 +28,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
 
-Due to recent Snowflake release changing the `DESC AUTHENTICATION POLICY` output,
+Due to recent Snowflake release (`10.10.2`) changing the `DESC AUTHENTICATION POLICY` output,
 the authentication_policy resource started to fail trying to parse changed format.
 
 The errors may look similar to the following:
