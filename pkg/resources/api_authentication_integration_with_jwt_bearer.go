@@ -71,7 +71,7 @@ func ImportApiAuthenticationWithJwtBearer(ctx context.Context, d *schema.Resourc
 	if err != nil {
 		return nil, err
 	}
-	if err := handleApiAuthImport(d, integration, properties); err != nil {
+	if err := handleApiAuthImport(ctx, d, integration, properties); err != nil {
 		return nil, err
 	}
 	oauthAuthorizationEndpoint, err := collections.FindFirst(properties, func(property sdk.SecurityIntegrationProperty) bool {
