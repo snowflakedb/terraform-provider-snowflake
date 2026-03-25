@@ -54,6 +54,8 @@ const (
 	Tables                         datasource = "snowflake_tables"
 	Tags                           datasource = "snowflake_tags"
 	Tasks                          datasource = "snowflake_tasks"
+	TrustCenterScannerPackages     datasource = "snowflake_trust_center_scanner_packages"
+	TrustCenterScanners            datasource = "snowflake_trust_center_scanners"
 	Users                          datasource = "snowflake_users"
 	UserProgrammaticAccessTokens   datasource = "snowflake_user_programmatic_access_tokens"
 	Views                          datasource = "snowflake_views"

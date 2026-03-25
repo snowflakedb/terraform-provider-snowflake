@@ -83,6 +83,7 @@ type Client struct {
 	Tables                       Tables
 	Tags                         Tags
 	Tasks                        Tasks
+	TrustCenter                  TrustCenter
 	Users                        Users
 	UserProgrammaticAccessTokens UserProgrammaticAccessTokens
 	Views                        Views
@@ -219,6 +220,7 @@ func (c *Client) initialize() {
 	c.Tables = &tables{client: c}
 	c.Tags = &tags{client: c}
 	c.Tasks = &tasks{client: c}
+	c.TrustCenter = &trustCenter{client: c}
 	c.Users = &users{client: c}
 	c.UserProgrammaticAccessTokens = &userProgrammaticAccessTokens{client: c}
 	c.Views = &views{client: c}
