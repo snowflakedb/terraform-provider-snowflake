@@ -158,7 +158,7 @@ func ReadSystemGetPrivateLinkConfig(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if config.AppServiceURL != "" {
-		appServiceURLErr := d.Set("app_service_url", config.AppServiceURL)
+		appServiceURLErr := d.Set("app_service_privatelink_url", config.AppServiceURL)
 		if appServiceURLErr != nil {
 			return diag.FromErr(appServiceURLErr)
 		}
@@ -179,7 +179,7 @@ func ReadSystemGetPrivateLinkConfig(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if config.ConnectionURLs != "" {
-		connURLsErr := d.Set("privatelink_connection_urls", config.ConnectionURLs)
+		connURLsErr := d.Set("client_redirect_urls", config.ConnectionURLs)
 		if connURLsErr != nil {
 			return diag.FromErr(connURLsErr)
 		}
