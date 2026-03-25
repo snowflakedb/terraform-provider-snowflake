@@ -127,6 +127,24 @@ var accountParameterSupportedParameters = []sdk.AccountParameter{
 	sdk.AccountParameterEnableConsoleOutput,
 	sdk.AccountParameterEnableUnredactedQuerySyntaxError,
 	sdk.AccountParameterEnablePersonalDatabase,
+
+	sdk.AccountParameterAllowBindValuesAccess,
+	sdk.AccountParameterAllowedSpcsWorkloadTypes,
+	sdk.AccountParameterDataMetricSchedule,
+	sdk.AccountParameterDefaultDbtVersion,
+	sdk.AccountParameterDisallowedSpcsWorkloadTypes,
+	sdk.AccountParameterEnableBudgetEventLogging,
+	sdk.AccountParameterEnableDataCompaction,
+	sdk.AccountParameterEnableGetDdlUseDataTypeAlias,
+	sdk.AccountParameterEnableIcebergMergeOnRead,
+	sdk.AccountParameterEnableNotebookCreationInPersonalDb,
+	sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement,
+	sdk.AccountParameterEnableTagPropagationEventLogging,
+	sdk.AccountParameterIcebergVersionDefault,
+	sdk.AccountParameterReadConsistencyMode,
+	sdk.AccountParameterRowTimestampDefault,
+	sdk.AccountParameterSqlTraceQueryText,
+	sdk.AccountParameterUseWorkspacesForSql,
 }
 
 func ToAccountParameter(s string) (sdk.AccountParameter, error) {

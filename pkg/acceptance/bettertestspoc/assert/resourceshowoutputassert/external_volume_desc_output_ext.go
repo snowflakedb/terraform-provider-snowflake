@@ -9,6 +9,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+func ExternalVolumesDatasourceDescribeOutput(t *testing.T, datasourceReference string) *ExternalVolumeDescribeOutputAssert {
+	t.Helper()
+	s := ExternalVolumeDescribeOutputAssert{
+		ResourceAssert: assert.NewDatasourceAssert(datasourceReference, "describe_output", "external_volumes.0."),
+	}
+	s.AddAssertion(assert.ValueSet("describe_output.#", "1"))
+	return &s
+}
+
 type ExternalVolumeDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -62,7 +71,7 @@ func (e *ExternalVolumeDescribeOutputAssert) HasStorageLocations(expected []sdk.
 		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".encryption_type", loc.EncryptionType))
 
 		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".storage_allowed_locations.#", "1"))
-		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".storage_allowed_locations.0", fmt.Sprintf("%s/*", loc.StorageBaseUrl)))
+		e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".storage_allowed_locations.0", fmt.Sprintf("%s*", loc.StorageBaseUrl)))
 
 		if loc.StorageProvider == string(sdk.StorageProviderS3) || loc.StorageProvider == string(sdk.StorageProviderS3GOV) {
 			s3Prefix := prefix + ".s3_storage_location.0"
@@ -72,8 +81,12 @@ func (e *ExternalVolumeDescribeOutputAssert) HasStorageLocations(expected []sdk.
 			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(s3Prefix + ".storage_aws_iam_user_arn"))
 			e.AddAssertion(assert.ResourceDescribeOutputValuePresent(s3Prefix + ".storage_aws_external_id"))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".storage_aws_access_point_arn", loc.S3StorageLocation.StorageAwsAccessPointArn))
-			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".use_privatelink_endpoint", loc.S3StorageLocation.UsePrivatelinkEndpoint))
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".encryption_kms_key_id", loc.S3StorageLocation.EncryptionKmsKeyId))
+			if loc.S3StorageLocation.UsePrivatelinkEndpoint != nil {
+				e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".use_privatelink_endpoint", fmt.Sprintf("%t", *loc.S3StorageLocation.UsePrivatelinkEndpoint)))
+			} else {
+				e.AddAssertion(assert.ResourceDescribeOutputValueSet(s3Prefix+".use_privatelink_endpoint", ""))
+			}
 		} else {
 			e.AddAssertion(assert.ResourceDescribeOutputValueSet(prefix+".s3_storage_location.#", "0"))
 		}

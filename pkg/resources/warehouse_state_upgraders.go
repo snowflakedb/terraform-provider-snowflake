@@ -84,8 +84,8 @@ func v092WarehouseSizeStateUpgrader(ctx context.Context, rawState map[string]any
 	// - if config have the same value, then we should have a no-op after migration
 	// - if config have different value, then we will have SET after migration
 	previousEnableQueryAcceleration := rawState["enable_query_acceleration"].(bool)
-	if !previousEnableQueryAcceleration {
-		rawState["query_acceleration_max_scale_factor"] = w.QueryAccelerationMaxScaleFactor
+	if !previousEnableQueryAcceleration && w.QueryAccelerationMaxScaleFactor != nil {
+		rawState["query_acceleration_max_scale_factor"] = *w.QueryAccelerationMaxScaleFactor
 	}
 
 	return rawState, nil

@@ -24,12 +24,6 @@ func (c *CatalogIntegrationClient) client() sdk.CatalogIntegrations {
 	return c.context.client.CatalogIntegrations
 }
 
-func (c *CatalogIntegrationClient) exec(sql string) error {
-	ctx := context.Background()
-	_, err := c.context.client.ExecForTests(ctx, sql)
-	return err
-}
-
 func (c *CatalogIntegrationClient) Create(t *testing.T) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
 	ctx := context.Background()
@@ -37,6 +31,17 @@ func (c *CatalogIntegrationClient) Create(t *testing.T) (sdk.AccountObjectIdenti
 
 	err := c.client().Create(ctx, sdk.NewCreateCatalogIntegrationRequest(id, true).
 		WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatIceberg)))
+	require.NoError(t, err)
+
+	return id, c.DropFunc(t, id)
+}
+
+func (c *CatalogIntegrationClient) CreateFunc(t *testing.T, request *sdk.CreateCatalogIntegrationRequest) (sdk.AccountObjectIdentifier, func()) {
+	t.Helper()
+	ctx := context.Background()
+	id := request.GetName()
+
+	err := c.client().Create(ctx, request)
 	require.NoError(t, err)
 
 	return id, c.DropFunc(t, id)
@@ -52,6 +57,14 @@ func (c *CatalogIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectId
 	}
 }
 
+func (c *CatalogIntegrationClient) Alter(t *testing.T, request *sdk.AlterCatalogIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, request)
+	require.NoError(t, err)
+}
+
 func (c *CatalogIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegration, error) {
 	t.Helper()
 	ctx := context.Background()
@@ -65,32 +78,32 @@ func (c *CatalogIntegrationClient) Describe(t *testing.T, id sdk.AccountObjectId
 	return c.client().Describe(ctx, id)
 }
 
-func (c *CatalogIntegrationClient) DescribeAwsGlue(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.AwsGlueParams, error) {
+func (c *CatalogIntegrationClient) DescribeAwsGlue(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegrationAwsGlueDetails, error) {
 	t.Helper()
 	ctx := context.Background()
-	return c.client().DescribeAwsGlueParams(ctx, id)
+	return c.client().DescribeAwsGlueDetails(ctx, id)
 }
 
-func (c *CatalogIntegrationClient) DescribeObjectStorage(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ObjectStorageParams, error) {
+func (c *CatalogIntegrationClient) DescribeObjectStorage(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegrationObjectStorageDetails, error) {
 	t.Helper()
 	ctx := context.Background()
-	return c.client().DescribeObjectStorageParams(ctx, id)
+	return c.client().DescribeObjectStorageDetails(ctx, id)
 }
 
-func (c *CatalogIntegrationClient) DescribeOpenCatalog(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.OpenCatalogParams, error) {
+func (c *CatalogIntegrationClient) DescribeOpenCatalog(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegrationOpenCatalogDetails, error) {
 	t.Helper()
 	ctx := context.Background()
-	return c.client().DescribeOpenCatalogParams(ctx, id)
+	return c.client().DescribeOpenCatalogDetails(ctx, id)
 }
 
-func (c *CatalogIntegrationClient) DescribeIcebergRest(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.IcebergRestParams, error) {
+func (c *CatalogIntegrationClient) DescribeIcebergRest(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegrationIcebergRestDetails, error) {
 	t.Helper()
 	ctx := context.Background()
-	return c.client().DescribeIcebergRestParams(ctx, id)
+	return c.client().DescribeIcebergRestDetails(ctx, id)
 }
 
-func (c *CatalogIntegrationClient) DescribeSapBdc(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SapBdcParams, error) {
+func (c *CatalogIntegrationClient) DescribeSapBdc(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegrationSapBdcDetails, error) {
 	t.Helper()
 	ctx := context.Background()
-	return c.client().DescribeSapBdcParams(ctx, id)
+	return c.client().DescribeSapBdcDetails(ctx, id)
 }

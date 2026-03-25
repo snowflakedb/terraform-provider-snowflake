@@ -40,7 +40,7 @@ func FullLegacyTomlConfigForServiceUser(t *testing.T, profile string, userId sdk
 			WithValidateDefaultParameters(true).
 			WithClientRequestMfaToken(true).
 			WithClientStoreTemporaryCredential(true).
-			WithDriverTracing(string(sdk.DriverLogLevelWarning)).
+			WithDriverTracing(string(sdk.DriverLogLevelWarn)).
 			WithTmpDirPath(".").
 			WithDisableQueryContextCache(true).
 			WithIncludeRetryReason(true).

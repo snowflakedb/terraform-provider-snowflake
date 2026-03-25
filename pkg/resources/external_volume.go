@@ -63,7 +63,7 @@ var externalVolumeSchema = map[string]*schema.Schema{
 				},
 				"storage_aws_external_id": {
 					Type:        schema.TypeString,
-					Computed:    true,
+					Optional:    true,
 					Description: "External ID that Snowflake uses to establish a trust relationship with AWS.",
 				},
 				"encryption_type": {
@@ -79,10 +79,41 @@ var externalVolumeSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Description: "Specifies the ID for the KMS-managed key used to encrypt files.",
 				},
+				"storage_aws_access_point_arn": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Specifies the access point ARN for the S3 bucket containing your data files. Only applicable for S3 and S3GOV storage providers.",
+				},
+				"use_privatelink_endpoint": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          BooleanDefault,
+					ValidateDiagFunc: validateBooleanString,
+					Description:      booleanStringFieldDescription("Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers."),
+					DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+						return oldValue == "" && newValue == BooleanDefault
+					},
+				},
 				"azure_tenant_id": {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "Specifies the ID for your Office 365 tenant that the allowed and blocked storage accounts belong to.",
+				},
+				"storage_endpoint": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Specifies the endpoint for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
+				},
+				"storage_aws_key_id": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Specifies the AWS key ID for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
+				},
+				"storage_aws_secret_key": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Sensitive:   true,
+					Description: "Specifies the AWS secret key for the S3-compatible storage location. Only applicable for S3COMPAT storage provider.",
 				},
 			},
 		},
@@ -109,7 +140,7 @@ var externalVolumeSchema = map[string]*schema.Schema{
 	DescribeOutputAttributeName: {
 		Type:        schema.TypeList,
 		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE EXTERNAL VOLUME` for the given external volume.",
+		Description: "Outputs the result of `DESCRIBE EXTERNAL VOLUME` for the given external volume. Because of Terraform limitations, the changes on storage_location field do not mark this field as computed.",
 		Elem: &schema.Resource{
 			Schema: schemas.DescribeExternalVolumeSchema,
 		},
@@ -142,7 +173,8 @@ func ExternalVolume() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalVolume, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalVolumeSchema, ShowOutputAttributeName, "name", "allow_writes", "comment"),
-			ComputedIfAnyAttributeChanged(externalVolumeSchema, DescribeOutputAttributeName, "name", "allow_writes", "comment", "storage_location"),
+			// storage_location is missing on purpose, because ComputedIfAnyAttributeChanged does not handle nested diffs well enough.
+			ComputedIfAnyAttributeChanged(externalVolumeSchema, DescribeOutputAttributeName, "name", "allow_writes", "comment"),
 		)),
 		Timeouts: defaultTimeouts,
 		StateUpgraders: []schema.StateUpgrader{
@@ -167,11 +199,17 @@ func storageLocationDetailsToStateMaps(locations []sdk.ExternalVolumeStorageLoca
 		switch {
 		case loc.S3StorageLocation != nil:
 			m["storage_aws_role_arn"] = loc.S3StorageLocation.StorageAwsRoleArn
-			m["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+
+			m["storage_aws_access_point_arn"] = loc.S3StorageLocation.StorageAwsAccessPointArn
 			m["encryption_kms_key_id"] = loc.S3StorageLocation.EncryptionKmsKeyId
+			if loc.S3StorageLocation.UsePrivatelinkEndpoint != nil {
+				m["use_privatelink_endpoint"] = booleanStringFromBool(*loc.S3StorageLocation.UsePrivatelinkEndpoint)
+			}
 		case loc.AzureStorageLocation != nil:
 			m["azure_tenant_id"] = loc.AzureStorageLocation.AzureTenantId
 		case loc.S3CompatStorageLocation != nil:
+			m["storage_endpoint"] = loc.S3CompatStorageLocation.Endpoint
+			m["storage_aws_key_id"] = loc.S3CompatStorageLocation.AwsAccessKeyId
 			m["encryption_kms_key_id"] = loc.S3CompatStorageLocation.EncryptionKmsKeyId
 		case loc.GCSStorageLocation != nil:
 			m["encryption_kms_key_id"] = loc.GCSStorageLocation.EncryptionKmsKeyId
@@ -302,7 +340,7 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
+		storageLocations := readStorageLocations(d, parsedExternalVolumeDescribed, withExternalChangesMarking)
 
 		detailsSchema := schemas.ExternalVolumeDetailsToSchema(parsedExternalVolumeDescribed)
 
@@ -318,6 +356,56 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 
 		return nil
 	}
+}
+
+func readStorageLocations(d *schema.ResourceData, parsedExternalVolumeDescribed sdk.ExternalVolumeDetails, withExternalChangesMarking bool) []map[string]any {
+	storageLocations := storageLocationDetailsToStateMaps(parsedExternalVolumeDescribed.StorageLocations)
+
+	// Preserve fields not returned by the API (secret key) and user-configured fields
+	// not tracked from DESCRIBE output (external id) from the previous state.
+	oldSecretKeys := make(map[string]string)
+	oldExternalIds := make(map[string]string)
+	for i := range d.Get("storage_location.#").(int) {
+		name := d.Get(fmt.Sprintf("storage_location.%d.storage_location_name", i)).(string)
+		oldSecretKeys[name] = d.Get(fmt.Sprintf("storage_location.%d.storage_aws_secret_key", i)).(string)
+		oldExternalIds[name] = d.Get(fmt.Sprintf("storage_location.%d.storage_aws_external_id", i)).(string)
+	}
+	for i := range len(storageLocations) {
+		locName := storageLocations[i]["storage_location_name"].(string)
+		if v, ok := oldSecretKeys[locName]; ok {
+			storageLocations[i]["storage_aws_secret_key"] = v
+		}
+		if v, ok := oldExternalIds[locName]; ok {
+			storageLocations[i]["storage_aws_external_id"] = v
+		}
+	}
+
+	// Handle external changes for storage_aws_external_id in S3 storage locations.
+	// Build a map from the previous describe_output keyed by location name, then compare
+	// against the current SF value to detect external changes. Using names instead of
+	// positional indexes avoids mismatches when locations are added/removed between reads.
+	if withExternalChangesMarking {
+		prevDescExternalIds := make(map[string]string)
+		for i := range d.Get("describe_output.0.storage_locations.#").(int) {
+			locName := d.Get(fmt.Sprintf("describe_output.0.storage_locations.%d.name", i)).(string)
+			s3Locs := d.Get(fmt.Sprintf("describe_output.0.storage_locations.%d.s3_storage_location", i)).([]any)
+			if len(s3Locs) > 0 {
+				if s3Map, ok := s3Locs[0].(map[string]any); ok {
+					prevDescExternalIds[locName] = s3Map["storage_aws_external_id"].(string)
+				}
+			}
+		}
+		for i, loc := range parsedExternalVolumeDescribed.StorageLocations {
+			if loc.S3StorageLocation == nil || i >= len(storageLocations) {
+				continue
+			}
+			if prev, ok := prevDescExternalIds[loc.Name]; ok && prev != loc.S3StorageLocation.StorageAwsExternalId {
+				storageLocations[i]["storage_aws_external_id"] = loc.S3StorageLocation.StorageAwsExternalId
+			}
+		}
+	}
+
+	return storageLocations
 }
 
 func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -391,26 +479,8 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 				return diag.FromErr(err)
 			}
 
-			addTempErr := addStorageLocation(tempStorageLocation, client, ctx, id)
-			if addTempErr != nil {
-				return diag.FromErr(addTempErr)
-			}
-
-			updateErr := updateStorageLocations(removedLocations, addedLocations, client, ctx, id)
-			// TODO use defer for the removal of the temp storage location
-			if updateErr != nil {
-				// Try to remove the temp location and then return with error
-				removeErr := removeStorageLocation(tempStorageLocation, client, ctx, id)
-				if removeErr != nil {
-					return diag.FromErr(errors.Join(updateErr, removeErr))
-				}
-
-				return diag.FromErr(updateErr)
-			}
-
-			removeErr := removeStorageLocation(tempStorageLocation, client, ctx, id)
-			if removeErr != nil {
-				return diag.FromErr(removeErr)
+			if err := updateStorageLocationsWithTemp(tempStorageLocation, removedLocations, addedLocations, client, ctx, id); err != nil {
+				return diag.FromErr(err)
 			}
 		} else {
 			updateErr := updateStorageLocations(removedLocations, addedLocations, client, ctx, id)
@@ -459,16 +529,27 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 		var storageLocation sdk.ExternalVolumeStorageLocation
 		switch storageProviderParsed {
 		case sdk.StorageProviderS3, sdk.StorageProviderS3GOV:
-			// Test that azure_tenant_id is not given
-			// If given non empty plans will be produced
+			// Validate that provider-incompatible fields are not given
 			azureTenantId, ok := storageLocationConfig["azure_tenant_id"].(string)
 			if ok && len(azureTenantId) > 0 {
-				return nil, fmt.Errorf("unable to extract storage location, azure_tenant_id provided for s3 storage location")
+				return nil, fmt.Errorf("unable to extract storage location, azure_tenant_id is not supported for s3 storage location")
+			}
+			storageEndpoint, ok := storageLocationConfig["storage_endpoint"].(string)
+			if ok && len(storageEndpoint) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_endpoint is not supported for s3 storage location")
+			}
+			storageAwsKeyId, ok := storageLocationConfig["storage_aws_key_id"].(string)
+			if ok && len(storageAwsKeyId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_key_id is not supported for s3 storage location")
+			}
+			storageAwsSecretKey, ok := storageLocationConfig["storage_aws_secret_key"].(string)
+			if ok && len(storageAwsSecretKey) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_secret_key is not supported for s3 storage location")
 			}
 
 			storageAwsRoleArn, ok := storageLocationConfig["storage_aws_role_arn"].(string)
 			if !ok || len(storageAwsRoleArn) == 0 {
-				return nil, fmt.Errorf("unable to extract storage location, missing storage_aws_role_arn key in an s3 storage location")
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn is required for s3 storage location")
 			}
 
 			s3StorageProvider, err := sdk.ToS3StorageProvider(storageProvider)
@@ -480,6 +561,25 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				StorageProvider:   s3StorageProvider,
 				StorageBaseUrl:    storageBaseUrl,
 				StorageAwsRoleArn: storageAwsRoleArn,
+			}
+
+			storageAwsExternalId, ok := storageLocationConfig["storage_aws_external_id"].(string)
+			if ok && len(storageAwsExternalId) > 0 {
+				s3StorageLocation.StorageAwsExternalId = &storageAwsExternalId
+			}
+
+			storageAwsAccessPointArn, ok := storageLocationConfig["storage_aws_access_point_arn"].(string)
+			if ok && len(storageAwsAccessPointArn) > 0 {
+				s3StorageLocation.StorageAwsAccessPointArn = &storageAwsAccessPointArn
+			}
+
+			usePrivatelinkEndpoint, ok := storageLocationConfig["use_privatelink_endpoint"].(string)
+			if ok && usePrivatelinkEndpoint != BooleanDefault && len(usePrivatelinkEndpoint) > 0 {
+				b, err := booleanStringToBool(usePrivatelinkEndpoint)
+				if err != nil {
+					return nil, err
+				}
+				s3StorageLocation.UsePrivatelinkEndpoint = &b
 			}
 
 			encryptionType, ok := storageLocationConfig["encryption_type"].(string)
@@ -507,16 +607,34 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				S3StorageLocationParams: s3StorageLocation,
 			}
 		case sdk.StorageProviderGCS:
-			// Test that azure_tenant_id and storage_aws_role_arn are not given
-			// If given non empty plans will be produced
+			// Validate that provider-incompatible fields are not given
 			azureTenantId, ok := storageLocationConfig["azure_tenant_id"].(string)
 			if ok && len(azureTenantId) > 0 {
-				return nil, fmt.Errorf("unable to extract storage location, azure_tenant_id provided for gcs storage location")
+				return nil, fmt.Errorf("unable to extract storage location, azure_tenant_id is not supported for gcs storage location")
 			}
-
 			storageAwsRoleArn, ok := storageLocationConfig["storage_aws_role_arn"].(string)
 			if ok && len(storageAwsRoleArn) > 0 {
-				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn provided for gcs storage location")
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn is not supported for gcs storage location")
+			}
+			storageAwsExternalId, ok := storageLocationConfig["storage_aws_external_id"].(string)
+			if ok && len(storageAwsExternalId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_external_id is not supported for gcs storage location")
+			}
+			storageAwsAccessPointArn, ok := storageLocationConfig["storage_aws_access_point_arn"].(string)
+			if ok && len(storageAwsAccessPointArn) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_access_point_arn is not supported for gcs storage location")
+			}
+			storageEndpoint, ok := storageLocationConfig["storage_endpoint"].(string)
+			if ok && len(storageEndpoint) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_endpoint is not supported for gcs storage location")
+			}
+			storageAwsKeyId, ok := storageLocationConfig["storage_aws_key_id"].(string)
+			if ok && len(storageAwsKeyId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_key_id is not supported for gcs storage location")
+			}
+			storageAwsSecretKey, ok := storageLocationConfig["storage_aws_secret_key"].(string)
+			if ok && len(storageAwsSecretKey) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_secret_key is not supported for gcs storage location")
 			}
 
 			gcsStorageLocation := &sdk.GCSStorageLocationParams{
@@ -546,27 +664,50 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 				GCSStorageLocationParams: gcsStorageLocation,
 			}
 		case sdk.StorageProviderAzure:
-			// Test that storage_aws_role_arn and encryption_kms_key_id is not given
-			// If given non empty plans will be produced
+			// Validate that provider-incompatible fields are not given
 			storageAwsRolArn, ok := storageLocationConfig["storage_aws_role_arn"].(string)
 			if ok && len(storageAwsRolArn) > 0 {
-				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn provided for azure storage location")
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn is not supported for azure storage location")
 			}
-
+			storageAwsExternalId, ok := storageLocationConfig["storage_aws_external_id"].(string)
+			if ok && len(storageAwsExternalId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_external_id is not supported for azure storage location")
+			}
 			encryptionKmsKeyId, ok := storageLocationConfig["encryption_kms_key_id"].(string)
 			if ok && len(encryptionKmsKeyId) > 0 {
-				return nil, fmt.Errorf("unable to extract storage location, encryption_kms_key_id provided for azure storage location")
+				return nil, fmt.Errorf("unable to extract storage location, encryption_kms_key_id is not supported for azure storage location")
 			}
-
-			// TODO add check that encryption_type is not set in the config for azure storage locations
-			// This may be more difficult as NONE is returned as the encyption type from Snowflake for azure
-			// storage locations, although it's not documented as a parameter
-
+			storageAwsAccessPointArn, ok := storageLocationConfig["storage_aws_access_point_arn"].(string)
+			if ok && len(storageAwsAccessPointArn) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_access_point_arn is not supported for azure storage location")
+			}
+			storageEndpoint, ok := storageLocationConfig["storage_endpoint"].(string)
+			if ok && len(storageEndpoint) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_endpoint is not supported for azure storage location")
+			}
+			storageAwsKeyId, ok := storageLocationConfig["storage_aws_key_id"].(string)
+			if ok && len(storageAwsKeyId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_key_id is not supported for azure storage location")
+			}
+			storageAwsSecretKey, ok := storageLocationConfig["storage_aws_secret_key"].(string)
+			if ok && len(storageAwsSecretKey) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_secret_key is not supported for azure storage location")
+			}
 			azureTenantId, ok := storageLocationConfig["azure_tenant_id"].(string)
 			if !ok || len(azureTenantId) == 0 {
 				return nil, fmt.Errorf("unable to extract storage location, missing azure_tenant_id provider key in an azure storage location")
 			}
+			// Azure location doesn't support setting encryption, so we want to disallow it. However, Snowflake returns NONE for encryption_type.
+			// So, here we allow NONE, but it is not used in the request anyway.
+			encryptionTypeRaw, _ := storageLocationConfig["encryption_type"].(string)
+			if encryptionTypeRaw != "" {
+				_, err := sdk.ToAzureEncryptionType(encryptionTypeRaw)
+				if err != nil {
+					return nil, fmt.Errorf("unable to extract storage location, encryption_type is not supported for azure storage location: %w", err)
+				}
+			}
 
+			// TODO(SNOW-2356128): handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
 			storageLocation = sdk.ExternalVolumeStorageLocation{
 				Name: name,
 				AzureStorageLocationParams: &sdk.AzureStorageLocationParams{
@@ -574,6 +715,64 @@ func extractStorageLocations(v any) ([]sdk.ExternalVolumeStorageLocationItem, er
 					StorageBaseUrl: storageBaseUrl,
 				},
 			}
+		case sdk.StorageProviderS3Compatible:
+			// Validate that provider-incompatible fields are not given
+			storageAwsRoleArn, ok := storageLocationConfig["storage_aws_role_arn"].(string)
+			if ok && len(storageAwsRoleArn) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_role_arn is not supported for s3compat storage location")
+			}
+			storageAwsExternalId, ok := storageLocationConfig["storage_aws_external_id"].(string)
+			if ok && len(storageAwsExternalId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_external_id is not supported for s3compat storage location")
+			}
+			azureTenantId, ok := storageLocationConfig["azure_tenant_id"].(string)
+			if ok && len(azureTenantId) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, azure_tenant_id is not supported for s3compat storage location")
+			}
+			storageAwsAccessPointArn, ok := storageLocationConfig["storage_aws_access_point_arn"].(string)
+			if ok && len(storageAwsAccessPointArn) > 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_access_point_arn is not supported for s3compat storage location")
+			}
+
+			storageEndpoint, ok := storageLocationConfig["storage_endpoint"].(string)
+			if !ok || len(storageEndpoint) == 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_endpoint is required for s3compat storage location")
+			}
+			storageAwsKeyId, ok := storageLocationConfig["storage_aws_key_id"].(string)
+			if !ok || len(storageAwsKeyId) == 0 {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_key_id is required for s3compat storage location")
+			}
+			// storage_aws_secret_key is required, but it is not returned from Snowflake. That's why we don't validate it here.
+			storageAwsSecretKey, ok := storageLocationConfig["storage_aws_secret_key"].(string)
+			if !ok {
+				return nil, fmt.Errorf("unable to extract storage location, storage_aws_secret_key is not a string")
+			}
+			// s3compat location doesn't support setting encryption, so we want to disallow it. However, Snowflake returns NONE for encryption_type.
+			// So, here we allow NONE, but it is not used in the request anyway.
+			encryptionTypeRaw, ok := storageLocationConfig["encryption_type"].(string)
+			if !ok {
+				return nil, fmt.Errorf("unable to extract storage location, encryption_type is not a string")
+			}
+			if encryptionTypeRaw != "" {
+				_, err := sdk.ToS3CompatEncryptionType(encryptionTypeRaw)
+				if err != nil {
+					return nil, fmt.Errorf("unable to extract storage location, encryption_type is not supported for s3compat storage location: %w", err)
+				}
+			}
+
+			storageLocation = sdk.ExternalVolumeStorageLocation{
+				Name: name,
+				S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParams{
+					StorageBaseUrl:  storageBaseUrl,
+					StorageEndpoint: storageEndpoint,
+					Credentials: sdk.ExternalVolumeS3CompatCredentials{
+						AwsKeyId:     storageAwsKeyId,
+						AwsSecretKey: storageAwsSecretKey,
+					},
+				},
+			}
+		default:
+			return nil, fmt.Errorf("unsupported storage provider: %s", storageProvider)
 		}
 		storageLocations[i] = storageLocation
 	}
@@ -602,6 +801,15 @@ func addStorageLocation(
 			addedLocation.StorageAwsRoleArn,
 			addedLocation.StorageBaseUrl,
 		)
+		if addedLocation.StorageAwsAccessPointArn != nil {
+			s3ParamsRequest = s3ParamsRequest.WithStorageAwsAccessPointArn(*addedLocation.StorageAwsAccessPointArn)
+		}
+		if addedLocation.UsePrivatelinkEndpoint != nil {
+			s3ParamsRequest = s3ParamsRequest.WithUsePrivatelinkEndpoint(*addedLocation.UsePrivatelinkEndpoint)
+		}
+		if addedLocation.StorageAwsExternalId != nil {
+			s3ParamsRequest = s3ParamsRequest.WithStorageAwsExternalId(*addedLocation.StorageAwsExternalId)
+		}
 		if addedLocation.Encryption != nil {
 			encryptionRequest := sdk.NewExternalVolumeS3EncryptionRequest(addedLocation.Encryption.EncryptionType)
 			if addedLocation.Encryption.KmsKeyId != nil {
@@ -634,7 +842,21 @@ func addStorageLocation(
 			addedLocation.AzureTenantId,
 			addedLocation.StorageBaseUrl,
 		)
+		// TODO(SNOW-2356128): handle use_privatelink_endpoint for Azure once testing on Azure deployment is possible
 		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithAzureStorageLocationParams(*azureParamsRequest)
+	case sdk.StorageProviderS3Compatible:
+		addedLocation := addedLocationItem.ExternalVolumeStorageLocation.S3CompatStorageLocationParams
+		s3CompatParamsRequest := sdk.NewS3CompatStorageLocationParamsRequest(
+			addedLocation.StorageBaseUrl,
+			addedLocation.StorageEndpoint,
+			sdk.ExternalVolumeS3CompatCredentialsRequest{
+				AwsKeyId:     addedLocation.Credentials.AwsKeyId,
+				AwsSecretKey: addedLocation.Credentials.AwsSecretKey,
+			},
+		)
+		newStorageLocationreq = sdk.NewExternalVolumeStorageLocationRequest(addedLocationItem.ExternalVolumeStorageLocation.Name).WithS3CompatStorageLocationParams(*s3CompatParamsRequest)
+	default:
+		return fmt.Errorf("unsupported storage provider: %s", storageProvider)
 	}
 
 	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithAddStorageLocation(sdk.ExternalVolumeStorageLocationItemRequest{ExternalVolumeStorageLocation: *newStorageLocationreq}))
@@ -647,6 +869,28 @@ func removeStorageLocation(
 	id sdk.AccountObjectIdentifier,
 ) error {
 	return client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithRemoveStorageLocation(removedLocation.ExternalVolumeStorageLocation.Name))
+}
+
+// updateStorageLocationsWithTemp adds a temporary storage location, performs the update, and ensures
+// the temporary location is always cleaned up. This is used when all existing storage locations
+// need to be replaced — because an external volume requires at least one storage location at all times.
+func updateStorageLocationsWithTemp(
+	tempStorageLocation sdk.ExternalVolumeStorageLocationItem,
+	removedLocations []sdk.ExternalVolumeStorageLocationItem,
+	addedLocations []sdk.ExternalVolumeStorageLocationItem,
+	client *sdk.Client,
+	ctx context.Context,
+	id sdk.AccountObjectIdentifier,
+) (err error) {
+	if err := addStorageLocation(tempStorageLocation, client, ctx, id); err != nil {
+		return err
+	}
+	defer func() {
+		removeErr := removeStorageLocation(tempStorageLocation, client, ctx, id)
+		err = errors.Join(err, removeErr)
+	}()
+
+	return updateStorageLocations(removedLocations, addedLocations, client, ctx, id)
 }
 
 // Process the removal / addition storage location requests.

@@ -1067,7 +1067,7 @@ func TestInt_GrantPrivilegeToShare(t *testing.T) {
 	})
 }
 
-func TestInt_RevokePrivilegeToShare(t *testing.T) {
+func TestInt_RevokePrivilegeFromShare(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)

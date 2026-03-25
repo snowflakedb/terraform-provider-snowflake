@@ -57,6 +57,13 @@ type WarehouseRepresentation struct {
 }
 
 func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
+	warehouseType, err := sdk.ToWarehouseType(row.Type)
+	if err != nil {
+		return nil, err
+	}
+	if warehouseType == sdk.WarehouseTypeAdaptive {
+		return nil, errors.New("adaptive warehouses are not supported")
+	}
 	autoSuspend, err := strconv.Atoi(row.AutoSuspend)
 	if err != nil {
 		return nil, err
@@ -74,6 +81,10 @@ func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
 		return nil, err
 	}
 
+	size := sdk.WarehouseSize(row.Size)
+	scalingPolicy := sdk.ScalingPolicy(row.ScalingPolicy)
+	enableQueryAcceleration := row.EnableQueryAcceleration == "true"
+	autoResume := row.AutoResume == "true"
 	warehouseRepresentation := &WarehouseRepresentation{
 		Warehouse: sdk.Warehouse{
 			Name:                            row.Name,
@@ -81,17 +92,17 @@ func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
 			IsDefault:                       row.IsDefault == "Y",
 			Owner:                           row.Owner,
 			Comment:                         row.Comment,
-			Type:                            sdk.WarehouseType(row.Type),
-			Size:                            sdk.WarehouseSize(row.Size),
+			Type:                            warehouseType,
+			Size:                            &size,
 			OwnerRoleType:                   row.OwnerRoleType,
 			State:                           sdk.WarehouseState(row.State),
-			ScalingPolicy:                   sdk.ScalingPolicy(row.ScalingPolicy),
-			EnableQueryAcceleration:         row.EnableQueryAcceleration == "true",
-			AutoSuspend:                     autoSuspend,
-			AutoResume:                      row.AutoResume == "true",
-			MinClusterCount:                 minClusterCount,
-			MaxClusterCount:                 maxClusterCount,
-			QueryAccelerationMaxScaleFactor: queryAccelerationMaxScaleFactor,
+			ScalingPolicy:                   &scalingPolicy,
+			EnableQueryAcceleration:         &enableQueryAcceleration,
+			AutoSuspend:                     &autoSuspend,
+			AutoResume:                      autoResume,
+			MinClusterCount:                 &minClusterCount,
+			MaxClusterCount:                 &maxClusterCount,
+			QueryAccelerationMaxScaleFactor: &queryAccelerationMaxScaleFactor,
 			ResourceMonitor:                 sdk.NewAccountObjectIdentifier(row.ResourceMonitor),
 		},
 	}

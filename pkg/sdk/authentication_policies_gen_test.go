@@ -493,6 +493,40 @@ func Test_ToMfaAuthenticationMethodsOption(t *testing.T) {
 	}
 }
 
+func Test_ToMfaAuthenticationMethodsReadOption(t *testing.T) {
+	type test struct {
+		input string
+		want  MfaAuthenticationMethodsReadOption
+	}
+	valid := []test{
+		// case insensitive.
+		{input: "all", want: MfaAuthenticationMethodsReadAll},
+
+		// supported values.
+		{input: "ALL", want: MfaAuthenticationMethodsReadAll},
+		{input: "SAML", want: MfaAuthenticationMethodsReadSaml},
+		{input: "PASSWORD", want: MfaAuthenticationMethodsReadPassword},
+		{input: "OIDC", want: MfaAuthenticationMethodsReadOidc},
+	}
+	invalid := []test{
+		{input: "foo"},
+		{input: "OAUTH"},
+	}
+	for _, tt := range valid {
+		t.Run(tt.input, func(t *testing.T) {
+			got, err := ToMfaAuthenticationMethodsReadOption(tt.input)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+	for _, tt := range invalid {
+		t.Run(tt.input, func(t *testing.T) {
+			_, err := ToMfaAuthenticationMethodsReadOption(tt.input)
+			require.Error(t, err)
+		})
+	}
+}
+
 func Test_ToMfaEnrollmentOption(t *testing.T) {
 	type test struct {
 		input string

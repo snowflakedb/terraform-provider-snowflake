@@ -189,6 +189,12 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.AuthenticationPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.AuthenticationPolicies.ShowByID)
 	},
+	resources.CatalogIntegrationAwsGlue: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
+	resources.CatalogIntegrationObjectStorage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
 	},
@@ -751,6 +757,22 @@ func CheckAccountParameterUnset(t *testing.T, paramName sdk.AccountParameter) fu
 			parameter := testClient().Parameter.ShowAccountParameter(t, paramName)
 			if parameter.Level != sdk.ParameterTypeSnowflakeDefault {
 				return fmt.Errorf("expected parameter level empty, got %v", parameter.Level)
+			}
+		}
+		return nil
+	}
+}
+
+func CheckAccountParameterUnsetToDefaultLevel(t *testing.T, paramName sdk.AccountParameter, defaultLevel sdk.ParameterType) func(*terraform.State) error {
+	t.Helper()
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "snowflake_account_parameter" {
+				continue
+			}
+			parameter := testClient().Parameter.ShowAccountParameter(t, paramName)
+			if parameter.Level != defaultLevel {
+				return fmt.Errorf("expected parameter level %v, got %v", defaultLevel, parameter.Level)
 			}
 		}
 		return nil

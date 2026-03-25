@@ -18,6 +18,8 @@ const (
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
 	AuthenticationPolicyResource                  feature = "snowflake_authentication_policy_resource"
 	AuthenticationPoliciesDatasource              feature = "snowflake_authentication_policies_datasource"
+	CatalogIntegrationAwsGlueResource             feature = "snowflake_catalog_integration_aws_glue_resource"
+	CatalogIntegrationObjectStorageResource       feature = "snowflake_catalog_integration_object_storage_resource"
 	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
@@ -39,6 +41,7 @@ const (
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
 	ExternalTablesDatasource                      feature = "snowflake_external_tables_datasource"
 	ExternalVolumeResource                        feature = "snowflake_external_volume_resource"
+	ExternalVolumesDatasource                     feature = "snowflake_external_volumes_datasource"
 	FailoverGroupResource                         feature = "snowflake_failover_group_resource"
 	FailoverGroupsDatasource                      feature = "snowflake_failover_groups_datasource"
 	FileFormatResource                            feature = "snowflake_file_format_resource"
@@ -116,6 +119,8 @@ var allPreviewFeatures = []feature{
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
+	CatalogIntegrationAwsGlueResource,
+	CatalogIntegrationObjectStorageResource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -134,6 +139,7 @@ var allPreviewFeatures = []feature{
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	ExternalVolumeResource,
+	ExternalVolumesDatasource,
 	FailoverGroupResource,
 	FailoverGroupsDatasource,
 	FileFormatResource,

@@ -61,6 +61,8 @@ func (sessionParameters *SessionParameters) setParam(parameter SessionParameter,
 		sessionParameters.DateInputFormat = &value
 	case SessionParameterDateOutputFormat:
 		sessionParameters.DateOutputFormat = &value
+	case SessionParameterEnableGetDdlUseDataTypeAlias:
+		err = setBooleanValue(parameter, value, &sessionParameters.EnableGetDdlUseDataTypeAlias)
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
 		err = setBooleanValue(parameter, value, &sessionParameters.EnableUnloadPhysicalTypeOptimization)
 	case SessionParameterErrorOnNondeterministicMerge:
@@ -207,6 +209,8 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 		unsetField = &sessionParametersUnset.DateInputFormat
 	case SessionParameterDateOutputFormat:
 		unsetField = &sessionParametersUnset.DateOutputFormat
+	case SessionParameterEnableGetDdlUseDataTypeAlias:
+		unsetField = &sessionParametersUnset.EnableGetDdlUseDataTypeAlias
 	case SessionParameterEnableUnloadPhysicalTypeOptimization:
 		unsetField = &sessionParametersUnset.EnableUnloadPhysicalTypeOptimization
 	case SessionParameterErrorOnNondeterministicMerge:
@@ -307,6 +311,13 @@ func (sessionParametersUnset *SessionParametersUnset) setParam(parameter Session
 func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter AccountParameter, value string) (matched bool, err error) {
 	matched = true
 	switch parameter {
+	case AccountParameterAllowBindValuesAccess:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.AllowBindValuesAccess = b
 	case AccountParameterAllowClientMFACaching:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
@@ -321,6 +332,8 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.AllowIDToken = b
+	case AccountParameterAllowedSpcsWorkloadTypes:
+		legacyAccountParameters.AllowedSpcsWorkloadTypes = &value
 	case AccountParameterClientEncryptionKeySize:
 		v, err := strconv.Atoi(value)
 		if err != nil {
@@ -329,6 +342,8 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 		legacyAccountParameters.ClientEncryptionKeySize = Pointer(v)
 	case AccountParameterCortexEnabledCrossRegion:
 		legacyAccountParameters.CortexEnabledCrossRegion = &value
+	case AccountParameterDefaultDbtVersion:
+		legacyAccountParameters.DefaultDbtVersion = &value
 	case AccountParameterDisableUserPrivilegeGrants:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
@@ -336,6 +351,15 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.DisableUserPrivilegeGrants = b
+	case AccountParameterDisallowedSpcsWorkloadTypes:
+		legacyAccountParameters.DisallowedSpcsWorkloadTypes = &value
+	case AccountParameterEnableBudgetEventLogging:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableBudgetEventLogging = b
 	case AccountParameterEnableIdentifierFirstLogin:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
@@ -357,6 +381,20 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.EnablePersonalDatabase = b
+	case AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = b
+	case AccountParameterEnableTagPropagationEventLogging:
+		var b *bool
+		b, err = parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return
+		}
+		legacyAccountParameters.EnableTagPropagationEventLogging = b
 	case AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
@@ -448,6 +486,8 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.PreventUnloadToInternalStages = b
+	case AccountParameterReadConsistencyMode:
+		legacyAccountParameters.ReadConsistencyMode = &value
 	case AccountParameterRequireStorageIntegrationForStageCreation:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
@@ -462,6 +502,8 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.RequireStorageIntegrationForStageOperation = b
+	case AccountParameterSqlTraceQueryText:
+		legacyAccountParameters.SqlTraceQueryText = &value
 	case AccountParameterSsoLoginPage:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)
@@ -469,6 +511,8 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 			return
 		}
 		legacyAccountParameters.SSOLoginPage = b
+	case AccountParameterUseWorkspacesForSql:
+		legacyAccountParameters.UseWorkspacesForSql = &value
 	default:
 		matched = false
 	}

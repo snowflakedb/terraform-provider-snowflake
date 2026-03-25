@@ -55,6 +55,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Databases().Schema,
 	},
 	{
+		name:   "ExternalVolumes",
+		schema: datasources.ExternalVolumes().Schema,
+	},
+	{
 		name:   "Functions",
 		schema: datasources.Functions().Schema,
 	},
