@@ -237,48 +237,38 @@ func ExternalS3Stage() *schema.Resource {
 }
 
 func ImportExternalS3Stage(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
+		return nil, err
+	}
+
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
+
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
 	}
-	if _, err := ImportName[sdk.SchemaObjectIdentifier](context.Background(), d, nil); err != nil {
-		return nil, err
-	}
+
 	stage, err := client.Stages.ShowByIDSafely(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	stageDetails, err := client.Stages.Describe(ctx, id)
+	stageProperties, err := client.Stages.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	details, err := sdk.ParseStageDetails(stageDetails)
+	details, err := sdk.ParseStageDetails(stageProperties)
 	if err != nil {
 		return nil, err
 	}
+
 	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
-	if details.DirectoryTable != nil {
-		autoRefreshValue := booleanStringFromBool(details.DirectoryTable.AutoRefresh)
-		if setDefaults {
-			autoRefreshValue = BooleanDefault
-		}
-		if err := d.Set("directory", []map[string]any{
-			{
-				"enable":       details.DirectoryTable.Enable,
-				"auto_refresh": autoRefreshValue,
-			},
-		}); err != nil {
-			return nil, err
-		}
+
+	if err := importStageCommonFields(d, details, setDefaults); err != nil {
+		return nil, err
 	}
-	if fileFormat := stageFileFormatToSchema(details, setDefaults); fileFormat != nil {
-		if err := d.Set("file_format", fileFormat); err != nil {
-			return nil, err
-		}
-	}
+
 	if details.PrivateLink != nil {
 		usePrivatelinkEndpointValue := booleanStringFromBool(details.PrivateLink.UsePrivatelinkEndpoint)
 		if setDefaults {
