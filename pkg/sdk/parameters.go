@@ -79,6 +79,8 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		opts.Unset.LegacyParameters.AccountParameters.ClientEncryptionKeySize = Pointer(true)
 	case AccountParameterCortexEnabledCrossRegion:
 		opts.Unset.LegacyParameters.AccountParameters.CortexEnabledCrossRegion = Pointer(true)
+	case AccountParameterCortexModelsAllowlist:
+		opts.Unset.LegacyParameters.AccountParameters.CortexModelsAllowlist = Pointer(true)
 	case AccountParameterDefaultDbtVersion:
 		opts.Unset.LegacyParameters.AccountParameters.DefaultDbtVersion = Pointer(true)
 	case AccountParameterDisableUserPrivilegeGrants:
@@ -87,6 +89,8 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		opts.Unset.LegacyParameters.AccountParameters.DisallowedSpcsWorkloadTypes = Pointer(true)
 	case AccountParameterEnableBudgetEventLogging:
 		opts.Unset.LegacyParameters.AccountParameters.EnableBudgetEventLogging = Pointer(true)
+	case AccountParameterEnableCortexAnalyst:
+		opts.Unset.LegacyParameters.AccountParameters.EnableCortexAnalyst = Pointer(true)
 	case AccountParameterEnableIdentifierFirstLogin:
 		opts.Unset.LegacyParameters.AccountParameters.EnableIdentifierFirstLogin = Pointer(true)
 	case AccountParameterEnableInternalStagesPrivatelink:
@@ -466,6 +470,7 @@ const (
 	AccountParameterDisableUserPrivilegeGrants                               AccountParameter = "DISABLE_USER_PRIVILEGE_GRANTS"
 	AccountParameterEnableAutomaticSensitiveDataClassificationLog            AccountParameter = "ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG"
 	AccountParameterEnableBudgetEventLogging                                 AccountParameter = "ENABLE_BUDGET_EVENT_LOGGING"
+	AccountParameterEnableCortexAnalyst                                      AccountParameter = "ENABLE_CORTEX_ANALYST"
 	AccountParameterEnableDataCompaction                                     AccountParameter = "ENABLE_DATA_COMPACTION"
 	AccountParameterEnableGetDdlUseDataTypeAlias                             AccountParameter = "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"
 	AccountParameterEnableIcebergMergeOnRead                                 AccountParameter = "ENABLE_ICEBERG_MERGE_ON_READ"
@@ -1153,10 +1158,12 @@ type LegacyAccountParameters struct {
 	AllowedSpcsWorkloadTypes                                 *string `ddl:"parameter,single_quotes" sql:"ALLOWED_SPCS_WORKLOAD_TYPES"`
 	ClientEncryptionKeySize                                  *int    `ddl:"parameter" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
 	CortexEnabledCrossRegion                                 *string `ddl:"parameter,single_quotes" sql:"CORTEX_ENABLED_CROSS_REGION"`
+	CortexModelsAllowlist                                    *string `ddl:"parameter,single_quotes" sql:"CORTEX_MODELS_ALLOWLIST"`
 	DefaultDbtVersion                                        *string `ddl:"parameter,single_quotes" sql:"DEFAULT_DBT_VERSION"`
 	DisableUserPrivilegeGrants                               *bool   `ddl:"parameter" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
 	DisallowedSpcsWorkloadTypes                              *string `ddl:"parameter,single_quotes" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
 	EnableBudgetEventLogging                                 *bool   `ddl:"parameter" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
+	EnableCortexAnalyst                                      *bool   `ddl:"parameter" sql:"ENABLE_CORTEX_ANALYST"`
 	EnableIdentifierFirstLogin                               *bool   `ddl:"parameter" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
 	EnableInternalStagesPrivatelink                          *bool   `ddl:"parameter" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
 	EnablePersonalDatabase                                   *bool   `ddl:"parameter" sql:"ENABLE_PERSONAL_DATABASE"`
@@ -1251,6 +1258,7 @@ type AccountParameters struct {
 	DisableUserPrivilegeGrants                               *bool                       `ddl:"parameter" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
 	EnableAutomaticSensitiveDataClassificationLog            *bool                       `ddl:"parameter" sql:"ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG"`
 	EnableBudgetEventLogging                                 *bool                       `ddl:"parameter" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
+	EnableCortexAnalyst                                      *bool                       `ddl:"parameter" sql:"ENABLE_CORTEX_ANALYST"`
 	EnableDataCompaction                                     *bool                       `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
 	EnableEgressCostOptimizer                                *bool                       `ddl:"parameter" sql:"ENABLE_EGRESS_COST_OPTIMIZER"`
 	EnableGetDdlUseDataTypeAlias                             *bool                       `ddl:"parameter" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
@@ -1354,10 +1362,12 @@ type LegacyAccountParametersUnset struct {
 	AllowedSpcsWorkloadTypes                                 *bool `ddl:"keyword" sql:"ALLOWED_SPCS_WORKLOAD_TYPES"`
 	ClientEncryptionKeySize                                  *bool `ddl:"keyword" sql:"CLIENT_ENCRYPTION_KEY_SIZE"`
 	CortexEnabledCrossRegion                                 *bool `ddl:"keyword" sql:"CORTEX_ENABLED_CROSS_REGION"`
+	CortexModelsAllowlist                                    *bool `ddl:"keyword" sql:"CORTEX_MODELS_ALLOWLIST"`
 	DefaultDbtVersion                                        *bool `ddl:"keyword" sql:"DEFAULT_DBT_VERSION"`
 	DisableUserPrivilegeGrants                               *bool `ddl:"keyword" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
 	DisallowedSpcsWorkloadTypes                              *bool `ddl:"keyword" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
 	EnableBudgetEventLogging                                 *bool `ddl:"keyword" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
+	EnableCortexAnalyst                                      *bool `ddl:"keyword" sql:"ENABLE_CORTEX_ANALYST"`
 	EnableIdentifierFirstLogin                               *bool `ddl:"keyword" sql:"ENABLE_IDENTIFIER_FIRST_LOGIN"`
 	EnableInternalStagesPrivatelink                          *bool `ddl:"keyword" sql:"ENABLE_INTERNAL_STAGES_PRIVATELINK"`
 	EnablePersonalDatabase                                   *bool `ddl:"keyword" sql:"ENABLE_PERSONAL_DATABASE"`
@@ -1429,6 +1439,7 @@ type AccountParametersUnset struct {
 	DisableUserPrivilegeGrants                               *bool `ddl:"keyword" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
 	EnableAutomaticSensitiveDataClassificationLog            *bool `ddl:"keyword" sql:"ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG"`
 	EnableBudgetEventLogging                                 *bool `ddl:"keyword" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
+	EnableCortexAnalyst                                      *bool `ddl:"keyword" sql:"ENABLE_CORTEX_ANALYST"`
 	EnableDataCompaction                                     *bool `ddl:"keyword" sql:"ENABLE_DATA_COMPACTION"`
 	EnableEgressCostOptimizer                                *bool `ddl:"keyword" sql:"ENABLE_EGRESS_COST_OPTIMIZER"`
 	EnableGetDdlUseDataTypeAlias                             *bool `ddl:"keyword" sql:"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS"`
