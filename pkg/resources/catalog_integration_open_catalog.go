@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -322,32 +323,21 @@ func buildOAuthRestAuthenticationRequest(d *schema.ResourceData) (sdk.OAuthRestA
 // handleExternalChangesToNestedAttrs marks drift on rest_config and rest_authentication when
 // the prior describe_output differs from the current Snowflake response.
 func handleExternalChangesToNestedAttrs(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
-	if err := handleExternalChangesToRestConfig(d, details); err != nil {
+	restConfig := []any{
+		map[string]any{
+			"catalog_uri":            details.RestConfig.CatalogUri,
+			"catalog_name":           details.RestConfig.CatalogName,
+			"catalog_api_type":       string(details.RestConfig.CatalogApiType),
+			"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
+		},
+	}
+	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+		outputMapping{"rest_config", "rest_config", restConfig, restConfig, nil},
+	)
+	if err != nil {
 		return err
 	}
 	return handleExternalChangesToRestAuthentication(d, details)
-}
-
-func handleExternalChangesToRestConfig(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
-	output, ok := d.GetOk(DescribeOutputAttributeName + ".0.rest_config")
-	if !ok {
-		return nil
-	}
-	outputList := output.([]any)
-	result := outputList[0].(map[string]any)
-
-	catalogApiType := string(details.RestConfig.CatalogApiType)
-	accessDelegationMode := string(details.RestConfig.AccessDelegationMode)
-	if result["catalog_api_type"] == catalogApiType && result["access_delegation_mode"] == accessDelegationMode {
-		return nil
-	}
-
-	return d.Set("rest_config", []any{map[string]any{
-		"catalog_uri":            details.RestConfig.CatalogUri,
-		"catalog_name":           details.RestConfig.CatalogName,
-		"catalog_api_type":       catalogApiType,
-		"access_delegation_mode": accessDelegationMode,
-	}})
 }
 
 func handleExternalChangesToRestAuthentication(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
@@ -359,15 +349,26 @@ func handleExternalChangesToRestAuthentication(d *schema.ResourceData, details *
 	result := outputList[0].(map[string]any)
 
 	oAuthTokenUri := details.RestAuthentication.OauthTokenUri
-	if result["oauth_token_uri"] == oAuthTokenUri {
+	if result["oauth_token_uri"] == oAuthTokenUri &&
+		result["oauth_client_id"] == details.RestAuthentication.OauthClientId &&
+		areSlicesEqual(details.RestAuthentication.OauthAllowedScopes, result["oauth_allowed_scopes"].([]any)) {
 		return nil
 	}
 
-	oAuthClientSecret := result["oauth_client_secret"]
 	return d.Set("rest_authentication", []any{map[string]any{
 		"oauth_token_uri":      oAuthTokenUri,
 		"oauth_client_id":      details.RestAuthentication.OauthClientId,
-		"oauth_client_secret":  oAuthClientSecret,
 		"oauth_allowed_scopes": details.RestAuthentication.OauthAllowedScopes,
 	}})
+}
+
+func areSlicesEqual(a []string, b []any) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	bs := make([]string, len(b))
+	for i, scope := range b {
+		bs[i] = scope.(string)
+	}
+	return slices.Equal(a, bs)
 }

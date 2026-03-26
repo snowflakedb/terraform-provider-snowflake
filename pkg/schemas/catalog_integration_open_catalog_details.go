@@ -68,8 +68,9 @@ var DescribeCatalogIntegrationOpenCatalogDetailsSchema = map[string]*schema.Sche
 					Computed: true,
 				},
 				"oauth_client_id": {
-					Type:     schema.TypeString,
-					Computed: true,
+					Type:      schema.TypeString,
+					Computed:  true,
+					Sensitive: true,
 				},
 				"oauth_allowed_scopes": {
 					Type:     schema.TypeList,

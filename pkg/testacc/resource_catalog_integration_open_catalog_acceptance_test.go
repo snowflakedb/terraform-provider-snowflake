@@ -493,7 +493,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Import
 			{
-				Config:                  config.FromModels(t, basic),
+				Config:                  config.FromModels(t, allAttributes),
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
