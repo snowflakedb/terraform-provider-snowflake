@@ -114,7 +114,7 @@ Optional:
 
 - `default_expiry_in_days` (Number) Specifies the default expiration time (in days) for a programmatic access token.
 - `max_expiry_in_days` (Number) Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.
-- `network_policy_evaluation` (String) Specifies the network policy evaluation for the PAT.
+- `network_policy_evaluation` (String) Specifies the network policy evaluation for the PAT. Valid values are: `ENFORCED_REQUIRED` | `ENFORCED_NOT_REQUIRED` | `NOT_ENFORCED`.
 - `require_role_restriction_for_service_users` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 

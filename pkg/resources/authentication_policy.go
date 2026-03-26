@@ -106,6 +106,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 					Required:         true,
 					Description:      fmt.Sprintf("The client or driver type. Valid values (case-insensitive): %s.", possibleValuesListed(sdk.AllClientPolicyDriverTypes)),
 					ValidateDiagFunc: sdkValidation(sdk.ToClientPolicyDriverType),
+					DiffSuppressFunc: NormalizeAndCompare(sdk.ToClientPolicyDriverType),
 				},
 				"minimum_version": {
 					Type:        schema.TypeString,
@@ -185,7 +186,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 					Optional:         true,
 					ValidateDiagFunc: sdkValidation(sdk.ToNetworkPolicyEvaluationOption),
 					DiffSuppressFunc: NormalizeAndCompare(sdk.ToNetworkPolicyEvaluationOption),
-					Description:      "Specifies the network policy evaluation for the PAT.",
+					Description:      fmt.Sprintf("Specifies the network policy evaluation for the PAT. Valid values are: %s.", possibleValuesListed(sdk.AllNetworkPolicyEvaluationOptions)),
 					AtLeastOneOf:     []string{"pat_policy.0.default_expiry_in_days", "pat_policy.0.max_expiry_in_days", "pat_policy.0.require_role_restriction_for_service_users", "pat_policy.0.network_policy_evaluation"},
 				},
 			},
@@ -464,10 +465,6 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			mfaAuthenticationMethods, err := authenticationPolicyDescriptions.GetMfaAuthenticationMethods()
-			if err != nil {
-				return diag.FromErr(err)
-			}
 			var securityIntegrationsStrings []string
 			if securityIntegrations != nil {
 				securityIntegrationsStrings = make([]string, len(securityIntegrations))
@@ -480,7 +477,6 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 				outputMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
 				outputMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
 				outputMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
-				outputMapping{"mfa_authentication_methods", "mfa_authentication_methods", authenticationPolicyDescriptions.Raw("MFA_AUTHENTICATION_METHODS"), mfaAuthenticationMethods, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -490,9 +486,7 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			"authentication_methods",
 			"mfa_enrollment",
 			"client_types",
-			"client_policy",
 			"security_integrations",
-			"mfa_authentication_methods",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -581,15 +575,13 @@ func UpdateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 	if d.HasChange("client_policy") {
 		if v, ok := d.GetOk("client_policy"); ok {
 			clientPolicyList := v.(*schema.Set).List()
-			if len(clientPolicyList) > 0 {
-				entries, err := toClientPolicyEntries(clientPolicyList)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				set.WithClientPolicy(entries)
-			} else {
-				unset.WithClientPolicy(true)
+			entries, err := toClientPolicyEntries(clientPolicyList)
+			if err != nil {
+				return diag.FromErr(err)
 			}
+			set.WithClientPolicy(entries)
+		} else {
+			unset.WithClientPolicy(true)
 		}
 	}
 
@@ -712,8 +704,12 @@ func ToPatPolicyRequestUpdate(d *schema.ResourceData, set **sdk.AuthenticationPo
 		}
 	}
 	if d.HasChange("pat_policy.0.require_role_restriction_for_service_users") {
-		if v, ok := patConfig["require_role_restriction_for_service_users"]; ok {
-			req.WithRequireRoleRestrictionForServiceUsers(v.(bool))
+		if v, ok := patConfig["require_role_restriction_for_service_users"]; ok && v.(string) != BooleanDefault {
+			parsed, err := booleanStringToBool(v.(string))
+			if err != nil {
+				return err
+			}
+			req.WithRequireRoleRestrictionForServiceUsers(parsed)
 		} else {
 			req.WithRequireRoleRestrictionForServiceUsers(true)
 		}
@@ -879,8 +875,12 @@ func ToPatPolicyRequest(value any) (sdk.AuthenticationPolicyPatPolicyRequest, er
 		}
 		patPolicy.WithNetworkPolicyEvaluation(networkPolicyEvaluation)
 	}
-	if v, ok := patConfig["require_role_restriction_for_service_users"]; ok {
-		patPolicy.WithRequireRoleRestrictionForServiceUsers(v.(bool))
+	if v, ok := patConfig["require_role_restriction_for_service_users"]; ok && v.(string) != BooleanDefault {
+		parsed, err := booleanStringToBool(v.(string))
+		if err != nil {
+			return sdk.AuthenticationPolicyPatPolicyRequest{}, err
+		}
+		patPolicy.WithRequireRoleRestrictionForServiceUsers(parsed)
 	} else {
 		// Default to true when pat_policy block is present but attribute unset (per Snowflake default).
 		patPolicy.WithRequireRoleRestrictionForServiceUsers(true)

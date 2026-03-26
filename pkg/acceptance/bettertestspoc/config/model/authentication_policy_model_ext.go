@@ -88,6 +88,9 @@ func (a *AuthenticationPolicyModel) WithPatPolicy(patPolicy sdk.AuthenticationPo
 	if patPolicy.MaxExpiryInDays != nil {
 		m["max_expiry_in_days"] = tfconfig.IntegerVariable(*patPolicy.MaxExpiryInDays)
 	}
+	if patPolicy.RequireRoleRestrictionForServiceUsers != nil {
+		m["require_role_restriction_for_service_users"] = tfconfig.BoolVariable(*patPolicy.RequireRoleRestrictionForServiceUsers)
+	}
 	if patPolicy.NetworkPolicyEvaluation != nil {
 		m["network_policy_evaluation"] = tfconfig.StringVariable(string(*patPolicy.NetworkPolicyEvaluation))
 	}
