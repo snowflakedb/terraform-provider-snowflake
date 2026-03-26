@@ -195,6 +195,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.CatalogIntegrationObjectStorage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
 	},
+	resources.CatalogIntegrationOpenCatalog: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
 	},

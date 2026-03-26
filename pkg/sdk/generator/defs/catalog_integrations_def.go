@@ -1,7 +1,6 @@
 package defs
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
@@ -238,8 +237,8 @@ var catalogIntegrationsDef = g.NewInterface(
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
 			Text("CatalogNamespace").
-			Field("RestConfig", g.KindOfT[sdk.OpenCatalogRestConfig]()).
-			Field("RestAuthentication", g.KindOfT[sdk.OAuthRestAuthentication]()),
+			Field("RestConfig", "OpenCatalogRestConfigDetails").
+			Field("RestAuthentication", "OAuthRestAuthenticationDetails"),
 		g.PlainStruct("CatalogIntegrationIcebergRestDetails").
 			AccountObjectIdentifier().
 			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
@@ -248,10 +247,10 @@ var catalogIntegrationsDef = g.NewInterface(
 			Number("RefreshIntervalSeconds").
 			Text("Comment").
 			Text("CatalogNamespace").
-			Field("RestConfig", g.KindOfT[sdk.IcebergRestRestConfig]()).
-			OptionalField("OAuthRestAuthentication", g.KindOfT[sdk.OAuthRestAuthentication]()).
-			OptionalField("BearerRestAuthentication", g.KindOfT[sdk.BearerRestAuthentication]()).
-			OptionalField("SigV4RestAuthentication", g.KindOfT[sdk.SigV4RestAuthentication]()),
+			Field("RestConfig", "IcebergRestRestConfigDetails").
+			OptionalField("OAuthRestAuthentication", "OAuthRestAuthenticationDetails").
+			OptionalField("BearerRestAuthentication", "BearerRestAuthenticationDetails").
+			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
 		g.PlainStruct("CatalogIntegrationSapBdcDetails").
 			AccountObjectIdentifier().
 			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
@@ -259,4 +258,25 @@ var catalogIntegrationsDef = g.NewInterface(
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment"),
+		g.PlainStruct("OpenCatalogRestConfigDetails").
+			Text("CatalogUri").
+			Field("CatalogApiType", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType]()).
+			Text("CatalogName").
+			Field("AccessDelegationMode", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode]()),
+		g.PlainStruct("IcebergRestRestConfigDetails").
+			Text("CatalogUri").
+			Text("Prefix").
+			Text("CatalogName").
+			Field("CatalogApiType", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType]()).
+			Field("AccessDelegationMode", g.KindOfT[sdkcommons.CatalogIntegrationAccessDelegationMode]()),
+		g.PlainStruct("OAuthRestAuthenticationDetails").
+			Text("OauthTokenUri").
+			Text("OauthClientId").
+			Text("OauthClientSecret").
+			StringList("OauthAllowedScopes"),
+		g.PlainStruct("BearerRestAuthenticationDetails").
+			Text("BearerToken"),
+		g.PlainStruct("SigV4RestAuthenticationDetails").
+			Text("Sigv4IamRole").
+			Text("Sigv4SigningRegion"),
 	)

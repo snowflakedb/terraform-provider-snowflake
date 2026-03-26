@@ -23,7 +23,7 @@ var catalogIntegrationObjectStorageSchema = func() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
-			Description:      "Specifies the table format. Supported values: ICEBERG, DELTA.",
+			Description:      "Specifies the table format. " + enumValuesDescription(sdk.AllCatalogIntegrationTableFormats),
 			DiffSuppressFunc: NormalizeAndCompare(sdk.ToCatalogIntegrationTableFormat),
 			ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationTableFormat),
 		},
