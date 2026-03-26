@@ -237,7 +237,44 @@ by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabl
 
 No changes in configuration are required.
 Without the flag enabled, the behavior remains the same as in previous versions.
+## v2.14.0 ➞ v2.14.1
 
+### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
+
+Due to recent Snowflake release (`10.10.2`) changing the `DESC AUTHENTICATION POLICY` output,
+the authentication_policy resource started to fail trying to parse changed format.
+
+The errors may look similar to the following:
+```
+╷
+│ Error: object does not exist
+│ 
+│ 
+│   with snowflake_authentication_policy.test,
+│   on test.tf line 3, in resource "snowflake_authentication_policy" "test":
+│    3: resource "snowflake_authentication_policy" "test" {
+│ 
+```
+
+What changed on the Snowflake side:
+- The row with `MFA_AUTHENTICATION_METHODS` is no longer returned (main root cause of the above error).
+- For default `MFA_ENROLLMENT` value (`OPTIONAL`) Snowflake now returns `REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY`, instead of `REQUIRED_PASSWORD_ONLY`.
+
+Because of this change, every provider version is potentially affected, and version bump to v2.14.1 is required to fix above error.
+
+This change updates the `describe_output` parsing and **removes** the already deprecated `mfa_authentication_methods` field from the `describe_output` computed field.
+This affects the `describe_output` in the `snowflake_authentication_policy` resource as well as `snowflake_authentication_policies` data source.
+
+For compatibility, the top-level settable `mfa_authentication_methods` attribute will stay, but now, won't be populated by the provider's Read operation,
+and still any configuration changes to it will have no effect. Although the field remains for now, it may be removed in a future release as both,
+`snowflake_authentication_policy` resource and `snowflake_authentication_policies` data source, are still preview features.
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
+After upgrading to the latest provider version,
+please remove any `mfa_authentication_methods` references from your `snowflake_authentication_policy` resources just in case.
+Other than that, no configuration changes are necessary.
+
+References: [#4557](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557)
 ## v2.13.x ➞ v2.14.0
 
 ### *(new feature)* Private Facts and Metrics support in Semantic Views

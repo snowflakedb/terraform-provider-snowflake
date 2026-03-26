@@ -11,17 +11,16 @@ import (
 
 // AuthenticationPolicyDescribeSchema represents output of DESCRIBE query for the single AuthenticationPolicy.
 var AuthenticationPolicyDescribeSchema = map[string]*schema.Schema{
-	"name":                       {Type: schema.TypeString, Computed: true},
-	"owner":                      {Type: schema.TypeString, Computed: true},
-	"authentication_methods":     {Type: schema.TypeString, Computed: true},
-	"mfa_authentication_methods": {Type: schema.TypeString, Computed: true},
-	"mfa_enrollment":             {Type: schema.TypeString, Computed: true},
-	"client_types":               {Type: schema.TypeString, Computed: true},
-	"security_integrations":      {Type: schema.TypeString, Computed: true},
-	"comment":                    {Type: schema.TypeString, Computed: true},
-	"mfa_policy":                 {Type: schema.TypeString, Computed: true},
-	"pat_policy":                 {Type: schema.TypeString, Computed: true},
-	"workload_identity_policy":   {Type: schema.TypeString, Computed: true},
+	"name":                     {Type: schema.TypeString, Computed: true},
+	"owner":                    {Type: schema.TypeString, Computed: true},
+	"authentication_methods":   {Type: schema.TypeString, Computed: true},
+	"mfa_enrollment":           {Type: schema.TypeString, Computed: true},
+	"client_types":             {Type: schema.TypeString, Computed: true},
+	"security_integrations":    {Type: schema.TypeString, Computed: true},
+	"comment":                  {Type: schema.TypeString, Computed: true},
+	"mfa_policy":               {Type: schema.TypeString, Computed: true},
+	"pat_policy":               {Type: schema.TypeString, Computed: true},
+	"workload_identity_policy": {Type: schema.TypeString, Computed: true},
 }
 
 var _ = AuthenticationPolicyDescribeSchema
@@ -34,7 +33,6 @@ var AuthenticationPolicyNames = []string{
 	"CLIENT_TYPES",
 	"SECURITY_INTEGRATIONS",
 	"MFA_ENROLLMENT",
-	"MFA_AUTHENTICATION_METHODS",
 	"MFA_POLICY",
 	"PAT_POLICY",
 	"WORKLOAD_IDENTITY_POLICY",
