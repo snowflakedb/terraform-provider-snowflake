@@ -391,10 +391,12 @@ type CreateAdaptiveWarehouseOptions struct {
 	Comment          *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	MaxStatementSize *MaxStatementSize `ddl:"parameter,single_quotes" sql:"MAX_STATEMENT_SIZE"`
 
+	// Tags
+	Tag []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
+
 	// Object params
-	StatementQueuedTimeoutInSeconds *int             `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
-	StatementTimeoutInSeconds       *int             `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-	Tag                             []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
+	StatementQueuedTimeoutInSeconds *int `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds       *int `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 }
 
 func (opts *CreateAdaptiveWarehouseOptions) validate() error {
@@ -709,6 +711,8 @@ type Warehouse struct {
 	OwnerRoleType                   string
 	ResourceConstraint              *WarehouseResourceConstraint
 	Generation                      *WarehouseGeneration
+	MaxStatementSize                *MaxStatementSize
+	MaxBurstRateCredits             *int
 }
 
 type warehouseDBRow struct {
@@ -746,6 +750,8 @@ type warehouseDBRow struct {
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
 	ResourceConstraint              sql.NullString `db:"resource_constraint"`
 	Generation                      sql.NullString `db:"generation"`
+	MaxStatementSize                sql.NullString `db:"max_statement_size"`
+	MaxBurstRateCredits             sql.NullInt64  `db:"max_burst_rate_credits"`
 }
 
 func (row warehouseDBRow) convert() (*Warehouse, error) {
@@ -842,6 +848,8 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 			return nil, fmt.Errorf("invalid warehouse type: %s", wh.Type)
 		}
 	}
+	mapNullStringWithMapping(&wh.MaxStatementSize, row.MaxStatementSize, ToMaxStatementSize)
+	mapNullInt(&wh.MaxBurstRateCredits, row.MaxBurstRateCredits)
 	return wh, nil
 }
 

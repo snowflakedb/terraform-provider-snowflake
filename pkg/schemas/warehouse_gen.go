@@ -3,12 +3,15 @@
 package schemas
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// ShowWarehouseSchema represents output of SHOW query for the single Warehouse.
-var ShowWarehouseSchema = map[string]*schema.Schema{
+// Adjusted manually: split into common, regular, and adaptive schemas.
+
+// showWarehouseSchemaCommon contains fields present for all warehouse types.
+var showWarehouseSchemaCommon = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -19,22 +22,6 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 	},
 	"type": {
 		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"size": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"min_cluster_count": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"max_cluster_count": {
-		Type:     schema.TypeInt,
-		Computed: true,
-	},
-	"started_clusters": {
-		Type:     schema.TypeInt,
 		Computed: true,
 	},
 	"running": {
@@ -51,10 +38,6 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 	},
 	"is_current": {
 		Type:     schema.TypeBool,
-		Computed: true,
-	},
-	"auto_suspend": {
-		Type:     schema.TypeInt,
 		Computed: true,
 	},
 	"auto_resume": {
@@ -97,6 +80,38 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"resource_monitor": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"owner_role_type": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+}
+
+// showWarehouseSchemaRegular contains fields only present for standard and snowpark-optimized warehouses.
+var showWarehouseSchemaRegular = map[string]*schema.Schema{
+	"size": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"min_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"max_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"started_clusters": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"auto_suspend": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
 	"enable_query_acceleration": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -105,15 +120,7 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-	"resource_monitor": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
 	"scaling_policy": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"owner_role_type": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -127,7 +134,10 @@ var ShowWarehouseSchema = map[string]*schema.Schema{
 	},
 }
 
-var _ = ShowWarehouseSchema
+// ShowRegularWarehouseSchema contains common and regular fields (used by the warehouse resource and data source).
+var ShowRegularWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaRegular)
+
+var _ = ShowRegularWarehouseSchema
 
 func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := make(map[string]any)
