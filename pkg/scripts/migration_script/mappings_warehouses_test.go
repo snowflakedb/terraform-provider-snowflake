@@ -132,3 +132,16 @@ import {
 		})
 	}
 }
+
+func TestHandleWarehousesMappings_AdaptiveWarehouseNotSupported(t *testing.T) {
+	inputRows := [][]string{
+		{"auto_resume", "auto_suspend", "name", "max_cluster_count", "min_cluster_count", "query_acceleration_max_scale_factor", "scaling_policy", "size", "type"},
+		{"true", "", "WAREHOUSE", "1", "1", "8", "", "", "ADAPTIVE"},
+	}
+
+	_, err := HandleWarehouses(&Config{
+		ObjectType: ObjectTypeWarehouses,
+		ImportFlag: ImportStatementTypeBlock,
+	}, inputRows)
+	assert.ErrorContains(t, err, "adaptive warehouses are not supported")
+}
