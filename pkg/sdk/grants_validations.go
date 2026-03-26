@@ -75,6 +75,7 @@ var validGrantOwnershipBulkObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
 	ObjectTypeDataMetricFunction,
 	ObjectTypeDatabase,
+	ObjectTypeDbtProject,
 	ObjectTypeDynamicTable,
 	ObjectTypeEventTable,
 	ObjectTypeExternalTable,
