@@ -26,6 +26,7 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeDataMetricFunction,
 	ObjectTypeDatabase,
 	ObjectTypeDatabaseRole,
+	ObjectTypeDbtProject,
 	ObjectTypeDynamicTable,
 	ObjectTypeEventTable,
 	ObjectTypeExternalTable,
