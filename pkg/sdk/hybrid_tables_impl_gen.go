@@ -13,6 +13,7 @@ var _ HybridTables = (*hybridTables)(nil)
 var (
 	_ convertibleRow[HybridTable]        = new(hybridTableRow)
 	_ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
+	_ convertibleRow[HybridTableIndex]   = new(hybridTableIndexRow)
 )
 
 type hybridTables struct {
@@ -71,6 +72,25 @@ func (v *hybridTables) Describe(ctx context.Context, id SchemaObjectIdentifier) 
 		return nil, err
 	}
 	return convertRows[hybridTableDetailsRow, HybridTableDetails](rows)
+}
+
+func (v *hybridTables) CreateIndex(ctx context.Context, request *CreateIndexHybridTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *hybridTables) DropIndex(ctx context.Context, request *DropIndexHybridTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *hybridTables) ShowIndexes(ctx context.Context, request *ShowIndexesHybridTableRequest) ([]HybridTableIndex, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[hybridTableIndexRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[hybridTableIndexRow, HybridTableIndex](dbRows)
 }
 
 func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
@@ -153,27 +173,6 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 	}
 	if r.ConstraintAction != nil {
 		opts.ConstraintAction = &HybridTableConstraintAction{}
-		if r.ConstraintAction.Add != nil {
-			opts.ConstraintAction.Add = &HybridTableConstraintActionAdd{}
-			opts.ConstraintAction.Add.OutOfLineConstraint = HybridTableOutOfLineConstraint{
-				Name:               r.ConstraintAction.Add.OutOfLineConstraint.Name,
-				Type:               r.ConstraintAction.Add.OutOfLineConstraint.Type,
-				Columns:            r.ConstraintAction.Add.OutOfLineConstraint.Columns,
-				ForeignKey:         r.ConstraintAction.Add.OutOfLineConstraint.ForeignKey,
-				Enforced:           r.ConstraintAction.Add.OutOfLineConstraint.Enforced,
-				NotEnforced:        r.ConstraintAction.Add.OutOfLineConstraint.NotEnforced,
-				Deferrable:         r.ConstraintAction.Add.OutOfLineConstraint.Deferrable,
-				NotDeferrable:      r.ConstraintAction.Add.OutOfLineConstraint.NotDeferrable,
-				InitiallyDeferred:  r.ConstraintAction.Add.OutOfLineConstraint.InitiallyDeferred,
-				InitiallyImmediate: r.ConstraintAction.Add.OutOfLineConstraint.InitiallyImmediate,
-				Enable:             r.ConstraintAction.Add.OutOfLineConstraint.Enable,
-				Disable:            r.ConstraintAction.Add.OutOfLineConstraint.Disable,
-				Validate:           r.ConstraintAction.Add.OutOfLineConstraint.Validate,
-				Novalidate:         r.ConstraintAction.Add.OutOfLineConstraint.Novalidate,
-				Rely:               r.ConstraintAction.Add.OutOfLineConstraint.Rely,
-				Norely:             r.ConstraintAction.Add.OutOfLineConstraint.Norely,
-			}
-		}
 		if r.ConstraintAction.Rename != nil {
 			opts.ConstraintAction.Rename = &HybridTableConstraintActionRename{
 				OldName: r.ConstraintAction.Rename.OldName,
@@ -202,12 +201,6 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 				Type:         v.Type,
 				Comment:      v.Comment,
 				UnsetComment: v.UnsetComment,
-			}
-			if v.NotNullConstraint != nil {
-				s[i].NotNullConstraint = &HybridTableColumnNotNullConstraint{
-					SetNotNull:  v.NotNullConstraint.SetNotNull,
-					DropNotNull: v.NotNullConstraint.DropNotNull,
-				}
 			}
 		}
 		opts.AlterColumnAction = s
@@ -245,23 +238,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 		opts.Set = &HybridTableSetProperties{
 			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
 			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
-			ChangeTracking:             r.Set.ChangeTracking,
-			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
-			EnableSchemaEvolution:      r.Set.EnableSchemaEvolution,
-			Contact:                    r.Set.Contact,
 			Comment:                    r.Set.Comment,
-			RowTimestamp:               r.Set.RowTimestamp,
-		}
-	}
-	if r.Unset != nil {
-		opts.Unset = &HybridTableUnsetProperties{
-			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
-			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
-			ChangeTracking:             r.Unset.ChangeTracking,
-			DefaultDdlCollation:        r.Unset.DefaultDdlCollation,
-			EnableSchemaEvolution:      r.Unset.EnableSchemaEvolution,
-			ContactPurpose:             r.Unset.ContactPurpose,
-			Comment:                    r.Unset.Comment,
 		}
 	}
 	return opts
@@ -323,4 +300,92 @@ func (r *ShowIndexesHybridTableRequest) toOpts() *ShowIndexesHybridTableOptions 
 		Limit:      r.Limit,
 	}
 	return opts
+}
+
+// adjusted manually
+func (r hybridTableRow) convert() (*HybridTable, error) {
+	ht := &HybridTable{
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+	}
+	if r.Rows.Valid {
+		ht.Rows = Int(int(r.Rows.Int64))
+	}
+	if r.Bytes.Valid {
+		ht.Bytes = Int(int(r.Bytes.Int64))
+	}
+	if r.Owner.Valid {
+		ht.Owner = r.Owner.String
+	}
+	if r.Comment.Valid {
+		ht.Comment = r.Comment.String
+	}
+	if r.OwnerRoleType.Valid {
+		ht.OwnerRoleType = r.OwnerRoleType.String
+	}
+	return ht, nil
+}
+
+// adjusted manually
+func (r hybridTableDetailsRow) convert() (*HybridTableDetails, error) {
+	details := &HybridTableDetails{
+		Name:       r.Name,
+		Type:       r.Type,
+		Kind:       r.Kind,
+		IsNullable: r.Null == "Y",
+		PrimaryKey: r.PrimaryKey == "Y",
+		UniqueKey:  r.UniqueKey == "Y",
+	}
+	if r.Default.Valid {
+		details.Default = r.Default.String
+	}
+	if r.Check.Valid {
+		details.Check = r.Check.String
+	}
+	if r.Expression.Valid {
+		details.Expression = r.Expression.String
+	}
+	if r.Comment.Valid {
+		details.Comment = r.Comment.String
+	}
+	if r.PolicyName.Valid {
+		details.PolicyName = r.PolicyName.String
+	}
+	if r.PrivacyDomain.Valid {
+		details.PrivacyDomain = r.PrivacyDomain.String
+	}
+	if r.SchemaEvolutionRecord.Valid {
+		details.SchemaEvolutionRecord = r.SchemaEvolutionRecord.String
+	}
+	return details, nil
+}
+
+// adjusted manually
+func (r hybridTableIndexRow) convert() (*HybridTableIndex, error) {
+	idx := &HybridTableIndex{
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		TableName:    r.Table,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
+	}
+	if r.IsUnique.Valid {
+		v := r.IsUnique.String == "Y"
+		idx.IsUnique = &v
+	}
+	if r.Columns.Valid {
+		idx.Columns = &r.Columns.String
+	}
+	if r.IncludedColumns.Valid {
+		idx.IncludedColumns = r.IncludedColumns.String
+	}
+	if r.Owner.Valid {
+		idx.Owner = r.Owner.String
+	}
+	if r.OwnerRoleType.Valid {
+		idx.OwnerRoleType = r.OwnerRoleType.String
+	}
+	return idx, nil
 }

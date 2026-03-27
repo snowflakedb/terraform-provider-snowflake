@@ -73,7 +73,6 @@ type AlterHybridTableRequest struct {
 	DropIndexAction   *HybridTableDropIndexActionRequest
 	ClusteringAction  *HybridTableClusteringActionRequest
 	Set               *HybridTableSetPropertiesRequest
-	Unset             *HybridTableUnsetPropertiesRequest
 }
 
 type HybridTableAddColumnActionRequest struct {
@@ -87,13 +86,8 @@ type HybridTableAddColumnActionRequest struct {
 }
 
 type HybridTableConstraintActionRequest struct {
-	Add    *HybridTableConstraintActionAddRequest
 	Rename *HybridTableConstraintActionRenameRequest
 	Drop   *HybridTableConstraintActionDropRequest
-}
-
-type HybridTableConstraintActionAddRequest struct {
-	OutOfLineConstraint HybridTableOutOfLineConstraintRequest
 }
 
 type HybridTableConstraintActionRenameRequest struct {
@@ -111,19 +105,15 @@ type HybridTableConstraintActionDropRequest struct {
 	Restrict       *bool
 }
 
+// NOTE: Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL (discovered via integration testing against Snowflake).
+// Snowflake docs may suggest otherwise but the operation errors at runtime.
 type HybridTableAlterColumnActionRequest struct {
-	ColumnName        string // required
-	DropDefault       *bool
-	SetDefault        *SequenceName
-	NotNullConstraint *HybridTableColumnNotNullConstraintRequest
-	Type              *DataType
-	Comment           *string
-	UnsetComment      *bool
-}
-
-type HybridTableColumnNotNullConstraintRequest struct {
-	SetNotNull  *bool
-	DropNotNull *bool
+	ColumnName   string // required
+	DropDefault  *bool
+	SetDefault   *SequenceName
+	Type         *DataType
+	Comment      *string
+	UnsetComment *bool
 }
 
 type HybridTableDropColumnActionRequest struct {
@@ -152,26 +142,16 @@ type HybridTableReclusterChangeStateRequest struct {
 	State *ReclusterState
 }
 
+// NOTE: Hybrid tables do not support CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION,
+// CONTACT, or ROW_TIMESTAMP in ALTER TABLE SET (per Snowflake documentation and runtime behavior).
 type HybridTableSetPropertiesRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
-	ChangeTracking             *bool
-	DefaultDdlCollation        *string
-	EnableSchemaEvolution      *bool
-	Contact                    []TableContact
 	Comment                    *string
-	RowTimestamp               *bool
 }
 
-type HybridTableUnsetPropertiesRequest struct {
-	DataRetentionTimeInDays    *bool
-	MaxDataExtensionTimeInDays *bool
-	ChangeTracking             *bool
-	DefaultDdlCollation        *bool
-	EnableSchemaEvolution      *bool
-	ContactPurpose             *string
-	Comment                    *bool
-}
+// NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
+// Snowflake docs may suggest otherwise but the operation errors at runtime.
 
 type DropHybridTableRequest struct {
 	IfExists *bool
