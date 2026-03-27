@@ -949,6 +949,18 @@ func TestGrants_GrantOwnership(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `GRANT OWNERSHIP ON TABLE %s TO ROLE %s`, tableId.FullyQualifiedName(), roleId.FullyQualifiedName())
 	})
 
+	t.Run("on dbt project to role", func(t *testing.T) {
+		dbtProjectId := randomSchemaObjectIdentifierInSchema(schemaId)
+		opts := defaultOpts()
+		opts.On = OwnershipGrantOn{
+			Object: &Object{
+				ObjectType: ObjectTypeDbtProject,
+				Name:       dbtProjectId,
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT OWNERSHIP ON DBT PROJECT %s TO ROLE %s`, dbtProjectId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
 	t.Run("on schema object to database role", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.To = OwnershipGrantTo{
