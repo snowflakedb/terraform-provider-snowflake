@@ -278,5 +278,6 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("BearerToken"),
 		g.PlainStruct("SigV4RestAuthenticationDetails").
 			Text("Sigv4IamRole").
-			Text("Sigv4SigningRegion"),
+			Text("Sigv4SigningRegion").
+			Text("Sigv4ExternalId"),
 	)
