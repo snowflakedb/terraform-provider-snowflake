@@ -210,57 +210,83 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 
 	t1Alias, t2Alias, dimensionName, factName, privateFactName, metricName, relationshipName := "lt1", "lt2", "d1", "f1", "f2", "m1", "r1"
 
-	// semantic view related details
-	commentDetails := objectassert.NewSemanticViewDetails(nil, nil, nil, "COMMENT", comment)
-
 	// logical table 1 related details
-	table1DatabaseName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1.ID().DatabaseName())
-	table1SchemaName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1.ID().SchemaName())
-	table1Name := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1.ID().Name())
-	table1Synonyms := objectassert.NewSemanticViewDetailsTable(t1Alias, "SYNONYMS", `["sales","orders"]`)
-	table1PrimaryKey := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", `["a1"]`)
-	table1UniqueKey := objectassert.NewSemanticViewDetailsTable(t1Alias, "UNIQUE_KEY", `[["a2"],["a3","a4"]]`)
-	table1Comment := objectassert.NewSemanticViewDetailsTable(t1Alias, "COMMENT", `logical table 1`)
-
-	// dimension related details
-	dimensionTable := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "TABLE", t1Alias)
-	dimensionExpression := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "EXPRESSION", `"lt1"."a1"`)
-	dimensionDataType := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-	dimensionSynonyms := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "SYNONYMS", `["dim1"]`)
-	dimensionComment := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "COMMENT", "dimension 1")
-	dimensionAccessModifier := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
-
-	// fact related details
-	factTable := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "TABLE", t1Alias)
-	factExpression := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "EXPRESSION", `"lt1"."a2"`)
-	factDataType := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-	factSynonyms := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "SYNONYMS", `["fact1"]`)
-	factComment := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "COMMENT", "fact 1")
-	factAccessModifier := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
-
-	privateFactTable := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "TABLE", t1Alias)
-	privateFactExpression := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "EXPRESSION", `"lt1"."a1"`)
-	privateFactDataType := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-	privateFactSynonyms := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "SYNONYMS", `["fact2"]`)
-	privateFactComment := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "COMMENT", "fact 2")
-	privateFactAccessModifier := objectassert.NewSemanticViewDetailsFact(privateFactName, t1Alias, "ACCESS_MODIFIER", "PRIVATE")
-
-	// metric related details
-	metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", t1Alias)
-	metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("lt1"."a1")`)
-	metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-	metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PRIVATE")
+	expectedTable1 := sdk.SemanticViewTableDetails{
+		TableNameOrAlias:      t1Alias,
+		BaseTableDatabaseName: table1.ID().DatabaseName(),
+		BaseTableSchemaName:   table1.ID().SchemaName(),
+		BaseTableName:         table1.ID().Name(),
+		PrimaryKeys:           `["a1"]`,
+		UniqueKeys:            `[["a2"],["a3","a4"]]`,
+		Synonyms:              `["sales","orders"]`,
+		Comment:               "logical table 1",
+	}
 
 	// logical table 2 related details
-	table2DatabaseName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2.ID().DatabaseName())
-	table2SchemaName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2.ID().SchemaName())
-	table2Name := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2.ID().Name())
+	expectedTable2 := sdk.SemanticViewTableDetails{
+		TableNameOrAlias:      t2Alias,
+		BaseTableDatabaseName: table2.ID().DatabaseName(),
+		BaseTableSchemaName:   table2.ID().SchemaName(),
+		BaseTableName:         table2.ID().Name(),
+		PrimaryKeys:           `["a1"]`,
+	}
+
+	// dimension related details
+	expectedDimension := sdk.SemanticViewDimensionDetails{
+		DimensionAlias:   dimensionName,
+		TableNameOrAlias: t1Alias,
+		Expression:       `"lt1"."a1"`,
+		DataType:         "NUMBER(38,0)",
+		Synonyms:         `["dim1"]`,
+		Comment:          "dimension 1",
+		AccessModifier:   "PUBLIC",
+		ParentEntity:     t1Alias,
+	}
+
+	// fact related details
+	expectedFact := sdk.SemanticViewFactDetails{
+		FactAlias:        factName,
+		TableNameOrAlias: t1Alias,
+		Expression:       `"lt1"."a2"`,
+		DataType:         "NUMBER(38,0)",
+		Synonyms:         `["fact1"]`,
+		Comment:          "fact 1",
+		AccessModifier:   "PUBLIC",
+		ParentEntity:     t1Alias,
+	}
+
+	expectedPrivateFact := sdk.SemanticViewFactDetails{
+		FactAlias:        privateFactName,
+		TableNameOrAlias: t1Alias,
+		Expression:       `"lt1"."a1"`,
+		DataType:         "NUMBER(38,0)",
+		Synonyms:         `["fact2"]`,
+		Comment:          "fact 2",
+		AccessModifier:   "PRIVATE",
+		ParentEntity:     t1Alias,
+	}
+
+	// metric related details
+	expectedMetric := sdk.SemanticViewMetricDetails{
+		MetricAlias:      metricName,
+		TableNameOrAlias: t1Alias,
+		Expression:       `SUM("lt1"."a1")`,
+		DataType:         "NUMBER(38,0)",
+		AccessModifier:   "PRIVATE",
+		Synonyms:         `["sem1","baseSem"]`,
+		Comment:          "semantic expression 1",
+		ParentEntity:     t1Alias,
+	}
 
 	// relationship related details
-	relationshipTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t1Alias, "TABLE", t1Alias)
-	relationshipRefTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t1Alias, "REF_TABLE", t2Alias)
-	relationshipForeignKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t1Alias, "FOREIGN_KEY", `["a1","a2"]`)
-	relationshipRefKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t1Alias, "REF_KEY", `["a1","a2"]`)
+	expectedRelationship := sdk.SemanticViewRelationshipDetails{
+		RelationshipAlias:   relationshipName,
+		TableNameOrAlias:    t1Alias,
+		ForeignKeys:         `["a1","a2"]`,
+		RefTableNameOrAlias: t2Alias,
+		RefKeys:             `["a1","a2"]`,
+		ParentEntity:        t1Alias,
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -338,37 +364,13 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					objectassert.SemanticViewDetails(t, id).
 						HasDetailsCount(34).
-						ContainsDetail(commentDetails).
-						ContainsDetail(table1DatabaseName).
-						ContainsDetail(table1SchemaName).
-						ContainsDetail(table1Name).
-						ContainsDetail(table1Synonyms).
-						ContainsDetail(table1PrimaryKey).
-						ContainsDetail(table1UniqueKey).
-						ContainsDetail(table1Comment).
-						ContainsDetail(dimensionTable).
-						ContainsDetail(dimensionExpression).
-						ContainsDetail(dimensionDataType).
-						ContainsDetail(dimensionSynonyms).
-						ContainsDetail(dimensionComment).
-						ContainsDetail(dimensionAccessModifier).
-						ContainsDetail(factTable).
-						ContainsDetail(factExpression).
-						ContainsDetail(factDataType).
-						ContainsDetail(factSynonyms).
-						ContainsDetail(factComment).
-						ContainsDetail(factAccessModifier).
-						ContainsDetail(metricTable).
-						ContainsDetail(metricExpression).
-						ContainsDetail(metricDataType).
-						ContainsDetail(metricAccessModifier).
-						ContainsDetail(table2DatabaseName).
-						ContainsDetail(table2SchemaName).
-						ContainsDetail(table2Name).
-						ContainsDetail(relationshipTable).
-						ContainsDetail(relationshipRefTable).
-						ContainsDetail(relationshipForeignKey).
-						ContainsDetail(relationshipRefKey),
+						HasComment(comment).
+						ContainsTable(expectedTable1).
+						ContainsTable(expectedTable2).
+						ContainsDimension(expectedDimension).
+						ContainsFact(expectedFact).
+						ContainsMetric(expectedMetric).
+						ContainsRelationship(expectedRelationship),
 				),
 			},
 			// import complete
@@ -439,12 +441,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 					resourceshowoutputassert.SemanticViewShowOutput(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasComment(changedComment),
 					objectassert.SemanticViewDetails(t, id).
-						ContainsDetail(privateFactTable).
-						ContainsDetail(privateFactExpression).
-						ContainsDetail(privateFactDataType).
-						ContainsDetail(privateFactSynonyms).
-						ContainsDetail(privateFactComment).
-						ContainsDetail(privateFactAccessModifier),
+						ContainsFact(expectedPrivateFact),
 				),
 			},
 			// change externally - no recreation yet
