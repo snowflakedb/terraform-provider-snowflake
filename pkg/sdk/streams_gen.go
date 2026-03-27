@@ -166,9 +166,9 @@ type Stream struct {
 	SchemaName    string
 	Owner         *string
 	Comment       *string
-	TableName     *string
+	TableName     *SchemaObjectIdentifier
 	SourceType    *StreamSourceType
-	BaseTables    []string
+	BaseTables    []SchemaObjectIdentifier
 	Type          *string
 	Stale         bool
 	Mode          *StreamMode

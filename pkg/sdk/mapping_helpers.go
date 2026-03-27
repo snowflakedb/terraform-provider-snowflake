@@ -3,6 +3,7 @@ package sdk
 import (
 	"database/sql"
 	"log"
+	"time"
 )
 
 func mapNullString(stringField **string, sqlValue sql.NullString) {
@@ -44,5 +45,11 @@ func mapStringWithMapping[T any](stringField *T, sqlValue string, mapper func(st
 		*stringField = mappedValue
 	} else {
 		log.Printf("[WARN] Failed to map string value, err = %s", err)
+	}
+}
+
+func mapNullTime(stringField **time.Time, sqlValue sql.NullTime) {
+	if sqlValue.Valid {
+		*stringField = &sqlValue.Time
 	}
 }

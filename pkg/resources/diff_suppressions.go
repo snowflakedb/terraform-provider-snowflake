@@ -240,22 +240,6 @@ func suppressIdentifierQuoting(_, oldValue, newValue string, _ *schema.ResourceD
 	return slices.Equal(oldId, newId)
 }
 
-func suppressIdentifierQuotingPartiallyQualifiedName(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-	if oldValue == "" || newValue == "" {
-		return false
-	}
-
-	oldId, err := sdk.ParseIdentifierString(oldValue)
-	if err != nil {
-		return false
-	}
-	newId, err := sdk.ParseIdentifierString(newValue)
-	if err != nil {
-		return false
-	}
-	return newId[len(newId)-1] == oldId[len(oldId)-1]
-}
-
 // IgnoreNewEmptyListOrSubfields suppresses the diff if `new` list is empty or compared subfield is ignored. Subfields can be nested.
 func IgnoreNewEmptyListOrSubfields(ignoredSubfields ...string) schema.SchemaDiffSuppressFunc {
 	return func(k, old, new string, _ *schema.ResourceData) bool {

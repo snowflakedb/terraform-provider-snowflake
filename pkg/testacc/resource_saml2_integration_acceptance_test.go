@@ -357,7 +357,7 @@ func TestAcc_Saml2Integration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "show_output.0.name", id.Name()),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "show_output.0.integration_type", "SAML2"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "show_output.0.category", "SECURITY"),
-					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "show_output.0.enabled", "false"),
+					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "show_output.0.enabled", "true"),
 					resource.TestCheckResourceAttr(recreatesModel.ResourceReference(), "show_output.0.comment", ""),
 					resource.TestCheckResourceAttrSet(recreatesModel.ResourceReference(), "show_output.0.created_on"),
 				),
@@ -988,7 +988,7 @@ func TestAcc_Saml2Integration_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "saml2_post_logout_redirect_url", ""),
 
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.#", "1"),
-					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.enabled", "false"),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "show_output.0.enabled", "true"),
 
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.#", "1"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.saml2_post_logout_redirect_url.0.value", ""),
