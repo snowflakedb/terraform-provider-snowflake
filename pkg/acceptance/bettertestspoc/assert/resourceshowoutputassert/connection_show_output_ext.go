@@ -19,8 +19,8 @@ func (c *ConnectionShowOutputAssert) HasPrimaryIdentifier(expected sdk.ExternalO
 
 func (c *ConnectionShowOutputAssert) HasFailoverAllowedToAccounts(expected ...sdk.AccountIdentifier) *ConnectionShowOutputAssert {
 	c.AddAssertion(assert.ResourceShowOutputValueSet("failover_allowed_to_accounts.#", fmt.Sprintf("%d", len(expected))))
-	for i, v := range expected {
-		c.AddAssertion(assert.ResourceShowOutputValueSet(fmt.Sprintf("failover_allowed_to_accounts.%d", i), v.Name()))
+	for _, v := range expected {
+		c.AddAssertion(assert.ResourceShowOutputSetElem("failover_allowed_to_accounts", v.Name()))
 	}
 	return c
 }
