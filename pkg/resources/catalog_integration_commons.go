@@ -71,13 +71,7 @@ func handleCatalogIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 
 	set := sdk.NewCatalogIntegrationSetRequest()
 
-	errs := errors.Join(
-		booleanAttributeUpdateSetOnly(d, "enabled", &set.Enabled),
-		// TODO [SNOW-3243983]: UNSET not implemented
-		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "refresh_interval_seconds", &set.RefreshIntervalSeconds, 30),
-		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
-	)
-	if errs != nil {
+	if errs := handleCatalogIntegrationCommonPropsUpdate(d, set); errs != nil {
 		return errs
 	}
 
@@ -88,6 +82,16 @@ func handleCatalogIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 	return nil
+}
+
+func handleCatalogIntegrationCommonPropsUpdate(d *schema.ResourceData, set *sdk.CatalogIntegrationSetRequest) error {
+	errs := errors.Join(
+		booleanAttributeUpdateSetOnly(d, "enabled", &set.Enabled),
+		// TODO [SNOW-3243983]: UNSET not implemented
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "refresh_interval_seconds", &set.RefreshIntervalSeconds, 30),
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+	)
+	return errs
 }
 
 func deleteCatalogIntegrationFunc() schema.DeleteContextFunc {

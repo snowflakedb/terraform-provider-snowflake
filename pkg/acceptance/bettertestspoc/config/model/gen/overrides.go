@@ -23,11 +23,12 @@ var multilineAttributesOverrides = map[string][]string{
 }
 
 var complexListAttributesOverrides = map[string]map[string]string{
-	"ExternalVolume":  {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
-	"Listing":         {"manifest": "sdk.StageLocation"},
-	"MaskingPolicy":   {"argument": "sdk.TableColumnSignature"},
-	"RowAccessPolicy": {"argument": "sdk.TableColumnSignature"},
-	"TagAssociation":  {"object_identifiers": "sdk.ObjectIdentifier"},
+	"CatalogIntegrationOpenCatalog": {"rest_config": "sdk.OpenCatalogRestConfigRequest", "rest_authentication": "sdk.OAuthRestAuthenticationRequest"},
+	"ExternalVolume":                {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
+	"Listing":                       {"manifest": "sdk.StageLocation"},
+	"MaskingPolicy":                 {"argument": "sdk.TableColumnSignature"},
+	"RowAccessPolicy":               {"argument": "sdk.TableColumnSignature"},
+	"TagAssociation":                {"object_identifiers": "sdk.ObjectIdentifier"},
 	// TODO [SNOW-1348114]: use better type for override (not null and default are currently not supported)
 	"Table":                   {"column": "sdk.TableColumnSignature"},
 	"SemanticView":            {"tables": "sdk.LogicalTable", "metrics": "sdk.MetricDefinition", "facts": "sdk.SemanticExpression", "dimensions": "sdk.SemanticExpression", "relationships": "sdk.SemanticViewRelationship"},

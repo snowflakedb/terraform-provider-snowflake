@@ -8,6 +8,7 @@
 - [snowflake_authentication_policy](./docs/resources/authentication_policy)
 - [snowflake_catalog_integration_aws_glue](./docs/resources/catalog_integration_aws_glue)
 - [snowflake_catalog_integration_object_storage](./docs/resources/catalog_integration_object_storage)
+- [snowflake_catalog_integration_open_catalog](./docs/resources/catalog_integration_open_catalog)
 - [snowflake_cortex_search_service](./docs/resources/cortex_search_service)
 - [snowflake_current_account](./docs/resources/current_account)
 - [snowflake_current_organization_account](./docs/resources/current_organization_account)

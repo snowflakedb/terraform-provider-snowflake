@@ -149,7 +149,6 @@ func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 	if err != nil {
 		return nil, err
 	}
-
 	stage, err := client.Stages.ShowByIDSafely(ctx, id)
 	if err != nil {
 		return nil, err

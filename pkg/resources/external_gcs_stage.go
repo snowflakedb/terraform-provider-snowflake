@@ -166,7 +166,6 @@ func ImportExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 	if err != nil {
 		return nil, err
 	}
-
 	stage, err := client.Stages.ShowByIDSafely(ctx, id)
 	if err != nil {
 		return nil, err

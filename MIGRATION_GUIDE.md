@@ -56,10 +56,12 @@ No changes are required for existing configurations.
 We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
 - [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
+- [snowflake_catalog_integration_open_catalog](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
 
-These features will be marked as stable in future releases. To use them, add
-- `snowflake_catalog_integration_aws_glue_resource`, or
-- `snowflake_catalog_integration_object_storage_resource`
+These features will be marked as stable in future releases. To use them, add 
+- `snowflake_catalog_integration_aws_glue_resource`,
+- `snowflake_catalog_integration_object_storage_resource`, or
+- `snowflake_catalog_integration_open_catalog_resource`
 to the `preview_features_enabled` field in the provider configuration.
 
 ### *(bug fix)* snowflake_account: fix nil pointer dereference panics
