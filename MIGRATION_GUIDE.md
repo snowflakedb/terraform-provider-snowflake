@@ -277,6 +277,20 @@ please remove any `mfa_authentication_methods` references from your `snowflake_a
 Other than that, no configuration changes are necessary.
 
 References: [#4557](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557)
+
+### *(bugfix)* Importing boolean fields in stage resources
+
+When importing stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`), boolean fields like `auto_refresh`, `trim_space`, `skip_blank_lines`, etc. were set to the actual Snowflake value (e.g., `"false"`) instead of the schema default `"default"`. This caused an unavoidable diff on every `terraform plan` after import. Some of these fields are mutually exclusive with others, so they can't be set in the configuration to match the actual value in Snowflake.
+
+To fix this, we introduce the new `IMPORT_BOOLEAN_DEFAULT` experiment. The fix is enabled by such flag because the import behavior differs from other resources.
+
+When this experiment is enabled, boolean fields that use special default values are set to `"default"` during import, preventing the persistent plan diff.
+
+To use this feature, add `IMPORT_BOOLEAN_DEFAULT` to the `experimental_features_enabled` field in the provider configuration.
+
+Without the flag enabled, the behavior remains the same as in previous versions.
+
+References: [#4549](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4549).
 ## v2.13.x ➞ v2.14.0
 
 ### *(new feature)* Private Facts and Metrics support in Semantic Views
