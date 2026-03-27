@@ -18,7 +18,7 @@ var AuthenticationPolicyDescribeSchema = map[string]*schema.Schema{
 	"client_types":             {Type: schema.TypeString, Computed: true},
 	"security_integrations":    {Type: schema.TypeString, Computed: true},
 	"comment":                  {Type: schema.TypeString, Computed: true},
-	"client_policy":              {Type: schema.TypeString, Computed: true},
+	"client_policy":            {Type: schema.TypeString, Computed: true},
 	"mfa_policy":               {Type: schema.TypeString, Computed: true},
 	"pat_policy":               {Type: schema.TypeString, Computed: true},
 	"workload_identity_policy": {Type: schema.TypeString, Computed: true},
