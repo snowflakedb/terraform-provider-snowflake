@@ -230,20 +230,24 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.OpenCatalogRestConfig{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.IcebergRestRestConfig{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.IcebergRestRestConfigDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.OAuthRestAuthentication{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.OAuthRestAuthenticationDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.SigV4RestAuthentication{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
+		IsDataSourceOutput: true,
 	},
 }
 

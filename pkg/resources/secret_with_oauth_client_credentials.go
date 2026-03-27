@@ -65,7 +65,7 @@ func ImportSecretWithClientCredentials(ctx context.Context, d *schema.ResourceDa
 		return nil, err
 	}
 
-	if err := handleSecretImport(d); err != nil {
+	if err := handleSecretImport(ctx, d); err != nil {
 		return nil, err
 	}
 	secretDescription, err := client.Secrets.Describe(ctx, id)

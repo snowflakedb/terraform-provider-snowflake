@@ -58,6 +58,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.CatalogIntegrationObjectStorage().Schema,
 	},
 	{
+		name:   "CatalogIntegrationOpenCatalog",
+		schema: resources.CatalogIntegrationOpenCatalog().Schema,
+	},
+	{
 		name:   "ComputePool",
 		schema: resources.ComputePool().Schema,
 	},

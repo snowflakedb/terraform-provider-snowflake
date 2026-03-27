@@ -591,6 +591,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_authentication_policy":                                        resources.AuthenticationPolicy(),
 		"snowflake_catalog_integration_aws_glue":                                 resources.CatalogIntegrationAwsGlue(),
 		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
+		"snowflake_catalog_integration_open_catalog":                             resources.CatalogIntegrationOpenCatalog(),
 		"snowflake_compute_pool":                                                 resources.ComputePool(),
 		"snowflake_cortex_search_service":                                        resources.CortexSearchService(),
 		"snowflake_current_account":                                              resources.CurrentAccount(),

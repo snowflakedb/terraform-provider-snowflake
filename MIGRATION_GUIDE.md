@@ -71,10 +71,12 @@ No changes are required for existing configurations.
 We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
 - [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
+- [snowflake_catalog_integration_open_catalog](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
 
-These features will be marked as stable in future releases. To use them, add
-- `snowflake_catalog_integration_aws_glue_resource`, or
-- `snowflake_catalog_integration_object_storage_resource`
+These features will be marked as stable in future releases. To use them, add 
+- `snowflake_catalog_integration_aws_glue_resource`,
+- `snowflake_catalog_integration_object_storage_resource`, or
+- `snowflake_catalog_integration_open_catalog_resource`
 to the `preview_features_enabled` field in the provider configuration.
 
 ### *(bug fix)* snowflake_account: fix nil pointer dereference panics
@@ -252,7 +254,58 @@ by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabl
 
 No changes in configuration are required.
 Without the flag enabled, the behavior remains the same as in previous versions.
+## v2.14.0 ➞ v2.14.1
 
+### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
+
+Due to recent Snowflake release (`10.10.2`) changing the `DESC AUTHENTICATION POLICY` output,
+the authentication_policy resource started to fail trying to parse changed format.
+
+The errors may look similar to the following:
+```
+╷
+│ Error: object does not exist
+│ 
+│ 
+│   with snowflake_authentication_policy.test,
+│   on test.tf line 3, in resource "snowflake_authentication_policy" "test":
+│    3: resource "snowflake_authentication_policy" "test" {
+│ 
+```
+
+What changed on the Snowflake side:
+- The row with `MFA_AUTHENTICATION_METHODS` is no longer returned (main root cause of the above error).
+- For default `MFA_ENROLLMENT` value (`OPTIONAL`) Snowflake now returns `REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY`, instead of `REQUIRED_PASSWORD_ONLY`.
+
+Because of this change, every provider version is potentially affected, and version bump to v2.14.1 is required to fix above error.
+
+This change updates the `describe_output` parsing and **removes** the already deprecated `mfa_authentication_methods` field from the `describe_output` computed field.
+This affects the `describe_output` in the `snowflake_authentication_policy` resource as well as `snowflake_authentication_policies` data source.
+
+For compatibility, the top-level settable `mfa_authentication_methods` attribute will stay, but now, won't be populated by the provider's Read operation,
+and still any configuration changes to it will have no effect. Although the field remains for now, it may be removed in a future release as both,
+`snowflake_authentication_policy` resource and `snowflake_authentication_policies` data source, are still preview features.
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
+After upgrading to the latest provider version,
+please remove any `mfa_authentication_methods` references from your `snowflake_authentication_policy` resources just in case.
+Other than that, no configuration changes are necessary.
+
+References: [#4557](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4557)
+
+### *(bugfix)* Importing boolean fields in stage resources
+
+When importing stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`), boolean fields like `auto_refresh`, `trim_space`, `skip_blank_lines`, etc. were set to the actual Snowflake value (e.g., `"false"`) instead of the schema default `"default"`. This caused an unavoidable diff on every `terraform plan` after import. Some of these fields are mutually exclusive with others, so they can't be set in the configuration to match the actual value in Snowflake.
+
+To fix this, we introduce the new `IMPORT_BOOLEAN_DEFAULT` experiment. The fix is enabled by such flag because the import behavior differs from other resources.
+
+When this experiment is enabled, boolean fields that use special default values are set to `"default"` during import, preventing the persistent plan diff.
+
+To use this feature, add `IMPORT_BOOLEAN_DEFAULT` to the `experimental_features_enabled` field in the provider configuration.
+
+Without the flag enabled, the behavior remains the same as in previous versions.
+
+References: [#4549](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4549).
 ## v2.13.x ➞ v2.14.0
 
 ### *(new feature)* Private Facts and Metrics support in Semantic Views

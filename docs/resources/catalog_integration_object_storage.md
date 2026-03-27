@@ -43,7 +43,7 @@ resource "snowflake_catalog_integration_object_storage" "complete" {
 
 - `enabled` (Boolean) Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.
 - `name` (String) Specifies the identifier (i.e. name) of the catalog integration; must be unique in your account.
-- `table_format` (String) Specifies the table format. Supported values: ICEBERG, DELTA.
+- `table_format` (String) Specifies the table format. Valid values are (case-insensitive): `ICEBERG` | `DELTA`.
 
 ### Optional
 

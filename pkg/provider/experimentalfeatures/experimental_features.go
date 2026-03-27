@@ -20,6 +20,7 @@ const (
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
 	ParametersReducedOutput     ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
 	TagsAllowEmptyAllowedValues ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
+	ImportBooleanDefault        ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
 )
 
 type experimentalFeatureState string
@@ -104,6 +105,15 @@ var allExperiments = []Experiment{
 			"Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.",
 			"When enabled, the three possible states in Snowflake for allowed values will be supported: `nil` (any value is allowed; whenever `allowed_values` are empty), `empty` (no value is allowed; handled by the `no_allowed_values` field), and `set` (all values defined in `allowed_values` are allowed).",
 			"Otherwise, the `no_allowed_values` field will be ignored (explicit changes will cause updates, but without any effect) and the `allowed_values` field will follow the old behavior: `nil` (any value is allowed; only available whenever tag resource is created without `allowed_values`), `empty` (no value is allowed; always set when updating from filled `allowed_values` set to empty one or completely removed from config), `set` (all values defined in `allowed_values` are allowed).",
+		),
+	},
+	{
+		ImportBooleanDefault,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Changes import behavior for boolean fields using the special `\"default\"` value.",
+			"When enabled, boolean fields using the special `\"default\"` value are set to `\"default\"` during import instead of the actual Snowflake value (e.g., `\"false\"`). This prevents unavoidable diffs on every plan after import.",
+			"Note: this is supported only on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`).",
 		),
 	},
 }

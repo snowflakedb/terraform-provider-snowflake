@@ -149,7 +149,6 @@ Read-Only:
 - `client_policy` (String)
 - `client_types` (String)
 - `comment` (String)
-- `mfa_authentication_methods` (String)
 - `mfa_enrollment` (String)
 - `mfa_policy` (String)
 - `name` (String)

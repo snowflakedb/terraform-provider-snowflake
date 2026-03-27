@@ -64,7 +64,9 @@ func ctyValToSliceString(valueElems []cty.Value) []string {
 	return elems
 }
 
-func ImportName[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.AccountIdentifier](ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+// ImportName parses the resource ID into the appropriate identifier type and sets the matching schema fields.
+// context.Context is unused but required to satisfy schema.StateContextFunc from the Terraform SDK.
+func ImportName[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentifier | sdk.SchemaObjectIdentifier | sdk.AccountIdentifier](_ context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	switch any(new(T)).(type) {
 	case *sdk.AccountObjectIdentifier:
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())

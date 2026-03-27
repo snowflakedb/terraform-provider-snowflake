@@ -386,3 +386,31 @@ func (w *WarehouseAssert) HasGeneration(expected sdk.WarehouseGeneration) *Wareh
 	})
 	return w
 }
+
+func (w *WarehouseAssert) HasMaxStatementSize(expected sdk.MaxStatementSize) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxStatementSize == nil {
+			return fmt.Errorf("expected max statement size to have value; got: nil")
+		}
+		if *o.MaxStatementSize != expected {
+			return fmt.Errorf("expected max statement size: %v; got: %v", expected, *o.MaxStatementSize)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasMaxBurstRateCredits(expected int) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxBurstRateCredits == nil {
+			return fmt.Errorf("expected max burst rate credits to have value; got: nil")
+		}
+		if *o.MaxBurstRateCredits != expected {
+			return fmt.Errorf("expected max burst rate credits: %v; got: %v", expected, *o.MaxBurstRateCredits)
+		}
+		return nil
+	})
+	return w
+}

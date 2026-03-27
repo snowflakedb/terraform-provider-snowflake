@@ -96,17 +96,6 @@ func (w *WarehouseAssert) HasNoAutoSuspend() *WarehouseAssert {
 	return w
 }
 
-func (w *WarehouseAssert) HasNoAutoResume() *WarehouseAssert {
-	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
-		t.Helper()
-		if o.AutoResume {
-			return fmt.Errorf("expected auto resume to be false; got: %t", o.AutoResume)
-		}
-		return nil
-	})
-	return w
-}
-
 func (w *WarehouseAssert) HasNoEnableQueryAcceleration() *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
@@ -123,6 +112,28 @@ func (w *WarehouseAssert) HasNoQueryAccelerationMaxScaleFactor() *WarehouseAsser
 		t.Helper()
 		if o.QueryAccelerationMaxScaleFactor != nil {
 			return fmt.Errorf("expected query acceleration max scale factor to be empty; got: %d", *o.QueryAccelerationMaxScaleFactor)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasNoMaxStatementSize() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxStatementSize != nil {
+			return fmt.Errorf("expected max statement size to be empty; got: %s", *o.MaxStatementSize)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasNoMaxBurstRateCredits() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxBurstRateCredits != nil {
+			return fmt.Errorf("expected max burst rate credits to be empty; got: %d", *o.MaxBurstRateCredits)
 		}
 		return nil
 	})
