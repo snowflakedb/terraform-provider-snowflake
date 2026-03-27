@@ -36,6 +36,21 @@ func (a *AuthenticationPolicyModel) WithClientTypes(clientTypes ...sdk.ClientTyp
 	)
 }
 
+func (a *AuthenticationPolicyModel) WithClientPolicy(entries ...sdk.AuthenticationPolicyClientPolicyEntry) *AuthenticationPolicyModel {
+	blocks := make([]tfconfig.Variable, len(entries))
+	for i, e := range entries {
+		minVer := ""
+		if e.Params != nil && e.Params.MinimumVersion != nil {
+			minVer = *e.Params.MinimumVersion
+		}
+		blocks[i] = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"client_type":     tfconfig.StringVariable(string(e.ClientType)),
+			"minimum_version": tfconfig.StringVariable(minVer),
+		})
+	}
+	return a.WithClientPolicyValue(tfconfig.SetVariable(blocks...))
+}
+
 func (a *AuthenticationPolicyModel) WithSecurityIntegrations(securityIntegrations ...string) *AuthenticationPolicyModel {
 	return a.WithSecurityIntegrationsValue(
 		tfconfig.SetVariable(
@@ -72,6 +87,9 @@ func (a *AuthenticationPolicyModel) WithPatPolicy(patPolicy sdk.AuthenticationPo
 	}
 	if patPolicy.MaxExpiryInDays != nil {
 		m["max_expiry_in_days"] = tfconfig.IntegerVariable(*patPolicy.MaxExpiryInDays)
+	}
+	if patPolicy.RequireRoleRestrictionForServiceUsers != nil {
+		m["require_role_restriction_for_service_users"] = tfconfig.BoolVariable(*patPolicy.RequireRoleRestrictionForServiceUsers)
 	}
 	if patPolicy.NetworkPolicyEvaluation != nil {
 		m["network_policy_evaluation"] = tfconfig.StringVariable(string(*patPolicy.NetworkPolicyEvaluation))

@@ -211,6 +211,7 @@ Read-Only:
 Read-Only:
 
 - `authentication_methods` (String)
+- `client_policy` (String)
 - `client_types` (String)
 - `comment` (String)
 - `mfa_enrollment` (String)
