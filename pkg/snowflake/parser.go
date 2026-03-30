@@ -96,6 +96,11 @@ func (e *ViewSelectStatementExtractor) consumeColumn() (isLast bool) {
 	if ok {
 		e.consumeSpace()
 		e.consumeID()
+		if e.input[e.pos-1] == ')' {
+			isLast = true
+			e.consumeSpace()
+			return
+		}
 		e.consumeSpace()
 		if ok := e.consumeToken("using"); ok {
 			e.consumeSpace()
@@ -112,7 +117,7 @@ func (e *ViewSelectStatementExtractor) consumeColumn() (isLast bool) {
 	e.consumeQuotedParameter("comment", false)
 	e.consumeSpace()
 	e.consumeToken(",")
-	if e.input[e.pos] == ')' {
+	if e.input[e.pos] == ')' { // e.pos < len(e.input) &&
 		e.consumeToken(")")
 		isLast = true
 	}
