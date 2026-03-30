@@ -35,11 +35,11 @@ func (v *tags) Show(ctx context.Context, request *ShowTagRequest) ([]Tag, error)
 }
 
 func (v *tags) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Tag, error) {
-	request := NewShowTagRequest().WithIn(&ExtendedIn{
+	request := NewShowTagRequest().WithIn(ExtendedIn{
 		In: In{
 			Schema: id.SchemaId(),
 		},
-	}).WithLike(id.Name())
+	}).WithLike(Like{Pattern: String(id.Name())})
 
 	tags, err := v.Show(ctx, request)
 	if err != nil {
@@ -103,25 +103,64 @@ func (v *tags) UnsetOnCurrentAccount(ctx context.Context, request *UnsetTagOnCur
 }
 
 func (s *CreateTagRequest) toOpts() *createTagOptions {
-	return &createTagOptions{
-		OrReplace:     s.orReplace,
-		IfNotExists:   s.ifNotExists,
-		name:          s.name,
-		Comment:       s.comment,
-		AllowedValues: s.allowedValues,
+	opts := &createTagOptions{
+		OrReplace:   s.orReplace,
+		IfNotExists: s.ifNotExists,
+		name:        s.name,
+		Propagate:   s.propagate,
+		Comment:     s.comment,
 	}
+	if len(s.allowedValues) > 0 {
+		opts.AllowedValues = createAllowedValues(s.allowedValues)
+	}
+	return opts
 }
 
 func (s *AlterTagRequest) toOpts() *alterTagOptions {
-	return &alterTagOptions{
+	opts := &alterTagOptions{
 		name:     s.name,
 		ifExists: s.ifExists,
-		Add:      s.add,
-		Drop:     s.drop,
-		Set:      s.set,
-		Unset:    s.unset,
-		Rename:   s.rename,
 	}
+	if len(s.add) > 0 {
+		opts.Add = &TagAdd{AllowedValues: createAllowedValues(s.add)}
+	}
+	if len(s.drop) > 0 {
+		opts.Drop = &TagDrop{AllowedValues: createAllowedValues(s.drop)}
+	}
+	if s.set != nil {
+		set := &TagSet{
+			Propagate: s.set.propagate,
+			Comment:   s.set.comment,
+		}
+		if len(s.set.allowedValues) > 0 {
+			set.AllowedValues = createAllowedValues(s.set.allowedValues)
+		}
+		if len(s.set.maskingPolicies) > 0 {
+			set.MaskingPolicies = &TagSetMaskingPolicies{
+				MaskingPolicies: createTagMaskingPolicies(s.set.maskingPolicies),
+				Force:           s.set.force,
+			}
+		}
+		opts.Set = set
+	}
+	if s.unset != nil {
+		unset := &TagUnset{
+			AllowedValues: s.unset.allowedValues,
+			Propagate:     s.unset.propagate,
+			OnConflict:    s.unset.onConflict,
+			Comment:       s.unset.comment,
+		}
+		if len(s.unset.maskingPolicies) > 0 {
+			unset.MaskingPolicies = &TagUnsetMaskingPolicies{
+				MaskingPolicies: createTagMaskingPolicies(s.unset.maskingPolicies),
+			}
+		}
+		opts.Unset = unset
+	}
+	if s.rename != nil {
+		opts.Rename = &TagRename{Name: *s.rename}
+	}
+	return opts
 }
 
 func (s *ShowTagRequest) toOpts() *showTagOptions {

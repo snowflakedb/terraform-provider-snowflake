@@ -22,7 +22,7 @@ func TestInt_Tags(t *testing.T) {
 	client := testClient(t)
 	ctx := context.Background()
 
-	assertTagHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier, expectedComment string, expectedAllowedValues []string) {
+	assertTagHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier, expectedComment string, expectedAllowedValues []string, expectedPropagate sdk.TagPropagation) {
 		t.Helper()
 		assertThatObject(t, objectassert.Tag(t, id).
 			HasName(id.Name()).
@@ -31,7 +31,8 @@ func TestInt_Tags(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(expectedComment).
 			HasAllowedValuesUnordered(expectedAllowedValues...).
-			HasOwnerRoleType("ROLE"),
+			HasOwnerRoleType("ROLE").
+			HasPropagate(string(expectedPropagate)),
 		)
 	}
 
@@ -39,12 +40,12 @@ func TestInt_Tags(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
 
-		request := sdk.NewCreateTagRequest(id).WithComment(&comment)
+		request := sdk.NewCreateTagRequest(id).WithComment(comment)
 		err := client.Tags.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
 
-		assertTagHandle(t, id, comment, nil)
+		assertTagHandle(t, id, comment, nil, sdk.TagPropagationNone)
 	})
 
 	t.Run("create tag: allowed values", func(t *testing.T) {
@@ -56,7 +57,7 @@ func TestInt_Tags(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
 
-		assertTagHandle(t, id, "", values)
+		assertTagHandle(t, id, "", values, sdk.TagPropagationNone)
 	})
 
 	t.Run("create tag: comment and allowed values", func(t *testing.T) {
@@ -66,13 +67,13 @@ func TestInt_Tags(t *testing.T) {
 		values := []string{"value1", "value2"}
 		request := sdk.NewCreateTagRequest(id).
 			WithOrReplace(true).
-			WithComment(&comment).
+			WithComment(comment).
 			WithAllowedValues(values)
 		err := client.Tags.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
 
-		assertTagHandle(t, id, comment, values)
+		assertTagHandle(t, id, comment, values, sdk.TagPropagationNone)
 	})
 
 	t.Run("create tag: no optionals", func(t *testing.T) {
@@ -82,7 +83,54 @@ func TestInt_Tags(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
 
-		assertTagHandle(t, id, "", nil)
+		assertTagHandle(t, id, "", nil, sdk.TagPropagationNone)
+	})
+
+	t.Run("create tag: propagate", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		request := sdk.NewCreateTagRequest(id).WithPropagate(sdk.TagPropagate{
+			PropagationMode: sdk.TagPropagationOnDependency,
+		})
+		err := client.Tags.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
+
+		assertTagHandle(t, id, "", nil, sdk.TagPropagationOnDependency)
+	})
+
+	t.Run("create tag: propagate with on_conflict value", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		request := sdk.NewCreateTagRequest(id).WithPropagate(sdk.TagPropagate{
+			PropagationMode: sdk.TagPropagationOnDependencyAndDataMovement,
+			OnConflict: &sdk.TagOnConflict{
+				Value: sdk.String("FAIL"),
+			},
+		})
+		err := client.Tags.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
+
+		assertTagHandle(t, id, "", nil, sdk.TagPropagationOnDependencyAndDataMovement)
+	})
+
+	t.Run("create tag: propagate with on_conflict allowed_values_sequence", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		request := sdk.NewCreateTagRequest(id).
+			WithAllowedValues([]string{"val1", "val2"}).
+			WithPropagate(sdk.TagPropagate{
+				PropagationMode: sdk.TagPropagationOnDataMovement,
+				OnConflict: &sdk.TagOnConflict{
+					AllowedValuesSequence: sdk.Bool(true),
+				},
+			})
+		err := client.Tags.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
+
+		assertTagHandle(t, id, "", []string{"val1", "val2"}, sdk.TagPropagationOnDataMovement)
 	})
 
 	t.Run("drop tag: existing", func(t *testing.T) {
@@ -126,7 +174,7 @@ func TestInt_Tags(t *testing.T) {
 		// alter tag with set comment
 		comment := random.Comment()
 		set := sdk.NewTagSetRequest().WithComment(comment)
-		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithIfExists(true).WithSet(set))
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithIfExists(true).WithSet(*set))
 		require.NoError(t, err)
 
 		tag, err = client.Tags.ShowByID(ctx, id)
@@ -135,7 +183,7 @@ func TestInt_Tags(t *testing.T) {
 
 		// alter tag with unset comment
 		unset := sdk.NewTagUnsetRequest().WithComment(true)
-		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(unset))
+		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*unset))
 		require.NoError(t, err)
 
 		tag, err = client.Tags.ShowByID(ctx, id)
@@ -153,7 +201,7 @@ func TestInt_Tags(t *testing.T) {
 
 		policies := []sdk.SchemaObjectIdentifier{policyTest.ID()}
 		set := sdk.NewTagSetRequest().WithMaskingPolicies(policies)
-		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(set))
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*set))
 		require.NoError(t, err)
 
 		ref, err := testClientHelper().PolicyReferences.GetPolicyReference(t, tag.ID(), sdk.PolicyEntityDomainTag)
@@ -167,7 +215,7 @@ func TestInt_Tags(t *testing.T) {
 		assert.Nil(t, returnedTagValue)
 
 		unset := sdk.NewTagUnsetRequest().WithMaskingPolicies(policies)
-		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(unset))
+		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*unset))
 		require.NoError(t, err)
 	})
 
@@ -209,7 +257,7 @@ func TestInt_Tags(t *testing.T) {
 		_, err = client.Tags.ShowByID(ctx, id)
 		assert.ErrorIs(t, err, collections.ErrObjectNotFound)
 
-		assertTagHandle(t, nid, "", nil)
+		assertTagHandle(t, nid, "", nil, sdk.TagPropagationNone)
 	})
 
 	t.Run("alter tag: unset allowed values", func(t *testing.T) {
@@ -227,12 +275,81 @@ func TestInt_Tags(t *testing.T) {
 		assert.Equal(t, values, tag.AllowedValues)
 
 		unset := sdk.NewTagUnsetRequest().WithAllowedValues(true)
-		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(unset))
+		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*unset))
 		require.NoError(t, err)
 
 		tag, err = client.Tags.ShowByID(ctx, id)
 		require.NoError(t, err)
 		assert.Empty(t, tag.AllowedValues)
+	})
+
+	t.Run("alter tag: set and unset propagate", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(tagCleanup)
+		id := tag.ID()
+
+		set := sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
+			PropagationMode: sdk.TagPropagationOnDependency,
+		})
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*set))
+		require.NoError(t, err)
+
+		tag, err = client.Tags.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, string(sdk.TagPropagationOnDependency), tag.Propagate)
+
+		unset := sdk.NewTagUnsetRequest().WithPropagate(true)
+		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*unset))
+		require.NoError(t, err)
+
+		tag, err = client.Tags.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, string(sdk.TagPropagationNone), tag.Propagate)
+	})
+
+	t.Run("alter tag: set propagate with on_conflict", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(tagCleanup)
+		id := tag.ID()
+
+		set := sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
+			PropagationMode: sdk.TagPropagationOnDependencyAndDataMovement,
+			OnConflict: &sdk.TagOnConflict{
+				Value: sdk.String("FAIL"),
+			},
+		})
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*set))
+		require.NoError(t, err)
+
+		tag, err = client.Tags.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, string(sdk.TagPropagationOnDependencyAndDataMovement), tag.Propagate)
+
+		unset := sdk.NewTagUnsetRequest().WithOnConflict(true)
+		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*unset))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter tag: set propagate with on_conflict allowed_values_sequence", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		request := sdk.NewCreateTagRequest(id).WithAllowedValues([]string{"val1", "val2"})
+		err := client.Tags.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
+
+		set := sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
+			PropagationMode: sdk.TagPropagationOnDataMovement,
+			OnConflict: &sdk.TagOnConflict{
+				AllowedValuesSequence: sdk.Bool(true),
+			},
+		})
+		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*set))
+		require.NoError(t, err)
+
+		tag, err := client.Tags.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, string(sdk.TagPropagationOnDataMovement), tag.Propagate)
 	})
 
 	t.Run("show tag: without like", func(t *testing.T) {
@@ -255,7 +372,7 @@ func TestInt_Tags(t *testing.T) {
 		tag2, tag2Cleanup := testClientHelper().Tag.CreateTag(t)
 		t.Cleanup(tag2Cleanup)
 
-		tags, err := client.Tags.Show(ctx, sdk.NewShowTagRequest().WithLike(tag1.Name))
+		tags, err := client.Tags.Show(ctx, sdk.NewShowTagRequest().WithLike(sdk.Like{Pattern: sdk.String(tag1.Name)}))
 		require.NoError(t, err)
 		assert.Len(t, tags, 1)
 		assert.Contains(t, tags, *tag1)
@@ -263,7 +380,7 @@ func TestInt_Tags(t *testing.T) {
 	})
 
 	t.Run("show tag: no matches", func(t *testing.T) {
-		tags, err := client.Tags.Show(ctx, sdk.NewShowTagRequest().WithLike("non-existent"))
+		tags, err := client.Tags.Show(ctx, sdk.NewShowTagRequest().WithLike(sdk.Like{Pattern: sdk.String("non-existent")}))
 		require.NoError(t, err)
 		assert.Empty(t, tags)
 	})
@@ -1184,4 +1301,316 @@ func TestInt_TagsAssociations(t *testing.T) {
 			testTagSet(id, tc.objectType)
 		})
 	}
+}
+
+func TestInt_TagsPropagation(t *testing.T) {
+	client := testClient(t)
+	ctx := context.Background()
+
+	t.Run("tag with propagation set on schema is visible on table via inheritance", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
+		t.Cleanup(schemaCleanup)
+
+		err := client.Schemas.Alter(ctx, schema.ID(), &sdk.AlterSchemaOptions{
+			SetTag: []sdk.TagAssociation{
+				{Name: tag.ID(), Value: "schema_value"},
+			},
+		})
+		require.NoError(t, err)
+
+		table, tableCleanup := testClientHelper().Table.CreateInSchema(t, schema.ID())
+		t.Cleanup(tableCleanup)
+
+		assertTagSet(t, tag.ID(), table.ID(), sdk.ObjectTypeTable, "schema_value")
+	})
+
+	t.Run("propagate on dependency: tag on table propagates to view", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table, tableCleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(tableCleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "propagated_value"},
+		}))
+		require.NoError(t, err)
+
+		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
+		t.Cleanup(viewCleanup)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "propagated_value")
+	})
+
+	t.Run("propagate on dependency: explicit set overrides, unset reverts to propagated value", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table, tableCleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(tableCleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "propagated_value"},
+		}))
+		require.NoError(t, err)
+
+		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
+		t.Cleanup(viewCleanup)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "propagated_value")
+
+		err = client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeView, view.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "explicit_value"},
+		}))
+		require.NoError(t, err)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "explicit_value")
+
+		err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeView, view.ID()).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
+		require.NoError(t, err)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "propagated_value")
+	})
+
+	t.Run("propagate on dependency: source value update propagates to target", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table, tableCleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(tableCleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "v1"},
+		}))
+		require.NoError(t, err)
+
+		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
+		t.Cleanup(viewCleanup)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "v1")
+
+		err = client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "v2"},
+		}))
+		require.NoError(t, err)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "v2")
+	})
+
+	t.Run("propagate on dependency: removing tag from source removes from target", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table, tableCleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(tableCleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "will_be_removed"},
+		}))
+		require.NoError(t, err)
+
+		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
+		t.Cleanup(viewCleanup)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "will_be_removed")
+
+		err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeTable, table.ID()).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
+		require.NoError(t, err)
+
+		assertTagUnset(t, tag.ID(), view.ID(), sdk.ObjectTypeView)
+	})
+
+	t.Run("propagate on data movement: tag propagates via CTAS", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDataMovement,
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table, tableCleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(tableCleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "data_movement_value"},
+		}))
+		require.NoError(t, err)
+
+		ctasTableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		_, err = client.ExecForTests(ctx, fmt.Sprintf("CREATE TABLE %s AS SELECT * FROM %s", ctasTableId.FullyQualifiedName(), table.ID().FullyQualifiedName()))
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			_, _ = client.ExecForTests(context.Background(), fmt.Sprintf("DROP TABLE IF EXISTS %s", ctasTableId.FullyQualifiedName()))
+		})
+
+		assertTagSet(t, tag.ID(), ctasTableId, sdk.ObjectTypeTable, "data_movement_value")
+	})
+
+	t.Run("conflict: default resolution produces CONFLICT string", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table1, table1Cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(table1Cleanup)
+		table2, table2Cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(table2Cleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table1.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "value_from_table1"},
+		}))
+		require.NoError(t, err)
+
+		err = client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table2.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "value_from_table2"},
+		}))
+		require.NoError(t, err)
+
+		query := fmt.Sprintf("SELECT t1.id AS id1, t2.id AS id2 FROM %s t1 JOIN %s t2 ON t1.id = t2.id",
+			table1.ID().FullyQualifiedName(), table2.ID().FullyQualifiedName())
+		view, viewCleanup := testClientHelper().View.CreateView(t, query)
+		t.Cleanup(viewCleanup)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "CONFLICT")
+	})
+
+	t.Run("conflict: custom ON_CONFLICT string", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+					OnConflict: &sdk.TagOnConflict{
+						Value: sdk.String("HIGHLY CONFIDENTIAL"),
+					},
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table1, table1Cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(table1Cleanup)
+		table2, table2Cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(table2Cleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table1.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "value1"},
+		}))
+		require.NoError(t, err)
+
+		err = client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table2.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "value2"},
+		}))
+		require.NoError(t, err)
+
+		query := fmt.Sprintf("SELECT t1.id AS id1, t2.id AS id2 FROM %s t1 JOIN %s t2 ON t1.id = t2.id",
+			table1.ID().FullyQualifiedName(), table2.ID().FullyQualifiedName())
+		view, viewCleanup := testClientHelper().View.CreateView(t, query)
+		t.Cleanup(viewCleanup)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "HIGHLY CONFIDENTIAL")
+	})
+
+	t.Run("conflict: ALLOWED_VALUES_SEQUENCE resolves using order", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithAllowedValues([]string{"confidential", "internal", "public"}).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+					OnConflict: &sdk.TagOnConflict{
+						AllowedValuesSequence: sdk.Bool(true),
+					},
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table1, table1Cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(table1Cleanup)
+		table2, table2Cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(table2Cleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table1.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "internal"},
+		}))
+		require.NoError(t, err)
+
+		err = client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table2.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "public"},
+		}))
+		require.NoError(t, err)
+
+		query := fmt.Sprintf("SELECT t1.id AS id1, t2.id AS id2 FROM %s t1 JOIN %s t2 ON t1.id = t2.id",
+			table1.ID().FullyQualifiedName(), table2.ID().FullyQualifiedName())
+		view, viewCleanup := testClientHelper().View.CreateView(t, query)
+		t.Cleanup(viewCleanup)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "internal")
+	})
+
+	t.Run("conflict: ALLOWED_VALUES_SEQUENCE with different order proves order matters", func(t *testing.T) {
+		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
+			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
+				WithAllowedValues([]string{"public", "internal", "confidential"}).
+				WithPropagate(sdk.TagPropagate{
+					PropagationMode: sdk.TagPropagationOnDependency,
+					OnConflict: &sdk.TagOnConflict{
+						AllowedValuesSequence: sdk.Bool(true),
+					},
+				}),
+		)
+		t.Cleanup(tagCleanup)
+
+		table1, table1Cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(table1Cleanup)
+		table2, table2Cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(table2Cleanup)
+
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table1.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "internal"},
+		}))
+		require.NoError(t, err)
+
+		err = client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table2.ID()).WithSetTags([]sdk.TagAssociation{
+			{Name: tag.ID(), Value: "public"},
+		}))
+		require.NoError(t, err)
+
+		query := fmt.Sprintf("SELECT t1.id AS id1, t2.id AS id2 FROM %s t1 JOIN %s t2 ON t1.id = t2.id",
+			table1.ID().FullyQualifiedName(), table2.ID().FullyQualifiedName())
+		view, viewCleanup := testClientHelper().View.CreateView(t, query)
+		t.Cleanup(viewCleanup)
+
+		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "public")
+	})
 }
