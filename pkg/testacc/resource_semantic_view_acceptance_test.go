@@ -216,9 +216,9 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		BaseTableDatabaseName: table1.ID().DatabaseName(),
 		BaseTableSchemaName:   table1.ID().SchemaName(),
 		BaseTableName:         table1.ID().Name(),
-		PrimaryKeys:           `["a1"]`,
-		UniqueKeys:            `[["a2"],["a3","a4"]]`,
-		Synonyms:              `["sales","orders"]`,
+		PrimaryKeys:           []string{"a1"},
+		UniqueKeys:            [][]string{{"a2"}, {"a3", "a4"}},
+		Synonyms:              []string{"sales", "orders"},
 		Comment:               "logical table 1",
 	}
 
@@ -228,63 +228,71 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		BaseTableDatabaseName: table2.ID().DatabaseName(),
 		BaseTableSchemaName:   table2.ID().SchemaName(),
 		BaseTableName:         table2.ID().Name(),
-		PrimaryKeys:           `["a1"]`,
+		PrimaryKeys:           []string{"a1"},
 	}
 
 	// dimension related details
 	expectedDimension := sdk.SemanticViewDimensionDetails{
-		DimensionAlias:   dimensionName,
-		TableNameOrAlias: t1Alias,
-		Expression:       `"lt1"."a1"`,
-		DataType:         "NUMBER(38,0)",
-		Synonyms:         `["dim1"]`,
-		Comment:          "dimension 1",
-		AccessModifier:   "PUBLIC",
-		ParentEntity:     t1Alias,
+		DimensionAlias: dimensionName,
+		Properties: sdk.CommonProperties{
+			TableNameOrAlias: t1Alias,
+			Expression:       `"lt1"."a1"`,
+			DataType:         "NUMBER(38,0)",
+			AccessModifier:   "PUBLIC",
+		},
+		Synonyms:     []string{"dim1"},
+		Comment:      "dimension 1",
+		ParentEntity: t1Alias,
 	}
 
 	// fact related details
 	expectedFact := sdk.SemanticViewFactDetails{
-		FactAlias:        factName,
-		TableNameOrAlias: t1Alias,
-		Expression:       `"lt1"."a2"`,
-		DataType:         "NUMBER(38,0)",
-		Synonyms:         `["fact1"]`,
-		Comment:          "fact 1",
-		AccessModifier:   "PUBLIC",
-		ParentEntity:     t1Alias,
+		FactAlias: factName,
+		Properties: sdk.CommonProperties{
+			TableNameOrAlias: t1Alias,
+			Expression:       `"lt1"."a2"`,
+			DataType:         "NUMBER(38,0)",
+			AccessModifier:   "PUBLIC",
+		},
+		Synonyms:     []string{"fact1"},
+		Comment:      "fact 1",
+		ParentEntity: t1Alias,
 	}
 
 	expectedPrivateFact := sdk.SemanticViewFactDetails{
-		FactAlias:        privateFactName,
-		TableNameOrAlias: t1Alias,
-		Expression:       `"lt1"."a1"`,
-		DataType:         "NUMBER(38,0)",
-		Synonyms:         `["fact2"]`,
-		Comment:          "fact 2",
-		AccessModifier:   "PRIVATE",
-		ParentEntity:     t1Alias,
+		FactAlias: privateFactName,
+		Properties: sdk.CommonProperties{
+			TableNameOrAlias: t1Alias,
+			Expression:       `"lt1"."a1"`,
+			DataType:         "NUMBER(38,0)",
+			AccessModifier:   "PRIVATE",
+		},
+		Synonyms:     []string{"fact2"},
+		Comment:      "fact 2",
+		ParentEntity: t1Alias,
 	}
 
 	// metric related details
 	expectedMetric := sdk.SemanticViewMetricDetails{
-		MetricAlias:      metricName,
-		TableNameOrAlias: t1Alias,
-		Expression:       `SUM("lt1"."a1")`,
-		DataType:         "NUMBER(38,0)",
-		AccessModifier:   "PRIVATE",
-		Synonyms:         `["sem1","baseSem"]`,
-		Comment:          "semantic expression 1",
-		ParentEntity:     t1Alias,
+		MetricAlias: metricName,
+		Properties: sdk.CommonProperties{
+			TableNameOrAlias: t1Alias,
+			Expression:       `SUM("lt1"."a1")`,
+			DataType:         "NUMBER(38,0)",
+			AccessModifier:   "PRIVATE",
+		},
+		Synonyms:     []string{"sem1", "baseSem"},
+		Comment:      "semantic expression 1",
+		ParentEntity: t1Alias,
 	}
 
 	// relationship related details
 	expectedRelationship := sdk.SemanticViewRelationshipDetails{
 		RelationshipAlias:   relationshipName,
 		TableNameOrAlias:    t1Alias,
-		ForeignKeys:         `["a1","a2"]`,
+		ForeignKeys:         []string{"a1", "a2"},
 		RefTableNameOrAlias: t2Alias,
-		RefKeys:             `["a1","a2"]`,
+		RefKeys:             []string{"a1", "a2"},
 		ParentEntity:        t1Alias,
 	}
 

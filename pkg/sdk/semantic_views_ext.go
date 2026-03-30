@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -11,52 +12,50 @@ type SemanticViewTableDetails struct {
 	BaseTableDatabaseName string
 	BaseTableSchemaName   string
 	BaseTableName         string
-	PrimaryKeys           string
-	UniqueKeys            string
-	Synonyms              string
+	PrimaryKeys           []string
+	UniqueKeys            [][]string
+	Synonyms              []string
 	Comment               string
 }
 
 type SemanticViewRelationshipDetails struct {
 	RelationshipAlias   string
 	TableNameOrAlias    string
-	ForeignKeys         string
+	ForeignKeys         []string
 	RefTableNameOrAlias string
-	RefKeys             string
+	RefKeys             []string
 	ParentEntity        string
 }
 
-type SemanticViewDimensionDetails struct {
-	DimensionAlias   string
+type CommonProperties struct {
 	TableNameOrAlias string
 	Expression       string
 	DataType         string
 	AccessModifier   string
-	Synonyms         string
-	Comment          string
-	ParentEntity     string
+}
+
+type SemanticViewDimensionDetails struct {
+	DimensionAlias string
+	Properties     CommonProperties
+	Synonyms       []string
+	Comment        string
+	ParentEntity   string
 }
 
 type SemanticViewFactDetails struct {
-	FactAlias        string
-	TableNameOrAlias string
-	Expression       string
-	DataType         string
-	AccessModifier   string
-	Synonyms         string
-	Comment          string
-	ParentEntity     string
+	FactAlias    string
+	Properties   CommonProperties
+	Synonyms     []string
+	Comment      string
+	ParentEntity string
 }
 
 type SemanticViewMetricDetails struct {
-	MetricAlias      string
-	TableNameOrAlias string
-	Expression       string
-	DataType         string
-	AccessModifier   string
-	Synonyms         string
-	Comment          string
-	ParentEntity     string
+	MetricAlias  string
+	Properties   CommonProperties
+	Synonyms     []string
+	Comment      string
+	ParentEntity string
 }
 
 type SemanticViewDescribeDetails struct {
@@ -385,11 +384,20 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 			case "BASE_TABLE_NAME":
 				currentTable.BaseTableName = prop.PropertyValue
 			case "PRIMARY_KEY":
-				currentTable.PrimaryKeys = prop.PropertyValue
+				err := json.Unmarshal([]byte(prop.PropertyValue), &currentTable.PrimaryKeys)
+				if err != nil {
+					errs = append(errs, err)
+				}
 			case "UNIQUE_KEY":
-				currentTable.UniqueKeys = prop.PropertyValue
+				err := json.Unmarshal([]byte(prop.PropertyValue), &currentTable.UniqueKeys)
+				if err != nil {
+					errs = append(errs, err)
+				}
 			case "SYNONYMS":
-				currentTable.Synonyms = prop.PropertyValue
+				err := json.Unmarshal([]byte(prop.PropertyValue), &currentTable.Synonyms)
+				if err != nil {
+					errs = append(errs, err)
+				}
 			case "COMMENT":
 				currentTable.Comment = prop.PropertyValue
 			}
@@ -412,11 +420,17 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 			case "TABLE":
 				currentRelationship.TableNameOrAlias = prop.PropertyValue
 			case "FOREIGN_KEY":
-				currentRelationship.ForeignKeys = prop.PropertyValue
+				err := json.Unmarshal([]byte(prop.PropertyValue), &currentRelationship.ForeignKeys)
+				if err != nil {
+					errs = append(errs, err)
+				}
 			case "REF_TABLE":
 				currentRelationship.RefTableNameOrAlias = prop.PropertyValue
 			case "REF_KEY":
-				currentRelationship.RefKeys = prop.PropertyValue
+				err := json.Unmarshal([]byte(prop.PropertyValue), &currentRelationship.RefKeys)
+				if err != nil {
+					errs = append(errs, err)
+				}
 			}
 		case "DIMENSION":
 			var currentDimension *SemanticViewDimensionDetails
@@ -435,15 +449,18 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 			}
 			switch prop.Property {
 			case "TABLE":
-				currentDimension.TableNameOrAlias = prop.PropertyValue
+				currentDimension.Properties.TableNameOrAlias = prop.PropertyValue
 			case "EXPRESSION":
-				currentDimension.Expression = prop.PropertyValue
+				currentDimension.Properties.Expression = prop.PropertyValue
 			case "DATA_TYPE":
-				currentDimension.DataType = prop.PropertyValue
+				currentDimension.Properties.DataType = prop.PropertyValue
 			case "ACCESS_MODIFIER":
-				currentDimension.AccessModifier = prop.PropertyValue
+				currentDimension.Properties.AccessModifier = prop.PropertyValue
 			case "SYNONYMS":
-				currentDimension.Synonyms = prop.PropertyValue
+				err := json.Unmarshal([]byte(prop.PropertyValue), &currentDimension.Synonyms)
+				if err != nil {
+					errs = append(errs, err)
+				}
 			case "COMMENT":
 				currentDimension.Comment = prop.PropertyValue
 			}
@@ -464,15 +481,18 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 			}
 			switch prop.Property {
 			case "TABLE":
-				currentFact.TableNameOrAlias = prop.PropertyValue
+				currentFact.Properties.TableNameOrAlias = prop.PropertyValue
 			case "EXPRESSION":
-				currentFact.Expression = prop.PropertyValue
+				currentFact.Properties.Expression = prop.PropertyValue
 			case "DATA_TYPE":
-				currentFact.DataType = prop.PropertyValue
+				currentFact.Properties.DataType = prop.PropertyValue
 			case "ACCESS_MODIFIER":
-				currentFact.AccessModifier = prop.PropertyValue
+				currentFact.Properties.AccessModifier = prop.PropertyValue
 			case "SYNONYMS":
-				currentFact.Synonyms = prop.PropertyValue
+				err := json.Unmarshal([]byte(prop.PropertyValue), &currentFact.Synonyms)
+				if err != nil {
+					errs = append(errs, err)
+				}
 			case "COMMENT":
 				currentFact.Comment = prop.PropertyValue
 			}
@@ -493,15 +513,18 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 			}
 			switch prop.Property {
 			case "TABLE":
-				currentMetric.TableNameOrAlias = prop.PropertyValue
+				currentMetric.Properties.TableNameOrAlias = prop.PropertyValue
 			case "EXPRESSION":
-				currentMetric.Expression = prop.PropertyValue
+				currentMetric.Properties.Expression = prop.PropertyValue
 			case "DATA_TYPE":
-				currentMetric.DataType = prop.PropertyValue
+				currentMetric.Properties.DataType = prop.PropertyValue
 			case "ACCESS_MODIFIER":
-				currentMetric.AccessModifier = prop.PropertyValue
+				currentMetric.Properties.AccessModifier = prop.PropertyValue
 			case "SYNONYMS":
-				currentMetric.Synonyms = prop.PropertyValue
+				err := json.Unmarshal([]byte(prop.PropertyValue), &currentMetric.Synonyms)
+				if err != nil {
+					errs = append(errs, err)
+				}
 			case "COMMENT":
 				currentMetric.Comment = prop.PropertyValue
 			}

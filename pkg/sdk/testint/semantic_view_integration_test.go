@@ -1,3 +1,5 @@
+//go:build non_account_level_tests
+
 package testint
 
 import (
@@ -165,7 +167,7 @@ func TestInt_SemanticView(t *testing.T) {
 		).WithRelationshipAlias(*relAliasRequest).WithRelationshipRefColumnNames([]sdk.SemanticViewColumnRequest{*relRefCol})
 
 		// facts
-		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F1"}})
+		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F1"}, {Synonym: "FA"}})
 		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."fact1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"first_c"`}).
 			WithSynonyms(*factSynonymRequest).
 			WithComment("fact comment")
@@ -224,7 +226,7 @@ func TestInt_SemanticView(t *testing.T) {
 			BaseTableDatabaseName: table1Id.DatabaseName(),
 			BaseTableSchemaName:   table1Id.SchemaName(),
 			BaseTableName:         table1Id.Name(),
-			PrimaryKeys:           `["first_c"]`,
+			PrimaryKeys:           []string{"first_c"},
 		}
 
 		expectedTable2 := sdk.SemanticViewTableDetails{
@@ -235,63 +237,73 @@ func TestInt_SemanticView(t *testing.T) {
 		}
 
 		expectedDimension := sdk.SemanticViewDimensionDetails{
-			DimensionAlias:   dimensionName,
-			TableNameOrAlias: t1Alias,
-			Expression:       dimensionExpressionRaw,
-			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
-			DataType:       "VARCHAR(16777216)",
-			Synonyms:       `["D1"]`,
-			Comment:        "dimension comment",
-			AccessModifier: "PUBLIC",
-			ParentEntity:   t1Alias,
+			DimensionAlias: dimensionName,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       dimensionExpressionRaw,
+				// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
+				DataType:       "VARCHAR(134217728)",
+				AccessModifier: "PUBLIC",
+			},
+			Synonyms:     []string{"D1"},
+			Comment:      "dimension comment",
+			ParentEntity: t1Alias,
 		}
 
 		expectedFact1 := sdk.SemanticViewFactDetails{
-			FactAlias:        factName,
-			TableNameOrAlias: t1Alias,
-			Expression:       `"first_c"`,
-			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
-			DataType:       "VARCHAR(16777216)",
-			Synonyms:       `["F1"]`,
-			Comment:        "fact comment",
-			AccessModifier: "PUBLIC",
-			ParentEntity:   t1Alias,
+			FactAlias: factName,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `"first_c"`,
+				// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
+				DataType:       "VARCHAR(134217728)",
+				AccessModifier: "PUBLIC",
+			},
+			Synonyms:     []string{"F1", "FA"},
+			Comment:      "fact comment",
+			ParentEntity: t1Alias,
 		}
 
 		expectedFact2 := sdk.SemanticViewFactDetails{
-			FactAlias:        factName2,
-			TableNameOrAlias: t1Alias,
-			Expression:       `"first_b"`,
-			DataType:         "NUMBER(38,0)",
-			Synonyms:         `["F2"]`,
-			AccessModifier:   "PRIVATE",
-			ParentEntity:     t1Alias,
+			FactAlias: factName2,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `"first_b"`,
+				DataType:         "NUMBER(38,0)",
+				AccessModifier:   "PRIVATE",
+			},
+			Synonyms:     []string{"F2"},
+			ParentEntity: t1Alias,
 		}
 
 		expectedMetric1 := sdk.SemanticViewMetricDetails{
-			MetricAlias:      metricName,
-			TableNameOrAlias: t1Alias,
-			Expression:       `SUM("table1"."first_a")`,
-			DataType:         "NUMBER(38,0)",
-			AccessModifier:   "PUBLIC",
-			ParentEntity:     t1Alias,
+			MetricAlias: metricName,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `SUM("table1"."first_a")`,
+				DataType:         "NUMBER(38,0)",
+				AccessModifier:   "PUBLIC",
+			},
+			ParentEntity: t1Alias,
 		}
 
 		expectedMetric2 := sdk.SemanticViewMetricDetails{
-			MetricAlias:      metric2Name,
-			TableNameOrAlias: t1Alias,
-			Expression:       `SUM("table1"."metric1") OVER (PARTITION BY "table1"."d1")`,
-			DataType:         "NUMBER(38,0)",
-			AccessModifier:   "PRIVATE",
-			ParentEntity:     t1Alias,
+			MetricAlias: metric2Name,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `SUM("table1"."metric1") OVER (PARTITION BY "table1"."d1")`,
+				DataType:         "NUMBER(38,0)",
+				AccessModifier:   "PRIVATE",
+			},
+			ParentEntity: t1Alias,
 		}
 
 		expectedRelationship := sdk.SemanticViewRelationshipDetails{
 			RelationshipAlias:   relationshipName,
 			TableNameOrAlias:    t2Alias,
-			ForeignKeys:         `["second_c"]`,
+			ForeignKeys:         []string{"second_c"},
 			RefTableNameOrAlias: t1Alias,
-			RefKeys:             `["first_c"]`,
+			RefKeys:             []string{"first_c"},
 			ParentEntity:        t2Alias,
 		}
 
@@ -333,16 +345,18 @@ func TestInt_SemanticView(t *testing.T) {
 			BaseTableDatabaseName: table1Id.DatabaseName(),
 			BaseTableSchemaName:   table1Id.SchemaName(),
 			BaseTableName:         table1Id.Name(),
-			PrimaryKeys:           `["first_c"]`,
+			PrimaryKeys:           []string{"first_c"},
 		}
 
 		expectedMetric := sdk.SemanticViewMetricDetails{
-			MetricAlias:      metricName,
-			TableNameOrAlias: t1Alias,
-			Expression:       `SUM("table1"."first_a")`,
-			DataType:         "NUMBER(38,0)",
-			AccessModifier:   "PUBLIC",
-			ParentEntity:     t1Alias,
+			MetricAlias: metricName,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `SUM("table1"."first_a")`,
+				DataType:         "NUMBER(38,0)",
+				AccessModifier:   "PUBLIC",
+			},
+			ParentEntity: t1Alias,
 		}
 
 		expectedTable2 := sdk.SemanticViewTableDetails{
