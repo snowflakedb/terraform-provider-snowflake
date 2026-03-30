@@ -56,77 +56,60 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 	externalRefreshIntervalSeconds := random.IntRange(30, 86400)
 
-	basicRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
-	}
-	completeRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
-			WithOauthTokenUri(oAuthTokenUri),
-	}
-	changedRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
-			WithOauthTokenUri(newOAuthTokenUri),
-	}
+	basicRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}})
+	completeRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+		WithOauthTokenUri(oAuthTokenUri)
+	changedRestAuth := *sdk.NewOAuthRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
+		WithOauthTokenUri(newOAuthTokenUri)
 
-	basicRestConfig := []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(catalogUri),
-	}
-	completeRestConfig := []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(catalogUri).
-			WithPrefix(prefix).
-			WithCatalogName(catalogName).
-			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-	}
-	changedRestConfig := []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(newCatalogUri).
-			WithPrefix(newPrefix).
-			WithCatalogName(newCatalogName).
-			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
-			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
-	}
+	basicRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri)
+	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithPrefix(prefix).
+		WithCatalogName(catalogName).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+		WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)
+	changedRestConfig := *sdk.NewIcebergRestRestConfigRequest(newCatalogUri).
+		WithPrefix(newPrefix).
+		WithCatalogName(newCatalogName).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
+		WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials)
 
-	basic := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, basicRestAuth, basicRestConfig)
+	basic := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, basicRestConfig, basicRestAuth)
 
-	altered := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), true, basicRestAuth, basicRestConfig).
+	altered := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), true, basicRestConfig, basicRestAuth).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds)
 
-	allAttributes := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, completeRestAuth, completeRestConfig).
+	allAttributes := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, completeRestConfig, completeRestAuth).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(catalogNamespace)
 
-	withChangedCatalogNamespace := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, completeRestAuth, completeRestConfig).
+	withChangedCatalogNamespace := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, completeRestConfig, completeRestAuth).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedRestConfig := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, completeRestAuth, changedRestConfig).
+	withChangedRestConfig := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, changedRestConfig, completeRestAuth).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedOAuthClientSecret := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
-			WithOauthTokenUri(oAuthTokenUri),
-	}, changedRestConfig).
+	withChangedOAuthClientSecret := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, changedRestConfig, *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+		WithOauthTokenUri(oAuthTokenUri)).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedRestAuth := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, changedRestAuth, changedRestConfig).
+	withChangedRestAuth := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, changedRestConfig, changedRestAuth).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withBearerToken := model.CatalogIntegrationIcebergRest("t", id.Name(), false, changedRestConfig).
+	withBearerToken := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, changedRestConfig, *sdk.NewBearerRestAuthenticationRequest(bearerToken)).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
-		WithCatalogNamespace(newCatalogNamespace).
-		WithBearerRestAuthentication([]sdk.BearerRestAuthenticationRequest{
-			*sdk.NewBearerRestAuthenticationRequest(bearerToken),
-		})
+		WithCatalogNamespace(newCatalogNamespace)
 
 	ref := basic.ResourceReference()
 
@@ -604,8 +587,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
 						WithOrReplace(true).
 						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(completeRestConfig[0]).
-							WithOAuthRestAuthentication(completeRestAuth[0]).
+							WithRestConfig(completeRestConfig).
+							WithOAuthRestAuthentication(completeRestAuth).
 							WithCatalogNamespace(externalCatalogNamespace))
 					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
@@ -635,8 +618,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
 						WithOrReplace(true).
 						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(completeRestConfig[0]).
-							WithOAuthRestAuthentication(completeRestAuth[0]))
+							WithRestConfig(completeRestConfig).
+							WithOAuthRestAuthentication(completeRestAuth))
 					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -683,8 +666,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
 						WithOrReplace(true).
 						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(changedRestConfig[0]).
-							WithOAuthRestAuthentication(completeRestAuth[0]))
+							WithRestConfig(changedRestConfig).
+							WithOAuthRestAuthentication(completeRestAuth))
 					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -724,23 +707,12 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 	bearerToken2 := random.AlphanumericN(32)
 	sigV4IamRole := "arn:aws:iam::123456789012:role/sigv4-role"
 
-	basicRestConfig := []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(catalogUri).
-			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway),
-	}
+	basicRestCfg := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway)
 
-	basic := model.CatalogIntegrationIcebergRest("t", id.Name(), false, basicRestConfig).
-		WithBearerRestAuthentication([]sdk.BearerRestAuthenticationRequest{
-			*sdk.NewBearerRestAuthenticationRequest(bearerToken1),
-		})
-	updated := model.CatalogIntegrationIcebergRest("t", id.Name(), false, basicRestConfig).
-		WithBearerRestAuthentication([]sdk.BearerRestAuthenticationRequest{
-			*sdk.NewBearerRestAuthenticationRequest(bearerToken2),
-		})
-	withSigV4 := model.CatalogIntegrationIcebergRest("t", id.Name(), false, basicRestConfig).
-		WithSigv4RestAuthentication([]sdk.SigV4RestAuthenticationRequest{
-			*sdk.NewSigV4RestAuthenticationRequest(sigV4IamRole),
-		})
+	basic := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, basicRestCfg, *sdk.NewBearerRestAuthenticationRequest(bearerToken1))
+	updated := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, basicRestCfg, *sdk.NewBearerRestAuthenticationRequest(bearerToken2))
+	withSigV4 := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, basicRestCfg, *sdk.NewSigV4RestAuthenticationRequest(sigV4IamRole))
 
 	ref := basic.ResourceReference()
 
@@ -885,32 +857,21 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 
 	bearerToken := random.AlphanumericN(32)
 
-	basicRestConfig := []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(catalogUri).
-			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway),
-	}
+	basicRestCfg := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway)
 
-	basicSigV4Auth := []sdk.SigV4RestAuthenticationRequest{
-		*sdk.NewSigV4RestAuthenticationRequest(sigV4IamRole).
-			WithSigv4SigningRegion(sigV4SigningRegion),
-	}
+	basicSigV4Auth := *sdk.NewSigV4RestAuthenticationRequest(sigV4IamRole).
+		WithSigv4SigningRegion(sigV4SigningRegion)
 
-	updatedSigV4Auth := []sdk.SigV4RestAuthenticationRequest{
-		*sdk.NewSigV4RestAuthenticationRequest(newSigV4IamRole).
-			WithSigv4SigningRegion(newSigV4SigningRegion).
-			WithSigv4ExternalId(newSigV4ExternalId),
-	}
+	updatedSigV4Auth := *sdk.NewSigV4RestAuthenticationRequest(newSigV4IamRole).
+		WithSigv4SigningRegion(newSigV4SigningRegion).
+		WithSigv4ExternalId(newSigV4ExternalId)
 
-	basic := model.CatalogIntegrationIcebergRest("t", id.Name(), false, basicRestConfig).
-		WithSigv4RestAuthentication(basicSigV4Auth)
+	basic := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, basicRestCfg, basicSigV4Auth)
 
-	updated := model.CatalogIntegrationIcebergRest("t", id.Name(), false, basicRestConfig).
-		WithSigv4RestAuthentication(updatedSigV4Auth)
+	updated := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, basicRestCfg, updatedSigV4Auth)
 
-	withBearerToken := model.CatalogIntegrationIcebergRest("t", id.Name(), false, basicRestConfig).
-		WithBearerRestAuthentication([]sdk.BearerRestAuthenticationRequest{
-			*sdk.NewBearerRestAuthenticationRequest(bearerToken),
-		})
+	withBearerToken := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, basicRestCfg, *sdk.NewBearerRestAuthenticationRequest(bearerToken))
 
 	ref := basic.ResourceReference()
 
@@ -1032,8 +993,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
 						WithOrReplace(true).
 						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(basicRestConfig[0]).
-							WithSigV4RestAuthentication(basicSigV4Auth[0]))
+							WithRestConfig(basicRestCfg).
+							WithSigV4RestAuthentication(basicSigV4Auth))
 					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -1066,99 +1027,61 @@ func TestAcc_CatalogIntegrationIcebergRest_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	catalogUri := "https://api.tabular.io/ws"
 	catalogName := "my_catalog_name"
-	restConfig := []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(catalogUri).
-			WithCatalogName(catalogName),
-	}
-	restAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
-	}
+	restConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithCatalogName(catalogName)
+	restAuth := *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}})
 
-	refreshIntervalNonPositive := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restAuth, restConfig).
+	refreshIntervalNonPositive := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, restAuth).
 		WithRefreshIntervalSeconds(0)
 
-	emptyCatalogNamespace := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restAuth, restConfig).
+	emptyCatalogNamespace := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, restAuth).
 		WithCatalogNamespace("")
 
-	emptyCatalogUri := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restAuth, []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(""),
-	})
+	emptyCatalogUri := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewIcebergRestRestConfigRequest(""), restAuth)
 
-	emptyCatalogName := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restAuth, []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(catalogUri).
-			WithCatalogName(""),
-	})
+	emptyCatalogName := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithCatalogName(""), restAuth)
 
-	invalidCatalogApiType := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restAuth, []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(catalogUri).
-			WithCatalogName(catalogName).
-			WithCatalogApiType("invalid"),
-	})
+	invalidCatalogApiType := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithCatalogName(catalogName).
+		WithCatalogApiType("invalid"), restAuth)
 
-	invalidAccessDelegationMode := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restAuth, []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest(catalogUri).
-			WithCatalogName(catalogName).
-			WithAccessDelegationMode("invalid"),
-	})
+	invalidAccessDelegationMode := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithCatalogName(catalogName).
+		WithAccessDelegationMode("invalid"), restAuth)
 
-	emptyOAuthTokenUri := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}).
-			WithOauthTokenUri(""),
-	}, restConfig)
+	emptyOAuthTokenUri := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}).
+		WithOauthTokenUri(""))
 
-	emptyOAuthClientId := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
-	}, restConfig)
+	emptyOAuthClientId := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewOAuthRestAuthenticationRequest("", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}))
 
-	emptyOAuthClientSecret := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
-	}, restConfig)
+	emptyOAuthClientSecret := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}))
 
-	emptyOAuthScopes := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{}),
-	}, restConfig)
+	emptyOAuthScopes := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{}))
 
-	emptyBearerToken := model.CatalogIntegrationIcebergRest("t", id.Name(), false, restConfig).
-		WithBearerRestAuthentication([]sdk.BearerRestAuthenticationRequest{
-			*sdk.NewBearerRestAuthenticationRequest(""),
-		})
+	emptyBearerToken := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, restConfig, *sdk.NewBearerRestAuthenticationRequest(""))
 
-	emptySigV4IamRole := model.CatalogIntegrationIcebergRest("t", id.Name(), false, restConfig).
-		WithSigv4RestAuthentication([]sdk.SigV4RestAuthenticationRequest{
-			*sdk.NewSigV4RestAuthenticationRequest(""),
-		})
+	emptySigV4IamRole := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest(""))
 
-	emptySigV4SigningRegion := model.CatalogIntegrationIcebergRest("t", id.Name(), false, restConfig).
-		WithSigv4RestAuthentication([]sdk.SigV4RestAuthenticationRequest{
-			*sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
-				WithSigv4SigningRegion(""),
-		})
+	emptySigV4SigningRegion := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
+		WithSigv4SigningRegion(""),
+	)
 
-	emptySigV4ExternalId := model.CatalogIntegrationIcebergRest("t", id.Name(), false, restConfig).
-		WithSigv4RestAuthentication([]sdk.SigV4RestAuthenticationRequest{
-			*sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
-				WithSigv4ExternalId(""),
-		})
+	emptySigV4ExternalId := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
+		WithSigv4ExternalId(""),
+	)
 
-	noAuthentication := model.CatalogIntegrationIcebergRest("t", id.Name(), false, restConfig)
+	noAuthentication := model.CatalogIntegrationIcebergRest("t", id.Name(), false, []sdk.IcebergRestRestConfigRequest{restConfig})
 
-	oauthAndBearer := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restAuth, restConfig).
-		WithBearerRestAuthentication([]sdk.BearerRestAuthenticationRequest{
-			*sdk.NewBearerRestAuthenticationRequest("token"),
-		})
+	oauthAndBearer := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, restAuth).
+		WithBearerRestAuthentication(*sdk.NewBearerRestAuthenticationRequest("token"))
 
-	oauthAndSigv4 := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restAuth, restConfig).
-		WithSigv4RestAuthentication([]sdk.SigV4RestAuthenticationRequest{
-			*sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role"),
-		})
+	oauthAndSigv4 := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, restAuth).
+		WithSigV4RestAuthentication(*sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role"))
 
-	bearerAndSigv4 := model.CatalogIntegrationIcebergRest("t", id.Name(), false, restConfig).
-		WithBearerRestAuthentication([]sdk.BearerRestAuthenticationRequest{
-			*sdk.NewBearerRestAuthenticationRequest("token"),
-		}).
-		WithSigv4RestAuthentication([]sdk.SigV4RestAuthenticationRequest{
-			*sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role"),
-		})
+	bearerAndSigv4 := model.CatalogIntegrationIcebergRest("t", id.Name(), false, []sdk.IcebergRestRestConfigRequest{restConfig}).
+		WithBearerRestAuthentication(*sdk.NewBearerRestAuthenticationRequest("token")).
+		WithSigV4RestAuthentication(*sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role"))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1262,13 +1185,9 @@ func TestAcc_CatalogIntegrationIcebergRest_Validations(t *testing.T) {
 }
 
 func TestAcc_CatalogIntegrationIcebergRest_ImportValidation(t *testing.T) {
-	restConfig := []sdk.IcebergRestRestConfigRequest{
-		*sdk.NewIcebergRestRestConfigRequest("https://api.tabular.io/ws").
-			WithCatalogName("my_catalog_name"),
-	}
-	restAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
-	}
+	restConfig := *sdk.NewIcebergRestRestConfigRequest("https://api.tabular.io/ws").
+		WithCatalogName("my_catalog_name")
+	restAuth := *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}})
 
 	notificationIntegration, notificationIntegrationCleanup := testClient().NotificationIntegration.Create(t)
 	t.Cleanup(notificationIntegrationCleanup)
@@ -1276,8 +1195,8 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportValidation(t *testing.T) {
 	catalogIntegrationObjectStorageId, catalogIntegrationObjectStorageCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogIntegrationObjectStorageCleanup)
 
-	catalogIntegrationIcebergRest := model.CatalogIntegrationIcebergRestOAuth("t", notificationIntegration.ID().Name(), false, restAuth, restConfig)
-	catalogIntegrationIcebergRest2 := model.CatalogIntegrationIcebergRestOAuth("t", catalogIntegrationObjectStorageId.Name(), false, restAuth, restConfig)
+	catalogIntegrationIcebergRest := model.CatalogIntegrationIcebergRestOAuth("t", notificationIntegration.ID().Name(), false, restConfig, restAuth)
+	catalogIntegrationIcebergRest2 := model.CatalogIntegrationIcebergRestOAuth("t", catalogIntegrationObjectStorageId.Name(), false, restConfig, restAuth)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

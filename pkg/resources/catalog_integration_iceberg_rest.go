@@ -64,7 +64,7 @@ var catalogIntegrationIcebergRestSchema = func() map[string]*schema.Schema {
 						Optional:         true,
 						ForceNew:         true,
 						Description:      "Specifies the connection type for the catalog API. " + enumValuesDescription(sdk.AllCatalogIntegrationCatalogApiTypes),
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type"),
+						DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type")),
 						ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationCatalogApiType),
 					},
 					"access_delegation_mode": {
@@ -72,7 +72,7 @@ var catalogIntegrationIcebergRestSchema = func() map[string]*schema.Schema {
 						Optional:         true,
 						ForceNew:         true,
 						Description:      "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage. " + enumValuesDescription(sdk.AllCatalogIntegrationAccessDelegationModes),
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode"),
+						DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode")),
 						ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationAccessDelegationMode),
 					},
 				},
@@ -434,6 +434,7 @@ func handleExternalChangesToOAuthRestAuthenticationIcebergRest(d *schema.Resourc
 			details.OAuthRestAuthentication.OauthClientId,
 			details.OAuthRestAuthentication.OauthAllowedScopes,
 		),
+		d.Set("bearer_rest_authentication", nil),
 		d.Set("sigv4_rest_authentication", nil),
 	)
 }
@@ -448,7 +449,11 @@ func handleExternalChangesToSigV4RestAuthentication(d *schema.ResourceData, deta
 	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
 		outputMapping{"sigv4_rest_authentication", "sigv4_rest_authentication", sigV4RestAuthorization, sigV4RestAuthorization, nil},
 	)
-	return errors.Join(err, d.Set("oauth_rest_authentication", nil))
+	return errors.Join(
+		err,
+		d.Set("oauth_rest_authentication", nil),
+		d.Set("bearer_rest_authentication", nil),
+	)
 }
 
 func handleExternalChangesToBearerRestAuthentication(d *schema.ResourceData) error {

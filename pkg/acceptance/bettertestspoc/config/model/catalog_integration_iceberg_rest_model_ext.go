@@ -30,63 +30,73 @@ func (c *CatalogIntegrationIcebergRestModel) WithRestConfig(restConfig []sdk.Ice
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestModel) WithOauthRestAuthentication(oauth []sdk.OAuthRestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
-	if len(oauth) == 0 {
-		return c
-	}
-	ra := oauth[0]
-	scopeVars := make([]tfconfig.Variable, len(ra.OauthAllowedScopes))
-	for i, s := range ra.OauthAllowedScopes {
+func (c *CatalogIntegrationIcebergRestModel) WithOauthRestAuthentication(oauth sdk.OAuthRestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
+	scopeVars := make([]tfconfig.Variable, len(oauth.OauthAllowedScopes))
+	for i, s := range oauth.OauthAllowedScopes {
 		scopeVars[i] = tfconfig.StringVariable(s.Value)
 	}
 	m := map[string]tfconfig.Variable{
-		"oauth_client_id":      tfconfig.StringVariable(ra.OauthClientId),
-		"oauth_client_secret":  tfconfig.StringVariable(ra.OauthClientSecret),
+		"oauth_client_id":      tfconfig.StringVariable(oauth.OauthClientId),
+		"oauth_client_secret":  tfconfig.StringVariable(oauth.OauthClientSecret),
 		"oauth_allowed_scopes": tfconfig.ListVariable(scopeVars...),
 	}
-	if ra.OauthTokenUri != nil {
-		m["oauth_token_uri"] = tfconfig.StringVariable(*ra.OauthTokenUri)
+	if oauth.OauthTokenUri != nil {
+		m["oauth_token_uri"] = tfconfig.StringVariable(*oauth.OauthTokenUri)
 	}
 	c.OauthRestAuthentication = tfconfig.ListVariable(tfconfig.ObjectVariable(m))
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestModel) WithBearerRestAuthentication(bearer []sdk.BearerRestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
-	if len(bearer) == 0 {
-		return c
-	}
-	b := bearer[0]
+func (c *CatalogIntegrationIcebergRestModel) WithBearerRestAuthentication(bearer sdk.BearerRestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
 	c.BearerRestAuthentication = tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-		"bearer_token": tfconfig.StringVariable(b.BearerToken),
+		"bearer_token": tfconfig.StringVariable(bearer.BearerToken),
 	}))
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestModel) WithSigv4RestAuthentication(sigv4 []sdk.SigV4RestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
-	if len(sigv4) == 0 {
-		return c
-	}
-	s := sigv4[0]
+func (c *CatalogIntegrationIcebergRestModel) WithSigV4RestAuthentication(sigv4 sdk.SigV4RestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
 	m := map[string]tfconfig.Variable{
-		"sigv4_iam_role": tfconfig.StringVariable(s.Sigv4IamRole),
+		"sigv4_iam_role": tfconfig.StringVariable(sigv4.Sigv4IamRole),
 	}
-	if s.Sigv4SigningRegion != nil {
-		m["sigv4_signing_region"] = tfconfig.StringVariable(*s.Sigv4SigningRegion)
+	if sigv4.Sigv4SigningRegion != nil {
+		m["sigv4_signing_region"] = tfconfig.StringVariable(*sigv4.Sigv4SigningRegion)
 	}
-	if s.Sigv4ExternalId != nil {
-		m["sigv4_external_id"] = tfconfig.StringVariable(*s.Sigv4ExternalId)
+	if sigv4.Sigv4ExternalId != nil {
+		m["sigv4_external_id"] = tfconfig.StringVariable(*sigv4.Sigv4ExternalId)
 	}
 	c.Sigv4RestAuthentication = tfconfig.ListVariable(tfconfig.ObjectVariable(m))
 	return c
 }
 
-// CatalogIntegrationIcebergRestOAuth is a convenience constructor for the common case (OAuth + REST config).
 func CatalogIntegrationIcebergRestOAuth(
 	resourceName string,
 	name string,
 	enabled bool,
-	oauth []sdk.OAuthRestAuthenticationRequest,
-	restConfig []sdk.IcebergRestRestConfigRequest,
+	restConfig sdk.IcebergRestRestConfigRequest,
+	oAuthRestAuthentication sdk.OAuthRestAuthenticationRequest,
 ) *CatalogIntegrationIcebergRestModel {
-	return CatalogIntegrationIcebergRest(resourceName, name, enabled, restConfig).WithOauthRestAuthentication(oauth)
+	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.IcebergRestRestConfigRequest{restConfig}).
+		WithOauthRestAuthentication(oAuthRestAuthentication)
+}
+
+func CatalogIntegrationIcebergRestBearer(
+	resourceName string,
+	name string,
+	enabled bool,
+	restConfig sdk.IcebergRestRestConfigRequest,
+	bearerRestAuthentication sdk.BearerRestAuthenticationRequest,
+) *CatalogIntegrationIcebergRestModel {
+	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.IcebergRestRestConfigRequest{restConfig}).
+		WithBearerRestAuthentication(bearerRestAuthentication)
+}
+
+func CatalogIntegrationIcebergRestSigV4(
+	resourceName string,
+	name string,
+	enabled bool,
+	restConfig sdk.IcebergRestRestConfigRequest,
+	sigV4RestAuthentication sdk.SigV4RestAuthenticationRequest,
+) *CatalogIntegrationIcebergRestModel {
+	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.IcebergRestRestConfigRequest{restConfig}).
+		WithSigV4RestAuthentication(sigV4RestAuthentication)
 }

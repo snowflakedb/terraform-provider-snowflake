@@ -56,7 +56,7 @@ var catalogIntegrationOpenCatalogSchema = func() map[string]*schema.Schema {
 						Optional:         true,
 						ForceNew:         true,
 						Description:      "Specifies how Snowflake connects to Open Catalog. " + enumValuesDescription(sdk.AllCatalogIntegrationCatalogApiTypes),
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type"),
+						DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type")),
 						ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationCatalogApiType),
 					},
 					"access_delegation_mode": {
@@ -64,7 +64,7 @@ var catalogIntegrationOpenCatalogSchema = func() map[string]*schema.Schema {
 						Optional:         true,
 						ForceNew:         true,
 						Description:      "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage. " + enumValuesDescription(sdk.AllCatalogIntegrationAccessDelegationModes),
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode"),
+						DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode")),
 						ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationAccessDelegationMode),
 					},
 				},
