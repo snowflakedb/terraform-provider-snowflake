@@ -66,7 +66,9 @@ The `snowflake_account_parameter` resource now supports the following additional
 
 No changes are required for existing configurations.
 
-### *(new feature)* New catalog integration resources
+### *(new feature)* New catalog integration resources and data source
+
+#### Resources 
 
 We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
@@ -80,6 +82,12 @@ These features will be marked as stable in future releases. To use them, add
 - `snowflake_catalog_integration_open_catalog_resource`, or
 - `snowflake_catalog_integration_iceberg_rest_resource`
 to the `preview_features_enabled` field in the provider configuration.
+
+#### Data source
+
+We have added a new preview data source for catalog integrations: [snowflake_catalog_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/catalog_integrations).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_catalog_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
 
 ### *(bug fix)* snowflake_account: fix nil pointer dereference panics
 
