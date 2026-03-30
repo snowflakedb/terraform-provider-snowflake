@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -114,6 +115,23 @@ func (g *Generator[T, M]) WithDescription(description string) *Generator[T, M] {
 func (g *Generator[T, M]) WithMakefileCommandPart(part string) *Generator[T, M] {
 	g.makefileCommandPart = part
 	return g
+}
+
+// effectivePartsForObject returns the generation parts that should be used for the given object.
+// It returns the intersection of non-nil, non-empty per-object allowed parts and the global filtered parts.
+func (g *Generator[T, M]) effectivePartsForObject(object T, globalParts []GenerationPart[T, M]) []GenerationPart[T, M] {
+	if settings, ok := any(object).(HasObjectGenerationSettings); ok {
+		if s := settings.getObjectGenerationSettings(); s != nil && len(s.AllowedGenerationParts) > 0 {
+			filtered := make([]GenerationPart[T, M], 0)
+			for _, p := range globalParts {
+				if slices.Contains(s.AllowedGenerationParts, p.name) {
+					filtered = append(filtered, p)
+				}
+			}
+			return filtered
+		}
+	}
+	return globalParts
 }
 
 func (g *Generator[T, M]) Run() error {
@@ -248,7 +266,7 @@ func (g *Generator[T, M]) generateAndSave(objects []T, parts []GenerationPart[T,
 	for _, s := range objects {
 		model := g.modelProvider(s, g.preamble)
 
-		for _, p := range parts {
+		for _, p := range g.effectivePartsForObject(s, parts) {
 			buffer := bytes.Buffer{}
 
 			if err := executeAllTemplates(model, &buffer, p.templates...); err != nil {
@@ -271,7 +289,7 @@ func (g *Generator[T, M]) generateAndPrint(objects []T, parts []GenerationPart[T
 		fmt.Println("===========================")
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
-		for _, p := range parts {
+		for _, p := range g.effectivePartsForObject(s, parts) {
 			if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, p.templates...); err != nil {
 				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
 				continue
