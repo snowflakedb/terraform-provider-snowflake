@@ -261,6 +261,22 @@ The `snowflake_grant_ownership` resource now supports granting ownership on `DBT
 
 No changes in configuration are required.
 
+### *(bugfix)* Fixed panic in `snowflake_view` when the last column has a masking policy without a `using` clause
+
+The `snowflake_view` resource could panic with `index out of range` during plan, apply, or refresh when the last column definition included a `masking_policy` block without a `using` argument. The error could be as follows:
+```
+panic: runtime error: index out of range [276] with length 276
+
+goroutine 149 [running]:
+github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake.(*ViewSelectStatementExtractor).consumeToken(0x1400077c818, {0x103fb7629, 0x11})
+	github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake/parser.go:242 +0x150
+...
+```
+
+This was caused by a missing early-exit check in the internal SQL parser used to extract the view's `SELECT` statement after consuming the masking policy identifier.
+
+No changes in configuration are required. If this error happened during object creation, the state of this resource may be empty. In this case, just reimport the object.
+
 ## v2.14.0 ➞ v2.14.1
 
 ### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
