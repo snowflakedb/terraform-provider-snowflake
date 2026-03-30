@@ -117,7 +117,7 @@ func (e *ViewSelectStatementExtractor) consumeColumn() (isLast bool) {
 	e.consumeQuotedParameter("comment", false)
 	e.consumeSpace()
 	e.consumeToken(",")
-	if e.input[e.pos] == ')' { // e.pos < len(e.input) &&
+	if e.input[e.pos] == ')' {
 		e.consumeToken(")")
 		isLast = true
 	}
