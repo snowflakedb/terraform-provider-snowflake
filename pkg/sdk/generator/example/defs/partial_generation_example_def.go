@@ -18,20 +18,14 @@ var PartialGenerationExample = g.NewInterface(
 			IfExists().
 			Name(),
 	).AlterOperation("https://example.com",
-		g.NewQueryStruct("Alter").
-			Alter().
-			IfExists().
-			Name().
-			OptionalQueryStructField(
-				"OptionalField",
-				g.NewQueryStruct("OptionalField").
-					List("SomeList", "DatabaseObjectIdentifier", g.ListOptions()),
-				g.KeywordOptions(),
-			).
-			QueryStructField(
-				"RequiredField",
-				g.NewQueryStruct("RequiredField").
-					List("SomeRequiredList", "DatabaseObjectIdentifier", g.ListOptions().Required()),
-				g.KeywordOptions().Required(),
-			),
-	)
+	g.NewQueryStruct("Alter").
+		Alter().
+		IfExists().
+		Name().
+		QueryStructField(
+			"RequiredField",
+			g.NewQueryStruct("PartialGenerationExampleRequiredField").
+				List("SomeRequiredList", "DatabaseObjectIdentifier", g.ListOptions().Required()),
+			g.KeywordOptions().Required(),
+		),
+)

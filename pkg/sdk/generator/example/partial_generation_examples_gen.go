@@ -20,17 +20,12 @@ type CreatePartialGenerationExampleOptions struct {
 
 // AlterPartialGenerationExampleOptions is based on https://example.com.
 type AlterPartialGenerationExampleOptions struct {
-	alter         bool                     `ddl:"static" sql:"ALTER"`
-	IfExists      *bool                    `ddl:"keyword" sql:"IF EXISTS"`
-	name          DatabaseObjectIdentifier `ddl:"identifier"`
-	OptionalField *OptionalField           `ddl:"keyword"`
-	RequiredField RequiredField            `ddl:"keyword"`
+	alter         bool                                  `ddl:"static" sql:"ALTER"`
+	IfExists      *bool                                 `ddl:"keyword" sql:"IF EXISTS"`
+	name          DatabaseObjectIdentifier              `ddl:"identifier"`
+	RequiredField PartialGenerationExampleRequiredField `ddl:"keyword"`
 }
 
-type OptionalField struct {
-	SomeList []DatabaseObjectIdentifier `ddl:"list"`
-}
-
-type RequiredField struct {
+type PartialGenerationExampleRequiredField struct {
 	SomeRequiredList []DatabaseObjectIdentifier `ddl:"list"`
 }
