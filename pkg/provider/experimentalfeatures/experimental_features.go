@@ -21,6 +21,7 @@ const (
 	ParametersReducedOutput     ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
 	TagsAllowEmptyAllowedValues ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
 	ImportBooleanDefault        ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
+	SafeDestroy ExperimentalFeature = "SAFE_DESTROY"
 )
 
 type experimentalFeatureState string
@@ -114,6 +115,16 @@ var allExperiments = []Experiment{
 			"Changes import behavior for boolean fields using the special `\"default\"` value.",
 			"When enabled, boolean fields using the special `\"default\"` value are set to `\"default\"` during import instead of the actual Snowflake value (e.g., `\"false\"`). This prevents unavoidable diffs on every plan after import.",
 			"Note: this is supported only on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, and `snowflake_stage_internal`).",
+		),
+	},
+	{
+		SafeDestroy,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"When enabled, resource destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.",
+			"Currently supported by: `snowflake_grant_privileges_to_account_role`. This experiment is designed to be extended to other resources in the future.",
+			"This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.",
+			"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
 		),
 	},
 }
