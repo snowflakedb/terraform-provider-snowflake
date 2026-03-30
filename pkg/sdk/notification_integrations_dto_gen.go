@@ -18,6 +18,7 @@ type CreateNotificationIntegrationRequest struct {
 	AutomatedDataLoadsParams *AutomatedDataLoadsParamsRequest
 	PushNotificationParams   *PushNotificationParamsRequest
 	EmailParams              *EmailParamsRequest
+	WebhookParams            *WebhookParamsRequest
 	Comment                  *string
 }
 
@@ -59,20 +60,34 @@ type EmailParamsRequest struct {
 	AllowedRecipients []NotificationIntegrationAllowedRecipient
 }
 
+type WebhookParamsRequest struct {
+	WebhookUrl          string // required
+	WebhookSecret       *SchemaObjectIdentifier
+	WebhookBodyTemplate *string
+	WebhookHeaders      []WebhookHeaderRequest
+}
+
+type WebhookHeaderRequest struct {
+	Header string // required
+	Value  string // required
+}
+
 type AlterNotificationIntegrationRequest struct {
-	IfExists         *bool
-	name             AccountObjectIdentifier // required
-	Set              *NotificationIntegrationSetRequest
-	UnsetEmailParams *NotificationIntegrationUnsetEmailParamsRequest
-	SetTags          []TagAssociation
-	UnsetTags        []ObjectIdentifier
+	IfExists           *bool
+	name               AccountObjectIdentifier // required
+	Set                *NotificationIntegrationSetRequest
+	UnsetEmailParams   *NotificationIntegrationUnsetEmailParamsRequest
+	UnsetWebhookParams *NotificationIntegrationUnsetWebhookParamsRequest
+	SetTags            []TagAssociation
+	UnsetTags          []ObjectIdentifier
 }
 
 type NotificationIntegrationSetRequest struct {
-	Enabled        *bool
-	SetPushParams  *SetPushParamsRequest
-	SetEmailParams *SetEmailParamsRequest
-	Comment        *string
+	Enabled          *bool
+	SetPushParams    *SetPushParamsRequest
+	SetEmailParams   *SetEmailParamsRequest
+	SetWebhookParams *SetWebhookParamsRequest
+	Comment          *string
 }
 
 type SetPushParamsRequest struct {
@@ -99,9 +114,23 @@ type SetEmailParamsRequest struct {
 	AllowedRecipients []NotificationIntegrationAllowedRecipient // required
 }
 
+type SetWebhookParamsRequest struct {
+	WebhookUrl          *string
+	WebhookSecret       *SchemaObjectIdentifier
+	WebhookBodyTemplate *string
+	WebhookHeaders      []WebhookHeaderRequest
+}
+
 type NotificationIntegrationUnsetEmailParamsRequest struct {
 	AllowedRecipients *bool
 	Comment           *bool
+}
+
+type NotificationIntegrationUnsetWebhookParamsRequest struct {
+	WebhookSecret       *bool
+	WebhookBodyTemplate *bool
+	WebhookHeaders      *bool
+	Comment             *bool
 }
 
 type DropNotificationIntegrationRequest struct {
