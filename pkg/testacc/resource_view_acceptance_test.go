@@ -1487,7 +1487,7 @@ func TestAcc_View_Issue3676_fix(t *testing.T) {
 // This test proves the fix for SNOW-3308280: panic when consumeToken reaches end of input (off-by-one in bounds check).
 // The error happened when the last column had a masking policy and no trailing options (USING clause), so the parser hits end-of-input while probing optional tokens.
 func TestAcc_View_SNOW_3308280_fix(t *testing.T) {
-	// Masking policy: 2-arg VARCHAR signature (from CreateMaskingPolicy helper)
+	// Use the identity masking policy to avoid the USING clause.
 	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
 	t.Cleanup(maskingPolicyCleanup)
 
