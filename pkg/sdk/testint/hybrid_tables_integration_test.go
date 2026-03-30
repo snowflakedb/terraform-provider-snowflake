@@ -489,8 +489,10 @@ func TestInt_HybridTables(t *testing.T) {
 					{Name: "PARENT_REF", Type: sdk.DataType("NUMBER(38,0)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{Type: sdk.ColumnConstraintTypeForeignKey, Columns: []string{"PARENT_REF"},
-						ForeignKey: &sdk.OutOfLineForeignKey{TableName: parentId, ColumnNames: []string{"PID"}}},
+					{
+						Type: sdk.ColumnConstraintTypeForeignKey, Columns: []string{"PARENT_REF"},
+						ForeignKey: &sdk.OutOfLineForeignKey{TableName: parentId, ColumnNames: []string{"PID"}},
+					},
 				},
 			})
 			t.Cleanup(childCleanup)
