@@ -11,7 +11,7 @@ var PartialGenerationExample = g.NewInterface(
 	"PartialGenerationExample",
 	g.KindOfT[sdkcommons.DatabaseObjectIdentifier](),
 ).
-	WithAllowedGenerationParts("default").
+	WithAllowedGenerationParts("default", "dto", "impl", "validations").
 	CreateOperation("https://example.com",
 		g.NewQueryStruct("Alter").
 			Alter().
