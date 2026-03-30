@@ -254,6 +254,13 @@ by adding `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabl
 
 No changes in configuration are required.
 Without the flag enabled, the behavior remains the same as in previous versions.
+
+### *(new feature)* snowflake_grant_ownership: support for DBT PROJECT object type
+
+The `snowflake_grant_ownership` resource now supports granting ownership on `DBT PROJECT` objects. This includes single object grants, bulk grants (`ALL DBT PROJECTS IN ...`), and future grants (`FUTURE DBT PROJECTS IN ...`). For more details, see [Access control for dbt projects on Snowflake](https://docs.snowflake.com/en/user-guide/data-engineering/dbt-projects-on-snowflake-access-control).
+
+No changes in configuration are required.
+
 ## v2.14.0 ➞ v2.14.1
 
 ### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
