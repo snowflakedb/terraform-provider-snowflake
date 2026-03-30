@@ -39,12 +39,12 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWareho
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
-			// Step 1: Create the grant with default provider.
+			// Create the grant with default provider.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, grantModel),
 			},
-			// Step 2: Drop the warehouse externally, then try to destroy without experiment — expect failure.
+			// Drop the warehouse externally, then try to destroy without experiment — expect failure.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig:                testClient().Warehouse.DropWarehouseFunc(t, wh.ID()),
@@ -52,7 +52,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWareho
 				Destroy:                  true,
 				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
 			},
-			// Step 3: Destroy with SAFE_DESTROY experiment — succeeds.
+			// Destroy with SAFE_DESTROY experiment — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
 				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
@@ -86,12 +86,12 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole(t
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
-			// Step 1: Create the grant with default provider.
+			// Create the grant with default provider.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, grantModel),
 			},
-			// Step 2: Drop the role externally, then try to destroy without experiment — expect failure.
+			// Drop the role externally, then try to destroy without experiment — expect failure.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig:                testClient().Role.DropRoleFunc(t, role.ID()),
@@ -99,7 +99,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole(t
 				Destroy:                  true,
 				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
 			},
-			// Step 3: Destroy with SAFE_DESTROY experiment — succeeds.
+			// Destroy with SAFE_DESTROY experiment — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
 				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
