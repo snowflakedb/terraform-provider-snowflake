@@ -54,8 +54,8 @@ func (v *TagPropagate) validate() error {
 		return errors.Join(ErrNilOptions)
 	}
 	var errs []error
-	if v.PropagationMode == "" {
-		errs = append(errs, errNotSet("TagPropagate", "PropagationMode"))
+	if v.Propagation == "" {
+		errs = append(errs, errNotSet("TagPropagate", "Propagation"))
 	}
 	if valueSet(v.OnConflict) {
 		if err := v.OnConflict.validate(); err != nil {
@@ -70,8 +70,8 @@ func (v *TagOnConflict) validate() error {
 		return errors.Join(ErrNilOptions)
 	}
 	var errs []error
-	if !exactlyOneValueSet(v.Value, v.AllowedValuesSequence) {
-		errs = append(errs, errExactlyOneOf("TagOnConflict", "Value", "AllowedValuesSequence"))
+	if !exactlyOneValueSet(v.CustomValue, v.AllowedValuesSequence) {
+		errs = append(errs, errExactlyOneOf("TagOnConflict", "CustomValue", "AllowedValuesSequence"))
 	}
 	return errors.Join(errs...)
 }

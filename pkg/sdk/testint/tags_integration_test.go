@@ -90,7 +90,7 @@ func TestInt_Tags(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		request := sdk.NewCreateTagRequest(id).WithPropagate(sdk.TagPropagate{
-			PropagationMode: sdk.TagPropagationOnDependency,
+			Propagation: sdk.TagPropagationOnDependency,
 		})
 		err := client.Tags.Create(ctx, request)
 		require.NoError(t, err)
@@ -103,9 +103,9 @@ func TestInt_Tags(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		request := sdk.NewCreateTagRequest(id).WithPropagate(sdk.TagPropagate{
-			PropagationMode: sdk.TagPropagationOnDependencyAndDataMovement,
+			Propagation: sdk.TagPropagationOnDependencyAndDataMovement,
 			OnConflict: &sdk.TagOnConflict{
-				Value: sdk.String("FAIL"),
+				CustomValue: sdk.String("FAIL"),
 			},
 		})
 		err := client.Tags.Create(ctx, request)
@@ -121,7 +121,7 @@ func TestInt_Tags(t *testing.T) {
 		request := sdk.NewCreateTagRequest(id).
 			WithAllowedValues([]string{"val1", "val2"}).
 			WithPropagate(sdk.TagPropagate{
-				PropagationMode: sdk.TagPropagationOnDataMovement,
+				Propagation: sdk.TagPropagationOnDataMovement,
 				OnConflict: &sdk.TagOnConflict{
 					AllowedValuesSequence: sdk.Bool(true),
 				},
@@ -289,7 +289,7 @@ func TestInt_Tags(t *testing.T) {
 		id := tag.ID()
 
 		set := sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
-			PropagationMode: sdk.TagPropagationOnDependency,
+			Propagation: sdk.TagPropagationOnDependency,
 		})
 		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*set))
 		require.NoError(t, err)
@@ -313,9 +313,9 @@ func TestInt_Tags(t *testing.T) {
 		id := tag.ID()
 
 		set := sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
-			PropagationMode: sdk.TagPropagationOnDependencyAndDataMovement,
+			Propagation: sdk.TagPropagationOnDependencyAndDataMovement,
 			OnConflict: &sdk.TagOnConflict{
-				Value: sdk.String("FAIL"),
+				CustomValue: sdk.String("FAIL"),
 			},
 		})
 		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*set))
@@ -339,7 +339,7 @@ func TestInt_Tags(t *testing.T) {
 		t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
 
 		set := sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
-			PropagationMode: sdk.TagPropagationOnDataMovement,
+			Propagation: sdk.TagPropagationOnDataMovement,
 			OnConflict: &sdk.TagOnConflict{
 				AllowedValuesSequence: sdk.Bool(true),
 			},
@@ -1311,7 +1311,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 				}),
 		)
 		t.Cleanup(tagCleanup)
@@ -1336,7 +1336,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 				}),
 		)
 		t.Cleanup(tagCleanup)
@@ -1359,7 +1359,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 				}),
 		)
 		t.Cleanup(tagCleanup)
@@ -1394,7 +1394,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 				}),
 		)
 		t.Cleanup(tagCleanup)
@@ -1424,7 +1424,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 				}),
 		)
 		t.Cleanup(tagCleanup)
@@ -1452,7 +1452,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDataMovement,
+					Propagation: sdk.TagPropagationOnDataMovement,
 				}),
 		)
 		t.Cleanup(tagCleanup)
@@ -1479,7 +1479,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 				}),
 		)
 		t.Cleanup(tagCleanup)
@@ -1511,9 +1511,9 @@ func TestInt_TagsPropagation(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateWithRequest(t,
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 					OnConflict: &sdk.TagOnConflict{
-						Value: sdk.String("HIGHLY CONFIDENTIAL"),
+						CustomValue: sdk.String("HIGHLY CONFIDENTIAL"),
 					},
 				}),
 		)
@@ -1547,7 +1547,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithAllowedValues([]string{"confidential", "internal", "public"}).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 					OnConflict: &sdk.TagOnConflict{
 						AllowedValuesSequence: sdk.Bool(true),
 					},
@@ -1583,7 +1583,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 			sdk.NewCreateTagRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier()).
 				WithAllowedValues([]string{"public", "internal", "confidential"}).
 				WithPropagate(sdk.TagPropagate{
-					PropagationMode: sdk.TagPropagationOnDependency,
+					Propagation: sdk.TagPropagationOnDependency,
 					OnConflict: &sdk.TagOnConflict{
 						AllowedValuesSequence: sdk.Bool(true),
 					},

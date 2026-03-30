@@ -85,12 +85,12 @@ func ToTagPropagation(s string) (TagPropagation, error) {
 }
 
 type TagPropagate struct {
-	PropagationMode TagPropagation `ddl:"parameter" sql:"PROPAGATE"`
-	OnConflict      *TagOnConflict `ddl:"keyword"`
+	Propagation TagPropagation `ddl:"parameter" sql:"PROPAGATE"`
+	OnConflict  *TagOnConflict `ddl:"keyword"`
 }
 
 type TagOnConflict struct {
-	Value                 *string `ddl:"parameter,single_quotes" sql:"ON_CONFLICT"`
+	CustomValue           *string `ddl:"parameter,single_quotes" sql:"ON_CONFLICT"`
 	AllowedValuesSequence *bool   `ddl:"keyword" sql:"ON_CONFLICT = ALLOWED_VALUES_SEQUENCE"`
 }
 
@@ -111,7 +111,7 @@ type Tag struct {
 	Comment       string
 	AllowedValues []string
 	OwnerRoleType string
-	Propagate     string
+	Propagate     TagPropagation
 }
 
 func (v *Tag) ID() SchemaObjectIdentifier {
@@ -139,11 +139,11 @@ func (tr tagRow) convert() (*Tag, error) {
 		Owner:         tr.Owner,
 		Comment:       tr.Comment,
 		OwnerRoleType: tr.OwnerRoleType,
-		Propagate:     tr.Propagate,
 	}
 	if tr.AllowedValues.Valid {
 		t.AllowedValues = ParseCommaSeparatedStringArray(tr.AllowedValues.String, true)
 	}
+	mapStringWithMapping(&t.Propagate, tr.Propagate, ToTagPropagation)
 	return t, nil
 }
 
