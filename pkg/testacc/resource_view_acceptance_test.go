@@ -1532,18 +1532,15 @@ func TestAcc_View_SNOW_3308280_fix(t *testing.T) {
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig:                testClient().View.DropViewFunc(t, id),
 				Config:                   accconfig.FromModels(t, viewModel),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_view.test", "name", id.Name()),
-					resource.TestCheckResourceAttr("snowflake_view.test", "database", id.DatabaseName()),
-					resource.TestCheckResourceAttr("snowflake_view.test", "schema", id.SchemaName()),
-					resource.TestCheckResourceAttr("snowflake_view.test", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_view.test", "column.1.column_name", "COL2"),
-					resource.TestCheckResourceAttr("snowflake_view.test", "column.1.masking_policy.#", "1"),
-					resource.TestCheckResourceAttr(
-						"snowflake_view.test",
-						"column.1.masking_policy.0.policy_name",
-						maskingPolicy.ID().FullyQualifiedName(),
-					),
+				Check: assertThat(t, resourceassert.ViewResource(t, viewModel.ResourceReference()).
+					HasNameString(id.Name()).
+					HasDatabaseString(id.DatabaseName()).
+					HasSchemaString(id.SchemaName()).
+					HasStatementString(statement).
+					HasColumns([]sdk.ViewColumn{
+						{Name: "COL1"},
+						{Name: "COL2", MaskingPolicy: &sdk.ViewColumnMaskingPolicy{MaskingPolicy: maskingPolicy.ID()}},
+					}),
 				),
 			},
 		},
