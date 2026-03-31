@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -266,7 +267,9 @@ func DeleteContextTrustCenterScanner(ctx context.Context, d *schema.ResourceData
 		UnsetSchedule:     true,
 		UnsetNotification: true,
 	}
-	_ = client.TrustCenter.UnsetScannerConfiguration(ctx, unsetReq)
+	if err := client.TrustCenter.UnsetScannerConfiguration(ctx, unsetReq); err != nil {
+		log.Printf("[DEBUG] failed to unset schedule/notification for scanner %s/%s during delete: %s", scannerPackageId, scannerId, err)
+	}
 
 	d.SetId("")
 	return nil

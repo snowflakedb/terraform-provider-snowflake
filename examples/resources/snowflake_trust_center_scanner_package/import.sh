@@ -1,0 +1,1 @@
+terraform import snowflake_trust_center_scanner_package.security_essentials 'SNOWFLAKE|SECURITY_ESSENTIALS'
