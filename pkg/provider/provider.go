@@ -678,6 +678,8 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_tag":                                                          resources.Tag(),
 		"snowflake_tag_association":                                              resources.TagAssociation(),
 		"snowflake_task":                                                         resources.Task(),
+		"snowflake_trust_center_scanner":                                         resources.TrustCenterScanner(),
+		"snowflake_trust_center_scanner_package":                                 resources.TrustCenterScannerPackage(),
 		"snowflake_user":                                                         resources.User(),
 		"snowflake_user_authentication_policy_attachment":                        resources.UserAuthenticationPolicyAttachment(),
 		"snowflake_user_password_policy_attachment":                              resources.UserPasswordPolicyAttachment(),
