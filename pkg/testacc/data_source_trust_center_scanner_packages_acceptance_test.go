@@ -1,4 +1,4 @@
-//go:build acceptance
+//go:build account_level_tests
 
 package testacc
 
@@ -26,6 +26,10 @@ func TestAcc_TrustCenterScannerPackages_Basic(t *testing.T) {
 				Config: accconfig.FromModels(t, dsModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.#"),
+					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.0.show_output.0.name"),
+					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.0.show_output.0.id"),
+					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.0.show_output.0.state"),
+					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.0.show_output.0.provider_name"),
 				),
 			},
 		},
@@ -47,6 +51,9 @@ func TestAcc_TrustCenterScannerPackages_WithLikeFilter(t *testing.T) {
 				Config: accconfig.FromModels(t, dsModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.#"),
+					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.0.show_output.0.name"),
+					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.0.show_output.0.id"),
+					resource.TestCheckResourceAttrSet(datasourceName, "scanner_packages.0.show_output.0.description"),
 				),
 			},
 		},

@@ -24,6 +24,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.15.x ➞ v2.16.0
+
+### *(new feature)* snowflake_trust_center_scanner_package resource
+
+New resource for managing Trust Center scanner packages. It supports enabling/disabling packages, setting schedules, and configuring notifications.
+
+### *(new feature)* snowflake_trust_center_scanner resource
+
+New resource for managing individual Trust Center scanners within a scanner package. It supports enabling/disabling scanners, setting schedules, and configuring notifications.
+
+### *(new feature)* snowflake_trust_center_scanner_packages data source
+
+New data source for listing Trust Center scanner packages. Supports optional `like` filter.
+
+### *(new feature)* snowflake_trust_center_scanners data source
+
+New data source for listing Trust Center scanners. Supports optional `like` and `scanner_package_id` filters.
+
 ## v2.14.x ➞ v2.15.0
 
 ### *(improvement)* Go driver bumped to v2
