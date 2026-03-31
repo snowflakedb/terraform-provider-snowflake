@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -57,7 +56,7 @@ var catalogIntegrationOpenCatalogSchema = func() map[string]*schema.Schema {
 						Optional:         true,
 						ForceNew:         true,
 						Description:      "Specifies how Snowflake connects to Open Catalog. " + enumValuesDescription(sdk.AllCatalogIntegrationCatalogApiTypes),
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type"),
+						DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationCatalogApiType), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.catalog_api_type")),
 						ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationCatalogApiType),
 					},
 					"access_delegation_mode": {
@@ -65,7 +64,7 @@ var catalogIntegrationOpenCatalogSchema = func() map[string]*schema.Schema {
 						Optional:         true,
 						ForceNew:         true,
 						Description:      "Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage. " + enumValuesDescription(sdk.AllCatalogIntegrationAccessDelegationModes),
-						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode"),
+						DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToCatalogIntegrationAccessDelegationMode), IgnoreChangeToCurrentSnowflakeValueInDescribe("rest_config.0.access_delegation_mode")),
 						ValidateDiagFunc: sdkValidation(sdk.ToCatalogIntegrationAccessDelegationMode),
 					},
 				},
@@ -168,7 +167,7 @@ func CreateCatalogIntegrationOpenCatalog(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	restAuth, err := buildOAuthRestAuthenticationRequest(d)
+	restAuth, err := buildOAuthRestAuthenticationRequest(d, "rest_authentication")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -303,23 +302,6 @@ func buildOpenCatalogRestConfigRequest(d *schema.ResourceData) (sdk.OpenCatalogR
 	return *req, nil
 }
 
-func buildOAuthRestAuthenticationRequest(d *schema.ResourceData) (sdk.OAuthRestAuthenticationRequest, error) {
-	v := d.Get("rest_authentication").([]any)
-	block := v[0].(map[string]any)
-	oauthClientId := block["oauth_client_id"].(string)
-	oauthClientSecret := block["oauth_client_secret"].(string)
-	scopesRaw := expandStringList(block["oauth_allowed_scopes"].([]any))
-	scopes := collections.Map(scopesRaw, func(v string) sdk.StringListItemWrapper {
-		return sdk.StringListItemWrapper{Value: v}
-	})
-	req := sdk.NewOAuthRestAuthenticationRequest(oauthClientId, oauthClientSecret, scopes)
-
-	if v, ok := block["oauth_token_uri"].(string); ok && v != "" {
-		req = req.WithOauthTokenUri(v)
-	}
-	return *req, nil
-}
-
 // handleExternalChangesToNestedAttrs marks drift on rest_config and rest_authentication when
 // the prior describe_output differs from the current Snowflake response.
 func handleExternalChangesToNestedAttrs(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
@@ -341,34 +323,11 @@ func handleExternalChangesToNestedAttrs(d *schema.ResourceData, details *sdk.Cat
 }
 
 func handleExternalChangesToRestAuthentication(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
-	output, ok := d.GetOk(DescribeOutputAttributeName + ".0.rest_authentication")
-	if !ok {
-		return nil
-	}
-	outputList := output.([]any)
-	result := outputList[0].(map[string]any)
-
-	oAuthTokenUri := details.RestAuthentication.OauthTokenUri
-	if result["oauth_token_uri"] == oAuthTokenUri &&
-		result["oauth_client_id"] == details.RestAuthentication.OauthClientId &&
-		areSlicesEqual(details.RestAuthentication.OauthAllowedScopes, result["oauth_allowed_scopes"].([]any)) {
-		return nil
-	}
-
-	return d.Set("rest_authentication", []any{map[string]any{
-		"oauth_token_uri":      oAuthTokenUri,
-		"oauth_client_id":      details.RestAuthentication.OauthClientId,
-		"oauth_allowed_scopes": details.RestAuthentication.OauthAllowedScopes,
-	}})
-}
-
-func areSlicesEqual(a []string, b []any) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	bs := make([]string, len(b))
-	for i, scope := range b {
-		bs[i] = scope.(string)
-	}
-	return slices.Equal(a, bs)
+	return handleExternalChangesToOAuthRestAuthentication(
+		d,
+		"rest_authentication",
+		details.RestAuthentication.OauthTokenUri,
+		details.RestAuthentication.OauthClientId,
+		details.RestAuthentication.OauthAllowedScopes,
+	)
 }
