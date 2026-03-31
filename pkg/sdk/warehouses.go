@@ -279,36 +279,36 @@ func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceC
 	}
 }
 
-type MaxStatementSize string
+type MaxQueryPerformanceLevel string
 
 const (
-	MaxStatementSizeXSmall   MaxStatementSize = "XSMALL"
-	MaxStatementSizeSmall    MaxStatementSize = "SMALL"
-	MaxStatementSizeMedium   MaxStatementSize = "MEDIUM"
-	MaxStatementSizeLarge    MaxStatementSize = "LARGE"
-	MaxStatementSizeXLarge   MaxStatementSize = "XLARGE"
-	MaxStatementSizeXXLarge  MaxStatementSize = "XXLARGE"
-	MaxStatementSizeXXXLarge MaxStatementSize = "XXXLARGE"
-	MaxStatementSizeX4Large  MaxStatementSize = "X4LARGE"
+	MaxQueryPerformanceLevelXSmall   MaxQueryPerformanceLevel = "XSMALL"
+	MaxQueryPerformanceLevelSmall    MaxQueryPerformanceLevel = "SMALL"
+	MaxQueryPerformanceLevelMedium   MaxQueryPerformanceLevel = "MEDIUM"
+	MaxQueryPerformanceLevelLarge    MaxQueryPerformanceLevel = "LARGE"
+	MaxQueryPerformanceLevelXLarge   MaxQueryPerformanceLevel = "XLARGE"
+	MaxQueryPerformanceLevelXXLarge  MaxQueryPerformanceLevel = "XXLARGE"
+	MaxQueryPerformanceLevelXXXLarge MaxQueryPerformanceLevel = "XXXLARGE"
+	MaxQueryPerformanceLevelX4Large  MaxQueryPerformanceLevel = "X4LARGE"
 )
 
-var AllMaxStatementSizes = []string{
-	string(MaxStatementSizeXSmall),
-	string(MaxStatementSizeSmall),
-	string(MaxStatementSizeMedium),
-	string(MaxStatementSizeLarge),
-	string(MaxStatementSizeXLarge),
-	string(MaxStatementSizeXXLarge),
-	string(MaxStatementSizeXXXLarge),
-	string(MaxStatementSizeX4Large),
+var AllMaxQueryPerformanceLevels = []string{
+	string(MaxQueryPerformanceLevelXSmall),
+	string(MaxQueryPerformanceLevelSmall),
+	string(MaxQueryPerformanceLevelMedium),
+	string(MaxQueryPerformanceLevelLarge),
+	string(MaxQueryPerformanceLevelXLarge),
+	string(MaxQueryPerformanceLevelXXLarge),
+	string(MaxQueryPerformanceLevelXXXLarge),
+	string(MaxQueryPerformanceLevelX4Large),
 }
 
-func ToMaxStatementSize(s string) (MaxStatementSize, error) {
+func ToMaxQueryPerformanceLevel(s string) (MaxQueryPerformanceLevel, error) {
 	s = strings.ToUpper(s)
-	if slices.Contains(AllMaxStatementSizes, s) {
-		return MaxStatementSize(s), nil
+	if slices.Contains(AllMaxQueryPerformanceLevels, s) {
+		return MaxQueryPerformanceLevel(s), nil
 	}
-	return "", fmt.Errorf("invalid max statement size: %s", s)
+	return "", fmt.Errorf("invalid max query performance level: %s", s)
 }
 
 // CreateWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-warehouse.
@@ -388,8 +388,9 @@ type CreateAdaptiveWarehouseOptions struct {
 	warehouseType bool                    `ddl:"static" sql:"WAREHOUSE_TYPE = 'ADAPTIVE'"`
 
 	// Object properties
-	Comment          *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	MaxStatementSize *MaxStatementSize `ddl:"parameter,single_quotes" sql:"MAX_STATEMENT_SIZE"`
+	Comment                   *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	MaxQueryPerformanceLevel  *MaxQueryPerformanceLevel `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
+	QueryThroughputMultiplier *int                      `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 
 	// Tags
 	Tag []TagAssociation `ddl:"keyword,parentheses" sql:"TAG"`
@@ -409,6 +410,9 @@ func (opts *CreateAdaptiveWarehouseOptions) validate() error {
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateAdaptiveWarehouseOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.QueryThroughputMultiplier) && !validateIntGreaterThanOrEqual(*opts.QueryThroughputMultiplier, 0) {
+		errs = append(errs, fmt.Errorf("QueryThroughputMultiplier must be greater than or equal to 0"))
 	}
 	return errors.Join(errs...)
 }
@@ -499,6 +503,7 @@ type WarehouseSet struct {
 	MaxConcurrencyLevel             *int `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	QueryThroughputMultiplier       *int `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 }
 
 func (v *WarehouseSet) validate() error {
@@ -518,8 +523,13 @@ func (v *WarehouseSet) validate() error {
 			return fmt.Errorf("QueryAccelerationMaxScaleFactor must be between 0 and 100")
 		}
 	}
-	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
-		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
+	if v.QueryThroughputMultiplier != nil {
+		if ok := validateIntGreaterThanOrEqual(*v.QueryThroughputMultiplier, 0); !ok {
+			return fmt.Errorf("QueryThroughputMultiplier must be greater than or equal to 0")
+		}
+	}
+	if everyValueNil(v.WarehouseType, v.WarehouseSize, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.QueryThroughputMultiplier) {
+		return errAtLeastOneOf("WarehouseSet", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier")
 	}
 	return nil
 }
@@ -544,11 +554,12 @@ type WarehouseUnset struct {
 	MaxConcurrencyLevel             *bool `ddl:"keyword" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *bool `ddl:"keyword" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	QueryThroughputMultiplier       *bool `ddl:"keyword" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 }
 
 func (v *WarehouseUnset) validate() error {
-	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds) {
-		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds")
+	if everyValueNil(v.WarehouseType, v.WaitForCompletion, v.MaxClusterCount, v.MinClusterCount, v.ScalingPolicy, v.AutoSuspend, v.AutoResume, v.ResourceMonitor, v.Comment, v.EnableQueryAcceleration, v.QueryAccelerationMaxScaleFactor, v.ResourceConstraint, v.Generation, v.MaxConcurrencyLevel, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.QueryThroughputMultiplier) {
+		return errAtLeastOneOf("WarehouseUnset", "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier")
 	}
 	return nil
 }
@@ -711,8 +722,8 @@ type Warehouse struct {
 	OwnerRoleType                   string
 	ResourceConstraint              *WarehouseResourceConstraint
 	Generation                      *WarehouseGeneration
-	MaxStatementSize                *MaxStatementSize
-	MaxBurstRateCredits             *int
+	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel
+	QueryThroughputMultiplier       *int
 }
 
 type warehouseDBRow struct {
@@ -750,8 +761,8 @@ type warehouseDBRow struct {
 	OwnerRoleType                   sql.NullString `db:"owner_role_type"`
 	ResourceConstraint              sql.NullString `db:"resource_constraint"`
 	Generation                      sql.NullString `db:"generation"`
-	MaxStatementSize                sql.NullString `db:"max_statement_size"`
-	MaxBurstRateCredits             sql.NullInt64  `db:"max_burst_rate_credits"`
+	MaxQueryPerformanceLevel        sql.NullString `db:"max_query_performance_level"`
+	QueryThroughputMultiplier       sql.NullInt64  `db:"query_throughput_multiplier"`
 }
 
 func (row warehouseDBRow) convert() (*Warehouse, error) {
@@ -848,8 +859,8 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 			return nil, fmt.Errorf("invalid warehouse type: %s", wh.Type)
 		}
 	}
-	mapNullStringWithMapping(&wh.MaxStatementSize, row.MaxStatementSize, ToMaxStatementSize)
-	mapNullInt(&wh.MaxBurstRateCredits, row.MaxBurstRateCredits)
+	mapNullStringWithMapping(&wh.MaxQueryPerformanceLevel, row.MaxQueryPerformanceLevel, ToMaxQueryPerformanceLevel)
+	mapNullInt(&wh.QueryThroughputMultiplier, row.QueryThroughputMultiplier)
 	return wh, nil
 }
 
