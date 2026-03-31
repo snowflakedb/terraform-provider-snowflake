@@ -303,11 +303,6 @@ func (s *HybridTableConstraintActionDropRequest) WithConstraintName(constraintNa
 	return s
 }
 
-func (s *HybridTableConstraintActionDropRequest) WithPrimaryKey(primaryKey bool) *HybridTableConstraintActionDropRequest {
-	s.PrimaryKey = &primaryKey
-	return s
-}
-
 func (s *HybridTableConstraintActionDropRequest) WithUnique(unique bool) *HybridTableConstraintActionDropRequest {
 	s.Unique = &unique
 	return s

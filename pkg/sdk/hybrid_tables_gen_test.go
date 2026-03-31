@@ -158,16 +158,16 @@ func TestHybridTables_Alter(t *testing.T) {
 		opts.ConstraintAction = &HybridTableConstraintAction{
 			Drop: &HybridTableConstraintActionDrop{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "ConstraintName", "Unique", "ForeignKey"))
 	})
 
 	t.Run("validation: drop constraint - cascade and restrict are mutually exclusive", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &HybridTableConstraintAction{
 			Drop: &HybridTableConstraintActionDrop{
-				PrimaryKey: Bool(true),
-				Cascade:    Bool(true),
-				Restrict:   Bool(true),
+				ConstraintName: String("pk_name"),
+				Cascade:        Bool(true),
+				Restrict:       Bool(true),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterHybridTableOptions.ConstraintAction.Drop", "Cascade", "Restrict"))
@@ -281,18 +281,6 @@ func TestHybridTables_Alter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP CONSTRAINT "my_constraint" RESTRICT`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: drop primary key", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.ConstraintAction = &HybridTableConstraintAction{
-			Drop: &HybridTableConstraintActionDrop{
-				PrimaryKey: Bool(true),
-				Cascade:    Bool(true),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF EXISTS %s DROP PRIMARY KEY CASCADE`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop unique with columns", func(t *testing.T) {

@@ -116,10 +116,11 @@ type HybridTableConstraintActionRename struct {
 	NewName          string `ddl:"parameter,no_equals,double_quotes" sql:"TO"`
 }
 
+// NOTE: PrimaryKey omitted — DROP PRIMARY KEY is unsupported on hybrid tables (errors at runtime).
+// Removed per PR #4461 review. The def file (hybrid_tables_def.go) reflects this omission.
 type HybridTableConstraintActionDrop struct {
 	drop           bool     `ddl:"static" sql:"DROP"`
 	ConstraintName *string  `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
-	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
 	Columns        []string `ddl:"keyword,parentheses"`
