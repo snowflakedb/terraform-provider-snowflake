@@ -30,6 +30,10 @@ func (t *TagModel) WithMaskingPolicies(maskingPolicies ...sdk.SchemaObjectIdenti
 	return t
 }
 
+func (t *TagModel) WithPropagateEnum(propagateEnum sdk.TagPropagation) *TagModel {
+	return t.WithPropagate(string(propagateEnum))
+}
+
 func (t *TagModel) WithOnConflictCustomValue(customValue string) *TagModel {
 	t.OnConflict = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"custom_value": tfconfig.StringVariable(customValue),

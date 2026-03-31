@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"testing"
 
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -19,7 +21,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -39,7 +40,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 	complete := model.TagBase("test", newId).
 		WithComment(comment).
 		WithAllowedValues("value1", "value2").
-		WithMaskingPolicies(maskingPolicy.ID())
+		WithMaskingPolicies(maskingPolicy.ID()).
+		WithPropagateEnum(sdk.TagPropagationOnDependency)
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.Tag(t, id).
@@ -48,7 +50,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasSchemaName(id.SchemaName()).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment("").
-			HasAllowedValues(),
+			HasAllowedValues().
+			HasPropagate(""),
 
 		resourceassert.TagResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
@@ -57,7 +60,9 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasSchemaString(id.SchemaName()).
 			HasCommentString("").
 			HasAllowedValuesEmpty().
-			HasMaskingPoliciesEmpty(),
+			HasMaskingPoliciesEmpty().
+			HasPropagateEmpty().
+			HasOnConflictEmpty(),
 
 		resourceshowoutputassert.TagShowOutput(t, basic.ResourceReference()).
 			HasCreatedOnNotEmpty().
@@ -77,7 +82,8 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasSchemaName(newId.SchemaName()).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
-			HasAllowedValuesUnordered("value1", "value2"),
+			HasAllowedValuesUnordered("value1", "value2").
+			HasPropagateEnum(sdk.TagPropagationOnDependency),
 
 		resourceassert.TagResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
@@ -86,7 +92,9 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasSchemaString(newId.SchemaName()).
 			HasCommentString(comment).
 			HasAllowedValues("value1", "value2").
-			HasMaskingPolicies(maskingPolicy.ID().FullyQualifiedName()),
+			HasMaskingPolicies(maskingPolicy.ID().FullyQualifiedName()).
+			HasPropagateEnum(sdk.TagPropagationOnDependency).
+			HasOnConflictEmpty(),
 
 		resourceshowoutputassert.TagShowOutput(t, complete.ResourceReference()).
 			HasCreatedOnNotEmpty().
@@ -150,6 +158,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()})))
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithComment(comment)))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{Propagation: sdk.Pointer(sdk.TagPropagationOnDependency)})))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -987,6 +996,298 @@ func TestAcc_Tag_NoAllowedValues_DisableExperimentFlag(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAllowedValuesEmpty(),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_Tag_PropagateAndOnConflict(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	basic := model.TagBase("test", id)
+
+	propagateOnly := model.TagBase("test", id).
+		WithPropagateEnum(sdk.TagPropagationOnDependency)
+
+	withCustomConflict := model.TagBase("test", id).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOnConflictCustomValue("FAIL")
+
+	withDifferentMode := model.TagBase("test", id).
+		WithPropagateEnum(sdk.TagPropagationOnDataMovement).
+		WithOnConflictCustomValue("FAIL")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Create with propagate only (no on_conflict)
+			{
+				Config: config.FromModels(t, propagateOnly),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency),
+
+					resourceassert.TagResource(t, propagateOnly.ResourceReference()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasOnConflictEmpty(),
+				),
+			},
+			// Import - propagate only (on_conflict not in Read, so import is clean)
+			{
+				Config:            config.FromModels(t, propagateOnly),
+				ResourceName:      propagateOnly.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - add on_conflict with custom_value
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withCustomConflict.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withCustomConflict),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency),
+
+					resourceassert.TagResource(t, withCustomConflict.ResourceReference()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasOnConflictCustomValue("FAIL"),
+				),
+			},
+			// Import - on_conflict is not in Read so it won't be imported
+			{
+				Config:                  config.FromModels(t, withCustomConflict),
+				ResourceName:            withCustomConflict.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"on_conflict"},
+			},
+			// Update - change propagate mode, keep on_conflict
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withDifferentMode.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withDifferentMode),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagateEnum(sdk.TagPropagationOnDataMovement),
+
+					resourceassert.TagResource(t, withDifferentMode.ResourceReference()).
+						HasPropagateEnum(sdk.TagPropagationOnDataMovement).
+						HasOnConflictCustomValue("FAIL"),
+				),
+			},
+			// Update - remove on_conflict, keep propagate
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(propagateOnly.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, propagateOnly),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency),
+
+					resourceassert.TagResource(t, propagateOnly.ResourceReference()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasOnConflictEmpty(),
+				),
+			},
+			// Update - remove propagate entirely
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagate(""),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasPropagateEmpty().
+						HasOnConflictEmpty(),
+				),
+			},
+			// Detect external change - someone sets propagate externally; provider reverts
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
+						Propagation: sdk.Pointer(sdk.TagPropagationOnDependency),
+					})))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagate(""),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasPropagateEmpty().
+						HasOnConflictEmpty(),
+				),
+			},
+			// Destroy - clean slate
+			{
+				Destroy: true,
+				Config:  config.FromModels(t, basic),
+				Check: assertThat(t,
+					invokeactionassert.TagDoesNotExist(t, id),
+				),
+			},
+			// Create - with propagate + on_conflict from scratch
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withCustomConflict.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, withCustomConflict),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency),
+
+					resourceassert.TagResource(t, withCustomConflict.ResourceReference()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasOnConflictCustomValue("FAIL"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	basic := model.TagBase("test", id)
+
+	withAllowedValuesSeq := model.TagBase("test", id).
+		WithPropagate("ON_DEPENDENCY_AND_DATA_MOVEMENT").
+		WithAllowedValues("confidential", "internal", "public").
+		WithOnConflictAllowedValuesSequence()
+
+	withCustomConflict := model.TagBase("test", id).
+		WithPropagate("ON_DEPENDENCY").
+		WithOnConflictCustomValue("FAIL")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Create with allowed_values + propagate + on_conflict { allowed_values_sequence = true }
+			{
+				Config: config.FromModels(t, withAllowedValuesSeq),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagateEnum(sdk.TagPropagationOnDependencyAndDataMovement).
+						HasAllowedValuesUnordered("confidential", "internal", "public"),
+
+					resourceassert.TagResource(t, withAllowedValuesSeq.ResourceReference()).
+						HasPropagateEnum(sdk.TagPropagationOnDependencyAndDataMovement).
+						HasAllowedValues("confidential", "internal", "public").
+						HasOnConflictAllowedValuesSequence(),
+				),
+			},
+			// Import - on_conflict not imported from Snowflake
+			{
+				Config:                  config.FromModels(t, withAllowedValuesSeq),
+				ResourceName:            withAllowedValuesSeq.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"on_conflict"},
+			},
+			// Update - switch to custom_value, drop allowed_values, change propagate mode
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withCustomConflict.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withCustomConflict),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency),
+
+					resourceassert.TagResource(t, withCustomConflict.ResourceReference()).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
+						HasAllowedValuesEmpty().
+						HasOnConflictCustomValue("FAIL"),
+				),
+			},
+			// Update - remove everything (propagate, on_conflict)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).
+						HasName(id.Name()).
+						HasPropagate(""),
+
+					resourceassert.TagResource(t, basic.ResourceReference()).
+						HasPropagateEmpty().
+						HasOnConflictEmpty().
+						HasAllowedValuesEmpty(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Tag_Validations(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	invalidPropagate := model.TagBase("test", id).
+		WithPropagate("INVALID")
+
+	onConflictWithoutPropagate := model.TagBase("test", id).
+		WithOnConflictCustomValue("FAIL")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, invalidPropagate),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid tag propagation value`),
+			},
+			{
+				Config:      config.FromModels(t, onConflictWithoutPropagate),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("\"on_conflict\": all of `on_conflict,propagate` must be specified"),
 			},
 		},
 	})

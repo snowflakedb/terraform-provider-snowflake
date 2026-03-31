@@ -34,23 +34,31 @@ func TestTagCreate(t *testing.T) {
 
 	t.Run("create with propagate", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Propagate = &TagPropagate{Propagation: TagPropagationOnDependency}
+		opts.Propagate = &TagPropagate{Propagation: Pointer(TagPropagationOnDependency)}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DEPENDENCY`, id.FullyQualifiedName())
 	})
 
 	t.Run("create with propagate and on_conflict value", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Propagate = &TagPropagate{
-			Propagation: TagPropagationOnDependencyAndDataMovement,
+			Propagation: Pointer(TagPropagationOnDependencyAndDataMovement),
 			OnConflict:  &TagOnConflict{CustomValue: String("FAIL")},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
 	})
 
+	t.Run("create with propagate and on_conflict value without propagate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Propagate = &TagPropagate{
+			OnConflict: &TagOnConflict{CustomValue: String("FAIL")},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
+	})
+
 	t.Run("create with propagate and on_conflict allowed_values_sequence", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Propagate = &TagPropagate{
-			Propagation: TagPropagationOnDataMovement,
+			Propagation: Pointer(TagPropagationOnDataMovement),
 			OnConflict:  &TagOnConflict{AllowedValuesSequence: Bool(true)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DATA_MOVEMENT ON_CONFLICT = ALLOWED_VALUES_SEQUENCE`, id.FullyQualifiedName())
@@ -276,7 +284,7 @@ func TestTagAlter(t *testing.T) {
 
 	t.Run("alter with set propagate", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Set = &TagSet{Propagate: &TagPropagate{Propagation: TagPropagationOnDependency}}
+		opts.Set = &TagSet{Propagate: &TagPropagate{Propagation: Pointer(TagPropagationOnDependency)}}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET PROPAGATE = ON_DEPENDENCY`, id.FullyQualifiedName())
 	})
 
@@ -284,11 +292,21 @@ func TestTagAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TagSet{
 			Propagate: &TagPropagate{
-				Propagation: TagPropagationOnDependencyAndDataMovement,
+				Propagation: Pointer(TagPropagationOnDependencyAndDataMovement),
 				OnConflict:  &TagOnConflict{CustomValue: String("FAIL")},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
+	})
+
+	t.Run("alter with set on_conflict value without propagate", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &TagSet{
+			Propagate: &TagPropagate{
+				OnConflict: &TagOnConflict{CustomValue: String("FAIL")},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter with unset propagate", func(t *testing.T) {

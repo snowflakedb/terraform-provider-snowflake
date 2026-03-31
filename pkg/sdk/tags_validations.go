@@ -54,8 +54,8 @@ func (v *TagPropagate) validate() error {
 		return errors.Join(ErrNilOptions)
 	}
 	var errs []error
-	if v.Propagation == "" {
-		errs = append(errs, errNotSet("TagPropagate", "Propagation"))
+	if !valueSet(v.Propagation) && !valueSet(v.OnConflict) {
+		errs = append(errs, errAtLeastOneOf("TagPropagate", "Propagation", "OnConflict"))
 	}
 	if valueSet(v.OnConflict) {
 		if err := v.OnConflict.validate(); err != nil {

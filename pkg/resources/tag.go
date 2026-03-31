@@ -82,7 +82,7 @@ var tagSchema = map[string]*schema.Schema{
 					Description: "", // TODO
 					ExactlyOneOf: []string{
 						"on_conflict.0.allowed_values_sequence",
-						"on_conflict.0.custom_values",
+						"on_conflict.0.custom_value",
 					},
 				},
 				"custom_value": {
@@ -91,7 +91,7 @@ var tagSchema = map[string]*schema.Schema{
 					Description: "", // TODO
 					ExactlyOneOf: []string{
 						"on_conflict.0.allowed_values_sequence",
-						"on_conflict.0.custom_values",
+						"on_conflict.0.custom_value",
 					},
 				},
 			},
@@ -209,16 +209,16 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			return diag.FromErr(err)
 		}
 		propagate := sdk.TagPropagate{
-			Propagation: tagPropagation,
+			Propagation: sdk.Pointer(tagPropagation),
 		}
 		if v, ok := d.GetOk("on_conflict"); ok {
 			onConflictMap := v.([]any)[0].(map[string]any)
-			if v, ok := onConflictMap["allowed_values_sequence"]; ok {
+			if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
 				propagate.OnConflict = &sdk.TagOnConflict{
-					AllowedValuesSequence: sdk.Bool(v.(bool)),
+					AllowedValuesSequence: sdk.Bool(true),
 				}
 			}
-			if v, ok := onConflictMap["custom_value"]; ok {
+			if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
 				propagate.OnConflict = &sdk.TagOnConflict{
 					CustomValue: sdk.String(v.(string)),
 				}
@@ -372,6 +372,21 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
+	// UNSET on_conflict before allowed_values when the tag already had a strategy and it is
+	// removed or replaced (GetOk false = removal; non-empty old list = change). Skip when
+	// on_conflict is newly added (empty old list) to avoid an eager UNSET.
+	if d.HasChange("on_conflict") {
+		_, newOk := d.GetOk("on_conflict")
+		oldOnConflict, _ := d.GetChange("on_conflict")
+		oldList, oldIsList := oldOnConflict.([]interface{})
+		needUnset := !newOk || (oldIsList && len(oldList) > 0)
+		if needUnset {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithOnConflict(true))); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
 		if d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
 			o, n := d.GetChange("allowed_values")
@@ -461,7 +476,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 				return diag.FromErr(err)
 			}
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
-				Propagation: tagPropagation,
+				Propagation: sdk.Pointer(tagPropagation),
 			}))); err != nil {
 				return diag.FromErr(err)
 			}
@@ -476,21 +491,17 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		if v, ok := d.GetOk("on_conflict"); ok {
 			onConflictMap := v.([]any)[0].(map[string]any)
 			propagate := sdk.TagPropagate{}
-			if v, ok := onConflictMap["allowed_values_sequence"]; ok {
+			if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
 				propagate.OnConflict = &sdk.TagOnConflict{
-					AllowedValuesSequence: sdk.Bool(v.(bool)),
+					AllowedValuesSequence: sdk.Bool(true),
 				}
 			}
-			if v, ok := onConflictMap["custom_value"]; ok {
+			if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
 				propagate.OnConflict = &sdk.TagOnConflict{
 					CustomValue: sdk.String(v.(string)),
 				}
 			}
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(propagate))); err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithOnConflict(true))); err != nil {
 				return diag.FromErr(err)
 			}
 		}

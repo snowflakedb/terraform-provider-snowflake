@@ -85,8 +85,8 @@ func ToTagPropagation(s string) (TagPropagation, error) {
 }
 
 type TagPropagate struct {
-	Propagation TagPropagation `ddl:"parameter" sql:"PROPAGATE"`
-	OnConflict  *TagOnConflict `ddl:"keyword"`
+	Propagation *TagPropagation `ddl:"parameter" sql:"PROPAGATE"`
+	OnConflict  *TagOnConflict  `ddl:"keyword"`
 }
 
 type TagOnConflict struct {
