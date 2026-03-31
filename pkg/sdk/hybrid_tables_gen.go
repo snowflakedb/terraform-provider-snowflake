@@ -103,8 +103,6 @@ type HybridTableAddColumnAction struct {
 	Comment          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
-// NOTE: Hybrid tables do not support ALTER TABLE ADD UNIQUE or ADD FOREIGN KEY constraints
-// (Snowflake returns: "Unique and foreign-key constraints can only be defined at table creation time").
 type HybridTableConstraintAction struct {
 	Rename *HybridTableConstraintActionRename `ddl:"keyword"`
 	Drop   *HybridTableConstraintActionDrop   `ddl:"keyword"`
@@ -118,8 +116,7 @@ type HybridTableConstraintActionRename struct {
 
 type HybridTableConstraintActionDrop struct {
 	drop           bool     `ddl:"static" sql:"DROP"`
-	ConstraintName *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
+	ConstraintName *string  `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
 	Columns        []string `ddl:"keyword,parentheses"`
@@ -127,8 +124,6 @@ type HybridTableConstraintActionDrop struct {
 	Restrict       *bool    `ddl:"keyword" sql:"RESTRICT"`
 }
 
-// NOTE: Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL (discovered via integration testing against Snowflake).
-// Snowflake docs may suggest otherwise but the operation errors at runtime.
 type HybridTableAlterColumnAction struct {
 	alter        bool          `ddl:"static" sql:"ALTER"`
 	column       bool          `ddl:"static" sql:"COLUMN"`
@@ -170,16 +165,11 @@ type HybridTableReclusterChangeState struct {
 	recluster bool            `ddl:"static" sql:"RECLUSTER"`
 }
 
-// NOTE: Hybrid tables do not support CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION,
-// CONTACT, or ROW_TIMESTAMP in ALTER TABLE SET (per Snowflake documentation and runtime behavior).
 type HybridTableSetProperties struct {
 	DataRetentionTimeInDays    *int    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
-
-// NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
-// Snowflake docs may suggest otherwise but the operation errors at runtime.
 
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.
 type DropHybridTableOptions struct {

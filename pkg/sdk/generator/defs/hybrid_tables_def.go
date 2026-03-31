@@ -69,16 +69,17 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 	).
 	OptionalQueryStructField(
 		"Drop",
+		// NOTE: PRIMARY KEY is not included here — DROP PRIMARY KEY is unsupported on hybrid tables.
+		// Snowflake returns an error at runtime; removed per PR #4461 review feedback.
 		g.NewQueryStruct("HybridTableConstraintActionDrop").
 			SQL("DROP").
 			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "ConstraintName").
-			OptionalSQL("PRIMARY KEY").
 			OptionalSQL("UNIQUE").
 			OptionalSQL("FOREIGN KEY").
 			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
 			OptionalSQL("CASCADE").
 			OptionalSQL("RESTRICT").
-			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey").
+			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "Unique", "ForeignKey").
 			WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
 		g.KeywordOptions(),
 	).
