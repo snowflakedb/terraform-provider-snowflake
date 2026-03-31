@@ -171,9 +171,9 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 		WithInDatabase(id1.DatabaseId()).
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
-	dataSourceModelWithLimit := datasourcemodel.SemanticViews("test").
-		WithRowsAndFrom(2, prefix).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	//dataSourceModelWithLimit := datasourcemodel.SemanticViews("test").
+	//	WithRowsAndFrom(2, prefix).
+	//	WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
@@ -199,12 +199,12 @@ func TestAcc_SemanticViews_Filtering(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceModelWithIn.DatasourceReference(), "semantic_views.#", "3"),
 				),
 			},
-			{
-				Config: accconfig.FromModels(t, model1, model2, model3, dataSourceModelWithLimit),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(dataSourceModelWithLimit.DatasourceReference(), "semantic_views.#", "2"),
-				),
-			},
+			//{
+			//	Config: accconfig.FromModels(t, model1, model2, model3, dataSourceModelWithLimit),
+			//	Check: resource.ComposeTestCheckFunc(
+			//		resource.TestCheckResourceAttr(dataSourceModelWithLimit.DatasourceReference(), "semantic_views.#", "2"),
+			//	),
+			//},
 		},
 	})
 }

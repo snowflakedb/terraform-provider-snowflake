@@ -6,12 +6,11 @@ import (
 	"regexp"
 	"testing"
 
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -212,23 +211,19 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 
 	// logical table 1 related details
 	expectedTable1 := sdk.SemanticViewTableDetails{
-		TableNameOrAlias:      t1Alias,
-		BaseTableDatabaseName: table1.ID().DatabaseName(),
-		BaseTableSchemaName:   table1.ID().SchemaName(),
-		BaseTableName:         table1.ID().Name(),
-		PrimaryKeys:           []string{"a1"},
-		UniqueKeys:            [][]string{{"a2"}, {"a3", "a4"}},
-		Synonyms:              []string{"sales", "orders"},
-		Comment:               "logical table 1",
+		TableNameOrAlias: t1Alias,
+		BaseTable:        sdk.NewSchemaObjectIdentifier(table1.ID().DatabaseName(), table1.ID().SchemaName(), table1.ID().Name()),
+		PrimaryKeys:      []string{"a1"},
+		UniqueKeys:       [][]string{{"a2"}, {"a3", "a4"}},
+		Synonyms:         []string{"sales", "orders"},
+		Comment:          "logical table 1",
 	}
 
 	// logical table 2 related details
 	expectedTable2 := sdk.SemanticViewTableDetails{
-		TableNameOrAlias:      t2Alias,
-		BaseTableDatabaseName: table2.ID().DatabaseName(),
-		BaseTableSchemaName:   table2.ID().SchemaName(),
-		BaseTableName:         table2.ID().Name(),
-		PrimaryKeys:           []string{"a1"},
+		TableNameOrAlias: t2Alias,
+		BaseTable:        sdk.NewSchemaObjectIdentifier(table2.ID().DatabaseName(), table2.ID().SchemaName(), table2.ID().Name()),
+		PrimaryKeys:      []string{"a1"},
 	}
 
 	// dimension related details
