@@ -222,18 +222,14 @@ func TestInt_SemanticView(t *testing.T) {
 		t1Alias, t2Alias, dimensionName, factName, factName2, metricName, metric2Name, relationshipName := "table1", "table2", "d1", "fact1", "fact2", "metric1", "metric2", "rel1"
 
 		expectedTable1 := sdk.SemanticViewTableDetails{
-			TableNameOrAlias:      t1Alias,
-			BaseTableDatabaseName: table1Id.DatabaseName(),
-			BaseTableSchemaName:   table1Id.SchemaName(),
-			BaseTableName:         table1Id.Name(),
-			PrimaryKeys:           []string{"first_c"},
+			TableNameOrAlias: t1Alias,
+			BaseTable:        sdk.NewSchemaObjectIdentifier(table1Id.DatabaseName(), table1Id.SchemaName(), table1Id.Name()),
+			PrimaryKeys:      []string{"first_c"},
 		}
 
 		expectedTable2 := sdk.SemanticViewTableDetails{
-			TableNameOrAlias:      t2Alias,
-			BaseTableDatabaseName: table2Id.DatabaseName(),
-			BaseTableSchemaName:   table2Id.SchemaName(),
-			BaseTableName:         table2Id.Name(),
+			TableNameOrAlias: t2Alias,
+			BaseTable:        sdk.NewSchemaObjectIdentifier(table2Id.DatabaseName(), table2Id.SchemaName(), table2Id.Name()),
 		}
 
 		expectedDimension := sdk.SemanticViewDimensionDetails{
@@ -242,7 +238,7 @@ func TestInt_SemanticView(t *testing.T) {
 				TableNameOrAlias: t1Alias,
 				Expression:       dimensionExpressionRaw,
 				// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
-				DataType:       "VARCHAR(134217728)",
+				DataType:       "VARCHAR(16777216)",
 				AccessModifier: "PUBLIC",
 			},
 			Synonyms:     []string{"D1"},
@@ -256,7 +252,7 @@ func TestInt_SemanticView(t *testing.T) {
 				TableNameOrAlias: t1Alias,
 				Expression:       `"first_c"`,
 				// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
-				DataType:       "VARCHAR(134217728)",
+				DataType:       "VARCHAR(16777216)",
 				AccessModifier: "PUBLIC",
 			},
 			Synonyms:     []string{"F1", "FA"},
@@ -341,11 +337,9 @@ func TestInt_SemanticView(t *testing.T) {
 		t1Alias, t2Alias, metricName := "table1", "table2", "metric1"
 
 		expectedTable1 := sdk.SemanticViewTableDetails{
-			TableNameOrAlias:      t1Alias,
-			BaseTableDatabaseName: table1Id.DatabaseName(),
-			BaseTableSchemaName:   table1Id.SchemaName(),
-			BaseTableName:         table1Id.Name(),
-			PrimaryKeys:           []string{"first_c"},
+			TableNameOrAlias: t1Alias,
+			BaseTable:        sdk.NewSchemaObjectIdentifier(table1Id.DatabaseName(), table1Id.SchemaName(), table1Id.Name()),
+			PrimaryKeys:      []string{"first_c"},
 		}
 
 		expectedMetric := sdk.SemanticViewMetricDetails{
@@ -360,10 +354,8 @@ func TestInt_SemanticView(t *testing.T) {
 		}
 
 		expectedTable2 := sdk.SemanticViewTableDetails{
-			TableNameOrAlias:      t2Alias,
-			BaseTableDatabaseName: table2Id.DatabaseName(),
-			BaseTableSchemaName:   table2Id.SchemaName(),
-			BaseTableName:         table2Id.Name(),
+			TableNameOrAlias: t2Alias,
+			BaseTable:        sdk.NewSchemaObjectIdentifier(table2Id.DatabaseName(), table2Id.SchemaName(), table2Id.Name()),
 		}
 
 		// confirm the semantic view details are correct

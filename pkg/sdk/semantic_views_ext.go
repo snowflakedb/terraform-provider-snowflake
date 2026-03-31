@@ -8,14 +8,12 @@ import (
 )
 
 type SemanticViewTableDetails struct {
-	TableNameOrAlias      string
-	BaseTableDatabaseName string
-	BaseTableSchemaName   string
-	BaseTableName         string
-	PrimaryKeys           []string
-	UniqueKeys            [][]string
-	Synonyms              []string
-	Comment               string
+	TableNameOrAlias string
+	BaseTable        SchemaObjectIdentifier
+	PrimaryKeys      []string
+	UniqueKeys       [][]string
+	Synonyms         []string
+	Comment          string
 }
 
 type SemanticViewRelationshipDetails struct {
@@ -364,12 +362,16 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 		switch *prop.ObjectKind {
 		case "TABLE":
 			var currentTable *SemanticViewTableDetails
+			// loop over all the tables until we either find one with a matching name, or exhaust the set
+			// this property should be added to the corresponding table object
 			for i := range details.Tables {
 				if details.Tables[i].TableNameOrAlias == *prop.ObjectName {
 					currentTable = &details.Tables[i]
 					break
 				}
 			}
+			// couldn't find a matching table in the details list
+			// create a new one with the name and add the property
 			if currentTable == nil {
 				details.Tables = append(details.Tables, SemanticViewTableDetails{
 					TableNameOrAlias: *prop.ObjectName,
@@ -378,11 +380,11 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 			}
 			switch prop.Property {
 			case "BASE_TABLE_DATABASE_NAME":
-				currentTable.BaseTableDatabaseName = prop.PropertyValue
+				currentTable.BaseTable.databaseName = prop.PropertyValue
 			case "BASE_TABLE_SCHEMA_NAME":
-				currentTable.BaseTableSchemaName = prop.PropertyValue
+				currentTable.BaseTable.schemaName = prop.PropertyValue
 			case "BASE_TABLE_NAME":
-				currentTable.BaseTableName = prop.PropertyValue
+				currentTable.BaseTable.name = prop.PropertyValue
 			case "PRIMARY_KEY":
 				err := json.Unmarshal([]byte(prop.PropertyValue), &currentTable.PrimaryKeys)
 				if err != nil {
