@@ -88,6 +88,17 @@ func (c *ParameterClient) ShowUserParametersOrError(t *testing.T, id sdk.Account
 	})
 }
 
+func (c *ParameterClient) ShowHybridTableParameters(t *testing.T, id sdk.SchemaObjectIdentifier) []*sdk.Parameter {
+	t.Helper()
+	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{
+		In: &sdk.ParametersIn{
+			Table: id,
+		},
+	})
+	require.NoError(t, err)
+	return params
+}
+
 func (c *ParameterClient) ShowTaskParameters(t *testing.T, id sdk.SchemaObjectIdentifier) []*sdk.Parameter {
 	t.Helper()
 	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{

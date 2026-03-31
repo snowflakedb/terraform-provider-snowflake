@@ -95,9 +95,10 @@ type HybridTableConstraintActionRenameRequest struct {
 	NewName string // required
 }
 
+// NOTE: PrimaryKey omitted — DROP PRIMARY KEY is unsupported on hybrid tables (errors at runtime).
+// Removed per PR #4461 review. See hybrid_tables_def.go for the authoritative definition.
 type HybridTableConstraintActionDropRequest struct {
 	ConstraintName *string
-	PrimaryKey     *bool
 	Unique         *bool
 	ForeignKey     *bool
 	Columns        []string

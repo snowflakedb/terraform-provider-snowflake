@@ -3,10 +3,10 @@
 package testint
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -381,9 +381,7 @@ func TestInt_HybridTables(t *testing.T) {
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithDataRetentionTimeInDays(7)))
 			require.NoError(t, err)
 
-			param, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterDataRetentionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeTable, Name: id})
-			require.NoError(t, err)
-			require.Equal(t, "7", param.Value)
+			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).HasDataRetentionTimeInDays(7))
 		})
 
 		t.Run("set max_data_extension_time_in_days", func(t *testing.T) {
@@ -394,10 +392,19 @@ func TestInt_HybridTables(t *testing.T) {
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithMaxDataExtensionTimeInDays(28)))
 			require.NoError(t, err)
 
-			param, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMaxDataExtensionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeTable, Name: id})
-			require.NoError(t, err)
-			require.Equal(t, "28", param.Value)
+			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).HasMaxDataExtensionTimeInDays(28))
 		})
+
+		// NOTE: The following ALTER TABLE SET properties are NOT supported on hybrid tables and are
+		// therefore absent from HybridTableSetProperties in the SDK — no tests are added for them:
+		//   - CHANGE_TRACKING: hybrid tables use an internal mechanism for change tracking; this
+		//     property is not user-configurable on hybrid tables.
+		//   - DEFAULT_DDL_COLLATION: not supported on hybrid tables per Snowflake documentation.
+		//   - ENABLE_SCHEMA_EVOLUTION: schema evolution is not supported on hybrid tables.
+		//   - CONTACT / CONTACT_PURPOSE: governance/data-sharing fields not applicable to hybrid tables.
+		//   - ROW_TIMESTAMP: row-level timestamp designation is not supported on hybrid tables.
+		// Attempting any of these via raw SQL results in a runtime error from Snowflake. The SDK
+		// intentionally omits them from HybridTableSetProperties.
 
 		// NOTE: Hybrid tables do not support ALTER TABLE ADD UNIQUE or ADD FOREIGN KEY.
 		// Snowflake returns: "Unique and foreign-key constraints can only be defined at table creation time."
@@ -451,6 +458,10 @@ func TestInt_HybridTables(t *testing.T) {
 			require.NoError(t, err)
 			require.Empty(t, details[1].Default)
 		})
+
+		// NOTE: AlterColumn.SetDefault (SET DEFAULT seq.NEXTVAL) is not tested — it is unclear
+		// whether hybrid tables support sequence-based column defaults set post-creation.
+		// This needs clarification with the Snowflake table team before a test can be added.
 
 		t.Run("drop constraint - by type", func(t *testing.T) {
 			// Drop UNIQUE by type
@@ -530,10 +541,18 @@ func TestInt_HybridTables(t *testing.T) {
 					WithChangeReclusterState(*sdk.NewHybridTableReclusterChangeStateRequest().WithState(sdk.ReclusterStateResume))))
 			require.NoError(t, err)
 
-			// Recluster
+			// Recluster (basic, no options)
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
 					WithRecluster(*sdk.NewHybridTableReclusterActionRequest())))
+			require.NoError(t, err)
+
+			// Recluster with MaxSize and Where
+			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithClusteringAction(*sdk.NewHybridTableClusteringActionRequest().
+					WithRecluster(*sdk.NewHybridTableReclusterActionRequest().
+						WithMaxSize(1024).
+						WithWhere("CATEGORY = 'A'"))))
 			require.NoError(t, err)
 
 			// Drop clustering key
@@ -788,35 +807,6 @@ func TestInt_HybridTables(t *testing.T) {
 			require.NoError(t, err)
 			_, err = client.HybridTables.ShowByID(ctx, id2)
 			require.ErrorIs(t, err, collections.ErrObjectNotFound)
-		})
-	})
-
-	// NOTE: AlterColumn.SetDefault with a sequence is not tested — it's unclear whether hybrid
-	// tables support SET DEFAULT seq.NEXTVAL. This needs clarification with the Snowflake table team.
-
-	t.Run("known limitations - error cases", func(t *testing.T) {
-		t.Run("DROP PRIMARY KEY is not supported", func(t *testing.T) {
-			id, cleanup := testClientHelper().HybridTable.Create(t)
-			t.Cleanup(cleanup)
-
-			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithConstraintAction(*sdk.NewHybridTableConstraintActionRequest().
-					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithPrimaryKey(true))))
-			require.Error(t, err)
-		})
-
-		// NOTE: ALTER TABLE UNSET COMMENT actually succeeds on hybrid tables (despite earlier findings).
-		// This is tested in the "set comment" test which overwrites the comment instead of unsetting.
-
-		t.Run("ALTER TABLE ADD CONSTRAINT UNIQUE is not supported", func(t *testing.T) {
-			id, cleanup := testClientHelper().HybridTable.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
-				{Name: "ID", Type: sdk.DataType("NUMBER(38,0)"), InlineConstraint: &sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}},
-				{Name: "CODE", Type: sdk.DataType("VARCHAR(50)")},
-			})
-			t.Cleanup(cleanup)
-
-			_, err := client.ExecForTests(ctx, fmt.Sprintf(`ALTER TABLE %s ADD CONSTRAINT uq_code UNIQUE ("CODE")`, id.FullyQualifiedName()))
-			require.Error(t, err)
 		})
 	})
 
