@@ -54,8 +54,8 @@ func (v *TagPropagate) validate() error {
 		return errors.Join(ErrNilOptions)
 	}
 	var errs []error
-	if !valueSet(v.Propagation) && !valueSet(v.OnConflict) {
-		errs = append(errs, errAtLeastOneOf("TagPropagate", "Propagation", "OnConflict"))
+	if !valueSet(v.PropagationMethod) && !valueSet(v.OnConflict) {
+		errs = append(errs, errAtLeastOneOf("TagPropagate", "PropagationMethod", "OnConflict"))
 	}
 	if valueSet(v.OnConflict) {
 		if err := v.OnConflict.validate(); err != nil {
@@ -79,7 +79,7 @@ func (v *TagOnConflict) validate() error {
 func (v *TagSet) validate() error {
 	var errs []error
 	if valueSet(v.MaskingPolicies) && anyValueSet(v.AllowedValues, v.Propagate, v.Comment) {
-		errs = append(errs, errOneOf("TagSet", "MaskingPolicies", "AllowedValues/Propagate/Comment"))
+		errs = append(errs, errOneOf("TagSet", "MaskingPolicies", "AllowedValues", "Propagate", "Comment"))
 	}
 	if !anyValueSet(v.MaskingPolicies, v.AllowedValues, v.Propagate, v.Comment) {
 		errs = append(errs, errAtLeastOneOf("TagSet", "MaskingPolicies", "AllowedValues", "Propagate", "Comment"))

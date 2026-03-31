@@ -77,16 +77,16 @@ var AllTagPropagationValues = []TagPropagation{
 }
 
 func ToTagPropagation(s string) (TagPropagation, error) {
-	mode := TagPropagation(strings.ToUpper(s))
-	if !slices.Contains(AllTagPropagationValues, mode) {
-		return "", fmt.Errorf("invalid tag propagation value: %s", mode)
+	tp := TagPropagation(strings.ToUpper(s))
+	if !slices.Contains(AllTagPropagationValues, tp) {
+		return "", fmt.Errorf("invalid tag propagation value: %s", tp)
 	}
-	return mode, nil
+	return tp, nil
 }
 
 type TagPropagate struct {
-	Propagation *TagPropagation `ddl:"parameter" sql:"PROPAGATE"`
-	OnConflict  *TagOnConflict  `ddl:"keyword"`
+	PropagationMethod *TagPropagation `ddl:"parameter" sql:"PROPAGATE"`
+	OnConflict        *TagOnConflict  `ddl:"keyword"`
 }
 
 type TagOnConflict struct {
