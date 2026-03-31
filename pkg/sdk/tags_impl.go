@@ -92,7 +92,7 @@ func (v *tags) Unset(ctx context.Context, request *UnsetTagRequest) error {
 
 func (v *tags) UnsetSafely(ctx context.Context, request *UnsetTagRequest) error {
 	return SafeUnsetTag(func() error {
-		return v.Unset(ctx, request)
+		return v.Unset(ctx, request.WithIfExists(true))
 	})
 }
 
