@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
@@ -19,6 +20,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -916,6 +918,62 @@ func TestAcc_ExternalS3Stage_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelStorageIntegrationWithPrivatelink),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`storage_integration": conflicts with use_privatelink_endpoint`),
+			},
+		},
+	})
+}
+
+// TestAcc_ExternalS3Stage_DescribeOutputPermadiff verifies that the describe_output
+// permadiff caused by identifier quoting on file_format.0.format_name is fixed.
+// In v2.14.1, ComputedIfAnyAttributeChanged was triggered on file_format changes,
+// causing describe_output to be marked
+// as (known after apply) on every plan when a nested field had changes which were suppressed.
+// See: https://github.com/snowflakedb/terraform-provider-snowflake/issues/4514
+func TestAcc_ExternalS3Stage_DescribeOutputPermadiff(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	awsUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	t.Cleanup(fileFormatCleanup)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ExternalS3StageResource))
+	currentProviderFactory := providerFactoryUsingCache("TestAcc_ExternalS3Stage_DescribeOutputPermadiff_GH4514")
+
+	// Use unquoted identifier form (e.g., "DB.SCHEMA.FMT") instead of the FQN form
+	// (e.g., "\"DB\".\"SCHEMA\".\"FMT\"") to reproduce the mismatch that causes the permadiff.
+	unquotedFormatName := fileFormat.ID().DatabaseName() + "." + fileFormat.ID().SchemaName() + "." + fileFormat.ID().Name()
+	quotedFormatName := fileFormat.ID().FullyQualifiedName()
+
+	stageModelUnquotedFileFormatId := model.ExternalS3StageWithId(id, awsUrl).
+		WithFileFormatName(unquotedFormatName)
+
+	stageModelQuotedFileFormatId := model.ExternalS3StageWithId(id, awsUrl).
+		WithFileFormatName(quotedFormatName)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalS3Stage),
+		Steps: []resource.TestStep{
+			// Step 1: Create with v2.14.1 — the version where the bug exists.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				Config:            accconfig.FromModels(t, providerModel, stageModelUnquotedFileFormatId),
+			},
+			// Step 2: Plan-only on v2.14.1 — proves the bug: after changing the file_format.0.format_name to quoted notation,
+			// the plan is not empty and describe_output is marked as (known after apply).
+			{
+				ExternalProviders:  ExternalProviderWithExactVersion("2.14.1"),
+				Config:             accconfig.FromModels(t, providerModel, stageModelQuotedFileFormatId),
+				ExpectNonEmptyPlan: true,
+			},
+			// Step 3: Upgrade to current version — plan must be empty (proves the fix).
+			{
+				ProtoV6ProviderFactories: currentProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModel, stageModelQuotedFileFormatId),
+				PlanOnly:                 true,
 			},
 		},
 	})

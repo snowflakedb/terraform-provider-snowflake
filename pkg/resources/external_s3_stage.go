@@ -203,7 +203,7 @@ func ExternalS3Stage() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3Stage, customdiff.All(
 			ComputedIfAnyAttributeChanged(externalS3StageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
-			ComputedIfAnyAttributeChanged(externalS3StageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "aws_access_point_arn", "file_format"),
+			ComputedIfAnyAttributeChanged(externalS3StageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint", "aws_access_point_arn"),
 			ComputedIfAnyAttributeChanged(externalS3StageSchema, FullyQualifiedNameAttributeName, "name"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
