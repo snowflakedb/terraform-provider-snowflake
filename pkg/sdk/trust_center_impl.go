@@ -89,7 +89,7 @@ func (tc *trustCenter) UnsetPackageConfiguration(ctx context.Context, req *Unset
 func (tc *trustCenter) ShowScannerPackages(ctx context.Context, req *ShowScannerPackagesRequest) ([]ScannerPackage, error) {
 	sql := "SELECT * FROM snowflake.trust_center.scanner_packages"
 	if req != nil && req.Like != nil && *req.Like != "" {
-		sql += fmt.Sprintf(" WHERE NAME LIKE '%s'", strings.ReplaceAll(*req.Like, "'", "''"))
+		sql += fmt.Sprintf(" WHERE NAME LIKE %s", escapeSnowflakeStringLiteral(*req.Like))
 	}
 
 	var rows []scannerPackageRow
@@ -202,10 +202,10 @@ func (tc *trustCenter) ShowScanners(ctx context.Context, req *ShowScannersReques
 	var conditions []string
 	if req != nil {
 		if req.ScannerPackageId != nil && *req.ScannerPackageId != "" {
-			conditions = append(conditions, fmt.Sprintf("SCANNER_PACKAGE_ID = '%s'", strings.ReplaceAll(*req.ScannerPackageId, "'", "''")))
+			conditions = append(conditions, fmt.Sprintf("SCANNER_PACKAGE_ID = %s", escapeSnowflakeStringLiteral(*req.ScannerPackageId)))
 		}
 		if req.Like != nil && *req.Like != "" {
-			conditions = append(conditions, fmt.Sprintf("NAME LIKE '%s'", strings.ReplaceAll(*req.Like, "'", "''")))
+			conditions = append(conditions, fmt.Sprintf("NAME LIKE %s", escapeSnowflakeStringLiteral(*req.Like)))
 		}
 	}
 
@@ -246,10 +246,10 @@ func (tc *trustCenter) ShowScannerByID(ctx context.Context, packageId, scannerId
 func (tc *trustCenter) buildSetConfigurationSQL(packageId, scannerId string, level TrustCenterConfigurationLevel, value interface{}) string {
 	var sb strings.Builder
 	sb.WriteString("CALL snowflake.trust_center.set_configuration(")
-	sb.WriteString(fmt.Sprintf("'%s'", strings.ReplaceAll(packageId, "'", "''")))
+	sb.WriteString(escapeSnowflakeStringLiteral(packageId))
 
 	if scannerId != "" {
-		sb.WriteString(fmt.Sprintf(", SCANNER_ID => '%s'", strings.ReplaceAll(scannerId, "'", "''")))
+		sb.WriteString(fmt.Sprintf(", SCANNER_ID => %s", escapeSnowflakeStringLiteral(scannerId)))
 	}
 
 	sb.WriteString(fmt.Sprintf(", CONFIGURATION_LEVEL => '%s'", level))
@@ -259,13 +259,12 @@ func (tc *trustCenter) buildSetConfigurationSQL(packageId, scannerId string, lev
 		sb.WriteString(fmt.Sprintf(", VALUE => %t", v))
 	case string:
 		if level == TrustCenterConfigurationLevelNotification {
-			// Notification is passed as PARSE_JSON
-			sb.WriteString(fmt.Sprintf(", VALUE => PARSE_JSON('%s')", strings.ReplaceAll(v, "'", "''")))
+			sb.WriteString(fmt.Sprintf(", VALUE => PARSE_JSON(%s)", escapeSnowflakeStringLiteral(v)))
 		} else {
-			sb.WriteString(fmt.Sprintf(", VALUE => '%s'", strings.ReplaceAll(v, "'", "''")))
+			sb.WriteString(fmt.Sprintf(", VALUE => %s", escapeSnowflakeStringLiteral(v)))
 		}
 	default:
-		sb.WriteString(fmt.Sprintf(", VALUE => '%v'", v))
+		sb.WriteString(fmt.Sprintf(", VALUE => %s", escapeSnowflakeStringLiteral(fmt.Sprintf("%v", v))))
 	}
 
 	sb.WriteString(")")
@@ -276,13 +275,19 @@ func (tc *trustCenter) buildSetConfigurationSQL(packageId, scannerId string, lev
 func (tc *trustCenter) buildUnsetConfigurationSQL(packageId, scannerId string, level TrustCenterConfigurationLevel) string {
 	var sb strings.Builder
 	sb.WriteString("CALL snowflake.trust_center.unset_configuration(")
-	sb.WriteString(fmt.Sprintf("'%s'", strings.ReplaceAll(packageId, "'", "''")))
+	sb.WriteString(escapeSnowflakeStringLiteral(packageId))
 
 	if scannerId != "" {
-		sb.WriteString(fmt.Sprintf(", SCANNER_ID => '%s'", strings.ReplaceAll(scannerId, "'", "''")))
+		sb.WriteString(fmt.Sprintf(", SCANNER_ID => %s", escapeSnowflakeStringLiteral(scannerId)))
 	}
 
 	sb.WriteString(fmt.Sprintf(", CONFIGURATION_LEVEL => '%s'", level))
 	sb.WriteString(")")
 	return sb.String()
+}
+
+// escapeSnowflakeStringLiteral escapes a string for safe inclusion as a
+// single-quoted SQL literal by doubling any embedded single quotes.
+func escapeSnowflakeStringLiteral(s string) string {
+	return fmt.Sprintf("'%s'", strings.ReplaceAll(s, "'", "''"))
 }
