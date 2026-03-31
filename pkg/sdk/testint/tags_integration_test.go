@@ -1486,6 +1486,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 
 		table1, table1Cleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(table1Cleanup)
+
 		table2, table2Cleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(table2Cleanup)
 
@@ -1521,6 +1522,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 
 		table1, table1Cleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(table1Cleanup)
+
 		table2, table2Cleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(table2Cleanup)
 
@@ -1593,6 +1595,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 
 		table1, table1Cleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(table1Cleanup)
+
 		table2, table2Cleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(table2Cleanup)
 
