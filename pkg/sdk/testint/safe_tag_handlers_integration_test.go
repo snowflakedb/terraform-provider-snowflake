@@ -94,6 +94,24 @@ func TestInt_SafeUnsetTagFromColumn(t *testing.T) {
 		err := client.Tags.UnsetSafely(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeColumn, nonExistingColumnId).WithUnsetTags(unsetTags))
 		assert.NoError(t, err)
 	})
+
+	t.Run("non-existing table", func(t *testing.T) {
+		missingTableCol := sdk.NewTableColumnIdentifier(table.ID().DatabaseName(), table.ID().SchemaName(), "does_not_exist", "ID")
+		err := client.Tags.UnsetSafely(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeColumn, missingTableCol).WithUnsetTags(unsetTags))
+		assert.NoError(t, err)
+	})
+
+	t.Run("non-existing schema", func(t *testing.T) {
+		missingSchemaCol := sdk.NewTableColumnIdentifier(table.ID().DatabaseName(), "does_not_exist", "does_not_exist", "ID")
+		err := client.Tags.UnsetSafely(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeColumn, missingSchemaCol).WithUnsetTags(unsetTags))
+		assert.NoError(t, err)
+	})
+
+	t.Run("non-existing database", func(t *testing.T) {
+		missingDbCol := sdk.NewTableColumnIdentifier("does_not_exist", "does_not_exist", "does_not_exist", "ID")
+		err := client.Tags.UnsetSafely(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeColumn, missingDbCol).WithUnsetTags(unsetTags))
+		assert.NoError(t, err)
+	})
 }
 
 func TestInt_SafeUnsetTagOnNonExistingSchemaObject(t *testing.T) {
