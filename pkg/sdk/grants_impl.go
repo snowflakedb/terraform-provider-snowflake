@@ -208,6 +208,12 @@ func (v *grants) RevokePrivilegeFromShare(ctx context.Context, privileges []Obje
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *grants) RevokePrivilegeFromShareSafely(ctx context.Context, privileges []ObjectPrivilege, on *ShareGrantOn, id AccountObjectIdentifier) error {
+	return SafeRevokePrivileges(func() error {
+		return v.RevokePrivilegeFromShare(ctx, privileges, on, id)
+	})
+}
+
 func (v *grants) GrantOwnership(ctx context.Context, on OwnershipGrantOn, to OwnershipGrantTo, opts *GrantOwnershipOptions) error {
 	if opts == nil {
 		opts = &GrantOwnershipOptions{}
