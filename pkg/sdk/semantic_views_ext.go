@@ -412,9 +412,17 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 				}
 			}
 			if currentRelationship == nil {
+				objectName := ""
+				if prop.ObjectName != nil {
+					objectName = *prop.ObjectName
+				}
+				parentEntity := ""
+				if prop.ParentEntity != nil {
+					parentEntity = *prop.ParentEntity
+				}
 				details.Relationships = append(details.Relationships, SemanticViewRelationshipDetails{
-					RelationshipAlias: *prop.ObjectName,
-					ParentEntity:      *prop.ParentEntity,
+					RelationshipAlias: objectName,
+					ParentEntity:      parentEntity,
 				})
 				currentRelationship = &details.Relationships[len(details.Relationships)-1]
 			}
@@ -443,9 +451,17 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 				}
 			}
 			if currentDimension == nil {
+				objectName := ""
+				if prop.ObjectName != nil {
+					objectName = *prop.ObjectName
+				}
+				parentEntity := ""
+				if prop.ParentEntity != nil {
+					parentEntity = *prop.ParentEntity
+				}
 				details.Dimensions = append(details.Dimensions, SemanticViewDimensionDetails{
-					DimensionAlias: *prop.ObjectName,
-					ParentEntity:   *prop.ParentEntity,
+					DimensionAlias: objectName,
+					ParentEntity:   parentEntity,
 				})
 				currentDimension = &details.Dimensions[len(details.Dimensions)-1]
 			}
@@ -475,9 +491,17 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 				}
 			}
 			if currentFact == nil {
+				objectName := ""
+				if prop.ObjectName != nil {
+					objectName = *prop.ObjectName
+				}
+				parentEntity := ""
+				if prop.ParentEntity != nil {
+					parentEntity = *prop.ParentEntity
+				}
 				details.Facts = append(details.Facts, SemanticViewFactDetails{
-					FactAlias:    *prop.ObjectName,
-					ParentEntity: *prop.ParentEntity,
+					FactAlias:    objectName,
+					ParentEntity: parentEntity,
 				})
 				currentFact = &details.Facts[len(details.Facts)-1]
 			}
@@ -507,9 +531,17 @@ func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id Schema
 				}
 			}
 			if currentMetric == nil {
+				objectName := ""
+				if prop.ObjectName != nil {
+					objectName = *prop.ObjectName
+				}
+				parentEntity := ""
+				if prop.ParentEntity != nil {
+					parentEntity = *prop.ParentEntity
+				}
 				details.Metrics = append(details.Metrics, SemanticViewMetricDetails{
-					MetricAlias:  *prop.ObjectName,
-					ParentEntity: *prop.ParentEntity,
+					MetricAlias:  objectName,
+					ParentEntity: parentEntity,
 				})
 				currentMetric = &details.Metrics[len(details.Metrics)-1]
 			}
