@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInt_SafeRevokePrivilegesFromAccountRole(t *testing.T) {
@@ -328,6 +329,80 @@ func TestInt_ShowFutureGrantsInNonExistingContainer(t *testing.T) {
 				In:     tt.In,
 			})
 			assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+		})
+	}
+}
+
+func TestInt_SafeRevokePrivilegeFromShare(t *testing.T) {
+	client := testClient(t)
+	ctx := context.Background()
+
+	share, shareCleanup := testClientHelper().Share.CreateShare(t)
+	t.Cleanup(shareCleanup)
+
+	// Grant USAGE on the test database to the share (prerequisite for schema-level grants).
+	revokeGrant := testClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, testClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage})
+	t.Cleanup(revokeGrant)
+
+	t.Run("privilege never granted", func(t *testing.T) {
+		// Snowflake returns success (0 rows affected) when revoking a privilege that was never granted.
+		err := client.Grants.RevokePrivilegeFromShare(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, &sdk.ShareGrantOn{
+			Table: &sdk.OnTable{
+				AllInSchema: testClientHelper().Ids.SchemaId(),
+			},
+		}, share.ID())
+		require.NoError(t, err)
+	})
+
+	t.Run("non-existing share", func(t *testing.T) {
+		err := client.Grants.RevokePrivilegeFromShareSafely(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
+			Database: testClientHelper().Ids.DatabaseId(),
+		}, NonExistingAccountObjectIdentifier)
+		require.NoError(t, err)
+	})
+
+	t.Run("non-existing database", func(t *testing.T) {
+		err := client.Grants.RevokePrivilegeFromShareSafely(ctx, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, &sdk.ShareGrantOn{
+			Database: NonExistingAccountObjectIdentifier,
+		}, share.ID())
+		require.NoError(t, err)
+	})
+}
+
+func TestInt_SafeRevokeFromShareOnNonExistingSchemaLevelObjects(t *testing.T) {
+	client := testClient(t)
+	ctx := context.Background()
+
+	share, shareCleanup := testClientHelper().Share.CreateShare(t)
+	t.Cleanup(shareCleanup)
+
+	// Grant USAGE on the test database to the share (prerequisite for schema-level grants).
+	revokeGrant := testClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, testClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage})
+	t.Cleanup(revokeGrant)
+
+	testCases := []struct {
+		Name       string
+		Privileges []sdk.ObjectPrivilege
+		On         *sdk.ShareGrantOn
+	}{
+		{Name: "non-existing schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: &sdk.ShareGrantOn{Schema: NonExistingDatabaseObjectIdentifier}},
+		{Name: "non-existing schema in non-existing database", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: &sdk.ShareGrantOn{Schema: NonExistingDatabaseObjectIdentifierWithNonExistingDatabase}},
+		{Name: "non-existing table", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{Table: &sdk.OnTable{Name: NonExistingSchemaObjectIdentifier}}},
+		{Name: "non-existing table in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{Table: &sdk.OnTable{Name: NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema}}},
+		{Name: "all tables in non-existing schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{Table: &sdk.OnTable{AllInSchema: NonExistingDatabaseObjectIdentifier}}},
+		{Name: "all tables in non-existing schema in non-existing database", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{Table: &sdk.OnTable{AllInSchema: NonExistingDatabaseObjectIdentifierWithNonExistingDatabase}}},
+		{Name: "non-existing view", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{View: NonExistingSchemaObjectIdentifier}},
+		{Name: "non-existing view in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}, On: &sdk.ShareGrantOn{View: NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema}},
+		{Name: "non-existing tag", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeRead}, On: &sdk.ShareGrantOn{Tag: NonExistingSchemaObjectIdentifier}},
+		{Name: "non-existing tag in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeRead}, On: &sdk.ShareGrantOn{Tag: NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema}},
+		{Name: "non-existing function", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: &sdk.ShareGrantOn{Function: NonExistingSchemaObjectIdentifierWithArguments}},
+		{Name: "non-existing function in non-existing database and schema", Privileges: []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}, On: &sdk.ShareGrantOn{Function: NonExistingSchemaObjectIdentifierWithArgumentsWithNonExistingDatabaseAndSchema}},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.Name, func(t *testing.T) {
+			err := client.Grants.RevokePrivilegeFromShareSafely(ctx, tt.Privileges, tt.On, share.ID())
+			assert.NoError(t, err)
 		})
 	}
 }
