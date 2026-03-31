@@ -156,6 +156,18 @@ func SafeRevokePrivileges(revoke func() error) error {
 	return err
 }
 
+// SafeUnsetTag is a helper function that wraps a tag unset function
+// and handles the case where the target object no longer exists.
+// When the referenced object (e.g. a table, view, schema, database, warehouse)
+// does not exist, Snowflake returns ErrObjectNotExistOrAuthorized.
+func SafeUnsetTag(unset func() error) error {
+	err := unset()
+	if errors.Is(err, ErrObjectNotExistOrAuthorized) {
+		return nil
+	}
+	return err
+}
+
 // SafeShowProgrammaticAccessTokenByName is a helper function with specific implementation for PATs.
 func SafeShowProgrammaticAccessTokenByName(
 	client *Client,
