@@ -62,6 +62,25 @@ func (v *grants) GrantPrivilegesToAccountRole(ctx context.Context, privileges *A
 }
 
 func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
+	return v.revokePrivilegesFromAccountRole(ctx, privileges, on, role, opts, noopExecWrapper)
+}
+
+func (v *grants) RevokePrivilegesFromAccountRoleSafely(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
+	return v.revokePrivilegesFromAccountRole(ctx, privileges, on, role, opts, SafeRevokePrivileges)
+}
+
+func noopExecWrapper(f func() error) error {
+	return f()
+}
+
+func (v *grants) revokePrivilegesFromAccountRole(
+	ctx context.Context,
+	privileges *AccountRoleGrantPrivileges,
+	on *AccountRoleGrantOn,
+	role AccountObjectIdentifier,
+	opts *RevokePrivilegesFromAccountRoleOptions,
+	execWrapper func(func() error) error,
+) error {
 	if opts == nil {
 		opts = &RevokePrivilegesFromAccountRoleOptions{}
 	}
@@ -81,7 +100,7 @@ func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges
 			on.SchemaObject.All.InDatabase,
 			on.SchemaObject.All.InSchema,
 			func(pipe Pipe) error {
-				return v.client.Grants.RevokePrivilegesFromAccountRole(
+				return v.revokePrivilegesFromAccountRole(
 					ctx,
 					privileges,
 					&AccountRoleGrantOn{
@@ -94,17 +113,14 @@ func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges
 					},
 					role,
 					opts,
+					execWrapper,
 				)
 			},
 		)
 	}
 
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *grants) RevokePrivilegesFromAccountRoleSafely(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
-	return SafeRevokePrivileges(func() error {
-		return v.RevokePrivilegesFromAccountRole(ctx, privileges, on, role, opts)
+	return execWrapper(func() error {
+		return validateAndExec(v.client, ctx, opts)
 	})
 }
 
