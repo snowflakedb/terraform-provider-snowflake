@@ -508,7 +508,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			)); err != nil {
 				return diag.FromErr(err)
 			}
-		} else {
+		} else if d.HasChange("propagate") {
 			// Propagate was removed from config.
 			// Note: Snowflake's UNSET PROPAGATE does NOT remove already-propagated tags from dependent objects.
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(
