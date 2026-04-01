@@ -19,6 +19,8 @@ type TagModel struct {
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MaskingPolicies    tfconfig.Variable `json:"masking_policies,omitempty"`
 	NoAllowedValues    tfconfig.Variable `json:"no_allowed_values,omitempty"`
+	OnConflict         tfconfig.Variable `json:"on_conflict,omitempty"`
+	Propagate          tfconfig.Variable `json:"propagate,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -117,6 +119,13 @@ func (t *TagModel) WithNoAllowedValues(noAllowedValues bool) *TagModel {
 	return t
 }
 
+// on_conflict attribute type is not yet supported, so WithOnConflict can't be generated
+
+func (t *TagModel) WithPropagate(propagate string) *TagModel {
+	t.Propagate = tfconfig.StringVariable(propagate)
+	return t
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -158,5 +167,15 @@ func (t *TagModel) WithMaskingPoliciesValue(value tfconfig.Variable) *TagModel {
 
 func (t *TagModel) WithNoAllowedValuesValue(value tfconfig.Variable) *TagModel {
 	t.NoAllowedValues = value
+	return t
+}
+
+func (t *TagModel) WithOnConflictValue(value tfconfig.Variable) *TagModel {
+	t.OnConflict = value
+	return t
+}
+
+func (t *TagModel) WithPropagateValue(value tfconfig.Variable) *TagModel {
+	t.Propagate = value
 	return t
 }

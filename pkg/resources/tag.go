@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -59,6 +61,48 @@ var tagSchema = map[string]*schema.Schema{
 		Optional:      true,
 		Description:   "When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled. Conflicts with `allowed_values`.",
 		ConflictsWith: []string{"allowed_values"},
+	},
+	"propagate": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: fmt.Sprintf("Specifies that the tag will be automatically propagated from source objects to target objects. See more about tag propagation in the [official documentation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). Valid options are: %s", docs.PossibleValuesListed(sdk.AllTagPropagationValues)),
+		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+			// Snowflake returns "NONE" when propagation is disabled; treat as equivalent to unset.
+			if strings.EqualFold(oldValue, string(sdk.TagPropagationNone)) && newValue == "" {
+				return true
+			}
+			return NormalizeAndCompare(sdk.ToTagPropagation)(k, oldValue, newValue, d)
+		},
+		ValidateDiagFunc: sdkValidation(sdk.ToTagPropagation),
+	},
+	"on_conflict": {
+		Type:         schema.TypeList,
+		Optional:     true,
+		Description:  externalChangesNotDetectedFieldDescription("Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation)."),
+		MaxItems:     1,
+		RequiredWith: []string{"propagate"},
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"allowed_values_sequence": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: externalChangesNotDetectedFieldDescription("The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict."),
+					ExactlyOneOf: []string{
+						"on_conflict.0.allowed_values_sequence",
+						"on_conflict.0.custom_value",
+					},
+				},
+				"custom_value": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: externalChangesNotDetectedFieldDescription("Whenever there is a conflict, the value of tag is set to custom_value. If `allowed_values` are set, the value set in this field should be one of the values in the `allowed_values` list."),
+					ExactlyOneOf: []string{
+						"on_conflict.0.allowed_values_sequence",
+						"on_conflict.0.custom_value",
+					},
+				},
+			},
+		},
 	},
 	"masking_policies": {
 		Type: schema.TypeSet,
@@ -166,6 +210,28 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if v, ok := d.GetOk("allowed_values"); ok {
 		request.WithAllowedValues(expandStringListAllowEmpty(v.(*schema.Set).List()))
 	}
+	if v, ok := d.GetOk("propagate"); ok {
+		tagPropagation, err := sdk.ToTagPropagation(v.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		propagate := sdk.NewTagPropagateRequest(tagPropagation)
+		if v, ok := d.GetOk("on_conflict"); ok {
+			onConflictMap := v.([]any)[0].(map[string]any)
+			if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
+				propagate.WithOnConflict(sdk.TagOnConflict{
+					AllowedValuesSequence: sdk.Bool(true),
+				})
+			}
+			if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
+				propagate.WithOnConflict(sdk.TagOnConflict{
+					CustomValue: sdk.String(v.(string)),
+				})
+			}
+		}
+		request.WithPropagate(*propagate)
+	}
+
 	if err := client.Tags.Create(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
@@ -254,6 +320,7 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
 		d.Set("allowed_values", tag.AllowedValues),
+		d.Set("propagate", tag.Propagate),
 		func() error {
 			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
 			if err != nil {
@@ -305,6 +372,14 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		} else {
 			unset := sdk.NewTagUnsetRequest().WithComment(true)
 			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*unset)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChange("on_conflict") {
+		if len(d.Get("on_conflict").([]any)) == 0 {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithOnConflict(true))); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -387,6 +462,58 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 				client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})),
 				client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})),
 			); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	// Determine if we need to re-apply propagation settings.
+	// Covers:
+	// - propagate changed
+	// - on_conflict changed (set or unset)
+	// - allowed_values changed while on_conflict is configured
+	shouldPropagate := d.HasChange("propagate") || d.HasChange("on_conflict")
+	if !shouldPropagate && d.HasChange("allowed_values") {
+		// If on_conflict is configured with allowed_values_sequence and allowed_values changed,
+		// re-send propagation to re-evaluate conflict resolution on dependent objects.
+		if v, ok := d.GetOk("on_conflict.0.allowed_values_sequence"); ok && v.(bool) {
+			shouldPropagate = true
+		}
+	}
+
+	if shouldPropagate {
+		if v, ok := d.GetOk("propagate"); ok {
+			tagPropagation, err := sdk.ToTagPropagation(v.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			propagate := sdk.NewTagPropagateRequest(tagPropagation)
+
+			if v, ok := d.GetOk("on_conflict"); ok && len(v.([]any)) > 0 {
+				onConflictMap := v.([]any)[0].(map[string]any)
+				if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
+					propagate.WithOnConflict(sdk.TagOnConflict{
+						AllowedValuesSequence: sdk.Bool(true),
+					})
+				}
+				if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
+					propagate.WithOnConflict(sdk.TagOnConflict{
+						CustomValue: sdk.String(v.(string)),
+					})
+				}
+			}
+
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(
+				*sdk.NewTagSetRequest().WithPropagate(*propagate),
+			)); err != nil {
+				return diag.FromErr(err)
+			}
+		} else if d.HasChange("propagate") {
+			// Propagate was removed from config.
+			// Note: Snowflake's UNSET PROPAGATE does NOT remove already-propagated tags from dependent objects.
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(
+				*sdk.NewTagUnsetRequest().WithPropagate(true),
+			)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
