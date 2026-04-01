@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -247,3 +248,43 @@ func TestAcc_FunctionSql_Decfloat(t *testing.T) {
 		},
 	})
 }
+
+// In v2.14.1 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
+// time because the comma inside NUMBER(x,y) is incorrectly treated as a column separator.
+func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	definition := "SELECT 1::NUMBER(38,0), 'error'::VARCHAR"
+	returnType := "TABLE(O_ERR_CODE NUMBER(38,0), O_ERR_SEVERITY VARCHAR)"
+
+	functionModel := model.FunctionSqlBasicInline("test", id, definition, returnType)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
+		Steps: []resource.TestStep{
+			// Step 1: v2.14.1 fails because TABLE with parametrized columns cannot be parsed.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				Config:            config.FromModels(t, functionModel),
+				ExpectError:       regexp.MustCompile(`number NUMBER\(38 could not be parsed, use "NUMBER\(precision, scale\)" format`),
+			},
+			// Step 2: Current version correctly parses TABLE with parametrized columns.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFunctionLanguageString("SQL").
+						// State stores the ToSql() form which uses legacy (non-parametrized) types.
+						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"),
+				),
+			},
+		},
+	})
+}
+
+// TODO [this PR]: TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults - use NUMBER(24,2) instead
