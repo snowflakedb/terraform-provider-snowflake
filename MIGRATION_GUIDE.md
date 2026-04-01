@@ -26,18 +26,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
-### *(new feature)* SAFE_DESTROY experiment
+### *(new feature)* GRANTS_SAFE_DESTROY experiment
 
-A new `SAFE_DESTROY` experiment has been added. When enabled, resource destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists, instead of failing with `does not exist or not authorized`.
+A new `GRANTS_SAFE_DESTROY` experiment has been added. When enabled, resource destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists, instead of failing with `does not exist or not authorized`.
 
 This is useful when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
 
 Currently supported by: `snowflake_grant_privileges_to_account_role`. This experiment is designed to be extended to other resources in the future.
 
-To enable, add `SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
+To enable, add `GRANTS_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
 ```hcl
 provider "snowflake" {
-  experimental_features_enabled = ["SAFE_DESTROY"]
+  experimental_features_enabled = ["GRANTS_SAFE_DESTROY"]
 }
 ```
 

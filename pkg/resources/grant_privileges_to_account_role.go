@@ -773,7 +773,7 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	privileges := getAccountRolePrivilegesFromSchema(d)
 	opts := &sdk.RevokePrivilegesFromAccountRoleOptions{}
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.SafeDestroy, providerCtx.EnabledExperiments) {
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
 		err = client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, privileges, grantOn, id.RoleName, opts)
 	} else {
 		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, grantOn, id.RoleName, opts)

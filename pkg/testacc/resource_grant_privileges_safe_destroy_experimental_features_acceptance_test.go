@@ -17,7 +17,7 @@ import (
 
 // TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWarehouse verifies that destroying
 // a grant resource fails when the target warehouse is deleted externally (default behavior), and succeeds
-// when the SAFE_DESTROY experiment is enabled.
+// when the GRANTS_SAFE_DESTROY experiment is enabled.
 // Uses all_privileges = true so that Read skips existence checks and Delete is actually called.
 func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWarehouse(t *testing.T) {
 	wh, whCleanup := testClient().Warehouse.CreateWarehouse(t)
@@ -31,7 +31,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWareho
 		WithOnAccountObject(sdk.ObjectTypeWarehouse, wh.ID())
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.SafeDestroy)
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
 	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWarehouse")
 
 	resource.Test(t, resource.TestCase{
@@ -52,7 +52,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWareho
 				Destroy:                  true,
 				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
 			},
-			// Destroy with SAFE_DESTROY experiment — succeeds.
+			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
 				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
@@ -64,7 +64,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWareho
 
 // TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole verifies that destroying
 // a grant resource fails when the grantee role is deleted externally (default behavior), and succeeds
-// when the SAFE_DESTROY experiment is enabled.
+// when the GRANTS_SAFE_DESTROY experiment is enabled.
 // Uses all_privileges = true so that Read skips existence checks and Delete is actually called.
 func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole(t *testing.T) {
 	wh, whCleanup := testClient().Warehouse.CreateWarehouse(t)
@@ -78,7 +78,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole(t
 		WithOnAccountObject(sdk.ObjectTypeWarehouse, wh.ID())
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.SafeDestroy)
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
 	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole")
 
 	resource.Test(t, resource.TestCase{
@@ -99,7 +99,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole(t
 				Destroy:                  true,
 				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
 			},
-			// Destroy with SAFE_DESTROY experiment — succeeds.
+			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
 				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
