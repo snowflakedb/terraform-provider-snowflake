@@ -1373,7 +1373,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		)
 		t.Cleanup(tagCleanup)
 
-		view := testClientHelper().Tag.SetupConflict(t, tag.ID(), "value_from_table1", "value_from_table2")
+		view := testClientHelper().Tag.SetupTagPropagationConflictOnView(t, tag.ID(), "value_from_table1", "value_from_table2")
 		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "CONFLICT")
 
 		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).
@@ -1401,7 +1401,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		)
 		t.Cleanup(tagCleanup)
 
-		view := testClientHelper().Tag.SetupConflict(t, tag.ID(), "internal", "public")
+		view := testClientHelper().Tag.SetupTagPropagationConflictOnView(t, tag.ID(), "internal", "public")
 		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "internal")
 
 		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).

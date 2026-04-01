@@ -101,9 +101,9 @@ func (c *TagClient) GetForObject(t *testing.T, tagId sdk.SchemaObjectIdentifier,
 	return client.GetTag(ctx, tagId, objectId, objectType)
 }
 
-// SetupConflict creates two tables with conflicting tag values and a view that joins them,
+// SetupTagPropagationConflictOnView creates two tables with conflicting tag values and a view that joins them,
 // producing a tag propagation conflict on the view.
-func (c *TagClient) SetupConflict(t *testing.T, tagId sdk.SchemaObjectIdentifier, value1, value2 string) *sdk.View {
+func (c *TagClient) SetupTagPropagationConflictOnView(t *testing.T, tagId sdk.SchemaObjectIdentifier, value1, value2 string) *sdk.View {
 	t.Helper()
 	ctx := context.Background()
 
