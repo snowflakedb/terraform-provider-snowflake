@@ -277,6 +277,16 @@ This was caused by a missing early-exit check in the internal SQL parser used to
 
 No changes in configuration are required. If this error happened during object creation, the state of this resource may be empty. In this case, just reimport the object.
 
+### *(bug fix)* Fixed `describe_output` permadiff on stage resources
+
+The `describe_output` computed attribute on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, `snowflake_stage_internal`) was incorrectly tracking `file_format` as a trigger for recomputation. The provider normalizes selected file format subfields (e.g. resolves identifier quoting), but it's not applied in the recomputation logic, which could lead to permadiffs.
+
+Now, changes on `file_format` do not trigger marking `describe_output` as computed in all stage resources.
+
+No changes in configuration are required.
+
+Reference: [#4514](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4514)
+
 ## v2.14.0 ➞ v2.14.1
 
 ### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
