@@ -719,7 +719,7 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 			// Detect external change - someone UNSET allowed values externally (null <-> empty transition)
 			{
 				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithUnset(sdk.NewTagUnsetRequest().WithAllowedValues(true)))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithAllowedValues(true)))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
