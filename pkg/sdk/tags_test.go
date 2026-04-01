@@ -29,25 +29,20 @@ func TestTagCreate(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG IF NOT EXISTS %s ALLOWED_VALUES 'value1', 'value2' COMMENT = 'comment'`, id.FullyQualifiedName())
+		opts.Propagate = &TagPropagate{
+			PropagationMethod: Pointer(TagPropagationOnDependencyAndDataMovement),
+			OnConflict:        &TagOnConflict{CustomValue: String("FAIL")},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG IF NOT EXISTS %s ALLOWED_VALUES 'value1', 'value2' PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL' COMMENT = 'comment'`, id.FullyQualifiedName())
 	})
 
-	t.Run("create with propagate", func(t *testing.T) {
+	t.Run("create with propagate only", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Propagate = &TagPropagate{PropagationMethod: Pointer(TagPropagationOnDependency)}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DEPENDENCY`, id.FullyQualifiedName())
 	})
 
-	t.Run("create with propagate and on_conflict value", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Propagate = &TagPropagate{
-			PropagationMethod: Pointer(TagPropagationOnDependencyAndDataMovement),
-			OnConflict:        &TagOnConflict{CustomValue: String("FAIL")},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
-	})
-
-	t.Run("create with propagate and on_conflict value without propagate", func(t *testing.T) {
+	t.Run("create with on_conflict without propagate method", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Propagate = &TagPropagate{
 			OnConflict: &TagOnConflict{CustomValue: String("FAIL")},
@@ -55,7 +50,7 @@ func TestTagCreate(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TAG %s ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
 	})
 
-	t.Run("create with propagate and on_conflict allowed_values_sequence", func(t *testing.T) {
+	t.Run("create with on_conflict allowed_values_sequence", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Propagate = &TagPropagate{
 			PropagationMethod: Pointer(TagPropagationOnDataMovement),
