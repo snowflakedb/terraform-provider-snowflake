@@ -31,10 +31,9 @@ func (c *TableDataTypeColumn) ColumnType() DataType {
 	return c.dataType
 }
 
-// TODO [SNOW-2054316]: using ToLegacyDataTypeSql as using ToSql on data type could result in printing something that won't be parsed correctly because column data types are not currently parsed (e.g. `TABLE(A NUMBER(38, 0))`)
 func (t *TableDataType) ToSql() string {
 	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
-		return fmt.Sprintf("%s %s", col.name, col.dataType.ToLegacyDataTypeSql())
+		return fmt.Sprintf("%s %s", col.name, col.dataType.ToSql())
 	}), ", ")
 	return fmt.Sprintf("%s(%s)", t.underlyingType, columns)
 }
@@ -54,7 +53,6 @@ func (t *TableDataType) Canonical() string {
 }
 
 func (t *TableDataType) ToSqlWithoutUnknowns() string {
-	// TODO [SNOW-2054316]: improve
 	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
 		return fmt.Sprintf("%s %s", col.name, col.dataType.ToSqlWithoutUnknowns())
 	}), ", ")
@@ -156,9 +154,7 @@ func areTableDataTypesDefinitelyDifferent(a, b *TableDataType) bool {
 		if aColumn.name != bColumn.name {
 			return true
 		}
-		// TODO [SNOW-2054316]: improve
-		// AreTheSame used instead of AreDefinitelyDifferent here as complex types are not supported for table data type yet (check Test_ParseDataType_Table).
-		if !AreTheSame(aColumn.dataType, bColumn.dataType) {
+		if AreDefinitelyDifferent(aColumn.dataType, bColumn.dataType) {
 			return true
 		}
 	}
