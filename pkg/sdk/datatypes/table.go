@@ -65,6 +65,29 @@ func (t *TableDataType) Columns() []TableDataTypeColumn {
 	return t.columns
 }
 
+// splitColumnDefs splits a comma-separated column definition string,
+// respecting nested parentheses (e.g. NUMBER(38,0) is kept intact).
+func splitColumnDefs(s string) []string {
+	var parts []string
+	depth := 0
+	start := 0
+	for i, ch := range s {
+		switch ch {
+		case '(':
+			depth++
+		case ')':
+			depth--
+		case ',':
+			if depth == 0 {
+				parts = append(parts, s[start:i])
+				start = i + 1
+			}
+		}
+	}
+	parts = append(parts, s[start:])
+	return parts
+}
+
 func parseTableDataTypeRaw(raw sanitizedDataTypeRaw) (*TableDataType, error) {
 	r := strings.TrimSpace(strings.TrimPrefix(raw.raw, raw.matchedByType))
 	if r == "" || (!strings.HasPrefix(r, "(") || !strings.HasSuffix(r, ")")) {
@@ -77,7 +100,7 @@ func parseTableDataTypeRaw(raw sanitizedDataTypeRaw) (*TableDataType, error) {
 			underlyingType: raw.matchedByType,
 		}, nil
 	}
-	columns, err := collections.MapErr(strings.Split(onlyArgs, ","), func(arg string) (TableDataTypeColumn, error) {
+	columns, err := collections.MapErr(splitColumnDefs(onlyArgs), func(arg string) (TableDataTypeColumn, error) {
 		argParts := strings.SplitN(strings.TrimSpace(arg), " ", 2)
 		if len(argParts) != 2 {
 			return TableDataTypeColumn{}, fmt.Errorf("could not parse table column: %s, it should contain the following format `<arg_name> <arg_type>`; parser failure may be connected to the complex argument names", arg)
