@@ -158,7 +158,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()})))
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithComment(comment)))
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{Propagation: sdk.Pointer(sdk.TagPropagationOnDependency)})))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency))))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1127,9 +1127,7 @@ func TestAcc_Tag_PropagateAndOnConflict(t *testing.T) {
 			// Detect external change - someone sets propagate externally; provider reverts
 			{
 				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
-						Propagation: sdk.Pointer(sdk.TagPropagationOnDependency),
-					})))
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency))))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

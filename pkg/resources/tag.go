@@ -208,23 +208,21 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		propagate := sdk.TagPropagate{
-			Propagation: sdk.Pointer(tagPropagation),
-		}
+		propagate := sdk.NewTagPropagateRequest(tagPropagation)
 		if v, ok := d.GetOk("on_conflict"); ok {
 			onConflictMap := v.([]any)[0].(map[string]any)
 			if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
-				propagate.OnConflict = &sdk.TagOnConflict{
+				propagate.WithOnConflict(sdk.TagOnConflict{
 					AllowedValuesSequence: sdk.Bool(true),
-				}
+				})
 			}
 			if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
-				propagate.OnConflict = &sdk.TagOnConflict{
+				propagate.WithOnConflict(sdk.TagOnConflict{
 					CustomValue: sdk.String(v.(string)),
-				}
+				})
 			}
 		}
-		request.WithPropagate(propagate)
+		request.WithPropagate(*propagate)
 	}
 
 	if err := client.Tags.Create(ctx, request); err != nil {
@@ -475,9 +473,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(sdk.TagPropagate{
-				Propagation: sdk.Pointer(tagPropagation),
-			}))); err != nil {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest(tagPropagation)))); err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
@@ -489,19 +485,23 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	if d.HasChange("on_conflict") {
 		if v, ok := d.GetOk("on_conflict"); ok {
+			tagPropagation, err := sdk.ToTagPropagation(d.Get("propagate").(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			onConflictMap := v.([]any)[0].(map[string]any)
-			propagate := sdk.TagPropagate{}
+			propagate := sdk.NewTagPropagateRequest(tagPropagation)
 			if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
-				propagate.OnConflict = &sdk.TagOnConflict{
+				propagate.WithOnConflict(sdk.TagOnConflict{
 					AllowedValuesSequence: sdk.Bool(true),
-				}
+				})
 			}
 			if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
-				propagate.OnConflict = &sdk.TagOnConflict{
+				propagate.WithOnConflict(sdk.TagOnConflict{
 					CustomValue: sdk.String(v.(string)),
-				}
+				})
 			}
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(propagate))); err != nil {
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*propagate))); err != nil {
 				return diag.FromErr(err)
 			}
 		}
