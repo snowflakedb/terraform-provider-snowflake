@@ -71,6 +71,7 @@ const (
 )
 
 var AllTagPropagationValues = []TagPropagation{
+	TagPropagationNone,
 	TagPropagationOnDependency,
 	TagPropagationOnDataMovement,
 	TagPropagationOnDependencyAndDataMovement,
