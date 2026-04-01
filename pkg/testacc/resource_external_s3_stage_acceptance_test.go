@@ -967,6 +967,7 @@ func TestAcc_ExternalS3Stage_DescribeOutputPermadiff(t *testing.T) {
 			{
 				ExternalProviders:  ExternalProviderWithExactVersion("2.14.1"),
 				Config:             accconfig.FromModels(t, providerModel, stageModelQuotedFileFormatId),
+				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
 			// Step 3: Upgrade to current version — plan must be empty (proves the fix).
