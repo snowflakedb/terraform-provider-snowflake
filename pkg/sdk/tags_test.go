@@ -571,13 +571,13 @@ func Test_Tag_ToTagPropagation(t *testing.T) {
 		{input: "ON_DEPENDENCY_AND_DATA_MOVEMENT", want: TagPropagationOnDependencyAndDataMovement},
 		{input: "ON_DEPENDENCY", want: TagPropagationOnDependency},
 		{input: "ON_DATA_MOVEMENT", want: TagPropagationOnDataMovement},
+		{input: "NONE", want: TagPropagationNone},
 	}
 
 	invalid := []test{
 		{input: ""},
 		{input: "foo"},
 		{input: "'ON_DEPENDENCY'"},
-		{input: "NONE"},
 	}
 
 	for _, tc := range valid {
