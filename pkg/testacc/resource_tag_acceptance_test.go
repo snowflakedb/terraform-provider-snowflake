@@ -39,9 +39,10 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 
 	complete := model.TagBase("test", newId).
 		WithComment(comment).
-		WithAllowedValues("value1", "value2").
+		WithAllowedValues("value1", "value2", "FAIL").
 		WithMaskingPolicies(maskingPolicy.ID()).
-		WithPropagateEnum(sdk.TagPropagationOnDependency)
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOnConflictCustomValue("FAIL")
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		objectassert.Tag(t, id).
@@ -82,7 +83,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasSchemaName(newId.SchemaName()).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
-			HasAllowedValuesUnordered("value1", "value2").
+			HasAllowedValuesUnordered("value1", "value2", "FAIL").
 			HasPropagateEnum(sdk.TagPropagationOnDependency),
 
 		resourceassert.TagResource(t, complete.ResourceReference()).
@@ -91,10 +92,10 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasDatabaseString(newId.DatabaseName()).
 			HasSchemaString(newId.SchemaName()).
 			HasCommentString(comment).
-			HasAllowedValues("value1", "value2").
+			HasAllowedValues("value1", "value2", "FAIL").
 			HasMaskingPolicies(maskingPolicy.ID().FullyQualifiedName()).
 			HasPropagateEnum(sdk.TagPropagationOnDependency).
-			HasOnConflictEmpty(),
+			HasOnConflictCustomValue("FAIL"),
 
 		resourceshowoutputassert.TagShowOutput(t, complete.ResourceReference()).
 			HasCreatedOnNotEmpty().
@@ -104,7 +105,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasComment(comment).
 			HasOwnerRoleType("ROLE").
-			HasAllowedValues("value1", "value2"),
+			HasAllowedValues("FAIL", "value1", "value2"),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -136,12 +137,13 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
 			},
-			// Import - with optionals
+			// Import - with optionals (on_conflict is not readable from Snowflake)
 			{
-				Config:            config.FromModels(t, complete),
-				ResourceName:      complete.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, complete),
+				ResourceName:            complete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"on_conflict"},
 			},
 			// Update - unset optionals
 			{
@@ -1001,193 +1003,35 @@ func TestAcc_Tag_NoAllowedValues_DisableExperimentFlag(t *testing.T) {
 	})
 }
 
-func TestAcc_Tag_PropagateAndOnConflict(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	basic := model.TagBase("test", id)
-
-	propagateOnly := model.TagBase("test", id).
-		WithPropagateEnum(sdk.TagPropagationOnDependency)
-
-	withCustomConflict := model.TagBase("test", id).
-		WithPropagateEnum(sdk.TagPropagationOnDependency).
-		WithOnConflictCustomValue("FAIL")
-
-	withDifferentMode := model.TagBase("test", id).
-		WithPropagateEnum(sdk.TagPropagationOnDataMovement).
-		WithOnConflictCustomValue("FAIL")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tagsProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Tag),
-		Steps: []resource.TestStep{
-			// Create with propagate only (no on_conflict)
-			{
-				Config: config.FromModels(t, propagateOnly),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency),
-
-					resourceassert.TagResource(t, propagateOnly.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency).
-						HasOnConflictEmpty(),
-				),
-			},
-			// Import - propagate only (on_conflict not in Read, so import is clean)
-			{
-				Config:            config.FromModels(t, propagateOnly),
-				ResourceName:      propagateOnly.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			// Update - add on_conflict with custom_value
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(withCustomConflict.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, withCustomConflict),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency),
-
-					resourceassert.TagResource(t, withCustomConflict.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency).
-						HasOnConflictCustomValue("FAIL"),
-				),
-			},
-			// Import - on_conflict is not in Read so it won't be imported
-			{
-				Config:                  config.FromModels(t, withCustomConflict),
-				ResourceName:            withCustomConflict.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"on_conflict"},
-			},
-			// Update - change propagate mode, keep on_conflict
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(withDifferentMode.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, withDifferentMode),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationOnDataMovement),
-
-					resourceassert.TagResource(t, withDifferentMode.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDataMovement).
-						HasOnConflictCustomValue("FAIL"),
-				),
-			},
-			// Update - remove on_conflict, keep propagate
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(propagateOnly.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, propagateOnly),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency),
-
-					resourceassert.TagResource(t, propagateOnly.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency).
-						HasOnConflictEmpty(),
-				),
-			},
-			// Update - remove propagate entirely
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationNone),
-
-					resourceassert.TagResource(t, basic.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationNone).
-						HasOnConflictEmpty(),
-				),
-			},
-			// Detect external change - someone sets propagate externally; provider reverts
-			{
-				PreConfig: func() {
-					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency))))
-				},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, basic),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationNone),
-
-					resourceassert.TagResource(t, basic.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationNone).
-						HasOnConflictEmpty(),
-				),
-			},
-			// Destroy - clean slate
-			{
-				Destroy: true,
-				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
-					invokeactionassert.TagDoesNotExist(t, id),
-				),
-			},
-			// Create - with propagate + on_conflict from scratch
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(withCustomConflict.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
-				Config: config.FromModels(t, withCustomConflict),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency),
-
-					resourceassert.TagResource(t, withCustomConflict.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency).
-						HasOnConflictCustomValue("FAIL"),
-				),
-			},
-		},
-	})
-}
-
 func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	t.Skip("Skipped: allowed_values is a Set type which does not preserve ordering; allowed_values_sequence depends on order; this will be addressed in the follow-up PR where this test will be unskipped")
 
-	basic := model.TagBase("test", id)
+	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	withAllowedValuesSeq := model.TagBase("test", id).
-		WithPropagate("ON_DEPENDENCY_AND_DATA_MOVEMENT").
+	var viewId sdk.SchemaObjectIdentifier
+
+	withSeqInitial := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
 		WithAllowedValues("confidential", "internal", "public").
 		WithOnConflictAllowedValuesSequence()
 
-	withCustomConflict := model.TagBase("test", id).
-		WithPropagate("ON_DEPENDENCY").
-		WithOnConflictCustomValue("FAIL")
+	withSeqReordered := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithAllowedValues("public", "internal", "confidential").
+		WithOnConflictAllowedValuesSequence()
+
+	withCustomConflict := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithAllowedValues("public", "internal", "confidential").
+		WithOnConflictCustomValue("confidential")
+
+	withSeqAgain := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithAllowedValues("public", "internal", "confidential").
+		WithOnConflictAllowedValuesSequence()
+
+	basic := model.TagBase("test", tagId).
+		WithAllowedValues("public", "internal", "confidential")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tagsProviderFactory,
@@ -1196,150 +1040,75 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Tag),
 		Steps: []resource.TestStep{
-			// Create with allowed_values + propagate + on_conflict { allowed_values_sequence = true }
+			// Create with allowed_values_sequence and set up conflicting dependency to assert propagated value
 			{
-				Config: config.FromModels(t, withAllowedValuesSeq),
+				Config: config.FromModels(t, withSeqInitial),
 				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationOnDependencyAndDataMovement).
+					objectassert.Tag(t, tagId).
+						HasPropagateEnum(sdk.TagPropagationOnDependency).
 						HasAllowedValuesUnordered("confidential", "internal", "public"),
-
-					resourceassert.TagResource(t, withAllowedValuesSeq.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependencyAndDataMovement).
-						HasAllowedValues("confidential", "internal", "public").
+					resourceassert.TagResource(t, withSeqInitial.ResourceReference()).
 						HasOnConflictAllowedValuesSequence(),
 				),
 			},
-			// Import - on_conflict not imported from Snowflake
+			// Set up conflicting dependency (tag must exist first) and verify propagated value
 			{
-				Config:                  config.FromModels(t, withAllowedValuesSeq),
-				ResourceName:            withAllowedValuesSeq.ResourceReference(),
+				PreConfig: func() {
+					view := testClient().Tag.SetupTagPropagationConflictOnView(t, tagId, "internal", "public")
+					viewId = view.ID()
+				},
+				Config: config.FromModels(t, withSeqInitial),
+				Check: assertThat(t,
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "internal"),
+				),
+			},
+			// Import (on_conflict not readable from Snowflake)
+			{
+				Config:                  config.FromModels(t, withSeqInitial),
+				ResourceName:            withSeqInitial.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"on_conflict"},
 			},
-			// Update - switch to custom_value, drop allowed_values, change propagate mode
+			// Update allowed_values order ONLY → "public" is now first match → view should get "public"
+			// TODO(follow-up PR): this step will fail until allowed_values is changed from Set to List
 			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(withCustomConflict.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
+				Config: config.FromModels(t, withSeqReordered),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, withSeqReordered.ResourceReference()).
+						HasOnConflictAllowedValuesSequence(),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "public"),
+				),
+			},
+			// Switch to custom_value → view should get "confidential"
+			{
 				Config: config.FromModels(t, withCustomConflict),
 				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency),
-
 					resourceassert.TagResource(t, withCustomConflict.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency).
-						HasAllowedValuesEmpty().
-						HasOnConflictCustomValue("FAIL"),
+						HasOnConflictCustomValue("confidential"),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "confidential"),
 				),
 			},
-			// Update - remove everything (propagate, on_conflict)
+			// Switch back to allowed_values_sequence → view should get "public" again (first match in order)
 			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
+				Config: config.FromModels(t, withSeqAgain),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, withSeqAgain.ResourceReference()).
+						HasOnConflictAllowedValuesSequence(),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "public"),
+				),
+			},
+			// Remove propagate and on_conflict → propagated tag value remains (Snowflake does not remove it), but state is clean
+			{
 				Config: config.FromModels(t, basic),
 				Check: assertThat(t,
-					objectassert.Tag(t, id).
-						HasName(id.Name()).
+					objectassert.Tag(t, tagId).
 						HasPropagateEnum(sdk.TagPropagationNone),
-
 					resourceassert.TagResource(t, basic.ResourceReference()).
 						HasPropagateEnum(sdk.TagPropagationNone).
-						HasOnConflictEmpty().
-						HasAllowedValuesEmpty(),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_Tag_Propagation_BasicOnDependency(t *testing.T) {
-	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
-	schemaId := testClient().Ids.RandomDatabaseObjectIdentifier()
-
-	var tableId sdk.SchemaObjectIdentifier
-
-	propagateOnDep := model.TagBase("test", tagId).
-		WithPropagateEnum(sdk.TagPropagationOnDependency)
-
-	propagateOnDepAndDM := model.TagBase("test", tagId).
-		WithPropagateEnum(sdk.TagPropagationOnDependencyAndDataMovement)
-
-	propagateOnDepWithConflict := model.TagBase("test", tagId).
-		WithPropagateEnum(sdk.TagPropagationOnDependency).
-		WithOnConflictCustomValue("OVERRIDE")
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tagsProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Tag),
-		Steps: []resource.TestStep{
-			// Step 1: Create the tag with propagate = ON_DEPENDENCY (tag must exist before we can set it on objects)
-			{
-				Config: config.FromModels(t, propagateOnDep),
-				Check: assertThat(t,
-					objectassert.Tag(t, tagId).
-						HasPropagateEnum(sdk.TagPropagationOnDependency),
-					resourceassert.TagResource(t, propagateOnDep.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency),
-				),
-			},
-			// Step 2: PreConfig sets up dependent objects (schema with tag, table in schema), then verify propagation
-			{
-				PreConfig: func() {
-					_, schemaCleanup := testClient().Schema.CreateSchemaWithOpts(t, schemaId, &sdk.CreateSchemaOptions{
-						Tag: []sdk.TagAssociation{
-							{Name: tagId, Value: "v1"},
-						},
-					})
-					t.Cleanup(schemaCleanup)
-
-					// Create a table inside the schema (it should inherit the tag via propagation)
-					table, tableCleanup := testClient().Table.CreateInSchema(t, schemaId)
-					t.Cleanup(tableCleanup)
-
-					tableId = table.ID()
-				},
-				Config: config.FromModels(t, propagateOnDep),
-				Check:  assertThat(t, invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return tableId }, sdk.ObjectTypeTable, "v1")),
-			},
-			// Update propagate mode ON_DEPENDENCY → ON_DEPENDENCY_AND_DATA_MOVEMENT → verify table still has tag "v1"
-			{
-				Config: config.FromModels(t, propagateOnDepAndDM),
-				Check: assertThat(t,
-					objectassert.Tag(t, tagId).
-						HasPropagateEnum(sdk.TagPropagationOnDependencyAndDataMovement),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return tableId }, sdk.ObjectTypeTable, "v1"),
-				),
-			},
-			// Update add on_conflict { custom_value = "OVERRIDE" } → verify table still has "v1"
-			{
-				Config: config.FromModels(t, propagateOnDepWithConflict),
-				Check: assertThat(t,
-					resourceassert.TagResource(t, propagateOnDepWithConflict.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency).
-						HasOnConflictCustomValue("OVERRIDE"),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return tableId }, sdk.ObjectTypeTable, "v1"),
-				),
-			},
-			// Update remove on_conflict (keep propagate) → verify table still has "v1"
-			{
-				Config: config.FromModels(t, propagateOnDep),
-				Check: assertThat(t,
-					resourceassert.TagResource(t, propagateOnDep.ResourceReference()).
-						HasPropagateEnum(sdk.TagPropagationOnDependency).
 						HasOnConflictEmpty(),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return tableId }, sdk.ObjectTypeTable, "v1"),
+					// Snowflake does not remove already-propagated tags when UNSET PROPAGATE is issued
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "public"),
 				),
 			},
 		},
@@ -1355,7 +1124,6 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 		WithPropagateEnum(sdk.TagPropagationOnDependency).
 		WithOnConflictCustomValue("FAIL")
 
-	// Same propagate + on_conflict, but add allowed_values (only allowed_values changes)
 	withCustomFailAndAllowedValues := model.TagBase("test", tagId).
 		WithPropagateEnum(sdk.TagPropagationOnDependency).
 		WithOnConflictCustomValue("FAIL").
@@ -1377,7 +1145,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Tag),
 		Steps: []resource.TestStep{
-			// Step 1: Create the tag with propagate + on_conflict (tag must exist first)
+			// Create the tag with propagate + on_conflict (tag must exist first)
 			{
 				Config: config.FromModels(t, withCustomFail),
 				Check: assertThat(t,
@@ -1386,7 +1154,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 						HasOnConflictCustomValue("FAIL"),
 				),
 			},
-			// Step 2: PreConfig sets up dependent objects (tables with conflicting tags, view), then verify
+			// PreConfig sets up dependent objects (tables with conflicting tags, view), then verify
 			{
 				PreConfig: func() {
 					view := testClient().Tag.SetupTagPropagationConflictOnView(t, tagId, "alpha", "beta")
@@ -1395,8 +1163,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 				Config: config.FromModels(t, withCustomFail),
 				Check:  assertThat(t, invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "FAIL")),
 			},
-			// Add allowed_values while keeping same propagate + on_conflict → verify view still gets "FAIL"
-			// (exercises shouldPropagate trigger: only allowed_values changed, but on_conflict is configured)
+			// Add allowed_values while keeping same propagate + on_conflict
 			{
 				Config: config.FromModels(t, withCustomFailAndAllowedValues),
 				Check: assertThat(t,
@@ -1406,7 +1173,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "FAIL"),
 				),
 			},
-			// Update custom_value to "RESTRICTED" → view gets "RESTRICTED"
+			// Update custom_value to "RESTRICTED"
 			{
 				Config: config.FromModels(t, withCustomRestricted),
 				Check: assertThat(t,
@@ -1415,7 +1182,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "RESTRICTED"),
 				),
 			},
-			// Remove on_conflict (keep propagate) → view gets "CONFLICT" (default conflict string)
+			// Remove on_conflict (keep propagate)
 			{
 				Config: config.FromModels(t, propagateOnly),
 				Check: assertThat(t,

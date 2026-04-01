@@ -71,7 +71,7 @@ resource "snowflake_tag" "tag" {
 Optional:
 
 - `allowed_values_sequence` (Boolean) The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
-- `custom_value` (String) Whenever there is a conflict, the value of tag is set to custom_value. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
+- `custom_value` (String) Whenever there is a conflict, the value of tag is set to custom_value. If `allowed_values` are set, the value set in this field should be one of the values in the `allowed_values` list. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 
 
 <a id="nestedblock--timeouts"></a>
