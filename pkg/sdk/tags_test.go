@@ -294,14 +294,14 @@ func TestTagAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET PROPAGATE = ON_DEPENDENCY_AND_DATA_MOVEMENT ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
 	})
 
-	t.Run("validation: alter set on_conflict without propagate", func(t *testing.T) {
+	t.Run("alter with set on_conflict value without propagate", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &TagSet{
 			Propagate: &TagPropagate{
 				OnConflict: &TagOnConflict{CustomValue: String("FAIL")},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("TagPropagate", "PropagationMethod"))
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG %s SET ON_CONFLICT = 'FAIL'`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter with unset propagate", func(t *testing.T) {

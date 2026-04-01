@@ -71,7 +71,7 @@ var tagSchema = map[string]*schema.Schema{
 	"on_conflict": {
 		Type:         schema.TypeList,
 		Optional:     true,
-		Description:  externalChangesNotDetectedFieldDescription(""), // TODO
+		Description:  externalChangesNotDetectedFieldDescription("Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation)."),
 		MaxItems:     1,
 		RequiredWith: []string{"propagate"},
 		Elem: &schema.Resource{
@@ -79,7 +79,7 @@ var tagSchema = map[string]*schema.Schema{
 				"allowed_values_sequence": {
 					Type:        schema.TypeBool,
 					Optional:    true,
-					Description: "", // TODO
+					Description: externalChangesNotDetectedFieldDescription("The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict."),
 					ExactlyOneOf: []string{
 						"on_conflict.0.allowed_values_sequence",
 						"on_conflict.0.custom_value",
@@ -88,7 +88,7 @@ var tagSchema = map[string]*schema.Schema{
 				"custom_value": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "", // TODO
+					Description: externalChangesNotDetectedFieldDescription("Whenever there is a conflict, the value of tag is set to custom_value."),
 					ExactlyOneOf: []string{
 						"on_conflict.0.allowed_values_sequence",
 						"on_conflict.0.custom_value",
@@ -467,41 +467,48 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	if d.HasChange("propagate") {
+	// Determine if we need to re-apply propagation settings.
+	// Covers: propagate changed, on_conflict changed (set or unset),
+	// or allowed_values changed while on_conflict is configured.
+	shouldPropagate := d.HasChange("propagate") || d.HasChange("on_conflict")
+	if !shouldPropagate && d.HasChange("allowed_values") {
+		// If on_conflict is configured (current state) and allowed_values changed,
+		// re-send propagation to re-evaluate conflict resolution on dependent objects.
+		_, shouldPropagate = d.GetOk("on_conflict")
+	}
+
+	if shouldPropagate {
 		if v, ok := d.GetOk("propagate"); ok {
 			tagPropagation, err := sdk.ToTagPropagation(v.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest(tagPropagation)))); err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithPropagate(true))); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
-	if d.HasChange("on_conflict") {
-		if v, ok := d.GetOk("on_conflict"); ok {
-			tagPropagation, err := sdk.ToTagPropagation(d.Get("propagate").(string))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			onConflictMap := v.([]any)[0].(map[string]any)
 			propagate := sdk.NewTagPropagateRequest(tagPropagation)
-			if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
-				propagate.WithOnConflict(sdk.TagOnConflict{
-					AllowedValuesSequence: sdk.Bool(true),
-				})
+			// Attach on_conflict if still configured (may have been removed this apply)
+			if v, ok := d.GetOk("on_conflict"); ok {
+				onConflictMap := v.([]any)[0].(map[string]any)
+				if v, ok := onConflictMap["allowed_values_sequence"]; ok && v.(bool) {
+					propagate.WithOnConflict(sdk.TagOnConflict{
+						AllowedValuesSequence: sdk.Bool(true),
+					})
+				}
+				if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
+					propagate.WithOnConflict(sdk.TagOnConflict{
+						CustomValue: sdk.String(v.(string)),
+					})
+				}
 			}
-			if v, ok := onConflictMap["custom_value"]; ok && v.(string) != "" {
-				propagate.WithOnConflict(sdk.TagOnConflict{
-					CustomValue: sdk.String(v.(string)),
-				})
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(
+				*sdk.NewTagSetRequest().WithPropagate(*propagate),
+			)); err != nil {
+				return diag.FromErr(err)
 			}
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithPropagate(*propagate))); err != nil {
+		} else if d.HasChange("propagate") {
+			// Propagate was removed from config. Note: Snowflake's UNSET PROPAGATE
+			// does NOT remove already-propagated tags from dependent objects.
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(
+				*sdk.NewTagUnsetRequest().WithPropagate(true),
+			)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
