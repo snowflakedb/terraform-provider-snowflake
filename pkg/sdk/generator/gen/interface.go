@@ -42,6 +42,17 @@ type Interface struct {
 	IdentifierKind string
 
 	*genhelpers.PreambleModel
+	*genhelpers.ObjectGenerationSettings
+}
+
+// WithAllowedGenerationParts restricts this object to only the specified generation parts.
+// Parts not listed here will be skipped during generation, even if enabled globally.
+func (i *Interface) WithAllowedGenerationParts(parts ...string) *Interface {
+	if i.ObjectGenerationSettings == nil {
+		i.ObjectGenerationSettings = &genhelpers.ObjectGenerationSettings{}
+	}
+	i.ObjectGenerationSettings.AllowedGenerationParts = parts
+	return i
 }
 
 func (i *Interface) ObjectName() string {
