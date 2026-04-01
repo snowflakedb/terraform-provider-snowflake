@@ -97,6 +97,7 @@ Read-Only:
 - `name` (String)
 - `owner` (String)
 - `owner_role_type` (String)
+- `propagate` (String)
 - `schema_name` (String)
 
 ## Import
