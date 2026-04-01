@@ -476,15 +476,15 @@ func TestInt_Warehouses(t *testing.T) {
 		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
 			HasType(sdk.WarehouseTypeStandard).
 			HasSize(sdk.WarehouseSizeMedium).
-			HasGeneration(sdk.WarehouseGenerationStandardGen2).
+			HasGeneration(sdk.WarehouseGenerationStandardGen1).
 			HasNoResourceConstraint().
 			HasMaxClusterCount(1).
 			HasMinClusterCount(1).
 			HasScalingPolicy(sdk.ScalingPolicyStandard).
-			HasAutoSuspend(34).
+			HasAutoSuspend(600).
 			HasAutoResume(true).
-			HasEnableQueryAcceleration(true).
-			HasQueryAccelerationMaxScaleFactor(2).
+			HasEnableQueryAcceleration(false).
+			HasQueryAccelerationMaxScaleFactor(8).
 			HasNoMaxQueryPerformanceLevel().
 			HasNoQueryThroughputMultiplier(),
 		)
