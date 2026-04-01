@@ -287,4 +287,38 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
 	})
 }
 
-// TODO [this PR]: TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults - use NUMBER(24,2) instead
+// TODO [this PR]: make this test pass
+func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	definition := "SELECT 1::NUMBER(24,2), 'error'::VARCHAR"
+	returnType := "TABLE(O_ERR_CODE NUMBER(24,2), O_ERR_SEVERITY VARCHAR)"
+
+	functionModel := model.FunctionSqlBasicInline("test", id, definition, returnType)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionSql),
+		Steps: []resource.TestStep{
+			// Step 1: v2.14.1 fails because TABLE with parametrized columns cannot be parsed.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				Config:            config.FromModels(t, functionModel),
+				ExpectError:       regexp.MustCompile(`number NUMBER\(24 could not be parsed, use "NUMBER\(precision, scale\)" format`),
+			},
+			// Step 2: Current version correctly parses TABLE with parametrized columns.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, functionModel),
+				Check: assertThat(t,
+					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFunctionLanguageString("SQL").
+						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"),
+				),
+			},
+		},
+	})
+}
