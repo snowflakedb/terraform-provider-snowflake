@@ -28,6 +28,8 @@ type CatalogIntegrations interface {
 	DescribeIcebergRestDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationIcebergRestDetails, error)
 	// DescribeSapBdcDetails is added manually
 	DescribeSapBdcDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationSapBdcDetails, error)
+	// DescribeDetails is added manually; it returns combined describe output for all types of catalog integrations.
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error)
 }
 
 // CreateCatalogIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration.
@@ -269,6 +271,23 @@ type CatalogIntegrationSapBdcDetails struct {
 	Enabled                bool
 	RefreshIntervalSeconds int
 	Comment                string
+}
+
+type CatalogIntegrationAllDetails struct {
+	Id                       AccountObjectIdentifier
+	CatalogSource            CatalogIntegrationCatalogSourceType
+	TableFormat              CatalogIntegrationTableFormat
+	Enabled                  bool
+	RefreshIntervalSeconds   int
+	Comment                  string
+	GlueAwsRoleArn           string
+	GlueCatalogId            string
+	GlueRegion               string
+	CatalogNamespace         string
+	RestConfig               *IcebergRestRestConfigDetails
+	OAuthRestAuthentication  *OAuthRestAuthenticationDetails
+	BearerRestAuthentication *BearerRestAuthenticationDetails
+	SigV4RestAuthentication  *SigV4RestAuthenticationDetails
 }
 
 type OpenCatalogRestConfigDetails struct {

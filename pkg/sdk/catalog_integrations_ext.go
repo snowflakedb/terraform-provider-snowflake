@@ -52,6 +52,14 @@ func (v *catalogIntegrations) DescribeSapBdcDetails(ctx context.Context, id Acco
 	return parseSapBdcProperties(properties, id)
 }
 
+func (v *catalogIntegrations) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseAllCatalogIntegrationProperties(properties, id)
+}
+
 type commonDetails struct {
 	CatalogSource          CatalogIntegrationCatalogSourceType
 	TableFormat            CatalogIntegrationTableFormat
@@ -96,6 +104,13 @@ func parseCommonProperties(properties []CatalogIntegrationProperty) (*commonDeta
 	return commons, errors.Join(errs...)
 }
 
+type awsGlueSpecificDetails struct {
+	glueAwsRoleArn   string
+	glueCatalogId    string
+	glueRegion       string
+	catalogNamespace string
+}
+
 func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
 	commons, err := parseCommonProperties(properties)
 	if err != nil {
@@ -109,19 +124,29 @@ func parseAwsGlueProperties(properties []CatalogIntegrationProperty, id AccountO
 		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
 		Comment:                commons.Comment,
 	}
+	awsGlueDetails := parseAwsGlueSpecificProperties(properties)
+	details.GlueAwsRoleArn = awsGlueDetails.glueAwsRoleArn
+	details.GlueCatalogId = awsGlueDetails.glueCatalogId
+	details.GlueRegion = awsGlueDetails.glueRegion
+	details.CatalogNamespace = awsGlueDetails.catalogNamespace
+	return details, nil
+}
+
+func parseAwsGlueSpecificProperties(properties []CatalogIntegrationProperty) *awsGlueSpecificDetails {
+	details := &awsGlueSpecificDetails{}
 	for _, prop := range properties {
 		switch prop.Name {
 		case "GLUE_AWS_ROLE_ARN":
-			details.GlueAwsRoleArn = prop.Value
+			details.glueAwsRoleArn = prop.Value
 		case "GLUE_CATALOG_ID":
-			details.GlueCatalogId = prop.Value
+			details.glueCatalogId = prop.Value
 		case "GLUE_REGION":
-			details.GlueRegion = prop.Value
+			details.glueRegion = prop.Value
 		case "CATALOG_NAMESPACE":
-			details.CatalogNamespace = prop.Value
+			details.catalogNamespace = prop.Value
 		}
 	}
-	return details, nil
+	return details
 }
 
 func parseObjectStorageProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationObjectStorageDetails, error) {
@@ -228,6 +253,48 @@ func parseSapBdcProperties(properties []CatalogIntegrationProperty, id AccountOb
 		Comment:                commons.Comment,
 	}
 	return params, nil
+}
+
+func parseAllCatalogIntegrationProperties(properties []CatalogIntegrationProperty, id AccountObjectIdentifier) (*CatalogIntegrationAllDetails, error) {
+	commons, err := parseCommonProperties(properties)
+	if err != nil {
+		return nil, err
+	}
+	details := &CatalogIntegrationAllDetails{
+		Id:                     id,
+		CatalogSource:          commons.CatalogSource,
+		TableFormat:            commons.TableFormat,
+		Enabled:                commons.Enabled,
+		RefreshIntervalSeconds: commons.RefreshIntervalSeconds,
+		Comment:                commons.Comment,
+	}
+
+	awsGlueDetails := parseAwsGlueSpecificProperties(properties)
+	details.GlueAwsRoleArn = awsGlueDetails.glueAwsRoleArn
+	details.GlueCatalogId = awsGlueDetails.glueCatalogId
+	details.GlueRegion = awsGlueDetails.glueRegion
+	details.CatalogNamespace = awsGlueDetails.catalogNamespace
+
+	var errs []error
+	for _, prop := range properties {
+		switch prop.Name {
+		case "REST_CONFIG":
+			if restConfig, err := parseIcebergRestRestConfigProperty(prop); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.RestConfig = &restConfig
+			}
+		case "REST_AUTHENTICATION":
+			if oAuthRestAuth, bearerRestAuth, sigV4RestAuth, err := parseRestAuthenticationProperty(prop); err != nil {
+				errs = append(errs, err)
+			} else {
+				details.OAuthRestAuthentication = oAuthRestAuth
+				details.BearerRestAuthentication = bearerRestAuth
+				details.SigV4RestAuthentication = sigV4RestAuth
+			}
+		}
+	}
+	return details, errors.Join(errs...)
 }
 
 func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (OpenCatalogRestConfigDetails, error) {
