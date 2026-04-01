@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -62,10 +63,16 @@ var tagSchema = map[string]*schema.Schema{
 		ConflictsWith: []string{"allowed_values"},
 	},
 	"propagate": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      fmt.Sprintf("Specifies that the tag will be automatically propagated from source objects to target objects. See more about tag propagation in the [official documentation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). Valid options are: %s", docs.PossibleValuesListed(sdk.AllTagPropagationValues)),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToTagPropagation),
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: fmt.Sprintf("Specifies that the tag will be automatically propagated from source objects to target objects. See more about tag propagation in the [official documentation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). Valid options are: %s", docs.PossibleValuesListed(sdk.AllTagPropagationValues)),
+		DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+			// Snowflake returns "NONE" when propagation is disabled; treat as equivalent to unset.
+			if strings.EqualFold(oldValue, string(sdk.TagPropagationNone)) && newValue == "" {
+				return true
+			}
+			return NormalizeAndCompare(sdk.ToTagPropagation)(k, oldValue, newValue, d)
+		},
 		ValidateDiagFunc: sdkValidation(sdk.ToTagPropagation),
 	},
 	"on_conflict": {

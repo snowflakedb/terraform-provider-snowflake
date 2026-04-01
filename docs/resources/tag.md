@@ -55,6 +55,8 @@ resource "snowflake_tag" "tag" {
 - `comment` (String) Specifies a comment for the tag.
 - `masking_policies` (Set of String) Set of masking policies for the tag. A tag can support one masking policy for each data type. If masking policies are assigned to the tag, before dropping the tag, the provider automatically unassigns them. For more information about this resource, see [docs](./masking_policy).
 - `no_allowed_values` (Boolean) When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled. Conflicts with `allowed_values`.
+- `on_conflict` (Block List, Max: 1) Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint". (see [below for nested schema](#nestedblock--on_conflict))
+- `propagate` (String) Specifies that the tag will be automatically propagated from source objects to target objects. See more about tag propagation in the [official documentation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). Valid options are: `NONE` | `ON_DEPENDENCY` | `ON_DATA_MOVEMENT` | `ON_DEPENDENCY_AND_DATA_MOVEMENT`
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -62,6 +64,15 @@ resource "snowflake_tag" "tag" {
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW TAGS` for the given tag. (see [below for nested schema](#nestedatt--show_output))
+
+<a id="nestedblock--on_conflict"></a>
+### Nested Schema for `on_conflict`
+
+Optional:
+
+- `allowed_values_sequence` (Boolean) The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
+- `custom_value` (String) Whenever there is a conflict, the value of tag is set to custom_value. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
