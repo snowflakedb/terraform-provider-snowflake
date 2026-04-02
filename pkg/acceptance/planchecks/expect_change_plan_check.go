@@ -18,7 +18,7 @@ var _ plancheck.PlanCheck = expectChangePlanCheck{}
 type expectChangePlanCheck struct {
 	resourceAddress string
 	attribute       string
-	action          tfjson.Action
+	actions         []tfjson.Action
 	oldValue        *string
 	newValue        *string
 }
@@ -91,8 +91,8 @@ func (e expectChangePlanCheck) CheckPlan(_ context.Context, req plancheck.CheckP
 			}
 		}
 
-		if !slices.Contains(change.Change.Actions, e.action) {
-			result = append(result, fmt.Errorf("expect change: expected action %s for %s, got: %v", e.action, e.resourceAddress, change.Change.Actions))
+		if !slices.Equal(change.Change.Actions, e.actions) {
+			result = append(result, fmt.Errorf("expect change: expected actions %v for %s, got: %v", e.actions, e.resourceAddress, change.Change.Actions))
 		}
 	}
 
@@ -108,7 +108,18 @@ func ExpectChange(resourceAddress string, attribute string, action tfjson.Action
 	return expectChangePlanCheck{
 		resourceAddress,
 		attribute,
-		action,
+		[]tfjson.Action{action},
+		oldValue,
+		newValue,
+	}
+}
+
+// TODO [SNOW-1473409]: describe
+func ExpectChangeDeleteCreate(resourceAddress string, attribute string, oldValue *string, newValue *string) plancheck.PlanCheck {
+	return expectChangePlanCheck{
+		resourceAddress,
+		attribute,
+		[]tfjson.Action{tfjson.ActionDelete, tfjson.ActionCreate},
 		oldValue,
 		newValue,
 	}
