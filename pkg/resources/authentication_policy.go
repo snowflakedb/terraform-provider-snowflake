@@ -421,7 +421,6 @@ func CreateContextAuthenticationPolicy(ctx context.Context, d *schema.ResourceDa
 
 func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		diags := diag.Diagnostics{}
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 		if err != nil {
@@ -447,38 +446,81 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		authenticationPolicyDescriptions := sdk.AuthenticationPolicyDetails(authenticationPolicyDescriptionsRaw)
+		diags := make(diag.Diagnostics, 0)
+
 		if withExternalChangesMarking {
+			describeMappings := make([]outputMapping, 0)
+
 			authenticationMethods, err := authenticationPolicyDescriptions.GetAuthenticationMethods()
 			if err != nil {
-				return diag.FromErr(err)
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to retrieve authentication from authentication policy describe details.",
+					Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
+				})
+			} else {
+				describeMappings = append(
+					describeMappings,
+					outputMapping{"authentication_methods", "authentication_methods", authenticationPolicyDescriptions.Raw("AUTHENTICATION_METHODS"), authenticationMethods, nil},
+				)
 			}
+
 			mfaEnrollment, err := authenticationPolicyDescriptions.GetMfaEnrollment()
 			if err != nil {
-				return diag.FromErr(err)
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to retrieve mfa enrollment from authentication policy describe details.",
+					Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
+				})
+			} else {
+				describeMappings = append(
+					describeMappings,
+					outputMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
+				)
 			}
+
 			clientTypes, err := authenticationPolicyDescriptions.GetClientTypes()
 			if err != nil {
-				return diag.FromErr(err)
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to retrieve client types from authentication policy describe details.",
+					Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
+				})
+			} else {
+				describeMappings = append(
+					describeMappings,
+					outputMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
+				)
 			}
+
 			securityIntegrations, err := authenticationPolicyDescriptions.GetSecurityIntegrations()
 			if err != nil {
-				return diag.FromErr(err)
-			}
-			var securityIntegrationsStrings []string
-			if securityIntegrations != nil {
-				securityIntegrationsStrings = make([]string, len(securityIntegrations))
-				for i, v := range securityIntegrations {
-					securityIntegrationsStrings[i] = v.Name()
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to retrieve security integrations from authentication policy describe details.",
+					Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", d.Id(), err),
+				})
+			} else {
+				var securityIntegrationsStrings []string
+				if securityIntegrations != nil {
+					securityIntegrationsStrings = make([]string, len(securityIntegrations))
+					for i, v := range securityIntegrations {
+						securityIntegrationsStrings[i] = v.Name()
+					}
 				}
+
+				describeMappings = append(
+					describeMappings,
+					outputMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
+				)
 			}
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
-				outputMapping{"authentication_methods", "authentication_methods", authenticationPolicyDescriptions.Raw("AUTHENTICATION_METHODS"), authenticationMethods, nil},
-				outputMapping{"mfa_enrollment", "mfa_enrollment", authenticationPolicyDescriptions.Raw("MFA_ENROLLMENT"), mfaEnrollment, nil},
-				outputMapping{"client_types", "client_types", authenticationPolicyDescriptions.Raw("CLIENT_TYPES"), clientTypes, nil},
-				outputMapping{"security_integrations", "security_integrations", authenticationPolicyDescriptions.Raw("SECURITY_INTEGRATIONS"), securityIntegrationsStrings, nil},
-			); err != nil {
-				return diag.FromErr(err)
+
+			if len(describeMappings) > 0 {
+				if err = handleExternalChangesToObjectInFlatDescribe(d, describeMappings...); err != nil {
+					return append(diags, diag.FromErr(err)...)
+				}
 			}
 		}
 
@@ -488,7 +530,7 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			"client_types",
 			"security_integrations",
 		}); err != nil {
-			return diag.FromErr(err)
+			return append(diags, diag.FromErr(err)...)
 		}
 
 		if err := errors.Join(
@@ -497,7 +539,7 @@ func ReadContextAuthenticationPolicy(withExternalChangesMarking bool) schema.Rea
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyToSchema(authenticationPolicy)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.AuthenticationPolicyDescriptionToSchema(authenticationPolicyDescriptions)}),
 		); err != nil {
-			return diag.FromErr(err)
+			return append(diags, diag.FromErr(err)...)
 		}
 
 		return diags
