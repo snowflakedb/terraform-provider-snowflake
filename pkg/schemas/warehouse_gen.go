@@ -220,6 +220,14 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	if warehouse.Generation != nil {
 		warehouseSchema["generation"] = string((*warehouse.Generation))
 	}
+	// Adjusted manually.
+	if warehouse.MaxQueryPerformanceLevel != nil {
+		warehouseSchema["max_query_performance_level"] = string(*warehouse.MaxQueryPerformanceLevel)
+	}
+	// Adjusted manually.
+	if warehouse.QueryThroughputMultiplier != nil {
+		warehouseSchema["query_throughput_multiplier"] = *warehouse.QueryThroughputMultiplier
+	}
 	return warehouseSchema
 }
 
