@@ -91,20 +91,20 @@ func WarehouseAdaptive() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.WarehouseAdaptive, CreateAdaptiveWarehouse),
-		ReadContext:   TrackingReadWrapper(resources.WarehouseAdaptive, ReadAdaptiveWarehouseFunc(true)),
-		// TODO: uncomment after ALTER is cleared.
+		CreateContext: TrackingCreateWrapper(resources.WarehouseAdaptive, CreateWarehouseAdaptive),
+		ReadContext:   TrackingReadWrapper(resources.WarehouseAdaptive, ReadWarehouseAdaptiveFunc(true)),
+		// TODO(SNOW-3174066): uncomment after ALTER is cleared.
 		// UpdateContext: TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateAdaptiveWarehouse),
 		DeleteContext: TrackingDeleteWrapper(resources.WarehouseAdaptive, deleteFunc),
 		Description:   "Resource used to manage adaptive warehouse objects. Adaptive warehouses automatically scale compute resources based on workload. For more information, check [adaptive warehouse documentation](https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses).",
 
 		Schema: warehouseAdaptiveSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.WarehouseAdaptive, ImportAdaptiveWarehouse),
+			StateContext: TrackingImportWrapper(resources.WarehouseAdaptive, ImportWarehouseAdaptive),
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseAdaptive, customdiff.All(
-			// TODO: uncomment after ALTER is cleared.
+			// TODO(SNOW-3174066): uncomment after ALTER is cleared.
 			// ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier"),
 			// ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ParametersAttributeName,
 			// 	strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
@@ -121,7 +121,7 @@ func WarehouseAdaptive() *schema.Resource {
 	}
 }
 
-func ImportAdaptiveWarehouse(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+func ImportWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
@@ -149,7 +149,7 @@ func ImportAdaptiveWarehouse(ctx context.Context, d *schema.ResourceData, meta a
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateAdaptiveWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func CreateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	name := d.Get("name").(string)
@@ -182,10 +182,10 @@ func CreateAdaptiveWarehouse(ctx context.Context, d *schema.ResourceData, meta a
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-	return ReadAdaptiveWarehouseFunc(false)(ctx, d, meta)
+	return ReadWarehouseAdaptiveFunc(false)(ctx, d, meta)
 }
 
-func ReadAdaptiveWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -234,7 +234,7 @@ func ReadAdaptiveWarehouseFunc(withExternalChangesMarking bool) schema.ReadConte
 		errs := errors.Join(
 			d.Set("name", w.Name),
 			d.Set("comment", w.Comment),
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseToSchema(w)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseAdaptiveToSchema(w)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseAdaptiveParametersToSchema(warehouseParameters, providerCtx)}),
 		)
@@ -261,7 +261,7 @@ func ReadAdaptiveWarehouseFunc(withExternalChangesMarking bool) schema.ReadConte
 	}
 }
 
-func UpdateAdaptiveWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
@@ -307,5 +307,5 @@ func UpdateAdaptiveWarehouse(ctx context.Context, d *schema.ResourceData, meta a
 		}
 	}
 
-	return ReadAdaptiveWarehouseFunc(false)(ctx, d, meta)
+	return ReadWarehouseAdaptiveFunc(false)(ctx, d, meta)
 }
