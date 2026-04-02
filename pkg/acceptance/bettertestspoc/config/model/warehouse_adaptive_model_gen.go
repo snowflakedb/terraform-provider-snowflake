@@ -13,11 +13,11 @@ import (
 type WarehouseAdaptiveModel struct {
 	Name                            tfconfig.Variable `json:"name,omitempty"`
 	Comment                         tfconfig.Variable `json:"comment,omitempty"`
+	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MaxQueryPerformanceLevel        tfconfig.Variable `json:"max_query_performance_level,omitempty"`
 	QueryThroughputMultiplier       tfconfig.Variable `json:"query_throughput_multiplier,omitempty"`
 	StatementQueuedTimeoutInSeconds tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
 	StatementTimeoutInSeconds       tfconfig.Variable `json:"statement_timeout_in_seconds,omitempty"`
-	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -84,6 +84,11 @@ func (w *WarehouseAdaptiveModel) WithComment(comment string) *WarehouseAdaptiveM
 	return w
 }
 
+func (w *WarehouseAdaptiveModel) WithFullyQualifiedName(fullyQualifiedName string) *WarehouseAdaptiveModel {
+	w.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+	return w
+}
+
 func (w *WarehouseAdaptiveModel) WithMaxQueryPerformanceLevel(maxQueryPerformanceLevel string) *WarehouseAdaptiveModel {
 	w.MaxQueryPerformanceLevel = tfconfig.StringVariable(maxQueryPerformanceLevel)
 	return w
@@ -104,11 +109,6 @@ func (w *WarehouseAdaptiveModel) WithStatementTimeoutInSeconds(statementTimeoutI
 	return w
 }
 
-func (w *WarehouseAdaptiveModel) WithFullyQualifiedName(fullyQualifiedName string) *WarehouseAdaptiveModel {
-	w.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return w
-}
-
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -120,6 +120,11 @@ func (w *WarehouseAdaptiveModel) WithNameValue(value tfconfig.Variable) *Warehou
 
 func (w *WarehouseAdaptiveModel) WithCommentValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
 	w.Comment = value
+	return w
+}
+
+func (w *WarehouseAdaptiveModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
+	w.FullyQualifiedName = value
 	return w
 }
 
@@ -140,10 +145,5 @@ func (w *WarehouseAdaptiveModel) WithStatementQueuedTimeoutInSecondsValue(value 
 
 func (w *WarehouseAdaptiveModel) WithStatementTimeoutInSecondsValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
 	w.StatementTimeoutInSeconds = value
-	return w
-}
-
-func (w *WarehouseAdaptiveModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
-	w.FullyQualifiedName = value
 	return w
 }

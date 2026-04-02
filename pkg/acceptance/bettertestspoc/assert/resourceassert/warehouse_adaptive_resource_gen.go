@@ -42,6 +42,11 @@ func (w *WarehouseAdaptiveResourceAssert) HasComment(expected string) *Warehouse
 	return w
 }
 
+func (w *WarehouseAdaptiveResourceAssert) HasFullyQualifiedName(expected string) *WarehouseAdaptiveResourceAssert {
+	w.StringValueSet("fully_qualified_name", expected)
+	return w
+}
+
 func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevel(expected string) *WarehouseAdaptiveResourceAssert {
 	w.StringValueSet("max_query_performance_level", expected)
 	return w
@@ -62,11 +67,6 @@ func (w *WarehouseAdaptiveResourceAssert) HasStatementTimeoutInSeconds(expected 
 	return w
 }
 
-func (w *WarehouseAdaptiveResourceAssert) HasFullyQualifiedName(expected string) *WarehouseAdaptiveResourceAssert {
-	w.StringValueSet("fully_qualified_name", expected)
-	return w
-}
-
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -81,6 +81,11 @@ func (w *WarehouseAdaptiveResourceAssert) HasCommentString(expected string) *War
 	return w
 }
 
+func (w *WarehouseAdaptiveResourceAssert) HasFullyQualifiedNameString(expected string) *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	return w
+}
+
 func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevelString(expected string) *WarehouseAdaptiveResourceAssert {
 	w.AddAssertion(assert.ValueSet("max_query_performance_level", expected))
 	return w
@@ -91,8 +96,13 @@ func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplierString(exp
 	return w
 }
 
-func (w *WarehouseAdaptiveResourceAssert) HasFullyQualifiedNameString(expected string) *WarehouseAdaptiveResourceAssert {
-	w.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+func (w *WarehouseAdaptiveResourceAssert) HasStatementQueuedTimeoutInSecondsString(expected string) *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", expected))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasStatementTimeoutInSecondsString(expected string) *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", expected))
 	return w
 }
 
@@ -100,8 +110,18 @@ func (w *WarehouseAdaptiveResourceAssert) HasFullyQualifiedNameString(expected s
 // Attribute no value checks //
 ///////////////////////////////
 
+func (w *WarehouseAdaptiveResourceAssert) HasNoName() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("name"))
+	return w
+}
+
 func (w *WarehouseAdaptiveResourceAssert) HasNoComment() *WarehouseAdaptiveResourceAssert {
 	w.AddAssertion(assert.ValueNotSet("comment"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasNoFullyQualifiedName() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
 	return w
 }
 
@@ -112,5 +132,88 @@ func (w *WarehouseAdaptiveResourceAssert) HasNoMaxQueryPerformanceLevel() *Wareh
 
 func (w *WarehouseAdaptiveResourceAssert) HasNoQueryThroughputMultiplier() *WarehouseAdaptiveResourceAssert {
 	w.AddAssertion(assert.ValueNotSet("query_throughput_multiplier"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasNoStatementQueuedTimeoutInSeconds() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("statement_queued_timeout_in_seconds"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasNoStatementTimeoutInSeconds() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueNotSet("statement_timeout_in_seconds"))
+	return w
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (w *WarehouseAdaptiveResourceAssert) HasCommentEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("comment", ""))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasFullyQualifiedNameEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevelEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("max_query_performance_level", ""))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplierEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("query_throughput_multiplier", ""))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasStatementQueuedTimeoutInSecondsEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", ""))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasStatementTimeoutInSecondsEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", ""))
+	return w
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (w *WarehouseAdaptiveResourceAssert) HasNameNotEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValuePresent("name"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasCommentNotEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValuePresent("comment"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasFullyQualifiedNameNotEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevelNotEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValuePresent("max_query_performance_level"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplierNotEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValuePresent("query_throughput_multiplier"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasStatementQueuedTimeoutInSecondsNotEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValuePresent("statement_queued_timeout_in_seconds"))
+	return w
+}
+
+func (w *WarehouseAdaptiveResourceAssert) HasStatementTimeoutInSecondsNotEmpty() *WarehouseAdaptiveResourceAssert {
+	w.AddAssertion(assert.ValuePresent("statement_timeout_in_seconds"))
 	return w
 }
