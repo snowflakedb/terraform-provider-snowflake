@@ -179,8 +179,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasQueryAccelerationMaxScaleFactor(90).
 			HasGeneration(sdk.WarehouseGenerationStandardGen2).
 			HasNoResourceConstraint().
-			HasNoMaxStatementSize().
-			HasNoMaxBurstRateCredits())
+			HasNoMaxQueryPerformanceLevel().
+			HasNoQueryThroughputMultiplier())
 
 		warehouse, err := client.Warehouses.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -200,8 +200,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouse.ResourceConstraint)
 		assert.NotNil(t, warehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *warehouse.Generation)
-		assert.Nil(t, warehouse.MaxStatementSize)
-		assert.Nil(t, warehouse.MaxBurstRateCredits)
+		assert.Nil(t, warehouse.MaxQueryPerformanceLevel)
+		assert.Nil(t, warehouse.QueryThroughputMultiplier)
 
 		// we can also use the read object to initialize:
 		assertThatObject(t, objectassert.WarehouseFromObject(t, warehouse).
@@ -220,8 +220,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasQueryAccelerationMaxScaleFactor(90).
 			HasNoResourceConstraint().
 			HasGeneration(sdk.WarehouseGenerationStandardGen2).
-			HasNoMaxStatementSize().
-			HasNoMaxBurstRateCredits())
+			HasNoMaxQueryPerformanceLevel().
+			HasNoQueryThroughputMultiplier())
 
 		tag1Value, err := client.SystemFunctions.GetTag(ctx, tag.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
 		require.NoError(t, err)
@@ -254,8 +254,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, result.ResourceConstraint)
 		assert.NotNil(t, result.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *result.Generation)
-		assert.Nil(t, result.MaxStatementSize)
-		assert.Nil(t, result.MaxBurstRateCredits)
+		assert.Nil(t, result.MaxQueryPerformanceLevel)
+		assert.Nil(t, result.QueryThroughputMultiplier)
 	})
 
 	t.Run("create: empty comment", func(t *testing.T) {
@@ -289,8 +289,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasNoEnableQueryAcceleration().
 			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxStatementSize(sdk.MaxStatementSizeLarge).
-			HasMaxBurstRateCredits(44),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+			HasQueryThroughputMultiplier(0),
 		)
 		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
 			HasStatementQueuedTimeoutInSeconds(0).
@@ -302,7 +302,8 @@ func TestInt_Warehouses(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateAdaptive(ctx, id, &sdk.CreateAdaptiveWarehouseOptions{
 			Comment:                         sdk.String("test adaptive warehouse"),
-			MaxStatementSize:                sdk.Pointer(sdk.MaxStatementSizeMedium),
+			MaxQueryPerformanceLevel:        sdk.Pointer(sdk.MaxQueryPerformanceLevelMedium),
+			QueryThroughputMultiplier:       sdk.Int(22),
 			StatementQueuedTimeoutInSeconds: sdk.Int(30),
 			StatementTimeoutInSeconds:       sdk.Int(60),
 		})
@@ -323,8 +324,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasNoEnableQueryAcceleration().
 			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxStatementSize(sdk.MaxStatementSizeMedium).
-			HasMaxBurstRateCredits(22),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+			HasQueryThroughputMultiplier(22),
 		)
 		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
 			HasStatementQueuedTimeoutInSeconds(30).
@@ -350,8 +351,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouse.ResourceConstraint)
 		assert.NotNil(t, warehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouse.Generation)
-		assert.Nil(t, warehouse.MaxStatementSize)
-		assert.Nil(t, warehouse.MaxBurstRateCredits)
+		assert.Nil(t, warehouse.MaxQueryPerformanceLevel)
+		assert.Nil(t, warehouse.QueryThroughputMultiplier)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
 			// WarehouseType omitted on purpose - it requires suspending the warehouse (separate test cases)
@@ -388,8 +389,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouseAfterSet.ResourceConstraint)
 		assert.NotNil(t, warehouseAfterSet.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterSet.Generation)
-		assert.Nil(t, warehouseAfterSet.MaxStatementSize)
-		assert.Nil(t, warehouseAfterSet.MaxBurstRateCredits)
+		assert.Nil(t, warehouseAfterSet.MaxQueryPerformanceLevel)
+		assert.Nil(t, warehouseAfterSet.QueryThroughputMultiplier)
 
 		alterOptions = &sdk.AlterWarehouseOptions{
 			// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
@@ -424,8 +425,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
 		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), warehouseAfterUnset.ScalingPolicy)
 		assert.True(t, warehouseAfterUnset.AutoResume)
-		assert.Nil(t, warehouseAfterUnset.MaxStatementSize)
-		assert.Nil(t, warehouseAfterUnset.MaxBurstRateCredits)
+		assert.Nil(t, warehouseAfterUnset.MaxQueryPerformanceLevel)
+		assert.Nil(t, warehouseAfterUnset.QueryThroughputMultiplier)
 	})
 
 	t.Run("alter adaptive: change warehouse type", func(t *testing.T) {
@@ -459,8 +460,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasNoEnableQueryAcceleration().
 			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxStatementSize(sdk.MaxStatementSizeMedium).
-			HasMaxBurstRateCredits(11),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+			HasQueryThroughputMultiplier(0),
 		)
 
 		// Change warehouse type back from adaptive to standard
@@ -484,8 +485,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasEnableQueryAcceleration(false).
 			HasQueryAccelerationMaxScaleFactor(8).
-			HasNoMaxStatementSize().
-			HasNoMaxBurstRateCredits(),
+			HasNoMaxQueryPerformanceLevel().
+			HasNoQueryThroughputMultiplier(),
 		)
 	})
 

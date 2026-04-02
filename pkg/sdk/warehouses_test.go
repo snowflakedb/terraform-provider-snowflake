@@ -85,9 +85,9 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 			OrReplace: Bool(true),
 			name:      NewAccountObjectIdentifier("myadaptivewh"),
 
-			Comment:          String("adaptive warehouse"),
-			MaxStatementSize: Pointer(MaxStatementSizeMedium),
-
+			Comment:                         String("adaptive warehouse"),
+			MaxQueryPerformanceLevel:        Pointer(MaxQueryPerformanceLevelMedium),
+			QueryThroughputMultiplier:       Int(22),
 			StatementQueuedTimeoutInSeconds: Int(30),
 			StatementTimeoutInSeconds:       Int(60),
 			Tag: []TagAssociation{
@@ -101,7 +101,7 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_STATEMENT_SIZE = 'MEDIUM' TAG (%s = 'v1', %s = 'v2') STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60`,
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_QUERY_PERFORMANCE_LEVEL = 'MEDIUM' QUERY_THROUGHPUT_MULTIPLIER = 22 TAG (%s = 'v1', %s = 'v2') STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60`,
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 
@@ -623,25 +623,25 @@ func Test_Warehouse_ToScalingPolicy(t *testing.T) {
 	}
 }
 
-func Test_Warehouse_ToMaxStatementSize(t *testing.T) {
+func Test_Warehouse_ToMaxQueryPerformanceLevel(t *testing.T) {
 	type test struct {
 		input string
-		want  MaxStatementSize
+		want  MaxQueryPerformanceLevel
 	}
 
 	valid := []test{
 		// case insensitive.
-		{input: "medium", want: MaxStatementSizeMedium},
+		{input: "medium", want: MaxQueryPerformanceLevelMedium},
 
 		// Supported Values
-		{input: "XSMALL", want: MaxStatementSizeXSmall},
-		{input: "SMALL", want: MaxStatementSizeSmall},
-		{input: "MEDIUM", want: MaxStatementSizeMedium},
-		{input: "LARGE", want: MaxStatementSizeLarge},
-		{input: "XLARGE", want: MaxStatementSizeXLarge},
-		{input: "XXLARGE", want: MaxStatementSizeXXLarge},
-		{input: "XXXLARGE", want: MaxStatementSizeXXXLarge},
-		{input: "X4LARGE", want: MaxStatementSizeX4Large},
+		{input: "XSMALL", want: MaxQueryPerformanceLevelXSmall},
+		{input: "SMALL", want: MaxQueryPerformanceLevelSmall},
+		{input: "MEDIUM", want: MaxQueryPerformanceLevelMedium},
+		{input: "LARGE", want: MaxQueryPerformanceLevelLarge},
+		{input: "XLARGE", want: MaxQueryPerformanceLevelXLarge},
+		{input: "XXLARGE", want: MaxQueryPerformanceLevelXXLarge},
+		{input: "XXXLARGE", want: MaxQueryPerformanceLevelXXXLarge},
+		{input: "X4LARGE", want: MaxQueryPerformanceLevelX4Large},
 	}
 
 	invalid := []test{
@@ -653,7 +653,7 @@ func Test_Warehouse_ToMaxStatementSize(t *testing.T) {
 
 	for _, tc := range valid {
 		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToMaxStatementSize(tc.input)
+			got, err := ToMaxQueryPerformanceLevel(tc.input)
 			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})
@@ -661,7 +661,7 @@ func Test_Warehouse_ToMaxStatementSize(t *testing.T) {
 
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToMaxStatementSize(tc.input)
+			_, err := ToMaxQueryPerformanceLevel(tc.input)
 			require.Error(t, err)
 		})
 	}

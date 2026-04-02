@@ -387,28 +387,28 @@ func (w *WarehouseAssert) HasGeneration(expected sdk.WarehouseGeneration) *Wareh
 	return w
 }
 
-func (w *WarehouseAssert) HasMaxStatementSize(expected sdk.MaxStatementSize) *WarehouseAssert {
+func (w *WarehouseAssert) HasMaxQueryPerformanceLevel(expected sdk.MaxQueryPerformanceLevel) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.MaxStatementSize == nil {
-			return fmt.Errorf("expected max statement size to have value; got: nil")
+		if o.MaxQueryPerformanceLevel == nil {
+			return fmt.Errorf("expected max query performance level to have value; got: nil")
 		}
-		if *o.MaxStatementSize != expected {
-			return fmt.Errorf("expected max statement size: %v; got: %v", expected, *o.MaxStatementSize)
+		if *o.MaxQueryPerformanceLevel != expected {
+			return fmt.Errorf("expected max query performance level: %v; got: %v", expected, *o.MaxQueryPerformanceLevel)
 		}
 		return nil
 	})
 	return w
 }
 
-func (w *WarehouseAssert) HasMaxBurstRateCredits(expected int) *WarehouseAssert {
+func (w *WarehouseAssert) HasQueryThroughputMultiplier(expected int) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.MaxBurstRateCredits == nil {
-			return fmt.Errorf("expected max burst rate credits to have value; got: nil")
+		if o.QueryThroughputMultiplier == nil {
+			return fmt.Errorf("expected query throughput multiplier to have value; got: nil")
 		}
-		if *o.MaxBurstRateCredits != expected {
-			return fmt.Errorf("expected max burst rate credits: %v; got: %v", expected, *o.MaxBurstRateCredits)
+		if *o.QueryThroughputMultiplier != expected {
+			return fmt.Errorf("expected query throughput multiplier: %v; got: %v", expected, *o.QueryThroughputMultiplier)
 		}
 		return nil
 	})
