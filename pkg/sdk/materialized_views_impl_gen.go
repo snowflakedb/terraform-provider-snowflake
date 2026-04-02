@@ -12,8 +12,10 @@ import (
 
 var _ MaterializedViews = (*materializedViews)(nil)
 
-var _ convertibleRow[MaterializedView] = new(materializedViewDBRow)
-var _ convertibleRow[MaterializedViewDetails] = new(materializedViewDetailsRow)
+var (
+	_ convertibleRow[MaterializedView]        = new(materializedViewDBRow)
+	_ convertibleRow[MaterializedViewDetails] = new(materializedViewDetailsRow)
+)
 
 type materializedViews struct {
 	client *Client

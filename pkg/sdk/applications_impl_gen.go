@@ -10,8 +10,10 @@ import (
 
 var _ Applications = (*applications)(nil)
 
-var _ convertibleRow[Application] = new(applicationRow)
-var _ convertibleRow[ApplicationProperty] = new(applicationPropertyRow)
+var (
+	_ convertibleRow[Application]         = new(applicationRow)
+	_ convertibleRow[ApplicationProperty] = new(applicationPropertyRow)
+)
 
 type applications struct {
 	client *Client
@@ -79,11 +81,9 @@ func (r *CreateApplicationRequest) toOpts() *CreateApplicationOptions {
 		Tag:         r.Tag,
 	}
 	if r.Version != nil {
-		// Manually changed UpgradeVersion -> Version
 		opts.Version = &ApplicationVersion{
 			VersionDirectory: r.Version.VersionDirectory,
 		}
-		// Manually changed UpgradeVersion -> Version
 		if r.Version.VersionAndPatch != nil {
 			opts.Version.VersionAndPatch = &VersionAndPatch{
 				Version: r.Version.VersionAndPatch.Version,

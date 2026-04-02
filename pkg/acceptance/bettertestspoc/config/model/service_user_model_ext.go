@@ -64,3 +64,55 @@ func (u *ServiceUserModel) WithNetworkPolicyId(networkPolicy sdk.AccountObjectId
 func (u *ServiceUserModel) WithDefaultSecondaryRolesOptionEnum(option sdk.SecondaryRolesOption) *ServiceUserModel {
 	return u.WithDefaultSecondaryRolesOption(string(option))
 }
+
+// WIF (Workload Identity Federation) helper methods
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityAws(arn string) *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAwsVariable(arn)
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityGcp(subject string) *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityGcpVariable(subject)
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityAzure(issuer, subject string) *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAzureVariable(issuer, subject)
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityOidc(issuer, subject string, audienceList ...string) *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityOidcVariable(issuer, subject, audienceList...)
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityAwsEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAwsEmpty()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityGcpEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityGcpEmpty()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityAzureEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAzureEmpty()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityOidcEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityOidcEmpty()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityMultipleProviders() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityMultipleProvidersVariable()
+	return u
+}
+
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityEmpty() *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityEmpty()
+	return u
+}

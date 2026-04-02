@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -15,6 +16,7 @@ type TestClient struct {
 	AccountInformation
 
 	Account                      *AccountClient
+	Agent                        *AgentClient
 	AggregationPolicy            *AggregationPolicyClient
 	Alert                        *AlertClient
 	ApiIntegration               *ApiIntegrationClient
@@ -49,6 +51,7 @@ type TestClient struct {
 	Listing                      *ListingClient
 	MaskingPolicy                *MaskingPolicyClient
 	MaterializedView             *MaterializedViewClient
+	McpServer                    *McpServerClient
 	NetworkPolicy                *NetworkPolicyClient
 	NetworkRule                  *NetworkRuleClient
 	Notebook                     *NotebookClient
@@ -73,6 +76,7 @@ type TestClient struct {
 	Share                        *ShareClient
 	SemanticView                 *SemanticViewClient
 	Snapshot                     *SnapshotClient
+	SnowflakeDefaults            *SnowflakeDefaultsClient
 	Stage                        *StageClient
 	StorageIntegration           *StorageIntegrationClient
 	Stream                       *StreamClient
@@ -85,14 +89,23 @@ type TestClient struct {
 	Warehouse                    *WarehouseClient
 }
 
-func NewTestClient(c *sdk.Client, database string, schema string, warehouse string, testObjectSuffix string) *TestClient {
+func NewTestClient(
+	c *sdk.Client,
+	database string,
+	schema string,
+	warehouse string,
+	testObjectSuffix string,
+	snowflakeEnvironment testenvs.SnowflakeEnvironment,
+) *TestClient {
 	context := &TestClientContext{
-		client:           c,
-		database:         database,
-		schema:           schema,
-		warehouse:        warehouse,
-		testObjectSuffix: testObjectSuffix,
+		client:               c,
+		database:             database,
+		schema:               schema,
+		warehouse:            warehouse,
+		testObjectSuffix:     testObjectSuffix,
+		snowflakeEnvironment: snowflakeEnvironment,
 	}
+
 	idsGenerator := NewIdsGenerator(context)
 	return &TestClient{
 		context: context,
@@ -101,6 +114,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		AccountInformation: context.client,
 
 		Account:                      NewAccountClient(context, idsGenerator),
+		Agent:                        NewAgentClient(context, idsGenerator),
 		AggregationPolicy:            NewAggregationPolicyClient(context, idsGenerator),
 		Alert:                        NewAlertClient(context, idsGenerator),
 		ApiIntegration:               NewApiIntegrationClient(context, idsGenerator),
@@ -135,6 +149,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		Listing:                      NewListingClient(context, idsGenerator),
 		MaskingPolicy:                NewMaskingPolicyClient(context, idsGenerator),
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),
+		McpServer:                    NewMcpServerClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
 		NetworkRule:                  NewNetworkRuleClient(context, idsGenerator),
 		Notebook:                     NewNotebookClient(context, idsGenerator),
@@ -155,6 +170,7 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 		SecurityIntegration:          NewSecurityIntegrationClient(context, idsGenerator),
 		SemanticView:                 NewSemanticViewClient(context, idsGenerator),
 		Snapshot:                     NewSnapshotClient(context, idsGenerator),
+		SnowflakeDefaults:            NewSnowflakeDefaultsClient(context),
 		Service:                      NewServiceClient(context, idsGenerator),
 		Sequence:                     NewSequenceClient(context, idsGenerator),
 		SessionPolicy:                NewSessionPolicyClient(context, idsGenerator),
@@ -173,9 +189,10 @@ func NewTestClient(c *sdk.Client, database string, schema string, warehouse stri
 }
 
 type TestClientContext struct {
-	client           *sdk.Client
-	database         string
-	schema           string
-	warehouse        string
-	testObjectSuffix string
+	client               *sdk.Client
+	database             string
+	schema               string
+	warehouse            string
+	testObjectSuffix     string
+	snowflakeEnvironment testenvs.SnowflakeEnvironment
 }

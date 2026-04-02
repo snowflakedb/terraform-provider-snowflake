@@ -5,11 +5,13 @@ package testacc
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -762,7 +764,6 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 		WithWeekOfYearPolicy(1).
 		WithWeekStart(1)
 
-	config.FromModels(t, completeConfigModel)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1013,6 +1014,43 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasUseCachedResultString("false").
 						HasWeekOfYearPolicyString("1").
 						HasWeekStartString("1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_CurrentAccount_migrateFromV2_10_0(t *testing.T) {
+	testClient().EnsureValidNonProdAccountIsUsed(t)
+
+	provider := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.CurrentAccountResource)).
+		WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
+
+	configModel := model.CurrentAccount("test")
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.10.0"),
+				Config:            config.FromModels(t, provider, configModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(configModel.ResourceReference(), "saml_identity_provider", "")),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, provider, configModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckNoResourceAttr(configModel.ResourceReference(), "saml_identity_provider")),
 				),
 			},
 		},

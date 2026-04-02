@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 )
@@ -22,6 +23,7 @@ func IsRunningOnWindows() bool {
 
 // Stat is an os.Stat wrapper.
 func Stat(path string) (os.FileInfo, error) {
+	path = filepath.Clean(path)
 	log.Printf("[DEBUG] Reading the %s file info", path)
 	return os.Stat(path)
 }
@@ -81,6 +83,7 @@ func fileIsSafeToRead(path string, verifyPermissions bool) error {
 }
 
 func readFile(path string) ([]byte, error) {
+	path = filepath.Clean(path)
 	log.Printf("[DEBUG] Reading the %s file", path)
 	return os.ReadFile(path)
 }

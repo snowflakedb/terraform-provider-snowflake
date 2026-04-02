@@ -12,32 +12,16 @@ jobs:
     steps:
       - name: Curl to webhook
         run: |
-          curl --location --request POST '${{ secrets.JIRA_BASE_URL }}/rest/api/2/issue' \
-          --header 'Authorization: Basic ${{ secrets.JIRA_API_TOKEN }}' \
+          curl --fail --location --request POST '${{ secrets.JIRA_WEBHOOK_URL }}' \
+          --header 'X-Automation-Webhook-Token: ${{ secrets.JIRA_WEBHOOK_TOKEN }}' \
           --header 'Content-Type: application/json' \
           --data-raw '{
-              "fields": {
-                "project": {
-                  "key": "${{ secrets.JIRA_PROJECT }}"
-                },
-                "summary": "terraform-provider-snowflake issue ${{ github.event.issue.number }}",
-                "description": "*URL*\n${{ github.event.issue.html_url }}",
-                "issuetype": {
-                  "name": "Task"
-                },       
-                "components": [
-                  {
-                    "id": "${{ secrets.JIRA_COMPONENT }}"
-                  }
-                ],
-                "labels": [${{ secrets.JIRA_LABELS }}],
-                "customfield_11401": {
-                  "id": "${{ secrets.JIRA_AREA }}"
-                },
-                "customfield_10008": "${{ secrets.JIRA_EPIC }}",
-                "assignee": {
-                  "id": "${{ secrets.JIRA_ASSIGNEE }}"
-                }
-              }
+            "issues": [
+              "${{ secrets.JIRA_ISSUES_EPIC }}"
+            ],
+            "data": {
+              "summary": "terraform-provider-snowflake issue ${{ github.event.issue.number }}",
+              "description": "*URL*\n${{ github.event.issue.html_url }}",
+              "parent": "${{ secrets.JIRA_ISSUES_EPIC }}"
             }
           }'

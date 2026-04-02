@@ -17,8 +17,8 @@ type CreateSemanticViewRequest struct {
 	name                      SchemaObjectIdentifier // required
 	logicalTables             []LogicalTableRequest  // required
 	semanticViewRelationships []SemanticViewRelationshipRequest
-	semanticViewFacts         []SemanticExpressionRequest
-	semanticViewDimensions    []SemanticExpressionRequest
+	semanticViewFacts         []FactDefinitionRequest
+	semanticViewDimensions    []DimensionDefinitionRequest
 	semanticViewMetrics       []MetricDefinitionRequest
 	Comment                   *string
 	CopyGrants                *bool
@@ -29,6 +29,7 @@ type AlterSemanticViewRequest struct {
 	name         SchemaObjectIdentifier // required
 	SetComment   *string
 	UnsetComment *bool
+	RenameTo     *SchemaObjectIdentifier
 }
 
 type DropSemanticViewRequest struct {
@@ -111,15 +112,25 @@ type SemanticSqlExpressionRequest struct {
 	SqlExpression string
 }
 
+type FactDefinitionRequest struct {
+	isPrivate          *bool
+	semanticExpression *SemanticExpressionRequest
+}
+
+type DimensionDefinitionRequest struct {
+	semanticExpression *SemanticExpressionRequest
+}
+
 type MetricDefinitionRequest struct {
+	isPrivate                      *bool
 	semanticExpression             *SemanticExpressionRequest
 	windowFunctionMetricDefinition *WindowFunctionMetricDefinitionRequest
 }
 
 type WindowFunctionMetricDefinitionRequest struct {
-	WindowFunction string // required
-	Metric         string // required
-	OverClause     *WindowFunctionOverClauseRequest
+	qualifiedExpressionName *QualifiedExpressionNameRequest // required
+	sqlExpression           *SemanticSqlExpressionRequest   // required
+	OverClause              *WindowFunctionOverClauseRequest
 }
 
 type WindowFunctionOverClauseRequest struct {

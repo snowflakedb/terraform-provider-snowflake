@@ -6,177 +6,248 @@ import (
 )
 
 type SdkObjectDef struct {
-	IdType       string
-	ObjectType   sdk.ObjectType
-	ObjectStruct any
+	IdType             string
+	ObjectStruct       any
+	IsDataSourceOutput bool
 }
 
-// TODO [SNOW-2324252]: remove object type?
 var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeDatabase,
 		ObjectStruct: sdk.Database{},
 	},
 	{
 		IdType:       "sdk.DatabaseObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeSchema,
 		ObjectStruct: sdk.Schema{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeRole,
 		ObjectStruct: sdk.Role{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeConnection,
 		ObjectStruct: sdk.Connection{},
 	},
 	{
 		IdType:       "sdk.DatabaseObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeDatabaseRole,
 		ObjectStruct: sdk.DatabaseRole{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeRowAccessPolicy,
 		ObjectStruct: sdk.RowAccessPolicy{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeUser,
 		ObjectStruct: sdk.User{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeView,
 		ObjectStruct: sdk.View{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeWarehouse,
 		ObjectStruct: sdk.Warehouse{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeResourceMonitor,
 		ObjectStruct: sdk.ResourceMonitor{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeNetworkPolicy,
 		ObjectStruct: sdk.NetworkPolicy{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeMaskingPolicy,
 		ObjectStruct: sdk.MaskingPolicy{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeAuthenticationPolicy,
 		ObjectStruct: sdk.AuthenticationPolicy{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeTask,
 		ObjectStruct: sdk.Task{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeExternalVolume,
 		ObjectStruct: sdk.ExternalVolume{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeSecret,
 		ObjectStruct: sdk.Secret{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeStream,
 		ObjectStruct: sdk.Stream{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeTag,
 		ObjectStruct: sdk.Tag{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeAccount,
 		ObjectStruct: sdk.Account{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifierWithArguments",
-		ObjectType:   sdk.ObjectTypeFunction,
 		ObjectStruct: sdk.Function{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifierWithArguments",
-		ObjectType:   sdk.ObjectTypeProcedure,
 		ObjectStruct: sdk.Procedure{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeImageRepository,
 		ObjectStruct: sdk.ImageRepository{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeComputePool,
 		ObjectStruct: sdk.ComputePool{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeGitRepository,
 		ObjectStruct: sdk.GitRepository{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeService,
 		ObjectStruct: sdk.Service{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeProgrammaticAccessToken,
 		ObjectStruct: sdk.ProgrammaticAccessToken{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeAccount,
 		ObjectStruct: sdk.OrganizationAccount{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeListing,
 		ObjectStruct: sdk.Listing{},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ListingDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeSemanticView,
 		ObjectStruct: sdk.SemanticView{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeStorageIntegration,
 		ObjectStruct: sdk.StorageIntegration{},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.StorageIntegrationAwsDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.StorageIntegrationAzureDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.StorageIntegrationGcsDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeNotebook,
 		ObjectStruct: sdk.Notebook{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeSecurityIntegration,
 		ObjectStruct: sdk.SecurityIntegration{},
 	},
 	{
+		IdType:       "sdk.DatabaseObjectIdentifier",
+		ObjectStruct: sdk.Schema{},
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectType:   sdk.ObjectTypeStreamlit,
 		ObjectStruct: sdk.Streamlit{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.UserWorkloadIdentityAuthenticationMethod{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.Stage{},
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.NetworkRule{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationS3Details{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationGcsDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationAzureDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.StorageLocationS3CompatDetails{},
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.CatalogIntegration{},
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationAwsGlueDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationObjectStorageDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationIcebergRestDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationSapBdcDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.IcebergRestRestConfigDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.OAuthRestAuthenticationDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
+		IsDataSourceOutput: true,
 	},
 }
 
@@ -185,8 +256,9 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 	for idx, d := range allStructs {
 		structDetails := genhelpers.ExtractStructDetails(d.ObjectStruct)
 		allSdkObjectsDetails[idx] = genhelpers.SdkObjectDetails{
-			IdType:        d.IdType,
-			StructDetails: structDetails,
+			IdType:             d.IdType,
+			StructDetails:      structDetails,
+			IsDataSourceOutput: d.IsDataSourceOutput,
 		}
 	}
 	return allSdkObjectsDetails

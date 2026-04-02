@@ -1,7 +1,6 @@
 package resourceshowoutputassert
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -13,7 +12,7 @@ func TagsDatasourceShowOutput(t *testing.T, name string) *TagShowOutputAssert {
 	t.Helper()
 
 	s := TagShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert("data."+name, "show_output", "tags.0."),
+		ResourceAssert: assert.NewDatasourceAssert("data.snowflake_tags."+name, "show_output", "tags.0."),
 	}
 	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &s
@@ -26,8 +25,8 @@ func (s *TagShowOutputAssert) HasCreatedOnNotEmpty() *TagShowOutputAssert {
 
 func (s *TagShowOutputAssert) HasAllowedValues(expected ...string) *TagShowOutputAssert {
 	s.AddAssertion(assert.ResourceShowOutputValueSet("allowed_values.#", strconv.FormatInt(int64(len(expected)), 10)))
-	for i := range expected {
-		s.AddAssertion(assert.ResourceShowOutputValueSet(fmt.Sprintf("allowed_values.%d", i), expected[i]))
+	for _, v := range expected {
+		s.AddAssertion(assert.ResourceShowOutputSetElem("allowed_values", v))
 	}
 	return s
 }

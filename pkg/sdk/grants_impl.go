@@ -102,6 +102,12 @@ func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *grants) RevokePrivilegesFromAccountRoleSafely(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
+	return SafeRevokePrivileges(func() error {
+		return v.RevokePrivilegesFromAccountRole(ctx, privileges, on, role, opts)
+	})
+}
+
 func (v *grants) GrantPrivilegesToDatabaseRole(ctx context.Context, privileges *DatabaseRoleGrantPrivileges, on *DatabaseRoleGrantOn, role DatabaseObjectIdentifier, opts *GrantPrivilegesToDatabaseRoleOptions) error {
 	if opts == nil {
 		opts = &GrantPrivilegesToDatabaseRoleOptions{}
@@ -202,6 +208,12 @@ func (v *grants) RevokePrivilegeFromShare(ctx context.Context, privileges []Obje
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *grants) RevokePrivilegeFromShareSafely(ctx context.Context, privileges []ObjectPrivilege, on *ShareGrantOn, id AccountObjectIdentifier) error {
+	return SafeRevokePrivileges(func() error {
+		return v.RevokePrivilegeFromShare(ctx, privileges, on, id)
+	})
+}
+
 func (v *grants) GrantOwnership(ctx context.Context, on OwnershipGrantOn, to OwnershipGrantTo, opts *GrantOwnershipOptions) error {
 	if opts == nil {
 		opts = &GrantOwnershipOptions{}
@@ -270,7 +282,7 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 				granteeName = granteeName[strings.IndexRune(granteeName, '.')+1:]
 			}
 			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeName)
-		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser}, grant.GrantedTo) {
+		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser, ObjectTypeApplication}, grant.GrantedTo) {
 			id, err := ParseDatabaseObjectIdentifier(granteeNameRaw)
 			if err != nil {
 				return nil, err

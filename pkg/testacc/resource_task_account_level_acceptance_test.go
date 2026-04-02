@@ -343,7 +343,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 		WithUserTaskMinimumTriggerIntervalInSeconds(30).
 		WithUserTaskTimeoutMs(1000).
 		WithAbortDetachedQuery(true).
-		WithAutocommit(false).
+		WithAutocommit(true).
 		WithBinaryInputFormatEnum(sdk.BinaryInputFormatUTF8).
 		WithBinaryOutputFormatEnum(sdk.BinaryOutputFormatBase64).
 		WithClientMemoryLimit(1024).
@@ -372,7 +372,6 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 		WithQuotedIdentifiersIgnoreCase(true).
 		WithRowsPerResultset(2).
 		WithS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-		WithSearchPath("$public, $current").
 		WithStatementQueuedTimeoutInSeconds(10).
 		WithStatementTimeoutInSeconds(10).
 		WithStrictJsonOutput(true).
@@ -437,7 +436,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasUserTaskMinimumTriggerIntervalInSeconds(30).
 						HasUserTaskTimeoutMs(1000).
 						HasAbortDetachedQuery(true).
-						HasAutocommit(false).
+						HasAutocommit(true).
 						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
 						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 						HasClientMemoryLimit(1024).
@@ -466,7 +465,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasQuotedIdentifiersIgnoreCase(true).
 						HasRowsPerResultset(2).
 						HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-						HasSearchPath("$public, $current").
+						HasSearchPath("$current, $public").
 						HasStatementQueuedTimeoutInSeconds(10).
 						HasStatementTimeoutInSeconds(10).
 						HasStrictJsonOutput(true).
@@ -495,7 +494,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasUserTaskMinimumTriggerIntervalInSeconds(30).
 						HasUserTaskTimeoutMs(1000).
 						HasAbortDetachedQuery(true).
-						HasAutocommit(false).
+						HasAutocommit(true).
 						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
 						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 						HasClientMemoryLimit(1024).
@@ -524,7 +523,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasQuotedIdentifiersIgnoreCase(true).
 						HasRowsPerResultset(2).
 						HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-						HasSearchPath("$public, $current").
+						HasSearchPath("$current, $public").
 						HasStatementQueuedTimeoutInSeconds(10).
 						HasStatementTimeoutInSeconds(10).
 						HasStrictJsonOutput(true).
@@ -562,7 +561,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasUserTaskMinimumTriggerIntervalInSeconds(30).
 						HasUserTaskTimeoutMs(1000).
 						HasAbortDetachedQuery(true).
-						HasAutocommit(false).
+						HasAutocommit(true).
 						HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
 						HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 						HasClientMemoryLimit(1024).
@@ -591,7 +590,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 						HasQuotedIdentifiersIgnoreCase(true).
 						HasRowsPerResultset(2).
 						HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-						HasSearchPath("$public, $current").
+						HasSearchPath("$current, $public").
 						HasStatementQueuedTimeoutInSeconds(10).
 						HasStatementTimeoutInSeconds(10).
 						HasStrictJsonOutput(true).

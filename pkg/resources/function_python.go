@@ -105,7 +105,8 @@ func CreateContextFunctionPython(ctx context.Context, d *schema.ResourceData, me
 }
 
 func ReadContextFunctionPython(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -138,7 +139,7 @@ func ReadContextFunctionPython(ctx context.Context, d *schema.ResourceData, meta
 		handleFunctionParameterRead(d, allFunctionDetails.functionParameters),
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.FunctionToSchema(allFunctionDetails.function)}),
-		d.Set(ParametersAttributeName, []map[string]any{schemas.FunctionParametersToSchema(allFunctionDetails.functionParameters)}),
+		d.Set(ParametersAttributeName, []map[string]any{schemas.FunctionParametersToSchema(allFunctionDetails.functionParameters, providerCtx)}),
 	)
 	if errs != nil {
 		return diag.FromErr(err)

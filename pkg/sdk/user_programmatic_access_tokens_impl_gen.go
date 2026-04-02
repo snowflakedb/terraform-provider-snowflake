@@ -11,10 +11,12 @@ import (
 )
 
 // whitespace adjusted manually
-var _ UserProgrammaticAccessTokens = (*userProgrammaticAccessTokens)(nil)
-var _ convertibleRow[AddProgrammaticAccessTokenResult] = new(addProgrammaticAccessTokenResultDBRow)
-var _ convertibleRow[RotateProgrammaticAccessTokenResult] = new(rotateProgrammaticAccessTokenResultDBRow)
-var _ convertibleRow[ProgrammaticAccessToken] = new(programmaticAccessTokenResultDBRow)
+var (
+	_ UserProgrammaticAccessTokens                        = (*userProgrammaticAccessTokens)(nil)
+	_ convertibleRow[AddProgrammaticAccessTokenResult]    = new(addProgrammaticAccessTokenResultDBRow)
+	_ convertibleRow[RotateProgrammaticAccessTokenResult] = new(rotateProgrammaticAccessTokenResultDBRow)
+	_ convertibleRow[ProgrammaticAccessToken]             = new(programmaticAccessTokenResultDBRow)
+)
 
 type userProgrammaticAccessTokens struct {
 	client *Client
@@ -70,11 +72,6 @@ func (v *userProgrammaticAccessTokens) ShowByID(ctx context.Context, userId, id 
 // Adjusted manually to include the user id in the request.
 func (v *userProgrammaticAccessTokens) ShowByIDSafely(ctx context.Context, userId, id AccountObjectIdentifier) (*ProgrammaticAccessToken, error) {
 	return SafeShowProgrammaticAccessTokenByName(v.client, ctx, userId, id)
-}
-
-// added manually
-func (v *userProgrammaticAccessTokens) RemoveByIDSafely(ctx context.Context, request *RemoveUserProgrammaticAccessTokenRequest) error {
-	return SafeRemoveProgrammaticAccessToken(v.client, ctx, request)
 }
 
 func (r *AddUserProgrammaticAccessTokenRequest) toOpts() *AddUserProgrammaticAccessTokenOptions {

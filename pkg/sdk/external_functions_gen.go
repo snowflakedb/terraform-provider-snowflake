@@ -141,11 +141,6 @@ func (v *ExternalFunction) ObjectType() ObjectType {
 	return ObjectTypeExternalFunction
 }
 
-// added manually
-func (v *ExternalFunction) ID() SchemaObjectIdentifierWithArguments {
-	return NewSchemaObjectIdentifierWithArguments(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
-}
-
 // DescribeExternalFunctionOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-function.
 type DescribeExternalFunctionOptions struct {
 	describe bool                                `ddl:"static" sql:"DESCRIBE"`

@@ -10,8 +10,10 @@ import (
 
 var _ SessionPolicies = (*sessionPolicies)(nil)
 
-var _ convertibleRow[SessionPolicy] = new(showSessionPolicyDBRow)
-var _ convertibleRow[SessionPolicyDescription] = new(describeSessionPolicyDBRow)
+var (
+	_ convertibleRow[SessionPolicy]            = new(showSessionPolicyDBRow)
+	_ convertibleRow[SessionPolicyDescription] = new(describeSessionPolicyDBRow)
+)
 
 type sessionPolicies struct {
 	client *Client

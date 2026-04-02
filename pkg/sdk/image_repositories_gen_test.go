@@ -42,9 +42,9 @@ func TestImageRepositories_Create(t *testing.T) {
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
 		comment := random.Comment()
 		tagId := NewAccountObjectIdentifier("tag1")
-		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.Comment = &comment
 		opts.Tag = []TagAssociation{

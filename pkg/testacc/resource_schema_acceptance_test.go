@@ -20,6 +20,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -433,6 +434,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 	t.Cleanup(cleanupDb)
 
 	schemaId := testClient().Ids.NewDatabaseObjectIdentifierInDatabase("PUBLIC", db.ID())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -442,14 +444,14 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 		Steps: []resource.TestStep{
 			// PUBLIC can not be created in v0.93
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            schemaV093(schemaId),
+				Config:            providerConfig + schemaV093(schemaId),
 				ExpectError:       regexp.MustCompile("Error: error creating schema PUBLIC"),
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.0"),
-				Config:            schemaV094WithPipeExecutionPaused(schemaId, true),
+				Config:            providerConfig + schemaV094WithPipeExecutionPaused(schemaId, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_schema.test", "name", schemaId.Name()),
 					resource.TestCheckResourceAttr("snowflake_schema.test", "database", schemaId.DatabaseName()),
@@ -473,7 +475,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 					require.Zero(t, schemas[0].DroppedOn)
 					require.NotZero(t, schemas[1].DroppedOn)
 				},
-				Config: schemaV094WithPipeExecutionPaused(schemaId, false),
+				Config: providerConfig + schemaV094WithPipeExecutionPaused(schemaId, false),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction("snowflake_schema.test", plancheck.ResourceActionUpdate),
@@ -495,6 +497,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_1(t *testing.T) {
 	t.Cleanup(cleanupDb)
 
 	schemaId := testClient().Ids.NewDatabaseObjectIdentifierInDatabase("PUBLIC", db.ID())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -504,9 +507,9 @@ func TestAcc_Schema_ManagePublicVersion_0_94_1(t *testing.T) {
 		Steps: []resource.TestStep{
 			// PUBLIC can not be created in v0.93
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            schemaV093(schemaId),
+				Config:            providerConfig + schemaV093(schemaId),
 				ExpectError:       regexp.MustCompile("Error: error creating schema PUBLIC"),
 			},
 			{
@@ -867,6 +870,7 @@ func checkDatabaseAndSchemaDataRetentionTime(t *testing.T, schemaId sdk.Database
 
 func TestAcc_Schema_migrateFromVersion093WithoutManagedAccess(t *testing.T) {
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_schema.test"
 	resource.Test(t, resource.TestCase{
@@ -876,9 +880,9 @@ func TestAcc_Schema_migrateFromVersion093WithoutManagedAccess(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            schemaV093(id),
+				Config:            providerConfig + schemaV093(id),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "is_managed", "false"),
@@ -902,6 +906,7 @@ func TestAcc_Schema_migrateFromVersion093(t *testing.T) {
 	t.Cleanup(tagCleanup)
 
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_schema.test"
 	resource.Test(t, resource.TestCase{
@@ -911,9 +916,9 @@ func TestAcc_Schema_migrateFromVersion093(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.93.0"),
-				Config:            schemaV093WithIsManagedAndDataRetentionDays(id, tag.ID(), "foo", true, 10),
+				Config:            providerConfig + schemaV093WithIsManagedAndDataRetentionDays(id, tag.ID(), "foo", true, 10),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "is_managed", "true"),
@@ -1000,6 +1005,7 @@ func TestAcc_Schema_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *tes
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
 
 	basicSchemaModel := model.Schema("test", id.DatabaseName(), id.Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1008,9 +1014,9 @@ func TestAcc_Schema_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *tes
 		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            accconfig.FromModels(t, basicSchemaModel),
+				Config:            providerConfig + accconfig.FromModels(t, basicSchemaModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(id)),
 				),
@@ -1033,6 +1039,7 @@ func TestAcc_Schema_IdentifierQuotingDiffSuppression(t *testing.T) {
 	quotedName := fmt.Sprintf(`"%s"`, id.Name())
 
 	basicSchemaModelWithQuotes := model.Schema("test", quotedDatabaseName, quotedName)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1041,10 +1048,10 @@ func TestAcc_Schema_IdentifierQuotingDiffSuppression(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Schema),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             accconfig.FromModels(t, basicSchemaModelWithQuotes),
+				Config:             providerConfig + accconfig.FromModels(t, basicSchemaModelWithQuotes),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicSchemaModelWithQuotes.ResourceReference(), "database", id.DatabaseName()),
 					resource.TestCheckResourceAttr(basicSchemaModelWithQuotes.ResourceReference(), "name", id.Name()),
@@ -1131,6 +1138,93 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 					resource.TestCheckResourceAttr(parameterSet.ResourceReference(), "default_ddl_collation", "en_nz"),
 				),
 				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+// TestAcc_Schema_FailedUpdateStoresCorrectState tests that when an update operation fails
+// (e.g., due to insufficient privileges), the Terraform state correctly stores the actual
+// state of the resource rather than the desired state. This ensures that subsequent plans
+// will correctly show the drift between the stored state and the desired configuration.
+func TestAcc_Schema_FailedUpdateStoresCorrectState(t *testing.T) {
+	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+
+	// Create a secondary role with limited privileges
+	limitedRole, roleCleanup := testClient().Role.CreateRoleGrantedToCurrentUser(t)
+	t.Cleanup(roleCleanup)
+
+	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(
+		t,
+		limitedRole.ID(),
+		id.DatabaseId(),
+		[]sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage},
+		false,
+	)
+
+	schemaWithManagedAccessFalse := model.Schema("test", id.DatabaseName(), id.Name()).WithWithManagedAccess(r.BooleanFalse)
+	schemaWithManagedAccessTrue := model.Schema("test", id.DatabaseName(), id.Name()).WithWithManagedAccess(r.BooleanTrue)
+	grantModel := model.GrantPrivilegesToAccountRole("test", limitedRole.Name).
+		WithOnSchemaName(id).
+		WithPrivileges(string(sdk.SchemaPrivilegeMonitor), string(sdk.SchemaPrivilegeUsage)).
+		WithDependsOn("snowflake_schema.test")
+
+	// Config for creating the schema with the admin role
+	basicConfig := accconfig.FromModels(t, grantModel, schemaWithManagedAccessFalse)
+	configWithLimitedRoleAndEnabledManagedAccess := accconfig.FromModels(t, grantModel, providermodel.SnowflakeProvider().WithRole(limitedRole.Name), schemaWithManagedAccessTrue)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Schema),
+		Steps: []resource.TestStep{
+			{
+				Config: basicConfig,
+				Check: assertThat(t,
+					objectassert.Schema(t, id).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasOptions(""),
+					resourceassert.SchemaResource(t, schemaWithManagedAccessFalse.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasWithManagedAccessString(r.BooleanFalse),
+				),
+			},
+			// Run the operation causing the broken state.
+			{
+				Config:      configWithLimitedRoleAndEnabledManagedAccess,
+				ExpectError: regexp.MustCompile("Insufficient privileges to operate on schema"),
+			},
+			// We want to assert that the managed access in state is false after the update fails. Because of the framework limitations,
+			// we need to do this in a separate step.
+			{
+				RefreshState: true,
+				Check: assertThat(t,
+					resourceassert.SchemaResource(t, "snowflake_schema.test").
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasWithManagedAccessString(r.BooleanFalse),
+				),
+				// The plan is non-empty because the managed access is enabled in the config, but the update failed.
+				ExpectNonEmptyPlan: true,
+			},
+			// We need to use the default role to destroy the resources in the last step.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(schemaWithManagedAccessFalse.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: basicConfig,
+				Check: assertThat(t,
+					resourceassert.SchemaResource(t, "snowflake_schema.test").
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasWithManagedAccessString(r.BooleanFalse),
+				),
 			},
 		},
 	})

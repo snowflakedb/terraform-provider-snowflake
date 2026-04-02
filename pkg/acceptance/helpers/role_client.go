@@ -63,6 +63,24 @@ func (c *RoleClient) CreateRoleGrantedToCurrentUser(t *testing.T) (*sdk.Role, fu
 	return role, roleCleanup
 }
 
+func (c *RoleClient) CreateRoleGrantedToCurrentRole(t *testing.T) (*sdk.Role, func()) {
+	t.Helper()
+	return c.CreateRoleWithIdentifierGrantedToCurrentRole(t, c.ids.RandomAccountObjectIdentifier())
+}
+
+func (c *RoleClient) CreateRoleWithIdentifierGrantedToCurrentRole(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Role, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	role, roleCleanup := c.CreateRoleWithIdentifier(t, id)
+
+	currentRole, err := c.context.client.ContextFunctions.CurrentRole(ctx)
+	require.NoError(t, err)
+
+	c.GrantRoleToRole(t, role.ID(), currentRole)
+	return role, roleCleanup
+}
+
 func (c *RoleClient) CreateRoleWithRequest(t *testing.T, req *sdk.CreateRoleRequest) (*sdk.Role, func()) {
 	t.Helper()
 	ctx := context.Background()
@@ -90,6 +108,16 @@ func (c *RoleClient) GrantRoleToUser(t *testing.T, id sdk.AccountObjectIdentifie
 
 	err := c.client().Grant(ctx, sdk.NewGrantRoleRequest(id, sdk.GrantRole{
 		User: sdk.Pointer(userId),
+	}))
+	require.NoError(t, err)
+}
+
+func (c *RoleClient) GrantRoleToRole(t *testing.T, id sdk.AccountObjectIdentifier, roleId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Grant(ctx, sdk.NewGrantRoleRequest(id, sdk.GrantRole{
+		Role: sdk.Pointer(roleId),
 	}))
 	require.NoError(t, err)
 }

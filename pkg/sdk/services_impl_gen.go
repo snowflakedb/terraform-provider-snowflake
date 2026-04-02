@@ -12,8 +12,10 @@ import (
 
 var _ Services = (*services)(nil)
 
-var _ convertibleRow[Service] = new(servicesRow)
-var _ convertibleRow[ServiceDetails] = new(serviceDescRow)
+var (
+	_ convertibleRow[Service]        = new(servicesRow)
+	_ convertibleRow[ServiceDetails] = new(serviceDescRow)
+)
 
 type services struct {
 	client *Client
@@ -159,7 +161,6 @@ func (r *AlterServiceRequest) toOpts() *AlterServiceOptions {
 		}
 		if r.Set.ExternalAccessIntegrations != nil {
 			opts.Set.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
-				// adjusted manually
 				ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations.ExternalAccessIntegrations,
 			}
 		}

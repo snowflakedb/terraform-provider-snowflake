@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -111,6 +112,13 @@ func TestLoadConfigFileWithInvalidFieldTypeFailsLegacy(t *testing.T) {
 		{name: "WorkloadIdentityProvider", fieldName: "workloadidentityprovider", wantType: "*string"},
 		{name: "WorkloadIdentityEntraResource", fieldName: "workloadidentityentraresource", wantType: "*string"},
 		{name: "EnableSingleUseRefreshTokens", fieldName: "enablesingleuserefreshtokens", wantType: "*bool"},
+		{name: "LogQueryText", fieldName: "logquerytext", wantType: "*bool"},
+		{name: "LogQueryParameters", fieldName: "logqueryparameters", wantType: "*bool"},
+		{name: "ProxyHost", fieldName: "proxyhost", wantType: "*string"},
+		{name: "ProxyUser", fieldName: "proxyuser", wantType: "*string"},
+		{name: "ProxyPassword", fieldName: "proxypassword", wantType: "*string"},
+		{name: "ProxyProtocol", fieldName: "proxyprotocol", wantType: "*string"},
+		{name: "NoProxy", fieldName: "noproxy", wantType: "*string"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -139,6 +147,7 @@ func TestLoadConfigFileWithInvalidFieldTypeIntFailsLegacy(t *testing.T) {
 		{name: "JwtExpireTimeout", fieldName: "jwtexpiretimeout"},
 		{name: "ExternalBrowserTimeout", fieldName: "externalbrowsertimeout"},
 		{name: "MaxRetryCount", fieldName: "maxretrycount"},
+		{name: "ProxyPort", fieldName: "proxyport"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s has to have a correct type", tt.name), func(t *testing.T) {
@@ -270,7 +279,15 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithOauthScope("oauth_scope").
 			WithWorkloadIdentityProvider("workload_identity_provider").
 			WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
-			WithEnableSingleUseRefreshTokens(true),
+			WithEnableSingleUseRefreshTokens(true).
+			WithLogQueryText(true).
+			WithLogQueryParameters(true).
+			WithProxyHost("proxy.example.com").
+			WithProxyPort(443).
+			WithProxyUser("username").
+			WithProxyPassword("****").
+			WithProxyProtocol("https").
+			WithNoProxy("localhost,snowflake.computing.com"),
 	})
 	bytes, err := cfg.MarshalToml()
 	require.NoError(t, err)
@@ -298,9 +315,8 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, "password", config.Password)
 		assert.Equal(t, "warehouse", config.Warehouse)
 		assert.Equal(t, "role", config.Role)
-		assert.Equal(t, map[string]*string{"foo": Pointer("bar")}, config.Params)
+		assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, config.Params)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ValidateDefaultParameters)
-		assert.Equal(t, "1.1.1.1", config.ClientIP.String())
 		assert.Equal(t, "http", config.Protocol)
 		assert.Equal(t, "host", config.Host)
 		assert.Equal(t, 1, config.Port)
@@ -315,12 +331,10 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, 50*time.Second, config.JWTExpireTimeout)
 		assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 		assert.Equal(t, 1, config.MaxRetryCount)
-		assert.True(t, config.InsecureMode) //nolint:staticcheck
 		assert.Equal(t, "token", config.Token)
 		assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
-		assert.True(t, config.KeepSessionAlive)
+		assert.True(t, config.ServerSessionKeepAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
-		assert.True(t, config.DisableTelemetry)
 		assert.Equal(t, string(DriverLogLevelTrace), config.Tracing)
 		assert.Equal(t, ".", config.TmpDirPath)
 		assert.Equal(t, gosnowflake.ConfigBoolTrue, config.ClientRequestMfaToken)
@@ -338,6 +352,14 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 		assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 		assert.True(t, config.EnableSingleUseRefreshTokens)
+		assert.True(t, config.LogQueryText)
+		assert.True(t, config.LogQueryParameters)
+		assert.Equal(t, "proxy.example.com", config.ProxyHost)
+		assert.Equal(t, 443, config.ProxyPort)
+		assert.Equal(t, "username", config.ProxyUser)
+		assert.Equal(t, "****", config.ProxyPassword)
+		assert.Equal(t, "https", config.ProxyProtocol)
+		assert.Equal(t, "localhost,snowflake.computing.com", config.NoProxy)
 	})
 
 	t.Run("with not found profile", func(t *testing.T) {
@@ -445,7 +467,15 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				WithOauthScope("oauth_scope").
 				WithWorkloadIdentityProvider("workload_identity_provider").
 				WithWorkloadIdentityEntraResource("workload_identity_entra_resource").
-				WithEnableSingleUseRefreshTokens(true),
+				WithEnableSingleUseRefreshTokens(true).
+				WithLogQueryText(true).
+				WithLogQueryParameters(true).
+				WithProxyHost("proxy.example.com").
+				WithProxyPort(443).
+				WithProxyUser("username").
+				WithProxyPassword("****").
+				WithProxyProtocol("https").
+				WithNoProxy("localhost,snowflake.computing.com"),
 			expected: func(t *testing.T, got gosnowflake.Config, err error) {
 				t.Helper()
 				require.NoError(t, err)
@@ -455,8 +485,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "host", got.Host)
 				assert.Equal(t, "wh", got.Warehouse)
 				assert.Equal(t, "role", got.Role)
-				assert.Equal(t, map[string]*string{"foo": Pointer("bar")}, got.Params)
-				assert.Equal(t, "1.2.3.4", got.ClientIP.String())
+				assert.Equal(t, map[string]*string{"foo": Pointer("bar"), ClientTelemetryEnableSessionParameter: Pointer("false")}, got.Params)
 				assert.Equal(t, "https", got.Protocol)
 				assert.Equal(t, "code", got.Passcode)
 				assert.Equal(t, 1234, got.Port)
@@ -470,11 +499,9 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, 60*time.Second, got.ExternalBrowserTimeout)
 				assert.Equal(t, 2, got.MaxRetryCount)
 				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
-				assert.True(t, got.InsecureMode) // nolint:staticcheck
 				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
 				assert.Equal(t, "token", got.Token)
-				assert.True(t, got.KeepSessionAlive)
-				assert.True(t, got.DisableTelemetry)
+				assert.True(t, got.ServerSessionKeepAlive)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ValidateDefaultParameters)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientRequestMfaToken)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientStoreTemporaryCredential)
@@ -492,6 +519,14 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, "workload_identity_provider", got.WorkloadIdentityProvider)
 				assert.Equal(t, "workload_identity_entra_resource", got.WorkloadIdentityEntraResource)
 				assert.True(t, got.EnableSingleUseRefreshTokens)
+				assert.True(t, got.LogQueryText)
+				assert.True(t, got.LogQueryParameters)
+				assert.Equal(t, "proxy.example.com", got.ProxyHost)
+				assert.Equal(t, 443, got.ProxyPort)
+				assert.Equal(t, "username", got.ProxyUser)
+				assert.Equal(t, "****", got.ProxyPassword)
+				assert.Equal(t, "https", got.ProxyProtocol)
+				assert.Equal(t, "localhost,snowflake.computing.com", got.NoProxy)
 				gotKey, err := x509.MarshalPKCS8PrivateKey(got.PrivateKey)
 				require.NoError(t, err)
 				gotUnencryptedKey := pem.EncodeToMemory(
@@ -541,6 +576,84 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := tt.input.DriverConfig()
 			require.ErrorContains(t, err, tt.err.Error())
+		})
+	}
+}
+
+func TestLegacyConfigDTODriverConfig_insecureModeAndDisableOcspChecks(t *testing.T) {
+	tests := []struct {
+		insecureMode      *bool
+		disableOcspChecks *bool
+		expected          bool
+	}{
+		{
+			insecureMode:      nil,
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      nil,
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: nil,
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: nil,
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(false),
+			expected:          false,
+		},
+		{
+			insecureMode:      Pointer(false),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(false),
+			expected:          true,
+		},
+		{
+			insecureMode:      Pointer(true),
+			disableOcspChecks: Pointer(true),
+			expected:          true,
+		},
+	}
+
+	boolPtrToString := func(b *bool) string {
+		if b != nil {
+			return strconv.FormatBool(*b)
+		}
+		return "nil"
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("insecure mode: %s, disableOcspChecks: %s, expected: %v", boolPtrToString(tt.insecureMode), boolPtrToString(tt.disableOcspChecks), tt.expected), func(t *testing.T) {
+			cfg := NewLegacyConfigDTO()
+			if tt.insecureMode != nil {
+				cfg = cfg.WithInsecureMode(*tt.insecureMode)
+			}
+			if tt.disableOcspChecks != nil {
+				cfg = cfg.WithDisableOCSPChecks(*tt.disableOcspChecks)
+			}
+
+			got, err := cfg.DriverConfig()
+
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, got.DisableOCSPChecks)
 		})
 	}
 }

@@ -127,6 +127,17 @@ func attributeMappedValueCreateBuilder[InputType any, MappedType any, RequestBui
 	return nil
 }
 
+func attributeMappedValueCreateBuilderNested[MappedType any, RequestBuilder any](d *schema.ResourceData, key string, setValue func(MappedType) RequestBuilder, mapper func(*schema.ResourceData) (MappedType, error)) error {
+	if _, ok := d.GetOk(key); ok {
+		value, err := mapper(d)
+		if err != nil {
+			return err
+		}
+		setValue(value)
+	}
+	return nil
+}
+
 func copyGrantsAttributeCreate(d *schema.ResourceData, isOrReplace bool, orReplaceField, copyGrantsField **bool) error {
 	if isOrReplace {
 		*orReplaceField = sdk.Bool(true)

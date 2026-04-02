@@ -28,6 +28,116 @@ func ImportedFunctionPythonResource(t *testing.T, id string) *FunctionPythonReso
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (f *FunctionPythonResourceAssert) HasDatabase(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("database", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasSchema(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("schema", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasName(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("name", expected)
+	return f
+}
+
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
+
+func (f *FunctionPythonResourceAssert) HasComment(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("comment", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasEnableConsoleOutput(expected bool) *FunctionPythonResourceAssert {
+	f.BoolValueSet("enable_console_output", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasExternalAccessIntegrations(expected ...string) *FunctionPythonResourceAssert {
+	f.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFullyQualifiedName(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("fully_qualified_name", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFunctionDefinition(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("function_definition", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasFunctionLanguage(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("function_language", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasHandler(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("handler", expected)
+	return f
+}
+
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
+
+func (f *FunctionPythonResourceAssert) HasIsAggregate(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("is_aggregate", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasIsSecure(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("is_secure", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasLogLevel(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("log_level", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasMetricLevel(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("metric_level", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasNullInputBehavior(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("null_input_behavior", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasPackages(expected ...string) *FunctionPythonResourceAssert {
+	f.SetContainsExactlyStringValues("packages", expected...)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasReturnResultsBehavior(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("return_results_behavior", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasReturnType(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("return_type", expected)
+	return f
+}
+
+func (f *FunctionPythonResourceAssert) HasRuntimeVersion(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("runtime_version", expected)
+	return f
+}
+
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
+
+func (f *FunctionPythonResourceAssert) HasTraceLevel(expected string) *FunctionPythonResourceAssert {
+	f.StringValueSet("trace_level", expected)
+	return f
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,11 +157,6 @@ func (f *FunctionPythonResourceAssert) HasNameString(expected string) *FunctionP
 	return f
 }
 
-func (f *FunctionPythonResourceAssert) HasArgumentsString(expected string) *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueSet("arguments", expected))
-	return f
-}
-
 func (f *FunctionPythonResourceAssert) HasCommentString(expected string) *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueSet("comment", expected))
 	return f
@@ -59,11 +164,6 @@ func (f *FunctionPythonResourceAssert) HasCommentString(expected string) *Functi
 
 func (f *FunctionPythonResourceAssert) HasEnableConsoleOutputString(expected string) *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueSet("enable_console_output", expected))
-	return f
-}
-
-func (f *FunctionPythonResourceAssert) HasExternalAccessIntegrationsString(expected string) *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueSet("external_access_integrations", expected))
 	return f
 }
 
@@ -84,11 +184,6 @@ func (f *FunctionPythonResourceAssert) HasFunctionLanguageString(expected string
 
 func (f *FunctionPythonResourceAssert) HasHandlerString(expected string) *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueSet("handler", expected))
-	return f
-}
-
-func (f *FunctionPythonResourceAssert) HasImportsString(expected string) *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueSet("imports", expected))
 	return f
 }
 
@@ -117,11 +212,6 @@ func (f *FunctionPythonResourceAssert) HasNullInputBehaviorString(expected strin
 	return f
 }
 
-func (f *FunctionPythonResourceAssert) HasPackagesString(expected string) *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueSet("packages", expected))
-	return f
-}
-
 func (f *FunctionPythonResourceAssert) HasReturnResultsBehaviorString(expected string) *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueSet("return_results_behavior", expected))
 	return f
@@ -134,11 +224,6 @@ func (f *FunctionPythonResourceAssert) HasReturnTypeString(expected string) *Fun
 
 func (f *FunctionPythonResourceAssert) HasRuntimeVersionString(expected string) *FunctionPythonResourceAssert {
 	f.AddAssertion(assert.ValueSet("runtime_version", expected))
-	return f
-}
-
-func (f *FunctionPythonResourceAssert) HasSecretsString(expected string) *FunctionPythonResourceAssert {
-	f.AddAssertion(assert.ValueSet("secrets", expected))
 	return f
 }
 

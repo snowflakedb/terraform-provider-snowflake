@@ -76,11 +76,6 @@ resource "snowflake_table" "table" {
     type    = "VARIANT"
     comment = "extra data"
   }
-
-  primary_key {
-    name = "my_key"
-    keys = ["data"]
-  }
 }
 ```
 

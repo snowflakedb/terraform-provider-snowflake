@@ -1,7 +1,6 @@
 package schemas
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -58,14 +57,4 @@ func init() {
 	for _, param := range accountParameters {
 		ShowAccountParametersSchema[strings.ToLower(string(param))] = ParameterListSchema
 	}
-}
-
-func AccountParametersToSchema(parameters []*sdk.Parameter) map[string]any {
-	accountParametersValue := make(map[string]any)
-	for _, param := range parameters {
-		if slices.Contains(accountParameters, sdk.AccountParameter(param.Key)) {
-			accountParametersValue[strings.ToLower(param.Key)] = []map[string]any{ParameterToSchema(param)}
-		}
-	}
-	return accountParametersValue
 }

@@ -1,8 +1,0 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.Field*/ -}}
-
-{{- template "validationTest" . -}}
-{{ range .Fields }}
-    {{- if .HasAnyValidationInSubtree }}
-        {{- template "validationTests" . -}}{{/* Recursive call */}}
-    {{ end -}}
-{{- end -}}

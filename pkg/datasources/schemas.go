@@ -134,7 +134,8 @@ func Schemas() *schema.Resource {
 }
 
 func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	var opts sdk.ShowSchemaOptions
 
 	if likePattern, ok := d.GetOk("like"); ok {
@@ -209,7 +210,7 @@ func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			schemaParameters = []map[string]any{resourceschemas.SchemaParametersToSchema(parameters)}
+			schemaParameters = []map[string]any{resourceschemas.SchemaParametersToSchema(parameters, providerCtx)}
 		}
 
 		flattenedSchemas[i] = map[string]any{

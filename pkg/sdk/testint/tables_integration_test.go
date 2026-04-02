@@ -94,6 +94,30 @@ func TestInt_Table(t *testing.T) {
 		assertTable(t, table, id)
 	})
 
+	t.Run("create table: DECFLOAT", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("FIRST_COLUMN", sdk.DataTypeNumber).WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(1, 1))),
+			*sdk.NewTableColumnRequest("SECOND_COLUMN", datatypes.DecfloatLegacyDataType),
+		}
+
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, columns))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(id))
+
+		table, err := client.Tables.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		assertTable(t, table, id)
+
+		returnedTableColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
+		expectedColumns := []expectedColumn{
+			{"FIRST_COLUMN", sdk.DataTypeNumber},
+			{"SECOND_COLUMN", datatypes.DecfloatLegacyDataType},
+		}
+		assertColumns(t, expectedColumns, returnedTableColumns)
+	})
+
 	t.Run("create table: complete optionals", func(t *testing.T) {
 		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicy(t)
 		t.Cleanup(maskingPolicyCleanup)
@@ -128,14 +152,14 @@ func TestInt_Table(t *testing.T) {
 				WithMatch(sdk.Pointer(sdk.FullMatchType)).
 				WithOn(sdk.NewForeignKeyOnAction().
 					WithOnDelete(sdk.Pointer(sdk.ForeignKeySetNullAction)).WithOnUpdate(sdk.Pointer(sdk.ForeignKeyRestrictAction))))
-		stageFileFormat := sdk.NewStageFileFormatRequest().
+		stageFileFormat := sdk.NewLegacyFileFormatRequest().
 			WithFileFormatType(sdk.FileFormatTypeCSV).
 			WithOptions(*sdk.NewFileFormatTypeOptionsRequest().WithCSVCompression(sdk.Pointer(sdk.CSVCompressionAuto)))
-		stageCopyOptions := sdk.NewStageCopyOptionsRequest().WithOnError(*sdk.NewStageCopyOnErrorOptionsRequest().WithSkipFile())
+		legacyTableCopyOptions := sdk.NewLegacyTableCopyOptionsRequest().WithOnError(*sdk.NewLegacyTableCopyOnErrorOptionsRequest().WithSkipFile())
 		request := sdk.NewCreateTableRequest(id, columns).
 			WithOutOfLineConstraint(*outOfLineConstraint).
 			WithStageFileFormat(*stageFileFormat).
-			WithStageCopyOptions(*stageCopyOptions).
+			WithStageCopyOptions(*legacyTableCopyOptions).
 			WithComment(&comment).
 			WithDataRetentionTimeInDays(sdk.Int(30)).
 			WithMaxDataExtensionTimeInDays(sdk.Int(30))
@@ -814,17 +838,17 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupTableProvider(id))
 
-		stageFileFormats := sdk.StageFileFormatRequest{
+		stageFileFormats := sdk.LegacyFileFormatRequest{
 			FileFormatType: sdk.Pointer(sdk.FileFormatTypeCSV),
 		}
-		stageCopyOptions := sdk.StageCopyOptionsRequest{
-			OnError: sdk.NewStageCopyOnErrorOptionsRequest().WithSkipFile(),
+		legacyTableCopyOptions := sdk.LegacyTableCopyOptionsRequest{
+			OnError: sdk.NewLegacyTableCopyOnErrorOptionsRequest().WithSkipFile(),
 		}
 		alterRequest := sdk.NewAlterTableRequest(id).
 			WithSet(sdk.NewTableSetRequest().
 				WithEnableSchemaEvolution(sdk.Bool(true)).
 				WithStageFileFormat(stageFileFormats).
-				WithStageCopyOptions(stageCopyOptions).
+				WithLegacyTableCopyOptions(legacyTableCopyOptions).
 				WithDataRetentionTimeInDays(sdk.Int(30)).
 				WithMaxDataExtensionTimeInDays(sdk.Int(90)).
 				WithChangeTracking(sdk.Bool(false)).

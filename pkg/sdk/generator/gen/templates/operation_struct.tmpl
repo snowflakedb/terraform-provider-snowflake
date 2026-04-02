@@ -1,0 +1,9 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Operation*/ -}}
+
+// {{ .OptsField.KindNoPtr }} is based on {{ .Doc }}.
+type {{ .OptsField.KindNoPtr }} struct {
+{{- range .OptsField.Fields }}
+    {{ .Name }} {{ .Kind }} {{ .TagsPrintable }}
+{{- end }}
+}
+

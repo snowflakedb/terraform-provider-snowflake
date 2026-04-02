@@ -13,8 +13,10 @@ import (
 
 var _ Procedures = (*procedures)(nil)
 
-var _ convertibleRow[Procedure] = new(procedureRow)
-var _ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
+var (
+	_ convertibleRow[Procedure]       = new(procedureRow)
+	_ convertibleRow[ProcedureDetail] = new(procedureDetailRow)
+)
 
 type procedures struct {
 	client *Client
@@ -611,7 +613,6 @@ func (r *CreateAndCallForJavaProcedureRequest) toOpts() *CreateAndCallForJavaPro
 	}
 	if r.WithClause != nil {
 		opts.WithClause = &ProcedureWithClause{
-			// adjusted manually
 			CteName:    r.WithClause.CteName,
 			CteColumns: r.WithClause.CteColumns,
 			Statement:  r.WithClause.Statement,

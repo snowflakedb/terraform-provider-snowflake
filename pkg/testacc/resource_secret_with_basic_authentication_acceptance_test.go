@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -18,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
@@ -186,16 +186,18 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Destroy - ensure secret is destroyed before the next step
+			// Destroy
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
-					invokeactionassert.SecretDoesNotExist(t, id),
-				),
 			},
 			// Create - with optionals
 			{
+				PreConfig: func() {
+					// ensure secret is destroyed before the moving forward
+					_, err := testClient().Secret.Show(t, id)
+					require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),

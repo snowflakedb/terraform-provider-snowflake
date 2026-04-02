@@ -5,7 +5,6 @@
 package testacc
 
 import (
-	"bytes"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -20,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -265,7 +265,7 @@ func TestAcc_Task_UpdatesInComplexDAG(t *testing.T) {
 						HasSchemaString(child3Id.SchemaName()).
 						HasNameString(child3Id.Name()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(child1.ID(), child2.ID()).
+						HasAfterIdentifier(child1.ID(), child2.ID()).
 						HasSqlStatementString("SELECT 1"),
 					resourceshowoutputassert.TaskShowOutput(t, basicConfigModel.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -287,7 +287,7 @@ func TestAcc_Task_UpdatesInComplexDAG(t *testing.T) {
 						HasNameString(child3Id.Name()).
 						HasStartedString(r.BooleanTrue).
 						HasCommentString(comment).
-						HasAfter(child1.ID(), child2.ID()).
+						HasAfterIdentifier(child1.ID(), child2.ID()).
 						HasSqlStatementString("SELECT 123"),
 					resourceshowoutputassert.TaskShowOutput(t, basicConfigModelAfterUpdate.ResourceReference()).
 						HasCreatedOnNotEmpty().
@@ -786,6 +786,192 @@ func TestAcc_Task_CronAndMinutes(t *testing.T) {
 	})
 }
 
+func TestAcc_Task_Seconds(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	seconds := 30
+	basic := model.TaskWithId("test", id, false, "SELECT 1")
+	configModelWithSeconds := model.TaskWithId("test", id, true, "SELECT 1").WithScheduleSeconds(seconds)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// create with seconds
+			{
+				Config: config.FromModels(t, configModelWithSeconds),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithSeconds.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleSeconds(seconds).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithSeconds.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleSeconds(seconds),
+				),
+			},
+			// Unset schedule (from seconds)
+			{
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, basic.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasNoScheduleSet().
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, basic.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleEmpty(),
+				),
+			},
+			// Change back to seconds
+			{
+				Config: config.FromModels(t, configModelWithSeconds),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithSeconds.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleSeconds(seconds).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithSeconds.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleSeconds(seconds),
+				),
+			},
+			// External changes detection - alter task externally with different schedule type
+			{
+				PreConfig: func() {
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSuspend(true))
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().WithSchedule("30 MINUTES")))
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithResume(true))
+				},
+				Config: config.FromModels(t, configModelWithSeconds),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithSeconds.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleSeconds(seconds).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithSeconds.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleSeconds(seconds),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_Hours(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	hours := 2
+	basic := model.TaskWithId("test", id, false, "SELECT 1")
+	configModelWithHours := model.TaskWithId("test", id, true, "SELECT 1").WithScheduleHours(hours)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// create with hours
+			{
+				Config: config.FromModels(t, configModelWithHours),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleHours(hours).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithHours.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleHours(hours),
+				),
+			},
+			// Unset schedule (from hours)
+			{
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, basic.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasNoScheduleSet().
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, basic.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleEmpty(),
+				),
+			},
+			// Change back to hours
+			{
+				Config: config.FromModels(t, configModelWithHours),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleHours(hours).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithHours.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleHours(hours),
+				),
+			},
+			// External changes detection - alter task externally with different schedule type
+			{
+				PreConfig: func() {
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSuspend(true))
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().WithSchedule("30 SECONDS")))
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithResume(true))
+				},
+				Config: config.FromModels(t, configModelWithHours),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithHours.ResourceReference()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanTrue).
+						HasScheduleHours(hours).
+						HasSqlStatementString("SELECT 1"),
+					resourceshowoutputassert.TaskShowOutput(t, configModelWithHours.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasScheduleHours(hours),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	minutes := 5
@@ -937,6 +1123,14 @@ func TestAcc_Task_CronAndMinutes_ExternalChanges(t *testing.T) {
 func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
+	taskConfigInvalidScheduleNegativeSeconds := model.TaskWithId("test", id, false, "SELECT 1").WithScheduleSeconds(0)
+	taskConfigInvalidScheduleNegativeMinutes := model.TaskWithId("test", id, false, "SELECT 1").WithScheduleMinutes(0)
+	taskConfigInvalidScheduleNegativeHours := model.TaskWithId("test", id, false, "SELECT 1").WithScheduleHours(0)
+	taskConfigWithEmptySchedule := model.TaskWithId("test", id, false, "SELECT 1").WithEmptySchedule()
+	taskConfigWithMultipleSchedules := model.TaskWithId("test", id, false, "SELECT 1").WithMultipleSchedules()
+	taskConfigWithEmptyTargetCompletionInterval := model.TaskWithId("test", id, false, "SELECT 1").WithEmptyTargetCompletionInterval()
+	taskConfigWithMultipleTargetCompletionIntervalValue := model.TaskWithId("test", id, false, "SELECT 1").WithMultipleTargetCompletionIntervalValue()
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -945,38 +1139,35 @@ func TestAcc_Task_ScheduleSchemaValidation(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			{
-				Config:      taskConfigInvalidScheduleSetMultipleOrEmpty(id, true),
-				ExpectError: regexp.MustCompile("\"schedule.0.minutes\": only one of `schedule.0.minutes,schedule.0.using_cron`"),
+				Config:      config.FromModels(t, taskConfigInvalidScheduleNegativeSeconds),
+				ExpectError: regexp.MustCompile(`expected seconds to be at least \(1\), got 0`),
 			},
 			{
-				Config:      taskConfigInvalidScheduleSetMultipleOrEmpty(id, false),
-				ExpectError: regexp.MustCompile("\"schedule.0.minutes\": one of `schedule.0.minutes,schedule.0.using_cron`"),
+				Config:      config.FromModels(t, taskConfigInvalidScheduleNegativeMinutes),
+				ExpectError: regexp.MustCompile(`expected minutes to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigInvalidScheduleNegativeHours),
+				ExpectError: regexp.MustCompile(`expected hours to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigWithEmptySchedule),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigWithMultipleSchedules),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigWithEmptyTargetCompletionInterval),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
+			},
+			{
+				Config:      config.FromModels(t, taskConfigWithMultipleTargetCompletionIntervalValue),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
 			},
 		},
 	})
-}
-
-func taskConfigInvalidScheduleSetMultipleOrEmpty(id sdk.SchemaObjectIdentifier, setMultiple bool) string {
-	var scheduleString string
-	scheduleBuffer := new(bytes.Buffer)
-	scheduleBuffer.WriteString("schedule {\n")
-	if setMultiple {
-		scheduleBuffer.WriteString("minutes = 10\n")
-		scheduleBuffer.WriteString("using_cron = \"*/5 * * * * UTC\"\n")
-	}
-	scheduleBuffer.WriteString("}\n")
-	scheduleString = scheduleBuffer.String()
-
-	return fmt.Sprintf(`
-resource "snowflake_task" "test" {
-	database = "%[1]s"
-	schema = "%[2]s"
-	name = "%[3]s"
-	started = false
-	sql_statement = "SELECT 1"
-
-	%[4]s
-}`, id.DatabaseName(), id.SchemaName(), id.Name(), scheduleString)
 }
 
 func TestAcc_Task_Enabled(t *testing.T) {
@@ -1092,7 +1283,7 @@ func TestAcc_Task_ConvertStandaloneTaskToSubtask(t *testing.T) {
 						HasScheduleMinutes(5).
 						HasState(sdk.TaskStateStarted),
 					resourceassert.TaskResource(t, childTaskModel.ResourceReference()).
-						HasAfter(id).
+						HasAfterIdentifier(id).
 						HasStartedString(r.BooleanTrue),
 					resourceshowoutputassert.TaskShowOutput(t, childTaskModel.ResourceReference()).
 						HasPredecessors(id).
@@ -1281,7 +1472,7 @@ func TestAcc_Task_SwitchScheduledWithAfter(t *testing.T) {
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
 						HasNoScheduleSet().
-						HasAfter(rootId).
+						HasAfterIdentifier(rootId).
 						HasSuspendTaskAfterNumFailuresString("10"),
 				),
 			},
@@ -1356,7 +1547,7 @@ func TestAcc_Task_WithAfter(t *testing.T) {
 						HasScheduleMinutes(schedule),
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId),
+						HasAfterIdentifier(rootId),
 				),
 			},
 			{
@@ -1424,7 +1615,7 @@ func TestAcc_Task_WithAfter_issue4001(t *testing.T) {
 				ExpectNonEmptyPlan:       true,
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
-						HasAfter(rootId),
+						HasAfterIdentifier(rootId),
 				),
 			},
 		},
@@ -1661,7 +1852,7 @@ func TestAcc_Task_UpdateAfterExternally(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId),
+						HasAfterIdentifier(rootId),
 					resourceshowoutputassert.TaskShowOutput(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasState(sdk.TaskStateStarted).
 						HasTaskRelations(sdk.TaskRelations{Predecessors: []sdk.SchemaObjectIdentifier{rootId}}),
@@ -1684,7 +1875,7 @@ func TestAcc_Task_UpdateAfterExternally(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TaskResource(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId),
+						HasAfterIdentifier(rootId),
 					resourceshowoutputassert.TaskShowOutput(t, childTaskConfigModelWithAfter.ResourceReference()).
 						HasState(sdk.TaskStateStarted).
 						HasTaskRelations(sdk.TaskRelations{Predecessors: []sdk.SchemaObjectIdentifier{rootId}}),
@@ -1746,7 +1937,7 @@ func TestAcc_Task_issue2207(t *testing.T) {
 						HasScheduleMinutes(schedule),
 					resourceassert.TaskResource(t, childTaskConfigModel.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId).
+						HasAfterIdentifier(rootId).
 						HasCommentString("abc"),
 				),
 			},
@@ -1765,7 +1956,7 @@ func TestAcc_Task_issue2207(t *testing.T) {
 						HasScheduleMinutes(schedule),
 					resourceassert.TaskResource(t, childTaskConfigModelWithDifferentComment.ResourceReference()).
 						HasStartedString(r.BooleanTrue).
-						HasAfter(rootId).
+						HasAfterIdentifier(rootId).
 						HasCommentString("def"),
 				),
 			},
@@ -1840,6 +2031,7 @@ func TestAcc_Task_issue3113(t *testing.T) {
 		WithScheduleMinutes(schedule).
 		WithSqlStatement(statement).
 		WithErrorIntegration(errorNotificationIntegration.ID().Name())
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1848,9 +2040,9 @@ func TestAcc_Task_issue3113(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.97.0"),
-				Config:            taskConfigWithErrorIntegration(id, errorNotificationIntegration.ID()),
+				Config:            providerConfig + taskConfigWithErrorIntegration(id, errorNotificationIntegration.ID()),
 				ExpectError:       regexp.MustCompile("error_integration: '' expected type 'string', got unconvertible type 'sdk.AccountObjectIdentifier'"),
 			},
 			{
@@ -1962,6 +2154,51 @@ func TestAcc_Task_StateUpgrade(t *testing.T) {
 	})
 }
 
+func TestAcc_Task_StateUpgradeWithHours(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+	hours := 2
+	basic := model.TaskWithId("test", id, false, statement)
+	basicWithScheduleHours := model.TaskWithId("test", id, false, statement).
+		WithScheduleHours(hours)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.10.0"),
+				Config:            config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, basicWithScheduleHours.ResourceReference()).
+						HasNameString(id.Name()),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().WithSchedule(fmt.Sprintf("%d HOUR", hours))))
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, basicWithScheduleHours),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basicWithScheduleHours.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, basicWithScheduleHours.ResourceReference()).
+						HasNameString(id.Name()).
+						HasScheduleHours(hours),
+					resourceshowoutputassert.TaskShowOutput(t, basicWithScheduleHours.ResourceReference()).
+						HasScheduleHours(hours),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 	rootTask, rootTaskCleanup := testClient().Task.Create(t)
 	t.Cleanup(rootTaskCleanup)
@@ -1975,7 +2212,6 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 		WithAfterValue(configvariable.SetVariable(configvariable.StringVariable(rootTask.ID().FullyQualifiedName()))).
 		WithComment(comment).
 		WithLogLevelEnum(sdk.LogLevelInfo).
-		WithAutocommit(false).
 		WithJsonIndent(4)
 
 	resource.Test(t, resource.TestCase{
@@ -1995,7 +2231,7 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 					resource.TestCheckResourceAttr(configModel.ResourceReference(), "user_task_timeout_ms", "50"),
 					resource.TestCheckResourceAttr(configModel.ResourceReference(), "comment", comment),
 					resource.TestCheckResourceAttr(configModel.ResourceReference(), "session_parameters.LOG_LEVEL", "INFO"),
-					resource.TestCheckResourceAttr(configModel.ResourceReference(), "session_parameters.AUTOCOMMIT", "false"),
+					resource.TestCheckNoResourceAttr(configModel.ResourceReference(), "session_parameters.AUTOCOMMIT"),
 					resource.TestCheckResourceAttr(configModel.ResourceReference(), "session_parameters.JSON_INDENT", "4"),
 				),
 			},
@@ -2011,11 +2247,11 @@ func TestAcc_Task_StateUpgradeWithAfter(t *testing.T) {
 						HasNameString(id.Name()).
 						HasStartedString(r.BooleanFalse).
 						HasSqlStatementString(statement).
-						HasAfter(rootTask.ID()).
+						HasAfterIdentifier(rootTask.ID()).
 						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
 						HasUserTaskTimeoutMsString("50").
 						HasLogLevelString(string(sdk.LogLevelInfo)).
-						HasAutocommitString("false").
+						HasAutocommitString("true").
 						HasJsonIndentString("4").
 						HasCommentString(comment),
 				),
@@ -2066,6 +2302,23 @@ resource "snowflake_task" "test" {
 `, id.DatabaseName(), id.SchemaName(), id.Name(), condition)
 }
 
+func taskBasicConfigV0980WithHours(id sdk.SchemaObjectIdentifier, condition string, hours int) string {
+	return fmt.Sprintf(`
+resource "snowflake_task" "test" {
+	database = "%[1]s"
+	schema = "%[2]s"
+	name = "%[3]s"
+	enabled = false
+	sql_statement = "SELECT 1"
+	schedule = "%[5]d HOURS"
+	allow_overlapping_execution = true
+	suspend_task_after_num_failures = 10
+	when = "%[4]s"
+	user_task_managed_initial_warehouse_size = "XSMALL"
+}
+`, id.DatabaseName(), id.SchemaName(), id.Name(), condition, hours)
+}
+
 func taskCompleteConfigV0980(
 	id sdk.SchemaObjectIdentifier,
 	rootTaskId sdk.SchemaObjectIdentifier,
@@ -2087,7 +2340,6 @@ resource "snowflake_task" "test" {
 	comment = "%[7]s"
 	session_parameters = {
 		LOG_LEVEL = "INFO",
-		AUTOCOMMIT = false,
 		JSON_INDENT = 4,
 	}
 }
@@ -2097,4 +2349,333 @@ resource "snowflake_task" "test" {
 		userTaskTimeoutMs,
 		comment,
 	)
+}
+
+func TestAcc_Task_ServerlessTaskFields(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	serverlessModel := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+		WithTargetCompletionIntervalMinutes(10).
+		WithServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+		WithServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge)
+
+	configModelWithoutParams := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// CREATE with all serverless task parameters
+			{
+				Config: config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+			// ALTER UNSET all serverless task parameters
+			{
+				Config: config.FromModels(t, configModelWithoutParams),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, configModelWithoutParams.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasNoTargetCompletionInterval().
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize().
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalEmpty(),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize(),
+				),
+			},
+			// ALTER SET all serverless task parameters back
+			{
+				Config: config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+			// external changes
+			{
+				PreConfig: func() {
+					// This step migrates the task to serverless by setting the new serverless parameters. We update the task directly in Snowflake.
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().
+						WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+						WithTargetCompletionInterval("2 HOURS").
+						WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+						WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeXXLarge),
+					))
+				},
+				Config: config.FromModels(t, serverlessModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(serverlessModel.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_ServerlessTaskFieldsWithMixedTaskTypes(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	serverlessModel := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+		WithTargetCompletionIntervalMinutes(10).
+		WithServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+		WithServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge)
+
+	warehouseBasedModel := model.TaskWithId("test", id, false, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// CREATE a non-serverless task
+			{
+				Config: config.FromModels(t, warehouseBasedModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, warehouseBasedModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouse(testClient().Ids.WarehouseId()).
+						HasTargetCompletionIntervalEmpty(),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasDefaultUserTaskManagedInitialWarehouseSize().
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize(),
+				),
+			},
+			// ALTER SET serverless task parameters on a non-serverless task
+			{
+				Config: config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasWarehouseEmpty().
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+			// Go back to warehouse task
+			{
+				Config: config.FromModels(t, warehouseBasedModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, warehouseBasedModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasStartedString(r.BooleanFalse).
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModel.ResourceReference()).
+						HasWarehouse(testClient().Ids.WarehouseId()).
+						HasTargetCompletionIntervalEmpty(),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModel.ResourceReference()).
+						HasDefaultUserTaskManagedInitialWarehouseSize().
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_migrateFromVersion_2_11_0_warehouseTask(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	warehouseModel := model.TaskWithId("test", id, false, statement).
+		WithWarehouse(testClient().Ids.WarehouseId().Name())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// CREATE a warehouse task
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
+				Config:            config.FromModels(t, warehouseModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, warehouseModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasSqlStatementString(statement),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, warehouseModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(warehouseModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, warehouseModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDefaultUserTaskManagedInitialWarehouseSize().
+						HasWarehouseString(testClient().Ids.WarehouseId().Name()).
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, warehouseModel.ResourceReference()).
+						HasWarehouse(testClient().Ids.WarehouseId()).
+						HasTargetCompletionIntervalEmpty(),
+					resourceparametersassert.TaskResourceParameters(t, warehouseModel.ResourceReference()).
+						HasDefaultUserTaskManagedInitialWarehouseSize().
+						HasDefaultServerlessTaskMinStatementSize().
+						HasDefaultServerlessTaskMaxStatementSize(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Task_migrateFromVersion_2_11_0_serverlessTask(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	statement := "SELECT 1"
+
+	serverlessModel := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall)
+	serverlessModelWithNewFields := model.TaskWithId("test", id, false, statement).
+		WithUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+		WithTargetCompletionIntervalMinutes(10).
+		WithServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+		WithServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			// CREATE a warehouse task
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
+				Config:            config.FromModels(t, serverlessModel),
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasWarehouseEmpty().
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasSqlStatementString(statement),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				PreConfig: func() {
+					// This step migrates the task to serverless by setting the new serverless parameters. We update the task directly in Snowflake.
+					testClient().Task.Alter(t, sdk.NewAlterTaskRequest(id).WithSet(*sdk.NewTaskSetRequest().
+						WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						WithTargetCompletionInterval("10 MINUTES").
+						WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+					))
+				},
+				Config: config.FromModels(t, serverlessModelWithNewFields),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(serverlessModelWithNewFields.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TaskResource(t, serverlessModelWithNewFields.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasUserTaskManagedInitialWarehouseSizeEnum(sdk.WarehouseSizeSmall).
+						HasTargetCompletionIntervalMinutes(10).
+						HasServerlessTaskMinStatementSizeEnum(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSizeEnum(sdk.WarehouseSizeLarge).
+						HasWarehouseEmpty().
+						HasSqlStatementString(statement),
+					resourceshowoutputassert.TaskShowOutput(t, serverlessModelWithNewFields.ResourceReference()).
+						HasWarehouseEmpty().
+						HasTargetCompletionIntervalMinutes(10),
+					resourceparametersassert.TaskResourceParameters(t, serverlessModelWithNewFields.ResourceReference()).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+						HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+				),
+			},
+		},
+	})
 }

@@ -1,0 +1,85 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
+
+{{ $impl := .NameLowerCased }}
+
+{{ range .Operations }}
+    {{ if .ShowMapping }}
+        {{ if .ShowKind }}
+            {{ if eq (show_mapping_deref .ShowKind) "single_value" }}
+                func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .ShowMapping.To.Name }}, error) {
+                    opts := request.toOpts()
+                    result, err := validateAndQueryOne[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
+                    if err != nil {
+                        return nil, err
+                    }
+                    return conversionErrorWrapped(result.convert())
+                }
+            {{ else if eq (show_mapping_deref .ShowKind) "slice" }}
+                func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error) {
+                    opts := request.toOpts()
+                    dbRows, err := validateAndQuery[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
+                    if err != nil {
+                        return nil, err
+                    }
+                    return convertRows[{{ .ShowMapping.From.Name }}, {{ .ShowMapping.To.Name }}](dbRows)
+                }
+            {{ end }}
+        {{ end }}
+    {{ else if eq .Name "ShowByID" }}
+        func (v *{{ $impl }}) ShowByID(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error) {
+            request := NewShow{{ .ObjectInterface.NameSingular }}Request()
+            {{- range .ShowByIDFiltering }}.
+                {{ .WithFiltering }}
+            {{- end }}
+            {{ $impl }}, err := v.Show(ctx, request)
+            if err != nil {
+                return nil, err
+            }
+            return collections.FindFirst({{ $impl }}, func(r {{ .ObjectInterface.NameSingular }}) bool { return r.Name == id.Name() })
+        }
+
+        func (v *{{ $impl }}) ShowByIDSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error) {
+            return SafeShowById(v.client, v.ShowByID, ctx, id)
+        }
+    {{ else if and (eq .Name "Describe") .DescribeMapping }}
+        {{ if .DescribeKind }}
+            {{ if eq (describe_mapping_deref .DescribeKind) "single_value" }}
+                func (v *{{ $impl }}) Describe(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .DescribeMapping.To.Name }}, error) {
+                    opts := &{{ .OptsField.Name }}{
+                        name: id,
+                    }
+                    result, err := validateAndQueryOne[{{ .DescribeMapping.From.Name }}](v.client, ctx, opts)
+                    if err != nil {
+                        return nil, err
+                    }
+                    return conversionErrorWrapped(result.convert())
+                }
+            {{ else if eq (describe_mapping_deref .DescribeKind) "slice" }}
+                func (v *{{ $impl }}) Describe(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) ([]{{ .DescribeMapping.To.Name }}, error) {
+                    opts := &{{ .OptsField.Name }}{
+                        name: id,
+                    }
+                    rows, err := validateAndQuery[{{ .DescribeMapping.From.Name}}](v.client, ctx, opts)
+                    if err != nil {
+                        return nil, err
+                    }
+                    return convertRows[{{ .DescribeMapping.From.Name }}, {{ .DescribeMapping.To.Name }}](rows)
+                }
+            {{ end }}
+        {{ end }}
+    {{ else if eq .Name "Drop" }}
+        func (v *{{ $impl }}) Drop(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error {
+            opts := request.toOpts()
+            return validateAndExec(v.client, ctx, opts)
+        }
+
+        func (v *{{ $impl }}) DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error {
+            return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDrop{{ .ObjectInterface.NameSingular }}Request(id).WithIfExists(true)) }, ctx, id)
+        }
+    {{ else }}
+        func (v *{{ $impl }}) {{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error {
+            opts := request.toOpts()
+            return validateAndExec(v.client, ctx, opts)
+        }
+    {{ end }}
+{{ end }}

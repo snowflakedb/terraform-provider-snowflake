@@ -2,8 +2,6 @@
 
 package sdk
 
-import ()
-
 func NewCreateExternalTableRequest(
 	name SchemaObjectIdentifier,
 	location string,
@@ -198,7 +196,7 @@ func (s *ExternalTableFileFormatTypeOptionsRequest) WithCsvEmptyFieldAsNull(csvE
 	return s
 }
 
-func (s *ExternalTableFileFormatTypeOptionsRequest) WithCsvEncoding(csvEncoding CSVEncoding) *ExternalTableFileFormatTypeOptionsRequest {
+func (s *ExternalTableFileFormatTypeOptionsRequest) WithCsvEncoding(csvEncoding CsvEncoding) *ExternalTableFileFormatTypeOptionsRequest {
 	s.csvEncoding = &csvEncoding
 	return s
 }

@@ -306,3 +306,7 @@ func ignoreCaseSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
 func ignoreCaseAndTrimSpaceSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
 	return strings.EqualFold(strings.TrimSpace(old), strings.TrimSpace(new))
 }
+
+func ignoreAlwaysSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
+	return true
+}

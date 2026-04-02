@@ -1,0 +1,10 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Field*/ -}}
+
+type {{ .DtoDecl }} struct {
+{{- range .Fields }}
+    {{- if .ShouldBeInDto }}
+        {{ .Name }} {{ .DtoKind }} {{ if .Required }}// required{{ end }}
+    {{- end }}
+{{- end }}
+}
+

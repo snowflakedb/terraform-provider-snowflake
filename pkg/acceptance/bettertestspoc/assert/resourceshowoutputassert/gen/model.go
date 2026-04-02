@@ -7,8 +7,9 @@ import (
 )
 
 type ResourceShowOutputAssertionsModel struct {
-	Name       string
-	Attributes []ResourceShowOutputAssertionModel
+	Name             string
+	IsDescribeOutput bool
+	Attributes       []ResourceShowOutputAssertionModel
 
 	*genhelpers.PreambleModel
 }
@@ -28,9 +29,10 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	return ResourceShowOutputAssertionsModel{
-		Name:          name,
-		Attributes:    attributes,
-		PreambleModel: preamble,
+		Name:             name,
+		IsDescribeOutput: sdkObject.IsDataSourceOutput,
+		Attributes:       attributes,
+		PreambleModel:    preamble,
 	}
 }
 
@@ -48,6 +50,7 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 	case concreteTypeWithoutPtr == "string":
 		assertionCreator = "ResourceShowOutputValue"
 	// TODO [SNOW-1501905]: distinguish between different enum types
+	// TODO [SNOW-1501905]: currently, it also generates this assertion type for sdk structs
 	case strings.HasPrefix(concreteTypeWithoutPtr, "sdk."):
 		assertionCreator = "ResourceShowOutputStringUnderlyingValue"
 	default:

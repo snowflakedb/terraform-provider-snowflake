@@ -72,6 +72,7 @@ func (a *AccountParametersAssert) HasDefaultParameterValueOnLevel(parameterName 
 func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 	return a.
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowBindValuesAccess, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowClientMFACaching, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowIDToken, sdk.ParameterTypeSnowflakeDefault).          // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
@@ -80,10 +81,18 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientMetadataUseSessionDatabase, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientResultColumnCaseInsensitive, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientSessionKeepAlive, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDisallowedSpcsWorkloadTypes, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDisableUiDownloadButton, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDisableUserPrivilegeGrants, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableBudgetEventLogging, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableDataCompaction, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableEgressCostOptimizer, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableGetDdlUseDataTypeAlias, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableIcebergMergeOnRead, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableNotebookCreationInPersonalDb, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableTagPropagationEventLogging, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableIdentifierFirstLogin, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableInternalStagesPrivatelink, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository, sdk.ParameterTypeSnowflakeDefault).
@@ -108,6 +117,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPreventUnloadToInlineURL, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPreventUnloadToInternalStages, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterRowTimestampDefault, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterReplaceInvalidCharacters, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterRequireStorageIntegrationForStageCreation, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterRequireStorageIntegrationForStageOperation, sdk.ParameterTypeSnowflakeDefault).
@@ -123,6 +133,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDataRetentionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterHybridTableLockTimeout, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterIcebergVersionDefault, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterMaxConcurrencyLevel, sdk.ParameterTypeSnowflakeDefault).
@@ -140,6 +151,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterWeekOfYearPolicy, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterWeekStart, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterActivePythonProfiler, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowedSpcsWorkloadTypes, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterBaseLocationPrefix, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterBinaryInputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterBinaryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
@@ -149,8 +161,10 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterCortexEnabledCrossRegion, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterCortexModelsAllowlist, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterCsvTimestampFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDataMetricSchedule, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDateInputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDateOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultDbtVersion, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultDDLCollation, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault).
@@ -168,12 +182,13 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPythonProfilerModules, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPythonProfilerTargetStage, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterQueryTag, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterReadConsistencyMode, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterS3StageVpceDnsName, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterSamlIdentityProvider, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterSearchPath, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterServerlessTaskMaxStatementSize, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterServerlessTaskMinStatementSize, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterSimulatedDataSharingConsumer, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterSqlTraceQueryText, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterStorageSerializationPolicy, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampInputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterTimestampLtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
@@ -187,12 +202,14 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterTransactionDefaultIsolationLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterUnsupportedDdlAction, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterUseWorkspacesForSql, sdk.ParameterTypeSnowflakeDefault)
 }
 
 func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAssert {
 	return a.
 		HasDefaultAbortDetachedQueryValueExplicit().
+		HasDefaultAllowBindValuesAccessValueExplicit().
 		HasDefaultAllowClientMfaCachingValueExplicit().
 		HasDefaultAllowIdTokenValueExplicit().
 		HasDefaultAutocommitValueExplicit().
@@ -201,10 +218,18 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultClientMetadataUseSessionDatabaseValueExplicit().
 		HasDefaultClientResultColumnCaseInsensitiveValueExplicit().
 		HasDefaultClientSessionKeepAliveValueExplicit().
+		HasDefaultDisallowedSpcsWorkloadTypesValueExplicit().
 		HasDefaultDisableUiDownloadButtonValueExplicit().
 		HasDefaultDisableUserPrivilegeGrantsValueExplicit().
 		HasDefaultEnableAutomaticSensitiveDataClassificationLogValueExplicit().
+		HasDefaultEnableBudgetEventLoggingValueExplicit().
+		HasDefaultEnableDataCompactionValueExplicit().
 		HasDefaultEnableEgressCostOptimizerValueExplicit().
+		HasDefaultEnableGetDdlUseDataTypeAliasValueExplicit().
+		HasDefaultEnableIcebergMergeOnReadValueExplicit().
+		HasDefaultEnableNotebookCreationInPersonalDbValueExplicit().
+		HasDefaultEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementValueExplicit().
+		HasDefaultEnableTagPropagationEventLoggingValueExplicit().
 		HasDefaultEnableIdentifierFirstLoginValueExplicit().
 		HasDefaultEnableInternalStagesPrivatelinkValueExplicit().
 		HasDefaultEnableTriSecretAndRekeyOptOutForImageRepositoryValueExplicit().
@@ -229,6 +254,7 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultPreventUnloadToInlineUrlValueExplicit().
 		HasDefaultPreventUnloadToInternalStagesValueExplicit().
 		HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
+		HasDefaultRowTimestampDefaultValueExplicit().
 		HasDefaultReplaceInvalidCharactersValueExplicit().
 		HasDefaultRequireStorageIntegrationForStageCreationValueExplicit().
 		HasDefaultRequireStorageIntegrationForStageOperationValueExplicit().
@@ -244,6 +270,7 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultClientSessionKeepAliveHeartbeatFrequencyValueExplicit().
 		HasDefaultDataRetentionTimeInDaysValueExplicit().
 		HasDefaultHybridTableLockTimeoutValueExplicit().
+		HasDefaultIcebergVersionDefaultValueExplicit().
 		HasDefaultJsonIndentValueExplicit().
 		HasDefaultLockTimeoutValueExplicit().
 		HasDefaultMaxConcurrencyLevelValueExplicit().
@@ -261,6 +288,7 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultWeekOfYearPolicyValueExplicit().
 		HasDefaultWeekStartValueExplicit().
 		HasDefaultActivePythonProfilerValueExplicit().
+		HasDefaultAllowedSpcsWorkloadTypesValueExplicit().
 		HasDefaultBaseLocationPrefixValueExplicit().
 		HasDefaultBinaryInputFormatValueExplicit().
 		HasDefaultBinaryOutputFormatValueExplicit().
@@ -270,8 +298,10 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultCortexEnabledCrossRegionValueExplicit().
 		HasDefaultCortexModelsAllowlistValueExplicit().
 		HasDefaultCsvTimestampFormatValueExplicit().
+		HasDefaultDataMetricScheduleValueExplicit().
 		HasDefaultDateInputFormatValueExplicit().
 		HasDefaultDateOutputFormatValueExplicit().
+		HasDefaultDefaultDbtVersionValueExplicit().
 		HasDefaultDefaultDdlCollationValueExplicit().
 		HasDefaultDefaultNotebookComputePoolCpuValueExplicit().
 		HasDefaultDefaultNotebookComputePoolGpuValueExplicit().
@@ -289,12 +319,13 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultPythonProfilerModulesValueExplicit().
 		HasDefaultPythonProfilerTargetStageValueExplicit().
 		HasDefaultQueryTagValueExplicit().
+		HasDefaultReadConsistencyModeValueExplicit().
 		HasDefaultS3StageVpceDnsNameValueExplicit().
-		HasDefaultSamlIdentityProviderValueExplicit().
 		HasDefaultSearchPathValueExplicit().
 		HasDefaultServerlessTaskMaxStatementSizeValueExplicit().
 		HasDefaultServerlessTaskMinStatementSizeValueExplicit().
 		HasDefaultSimulatedDataSharingConsumerValueExplicit().
+		HasDefaultSqlTraceQueryTextValueExplicit().
 		HasDefaultStorageSerializationPolicyValueExplicit().
 		HasDefaultTimestampInputFormatValueExplicit().
 		HasDefaultTimestampLtzOutputFormatValueExplicit().
@@ -308,7 +339,8 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultTraceLevelValueExplicit().
 		HasDefaultTransactionDefaultIsolationLevelValueExplicit().
 		HasDefaultUnsupportedDdlActionValueExplicit().
-		HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit()
+		HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit().
+		HasDefaultUseWorkspacesForSqlValueExplicit()
 }
 
 ////////////////////////////
@@ -317,6 +349,11 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 
 func (a *AccountParametersAssert) HasAbortDetachedQuery(expected bool) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAbortDetachedQuery, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasAllowBindValuesAccess(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAllowBindValuesAccess, expected))
 	return a
 }
 
@@ -360,6 +397,11 @@ func (a *AccountParametersAssert) HasClientSessionKeepAlive(expected bool) *Acco
 	return a
 }
 
+func (a *AccountParametersAssert) HasDisallowedSpcsWorkloadTypes(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDisallowedSpcsWorkloadTypes, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasDisableUiDownloadButton(expected bool) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterDisableUiDownloadButton, expected))
 	return a
@@ -375,8 +417,43 @@ func (a *AccountParametersAssert) HasEnableAutomaticSensitiveDataClassificationL
 	return a
 }
 
+func (a *AccountParametersAssert) HasEnableBudgetEventLogging(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableBudgetEventLogging, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableDataCompaction(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableDataCompaction, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasEnableEgressCostOptimizer(expected bool) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableEgressCostOptimizer, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableGetDdlUseDataTypeAlias(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableGetDdlUseDataTypeAlias, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableIcebergMergeOnRead(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableIcebergMergeOnRead, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableNotebookCreationInPersonalDb(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableNotebookCreationInPersonalDb, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableTagPropagationEventLogging(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterEnableTagPropagationEventLogging, expected))
 	return a
 }
 
@@ -500,6 +577,11 @@ func (a *AccountParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) 
 	return a
 }
 
+func (a *AccountParametersAssert) HasRowTimestampDefault(expected bool) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterRowTimestampDefault, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasReplaceInvalidCharacters(expected bool) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterReplaceInvalidCharacters, expected))
 	return a
@@ -572,6 +654,11 @@ func (a *AccountParametersAssert) HasDataRetentionTimeInDays(expected int) *Acco
 
 func (a *AccountParametersAssert) HasHybridTableLockTimeout(expected int) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterHybridTableLockTimeout, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasIcebergVersionDefault(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterIcebergVersionDefault, expected))
 	return a
 }
 
@@ -660,6 +747,11 @@ func (a *AccountParametersAssert) HasActivePythonProfiler(expected sdk.ActivePyt
 	return a
 }
 
+func (a *AccountParametersAssert) HasAllowedSpcsWorkloadTypes(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterAllowedSpcsWorkloadTypes, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasBaseLocationPrefix(expected string) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterBaseLocationPrefix, expected))
 	return a
@@ -705,6 +797,11 @@ func (a *AccountParametersAssert) HasCsvTimestampFormat(expected string) *Accoun
 	return a
 }
 
+func (a *AccountParametersAssert) HasDataMetricSchedule(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDataMetricSchedule, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasDateInputFormat(expected string) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDateInputFormat, expected))
 	return a
@@ -712,6 +809,11 @@ func (a *AccountParametersAssert) HasDateInputFormat(expected string) *AccountPa
 
 func (a *AccountParametersAssert) HasDateOutputFormat(expected string) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDateOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultDbtVersion(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDefaultDbtVersion, expected))
 	return a
 }
 
@@ -800,13 +902,13 @@ func (a *AccountParametersAssert) HasQueryTag(expected string) *AccountParameter
 	return a
 }
 
-func (a *AccountParametersAssert) HasS3StageVpceDnsName(expected string) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterS3StageVpceDnsName, expected))
+func (a *AccountParametersAssert) HasReadConsistencyMode(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterReadConsistencyMode, expected))
 	return a
 }
 
-func (a *AccountParametersAssert) HasSamlIdentityProvider(expected string) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterSamlIdentityProvider, expected))
+func (a *AccountParametersAssert) HasS3StageVpceDnsName(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterS3StageVpceDnsName, expected))
 	return a
 }
 
@@ -827,6 +929,11 @@ func (a *AccountParametersAssert) HasServerlessTaskMinStatementSize(expected sdk
 
 func (a *AccountParametersAssert) HasSimulatedDataSharingConsumer(expected string) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterSimulatedDataSharingConsumer, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSqlTraceQueryText(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterSqlTraceQueryText, expected))
 	return a
 }
 
@@ -900,12 +1007,22 @@ func (a *AccountParametersAssert) HasUserTaskManagedInitialWarehouseSize(expecte
 	return a
 }
 
+func (a *AccountParametersAssert) HasUseWorkspacesForSql(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterUseWorkspacesForSql, expected))
+	return a
+}
+
 ////////////////////////////
 // Parameter level checks //
 ////////////////////////////
 
 func (a *AccountParametersAssert) HasAbortDetachedQueryLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAbortDetachedQuery, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasAllowBindValuesAccessLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAllowBindValuesAccess, expected))
 	return a
 }
 
@@ -949,6 +1066,11 @@ func (a *AccountParametersAssert) HasClientSessionKeepAliveLevel(expected sdk.Pa
 	return a
 }
 
+func (a *AccountParametersAssert) HasDisallowedSpcsWorkloadTypesLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDisallowedSpcsWorkloadTypes, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasDisableUiDownloadButtonLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDisableUiDownloadButton, expected))
 	return a
@@ -964,8 +1086,43 @@ func (a *AccountParametersAssert) HasEnableAutomaticSensitiveDataClassificationL
 	return a
 }
 
+func (a *AccountParametersAssert) HasEnableBudgetEventLoggingLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableBudgetEventLogging, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableDataCompactionLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableDataCompaction, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasEnableEgressCostOptimizerLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableEgressCostOptimizer, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableGetDdlUseDataTypeAliasLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableGetDdlUseDataTypeAlias, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableIcebergMergeOnReadLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableIcebergMergeOnRead, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableNotebookCreationInPersonalDbLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableNotebookCreationInPersonalDb, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasEnableTagPropagationEventLoggingLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterEnableTagPropagationEventLogging, expected))
 	return a
 }
 
@@ -1025,7 +1182,7 @@ func (a *AccountParametersAssert) HasErrorOnNondeterministicUpdateLevel(expected
 }
 
 func (a *AccountParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected))
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -1086,6 +1243,11 @@ func (a *AccountParametersAssert) HasPreventUnloadToInternalStagesLevel(expected
 
 func (a *AccountParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterQuotedIdentifiersIgnoreCase, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasRowTimestampDefaultLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterRowTimestampDefault, expected))
 	return a
 }
 
@@ -1161,6 +1323,11 @@ func (a *AccountParametersAssert) HasDataRetentionTimeInDaysLevel(expected sdk.P
 
 func (a *AccountParametersAssert) HasHybridTableLockTimeoutLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterHybridTableLockTimeout, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasIcebergVersionDefaultLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterIcebergVersionDefault, expected))
 	return a
 }
 
@@ -1249,6 +1416,11 @@ func (a *AccountParametersAssert) HasActivePythonProfilerLevel(expected sdk.Para
 	return a
 }
 
+func (a *AccountParametersAssert) HasAllowedSpcsWorkloadTypesLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAllowedSpcsWorkloadTypes, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasBaseLocationPrefixLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterBaseLocationPrefix, expected))
 	return a
@@ -1294,6 +1466,11 @@ func (a *AccountParametersAssert) HasCsvTimestampFormatLevel(expected sdk.Parame
 	return a
 }
 
+func (a *AccountParametersAssert) HasDataMetricScheduleLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDataMetricSchedule, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasDateInputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDateInputFormat, expected))
 	return a
@@ -1301,6 +1478,11 @@ func (a *AccountParametersAssert) HasDateInputFormatLevel(expected sdk.Parameter
 
 func (a *AccountParametersAssert) HasDateOutputFormatLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDateOutputFormat, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultDbtVersionLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultDbtVersion, expected))
 	return a
 }
 
@@ -1389,13 +1571,13 @@ func (a *AccountParametersAssert) HasQueryTagLevel(expected sdk.ParameterType) *
 	return a
 }
 
-func (a *AccountParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterS3StageVpceDnsName, expected))
+func (a *AccountParametersAssert) HasReadConsistencyModeLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterReadConsistencyMode, expected))
 	return a
 }
 
-func (a *AccountParametersAssert) HasSamlIdentityProviderLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSamlIdentityProvider, expected))
+func (a *AccountParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterS3StageVpceDnsName, expected))
 	return a
 }
 
@@ -1416,6 +1598,11 @@ func (a *AccountParametersAssert) HasServerlessTaskMinStatementSizeLevel(expecte
 
 func (a *AccountParametersAssert) HasSimulatedDataSharingConsumerLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSimulatedDataSharingConsumer, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasSqlTraceQueryTextLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSqlTraceQueryText, expected))
 	return a
 }
 
@@ -1489,12 +1676,21 @@ func (a *AccountParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(ex
 	return a
 }
 
+func (a *AccountParametersAssert) HasUseWorkspacesForSqlLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterUseWorkspacesForSql, expected))
+	return a
+}
+
 ////////////////////////////////////
 // Parameter default value checks //
 ////////////////////////////////////
 
 func (a *AccountParametersAssert) HasDefaultAbortDetachedQueryValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterAbortDetachedQuery)
+}
+
+func (a *AccountParametersAssert) HasDefaultAllowBindValuesAccessValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterAllowBindValuesAccess)
 }
 
 func (a *AccountParametersAssert) HasDefaultAllowClientMfaCachingValue() *AccountParametersAssert {
@@ -1529,6 +1725,10 @@ func (a *AccountParametersAssert) HasDefaultClientSessionKeepAliveValue() *Accou
 	return a.HasDefaultParameterValue(sdk.AccountParameterClientSessionKeepAlive)
 }
 
+func (a *AccountParametersAssert) HasDefaultDisallowedSpcsWorkloadTypesValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDisallowedSpcsWorkloadTypes)
+}
+
 func (a *AccountParametersAssert) HasDefaultDisableUiDownloadButtonValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterDisableUiDownloadButton)
 }
@@ -1541,8 +1741,36 @@ func (a *AccountParametersAssert) HasDefaultEnableAutomaticSensitiveDataClassifi
 	return a.HasDefaultParameterValue(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog)
 }
 
+func (a *AccountParametersAssert) HasDefaultEnableBudgetEventLoggingValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableBudgetEventLogging)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableDataCompactionValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableDataCompaction)
+}
+
 func (a *AccountParametersAssert) HasDefaultEnableEgressCostOptimizerValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterEnableEgressCostOptimizer)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableGetDdlUseDataTypeAliasValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableGetDdlUseDataTypeAlias)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableIcebergMergeOnReadValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableIcebergMergeOnRead)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableNotebookCreationInPersonalDbValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableNotebookCreationInPersonalDb)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableTagPropagationEventLoggingValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterEnableTagPropagationEventLogging)
 }
 
 func (a *AccountParametersAssert) HasDefaultEnableIdentifierFirstLoginValue() *AccountParametersAssert {
@@ -1641,6 +1869,10 @@ func (a *AccountParametersAssert) HasDefaultQuotedIdentifiersIgnoreCaseValue() *
 	return a.HasDefaultParameterValue(sdk.AccountParameterQuotedIdentifiersIgnoreCase)
 }
 
+func (a *AccountParametersAssert) HasDefaultRowTimestampDefaultValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterRowTimestampDefault)
+}
+
 func (a *AccountParametersAssert) HasDefaultReplaceInvalidCharactersValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterReplaceInvalidCharacters)
 }
@@ -1699,6 +1931,10 @@ func (a *AccountParametersAssert) HasDefaultDataRetentionTimeInDaysValue() *Acco
 
 func (a *AccountParametersAssert) HasDefaultHybridTableLockTimeoutValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterHybridTableLockTimeout)
+}
+
+func (a *AccountParametersAssert) HasDefaultIcebergVersionDefaultValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterIcebergVersionDefault)
 }
 
 func (a *AccountParametersAssert) HasDefaultJsonIndentValue() *AccountParametersAssert {
@@ -1769,6 +2005,10 @@ func (a *AccountParametersAssert) HasDefaultActivePythonProfilerValue() *Account
 	return a.HasDefaultParameterValue(sdk.AccountParameterActivePythonProfiler)
 }
 
+func (a *AccountParametersAssert) HasDefaultAllowedSpcsWorkloadTypesValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterAllowedSpcsWorkloadTypes)
+}
+
 func (a *AccountParametersAssert) HasDefaultBaseLocationPrefixValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterBaseLocationPrefix)
 }
@@ -1805,12 +2045,20 @@ func (a *AccountParametersAssert) HasDefaultCsvTimestampFormatValue() *AccountPa
 	return a.HasDefaultParameterValue(sdk.AccountParameterCsvTimestampFormat)
 }
 
+func (a *AccountParametersAssert) HasDefaultDataMetricScheduleValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDataMetricSchedule)
+}
+
 func (a *AccountParametersAssert) HasDefaultDateInputFormatValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterDateInputFormat)
 }
 
 func (a *AccountParametersAssert) HasDefaultDateOutputFormatValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterDateOutputFormat)
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultDbtVersionValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultDbtVersion)
 }
 
 func (a *AccountParametersAssert) HasDefaultDefaultDdlCollationValue() *AccountParametersAssert {
@@ -1881,12 +2129,12 @@ func (a *AccountParametersAssert) HasDefaultQueryTagValue() *AccountParametersAs
 	return a.HasDefaultParameterValue(sdk.AccountParameterQueryTag)
 }
 
-func (a *AccountParametersAssert) HasDefaultS3StageVpceDnsNameValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterS3StageVpceDnsName)
+func (a *AccountParametersAssert) HasDefaultReadConsistencyModeValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterReadConsistencyMode)
 }
 
-func (a *AccountParametersAssert) HasDefaultSamlIdentityProviderValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterSamlIdentityProvider)
+func (a *AccountParametersAssert) HasDefaultS3StageVpceDnsNameValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterS3StageVpceDnsName)
 }
 
 func (a *AccountParametersAssert) HasDefaultSearchPathValue() *AccountParametersAssert {
@@ -1903,6 +2151,10 @@ func (a *AccountParametersAssert) HasDefaultServerlessTaskMinStatementSizeValue(
 
 func (a *AccountParametersAssert) HasDefaultSimulatedDataSharingConsumerValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterSimulatedDataSharingConsumer)
+}
+
+func (a *AccountParametersAssert) HasDefaultSqlTraceQueryTextValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterSqlTraceQueryText)
 }
 
 func (a *AccountParametersAssert) HasDefaultStorageSerializationPolicyValue() *AccountParametersAssert {
@@ -1961,12 +2213,20 @@ func (a *AccountParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeV
 	return a.HasDefaultParameterValue(sdk.AccountParameterUserTaskManagedInitialWarehouseSize)
 }
 
+func (a *AccountParametersAssert) HasDefaultUseWorkspacesForSqlValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterUseWorkspacesForSql)
+}
+
 /////////////////////////////////////////////
 // Parameter explicit default value checks //
 /////////////////////////////////////////////
 
 func (a *AccountParametersAssert) HasDefaultAbortDetachedQueryValueExplicit() *AccountParametersAssert {
 	return a.HasAbortDetachedQuery(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultAllowBindValuesAccessValueExplicit() *AccountParametersAssert {
+	return a.HasAllowBindValuesAccess(true)
 }
 
 func (a *AccountParametersAssert) HasDefaultAllowClientMfaCachingValueExplicit() *AccountParametersAssert {
@@ -2001,6 +2261,10 @@ func (a *AccountParametersAssert) HasDefaultClientSessionKeepAliveValueExplicit(
 	return a.HasClientSessionKeepAlive(false)
 }
 
+func (a *AccountParametersAssert) HasDefaultDisallowedSpcsWorkloadTypesValueExplicit() *AccountParametersAssert {
+	return a.HasDisallowedSpcsWorkloadTypes("")
+}
+
 func (a *AccountParametersAssert) HasDefaultDisableUiDownloadButtonValueExplicit() *AccountParametersAssert {
 	return a.HasDisableUiDownloadButton(false)
 }
@@ -2013,8 +2277,36 @@ func (a *AccountParametersAssert) HasDefaultEnableAutomaticSensitiveDataClassifi
 	return a.HasEnableAutomaticSensitiveDataClassificationLog(true)
 }
 
+func (a *AccountParametersAssert) HasDefaultEnableBudgetEventLoggingValueExplicit() *AccountParametersAssert {
+	return a.HasEnableBudgetEventLogging(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableDataCompactionValueExplicit() *AccountParametersAssert {
+	return a.HasEnableDataCompaction(true)
+}
+
 func (a *AccountParametersAssert) HasDefaultEnableEgressCostOptimizerValueExplicit() *AccountParametersAssert {
 	return a.HasEnableEgressCostOptimizer(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableGetDdlUseDataTypeAliasValueExplicit() *AccountParametersAssert {
+	return a.HasEnableGetDdlUseDataTypeAlias(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableIcebergMergeOnReadValueExplicit() *AccountParametersAssert {
+	return a.HasEnableIcebergMergeOnRead(true)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableNotebookCreationInPersonalDbValueExplicit() *AccountParametersAssert {
+	return a.HasEnableNotebookCreationInPersonalDb(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementValueExplicit() *AccountParametersAssert {
+	return a.HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(false)
+}
+
+func (a *AccountParametersAssert) HasDefaultEnableTagPropagationEventLoggingValueExplicit() *AccountParametersAssert {
+	return a.HasEnableTagPropagationEventLogging(false)
 }
 
 func (a *AccountParametersAssert) HasDefaultEnableIdentifierFirstLoginValueExplicit() *AccountParametersAssert {
@@ -2113,6 +2405,10 @@ func (a *AccountParametersAssert) HasDefaultQuotedIdentifiersIgnoreCaseValueExpl
 	return a.HasQuotedIdentifiersIgnoreCase(false)
 }
 
+func (a *AccountParametersAssert) HasDefaultRowTimestampDefaultValueExplicit() *AccountParametersAssert {
+	return a.HasRowTimestampDefault(false)
+}
+
 func (a *AccountParametersAssert) HasDefaultReplaceInvalidCharactersValueExplicit() *AccountParametersAssert {
 	return a.HasReplaceInvalidCharacters(false)
 }
@@ -2171,6 +2467,10 @@ func (a *AccountParametersAssert) HasDefaultDataRetentionTimeInDaysValueExplicit
 
 func (a *AccountParametersAssert) HasDefaultHybridTableLockTimeoutValueExplicit() *AccountParametersAssert {
 	return a.HasHybridTableLockTimeout(3600)
+}
+
+func (a *AccountParametersAssert) HasDefaultIcebergVersionDefaultValueExplicit() *AccountParametersAssert {
+	return a.HasIcebergVersionDefault(2)
 }
 
 func (a *AccountParametersAssert) HasDefaultJsonIndentValueExplicit() *AccountParametersAssert {
@@ -2241,6 +2541,10 @@ func (a *AccountParametersAssert) HasDefaultActivePythonProfilerValueExplicit() 
 	return a.HasActivePythonProfiler(sdk.ActivePythonProfilerLine)
 }
 
+func (a *AccountParametersAssert) HasDefaultAllowedSpcsWorkloadTypesValueExplicit() *AccountParametersAssert {
+	return a.HasAllowedSpcsWorkloadTypes("ALL")
+}
+
 func (a *AccountParametersAssert) HasDefaultBaseLocationPrefixValueExplicit() *AccountParametersAssert {
 	return a.HasBaseLocationPrefix("")
 }
@@ -2277,12 +2581,20 @@ func (a *AccountParametersAssert) HasDefaultCsvTimestampFormatValueExplicit() *A
 	return a.HasCsvTimestampFormat("")
 }
 
+func (a *AccountParametersAssert) HasDefaultDataMetricScheduleValueExplicit() *AccountParametersAssert {
+	return a.HasDataMetricSchedule("60 MINUTES")
+}
+
 func (a *AccountParametersAssert) HasDefaultDateInputFormatValueExplicit() *AccountParametersAssert {
 	return a.HasDateInputFormat("AUTO")
 }
 
 func (a *AccountParametersAssert) HasDefaultDateOutputFormatValueExplicit() *AccountParametersAssert {
 	return a.HasDateOutputFormat("YYYY-MM-DD")
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultDbtVersionValueExplicit() *AccountParametersAssert {
+	return a.HasDefaultDbtVersion("1.9.4")
 }
 
 func (a *AccountParametersAssert) HasDefaultDefaultDdlCollationValueExplicit() *AccountParametersAssert {
@@ -2353,12 +2665,12 @@ func (a *AccountParametersAssert) HasDefaultQueryTagValueExplicit() *AccountPara
 	return a.HasQueryTag("")
 }
 
-func (a *AccountParametersAssert) HasDefaultS3StageVpceDnsNameValueExplicit() *AccountParametersAssert {
-	return a.HasS3StageVpceDnsName("")
+func (a *AccountParametersAssert) HasDefaultReadConsistencyModeValueExplicit() *AccountParametersAssert {
+	return a.HasReadConsistencyMode("SESSION")
 }
 
-func (a *AccountParametersAssert) HasDefaultSamlIdentityProviderValueExplicit() *AccountParametersAssert {
-	return a.HasSamlIdentityProvider("")
+func (a *AccountParametersAssert) HasDefaultS3StageVpceDnsNameValueExplicit() *AccountParametersAssert {
+	return a.HasS3StageVpceDnsName("")
 }
 
 func (a *AccountParametersAssert) HasDefaultSearchPathValueExplicit() *AccountParametersAssert {
@@ -2375,6 +2687,10 @@ func (a *AccountParametersAssert) HasDefaultServerlessTaskMinStatementSizeValueE
 
 func (a *AccountParametersAssert) HasDefaultSimulatedDataSharingConsumerValueExplicit() *AccountParametersAssert {
 	return a.HasSimulatedDataSharingConsumer("")
+}
+
+func (a *AccountParametersAssert) HasDefaultSqlTraceQueryTextValueExplicit() *AccountParametersAssert {
+	return a.HasSqlTraceQueryText("OFF")
 }
 
 func (a *AccountParametersAssert) HasDefaultStorageSerializationPolicyValueExplicit() *AccountParametersAssert {
@@ -2431,4 +2747,8 @@ func (a *AccountParametersAssert) HasDefaultUnsupportedDdlActionValueExplicit() 
 
 func (a *AccountParametersAssert) HasDefaultUserTaskManagedInitialWarehouseSizeValueExplicit() *AccountParametersAssert {
 	return a.HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)
+}
+
+func (a *AccountParametersAssert) HasDefaultUseWorkspacesForSqlValueExplicit() *AccountParametersAssert {
+	return a.HasUseWorkspacesForSql("unset")
 }

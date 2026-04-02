@@ -1,0 +1,20 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/tools/doc-gen-helper.ExperimentalFeatures*/ -}}
+{{ if gt (len .ActiveExperiments) 0 }}### Active experiments{{ end }}
+
+The following experiments are currently active. Depending on the feedback, we may decide to include them as default behavior/stable feature of the provider in the future.
+
+To share feedback please reach out to us through your Snowflake account manager.
+{{ range .ActiveExperiments }}
+#### {{ .Name }}
+{{ .Description }}
+{{ end }}
+{{ if gt (len .DiscontinuedExperiments) 0 }}### Discontinued experiments
+
+The following experiments were left for backward compatibility.
+Setting them will have no effect on the provider's behavior.
+They will be removed in the next major release of the provider.
+
+{{ range .DiscontinuedExperiments -}}
+    - `{{ .Name }}`
+{{ end -}}
+{{ end }}

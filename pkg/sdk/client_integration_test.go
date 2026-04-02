@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -64,9 +64,9 @@ func TestClient_NewClientDriverLoggingLevel(t *testing.T) {
 
 		var expected string
 		if os.Getenv("GITHUB_ACTIONS") != "" {
-			expected = "fatal"
+			expected = "FATAL"
 		} else {
-			expected = "error"
+			expected = "ERROR"
 		}
 		assert.Equal(t, expected, gosnowflake.GetLogger().GetLogLevel())
 	})
@@ -77,6 +77,6 @@ func TestClient_NewClientDriverLoggingLevel(t *testing.T) {
 		_, err := NewClient(config)
 		require.NoError(t, err)
 
-		assert.Equal(t, "trace", gosnowflake.GetLogger().GetLogLevel())
+		assert.Equal(t, "TRACE", gosnowflake.GetLogger().GetLogLevel())
 	})
 }

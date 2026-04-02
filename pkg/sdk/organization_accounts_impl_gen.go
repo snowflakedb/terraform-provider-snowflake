@@ -112,23 +112,23 @@ func (r *ShowOrganizationAccountRequest) toOpts() *ShowOrganizationAccountOption
 func (r organizationAccountDbRow) convert() (*OrganizationAccount, error) {
 	// adjusted manually
 	oa := &OrganizationAccount{
-		OrganizationName:                     r.OrganizationName,
-		AccountName:                          r.AccountName,
-		SnowflakeRegion:                      r.SnowflakeRegion,
-		AccountUrl:                           r.AccountUrl,
-		CreatedOn:                            r.CreatedOn,
-		AccountLocator:                       r.AccountLocator,
-		AccountLocatorUrl:                    r.AccountLocatorUrl,
-		ManagedAccounts:                      r.ManagedAccounts,
-		ConsumptionBillingEntityName:         r.ConsumptionBillingEntityName,
-		MarketplaceProviderBillingEntityName: r.MarketplaceProviderBillingEntityName,
-		IsOrgAdmin:                           r.IsOrgAdmin,
-		IsEventsAccount:                      r.IsEventsAccount,
-		IsOrganizationAccount:                r.IsOrganizationAccount,
+		OrganizationName:             r.OrganizationName,
+		AccountName:                  r.AccountName,
+		SnowflakeRegion:              r.SnowflakeRegion,
+		AccountUrl:                   r.AccountUrl,
+		CreatedOn:                    r.CreatedOn,
+		AccountLocator:               r.AccountLocator,
+		AccountLocatorUrl:            r.AccountLocatorUrl,
+		ManagedAccounts:              r.ManagedAccounts,
+		ConsumptionBillingEntityName: r.ConsumptionBillingEntityName,
+		IsOrgAdmin:                   r.IsOrgAdmin,
+		IsEventsAccount:              r.IsEventsAccount,
+		IsOrganizationAccount:        r.IsOrganizationAccount,
 	}
 	mapStringWithMapping(&oa.Edition, r.Edition, ToOrganizationAccountEdition)
 	mapNullString(&oa.Comment, r.Comment)
 	mapNullString(&oa.MarketplaceConsumerBillingEntityName, r.MarketplaceConsumerBillingEntityName)
+	mapNullString(&oa.MarketplaceProviderBillingEntityName, r.MarketplaceProviderBillingEntityName)
 	mapNullString(&oa.OldAccountUrl, r.OldAccountUrl)
 	mapNullString(&oa.AccountOldUrlSavedOn, r.AccountOldUrlSavedOn)
 	mapNullString(&oa.AccountOldUrlLastUsed, r.AccountOldUrlLastUsed)

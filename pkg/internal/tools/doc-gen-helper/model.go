@@ -1,5 +1,7 @@
 package main
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+
 type DeprecatedResourcesContext struct {
 	Resources []DeprecatedResource
 }
@@ -40,4 +42,18 @@ type FeatureStabilityContext struct {
 
 type FeatureStability struct {
 	NameRelativeLink string
+}
+
+type ExperimentalFeatures struct {
+	ActiveExperiments       []Experiment
+	DiscontinuedExperiments []Experiment
+}
+
+type Experiment struct {
+	Name        string
+	Description string
+}
+
+func toExperimentModel(e experimentalfeatures.Experiment) Experiment {
+	return Experiment{string(e.Name()), e.Description()}
 }

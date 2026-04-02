@@ -27,8 +27,16 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Accounts().Schema,
 	},
 	{
+		name:   "AccountRoles",
+		schema: datasources.AccountRoles().Schema,
+	},
+	{
 		name:   "AuthenticationPolicies",
 		schema: datasources.AuthenticationPolicies().Schema,
+	},
+	{
+		name:   "CatalogIntegrations",
+		schema: datasources.CatalogIntegrations().Schema,
 	},
 	{
 		name:   "ComputePools",
@@ -51,6 +59,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Databases().Schema,
 	},
 	{
+		name:   "ExternalVolumes",
+		schema: datasources.ExternalVolumes().Schema,
+	},
+	{
 		name:   "Functions",
 		schema: datasources.Functions().Schema,
 	},
@@ -67,6 +79,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.ImageRepositories().Schema,
 	},
 	{
+		name:   "Listings",
+		schema: datasources.Listings().Schema,
+	},
+	{
 		name:   "MaskingPolicies",
 		schema: datasources.MaskingPolicies().Schema,
 	},
@@ -75,12 +91,24 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.NetworkPolicies().Schema,
 	},
 	{
+		name:   "NetworkRules",
+		schema: datasources.NetworkRules().Schema,
+	},
+	{
+		name:   "Notebooks",
+		schema: datasources.Notebooks().Schema,
+	},
+	{
 		name:   "Procedures",
 		schema: datasources.Procedures().Schema,
 	},
 	{
 		name:   "ResourceMonitors",
 		schema: datasources.ResourceMonitors().Schema,
+	},
+	{
+		name:   "RowAccessPolicies",
+		schema: datasources.RowAccessPolicies().Schema,
 	},
 	{
 		name:   "Schemas",
@@ -101,6 +129,14 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Services",
 		schema: datasources.Services().Schema,
+	},
+	{
+		name:   "StorageIntegrations",
+		schema: datasources.StorageIntegrations().Schema,
+	},
+	{
+		name:   "Stages",
+		schema: datasources.Stages().Schema,
 	},
 	{
 		name:   "Streamlits",

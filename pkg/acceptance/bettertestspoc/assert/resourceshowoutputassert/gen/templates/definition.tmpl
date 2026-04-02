@@ -1,29 +1,39 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert/gen.ResourceParametersAssertionsModel*/ -}}
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/gen.ResourceShowOutputAssertionsModel*/ -}}
 
-{{- $assertName := .Name | printf "%sShowOutputAssert" -}}
-{{- $nameLowerCase := FirstLetterLowercase .Name -}}
-{{- $assertVar := FirstLetterLowercase .Name | printf "%sAssert" }}
+{{- $name := .Name }}
+{{- $outputType := "Show"}}
+{{- $assertName := $name | printf "%sShowOutputAssert" }}
+
+{{- if .IsDescribeOutput }}
+    {{- $name = TrimSuffix .Name "Details" }}
+
+    {{- $outputType = "Describe" }}
+    {{- $assertName = $name | printf "%sDescribeOutputAssert" }}
+{{- end }}
+
+{{- $outputTypeLowerCase := FirstLetterLowercase $outputType }}
+{{- $assertVar := FirstLetterLowercase $name | printf "%sAssert" }}
 
 type {{ $assertName }} struct {
     *assert.ResourceAssert
 }
 
-func {{ .Name }}ShowOutput(t *testing.T, name string) *{{ $assertName }} {
+func {{ $name }}{{ $outputType }}Output(t *testing.T, name string) *{{ $assertName }} {
     t.Helper()
 
     {{ $assertVar }} := {{ $assertName }}{
-        ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+        ResourceAssert: assert.NewResourceAssert(name, "{{ $outputTypeLowerCase }}_output"),
     }
-    {{ $assertVar }}.AddAssertion(assert.ValueSet("show_output.#", "1"))
+    {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ $outputTypeLowerCase }}_output.#", "1"))
     return &{{ $assertVar }}
 }
 
-func Imported{{ .Name }}ShowOutput(t *testing.T, id string) *{{ $assertName }} {
+func Imported{{ $name }}{{ $outputType }}Output(t *testing.T, id string) *{{ $assertName }} {
     t.Helper()
 
     {{ $assertVar }} := {{ $assertName }}{
-        ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+        ResourceAssert: assert.NewImportedResourceAssert(id, "{{ $outputTypeLowerCase }}_output"),
     }
-    {{ $assertVar }}.AddAssertion(assert.ValueSet("show_output.#", "1"))
+    {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ $outputTypeLowerCase }}_output.#", "1"))
     return &{{ $assertVar }}
 }

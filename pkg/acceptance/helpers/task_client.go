@@ -46,6 +46,14 @@ func (c *TaskClient) CreateWithAfter(t *testing.T, after ...sdk.SchemaObjectIden
 	return c.CreateWithRequest(t, c.defaultCreateTaskRequest(t).WithAfter(after))
 }
 
+func (c *TaskClient) CreateServerless(t *testing.T) (*sdk.Task, func()) {
+	t.Helper()
+	id := c.ids.RandomSchemaObjectIdentifier()
+	warehouseReq := sdk.NewCreateTaskWarehouseRequest().WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)
+	req := sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").WithWarehouse(*warehouseReq)
+	return c.CreateWithRequest(t, req)
+}
+
 func (c *TaskClient) CreateWithRequest(t *testing.T, request *sdk.CreateTaskRequest) (*sdk.Task, func()) {
 	t.Helper()
 	ctx := context.Background()

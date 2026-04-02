@@ -38,7 +38,7 @@ func SecretWithGenericString() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.SecretWithGenericString, customdiff.All(
 			ComputedIfAnyAttributeChanged(secretGenericStringSchema, ShowOutputAttributeName, "comment"),
-			ComputedIfAnyAttributeChanged(secretGenericStringSchema, DescribeOutputAttributeName),
+			ComputedIfAnyAttributeChanged(secretGenericStringSchema, DescribeOutputAttributeName, "comment"),
 			RecreateWhenSecretTypeChangedExternally(sdk.SecretTypeGenericString),
 		)),
 
@@ -56,7 +56,7 @@ func ImportSecretWithGenericString(ctx context.Context, d *schema.ResourceData, 
 		return nil, err
 	}
 
-	if err := handleSecretImport(d); err != nil {
+	if err := handleSecretImport(ctx, d); err != nil {
 		return nil, err
 	}
 

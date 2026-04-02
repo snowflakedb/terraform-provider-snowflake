@@ -387,3 +387,38 @@ func TestAcc_Stage_Issue3959(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_InternalStage(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Stage),
+		Steps: []resource.TestStep{
+			{
+				Config: internalStageConfig(id),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_stage.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_stage.test", "fully_qualified_name", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr("snowflake_stage.test", "database", TestDatabaseName),
+					resource.TestCheckResourceAttr("snowflake_stage.test", "schema", TestSchemaName),
+					resource.TestCheckResourceAttr("snowflake_stage.test", "comment", "Terraform acceptance test"),
+				),
+			},
+		},
+	})
+}
+
+func internalStageConfig(stageId sdk.SchemaObjectIdentifier) string {
+	return fmt.Sprintf(`
+resource "snowflake_stage" "test" {
+	database = "%[1]s"
+	schema = "%[2]s"
+	name = "%[3]s"
+	comment = "Terraform acceptance test"
+}
+`, stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
+}

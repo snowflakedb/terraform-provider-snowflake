@@ -567,7 +567,7 @@ func (b sqlBuilder) getInterface(field reflect.Value) interface{} {
 		return field.Interface()
 	}
 	// otherwise yolo
-	return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Interface()
+	return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Interface() //nolint:gosec
 }
 
 type sqlListClause struct {

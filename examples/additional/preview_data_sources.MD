@@ -1,8 +1,9 @@
 <!-- Section of preview data sources -->
-## Currently preview data sources 
+### Currently preview data sources 
 
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_authentication_policies](./docs/data-sources/authentication_policies)
+- [snowflake_catalog_integrations](./docs/data-sources/catalog_integrations)
 - [snowflake_cortex_search_services](./docs/data-sources/cortex_search_services)
 - [snowflake_current_account](./docs/data-sources/current_account)
 - [snowflake_current_role](./docs/data-sources/current_role)
@@ -11,13 +12,18 @@
 - [snowflake_dynamic_tables](./docs/data-sources/dynamic_tables)
 - [snowflake_external_functions](./docs/data-sources/external_functions)
 - [snowflake_external_tables](./docs/data-sources/external_tables)
+- [snowflake_external_volumes](./docs/data-sources/external_volumes)
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)
+- [snowflake_listings](./docs/data-sources/listings)
 - [snowflake_materialized_views](./docs/data-sources/materialized_views)
+- [snowflake_network_rules](./docs/data-sources/network_rules)
+- [snowflake_notebooks](./docs/data-sources/notebooks)
 - [snowflake_parameters](./docs/data-sources/parameters)
 - [snowflake_pipes](./docs/data-sources/pipes)
 - [snowflake_procedures](./docs/data-sources/procedures)
+- [snowflake_semantic_views](./docs/data-sources/semantic_views)
 - [snowflake_sequences](./docs/data-sources/sequences)
 - [snowflake_shares](./docs/data-sources/shares)
 - [snowflake_stages](./docs/data-sources/stages)

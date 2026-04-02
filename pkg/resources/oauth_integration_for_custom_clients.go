@@ -381,7 +381,8 @@ func CreateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 
 func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		client := meta.(*provider.Context).Client
+		providerCtx := meta.(*provider.Context)
+		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
@@ -552,7 +553,7 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err = d.Set(RelatedParametersAttributeName, []map[string]any{schemas.OauthForCustomClientsParametersToSchema([]*sdk.Parameter{param})}); err != nil {
+		if err = d.Set(RelatedParametersAttributeName, []map[string]any{schemas.OauthForCustomClientsParametersToSchema([]*sdk.Parameter{param}, providerCtx)}); err != nil {
 			return diag.FromErr(err)
 		}
 

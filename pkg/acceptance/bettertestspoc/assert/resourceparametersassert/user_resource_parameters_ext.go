@@ -3,8 +3,8 @@ package resourceparametersassert
 import (
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvidentifiers"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -68,4 +68,39 @@ func (u *UserResourceParametersAssert) HasAllDefaults() *UserResourceParametersA
 		HasUseCachedResult(true).
 		HasWeekOfYearPolicy(0).
 		HasWeekStart(0)
+}
+
+// TODO [SNOW-1501905]: generate defaults for each parameter
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorValueDefault() *UserResourceParametersAssert {
+	return u.HasEnableUnredactedQuerySyntaxError(false)
+}
+
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorKey() *UserResourceParametersAssert {
+	u.AddAssertion(assert.ResourceParameterKeySet(sdk.UserParameterEnableUnredactedQuerySyntaxError, string(sdk.UserParameterEnableUnredactedQuerySyntaxError)))
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorDefault() *UserResourceParametersAssert {
+	u.AddAssertion(assert.ResourceParameterDefaultSet(sdk.UserParameterEnableUnredactedQuerySyntaxError, "false"))
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorDescriptionNotEmpty() *UserResourceParametersAssert {
+	u.AddAssertion(assert.ResourceParameterDescriptionPresent(sdk.UserParameterEnableUnredactedQuerySyntaxError))
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorKeyEmpty() *UserResourceParametersAssert {
+	u.AddAssertion(assert.ResourceParameterKeySet(sdk.UserParameterEnableUnredactedQuerySyntaxError, ""))
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorDefaultEmpty() *UserResourceParametersAssert {
+	u.AddAssertion(assert.ResourceParameterDefaultSet(sdk.UserParameterEnableUnredactedQuerySyntaxError, ""))
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorDescriptionEmpty() *UserResourceParametersAssert {
+	u.AddAssertion(assert.ResourceParameterDescriptionSet(sdk.UserParameterEnableUnredactedQuerySyntaxError, ""))
+	return u
 }

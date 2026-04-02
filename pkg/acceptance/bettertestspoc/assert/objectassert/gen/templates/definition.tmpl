@@ -9,8 +9,12 @@ type {{ $assertName }} struct {
 func {{ .Name }}(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
-        assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType{{ .Name }}, id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
-            return testClient.{{ .Name }}.Show
+        assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("{{ .Name }}"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
+            {{- if .IsDataSourceOutput }}
+                return testClient.{{ TrimSuffix .Name "Details" }}.Describe
+            {{- else }}
+                return testClient.{{ .Name }}.Show
+            {{- end }}
         }),
     }
 }

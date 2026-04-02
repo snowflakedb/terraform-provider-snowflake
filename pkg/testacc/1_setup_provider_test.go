@@ -7,16 +7,16 @@ import (
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+type ProviderFactory = map[string]func() (tfprotov6.ProviderServer, error)
 
 var (
 	// TODO [SNOW-2661409]: check all the places using TestAccProvider directly
@@ -40,13 +40,19 @@ func setUpProvider() error {
 }
 
 var (
-	functionsAndProceduresProviderFactory     = providerFactoryUsingCache("FunctionsAndProcedures")
-	viewsProviderFactory                      = providerFactoryUsingCache("Views")
-	tagsProviderFactory                       = providerFactoryUsingCache("Tags")
-	servicesProviderFactory                   = providerFactoryUsingCache("Services")
-	userPasswordPoliciesProviderFactory       = providerFactoryUsingCache("UserPasswordPolicies")
-	userAuthenticationPoliciesProviderFactory = providerFactoryUsingCache("UserAuthenticationPolicies")
-	explicitAccountAdminRoleProviderFactory   = providerFactoryUsingCache("ExplicitAccountAdminRole")
+	functionsAndProceduresProviderFactory            = providerFactoryUsingCache("FunctionsAndProcedures")
+	viewsProviderFactory                             = providerFactoryUsingCache("Views")
+	tagsProviderFactory                              = providerFactoryUsingCache("Tags")
+	tagsWithExperimentFlagProviderFactory            = providerFactoryUsingCache("TagsWithExperimentFlag")
+	servicesProviderFactory                          = providerFactoryUsingCache("Services")
+	userPasswordPoliciesProviderFactory              = providerFactoryUsingCache("UserPasswordPolicies")
+	userAuthenticationPoliciesProviderFactory        = providerFactoryUsingCache("UserAuthenticationPolicies")
+	explicitAccountAdminRoleProviderFactory          = providerFactoryUsingCache("ExplicitAccountAdminRole")
+	strictPrivilegeManagementGrantProviderFactory    = providerFactoryUsingCache("StrictPrivilegeManagementGrantProvider")
+	grantsImportValidationProviderFactory            = providerFactoryUsingCache("GrantsImportValidationProvider")
+	grantsImportValidationAndStrictProviderFactory   = providerFactoryUsingCache("GrantsImportValidationAndStrictProvider")
+	userEnableDefaultWorkloadIdentityProviderFactory = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
+	s3StageProviderFactory                           = providerFactoryUsingCache("StageExternalS3")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate
@@ -54,8 +60,8 @@ var secondaryAccountProviderFactory = providerFactoryUsingCache("SecondaryAccoun
 
 func acceptanceTestsProvider() *schema.Provider {
 	p := provider.Provider()
-	p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
-	p.DataSourcesMap["snowflake_semantic_views"] = datasources.SemanticViews()
+	// add resources and data sources that are not ready here like:
+	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	return p
 }
 

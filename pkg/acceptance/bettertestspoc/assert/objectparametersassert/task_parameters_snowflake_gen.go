@@ -106,6 +106,8 @@ func (t *TaskParametersAssert) HasAllDefaults() *TaskParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterRowsPerResultset, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterS3StageVpceDnsName, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterSearchPath, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterServerlessTaskMaxStatementSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterServerlessTaskMinStatementSize, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.TaskParameterStrictJsonOutput, sdk.ParameterTypeSnowflakeDefault).
@@ -168,6 +170,8 @@ func (t *TaskParametersAssert) HasAllDefaultsExplicit() *TaskParametersAssert {
 		HasDefaultRowsPerResultsetValueExplicit().
 		HasDefaultS3StageVpceDnsNameValueExplicit().
 		HasDefaultSearchPathValueExplicit().
+		HasDefaultServerlessTaskMaxStatementSizeValueExplicit().
+		HasDefaultServerlessTaskMinStatementSizeValueExplicit().
 		HasDefaultStatementQueuedTimeoutInSecondsValueExplicit().
 		HasDefaultStatementTimeoutInSecondsValueExplicit().
 		HasDefaultStrictJsonOutputValueExplicit().
@@ -377,6 +381,16 @@ func (t *TaskParametersAssert) HasS3StageVpceDnsName(expected string) *TaskParam
 
 func (t *TaskParametersAssert) HasSearchPath(expected string) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterValueSet(sdk.TaskParameterSearchPath, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk.WarehouseSize) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasServerlessTaskMinStatementSize(expected sdk.WarehouseSize) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
 	return t
 }
 
@@ -674,6 +688,16 @@ func (t *TaskParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *T
 	return t
 }
 
+func (t *TaskParametersAssert) HasServerlessTaskMaxStatementSizeLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterServerlessTaskMaxStatementSize, expected))
+	return t
+}
+
+func (t *TaskParametersAssert) HasServerlessTaskMinStatementSizeLevel(expected sdk.ParameterType) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterServerlessTaskMinStatementSize, expected))
+	return t
+}
+
 func (t *TaskParametersAssert) HasStatementQueuedTimeoutInSecondsLevel(expected sdk.ParameterType) *TaskParametersAssert {
 	t.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.TaskParameterStatementQueuedTimeoutInSeconds, expected))
 	return t
@@ -931,6 +955,14 @@ func (t *TaskParametersAssert) HasDefaultSearchPathValue() *TaskParametersAssert
 	return t.HasDefaultParameterValue(sdk.TaskParameterSearchPath)
 }
 
+func (t *TaskParametersAssert) HasDefaultServerlessTaskMaxStatementSizeValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterServerlessTaskMaxStatementSize)
+}
+
+func (t *TaskParametersAssert) HasDefaultServerlessTaskMinStatementSizeValue() *TaskParametersAssert {
+	return t.HasDefaultParameterValue(sdk.TaskParameterServerlessTaskMinStatementSize)
+}
+
 func (t *TaskParametersAssert) HasDefaultStatementQueuedTimeoutInSecondsValue() *TaskParametersAssert {
 	return t.HasDefaultParameterValue(sdk.TaskParameterStatementQueuedTimeoutInSeconds)
 }
@@ -1165,6 +1197,14 @@ func (t *TaskParametersAssert) HasDefaultS3StageVpceDnsNameValueExplicit() *Task
 
 func (t *TaskParametersAssert) HasDefaultSearchPathValueExplicit() *TaskParametersAssert {
 	return t.HasSearchPath("$current, $public")
+}
+
+func (t *TaskParametersAssert) HasDefaultServerlessTaskMaxStatementSizeValueExplicit() *TaskParametersAssert {
+	return t.HasServerlessTaskMaxStatementSize(sdk.WarehouseSize("X2Large"))
+}
+
+func (t *TaskParametersAssert) HasDefaultServerlessTaskMinStatementSizeValueExplicit() *TaskParametersAssert {
+	return t.HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall)
 }
 
 func (t *TaskParametersAssert) HasDefaultStatementQueuedTimeoutInSecondsValueExplicit() *TaskParametersAssert {

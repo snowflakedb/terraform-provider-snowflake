@@ -7,6 +7,9 @@ import (
 	"regexp"
 	"testing"
 
+	tfjson "github.com/hashicorp/terraform-json"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -14,8 +17,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -455,6 +458,45 @@ func TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate(t *testing.T) {
 						HasCommentString(comment),
 					resourceshowoutputassert.OrganizationAccountShowOutput(t, completePropertiesModel.ResourceReference()).
 						HasComment(comment),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_CurrentOrganizationAccount_migrateFromV2_10_0(t *testing.T) {
+	testClient().EnsureValidNonProdOrganizationAccountIsUsed(t)
+
+	currentOrganizationAccountName := testClient().OrganizationAccount.ShowCurrent(t).AccountName
+
+	provider := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.CurrentOrganizationAccountResource)).
+		WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
+
+	configModel := model.CurrentOrganizationAccount("test", currentOrganizationAccountName)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.10.0"),
+				Config:            config.FromModels(t, provider, configModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(configModel.ResourceReference(), "saml_identity_provider", "")),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(configModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, provider, configModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckNoResourceAttr(configModel.ResourceReference(), "saml_identity_provider")),
 				),
 			},
 		},

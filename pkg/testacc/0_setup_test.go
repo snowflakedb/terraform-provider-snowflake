@@ -13,7 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 const AcceptanceTestPrefix = "acc_test_"
@@ -103,7 +103,14 @@ func (atc *acceptanceTestContext) initialize() error {
 	}
 	atc.config = defaultConfig
 	atc.client = client
-	atc.testClient = helpers.NewTestClient(client, TestDatabaseName, TestSchemaName, TestWarehouseName, acceptancetests.ObjectsSuffix)
+	atc.testClient = helpers.NewTestClient(
+		client,
+		TestDatabaseName,
+		TestSchemaName,
+		TestWarehouseName,
+		acceptancetests.ObjectsSuffix,
+		testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+	)
 
 	ctx := context.Background()
 	db, dbCleanup, err := testClient().CreateTestDatabase(ctx, false)
@@ -135,7 +142,14 @@ func (atc *acceptanceTestContext) initialize() error {
 		}
 		atc.secondaryConfig = secondaryConfig
 		atc.secondaryClient = secondaryClient
-		atc.secondaryTestClient = helpers.NewTestClient(secondaryClient, TestDatabaseName, TestSchemaName, TestWarehouseName, acceptancetests.ObjectsSuffix)
+		atc.secondaryTestClient = helpers.NewTestClient(
+			secondaryClient,
+			TestDatabaseName,
+			TestSchemaName,
+			TestWarehouseName,
+			acceptancetests.ObjectsSuffix,
+			testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+		)
 
 		if secondaryConfig.Account == defaultConfig.Account {
 			accTestLog.Printf("[WARN] Default and secondary configs are set to the same account; it may cause problems in tests requiring multiple accounts")

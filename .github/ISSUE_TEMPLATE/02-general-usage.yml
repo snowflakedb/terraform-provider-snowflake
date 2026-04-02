@@ -1,6 +1,5 @@
 name: General Usage
 description: General help or questions about the usage of provider.
-title: "[General Usage]: "
 labels: ["general-usage"]
 body:
   - type: markdown

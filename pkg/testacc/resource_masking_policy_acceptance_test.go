@@ -14,12 +14,14 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -374,6 +376,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 	body := "case when current_role() in ('ANALYST') then val else sha2(val, 512) end"
 	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
 	variableModel := accconfig.SetMapStringVariable("arguments")
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	commonVariables := config.Variables{
 		"arguments": config.SetVariable(
@@ -392,9 +395,9 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            maskingPolicyConfig(id),
+				Config:            providerConfig + maskingPolicyConfig(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", id.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", id.FullyQualifiedName()),
@@ -544,6 +547,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 			Type: testdatatypes.DataTypeVarchar,
 		},
 	}, body, testdatatypes.DataTypeVarchar.ToSqlWithoutUnknowns()).WithComment(comment).WithExemptOtherPolicies(r.BooleanTrue)
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resourceName := "snowflake_masking_policy.test"
 	resource.Test(t, resource.TestCase{
@@ -552,9 +556,9 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.95.0"),
-				Config:            maskingPolicyV0950(id, body, comment),
+				Config:            providerConfig + maskingPolicyV0950(id, body, comment),
 				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
 					HasNameString(id.Name()).
 					HasDatabaseString(id.DatabaseName()).
@@ -1066,6 +1070,60 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 					}).
 					HasReturnDataTypeString(testdatatypes.DefaultVarcharAsString),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_MaskingPolicy_Decfloat(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	body := "REPLACE('X', 1, 2)::DECFLOAT"
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, datatypes.DecfloatLegacyDataType)
+	variableModel := accconfig.SetMapStringVariable("arguments")
+
+	commonVariables := config.Variables{
+		"arguments": config.SetVariable(
+			config.MapVariable(map[string]config.Variable{
+				"name": config.StringVariable("A"),
+				"type": config.StringVariable(datatypes.DecfloatLegacyDataType),
+			}),
+		),
+	}
+
+	resourceName := "snowflake_masking_policy.test"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.MaskingPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:          accconfig.FromModels(t, variableModel, policyModel),
+				ConfigVariables: commonVariables,
+				Check: assertThat(t, resourceassert.MaskingPolicyResource(t, resourceName).
+					HasNameString(id.Name()).
+					HasDatabaseString(id.DatabaseName()).
+					HasSchemaString(id.SchemaName()).
+					HasReturnDataTypeString("DECFLOAT(38)").
+					HasFullyQualifiedNameString(id.FullyQualifiedName()).
+					HasBodyString(body).
+					HasExemptOtherPoliciesString(r.BooleanDefault).
+					HasArguments([]sdk.TableColumnSignature{
+						{
+							Name: "A",
+							Type: testdatatypes.DataTypeDecfloat,
+						},
+					}),
+				),
+			},
+			{
+				ConfigVariables:         commonVariables,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"exempt_other_policies"},
 			},
 		},
 	})

@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -156,6 +157,7 @@ func TestInt_Users(t *testing.T) {
 		assertThatObject(t, objectassert.UserFromObject(t, user).
 			HasName(id.Name()).
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(false).
 			HasLoginName(strings.ToUpper(loginName)).
 			HasDefaultRole(defaultRole),
 		)
@@ -328,6 +330,7 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(false).
 			HasHasRsaPublicKey(true),
 		)
 	})
@@ -335,6 +338,7 @@ func TestInt_Users(t *testing.T) {
 	t.Run("create: all object properties - type service", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		currentRole := testClientHelper().Context.CurrentRole(t)
+		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 
 		// omitting FirstName, MiddleName, LastName, Password, MustChangePassword, and MinsToBypassMFA
 		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
@@ -350,8 +354,19 @@ func TestInt_Users(t *testing.T) {
 			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
-			Comment:               sdk.String("some comment"),
-			Type:                  sdk.Pointer(sdk.UserTypeService),
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+					Issuer:  sdk.String("https://accounts.google.com"),
+					Subject: sdk.String(subject),
+					OidcAudienceList: []sdk.StringListItemWrapper{
+						{
+							Value: "https://accounts.google.com/o/oauth2/auth",
+						},
+					},
+				},
+			},
+			Comment: sdk.String("some comment"),
+			Type:    sdk.Pointer(sdk.UserTypeService),
 		}}
 
 		err := client.Users.Create(ctx, id, createOpts)
@@ -412,14 +427,31 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(false).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      subject,
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
 		)
 	})
 
 	t.Run("create: all object properties - type legacy service", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		currentRole := testClientHelper().Context.CurrentRole(t)
-
+		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, and MinsToBypassMFA
 		createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
 			Password:              sdk.String(password),
@@ -436,8 +468,19 @@ func TestInt_Users(t *testing.T) {
 			DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 			RSAPublicKey:          sdk.String(key),
 			RSAPublicKey2:         sdk.String(key2),
-			Comment:               sdk.String("some comment"),
-			Type:                  sdk.Pointer(sdk.UserTypeLegacyService),
+			WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+				OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+					Issuer:  sdk.String("https://accounts.google.com"),
+					Subject: sdk.String(subject),
+					OidcAudienceList: []sdk.StringListItemWrapper{
+						{
+							Value: "https://accounts.google.com/o/oauth2/auth",
+						},
+					},
+				},
+			},
+			Comment: sdk.String("some comment"),
+			Type:    sdk.Pointer(sdk.UserTypeLegacyService),
 		}}
 
 		err := client.Users.Create(ctx, id, createOpts)
@@ -498,9 +541,229 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
 		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      subject,
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
+		)
 	})
+
+	type awsWifData struct {
+		accountNumber string
+		arn           string
+	}
+
+	type azureWifData struct {
+		issuer  string
+		subject string
+	}
+
+	type gcpWifData struct {
+		subject string
+	}
+
+	awsWifConfig := func(arn string) *sdk.UserObjectWorkloadIdentityProperties {
+		return &sdk.UserObjectWorkloadIdentityProperties{
+			AwsType: &sdk.UserObjectWorkloadIdentityAws{
+				Arn: sdk.String(arn),
+			},
+		}
+	}
+	awsWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, account string) {
+		assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
+			IamRole:      "test-role",
+			Type:         "IAM_ROLE",
+			AwsAccount:   account,
+			AwsPartition: "aws",
+		})
+	}
+
+	azureWifConfig := func(issuer string, subject string) *sdk.UserObjectWorkloadIdentityProperties {
+		return &sdk.UserObjectWorkloadIdentityProperties{
+			AzureType: &sdk.UserObjectWorkloadIdentityAzure{
+				Issuer:  sdk.String(issuer),
+				Subject: sdk.String(subject),
+			},
+		}
+	}
+	azureWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, issuer string, subject string) {
+		assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
+			Issuer:  issuer,
+			Subject: subject,
+		})
+	}
+
+	gcpWifConfig := func(subject string) *sdk.UserObjectWorkloadIdentityProperties {
+		return &sdk.UserObjectWorkloadIdentityProperties{
+			GcpType: &sdk.UserObjectWorkloadIdentityGcp{
+				Subject: sdk.String(subject),
+			},
+		}
+	}
+	gcpWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, subject string) {
+		assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
+			Subject: subject,
+		})
+	}
+	wifCreateTestCases := []struct {
+		provider     sdk.WIFType
+		userType     sdk.UserType
+		setup        func() any
+		metadata     any
+		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityProperties
+		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
+	}{
+		{
+			provider: sdk.WIFTypeAWS,
+			userType: sdk.UserTypeService,
+			setup: func() any {
+				accountNumber := random.NumericN(12)
+				return awsWifData{
+					accountNumber: accountNumber,
+					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return awsWifConfig(data.(awsWifData).arn)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
+			},
+		},
+		{
+			provider: sdk.WIFTypeAzure,
+			userType: sdk.UserTypeService,
+			setup: func() any {
+				return azureWifData{
+					issuer:  testvars.MicrosoftIssuer,
+					subject: random.AlphaN(10),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
+			},
+		},
+		{
+			provider: sdk.WIFTypeGCP,
+			userType: sdk.UserTypeService,
+			setup: func() any {
+				return gcpWifData{
+					subject: random.NumericN(10),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return gcpWifConfig(data.(gcpWifData).subject)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
+			},
+		},
+		{
+			provider: sdk.WIFTypeAWS,
+			userType: sdk.UserTypeLegacyService,
+			setup: func() any {
+				accountNumber := random.NumericN(12)
+				return awsWifData{
+					accountNumber: accountNumber,
+					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return awsWifConfig(data.(awsWifData).arn)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
+			},
+		},
+		{
+			provider: sdk.WIFTypeAzure,
+			userType: sdk.UserTypeLegacyService,
+			setup: func() any {
+				return azureWifData{
+					issuer:  testvars.MicrosoftIssuer,
+					subject: random.AlphaN(10),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
+			},
+		},
+		{
+			provider: sdk.WIFTypeGCP,
+			userType: sdk.UserTypeLegacyService,
+			setup: func() any {
+				return gcpWifData{
+					subject: random.NumericN(10),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return gcpWifConfig(data.(gcpWifData).subject)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
+			},
+		},
+	}
+
+	for _, tt := range wifCreateTestCases {
+		t.Run(fmt.Sprintf("create: type %s with %s workload identity", tt.userType, tt.provider), func(t *testing.T) {
+			id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+			currentRole := testClientHelper().Context.CurrentRole(t)
+
+			data := tt.setup()
+
+			createOpts := &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
+				WorkloadIdentity: tt.wifConfig(data),
+				Type:             sdk.Pointer(tt.userType),
+			}}
+
+			err := client.Users.Create(ctx, id, createOpts)
+			require.NoError(t, err)
+			t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
+
+			user, err := client.Users.ShowByID(ctx, id)
+			require.NoError(t, err)
+
+			assertThatObject(t, objectassert.User(t, user.ID()).
+				HasName(user.Name).
+				HasType(string(tt.userType)).
+				HasHasWorkloadIdentity(true).
+				HasOwner(currentRole.Name()),
+			)
+
+			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+			require.NoError(t, err)
+			assert.Equal(t, 1, len(methods))
+			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+				HasName("DEFAULT").
+				HasType(tt.provider).
+				HasNoComment().
+				HasLastUsedNotEmpty().
+				HasCreatedOnNotEmpty()
+			tt.wifAssertion(t, assertion, data)
+			assertThatObject(t, assertion)
+		})
+	}
 
 	incorrectObjectPropertiesForServiceType := []struct {
 		property             string
@@ -937,6 +1200,7 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(false).
 			HasHasRsaPublicKey(true).
 			HasType(string(sdk.UserTypePerson)),
 		)
@@ -990,6 +1254,7 @@ func TestInt_Users(t *testing.T) {
 			HasOwner(currentRole.Name()),
 		)
 
+		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, Password, MustChangePassword, MinsToBypassMFA, and DisableMfa
 		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
 			ObjectProperties: &sdk.UserAlterObjectProperties{
@@ -1006,7 +1271,18 @@ func TestInt_Users(t *testing.T) {
 					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
-					Comment:               sdk.String("some comment"),
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+							Issuer:  sdk.String("https://accounts.google.com"),
+							Subject: sdk.String(subject),
+							OidcAudienceList: []sdk.StringListItemWrapper{
+								{
+									Value: "https://accounts.google.com/o/oauth2/auth",
+								},
+							},
+						},
+					},
+					Comment: sdk.String("some comment"),
 				},
 			},
 		}}
@@ -1041,7 +1317,24 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(false).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      subject,
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
 		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -1058,6 +1351,7 @@ func TestInt_Users(t *testing.T) {
 				DefaultSecondaryRoles: sdk.Bool(true),
 				RSAPublicKey:          sdk.Bool(true),
 				RSAPublicKey2:         sdk.Bool(true),
+				WorkloadIdentity:      sdk.Bool(true),
 				Comment:               sdk.Bool(true),
 			},
 		}}
@@ -1070,6 +1364,10 @@ func TestInt_Users(t *testing.T) {
 			HasDisplayName("").
 			HasOwner(currentRole.Name()),
 		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
 	})
 
 	t.Run("alter: set and unset object properties - type legacy service", func(t *testing.T) {
@@ -1084,6 +1382,7 @@ func TestInt_Users(t *testing.T) {
 			HasOwner(currentRole.Name()),
 		)
 
+		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, MinsToBypassMFA, and DisableMfa
 		alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
 			ObjectProperties: &sdk.UserAlterObjectProperties{
@@ -1102,7 +1401,18 @@ func TestInt_Users(t *testing.T) {
 					DefaultSecondaryRoles: &sdk.SecondaryRoles{All: sdk.Bool(true)},
 					RSAPublicKey:          sdk.String(key),
 					RSAPublicKey2:         sdk.String(key2),
-					Comment:               sdk.String("some comment"),
+					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
+						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
+							Issuer:  sdk.String("https://accounts.google.com"),
+							Subject: sdk.String(subject),
+							OidcAudienceList: []sdk.StringListItemWrapper{
+								{
+									Value: "https://accounts.google.com/o/oauth2/auth",
+								},
+							},
+						},
+					},
+					Comment: sdk.String("some comment"),
 				},
 			},
 		}}
@@ -1137,7 +1447,24 @@ func TestInt_Users(t *testing.T) {
 			HasExpiresAtTimeNotEmpty().
 			HasLockedUntilTimeNotEmpty().
 			HasHasPassword(true).
+			HasHasWorkloadIdentity(true).
 			HasHasRsaPublicKey(true),
+		)
+
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 1, len(methods))
+		assertThatObject(t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+			HasName("DEFAULT").
+			HasType(sdk.WIFTypeOIDC).
+			HasNoComment().
+			HasLastUsedNotEmpty().
+			HasCreatedOnNotEmpty().
+			HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+				Issuer:       "https://accounts.google.com",
+				Subject:      subject,
+				AudienceList: []string{"https://accounts.google.com/o/oauth2/auth"},
+			}),
 		)
 
 		alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
@@ -1157,6 +1484,7 @@ func TestInt_Users(t *testing.T) {
 				RSAPublicKey:          sdk.Bool(true),
 				RSAPublicKey2:         sdk.Bool(true),
 				Comment:               sdk.Bool(true),
+				WorkloadIdentity:      sdk.Bool(true),
 			},
 		}}
 
@@ -1168,7 +1496,183 @@ func TestInt_Users(t *testing.T) {
 			HasDisplayName("").
 			HasOwner(currentRole.Name()),
 		)
+
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		require.NoError(t, err)
+		assert.Equal(t, 0, len(methods))
 	})
+
+	wifAlterTestCases := []struct {
+		provider     sdk.WIFType
+		userType     sdk.UserType
+		createUser   func(t *testing.T) (*sdk.User, func())
+		setup        func() any
+		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityProperties
+		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
+	}{
+		{
+			provider:   sdk.WIFTypeAWS,
+			userType:   sdk.UserTypeService,
+			createUser: testClientHelper().User.CreateServiceUser,
+			setup: func() any {
+				accountNumber := random.NumericN(12)
+				return awsWifData{
+					accountNumber: accountNumber,
+					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return awsWifConfig(data.(awsWifData).arn)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
+			},
+		},
+		{
+			provider:   sdk.WIFTypeAzure,
+			userType:   sdk.UserTypeService,
+			createUser: testClientHelper().User.CreateServiceUser,
+			setup: func() any {
+				return azureWifData{
+					issuer:  testvars.MicrosoftIssuer,
+					subject: random.AlphaN(10),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
+			},
+		},
+		{
+			provider:   sdk.WIFTypeGCP,
+			userType:   sdk.UserTypeService,
+			createUser: testClientHelper().User.CreateServiceUser,
+			setup: func() any {
+				return gcpWifData{
+					subject: random.NumericN(10),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return gcpWifConfig(data.(gcpWifData).subject)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
+			},
+		},
+		{
+			provider:   sdk.WIFTypeAWS,
+			userType:   sdk.UserTypeLegacyService,
+			createUser: testClientHelper().User.CreateLegacyServiceUser,
+			setup: func() any {
+				accountNumber := random.NumericN(12)
+				return awsWifData{
+					accountNumber: accountNumber,
+					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return awsWifConfig(data.(awsWifData).arn)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
+			},
+		},
+		{
+			provider:   sdk.WIFTypeAzure,
+			userType:   sdk.UserTypeLegacyService,
+			createUser: testClientHelper().User.CreateLegacyServiceUser,
+			setup: func() any {
+				return azureWifData{
+					issuer:  testvars.MicrosoftIssuer,
+					subject: random.AlphaN(10),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
+			},
+		},
+		{
+			provider:   sdk.WIFTypeGCP,
+			userType:   sdk.UserTypeLegacyService,
+			createUser: testClientHelper().User.CreateLegacyServiceUser,
+			setup: func() any {
+				return gcpWifData{
+					subject: random.NumericN(10),
+				}
+			},
+			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityProperties {
+				return gcpWifConfig(data.(gcpWifData).subject)
+			},
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
+			},
+		},
+	}
+
+	for _, tt := range wifAlterTestCases {
+		t.Run(fmt.Sprintf("alter: set and unset %s workload identity - type %s", tt.provider, tt.userType), func(t *testing.T) {
+			user, userCleanup := tt.createUser(t)
+			t.Cleanup(userCleanup)
+
+			data := tt.setup()
+
+			// Verify initial state - no WIF
+			assertThatObject(t, objectassert.UserFromObject(t, user).
+				HasHasWorkloadIdentity(false),
+			)
+
+			// Set WIF
+			alterOpts := &sdk.AlterUserOptions{Set: &sdk.UserSet{
+				ObjectProperties: &sdk.UserAlterObjectProperties{
+					UserObjectProperties: sdk.UserObjectProperties{
+						WorkloadIdentity: tt.wifConfig(data),
+					},
+				},
+			}}
+
+			err := client.Users.Alter(ctx, user.ID(), alterOpts)
+			require.NoError(t, err)
+
+			assertThatObject(t, objectassert.User(t, user.ID()).
+				HasHasWorkloadIdentity(true),
+			)
+
+			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+			require.NoError(t, err)
+			assert.Equal(t, 1, len(methods))
+			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
+				HasName("DEFAULT").
+				HasType(tt.provider).
+				HasNoComment().
+				HasLastUsedNotEmpty().
+				HasCreatedOnNotEmpty()
+			tt.wifAssertion(t, assertion, data)
+			assertThatObject(t, assertion)
+
+			// Unset WIF
+			alterOpts = &sdk.AlterUserOptions{Unset: &sdk.UserUnset{
+				ObjectProperties: &sdk.UserObjectPropertiesUnset{
+					WorkloadIdentity: sdk.Bool(true),
+				},
+			}}
+
+			err = client.Users.Alter(ctx, user.ID(), alterOpts)
+			require.NoError(t, err)
+
+			assertThatObject(t, objectassert.User(t, user.ID()).
+				HasHasWorkloadIdentity(false),
+			)
+
+			methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+			require.NoError(t, err)
+			assert.Equal(t, 0, len(methods))
+		})
+	}
 
 	incorrectAlterForServiceType := []struct {
 		property           string
@@ -1841,7 +2345,8 @@ func TestInt_Users(t *testing.T) {
 			HasHasPassword(false).
 			HasHasRsaPublicKey(false).
 			HasType(""). // underlying null
-			HasHasMfa(false),
+			HasHasMfa(false).
+			HasHasWorkloadIdentity(false),
 		)
 	})
 

@@ -18,63 +18,60 @@ import (
 // TODO [SNOW-1866453]: add more acc tests for the remaining parameters
 
 func TestAcc_AccountParameter(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterAllowIDToken), "true")
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckAccountParameterUnset(t, sdk.AccountParameterAllowIDToken),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterAllowIDToken)).
-					HasValueString("true"),
-				),
-			},
-		},
-	})
-}
+	testCases := []struct {
+		param        sdk.AccountParameter
+		value        string
+		defaultLevel sdk.ParameterType
+	}{
+		{sdk.AccountParameterAllowIDToken, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterPreventLoadFromInlineURL, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterRequireStorageIntegrationForStageCreation, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterInitialReplicationSizeLimitInTB, "3.0", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterCsvTimestampFormat, "YYYY-MM-DD", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterDisableUserPrivilegeGrants, resources.BooleanTrue, sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterAllowBindValuesAccess, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterAllowedSpcsWorkloadTypes, "ALL", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterDataMetricSchedule, "60 MINUTES", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterDefaultDbtVersion, "1.9.4", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterDisallowedSpcsWorkloadTypes, "", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterEnableBudgetEventLogging, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterCortexModelsAllowlist, "All", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterEnableCortexAnalyst, "true", sdk.ParameterTypeSystem},
+		{sdk.AccountParameterEnableDataCompaction, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterEnableGetDdlUseDataTypeAlias, "false", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterEnableIcebergMergeOnRead, "true", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterEnableNotebookCreationInPersonalDb, "false", sdk.ParameterTypeSystem},
+		{sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement, "false", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterEnableTagPropagationEventLogging, "false", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterIcebergVersionDefault, "2", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterReadConsistencyMode, "SESSION", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterRowTimestampDefault, "false", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterSqlTraceQueryText, "OFF", sdk.ParameterTypeSnowflakeDefault},
+		{sdk.AccountParameterUseWorkspacesForSql, "false", sdk.ParameterTypeSnowflakeDefault},
+	}
 
-func TestAcc_AccountParameter_PREVENT_LOAD_FROM_INLINE_URL(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterPreventLoadFromInlineURL), "true")
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckAccountParameterUnset(t, sdk.AccountParameterPreventLoadFromInlineURL),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterPreventLoadFromInlineURL)).
-					HasValueString("true"),
-				),
-			},
-		},
-	})
-}
+	for _, tt := range testCases {
+		t.Run(string(tt.param), func(t *testing.T) {
+			accountParameterModel := model.AccountParameter("test", string(tt.param), tt.value)
 
-func TestAcc_AccountParameter_REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterRequireStorageIntegrationForStageCreation), "true")
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckAccountParameterUnset(t, sdk.AccountParameterRequireStorageIntegrationForStageCreation),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterRequireStorageIntegrationForStageCreation)).
-					HasValueString("true"),
-				),
-			},
-		},
-	})
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+					tfversion.RequireAbove(tfversion.Version1_5_0),
+				},
+				CheckDestroy: CheckAccountParameterUnsetToDefaultLevel(t, tt.param, tt.defaultLevel),
+				Steps: []resource.TestStep{
+					{
+						Config: config.FromModels(t, accountParameterModel),
+						Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
+							HasKeyString(string(tt.param)).
+							HasValueString(tt.value),
+						),
+					},
+				},
+			})
+		})
+	}
 }
 
 // Proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2573 is solved.
@@ -126,80 +123,6 @@ func TestAcc_AccountParameter_Issue3025(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{},
-			},
-		},
-	})
-}
-
-func TestAcc_AccountParameter_ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterRequireStorageIntegrationForStageCreation), "true")
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckAccountParameterUnset(t, sdk.AccountParameterRequireStorageIntegrationForStageCreation),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterRequireStorageIntegrationForStageCreation)).
-					HasValueString("true"),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_AccountParameter_INITIAL_REPLICATION_SIZE_LIMIT_IN_TB(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterInitialReplicationSizeLimitInTB), "3.0")
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckAccountParameterUnset(t, sdk.AccountParameterInitialReplicationSizeLimitInTB),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterInitialReplicationSizeLimitInTB)).
-					HasValueString("3.0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_AccountParameter_CSV_TIMESTAMP_FORMAT(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterCsvTimestampFormat), "YYYY-MM-DD")
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		CheckDestroy:             CheckAccountParameterUnset(t, sdk.AccountParameterCsvTimestampFormat),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterCsvTimestampFormat)).
-					HasValueString("YYYY-MM-DD"),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_AccountParameter_DISABLE_USER_PRIVILEGE_GRANTS(t *testing.T) {
-	accountParameterModel := model.AccountParameter("test", string(sdk.AccountParameterDisableUserPrivilegeGrants), resources.BooleanTrue)
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		CheckDestroy:             CheckAccountParameterUnset(t, sdk.AccountParameterDisableUserPrivilegeGrants),
-		Steps: []resource.TestStep{
-			{
-				Config: config.FromModels(t, accountParameterModel),
-				Check: assertThat(t, resourceassert.AccountParameterResource(t, accountParameterModel.ResourceReference()).
-					HasKeyString(string(sdk.AccountParameterDisableUserPrivilegeGrants)).
-					HasValueString(resources.BooleanTrue),
-				),
 			},
 		},
 	})

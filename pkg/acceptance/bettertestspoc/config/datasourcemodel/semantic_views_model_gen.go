@@ -16,7 +16,6 @@ type SemanticViewsModel struct {
 	Limit         tfconfig.Variable `json:"limit,omitempty"`
 	SemanticViews tfconfig.Variable `json:"semantic_views,omitempty"`
 	StartsWith    tfconfig.Variable `json:"starts_with,omitempty"`
-	WithDescribe  tfconfig.Variable `json:"with_describe,omitempty"`
 
 	*config.DatasourceModelMeta
 }
@@ -79,11 +78,6 @@ func (s *SemanticViewsModel) WithStartsWith(startsWith string) *SemanticViewsMod
 	return s
 }
 
-func (s *SemanticViewsModel) WithWithDescribe(withDescribe bool) *SemanticViewsModel {
-	s.WithDescribe = tfconfig.BoolVariable(withDescribe)
-	return s
-}
-
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -110,10 +104,5 @@ func (s *SemanticViewsModel) WithSemanticViewsValue(value tfconfig.Variable) *Se
 
 func (s *SemanticViewsModel) WithStartsWithValue(value tfconfig.Variable) *SemanticViewsModel {
 	s.StartsWith = value
-	return s
-}
-
-func (s *SemanticViewsModel) WithWithDescribeValue(value tfconfig.Variable) *SemanticViewsModel {
-	s.WithDescribe = value
 	return s
 }

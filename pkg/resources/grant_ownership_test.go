@@ -54,6 +54,30 @@ func TestGetOnObjectIdentifier(t *testing.T) {
 			Expected:   sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_table"),
 		},
 		{
+			Name:       "dbt project - schema object identifier",
+			ObjectType: sdk.ObjectTypeDbtProject,
+			ObjectName: "test_database.test_schema.test_dbt_project",
+			Expected:   sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_dbt_project"),
+		},
+		{
+			Name:       "semantic view - schema object identifier",
+			ObjectType: sdk.ObjectTypeSemanticView,
+			ObjectName: "test_database.test_schema.test_semantic_view",
+			Expected:   sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_semantic_view"),
+		},
+		{
+			Name:       "account - organization and account name",
+			ObjectType: sdk.ObjectTypeAccount,
+			ObjectName: "myorg.myaccount",
+			Expected:   sdk.NewAccountIdentifier("myorg", "myaccount"),
+		},
+		{
+			Name:       "validation - invalid account identifier (single part)",
+			ObjectType: sdk.ObjectTypeAccount,
+			ObjectName: "only_one_part",
+			Error:      `expected 2 in a form of "<organization_name>.<account_name>"`,
+		},
+		{
 			Name:       "account object identifier with dots",
 			ObjectType: sdk.ObjectTypeDatabase,
 			ObjectName: "\"database.name.with.dots\"",
@@ -66,10 +90,10 @@ func TestGetOnObjectIdentifier(t *testing.T) {
 			Expected:   sdk.NewAccountObjectIdentifier("to.many.parts.in.this.identifier"),
 		},
 		{
-			Name:       "validation - unsupported type",
-			ObjectType: sdk.ObjectTypeShare,
-			ObjectName: "some_share",
-			Error:      "object_type SHARE is not supported",
+			Name:       "validation - unsupported type (pseudo-object not in sdk.AllObjectTypes)",
+			ObjectType: sdk.ObjectTypeProgrammaticAccessToken,
+			ObjectName: "some_name",
+			Error:      "object_type PROGRAMMATIC ACCESS TOKEN is not supported",
 		},
 		{
 			Name:       "validation - invalid database object identifier",
@@ -142,6 +166,19 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 				Object: &sdk.Object{
 					ObjectType: sdk.ObjectTypeTable,
 					Name:       sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_table"),
+				},
+			},
+		},
+		{
+			Name: "dbt project object type",
+			On: map[string]any{
+				"object_type": "DBT PROJECT",
+				"object_name": "test_database.test_schema.test_dbt_project",
+			},
+			Expected: sdk.OwnershipGrantOn{
+				Object: &sdk.Object{
+					ObjectType: sdk.ObjectTypeDbtProject,
+					Name:       sdk.NewSchemaObjectIdentifier("test_database", "test_schema", "test_dbt_project"),
 				},
 			},
 		},

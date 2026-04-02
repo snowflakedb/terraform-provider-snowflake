@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -152,5 +153,15 @@ func (c *SchemaClient) Alter(t *testing.T, id sdk.DatabaseObjectIdentifier, opts
 	ctx := context.Background()
 
 	err := c.client().Alter(ctx, id, opts)
+	require.NoError(t, err)
+}
+
+func (c *SchemaClient) AlterDefaultStreamlitNotebookWarehouse(t *testing.T, id sdk.DatabaseObjectIdentifier, warehouse sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`ALTER SCHEMA %s SET DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE = '%s'`, id.FullyQualifiedName(), warehouse.Name())
+
+	_, err := c.context.client.ExecForTests(ctx, query)
 	require.NoError(t, err)
 }

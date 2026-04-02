@@ -30,13 +30,13 @@ func (s *CreateSemanticViewRequest) WithSemanticViewRelationships(semanticViewRe
 }
 
 // adjusted manually
-func (s *CreateSemanticViewRequest) WithSemanticViewFacts(semanticViewFacts []SemanticExpressionRequest) *CreateSemanticViewRequest {
+func (s *CreateSemanticViewRequest) WithSemanticViewFacts(semanticViewFacts []FactDefinitionRequest) *CreateSemanticViewRequest {
 	s.semanticViewFacts = semanticViewFacts
 	return s
 }
 
 // adjusted manually
-func (s *CreateSemanticViewRequest) WithSemanticViewDimensions(semanticViewDimensions []SemanticExpressionRequest) *CreateSemanticViewRequest {
+func (s *CreateSemanticViewRequest) WithSemanticViewDimensions(semanticViewDimensions []DimensionDefinitionRequest) *CreateSemanticViewRequest {
 	s.semanticViewDimensions = semanticViewDimensions
 	return s
 }
@@ -77,6 +77,11 @@ func (s *AlterSemanticViewRequest) WithSetComment(setComment string) *AlterSeman
 
 func (s *AlterSemanticViewRequest) WithUnsetComment(unsetComment bool) *AlterSemanticViewRequest {
 	s.UnsetComment = &unsetComment
+	return s
+}
+
+func (s *AlterSemanticViewRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterSemanticViewRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 
@@ -292,6 +297,20 @@ func (s *SemanticSqlExpressionRequest) WithSqlExpression(SqlExpression string) *
 	return s
 }
 
+func NewFactDefinitionRequest() *FactDefinitionRequest {
+	return &FactDefinitionRequest{}
+}
+
+func (f *FactDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *FactDefinitionRequest {
+	f.semanticExpression = &semanticExpression
+	return f
+}
+
+func (f *FactDefinitionRequest) WithIsPrivate(isPrivate bool) *FactDefinitionRequest {
+	f.isPrivate = &isPrivate
+	return f
+}
+
 func NewMetricDefinitionRequest() *MetricDefinitionRequest {
 	return &MetricDefinitionRequest{}
 }
@@ -306,13 +325,27 @@ func (s *MetricDefinitionRequest) WithWindowFunctionMetricDefinition(windowFunct
 	return s
 }
 
+func (s *MetricDefinitionRequest) WithIsPrivate(isPrivate bool) *MetricDefinitionRequest {
+	s.isPrivate = &isPrivate
+	return s
+}
+
+func NewDimensionDefinitionRequest() *DimensionDefinitionRequest {
+	return &DimensionDefinitionRequest{}
+}
+
+func (d *DimensionDefinitionRequest) WithSemanticExpression(semanticExpression SemanticExpressionRequest) *DimensionDefinitionRequest {
+	d.semanticExpression = &semanticExpression
+	return d
+}
+
 func NewWindowFunctionMetricDefinitionRequest(
-	WindowFunction string,
-	Metric string,
+	qualifiedExpressionName *QualifiedExpressionNameRequest,
+	sqlExpression *SemanticSqlExpressionRequest,
 ) *WindowFunctionMetricDefinitionRequest {
 	s := WindowFunctionMetricDefinitionRequest{}
-	s.WindowFunction = WindowFunction
-	s.Metric = Metric
+	s.qualifiedExpressionName = qualifiedExpressionName
+	s.sqlExpression = sqlExpression
 	return &s
 }
 

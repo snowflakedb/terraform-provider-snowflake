@@ -5,15 +5,14 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (s *ServiceResourceAssert) HasExternalAccessIntegrations(expected ...sdk.AccountObjectIdentifier) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_access_integrations.#", fmt.Sprintf("%d", len(expected))))
-	for i, v := range expected {
-		s.AddAssertion(assert.ValueSet(fmt.Sprintf("external_access_integrations.%d", i), v.FullyQualifiedName()))
-	}
-	return s
+func (s *ServiceResourceAssert) HasExternalAccessIntegrationsIdentifier(expected ...sdk.AccountObjectIdentifier) *ServiceResourceAssert {
+	return s.HasExternalAccessIntegrations(collections.Map(expected, func(v sdk.AccountObjectIdentifier) string {
+		return v.FullyQualifiedName()
+	})...)
 }
 
 func (s *ServiceResourceAssert) HasFromSpecificationTextNotEmpty() *ServiceResourceAssert {

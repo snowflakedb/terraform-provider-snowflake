@@ -108,7 +108,6 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.FileFormat,
 		resources.ManagedAccount,
 		resources.MaterializedView,
-		resources.NetworkRule,
 		resources.NotificationIntegration,
 		resources.PasswordPolicy,
 		resources.Pipe,
@@ -190,6 +189,18 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.AuthenticationPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.AuthenticationPolicies.ShowByID)
 	},
+	resources.CatalogIntegrationAwsGlue: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
+	resources.CatalogIntegrationObjectStorage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
+	resources.CatalogIntegrationOpenCatalog: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
+	resources.CatalogIntegrationIcebergRest: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
+	},
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
 	},
@@ -210,6 +221,18 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.EmailNotificationIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NotificationIntegrations.ShowByID)
+	},
+	resources.ExternalAzureStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
+	resources.ExternalGcsStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
+	resources.ExternalS3Stage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
+	resources.ExternalS3CompatibleStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
 	},
 	resources.ExternalFunction: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ExternalFunctions.ShowByID)
@@ -250,6 +273,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ImageRepositories.ShowByID)
 	},
+	resources.InternalStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Stages.ShowByID)
+	},
 	resources.JobService: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Services.ShowByID)
 	},
@@ -273,6 +299,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.NetworkRule: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NetworkRules.ShowByID)
+	},
+	resources.Notebook: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Notebooks.ShowByID)
 	},
 	resources.NotificationIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NotificationIntegrations.ShowByID)
@@ -359,6 +388,15 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 		return runShowById(ctx, id, client.Stages.ShowByID)
 	},
 	resources.StorageIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
+	resources.StorageIntegrationAws: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
+	resources.StorageIntegrationAzure: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
+	},
+	resources.StorageIntegrationGcs: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.StorageIntegrations.ShowByID)
 	},
 	resources.StreamOnDirectoryTable: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
@@ -462,8 +500,21 @@ func CheckGrantDatabaseRoleDestroy(t *testing.T) func(*terraform.State) error {
 	}
 }
 
-// CheckAccountRolePrivilegesRevoked is a custom checks that should be later incorporated into generic CheckDestroy
+// CheckAccountRolePrivilegesRevoked is a custom check that should be later incorporated into generic CheckDestroy
 func CheckAccountRolePrivilegesRevoked(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+
+	return checkAccountRolePrivilegesRevoked(t, 0)
+}
+
+// CheckAccountRolePrivilegesRevokedAtMost checks if the number of granted privileges is less than or equal to the given number
+func CheckAccountRolePrivilegesRevokedAtMost(t *testing.T, atMost int) func(*terraform.State) error {
+	t.Helper()
+
+	return checkAccountRolePrivilegesRevoked(t, atMost)
+}
+
+func checkAccountRolePrivilegesRevoked(t *testing.T, atMost int) func(*terraform.State) error {
 	t.Helper()
 
 	return func(s *terraform.State) error {
@@ -484,8 +535,8 @@ func CheckAccountRolePrivilegesRevoked(t *testing.T) func(*terraform.State) erro
 			for _, grant := range grants {
 				grantedPrivileges = append(grantedPrivileges, grant.Privilege)
 			}
-			if len(grantedPrivileges) > 0 {
-				return fmt.Errorf("account role (%s) is still granted, granted privileges %v", id.FullyQualifiedName(), grantedPrivileges)
+			if len(grantedPrivileges) > atMost {
+				return fmt.Errorf("account role (%s) is still granted with more than %d privileges: %v", id.FullyQualifiedName(), atMost, grantedPrivileges)
 			}
 		}
 		return nil
@@ -712,6 +763,22 @@ func CheckAccountParameterUnset(t *testing.T, paramName sdk.AccountParameter) fu
 			parameter := testClient().Parameter.ShowAccountParameter(t, paramName)
 			if parameter.Level != sdk.ParameterTypeSnowflakeDefault {
 				return fmt.Errorf("expected parameter level empty, got %v", parameter.Level)
+			}
+		}
+		return nil
+	}
+}
+
+func CheckAccountParameterUnsetToDefaultLevel(t *testing.T, paramName sdk.AccountParameter, defaultLevel sdk.ParameterType) func(*terraform.State) error {
+	t.Helper()
+	return func(s *terraform.State) error {
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "snowflake_account_parameter" {
+				continue
+			}
+			parameter := testClient().Parameter.ShowAccountParameter(t, paramName)
+			if parameter.Level != defaultLevel {
+				return fmt.Errorf("expected parameter level %v, got %v", defaultLevel, parameter.Level)
 			}
 		}
 		return nil

@@ -252,7 +252,7 @@ func ReadDynamicTables(ctx context.Context, d *schema.ResourceData, meta any) di
 		request.WithLimit(&limit)
 	}
 
-	dts, err := client.DynamicTables.Show(context.Background(), request)
+	dts, err := client.DynamicTables.Show(ctx, request)
 	if err != nil {
 		log.Printf("[DEBUG] snowflake_dynamic_tables.go: %v", err)
 		d.SetId("")

@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -11,13 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// TODO [SNOW-2852837]: add describe output (handle correctly each subsection); add with_describe attribute
 var semanticViewsSchema = map[string]*schema.Schema{
-	"with_describe": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     true,
-		Description: "Runs DESC SEMANTIC VIEW for each semantic view returned by SHOW SEMANTIC VIEWS. The output of describe is saved to the description field. By default this value is set to true.",
-	},
 	"like":        likeSchema,
 	"in":          inSchema,
 	"starts_with": startsWithSchema,
@@ -36,14 +33,6 @@ var semanticViewsSchema = map[string]*schema.Schema{
 						Schema: schemas.ShowSemanticViewSchema,
 					},
 				},
-				resources.DescribeOutputAttributeName: {
-					Type:        schema.TypeList,
-					Computed:    true,
-					Description: "Holds the output of DESCRIBE SEMANTIC VIEW.",
-					Elem: &schema.Resource{
-						Schema: schemas.DescribeSemanticViewSchema,
-					},
-				},
 			},
 		},
 	},
@@ -51,10 +40,10 @@ var semanticViewsSchema = map[string]*schema.Schema{
 
 func SemanticViews() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: ReadSemanticViews,
+		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.SemanticViewDatasource), TrackingReadWrapper(datasources.SemanticViews, ReadSemanticViews)),
 		Schema:      semanticViewsSchema,
 		Description: "Data source used to get details of filtered semantic views. Filtering is aligned with the current possibilities for [SHOW SEMANTIC VIEWS](https://docs.snowflake.com/en/sql-reference/sql/show-semantic-views) query." +
-			" The results of SHOW and DESCRIBE are encapsulated in one output collection `semantic_views`.",
+			" The results are encapsulated in one output collection `semantic_views`. DESCRIBE is not currently supported and will be added before promoting the resource to stable.",
 	}
 }
 
@@ -79,17 +68,8 @@ func ReadSemanticViews(ctx context.Context, d *schema.ResourceData, meta any) di
 	flattenedSemanticViews := make([]map[string]any, len(semanticViews))
 	for i, semanticView := range semanticViews {
 		semanticView := semanticView
-		var semanticViewDetails []map[string]any
-		if d.Get("with_describe").(bool) {
-			describeResult, err := client.SemanticViews.Describe(ctx, semanticView.ID())
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			semanticViewDetails = schemas.SemanticViewDetailsToSchema(describeResult)
-		}
 		flattenedSemanticViews[i] = map[string]any{
-			resources.ShowOutputAttributeName:     []map[string]any{schemas.SemanticViewToSchema(&semanticView)},
-			resources.DescribeOutputAttributeName: semanticViewDetails,
+			resources.ShowOutputAttributeName: []map[string]any{schemas.SemanticViewToSchema(&semanticView)},
 		}
 	}
 	if err := d.Set("semantic_views", flattenedSemanticViews); err != nil {

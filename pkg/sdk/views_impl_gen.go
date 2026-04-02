@@ -12,8 +12,10 @@ import (
 
 var _ Views = (*views)(nil)
 
-var _ convertibleRow[View] = new(viewDBRow)
-var _ convertibleRow[ViewDetails] = new(viewDetailsRow)
+var (
+	_ convertibleRow[View]        = new(viewDBRow)
+	_ convertibleRow[ViewDetails] = new(viewDetailsRow)
+)
 
 type views struct {
 	client *Client
@@ -163,14 +165,12 @@ func (r *AlterViewRequest) toOpts() *AlterViewOptions {
 	}
 	if r.AddRowAccessPolicy != nil {
 		opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{
-			// adjusted manually
 			RowAccessPolicy: r.AddRowAccessPolicy.RowAccessPolicy,
 			On:              r.AddRowAccessPolicy.On,
 		}
 	}
 	if r.DropRowAccessPolicy != nil {
 		opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{
-			// adjusted manually
 			RowAccessPolicy: r.DropRowAccessPolicy.RowAccessPolicy,
 		}
 	}

@@ -42,6 +42,9 @@ from bar;`
 	columnsListEndingWithComment := `CREATE OR REPLACE SECURE TEMPORARY VIEW "rgdxfmnfhh"."PUBLIC"."rgdxfmnfhh" (id PROJECTION POLICY pp MASKING POLICY mp COMMENT 'asdf', foo PROJECTION POLICY pp COMMENT 'foo (bar) hoge') COMMENT = 'Terraform test resource' ROW ACCESS policy rap on (title, title2) AGGREGATION POLICY rap ENTITY KEY (foo, bar)  AS SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES`
 	columnsListEndingWithID := `CREATE OR REPLACE SECURE TEMPORARY VIEW "rgdxfmnfhh"."PUBLIC"."rgdxfmnfhh" ("ID", "FOO") COMMENT = 'Terraform test resource' ROW ACCESS policy rap on (title, title2) AGGREGATION POLICY rap ENTITY KEY (foo, bar)  AS SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES`
 	allFields := `CREATE OR REPLACE SECURE TEMPORARY VIEW "rgdxfmnfhh"."PUBLIC"."rgdxfmnfhh" (id PROJECTION POLICY pp MASKING POLICY mp USING ("col1", "cond1") COMMENT 'asdf', foo MASKING POLICY mp USING ("col1", "cond1")) COMMENT = 'Terraform test resource' ROW ACCESS policy rap on (title, title2) AGGREGATION POLICY rap ENTITY KEY (foo, bar)  AS SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES`
+	// Regression test for SNOW-3308280: panic when consumeToken reaches end of input (off-by-one in bounds check).
+	// The last column has a masking policy and no trailing options, so the parser hits end-of-input while probing optional tokens.
+	snow3308280 := `CREATE OR REPLACE VIEW "DB"."SCHEMA"."VIEW_NAME" (col1 MASKING POLICY "DB"."SCHEMA"."MASK_POLICY") AS SELECT col1 FROM DB.SCHEMA.SOURCE_TABLE`
 	testStatement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 	type args struct {
 		input string
@@ -76,6 +79,7 @@ from bar;`
 		{"with column list ending with comment", args{columnsListEndingWithComment}, testStatement, false},
 		{"with column list ending with column name", args{columnsListEndingWithID}, testStatement, false},
 		{"all fields", args{allFields}, testStatement, false},
+		{"SNOW-3308280: masking policy on last column reaching end of input", args{snow3308280}, "SELECT col1 FROM DB.SCHEMA.SOURCE_TABLE", false},
 	}
 	for _, tt := range tests {
 		tt := tt

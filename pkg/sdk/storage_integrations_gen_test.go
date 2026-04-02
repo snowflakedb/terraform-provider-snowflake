@@ -104,7 +104,7 @@ func TestStorageIntegrations_Create(t *testing.T) {
 		opts.OrReplace = Bool(true)
 		opts.S3StorageProviderParams = nil
 		opts.AzureStorageProviderParams = &AzureStorageParams{
-			AzureTenantId:          String("azure-tenant-id"),
+			AzureTenantId:          "azure-tenant-id",
 			UsePrivatelinkEndpoint: Bool(true),
 		}
 		opts.StorageBlockedLocations = []StorageLocation{{Path: "blocked-loc-1"}, {Path: "blocked-loc-2"}}
@@ -161,12 +161,74 @@ func TestStorageIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStorageIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.Set.S3Params opts.Set.AzureParams]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &StorageIntegrationSet{
+			S3Params:    &SetS3StorageParams{},
+			AzureParams: &SetAzureStorageParams{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterStorageIntegrationOptions.Set", "S3Params", "AzureParams"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Set.S3Params opts.Set.AzureParams opts.Set.Enabled opts.Set.StorageAllowedLocations opts.Set.StorageBlockedLocations opts.Set.Comment] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &StorageIntegrationSet{}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Set", "S3Params", "AzureParams", "Enabled", "StorageAllowedLocations", "StorageBlockedLocations", "Comment"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Set.S3Params.StorageAwsRoleArn opts.Set.S3Params.StorageAwsExternalId opts.Set.S3Params.StorageAwsObjectAcl opts.Set.S3Params.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &StorageIntegrationSet{
+			S3Params: &SetS3StorageParams{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Set.S3Params", "StorageAwsRoleArn", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Set.AzureParams.AzureTenantId opts.Set.AzureParams.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &StorageIntegrationSet{
+			AzureParams: &SetAzureStorageParams{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Set.AzureParams", "AzureTenantId", "UsePrivatelinkEndpoint"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.Unset.S3Params opts.Unset.AzureParams]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &StorageIntegrationUnset{
+			S3Params:    &UnsetS3StorageParams{},
+			AzureParams: &UnsetAzureStorageParams{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterStorageIntegrationOptions.Unset", "S3Params", "AzureParams"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.S3Params opts.Unset.AzureParams opts.Unset.Enabled opts.Unset.StorageBlockedLocations opts.Unset.Comment] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &StorageIntegrationUnset{}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset", "S3Params", "AzureParams", "Enabled", "StorageBlockedLocations", "Comment"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.S3Params.StorageAwsExternalId opts.Unset.S3Params.StorageAwsObjectAcl opts.Unset.S3Params.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &StorageIntegrationUnset{
+			S3Params: &UnsetS3StorageParams{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.S3Params", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.AzureParams.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &StorageIntegrationUnset{
+			AzureParams: &UnsetAzureStorageParams{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.AzureParams", "UsePrivatelinkEndpoint"))
+	})
+
 	// all variants added manually
 	t.Run("set - s3", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &StorageIntegrationSet{
 			S3Params: &SetS3StorageParams{
-				StorageAwsRoleArn:      "new-aws-role-arn",
+				StorageAwsRoleArn:      String("new-aws-role-arn"),
 				StorageAwsExternalId:   String("new-external-id"),
 				StorageAwsObjectAcl:    String("new-aws-object-acl"),
 				UsePrivatelinkEndpoint: Bool(true),
@@ -183,7 +245,7 @@ func TestStorageIntegrations_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &StorageIntegrationSet{
 			AzureParams: &SetAzureStorageParams{
-				AzureTenantId:          "new-azure-tenant-id",
+				AzureTenantId:          String("new-azure-tenant-id"),
 				UsePrivatelinkEndpoint: Bool(true),
 			},
 			Enabled:                 Bool(false),
@@ -192,6 +254,17 @@ func TestStorageIntegrations_Alter(t *testing.T) {
 			Comment:                 String("changed comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s SET AZURE_TENANT_ID = 'new-azure-tenant-id' USE_PRIVATELINK_ENDPOINT = true ENABLED = false STORAGE_ALLOWED_LOCATIONS = ('new-allowed-location') STORAGE_BLOCKED_LOCATIONS = ('new-blocked-location') COMMENT = 'changed comment'", id.FullyQualifiedName())
+	})
+
+	t.Run("set - gcs", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &StorageIntegrationSet{
+			Enabled:                 Bool(false),
+			StorageAllowedLocations: []StorageLocation{{Path: "new-allowed-location"}},
+			StorageBlockedLocations: []StorageLocation{{Path: "new-blocked-location"}},
+			Comment:                 String("changed comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s SET ENABLED = false STORAGE_ALLOWED_LOCATIONS = ('new-allowed-location') STORAGE_BLOCKED_LOCATIONS = ('new-blocked-location') COMMENT = 'changed comment'", id.FullyQualifiedName())
 	})
 
 	t.Run("set tags", func(t *testing.T) {
@@ -210,16 +283,42 @@ func TestStorageIntegrations_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER STORAGE INTEGRATION IF EXISTS %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
 	})
 
-	t.Run("unset", func(t *testing.T) {
+	t.Run("unset s3", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &StorageIntegrationUnset{
-			StorageAwsExternalId:    Bool(true),
-			StorageAwsObjectAcl:     Bool(true),
+			S3Params: &UnsetS3StorageParams{
+				StorageAwsExternalId:   Bool(true),
+				StorageAwsObjectAcl:    Bool(true),
+				UsePrivatelinkEndpoint: Bool(true),
+			},
 			Enabled:                 Bool(true),
 			StorageBlockedLocations: Bool(true),
 			Comment:                 Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET STORAGE_AWS_EXTERNAL_ID, STORAGE_AWS_OBJECT_ACL, ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET STORAGE_AWS_EXTERNAL_ID, STORAGE_AWS_OBJECT_ACL, USE_PRIVATELINK_ENDPOINT, ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
+	})
+
+	t.Run("unset azure", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &StorageIntegrationUnset{
+			AzureParams: &UnsetAzureStorageParams{
+				UsePrivatelinkEndpoint: Bool(true),
+			},
+			Enabled:                 Bool(true),
+			StorageBlockedLocations: Bool(true),
+			Comment:                 Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET USE_PRIVATELINK_ENDPOINT, ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
+	})
+
+	t.Run("unset gcs", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &StorageIntegrationUnset{
+			Enabled:                 Bool(true),
+			StorageBlockedLocations: Bool(true),
+			Comment:                 Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
 	})
 
 	t.Run("unset tags", func(t *testing.T) {

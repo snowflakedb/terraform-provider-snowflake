@@ -4,14 +4,17 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var _ SecurityIntegrations = (*securityIntegrations)(nil)
 
-var _ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
-var _ convertibleRow[SecurityIntegration] = new(securityIntegrationShowRow)
+var (
+	_ convertibleRow[SecurityIntegrationProperty] = new(securityIntegrationDescRow)
+	_ convertibleRow[SecurityIntegration]         = new(securityIntegrationShowRow)
+)
 
 type securityIntegrations struct {
 	client *Client
@@ -219,19 +222,16 @@ func (r *CreateExternalOauthSecurityIntegrationRequest) toOpts() *CreateExternal
 	}
 	if r.ExternalOauthBlockedRolesList != nil {
 		opts.ExternalOauthBlockedRolesList = &BlockedRolesList{
-			// adjusted manually
 			BlockedRolesList: r.ExternalOauthBlockedRolesList.BlockedRolesList,
 		}
 	}
 	if r.ExternalOauthAllowedRolesList != nil {
 		opts.ExternalOauthAllowedRolesList = &AllowedRolesList{
-			// adjusted manually
 			AllowedRolesList: r.ExternalOauthAllowedRolesList.AllowedRolesList,
 		}
 	}
 	if r.ExternalOauthAudienceList != nil {
 		opts.ExternalOauthAudienceList = &AudienceList{
-			// adjusted manually
 			AudienceList: r.ExternalOauthAudienceList.AudienceList,
 		}
 	}
@@ -253,7 +253,6 @@ func (r *CreateOauthForPartnerApplicationsSecurityIntegrationRequest) toOpts() *
 	}
 	if r.BlockedRolesList != nil {
 		opts.BlockedRolesList = &BlockedRolesList{
-			// adjusted manually
 			BlockedRolesList: r.BlockedRolesList.BlockedRolesList,
 		}
 	}
@@ -281,13 +280,11 @@ func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) toOpts() *Create
 	}
 	if r.PreAuthorizedRolesList != nil {
 		opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{
-			// adjusted manually
 			PreAuthorizedRolesList: r.PreAuthorizedRolesList.PreAuthorizedRolesList,
 		}
 	}
 	if r.BlockedRolesList != nil {
 		opts.BlockedRolesList = &BlockedRolesList{
-			// adjusted manually
 			BlockedRolesList: r.BlockedRolesList.BlockedRolesList,
 		}
 	}
@@ -327,7 +324,8 @@ func (r *CreateScimSecurityIntegrationRequest) toOpts() *CreateScimSecurityInteg
 		name:        r.name,
 		Enabled:     r.Enabled,
 		ScimClient:  r.ScimClient,
-		RunAsRole:   r.RunAsRole,
+		// Adjusted manually.
+		RunAsRole: fmt.Sprintf("'%s'", r.RunAsRole),
 		// Adjusted manually.
 		NetworkPolicy: securityIntegrationNetworkPolicyQuoted(r.NetworkPolicy),
 		SyncPassword:  r.SyncPassword,
@@ -451,7 +449,6 @@ func (r *AlterExternalOauthSecurityIntegrationRequest) toOpts() *AlterExternalOa
 		}
 		if r.Set.ExternalOauthBlockedRolesList != nil {
 			opts.Set.ExternalOauthBlockedRolesList = &BlockedRolesList{
-				// Adjusted manually
 				BlockedRolesList: r.Set.ExternalOauthBlockedRolesList.BlockedRolesList,
 			}
 		}

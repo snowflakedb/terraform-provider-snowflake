@@ -137,7 +137,7 @@ func TestInt_Tasks(t *testing.T) {
 
 	sessionParametersSet := sdk.SessionParameters{
 		AbortDetachedQuery:                       sdk.Bool(true),
-		Autocommit:                               sdk.Bool(false),
+		Autocommit:                               sdk.Bool(true),
 		BinaryInputFormat:                        sdk.Pointer(sdk.BinaryInputFormatUTF8),
 		BinaryOutputFormat:                       sdk.Pointer(sdk.BinaryOutputFormatBase64),
 		ClientMemoryLimit:                        sdk.Int(1024),
@@ -167,7 +167,6 @@ func TestInt_Tasks(t *testing.T) {
 		QuotedIdentifiersIgnoreCase:              sdk.Bool(true),
 		RowsPerResultset:                         sdk.Int(2),
 		S3StageVpceDnsName:                       sdk.String("vpce-id.s3.region.vpce.amazonaws.com"),
-		SearchPath:                               sdk.String("$public, $current"),
 		StatementQueuedTimeoutInSeconds:          sdk.Int(10),
 		StatementTimeoutInSeconds:                sdk.Int(10),
 		StrictJsonOutput:                         sdk.Bool(true),
@@ -194,7 +193,7 @@ func TestInt_Tasks(t *testing.T) {
 	assertSessionParametersSet := func(parametersAssert *objectparametersassert.TaskParametersAssert) *objectparametersassert.TaskParametersAssert {
 		return parametersAssert.
 			HasAbortDetachedQuery(true).
-			HasAutocommit(false).
+			HasAutocommit(true).
 			HasBinaryInputFormat(sdk.BinaryInputFormatUTF8).
 			HasBinaryOutputFormat(sdk.BinaryOutputFormatBase64).
 			HasClientMemoryLimit(1024).
@@ -224,7 +223,7 @@ func TestInt_Tasks(t *testing.T) {
 			HasQuotedIdentifiersIgnoreCase(true).
 			HasRowsPerResultset(2).
 			HasS3StageVpceDnsName("vpce-id.s3.region.vpce.amazonaws.com").
-			HasSearchPath("$public, $current").
+			HasSearchPath("$current, $public").
 			HasStatementQueuedTimeoutInSeconds(10).
 			HasStatementTimeoutInSeconds(10).
 			HasStrictJsonOutput(true).
@@ -509,6 +508,31 @@ func TestInt_Tasks(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, sdk.Pointer("v1"), returnedTagValue)
+	})
+
+	t.Run("create task: with serverless task parameters", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		// Create a serverless task (WithUserTaskManagedInitialWarehouseSize) with serverless parameters
+		err := testClient(t).Tasks.Create(ctx, sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").
+			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium)).
+			WithTargetCompletionInterval("10 MINUTES").
+			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Task.DropFunc(t, id))
+
+		// Verify parameters were set
+		assertThatObject(t, objectparametersassert.TaskParameters(t, id).
+			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		)
+		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
+		assertThatObject(t, objectassert.Task(t, id).
+			HasNoWarehouse().
+			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(10)}),
+		)
 	})
 
 	t.Run("clone task: default", func(t *testing.T) {
@@ -1089,6 +1113,146 @@ func TestInt_Tasks(t *testing.T) {
 		childTaskStatus, err = client.Tasks.ShowByID(ctx, childTask.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateStarted, childTaskStatus.State)
+	})
+
+	t.Run("alter task: set and unset serverless task parameters", func(t *testing.T) {
+		// Create a serverless task (with USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE)
+		task, taskCleanup := testClientHelper().Task.CreateServerless(t)
+		t.Cleanup(taskCleanup)
+
+		// Set the serverless task parameters
+		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
+			WithTargetCompletionInterval("15 MINUTES").
+			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		))
+		require.NoError(t, err)
+
+		// Verify parameters were set
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeLarge),
+		)
+		// target_completion_interval is returned by SHOW command, not SHOW PARAMETERS
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasNoWarehouse().
+			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(15)}),
+		)
+
+		// Unset the serverless task parameters
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
+			WithTargetCompletionInterval(true).
+			WithServerlessTaskMinStatementSize(true).
+			WithServerlessTaskMaxStatementSize(true),
+		))
+		require.NoError(t, err)
+
+		// Verify parameters were unset (reverted to defaults)
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasDefaultServerlessTaskMinStatementSizeValue().
+			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasNoTargetCompletionInterval(),
+		)
+	})
+
+	t.Run("serverless task parameters on non-serverless task", func(t *testing.T) {
+		warehouseId := testClientHelper().Ids.WarehouseId()
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		task, taskCleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(id, "SELECT CURRENT_TIMESTAMP").
+			WithWarehouse(*sdk.NewCreateTaskWarehouseRequest().WithWarehouse(warehouseId)))
+		t.Cleanup(taskCleanup)
+
+		assertThatObject(t, objectassert.Task(t, task.ID()).HasWarehouse(warehouseId))
+
+		// Setting serverless task parameters on a non-serverless task fails, even if we set USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE
+		err := client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
+			WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			WithTargetCompletionInterval("10 MINUTES").
+			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeSmall),
+		))
+		require.ErrorContains(t, err, "Cannot set USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE on a non-serverless task.")
+
+		// First, unset the warehouse to make the task serverless.
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
+			WithWarehouse(true),
+		))
+		require.NoError(t, err)
+
+		// Assert default attributes.
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasDefaultUserTaskManagedInitialWarehouseSizeValue().
+			HasDefaultServerlessTaskMinStatementSizeValue().
+			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasNoWarehouse().
+			HasNoTargetCompletionInterval(),
+		)
+
+		// Set serverless task parameters.
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
+			WithTargetCompletionInterval("10 MINUTES").
+			WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+			WithServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+			WithServerlessTaskMaxStatementSize(sdk.WarehouseSizeMedium),
+		))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall).
+			HasServerlessTaskMaxStatementSize(sdk.WarehouseSizeMedium),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasNoWarehouse().
+			HasTargetCompletionInterval(sdk.TaskTargetCompletionInterval{Minutes: sdk.Pointer(10)}),
+		)
+
+		// Convert back to warehouse-based task - fails
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
+			WithWarehouse(warehouseId),
+		))
+		require.ErrorContains(t, err, "091857 (42601): TARGET_COMPLETION_INTERVAL is only allowed for serverless Tasks.")
+
+		// Unset the serverless parameters on the warehouse-based task
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithUnset(*sdk.NewTaskUnsetRequest().
+			WithTargetCompletionInterval(true).
+			WithUserTaskManagedInitialWarehouseSize(true).
+			WithServerlessTaskMinStatementSize(true).
+			WithServerlessTaskMaxStatementSize(true),
+		))
+		require.NoError(t, err)
+
+		// Verify parameters were unset
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasDefaultUserTaskManagedInitialWarehouseSizeValue().
+			HasDefaultServerlessTaskMinStatementSizeValue().
+			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasNoWarehouse().
+			HasNoTargetCompletionInterval(),
+		)
+
+		err = client.Tasks.Alter(ctx, sdk.NewAlterTaskRequest(task.ID()).WithSet(*sdk.NewTaskSetRequest().
+			WithWarehouse(warehouseId),
+		))
+		require.NoError(t, err)
+
+		// Verify task is back to warehouse-based and parameters are still set
+		assertThatObject(t, objectparametersassert.TaskParameters(t, task.ID()).
+			HasDefaultUserTaskManagedInitialWarehouseSizeValue().
+			HasDefaultServerlessTaskMinStatementSizeValue().
+			HasDefaultServerlessTaskMaxStatementSizeValue(),
+		)
+		assertThatObject(t, objectassert.Task(t, task.ID()).
+			HasWarehouse(warehouseId).
+			HasNoTargetCompletionInterval(),
+		)
 	})
 
 	// TODO(SNOW-1277135): Create more tests with different sets of roots/children and see if the current implementation

@@ -32,6 +32,7 @@ type ServiceUserModel struct {
 	DefaultRole                              tfconfig.Variable `json:"default_role,omitempty"`
 	DefaultSecondaryRolesOption              tfconfig.Variable `json:"default_secondary_roles_option,omitempty"`
 	DefaultWarehouse                         tfconfig.Variable `json:"default_warehouse,omitempty"`
+	DefaultWorkloadIdentity                  tfconfig.Variable `json:"default_workload_identity,omitempty"`
 	Disabled                                 tfconfig.Variable `json:"disabled,omitempty"`
 	DisplayName                              tfconfig.Variable `json:"display_name,omitempty"`
 	Email                                    tfconfig.Variable `json:"email,omitempty"`
@@ -245,6 +246,8 @@ func (s *ServiceUserModel) WithDefaultWarehouse(defaultWarehouse string) *Servic
 	s.DefaultWarehouse = tfconfig.StringVariable(defaultWarehouse)
 	return s
 }
+
+// default_workload_identity attribute type is not yet supported, so WithDefaultWorkloadIdentity can't be generated
 
 func (s *ServiceUserModel) WithDisabled(disabled string) *ServiceUserModel {
 	s.Disabled = tfconfig.StringVariable(disabled)
@@ -617,6 +620,11 @@ func (s *ServiceUserModel) WithDefaultSecondaryRolesOptionValue(value tfconfig.V
 
 func (s *ServiceUserModel) WithDefaultWarehouseValue(value tfconfig.Variable) *ServiceUserModel {
 	s.DefaultWarehouse = value
+	return s
+}
+
+func (s *ServiceUserModel) WithDefaultWorkloadIdentityValue(value tfconfig.Variable) *ServiceUserModel {
+	s.DefaultWorkloadIdentity = value
 	return s
 }
 

@@ -1,6 +1,11 @@
 # Run secret-dependent integration tests only after /ok-to-test approval
 name: Tests
 
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
 # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/control-the-concurrency-of-workflows-and-jobs#example-only-cancel-in-progress-jobs-or-runs-for-the-current-workflow
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -39,16 +44,21 @@ jobs:
 
       - id: verify_sha_input
         if: github.event_name == 'repository_dispatch'
+        env:
+          PR_HEAD_SHA: ${{ github.event.client_payload.pull_request.head.sha }}
+          SLASH_SHA: ${{ github.event.client_payload.slash_command.args.named.sha }}
+          PR_HEAD_REPO: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+          PR_HEAD_REF: ${{ github.event.client_payload.pull_request.head.ref }}
         run: |
-          echo \"${{ github.event.client_payload.pull_request.head.sha }}\"
-          echo \"${{ github.event.client_payload.slash_command.args.named.sha }}\"
-          echo \"${{ github.event.client_payload.pull_request.head.repo.full_name }}\"
-          echo \"${{ github.event.client_payload.pull_request.head.ref }}\"
-          SHAINPUT=$(echo ${{ github.event.client_payload.slash_command.args.named.sha }} | cut -c1-7)
+          echo "$PR_HEAD_SHA"
+          echo "$SLASH_SHA"
+          echo "$PR_HEAD_REPO"
+          echo "$PR_HEAD_REF"
+          SHAINPUT=$(echo "$SLASH_SHA" | cut -c1-7)
           if [ ${#SHAINPUT} -le 6 ]; then echo "error::input sha not at least 7 characters long" ; exit 1
           else echo "done"
           fi
-          SHAHEAD=$(echo ${{ github.event.client_payload.pull_request.head.sha }} | cut -c1-7)
+          SHAHEAD=$(echo "$PR_HEAD_SHA" | cut -c1-7)
           echo ${#SHAINPUT}
           echo ${#SHAHEAD}
           if [ "${SHAHEAD}" != "${SHAINPUT}" ]; then echo "sha input from slash command does not equal the head sha" ; exit 1
@@ -108,8 +118,8 @@ jobs:
           cd $HOME/.snowflake
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE }}" > ./config
           echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_LEGACY }}" > ./config_legacy
-          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE }}" > ./config_v097_compatible
-          chmod 0600 ./config ./config_legacy ./config_v097_compatible
+          echo "${{ secrets.SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE_WITH_SERVICE_USER }}" > ./config_v097_compatible_with_service_user
+          chmod 0600 ./config ./config_legacy ./config_v097_compatible_with_service_user
 
       - name: Run unit tests
         # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make upload-test-results)
@@ -163,6 +173,9 @@ jobs:
           TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN }}
           TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID: ${{ secrets.TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID }}
           TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL: ${{ secrets.TEST_SF_TF_GCS_EXTERNAL_BUCKET_URL }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY }}
+          TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_V097_COMPATIBLE_PRIVATE_KEY_PASSPHRASE }}
+
 
       - name: Sweepers cleanup
         if: ${{ always() && steps.setup_go.conclusion == 'success' }}

@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -36,11 +37,11 @@ func init() {
 	}
 }
 
-func DatabaseParametersToSchema(parameters []*sdk.Parameter) map[string]any {
+func DatabaseParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
 	databaseParametersValue := make(map[string]any)
 	for _, param := range parameters {
 		if slices.Contains(databaseParameters, sdk.AccountParameter(param.Key)) {
-			databaseParametersValue[strings.ToLower(param.Key)] = []map[string]any{ParameterToSchema(param)}
+			databaseParametersValue[strings.ToLower(param.Key)] = []map[string]any{ParameterToSchemaReducedOutput(param, providerCtx)}
 		}
 	}
 	return databaseParametersValue

@@ -23,11 +23,6 @@ type CreateApiIntegrationRequest struct {
 	Comment                 *string
 }
 
-// Added manually
-func (r *CreateApiIntegrationRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 type AwsApiParamsRequest struct {
 	ApiProvider   ApiIntegrationAwsApiProviderType // required
 	ApiAwsRoleArn string                           // required

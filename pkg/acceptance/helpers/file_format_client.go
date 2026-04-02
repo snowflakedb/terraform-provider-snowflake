@@ -20,7 +20,7 @@ func NewFileFormatClient(context *TestClientContext, idsGenerator *IdsGenerator)
 	}
 }
 
-func (c *FileFormatClient) client() sdk.FileFormats {
+func (c *FileFormatClient) client() sdk.LegacyFileFormats {
 	return c.context.client.FileFormats
 }
 

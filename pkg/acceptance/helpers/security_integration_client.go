@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -135,7 +136,7 @@ func (c *SecurityIntegrationClient) CreateSaml2WithRequest(t *testing.T, request
 
 func (c *SecurityIntegrationClient) CreateScim(t *testing.T) (*sdk.SecurityIntegration, func()) {
 	t.Helper()
-	return c.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.ScimSecurityIntegrationScimClientGeneric, sdk.ScimSecurityIntegrationRunAsRoleGenericScimProvisioner))
+	return c.CreateScimWithRequest(t, sdk.NewCreateScimSecurityIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), sdk.ScimSecurityIntegrationScimClientGeneric, snowflakeroles.GenericScimProvisioner.FullyQualifiedName()))
 }
 
 func (c *SecurityIntegrationClient) CreateApiAuthenticationClientCredentialsWithRequest(t *testing.T, request *sdk.CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest) (*sdk.SecurityIntegration, func()) {
@@ -209,6 +210,30 @@ func (c *SecurityIntegrationClient) DropSecurityIntegrationFunc(t *testing.T, id
 		err := c.client().Drop(ctx, sdk.NewDropSecurityIntegrationRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithAuthorizationCodeGrantFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithAuthorizationCodeGrantFlow(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithClientCredentialsFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithClientCredentialsFlow(ctx, request)
+	require.NoError(t, err)
+}
+
+func (c *SecurityIntegrationClient) AlterApiAuthenticationWithJwtBearerFlow(t *testing.T, request *sdk.AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().AlterApiAuthenticationWithJwtBearerFlow(ctx, request)
+	require.NoError(t, err)
 }
 
 func (c *SecurityIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.SecurityIntegration, error) {

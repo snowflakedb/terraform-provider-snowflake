@@ -28,13 +28,13 @@ type replicationFunctions struct {
 }
 
 type ReplicationAccount struct {
-	SnowflakeRegion  string    `db:"snowflake_region"`
-	CreatedOn        time.Time `db:"created_on"`
-	AccountName      string    `db:"account_name"`
-	AccountLocator   string    `db:"account_locator"`
-	Comment          string    `db:"comment"`
-	OrganizationName string    `db:"organization_name"`
-	IsOrgAdmin       bool      `db:"is_org_admin"`
+	SnowflakeRegion  string         `db:"snowflake_region"`
+	CreatedOn        time.Time      `db:"created_on"`
+	AccountName      string         `db:"account_name"`
+	AccountLocator   string         `db:"account_locator"`
+	Comment          sql.NullString `db:"comment"`
+	OrganizationName string         `db:"organization_name"`
+	IsOrgAdmin       bool           `db:"is_org_admin"`
 }
 
 func (v *ReplicationAccount) ID() AccountIdentifier {

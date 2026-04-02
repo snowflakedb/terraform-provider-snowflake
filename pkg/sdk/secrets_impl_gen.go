@@ -10,8 +10,10 @@ import (
 
 var _ Secrets = (*secrets)(nil)
 
-var _ convertibleRow[Secret] = new(secretDBRow)
-var _ convertibleRow[SecretDetails] = new(secretDetailsDBRow)
+var (
+	_ convertibleRow[Secret]        = new(secretDBRow)
+	_ convertibleRow[SecretDetails] = new(secretDetailsDBRow)
+)
 
 type secrets struct {
 	client *Client
@@ -96,7 +98,6 @@ func (r *CreateWithOAuthClientCredentialsFlowSecretRequest) toOpts() *CreateWith
 	}
 	if r.OauthScopes != nil {
 		opts.OauthScopes = &OauthScopesList{
-			// adjusted manually
 			OauthScopesList: r.OauthScopes.OauthScopesList,
 		}
 	}

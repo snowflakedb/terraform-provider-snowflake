@@ -28,6 +28,116 @@ func ImportedProcedurePythonResource(t *testing.T, id string) *ProcedurePythonRe
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (p *ProcedurePythonResourceAssert) HasDatabase(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("database", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasSchema(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("schema", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasName(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("name", expected)
+	return p
+}
+
+// typed assert for "arguments" (type: List, subtype: Map) is not currently supported
+
+func (p *ProcedurePythonResourceAssert) HasComment(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("comment", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasEnableConsoleOutput(expected bool) *ProcedurePythonResourceAssert {
+	p.BoolValueSet("enable_console_output", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasExecuteAs(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("execute_as", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasExternalAccessIntegrations(expected ...string) *ProcedurePythonResourceAssert {
+	p.SetContainsExactlyStringValues("external_access_integrations", expected...)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasFullyQualifiedName(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("fully_qualified_name", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasHandler(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("handler", expected)
+	return p
+}
+
+// typed assert for "imports" (type: Set, subtype: Map) is not currently supported
+
+func (p *ProcedurePythonResourceAssert) HasIsSecure(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("is_secure", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasLogLevel(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("log_level", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasMetricLevel(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("metric_level", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasNullInputBehavior(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("null_input_behavior", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasPackages(expected ...string) *ProcedurePythonResourceAssert {
+	p.SetContainsExactlyStringValues("packages", expected...)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasProcedureDefinition(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("procedure_definition", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasProcedureLanguage(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("procedure_language", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasReturnType(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("return_type", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasRuntimeVersion(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("runtime_version", expected)
+	return p
+}
+
+// typed assert for "secrets" (type: Set, subtype: Map) is not currently supported
+
+func (p *ProcedurePythonResourceAssert) HasSnowparkPackage(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("snowpark_package", expected)
+	return p
+}
+
+func (p *ProcedurePythonResourceAssert) HasTraceLevel(expected string) *ProcedurePythonResourceAssert {
+	p.StringValueSet("trace_level", expected)
+	return p
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -47,11 +157,6 @@ func (p *ProcedurePythonResourceAssert) HasNameString(expected string) *Procedur
 	return p
 }
 
-func (p *ProcedurePythonResourceAssert) HasArgumentsString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments", expected))
-	return p
-}
-
 func (p *ProcedurePythonResourceAssert) HasCommentString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("comment", expected))
 	return p
@@ -67,11 +172,6 @@ func (p *ProcedurePythonResourceAssert) HasExecuteAsString(expected string) *Pro
 	return p
 }
 
-func (p *ProcedurePythonResourceAssert) HasExternalAccessIntegrationsString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("external_access_integrations", expected))
-	return p
-}
-
 func (p *ProcedurePythonResourceAssert) HasFullyQualifiedNameString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
 	return p
@@ -79,11 +179,6 @@ func (p *ProcedurePythonResourceAssert) HasFullyQualifiedNameString(expected str
 
 func (p *ProcedurePythonResourceAssert) HasHandlerString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("handler", expected))
-	return p
-}
-
-func (p *ProcedurePythonResourceAssert) HasImportsString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("imports", expected))
 	return p
 }
 
@@ -107,11 +202,6 @@ func (p *ProcedurePythonResourceAssert) HasNullInputBehaviorString(expected stri
 	return p
 }
 
-func (p *ProcedurePythonResourceAssert) HasPackagesString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("packages", expected))
-	return p
-}
-
 func (p *ProcedurePythonResourceAssert) HasProcedureDefinitionString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("procedure_definition", expected))
 	return p
@@ -129,11 +219,6 @@ func (p *ProcedurePythonResourceAssert) HasReturnTypeString(expected string) *Pr
 
 func (p *ProcedurePythonResourceAssert) HasRuntimeVersionString(expected string) *ProcedurePythonResourceAssert {
 	p.AddAssertion(assert.ValueSet("runtime_version", expected))
-	return p
-}
-
-func (p *ProcedurePythonResourceAssert) HasSecretsString(expected string) *ProcedurePythonResourceAssert {
-	p.AddAssertion(assert.ValueSet("secrets", expected))
 	return p
 }
 

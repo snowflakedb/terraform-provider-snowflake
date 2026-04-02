@@ -2,6 +2,7 @@
 
 package sdk
 
+// imports ajusted manually
 import (
 	"testing"
 

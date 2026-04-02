@@ -16,84 +16,101 @@ type Object struct {
 type ObjectType string
 
 const (
-	ObjectTypeAccount              ObjectType = "ACCOUNT"
-	ObjectTypeManagedAccount       ObjectType = "MANAGED ACCOUNT"
-	ObjectTypeUser                 ObjectType = "USER"
-	ObjectTypeDatabaseRole         ObjectType = "DATABASE ROLE"
-	ObjectTypeDataset              ObjectType = "DATASET"
-	ObjectTypeDbtProject           ObjectType = "DBT PROJECT"
-	ObjectTypeRole                 ObjectType = "ROLE"
-	ObjectTypeIntegration          ObjectType = "INTEGRATION"
-	ObjectTypeNetworkPolicy        ObjectType = "NETWORK POLICY"
-	ObjectTypePasswordPolicy       ObjectType = "PASSWORD POLICY"
-	ObjectTypeSessionPolicy        ObjectType = "SESSION POLICY"
-	ObjectTypePrivacyPolicy        ObjectType = "PRIVACY POLICY"
-	ObjectTypeReplicationGroup     ObjectType = "REPLICATION GROUP"
-	ObjectTypeFailoverGroup        ObjectType = "FAILOVER GROUP"
-	ObjectTypeConnection           ObjectType = "CONNECTION"
-	ObjectTypeParameter            ObjectType = "PARAMETER"
-	ObjectTypeWarehouse            ObjectType = "WAREHOUSE"
-	ObjectTypeResourceMonitor      ObjectType = "RESOURCE MONITOR"
-	ObjectTypeDatabase             ObjectType = "DATABASE"
-	ObjectTypeSchema               ObjectType = "SCHEMA"
-	ObjectTypeShare                ObjectType = "SHARE"
-	ObjectTypeTable                ObjectType = "TABLE"
-	ObjectTypeDynamicTable         ObjectType = "DYNAMIC TABLE"
-	ObjectTypeCortexSearchService  ObjectType = "CORTEX SEARCH SERVICE"
-	ObjectTypeExternalTable        ObjectType = "EXTERNAL TABLE"
-	ObjectTypeEventTable           ObjectType = "EVENT TABLE"
-	ObjectTypeView                 ObjectType = "VIEW"
-	ObjectTypeMaterializedView     ObjectType = "MATERIALIZED VIEW"
-	ObjectTypeSequence             ObjectType = "SEQUENCE"
-	ObjectTypeSnapshot             ObjectType = "SNAPSHOT"
-	ObjectTypeSnapshotPolicy       ObjectType = "SNAPSHOT POLICY"
-	ObjectTypeSnapshotSet          ObjectType = "SNAPSHOT SET"
-	ObjectTypeFunction             ObjectType = "FUNCTION"
-	ObjectTypeExternalFunction     ObjectType = "EXTERNAL FUNCTION"
-	ObjectTypeProcedure            ObjectType = "PROCEDURE"
-	ObjectTypeStream               ObjectType = "STREAM"
-	ObjectTypeTask                 ObjectType = "TASK"
-	ObjectTypeMaskingPolicy        ObjectType = "MASKING POLICY"
-	ObjectTypeRowAccessPolicy      ObjectType = "ROW ACCESS POLICY"
-	ObjectTypeTag                  ObjectType = "TAG"
-	ObjectTypeSecret               ObjectType = "SECRET"
-	ObjectTypeStage                ObjectType = "STAGE"
-	ObjectTypeFileFormat           ObjectType = "FILE FORMAT"
-	ObjectTypePipe                 ObjectType = "PIPE"
-	ObjectTypeAlert                ObjectType = "ALERT"
-	ObjectTypeBudget               ObjectType = "SNOWFLAKE.CORE.BUDGET"
-	ObjectTypeClassification       ObjectType = "SNOWFLAKE.ML.CLASSIFICATION"
-	ObjectTypeApplication          ObjectType = "APPLICATION"
-	ObjectTypeApplicationPackage   ObjectType = "APPLICATION PACKAGE"
-	ObjectTypeApplicationRole      ObjectType = "APPLICATION ROLE"
-	ObjectTypeStreamlit            ObjectType = "STREAMLIT"
-	ObjectTypeColumn               ObjectType = "COLUMN"
-	ObjectTypeIcebergTable         ObjectType = "ICEBERG TABLE"
-	ObjectTypeJoinPolicy           ObjectType = "JOIN POLICY"
-	ObjectTypeExternalVolume       ObjectType = "EXTERNAL VOLUME"
-	ObjectTypeNetworkRule          ObjectType = "NETWORK RULE"
-	ObjectTypeNotebook             ObjectType = "NOTEBOOK"
-	ObjectTypePackagesPolicy       ObjectType = "PACKAGES POLICY"
-	ObjectTypeComputePool          ObjectType = "COMPUTE POOL"
-	ObjectTypeAggregationPolicy    ObjectType = "AGGREGATION POLICY"
-	ObjectTypeAuthenticationPolicy ObjectType = "AUTHENTICATION POLICY"
-	ObjectTypeHybridTable          ObjectType = "HYBRID TABLE"
-	ObjectTypeImageRepository      ObjectType = "IMAGE REPOSITORY"
-	ObjectTypeProjectionPolicy     ObjectType = "PROJECTION POLICY"
-	ObjectTypeDataMetricFunction   ObjectType = "DATA METRIC FUNCTION"
-	ObjectTypeGitRepository        ObjectType = "GIT REPOSITORY"
-	ObjectTypeModel                ObjectType = "MODEL"
-	ObjectTypeModelMonitor         ObjectType = "MODEL MONITOR"
-	ObjectTypeService              ObjectType = "SERVICE"
-	ObjectTypeStorageIntegration   ObjectType = "STORAGE INTEGRATION"
-	ObjectTypeListing              ObjectType = "LISTING"
-	ObjectTypeSemanticView         ObjectType = "SEMANTIC VIEW"
+	ObjectTypeAccount                ObjectType = "ACCOUNT"
+	ObjectTypeManagedAccount         ObjectType = "MANAGED ACCOUNT"
+	ObjectTypeUser                   ObjectType = "USER"
+	ObjectTypeDatabaseRole           ObjectType = "DATABASE ROLE"
+	ObjectTypeDataset                ObjectType = "DATASET"
+	ObjectTypeDbtProject             ObjectType = "DBT PROJECT"
+	ObjectTypeRole                   ObjectType = "ROLE"
+	ObjectTypeIntegration            ObjectType = "INTEGRATION"
+	ObjectTypeNetworkPolicy          ObjectType = "NETWORK POLICY"
+	ObjectTypePasswordPolicy         ObjectType = "PASSWORD POLICY"
+	ObjectTypeSessionPolicy          ObjectType = "SESSION POLICY"
+	ObjectTypePrivacyPolicy          ObjectType = "PRIVACY POLICY"
+	ObjectTypeReplicationGroup       ObjectType = "REPLICATION GROUP"
+	ObjectTypeFailoverGroup          ObjectType = "FAILOVER GROUP"
+	ObjectTypeConnection             ObjectType = "CONNECTION"
+	ObjectTypeParameter              ObjectType = "PARAMETER"
+	ObjectTypeWarehouse              ObjectType = "WAREHOUSE"
+	ObjectTypeResourceMonitor        ObjectType = "RESOURCE MONITOR"
+	ObjectTypeDatabase               ObjectType = "DATABASE"
+	ObjectTypeSchema                 ObjectType = "SCHEMA"
+	ObjectTypeShare                  ObjectType = "SHARE"
+	ObjectTypeTable                  ObjectType = "TABLE"
+	ObjectTypeDynamicTable           ObjectType = "DYNAMIC TABLE"
+	ObjectTypeCortexSearchService    ObjectType = "CORTEX SEARCH SERVICE"
+	ObjectTypeExternalTable          ObjectType = "EXTERNAL TABLE"
+	ObjectTypeEventTable             ObjectType = "EVENT TABLE"
+	ObjectTypeView                   ObjectType = "VIEW"
+	ObjectTypeMaterializedView       ObjectType = "MATERIALIZED VIEW"
+	ObjectTypeSequence               ObjectType = "SEQUENCE"
+	ObjectTypeSnapshot               ObjectType = "SNAPSHOT"
+	ObjectTypeSnapshotPolicy         ObjectType = "SNAPSHOT POLICY"
+	ObjectTypeSnapshotSet            ObjectType = "SNAPSHOT SET"
+	ObjectTypeFunction               ObjectType = "FUNCTION"
+	ObjectTypeExternalFunction       ObjectType = "EXTERNAL FUNCTION"
+	ObjectTypeProcedure              ObjectType = "PROCEDURE"
+	ObjectTypeStream                 ObjectType = "STREAM"
+	ObjectTypeTask                   ObjectType = "TASK"
+	ObjectTypeMaskingPolicy          ObjectType = "MASKING POLICY"
+	ObjectTypeRowAccessPolicy        ObjectType = "ROW ACCESS POLICY"
+	ObjectTypeTag                    ObjectType = "TAG"
+	ObjectTypeSecret                 ObjectType = "SECRET"
+	ObjectTypeStage                  ObjectType = "STAGE"
+	ObjectTypeFileFormat             ObjectType = "FILE FORMAT"
+	ObjectTypePipe                   ObjectType = "PIPE"
+	ObjectTypeAlert                  ObjectType = "ALERT"
+	ObjectTypeBudget                 ObjectType = "SNOWFLAKE.CORE.BUDGET"
+	ObjectTypeClassification         ObjectType = "SNOWFLAKE.ML.CLASSIFICATION"
+	ObjectTypeApplication            ObjectType = "APPLICATION"
+	ObjectTypeApplicationPackage     ObjectType = "APPLICATION PACKAGE"
+	ObjectTypeApplicationRole        ObjectType = "APPLICATION ROLE"
+	ObjectTypeStreamlit              ObjectType = "STREAMLIT"
+	ObjectTypeColumn                 ObjectType = "COLUMN"
+	ObjectTypeIcebergTable           ObjectType = "ICEBERG TABLE"
+	ObjectTypeJoinPolicy             ObjectType = "JOIN POLICY"
+	ObjectTypeExternalVolume         ObjectType = "EXTERNAL VOLUME"
+	ObjectTypeNetworkRule            ObjectType = "NETWORK RULE"
+	ObjectTypeNotebook               ObjectType = "NOTEBOOK"
+	ObjectTypeNotebookProject        ObjectType = "NOTEBOOK PROJECT"
+	ObjectTypePackagesPolicy         ObjectType = "PACKAGES POLICY"
+	ObjectTypeComputePool            ObjectType = "COMPUTE POOL"
+	ObjectTypeAggregationPolicy      ObjectType = "AGGREGATION POLICY"
+	ObjectTypeAuthenticationPolicy   ObjectType = "AUTHENTICATION POLICY"
+	ObjectTypeHybridTable            ObjectType = "HYBRID TABLE"
+	ObjectTypeImageRepository        ObjectType = "IMAGE REPOSITORY"
+	ObjectTypeProjectionPolicy       ObjectType = "PROJECTION POLICY"
+	ObjectTypeDataMetricFunction     ObjectType = "DATA METRIC FUNCTION"
+	ObjectTypeGitRepository          ObjectType = "GIT REPOSITORY"
+	ObjectTypeModel                  ObjectType = "MODEL"
+	ObjectTypeModelMonitor           ObjectType = "MODEL MONITOR"
+	ObjectTypeService                ObjectType = "SERVICE"
+	ObjectTypeStorageIntegration     ObjectType = "STORAGE INTEGRATION"
+	ObjectTypeListing                ObjectType = "LISTING"
+	ObjectTypeSemanticView           ObjectType = "SEMANTIC VIEW"
+	ObjectTypeOnlineFeatureTable     ObjectType = "ONLINE FEATURE TABLE"
+	ObjectTypeExperiment             ObjectType = "EXPERIMENT"
+	ObjectTypeAgent                  ObjectType = "AGENT"
+	ObjectTypeGateway                ObjectType = "GATEWAY"
+	ObjectTypeMcpServer              ObjectType = "MCP SERVER"
+	ObjectTypeStorageLifecyclePolicy ObjectType = "STORAGE LIFECYCLE POLICY"
+	ObjectTypeWorkspace              ObjectType = "WORKSPACE"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
+	// ObjectTypeUserWorkloadIdentityAuthenticationMethod is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
+	// This object does not have grants and cannot be tagged.
+	ObjectTypeUserWorkloadIdentityAuthenticationMethod ObjectType = "USER WORKLOAD IDENTITY AUTHENTICATION METHOD" //nolint:gosec
 	// ObjectTypeSecurityIntegration is a pseudo-object, only used in object and invoke action assertions.
 	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
 	ObjectTypeSecurityIntegration ObjectType = "SECURITY INTEGRATION"
+	// TODO(SNOW-2683939): Remove in the following prs
+	ObjectTypeListingDetails ObjectType = "LISTING DETAILS"
+	// ObjectTypeApiIntegration and ObjectTypeCatalogIntegration are pseudo-objects, only used in object and invoke action assertions.
+	// For actual Snowflake operations where object type is needed, ObjectTypeIntegration should be used.
+	ObjectTypeApiIntegration     ObjectType = "API INTEGRATION"
+	ObjectTypeCatalogIntegration ObjectType = "CATALOG INTEGRATION"
 )
 
 func (o ObjectType) String() string {
@@ -131,6 +148,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeCortexSearchService,
 	ObjectTypeExternalTable,
 	ObjectTypeEventTable,
+	ObjectTypeExperiment,
 	ObjectTypeView,
 	ObjectTypeMaterializedView,
 	ObjectTypeSequence,
@@ -157,12 +175,14 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeApplicationPackage,
 	ObjectTypeApplicationRole,
 	ObjectTypeStreamlit,
+	ObjectTypeOnlineFeatureTable,
 	ObjectTypeColumn,
 	ObjectTypeIcebergTable,
 	ObjectTypeJoinPolicy,
 	ObjectTypeExternalVolume,
 	ObjectTypeNetworkRule,
 	ObjectTypeNotebook,
+	ObjectTypeNotebookProject,
 	ObjectTypePackagesPolicy,
 	ObjectTypeComputePool,
 	ObjectTypeAggregationPolicy,
@@ -175,8 +195,15 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeModel,
 	ObjectTypeModelMonitor,
 	ObjectTypeService,
+	ObjectTypeListing,
 	ObjectTypeStorageIntegration,
+	ObjectTypeAgent,
+	ObjectTypeGateway,
+	ObjectTypeMcpServer,
+	ObjectTypeStorageLifecyclePolicy,
+	ObjectTypeWorkspace,
 	ObjectTypeProgrammaticAccessToken,
+	ObjectTypeCatalogIntegration,
 }
 
 // TODO(SNOW-1834370): use ToObjectType in other places with type conversion (instead of sdk.ObjectType)
@@ -216,6 +243,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeCortexSearchService:     PluralObjectTypeCortexSearchServices,
 		ObjectTypeExternalTable:           PluralObjectTypeExternalTables,
 		ObjectTypeEventTable:              PluralObjectTypeEventTables,
+		ObjectTypeExperiment:              PluralObjectTypeExperiments,
 		ObjectTypeView:                    PluralObjectTypeViews,
 		ObjectTypeMaterializedView:        PluralObjectTypeMaterializedViews,
 		ObjectTypeSequence:                PluralObjectTypeSequences,
@@ -242,11 +270,13 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeApplicationPackage:      PluralObjectTypeApplicationPackages,
 		ObjectTypeApplicationRole:         PluralObjectTypeApplicationRoles,
 		ObjectTypeStreamlit:               PluralObjectTypeStreamlits,
+		ObjectTypeOnlineFeatureTable:      PluralObjectTypeOnlineFeatureTables,
 		ObjectTypeIcebergTable:            PluralObjectTypeIcebergTables,
 		ObjectTypeJoinPolicy:              PluralObjectTypeJoinPolicies,
 		ObjectTypeExternalVolume:          PluralObjectTypeExternalVolumes,
 		ObjectTypeNetworkRule:             PluralObjectTypeNetworkRules,
 		ObjectTypeNotebook:                PluralObjectTypeNotebooks,
+		ObjectTypeNotebookProject:         PluralObjectTypeNotebookProjects,
 		ObjectTypePackagesPolicy:          PluralObjectTypePackagesPolicies,
 		ObjectTypeComputePool:             PluralObjectTypeComputePool,
 		ObjectTypeAggregationPolicy:       PluralObjectTypeAggregationPolicies,
@@ -261,6 +291,12 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeService:                 PluralObjectTypeServices,
 		ObjectTypeProgrammaticAccessToken: PluralObjectTypeProgrammaticAccessTokens,
 		ObjectTypeStorageIntegration:      PluralObjectTypeStorageIntegrations,
+		ObjectTypeAgent:                   PluralObjectTypeAgents,
+		ObjectTypeGateway:                 PluralObjectTypeGateways,
+		ObjectTypeMcpServer:               PluralObjectTypeMcpServers,
+		ObjectTypeStorageLifecyclePolicy:  PluralObjectTypeStorageLifecyclePolicies,
+		ObjectTypeWorkspace:               PluralObjectTypeWorkspaces,
+		ObjectTypeCatalogIntegration:      PluralObjectTypeCatalogIntegrations,
 	}
 }
 
@@ -335,6 +371,7 @@ const (
 	PluralObjectTypeCortexSearchServices     PluralObjectType = "CORTEX SEARCH SERVICES"
 	PluralObjectTypeExternalTables           PluralObjectType = "EXTERNAL TABLES"
 	PluralObjectTypeEventTables              PluralObjectType = "EVENT TABLES"
+	PluralObjectTypeExperiments              PluralObjectType = "EXPERIMENTS"
 	PluralObjectTypeViews                    PluralObjectType = "VIEWS"
 	PluralObjectTypeMaterializedViews        PluralObjectType = "MATERIALIZED VIEWS"
 	PluralObjectTypeSequences                PluralObjectType = "SEQUENCES"
@@ -361,11 +398,13 @@ const (
 	PluralObjectTypeApplicationPackages      PluralObjectType = "APPLICATION PACKAGES"
 	PluralObjectTypeApplicationRoles         PluralObjectType = "APPLICATION ROLES"
 	PluralObjectTypeStreamlits               PluralObjectType = "STREAMLITS"
+	PluralObjectTypeOnlineFeatureTables      PluralObjectType = "ONLINE FEATURE TABLES"
 	PluralObjectTypeIcebergTables            PluralObjectType = "ICEBERG TABLES"
 	PluralObjectTypeJoinPolicies             PluralObjectType = "JOIN POLICIES"
 	PluralObjectTypeExternalVolumes          PluralObjectType = "EXTERNAL VOLUMES"
 	PluralObjectTypeNetworkRules             PluralObjectType = "NETWORK RULES"
 	PluralObjectTypeNotebooks                PluralObjectType = "NOTEBOOKS"
+	PluralObjectTypeNotebookProjects         PluralObjectType = "NOTEBOOK PROJECTS"
 	PluralObjectTypePackagesPolicies         PluralObjectType = "PACKAGES POLICIES"
 	PluralObjectTypeComputePool              PluralObjectType = "COMPUTE POOLS"
 	PluralObjectTypeAggregationPolicies      PluralObjectType = "AGGREGATION POLICIES"
@@ -380,6 +419,12 @@ const (
 	PluralObjectTypeServices                 PluralObjectType = "SERVICES"
 	PluralObjectTypeProgrammaticAccessTokens PluralObjectType = "PROGRAMMATIC ACCESS TOKENS" //nolint:gosec
 	PluralObjectTypeStorageIntegrations      PluralObjectType = "STORAGE INTEGRATIONS"
+	PluralObjectTypeWorkspaces               PluralObjectType = "WORKSPACES"
+	PluralObjectTypeStorageLifecyclePolicies PluralObjectType = "STORAGE LIFECYCLE POLICIES"
+	PluralObjectTypeAgents                   PluralObjectType = "AGENTS"
+	PluralObjectTypeGateways                 PluralObjectType = "GATEWAYS"
+	PluralObjectTypeMcpServers               PluralObjectType = "MCP SERVERS"
+	PluralObjectTypeCatalogIntegrations      PluralObjectType = "CATALOG INTEGRATIONS"
 )
 
 func (p PluralObjectType) String() string {

@@ -228,17 +228,23 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 		newIdsFQN := collections.Map(newIds, sdk.ObjectIdentifier.FullyQualifiedName)
 		addedIdsFQN, removedIdsFQN, commonIdsFQN := ListDiffWithCommonItems(oldIdsFQN, newIdsFQN)
 
-		addedIds, err := collections.MapErr(addedIdsFQN, sdk.ParseObjectIdentifierString)
+		addedIds, err := collections.MapErr(addedIdsFQN, func(fqn string) (sdk.ObjectIdentifier, error) {
+			return GetOnObjectIdentifier(objectType, fqn)
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		removedIds, err := collections.MapErr(removedIdsFQN, sdk.ParseObjectIdentifierString)
+		removedIds, err := collections.MapErr(removedIdsFQN, func(fqn string) (sdk.ObjectIdentifier, error) {
+			return GetOnObjectIdentifier(objectType, fqn)
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		commonIds, err := collections.MapErr(commonIdsFQN, sdk.ParseObjectIdentifierString)
+		commonIds, err := collections.MapErr(commonIdsFQN, func(fqn string) (sdk.ObjectIdentifier, error) {
+			return GetOnObjectIdentifier(objectType, fqn)
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}

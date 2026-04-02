@@ -13,11 +13,6 @@ type CreateManagedAccountRequest struct {
 	CreateManagedAccountParams CreateManagedAccountParamsRequest // required
 }
 
-// added manually
-func (r *CreateManagedAccountRequest) GetName() AccountObjectIdentifier {
-	return r.name
-}
-
 type CreateManagedAccountParamsRequest struct {
 	AdminName     string // required
 	AdminPassword string // required

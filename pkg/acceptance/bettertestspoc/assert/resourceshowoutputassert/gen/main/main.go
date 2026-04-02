@@ -3,7 +3,7 @@
 package main
 
 import (
-	objectassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert/gen"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -20,7 +20,7 @@ func main() {
 			WithImport("testing").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"),
-		objectassertgen.GetSdkObjectDetails,
+		gen.GetFilteredSdkObjectDetails,
 		gen.ModelFromSdkObjectDetails,
 		getFilename,
 		gen.AllTemplates,
@@ -29,5 +29,8 @@ func main() {
 }
 
 func getFilename(_ genhelpers.SdkObjectDetails, model gen.ResourceShowOutputAssertionsModel) string {
+	if model.IsDescribeOutput {
+		return strings.TrimSuffix(genhelpers.ToSnakeCase(model.Name), "_details") + "_desc_output" + "_gen.go"
+	}
 	return genhelpers.ToSnakeCase(model.Name) + "_show_output" + "_gen.go"
 }

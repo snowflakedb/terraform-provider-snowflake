@@ -18,6 +18,11 @@ const (
 	ApiIntegrationResource                        feature = "snowflake_api_integration_resource"
 	AuthenticationPolicyResource                  feature = "snowflake_authentication_policy_resource"
 	AuthenticationPoliciesDatasource              feature = "snowflake_authentication_policies_datasource"
+	CatalogIntegrationAwsGlueResource             feature = "snowflake_catalog_integration_aws_glue_resource"
+	CatalogIntegrationObjectStorageResource       feature = "snowflake_catalog_integration_object_storage_resource"
+	CatalogIntegrationOpenCatalogResource         feature = "snowflake_catalog_integration_open_catalog_resource"
+	CatalogIntegrationIcebergRestResource         feature = "snowflake_catalog_integration_iceberg_rest_resource"
+	CatalogIntegrationsDatasource                 feature = "snowflake_catalog_integrations_datasource"
 	ComputePoolResource                           feature = "snowflake_compute_pool_resource"
 	ComputePoolsDatasource                        feature = "snowflake_compute_pools_datasource"
 	CortexSearchServiceResource                   feature = "snowflake_cortex_search_service_resource"
@@ -30,11 +35,16 @@ const (
 	DynamicTableResource                          feature = "snowflake_dynamic_table_resource"
 	DynamicTablesDatasource                       feature = "snowflake_dynamic_tables_datasource"
 	EmailNotificationIntegrationResource          feature = "snowflake_email_notification_integration_resource"
+	ExternalAzureStageResource                    feature = "snowflake_stage_external_azure_resource"
 	ExternalFunctionResource                      feature = "snowflake_external_function_resource"
 	ExternalFunctionsDatasource                   feature = "snowflake_external_functions_datasource"
+	ExternalGcsStageResource                      feature = "snowflake_stage_external_gcs_resource"
+	ExternalS3StageResource                       feature = "snowflake_stage_external_s3_resource"
+	ExternalS3CompatibleStageResource             feature = "snowflake_stage_external_s3_compatible_resource"
 	ExternalTableResource                         feature = "snowflake_external_table_resource"
 	ExternalTablesDatasource                      feature = "snowflake_external_tables_datasource"
 	ExternalVolumeResource                        feature = "snowflake_external_volume_resource"
+	ExternalVolumesDatasource                     feature = "snowflake_external_volumes_datasource"
 	FailoverGroupResource                         feature = "snowflake_failover_group_resource"
 	FailoverGroupsDatasource                      feature = "snowflake_failover_groups_datasource"
 	FileFormatResource                            feature = "snowflake_file_format_resource"
@@ -49,13 +59,18 @@ const (
 	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
+	InternalStageResource                         feature = "snowflake_stage_internal_resource"
 	JobServiceResource                            feature = "snowflake_job_service_resource"
 	ListingResource                               feature = "snowflake_listing_resource"
+	ListingsDatasource                            feature = "snowflake_listings_datasource"
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
+	NetworkRulesDatasource                        feature = "snowflake_network_rules_datasource"
+	NotebookResource                              feature = "snowflake_notebook_resource"
+	NotebooksDatasource                           feature = "snowflake_notebooks_datasource"
 	NotificationIntegrationResource               feature = "snowflake_notification_integration_resource"
 	ObjectParameterResource                       feature = "snowflake_object_parameter_resource"
 	PasswordPolicyResource                        feature = "snowflake_password_policy_resource"
@@ -80,6 +95,9 @@ const (
 	StageResource                                 feature = "snowflake_stage_resource"
 	StagesDatasource                              feature = "snowflake_stages_datasource"
 	StorageIntegrationResource                    feature = "snowflake_storage_integration_resource"
+	StorageIntegrationAwsResource                 feature = "snowflake_storage_integration_aws_resource"
+	StorageIntegrationAzureResource               feature = "snowflake_storage_integration_azure_resource"
+	StorageIntegrationGcsResource                 feature = "snowflake_storage_integration_gcs_resource"
 	StorageIntegrationsDatasource                 feature = "snowflake_storage_integrations_datasource"
 	SystemGenerateSCIMAccessTokenDatasource       feature = "snowflake_system_generate_scim_access_token_datasource"
 	SystemGetAWSSNSIAMPolicyDatasource            feature = "snowflake_system_get_aws_sns_iam_policy_datasource"
@@ -104,6 +122,11 @@ var allPreviewFeatures = []feature{
 	ApiIntegrationResource,
 	AuthenticationPolicyResource,
 	AuthenticationPoliciesDatasource,
+	CatalogIntegrationAwsGlueResource,
+	CatalogIntegrationObjectStorageResource,
+	CatalogIntegrationOpenCatalogResource,
+	CatalogIntegrationIcebergRestResource,
+	CatalogIntegrationsDatasource,
 	CortexSearchServiceResource,
 	CortexSearchServicesDatasource,
 	CurrentAccountResource,
@@ -113,11 +136,16 @@ var allPreviewFeatures = []feature{
 	DatabaseRoleDatasource,
 	DynamicTableResource,
 	DynamicTablesDatasource,
+	ExternalAzureStageResource,
 	ExternalFunctionResource,
 	ExternalFunctionsDatasource,
+	ExternalGcsStageResource,
+	ExternalS3StageResource,
+	ExternalS3CompatibleStageResource,
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	ExternalVolumeResource,
+	ExternalVolumesDatasource,
 	FailoverGroupResource,
 	FailoverGroupsDatasource,
 	FileFormatResource,
@@ -128,12 +156,16 @@ var allPreviewFeatures = []feature{
 	FunctionScalaResource,
 	FunctionSqlResource,
 	FunctionsDatasource,
+	InternalStageResource,
 	JobServiceResource,
+	ListingsDatasource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
 	NetworkPolicyAttachmentResource,
-	NetworkRuleResource,
+	NetworkRulesDatasource,
+	NotebookResource,
+	NotebooksDatasource,
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
@@ -141,9 +173,8 @@ var allPreviewFeatures = []feature{
 	PipeResource,
 	PipesDatasource,
 	CurrentRoleDatasource,
-	// TODO(SNOW-2108211): Uncomment after adjusting resource and data source
-	// SemanticViewResource,
-	// SemanticViewDatasource,
+	SemanticViewResource,
+	SemanticViewDatasource,
 	SequenceResource,
 	SequencesDatasource,
 	ShareResource,
@@ -158,6 +189,9 @@ var allPreviewFeatures = []feature{
 	StageResource,
 	StagesDatasource,
 	StorageIntegrationResource,
+	StorageIntegrationAwsResource,
+	StorageIntegrationAzureResource,
+	StorageIntegrationGcsResource,
 	StorageIntegrationsDatasource,
 	SystemGenerateSCIMAccessTokenDatasource,
 	SystemGetAWSSNSIAMPolicyDatasource,
@@ -185,6 +219,7 @@ var promotedFeatures = []feature{
 	ServicesDatasource,
 	UserProgrammaticAccessTokenResource,
 	UserProgrammaticAccessTokensDatasource,
+	NetworkRuleResource,
 }
 var PromotedFeatures = sdk.AsStringList(promotedFeatures)
 
@@ -224,4 +259,15 @@ func IsPromotedFeature(rawFeature string) bool {
 	return slices.ContainsFunc(PromotedFeatures, func(s string) bool {
 		return strings.EqualFold(rawFeature, s)
 	})
+}
+
+type PreviewFeature interface {
+	xxxProtected()
+	String() string
+}
+
+func (f feature) xxxProtected() {}
+
+func (f feature) String() string {
+	return string(f)
 }

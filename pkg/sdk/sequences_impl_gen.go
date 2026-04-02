@@ -10,8 +10,10 @@ import (
 
 var _ Sequences = (*sequences)(nil)
 
-var _ convertibleRow[Sequence] = new(sequenceRow)
-var _ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
+var (
+	_ convertibleRow[Sequence]       = new(sequenceRow)
+	_ convertibleRow[SequenceDetail] = new(sequenceDetailRow)
+)
 
 type sequences struct {
 	client *Client
@@ -90,7 +92,6 @@ func (r *AlterSequenceRequest) toOpts() *AlterSequenceOptions {
 		name:         r.name,
 		RenameTo:     r.RenameTo,
 		SetIncrement: r.SetIncrement,
-
 		UnsetComment: r.UnsetComment,
 	}
 	if r.Set != nil {

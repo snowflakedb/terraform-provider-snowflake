@@ -36,16 +36,14 @@ func (c *ExternalTableClient) PublishDataToStage(t *testing.T, stageId sdk.Schem
 func (c *ExternalTableClient) CreateWithLocation(t *testing.T, location string) (*sdk.ExternalTable, func()) {
 	t.Helper()
 
-	externalTableId := c.ids.RandomSchemaObjectIdentifier()
-	req := sdk.NewCreateExternalTableRequest(externalTableId, location).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJSON)).WithColumns([]*sdk.ExternalTableColumnRequest{sdk.NewExternalTableColumnRequest("id", sdk.DataTypeNumber, "value:time::int")})
-
-	return c.CreateWithRequest(t, req)
+	return c.CreateInSchemaWithLocation(t, location, c.ids.SchemaId())
 }
 
 func (c *ExternalTableClient) CreateInSchemaWithLocation(t *testing.T, location string, schemaId sdk.DatabaseObjectIdentifier) (*sdk.ExternalTable, func()) {
 	t.Helper()
 
-	req := sdk.NewCreateExternalTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), location).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJSON)).WithColumns([]*sdk.ExternalTableColumnRequest{sdk.NewExternalTableColumnRequest("id", sdk.DataTypeNumber, "value:time::int")})
+	req := sdk.NewCreateExternalTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), location).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJSON)).WithColumns([]*sdk.ExternalTableColumnRequest{sdk.NewExternalTableColumnRequest("id", sdk.DataTypeNumber, "value:time::int")}).
+		WithAutoRefresh(false)
 
 	return c.CreateWithRequest(t, req)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	providerresources "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
@@ -37,6 +38,14 @@ func blocklistedCharactersFieldDescription(description string) string {
 	return fmt.Sprintf(`%s Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: %s.`, description, characterList([]rune{'|', '.', '"'}))
 }
 
+func caseSensitiveFieldDoubleQuotes(description string) string {
+	return fmt.Sprintf(`%s This field is case-sensitive - the provider uses double quotes to wrap it when sending the SQL to Snowflake.`, description)
+}
+
+func caseSensitiveListItemDoubleQuotes(description string, listItemNamePlural string) string {
+	return fmt.Sprintf(`%s %s in this list are case-sensitive - the provider uses double quotes to wrap each of them when sending the SQL to Snowflake.`, description, listItemNamePlural)
+}
+
 func diffSuppressStatementFieldDescription(description string) string {
 	return fmt.Sprintf(`%s To mitigate permadiff on this field, the provider replaces blank characters with a space. This can lead to false positives in cases where a change in case or run of whitespace is semantically significant.`, description)
 }
@@ -63,4 +72,16 @@ func joinWithSpace(parts ...string) string {
 
 func exampleSchemaObjectIdentifier(schemaObjectName string) string {
 	return fmt.Sprintf("Example: `\"\\\"<db_name>\\\".\\\"<schema_name>\\\".\\\"<%s_name>\\\"\"`.", schemaObjectName)
+}
+
+func experimentalFeatureDescription(feature experimentalfeatures.ExperimentalFeature) string {
+	return fmt.Sprintf("This field can be only used when `%s` option is specified in provider block in the [`experimental_features_enabled`](../#experimental_features_enabled-1) field.", feature)
+}
+
+func ignoredAfterCreationDescription() string {
+	return "This field is used only when creating the object. Changes on this field are ignored after creation."
+}
+
+func enumValuesDescription[T ~string](values []T) string {
+	return fmt.Sprintf("Valid values are (case-insensitive): %s.", possibleValuesListed(values))
 }

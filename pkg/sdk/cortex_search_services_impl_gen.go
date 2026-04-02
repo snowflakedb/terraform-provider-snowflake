@@ -12,8 +12,10 @@ import (
 
 var _ CortexSearchServices = (*cortexSearchServices)(nil)
 
-var _ convertibleRow[CortexSearchService] = new(cortexSearchServiceRow)
-var _ convertibleRow[CortexSearchServiceDetails] = new(cortexSearchServiceDetailsRow)
+var (
+	_ convertibleRow[CortexSearchService]        = new(cortexSearchServiceRow)
+	_ convertibleRow[CortexSearchServiceDetails] = new(cortexSearchServiceDetailsRow)
+)
 
 type cortexSearchServices struct {
 	client *Client

@@ -20,7 +20,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCSV,
-			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				CSVCompression:                &sdk.CSVCompressionBz2,
 				CSVRecordDelimiter:            sdk.String("\\123"),
 				CSVFieldDelimiter:             sdk.String("0x42"),
@@ -110,7 +110,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCSV,
-			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				CSVFieldOptionallyEnclosedBy: sdk.String("NONE"),
 			},
 		})
@@ -129,7 +129,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeJSON,
-			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				JSONCompression:       &sdk.JSONCompressionBrotli,
 				JSONDateFormat:        sdk.String("a"),
 				JSONTimeFormat:        sdk.String("b"),
@@ -200,7 +200,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeAvro,
-			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				AvroCompression:              &sdk.AvroCompressionGzip,
 				AvroTrimSpace:                sdk.Bool(true),
 				AvroReplaceInvalidCharacters: sdk.Bool(true),
@@ -241,7 +241,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeORC,
-			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				ORCTrimSpace:                sdk.Bool(true),
 				ORCReplaceInvalidCharacters: sdk.Bool(true),
 				ORCNullIf:                   &[]sdk.NullString{{S: "a"}, {S: "b"}},
@@ -279,7 +279,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeParquet,
-			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				ParquetCompression:              &sdk.ParquetCompressionLzo,
 				ParquetBinaryAsText:             sdk.Bool(true),
 				ParquetTrimSpace:                sdk.Bool(true),
@@ -323,7 +323,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeXML,
-			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				XMLCompression:          &sdk.XMLCompressionDeflate,
 				XMLIgnoreUTF8Errors:     sdk.Bool(true),
 				XMLPreserveSpace:        sdk.Bool(true),
@@ -407,7 +407,7 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 	t.Run("set + set comment", func(t *testing.T) {
 		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormatWithOptions(t, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCSV,
-			FileFormatTypeOptions: sdk.FileFormatTypeOptions{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				CSVCompression: &sdk.CSVCompressionAuto,
 				CSVParseHeader: sdk.Bool(false),
 			},
@@ -415,7 +415,7 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 		t.Cleanup(fileFormatCleanup)
 
 		err := client.FileFormats.Alter(ctx, fileFormat.ID(), &sdk.AlterFileFormatOptions{
-			Set: &sdk.FileFormatTypeOptions{
+			Set: &sdk.LegacyFileFormatTypeOptions{
 				Comment:        sdk.String("some comment"),
 				CSVCompression: &sdk.CSVCompressionBz2,
 				CSVParseHeader: sdk.Bool(true),

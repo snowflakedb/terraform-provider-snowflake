@@ -3,7 +3,20 @@ package sdk
 import (
 	"database/sql"
 	"log"
+	"time"
 )
+
+func mapNullTimeToNonNullableField(timeField *time.Time, sqlValue sql.NullTime) {
+	if sqlValue.Valid {
+		*timeField = sqlValue.Time
+	}
+}
+
+func mapNullStringToNonNullableField(stringField *string, sqlValue sql.NullString) {
+	if sqlValue.Valid {
+		*stringField = sqlValue.String
+	}
+}
 
 func mapNullString(stringField **string, sqlValue sql.NullString) {
 	if sqlValue.Valid {
@@ -23,6 +36,13 @@ func mapNullStringWithMapping[T any](stringField **T, sqlValue sql.NullString, m
 	}
 }
 
+func mapNullInt(intField **int, sqlValue sql.NullInt64) {
+	if sqlValue.Valid {
+		v := int(sqlValue.Int64)
+		*intField = &v
+	}
+}
+
 func mapNullBool(boolField **bool, sqlValue sql.NullBool) {
 	if sqlValue.Valid {
 		*boolField = &sqlValue.Bool
@@ -31,6 +51,7 @@ func mapNullBool(boolField **bool, sqlValue sql.NullBool) {
 
 // mapStringWithMapping maps a string to a type T using a provided mapper function.
 // Be careful with the sensitive values as the mapper function can return an error, which is then logged by this function.
+// TODO [SNOW-3108659]: return error?
 func mapStringWithMapping[T any](stringField *T, sqlValue string, mapper func(string) (T, error)) {
 	if mappedValue, err := mapper(sqlValue); err == nil {
 		*stringField = mappedValue

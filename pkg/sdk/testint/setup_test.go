@@ -15,7 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/snowflakedb/gosnowflake"
+	"github.com/snowflakedb/gosnowflake/v2"
 )
 
 const IntegrationTestPrefix = "int_test_"
@@ -145,7 +145,14 @@ func (itc *integrationTestContext) initialize() error {
 	}
 
 	// TODO [SNOW-1763603]: we can't use test client because of the testing.T parameter that is not present here; discuss
-	itc.testClient = helpers.NewTestClient(c, TestDatabaseName, TestSchemaName, TestWarehouseName, integrationtests.ObjectsSuffix)
+	itc.testClient = helpers.NewTestClient(
+		c,
+		TestDatabaseName,
+		TestSchemaName,
+		TestWarehouseName,
+		integrationtests.ObjectsSuffix,
+		testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+	)
 
 	db, dbCleanup, err := testClientHelper().CreateTestDatabase(itc.ctx, false)
 	itc.databaseCleanup = dbCleanup
@@ -186,7 +193,14 @@ func (itc *integrationTestContext) initialize() error {
 		itc.secondaryClient = secondaryClient
 		itc.secondaryCtx = context.Background()
 
-		itc.secondaryTestClient = helpers.NewTestClient(secondaryClient, TestDatabaseName, TestSchemaName, TestWarehouseName, integrationtests.ObjectsSuffix)
+		itc.secondaryTestClient = helpers.NewTestClient(
+			secondaryClient,
+			TestDatabaseName,
+			TestSchemaName,
+			TestWarehouseName,
+			integrationtests.ObjectsSuffix,
+			testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+		)
 
 		secondaryDb, secondaryDbCleanup, err := secondaryTestClientHelper().CreateTestDatabase(itc.ctx, false)
 		itc.secondaryDatabaseCleanup = secondaryDbCleanup

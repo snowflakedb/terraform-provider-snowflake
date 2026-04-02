@@ -25,11 +25,6 @@ type CreateMaterializedViewRequest struct {
 	sql                    string // required
 }
 
-// added manually
-func (r *CreateMaterializedViewRequest) GetName() SchemaObjectIdentifier {
-	return r.name
-}
-
 type MaterializedViewColumnRequest struct {
 	Name    string // required
 	Comment *string

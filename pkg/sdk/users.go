@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -40,6 +41,7 @@ type Users interface {
 	ShowProgrammaticAccessTokens(ctx context.Context, request *ShowUserProgrammaticAccessTokenRequest) ([]ProgrammaticAccessToken, error)
 	ShowProgrammaticAccessTokenByName(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
 	ShowProgrammaticAccessTokenByNameSafely(ctx context.Context, userId AccountObjectIdentifier, tokenName AccountObjectIdentifier) (*ProgrammaticAccessToken, error)
+	ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethod, error)
 }
 
 var _ Users = (*users)(nil)
@@ -77,6 +79,7 @@ type User struct {
 	HasRsaPublicKey       bool
 	Type                  string
 	HasMfa                bool
+	HasWorkloadIdentity   bool
 }
 
 func (v *User) GetSecondaryRolesOption() SecondaryRolesOption {
@@ -124,6 +127,7 @@ type userDBRow struct {
 	HasRsaPublicKey       sql.NullBool   `db:"has_rsa_public_key"`
 	Type                  sql.NullString `db:"type"`
 	HasMfa                sql.NullBool   `db:"has_mfa"`
+	HasWorkloadIdentity   sql.NullBool   `db:"has_workload_identity"`
 }
 
 func (row userDBRow) convert() (*User, error) {
@@ -207,6 +211,9 @@ func (row userDBRow) convert() (*User, error) {
 	if row.HasMfa.Valid {
 		user.HasMfa = row.HasMfa.Bool
 	}
+	if row.HasWorkloadIdentity.Valid {
+		user.HasWorkloadIdentity = row.HasWorkloadIdentity.Bool
+	}
 	return user, nil
 }
 
@@ -244,9 +251,16 @@ func (opts *CreateUserOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		return errors.Join(ErrInvalidObjectIdentifier)
 	}
-	if valueSet(opts.ObjectProperties) && valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
-		if err := opts.ObjectProperties.DefaultSecondaryRoles.validate(); err != nil {
-			return err
+	if valueSet(opts.ObjectProperties) {
+		if valueSet(opts.ObjectProperties.WorkloadIdentity) {
+			if err := opts.ObjectProperties.WorkloadIdentity.validate(); err != nil {
+				return err
+			}
+		}
+		if valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
+			if err := opts.ObjectProperties.DefaultSecondaryRoles.validate(); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -269,28 +283,91 @@ func (v *users) Create(ctx context.Context, id AccountObjectIdentifier, opts *Cr
 }
 
 type UserObjectProperties struct {
-	Password              *string                  `ddl:"parameter,single_quotes" sql:"PASSWORD"`
-	LoginName             *string                  `ddl:"parameter,single_quotes" sql:"LOGIN_NAME"`
-	DisplayName           *string                  `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
-	FirstName             *string                  `ddl:"parameter,single_quotes" sql:"FIRST_NAME"`
-	MiddleName            *string                  `ddl:"parameter,single_quotes" sql:"MIDDLE_NAME"`
-	LastName              *string                  `ddl:"parameter,single_quotes" sql:"LAST_NAME"`
-	Email                 *string                  `ddl:"parameter,single_quotes" sql:"EMAIL"`
-	MustChangePassword    *bool                    `ddl:"parameter,no_quotes" sql:"MUST_CHANGE_PASSWORD"`
-	Disable               *bool                    `ddl:"parameter,no_quotes" sql:"DISABLED"`
-	DaysToExpiry          *int                     `ddl:"parameter,no_quotes" sql:"DAYS_TO_EXPIRY"`
-	MinsToUnlock          *int                     `ddl:"parameter,no_quotes" sql:"MINS_TO_UNLOCK"`
-	DefaultWarehouse      *AccountObjectIdentifier `ddl:"identifier,equals" sql:"DEFAULT_WAREHOUSE"`
-	DefaultNamespace      *ObjectIdentifier        `ddl:"identifier,equals" sql:"DEFAULT_NAMESPACE"`
-	DefaultRole           *AccountObjectIdentifier `ddl:"identifier,equals" sql:"DEFAULT_ROLE"`
-	DefaultSecondaryRoles *SecondaryRoles          `ddl:"parameter,equals" sql:"DEFAULT_SECONDARY_ROLES"`
-	MinsToBypassMFA       *int                     `ddl:"parameter,no_quotes" sql:"MINS_TO_BYPASS_MFA"`
-	RSAPublicKey          *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY"`
-	RSAPublicKeyFp        *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_FP"`
-	RSAPublicKey2         *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2"`
-	RSAPublicKey2Fp       *string                  `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2_FP"`
-	Type                  *UserType                `ddl:"parameter,no_quotes" sql:"TYPE"`
-	Comment               *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Password              *string                               `ddl:"parameter,single_quotes" sql:"PASSWORD"`
+	LoginName             *string                               `ddl:"parameter,single_quotes" sql:"LOGIN_NAME"`
+	DisplayName           *string                               `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
+	FirstName             *string                               `ddl:"parameter,single_quotes" sql:"FIRST_NAME"`
+	MiddleName            *string                               `ddl:"parameter,single_quotes" sql:"MIDDLE_NAME"`
+	LastName              *string                               `ddl:"parameter,single_quotes" sql:"LAST_NAME"`
+	Email                 *string                               `ddl:"parameter,single_quotes" sql:"EMAIL"`
+	MustChangePassword    *bool                                 `ddl:"parameter,no_quotes" sql:"MUST_CHANGE_PASSWORD"`
+	Disable               *bool                                 `ddl:"parameter,no_quotes" sql:"DISABLED"`
+	DaysToExpiry          *int                                  `ddl:"parameter,no_quotes" sql:"DAYS_TO_EXPIRY"`
+	MinsToUnlock          *int                                  `ddl:"parameter,no_quotes" sql:"MINS_TO_UNLOCK"`
+	DefaultWarehouse      *AccountObjectIdentifier              `ddl:"identifier,equals" sql:"DEFAULT_WAREHOUSE"`
+	DefaultNamespace      *ObjectIdentifier                     `ddl:"identifier,equals" sql:"DEFAULT_NAMESPACE"`
+	DefaultRole           *AccountObjectIdentifier              `ddl:"identifier,equals" sql:"DEFAULT_ROLE"`
+	DefaultSecondaryRoles *SecondaryRoles                       `ddl:"parameter,equals" sql:"DEFAULT_SECONDARY_ROLES"`
+	MinsToBypassMFA       *int                                  `ddl:"parameter,no_quotes" sql:"MINS_TO_BYPASS_MFA"`
+	RSAPublicKey          *string                               `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY"`
+	RSAPublicKeyFp        *string                               `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_FP"`
+	RSAPublicKey2         *string                               `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2"`
+	RSAPublicKey2Fp       *string                               `ddl:"parameter,single_quotes" sql:"RSA_PUBLIC_KEY_2_FP"`
+	Type                  *UserType                             `ddl:"parameter,no_quotes" sql:"TYPE"`
+	WorkloadIdentity      *UserObjectWorkloadIdentityProperties `ddl:"list,parentheses,no_comma" sql:"WORKLOAD_IDENTITY ="`
+	Comment               *string                               `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type WIFType string
+
+const (
+	WIFTypeAWS   WIFType = "AWS"
+	WIFTypeAzure WIFType = "AZURE"
+	WIFTypeGCP   WIFType = "GCP"
+	WIFTypeOIDC  WIFType = "OIDC"
+)
+
+func ToWIFTypeType(s string) (WIFType, error) {
+	switch strings.ToUpper(s) {
+	case string(WIFTypeAWS):
+		return WIFTypeAWS, nil
+	case string(WIFTypeAzure):
+		return WIFTypeAzure, nil
+	case string(WIFTypeGCP):
+		return WIFTypeGCP, nil
+	case string(WIFTypeOIDC):
+		return WIFTypeOIDC, nil
+	default:
+		return "", fmt.Errorf("invalid WIF type: %s", s)
+	}
+}
+
+type UserObjectWorkloadIdentityProperties struct {
+	AwsType   *UserObjectWorkloadIdentityAws   `ddl:"keyword"`
+	AzureType *UserObjectWorkloadIdentityAzure `ddl:"keyword"`
+	GcpType   *UserObjectWorkloadIdentityGcp   `ddl:"keyword"`
+	OidcType  *UserObjectWorkloadIdentityOidc  `ddl:"keyword"`
+}
+
+type UserObjectWorkloadIdentityAws struct {
+	wifType string  `ddl:"static" sql:"TYPE = AWS"`
+	Arn     *string `ddl:"parameter,single_quotes" sql:"ARN"`
+}
+
+type UserObjectWorkloadIdentityAzure struct {
+	wifType string  `ddl:"static" sql:"TYPE = AZURE"`
+	Issuer  *string `ddl:"parameter,single_quotes" sql:"ISSUER"`
+	Subject *string `ddl:"parameter,single_quotes" sql:"SUBJECT"`
+}
+
+type UserObjectWorkloadIdentityGcp struct {
+	wifType string  `ddl:"static" sql:"TYPE = GCP"`
+	Subject *string `ddl:"parameter,single_quotes" sql:"SUBJECT"`
+}
+
+type UserObjectWorkloadIdentityOidc struct {
+	wifType          string                  `ddl:"static" sql:"TYPE = OIDC"`
+	Issuer           *string                 `ddl:"parameter,single_quotes" sql:"ISSUER"`
+	Subject          *string                 `ddl:"parameter,single_quotes" sql:"SUBJECT"`
+	OidcAudienceList []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OIDC_AUDIENCE_LIST"`
+}
+
+func (workloadIdentity *UserObjectWorkloadIdentityProperties) validate() error {
+	var errs []error
+	if !exactlyOneValueSet(workloadIdentity.AwsType, workloadIdentity.AzureType, workloadIdentity.GcpType, workloadIdentity.OidcType) {
+		errs = append(errs, errExactlyOneOf("UserObjectWorkloadIdentityProperties", "AwsType", "AzureType", "GcpType", "OidcType"))
+	}
+	return errors.Join(errs...)
 }
 
 type UserAlterObjectProperties struct {
@@ -327,6 +404,7 @@ type UserObjectPropertiesUnset struct {
 	RSAPublicKey          *bool `ddl:"keyword" sql:"RSA_PUBLIC_KEY"`
 	RSAPublicKey2         *bool `ddl:"keyword" sql:"RSA_PUBLIC_KEY_2"`
 	Type                  *bool `ddl:"keyword" sql:"TYPE"`
+	WorkloadIdentity      *bool `ddl:"keyword" sql:"WORKLOAD_IDENTITY"`
 	Comment               *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
@@ -448,9 +526,16 @@ func (opts *UserSet) validate() error {
 	if anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) && anyValueSet(opts.ObjectProperties, opts.ObjectParameters, opts.SessionParameters) {
 		return NewError("policies cannot be set with user properties or parameters at the same time")
 	}
-	if valueSet(opts.ObjectProperties) && valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
-		if err := opts.ObjectProperties.DefaultSecondaryRoles.validate(); err != nil {
-			return err
+	if valueSet(opts.ObjectProperties) {
+		if valueSet(opts.ObjectProperties.WorkloadIdentity) {
+			if err := opts.ObjectProperties.WorkloadIdentity.validate(); err != nil {
+				return err
+			}
+		}
+		if valueSet(opts.ObjectProperties.DefaultSecondaryRoles) {
+			if err := opts.ObjectProperties.DefaultSecondaryRoles.validate(); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -563,6 +648,7 @@ type UserDetails struct {
 	CustomLandingPageUrl                *StringProperty
 	CustomLandingPageUrlFlushNextUiLoad *BoolProperty
 	HasMfa                              *BoolProperty
+	HasWorkloadIdentity                 *BoolProperty
 }
 
 func userDetailsFromRows(rows []propertyRow) *UserDetails {
@@ -637,6 +723,8 @@ func userDetailsFromRows(rows []propertyRow) *UserDetails {
 			v.CustomLandingPageUrl = row.toStringProperty()
 		case "CUSTOM_LANDING_PAGE_URL_FLUSH_NEXT_UI_LOAD":
 			v.CustomLandingPageUrlFlushNextUiLoad = row.toBoolProperty()
+		case "HAS_WORKLOAD_IDENTITY":
+			v.HasWorkloadIdentity = row.toBoolProperty()
 		}
 	}
 	return v
@@ -824,4 +912,124 @@ var AcceptableUserTypes = map[UserType][]string{
 	UserTypePerson:        {"", string(UserTypePerson)},
 	UserTypeService:       {string(UserTypeService)},
 	UserTypeLegacyService: {string(UserTypeLegacyService)},
+}
+
+type userWorkloadIdentityAuthenticationMethodsDBRow struct {
+	Name           string         `db:"name"`
+	Type           string         `db:"type"`
+	Comment        sql.NullString `db:"comment"`
+	LastUsed       sql.NullTime   `db:"last_used"`
+	CreatedOn      time.Time      `db:"created_on"`
+	AdditionalInfo sql.NullString `db:"additional_info"`
+}
+
+func (row userWorkloadIdentityAuthenticationMethodsDBRow) convert() (*UserWorkloadIdentityAuthenticationMethod, error) {
+	methods := &UserWorkloadIdentityAuthenticationMethod{
+		Name:      row.Name,
+		CreatedOn: row.CreatedOn,
+	}
+
+	wifType, err := ToWIFTypeType(row.Type)
+	if err != nil {
+		return nil, err
+	}
+	methods.Type = wifType
+	switch wifType {
+	case WIFTypeAWS:
+		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{}
+		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
+			return nil, err
+		}
+		methods.AwsAdditionalInfo = additionalInfo
+	case WIFTypeAzure:
+		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{}
+		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
+			return nil, err
+		}
+		methods.AzureAdditionalInfo = additionalInfo
+	case WIFTypeGCP:
+		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{}
+		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
+			return nil, err
+		}
+		methods.GcpAdditionalInfo = additionalInfo
+	case WIFTypeOIDC:
+		additionalInfo := &UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{}
+		if err := json.Unmarshal([]byte(row.AdditionalInfo.String), additionalInfo); err != nil {
+			return nil, err
+		}
+		methods.OidcAdditionalInfo = additionalInfo
+	}
+
+	if row.LastUsed.Valid {
+		methods.LastUsed = row.LastUsed.Time
+	}
+	if row.Comment.Valid {
+		methods.Comment = row.Comment.String
+	}
+	return methods, nil
+}
+
+type UserWorkloadIdentityAuthenticationMethod struct {
+	Name                string
+	Type                WIFType
+	Comment             string
+	LastUsed            time.Time
+	CreatedOn           time.Time
+	AwsAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo
+	AzureAdditionalInfo *UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo
+	GcpAdditionalInfo   *UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo
+	OidcAdditionalInfo  *UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo
+}
+
+func (v *UserWorkloadIdentityAuthenticationMethod) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(v.Name)
+}
+
+type UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo struct {
+	IamRole      string `json:"iamRole"`
+	Type         string `json:"type"`
+	AwsAccount   string `json:"awsAccount"`
+	AwsPartition string `json:"awsPartition"`
+}
+
+type UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo struct {
+	Issuer  string `json:"issuer"`
+	Subject string `json:"subject"`
+}
+
+type UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo struct {
+	Subject string `json:"subject"`
+}
+
+type UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo struct {
+	Issuer       string   `json:"issuer"`
+	Subject      string   `json:"subject"`
+	AudienceList []string `json:"audienceList"`
+}
+
+// showUserAuthenticationMethodOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-user-workload-identity-authentication-methods
+type showUserAuthenticationMethodOptions struct {
+	show                            bool                    `ddl:"static" sql:"SHOW"`
+	userWorkloadIdentityAuthMethods bool                    `ddl:"static" sql:"USER WORKLOAD IDENTITY AUTHENTICATION METHODS"`
+	ForUser                         AccountObjectIdentifier `ddl:"identifier,no_equals,no_quotes" sql:"FOR USER"`
+}
+
+func (opts *showUserAuthenticationMethodOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	return nil
+}
+
+func (v *users) ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx context.Context, userId AccountObjectIdentifier) ([]UserWorkloadIdentityAuthenticationMethod, error) {
+	opts := &showUserAuthenticationMethodOptions{
+		ForUser: userId,
+	}
+	opts = createIfNil(opts)
+	dbRows, err := validateAndQuery[userWorkloadIdentityAuthenticationMethodsDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[userWorkloadIdentityAuthenticationMethodsDBRow, UserWorkloadIdentityAuthenticationMethod](dbRows)
 }

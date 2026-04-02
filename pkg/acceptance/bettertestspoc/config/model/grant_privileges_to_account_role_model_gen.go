@@ -11,16 +11,17 @@ import (
 )
 
 type GrantPrivilegesToAccountRoleModel struct {
-	AccountRoleName    tfconfig.Variable `json:"account_role_name,omitempty"`
-	AllPrivileges      tfconfig.Variable `json:"all_privileges,omitempty"`
-	AlwaysApply        tfconfig.Variable `json:"always_apply,omitempty"`
-	AlwaysApplyTrigger tfconfig.Variable `json:"always_apply_trigger,omitempty"`
-	OnAccount          tfconfig.Variable `json:"on_account,omitempty"`
-	OnAccountObject    tfconfig.Variable `json:"on_account_object,omitempty"`
-	OnSchema           tfconfig.Variable `json:"on_schema,omitempty"`
-	OnSchemaObject     tfconfig.Variable `json:"on_schema_object,omitempty"`
-	Privileges         tfconfig.Variable `json:"privileges,omitempty"`
-	WithGrantOption    tfconfig.Variable `json:"with_grant_option,omitempty"`
+	AccountRoleName           tfconfig.Variable `json:"account_role_name,omitempty"`
+	AllPrivileges             tfconfig.Variable `json:"all_privileges,omitempty"`
+	AlwaysApply               tfconfig.Variable `json:"always_apply,omitempty"`
+	AlwaysApplyTrigger        tfconfig.Variable `json:"always_apply_trigger,omitempty"`
+	OnAccount                 tfconfig.Variable `json:"on_account,omitempty"`
+	OnAccountObject           tfconfig.Variable `json:"on_account_object,omitempty"`
+	OnSchema                  tfconfig.Variable `json:"on_schema,omitempty"`
+	OnSchemaObject            tfconfig.Variable `json:"on_schema_object,omitempty"`
+	Privileges                tfconfig.Variable `json:"privileges,omitempty"`
+	StrictPrivilegeManagement tfconfig.Variable `json:"strict_privilege_management,omitempty"`
+	WithGrantOption           tfconfig.Variable `json:"with_grant_option,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -110,6 +111,11 @@ func (g *GrantPrivilegesToAccountRoleModel) WithOnAccount(onAccount bool) *Grant
 
 // privileges attribute type is not yet supported, so WithPrivileges can't be generated
 
+func (g *GrantPrivilegesToAccountRoleModel) WithStrictPrivilegeManagement(strictPrivilegeManagement bool) *GrantPrivilegesToAccountRoleModel {
+	g.StrictPrivilegeManagement = tfconfig.BoolVariable(strictPrivilegeManagement)
+	return g
+}
+
 func (g *GrantPrivilegesToAccountRoleModel) WithWithGrantOption(withGrantOption bool) *GrantPrivilegesToAccountRoleModel {
 	g.WithGrantOption = tfconfig.BoolVariable(withGrantOption)
 	return g
@@ -161,6 +167,11 @@ func (g *GrantPrivilegesToAccountRoleModel) WithOnSchemaObjectValue(value tfconf
 
 func (g *GrantPrivilegesToAccountRoleModel) WithPrivilegesValue(value tfconfig.Variable) *GrantPrivilegesToAccountRoleModel {
 	g.Privileges = value
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithStrictPrivilegeManagementValue(value tfconfig.Variable) *GrantPrivilegesToAccountRoleModel {
+	g.StrictPrivilegeManagement = value
 	return g
 }
 

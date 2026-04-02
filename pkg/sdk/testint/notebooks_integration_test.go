@@ -125,7 +125,8 @@ func TestInt_Notebooks(t *testing.T) {
 
 		request := sdk.NewCreateNotebookRequest(id)
 
-		err := client.Notebooks.Create(ctx, request)
+		_, notebookCleanup := testClientHelper().Notebook.CreateWithRequest(t, request)
+		t.Cleanup(notebookCleanup)
 
 		computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
 		t.Cleanup(computePoolCleanup)
@@ -136,7 +137,6 @@ func TestInt_Notebooks(t *testing.T) {
 		queryWarehouse, queryWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(queryWarehouseCleanup)
 
-		// 'Secrets' field is missing from SHOW and DESC by design.
 		setRequest := sdk.NewNotebookSetRequest().
 			WithComment("comment").
 			WithQueryWarehouse(queryWarehouse.ID()).
@@ -147,7 +147,7 @@ func TestInt_Notebooks(t *testing.T) {
 
 		alterRequest := sdk.NewAlterNotebookRequest(id).WithSet(*setRequest)
 
-		err = client.Notebooks.Alter(ctx, alterRequest)
+		err := client.Notebooks.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
 		updatedNotebook, err := client.Notebooks.ShowByID(ctx, id)
@@ -197,6 +197,20 @@ func TestInt_Notebooks(t *testing.T) {
 		)
 	})
 
+	t.Run("alter: set non-existing warehouse", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		request := sdk.NewCreateNotebookRequest(id)
+
+		_, notebookCleanup := testClientHelper().Notebook.CreateWithRequest(t, request)
+		t.Cleanup(notebookCleanup)
+
+		setRequest := sdk.NewNotebookSetRequest().WithWarehouse(sdk.NewAccountObjectIdentifier("invalid warehouse"))
+		alterRequest := sdk.NewAlterNotebookRequest(id).WithSet(*setRequest)
+
+		err := client.Notebooks.Alter(ctx, alterRequest)
+		require.Error(t, err)
+	})
+
 	t.Run("alter: unset", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
@@ -236,8 +250,7 @@ func TestInt_Notebooks(t *testing.T) {
 			WithExternalAccessIntegrations(true).
 			WithQueryWarehouse(true).
 			WithRuntimeEnvironmentVersion(true).
-			WithRuntimeName(true).
-			WithSecrets(true)
+			WithRuntimeName(true)
 
 		alterRequest := sdk.NewAlterNotebookRequest(id).WithUnset(*unsetRequest)
 

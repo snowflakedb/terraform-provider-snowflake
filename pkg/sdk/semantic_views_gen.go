@@ -17,6 +17,9 @@ type SemanticViews interface {
 	Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
+
+	// DescribeSemanticViewDetails is added manually; it returns converted describe output for semantic views
+	DescribeSemanticViewDetails(ctx context.Context, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error)
 }
 
 // CreateSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view.
@@ -28,8 +31,8 @@ type CreateSemanticViewOptions struct {
 	name                      SchemaObjectIdentifier     `ddl:"identifier"`
 	logicalTables             []LogicalTable             `ddl:"parameter,parentheses,no_equals" sql:"TABLES"`
 	semanticViewRelationships []SemanticViewRelationship `ddl:"parameter,parentheses,no_equals" sql:"RELATIONSHIPS"`
-	semanticViewFacts         []SemanticExpression       `ddl:"parameter,parentheses,no_equals" sql:"FACTS"`
-	semanticViewDimensions    []SemanticExpression       `ddl:"parameter,parentheses,no_equals" sql:"DIMENSIONS"`
+	semanticViewFacts         []FactDefinition           `ddl:"parameter,parentheses,no_equals" sql:"FACTS"`
+	semanticViewDimensions    []DimensionDefinition      `ddl:"parameter,parentheses,no_equals" sql:"DIMENSIONS"`
 	semanticViewMetrics       []MetricDefinition         `ddl:"parameter,parentheses,no_equals" sql:"METRICS"`
 	Comment                   *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	CopyGrants                *bool                      `ddl:"keyword" sql:"COPY GRANTS"`
@@ -45,7 +48,7 @@ type LogicalTable struct {
 }
 
 type LogicalTableAlias struct {
-	LogicalTableAlias string `ddl:"keyword"`
+	LogicalTableAlias string `ddl:"keyword,double_quotes"`
 	as                bool   `ddl:"static" sql:"AS"`
 }
 
@@ -75,17 +78,17 @@ type SemanticViewRelationship struct {
 }
 
 type RelationshipAlias struct {
-	RelationshipAlias string `ddl:"keyword"`
+	RelationshipAlias string `ddl:"keyword,double_quotes"`
 	as                bool   `ddl:"static" sql:"AS"`
 }
 
 type RelationshipTableAlias struct {
 	RelationshipTableName  *SchemaObjectIdentifier `ddl:"identifier"`
-	RelationshipTableAlias *string                 `ddl:"keyword"`
+	RelationshipTableAlias *string                 `ddl:"keyword,double_quotes"`
 }
 
 type SemanticViewColumn struct {
-	Name string `ddl:"keyword"`
+	Name string `ddl:"keyword,double_quotes"`
 }
 
 type SemanticExpression struct {
@@ -104,16 +107,26 @@ type SemanticSqlExpression struct {
 	SqlExpression string `ddl:"keyword,no_quotes"`
 }
 
+type FactDefinition struct {
+	isPrivate          *bool               `ddl:"keyword" sql:"PRIVATE"`
+	semanticExpression *SemanticExpression `ddl:"keyword"`
+}
+
+type DimensionDefinition struct {
+	semanticExpression *SemanticExpression `ddl:"keyword"`
+}
+
 type MetricDefinition struct {
+	isPrivate                      *bool                           `ddl:"keyword" sql:"PRIVATE"`
 	semanticExpression             *SemanticExpression             `ddl:"keyword"`
 	windowFunctionMetricDefinition *WindowFunctionMetricDefinition `ddl:"keyword"`
 }
 
 type WindowFunctionMetricDefinition struct {
-	WindowFunction string                    `ddl:"keyword"`
-	as             bool                      `ddl:"static" sql:"AS"`
-	Metric         string                    `ddl:"keyword"`
-	OverClause     *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
+	qualifiedExpressionName *QualifiedExpressionName  `ddl:"keyword"`
+	as                      bool                      `ddl:"static" sql:"AS"`
+	sqlExpression           *SemanticSqlExpression    `ddl:"keyword"`
+	OverClause              *WindowFunctionOverClause `ddl:"list,parentheses,no_comma" sql:"OVER"`
 }
 
 type WindowFunctionOverClause struct {
@@ -124,12 +137,13 @@ type WindowFunctionOverClause struct {
 
 // AlterSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-semantic-view.
 type AlterSemanticViewOptions struct {
-	alter        bool                   `ddl:"static" sql:"ALTER"`
-	semanticView bool                   `ddl:"static" sql:"SEMANTIC VIEW"`
-	IfExists     *bool                  `ddl:"keyword" sql:"IF EXISTS"`
-	name         SchemaObjectIdentifier `ddl:"identifier"`
-	SetComment   *string                `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
-	UnsetComment *bool                  `ddl:"keyword" sql:"UNSET COMMENT"`
+	alter        bool                    `ddl:"static" sql:"ALTER"`
+	semanticView bool                    `ddl:"static" sql:"SEMANTIC VIEW"`
+	IfExists     *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	name         SchemaObjectIdentifier  `ddl:"identifier"`
+	SetComment   *string                 `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
+	UnsetComment *bool                   `ddl:"keyword" sql:"UNSET COMMENT"`
+	RenameTo     *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 }
 
 // DropSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-semantic-view.

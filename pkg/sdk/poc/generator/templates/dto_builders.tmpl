@@ -1,7 +1,0 @@
-{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/poc/generator.Interface*/ -}}
-
-{{- range .Operations }}
-    {{- range .DtosToGenerate }}
-        {{ template "dtoBuilderTemplate" . }}
-    {{- end }}
-{{- end }}

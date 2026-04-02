@@ -28,6 +28,56 @@ func ImportedGrantPrivilegesToAccountRoleResource(t *testing.T, id string) *Gran
 	}
 }
 
+//////////////////////////////////
+// Attribute typed value checks //
+//////////////////////////////////
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAccountRoleName(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.StringValueSet("account_role_name", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAllPrivileges(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("all_privileges", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApply(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("always_apply", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyTrigger(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.StringValueSet("always_apply_trigger", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccount(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("on_account", expected)
+	return g
+}
+
+// typed assert for "on_account_object" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "on_schema" (type: List, subtype: Map) is not currently supported
+
+// typed assert for "on_schema_object" (type: List, subtype: Map) is not currently supported
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivileges(expected ...string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.SetContainsExactlyStringValues("privileges", expected...)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagement(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("strict_privilege_management", expected)
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOption(expected bool) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.BoolValueSet("with_grant_option", expected)
+	return g
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -57,23 +107,8 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountString(expected
 	return g
 }
 
-func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountObjectString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_account_object", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnSchemaString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnSchemaObjectString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema_object", expected))
-	return g
-}
-
-func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivilegesString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("privileges", expected))
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementString(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.AddAssertion(assert.ValueSet("strict_privilege_management", expected))
 	return g
 }
 
@@ -108,6 +143,11 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoAlwaysApplyTrigger() *
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoOnAccount() *GrantPrivilegesToAccountRoleResourceAssert {
 	g.AddAssertion(assert.ValueNotSet("on_account"))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasNoStrictPrivilegeManagement() *GrantPrivilegesToAccountRoleResourceAssert {
+	g.AddAssertion(assert.ValueNotSet("strict_privilege_management"))
 	return g
 }
 
@@ -160,6 +200,11 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasPrivilegesEmpty() *Grant
 	return g
 }
 
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
+	g.AddAssertion(assert.ValueSet("strict_privilege_management", ""))
+	return g
+}
+
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasWithGrantOptionEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
 	g.AddAssertion(assert.ValueSet("with_grant_option", ""))
 	return g
@@ -191,6 +236,11 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasAlwaysApplyTriggerNotEmp
 
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
 	g.AddAssertion(assert.ValuePresent("on_account"))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasStrictPrivilegeManagementNotEmpty() *GrantPrivilegesToAccountRoleResourceAssert {
+	g.AddAssertion(assert.ValuePresent("strict_privilege_management"))
 	return g
 }
 

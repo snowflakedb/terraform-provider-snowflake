@@ -13,3 +13,8 @@ func (s *StreamlitShowOutputAssert) HasUrlIdNotEmpty() *StreamlitShowOutputAsser
 	s.AddAssertion(assert.ResourceShowOutputValuePresent("url_id"))
 	return s
 }
+
+func (s *StreamlitShowOutputAssert) HasOwnerNotEmpty() *StreamlitShowOutputAssert {
+	s.AddAssertion(assert.ResourceShowOutputValuePresent("owner"))
+	return s
+}

@@ -1,0 +1,33 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
+
+import "context"
+
+type {{ .Name }} interface {
+	{{- range .Operations }}
+		{{- if .ShowMapping }}
+			{{- if .ShowKind}}
+				{{- if eq (show_mapping_deref .ShowKind) "single_value" }}
+					{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) (*{{ .ShowMapping.To.Name }}, error)
+				{{- else if eq (show_mapping_deref .ShowKind) "slice" }}
+					{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) ([]{{ .ShowMapping.To.Name }}, error)
+				{{- end }}
+			{{- end }}
+		{{- else if eq .Name "ShowByID" }}
+			{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)
+			{{ .Name }}Safely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .ObjectInterface.NameSingular }}, error)
+		{{- else if and (eq .Name "Describe") .DescribeMapping }}
+			{{- if .DescribeKind }}
+				{{- if eq (describe_mapping_deref .DescribeKind) "single_value" }}
+					{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) (*{{ .DescribeMapping.To.Name }}, error)
+				{{- else if eq (describe_mapping_deref .DescribeKind) "slice" }}
+					{{ .Name }}(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) ([]{{ .DescribeMapping.To.Name }}, error)
+				{{- end }}
+			{{- end }}
+		{{- else if eq .Name "Drop" }}
+			Drop(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
+			DropSafely(ctx context.Context, id {{ .ObjectInterface.IdentifierKind }}) error
+		{{- else }}
+			{{ .Name }}(ctx context.Context, request *{{ .OptsField.DtoDecl }}) error
+		{{- end -}}
+	{{ end }}
+}

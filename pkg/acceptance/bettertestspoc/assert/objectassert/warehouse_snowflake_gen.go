@@ -68,8 +68,11 @@ func (w *WarehouseAssert) HasType(expected sdk.WarehouseType) *WarehouseAssert {
 func (w *WarehouseAssert) HasSize(expected sdk.WarehouseSize) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.Size != expected {
-			return fmt.Errorf("expected size: %v; got: %v", expected, o.Size)
+		if o.Size == nil {
+			return fmt.Errorf("expected size to have value; got: nil")
+		}
+		if *o.Size != expected {
+			return fmt.Errorf("expected size: %v; got: %v", expected, *o.Size)
 		}
 		return nil
 	})
@@ -79,8 +82,11 @@ func (w *WarehouseAssert) HasSize(expected sdk.WarehouseSize) *WarehouseAssert {
 func (w *WarehouseAssert) HasMinClusterCount(expected int) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.MinClusterCount != expected {
-			return fmt.Errorf("expected min cluster count: %v; got: %v", expected, o.MinClusterCount)
+		if o.MinClusterCount == nil {
+			return fmt.Errorf("expected min cluster count to have value; got: nil")
+		}
+		if *o.MinClusterCount != expected {
+			return fmt.Errorf("expected min cluster count: %v; got: %v", expected, *o.MinClusterCount)
 		}
 		return nil
 	})
@@ -90,8 +96,11 @@ func (w *WarehouseAssert) HasMinClusterCount(expected int) *WarehouseAssert {
 func (w *WarehouseAssert) HasMaxClusterCount(expected int) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.MaxClusterCount != expected {
-			return fmt.Errorf("expected max cluster count: %v; got: %v", expected, o.MaxClusterCount)
+		if o.MaxClusterCount == nil {
+			return fmt.Errorf("expected max cluster count to have value; got: nil")
+		}
+		if *o.MaxClusterCount != expected {
+			return fmt.Errorf("expected max cluster count: %v; got: %v", expected, *o.MaxClusterCount)
 		}
 		return nil
 	})
@@ -101,8 +110,11 @@ func (w *WarehouseAssert) HasMaxClusterCount(expected int) *WarehouseAssert {
 func (w *WarehouseAssert) HasStartedClusters(expected int) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.StartedClusters != expected {
-			return fmt.Errorf("expected started clusters: %v; got: %v", expected, o.StartedClusters)
+		if o.StartedClusters == nil {
+			return fmt.Errorf("expected started clusters to have value; got: nil")
+		}
+		if *o.StartedClusters != expected {
+			return fmt.Errorf("expected started clusters: %v; got: %v", expected, *o.StartedClusters)
 		}
 		return nil
 	})
@@ -112,8 +124,11 @@ func (w *WarehouseAssert) HasStartedClusters(expected int) *WarehouseAssert {
 func (w *WarehouseAssert) HasRunning(expected int) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.Running != expected {
-			return fmt.Errorf("expected running: %v; got: %v", expected, o.Running)
+		if o.Running == nil {
+			return fmt.Errorf("expected running to have value; got: nil")
+		}
+		if *o.Running != expected {
+			return fmt.Errorf("expected running: %v; got: %v", expected, *o.Running)
 		}
 		return nil
 	})
@@ -123,8 +138,11 @@ func (w *WarehouseAssert) HasRunning(expected int) *WarehouseAssert {
 func (w *WarehouseAssert) HasQueued(expected int) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.Queued != expected {
-			return fmt.Errorf("expected queued: %v; got: %v", expected, o.Queued)
+		if o.Queued == nil {
+			return fmt.Errorf("expected queued to have value; got: nil")
+		}
+		if *o.Queued != expected {
+			return fmt.Errorf("expected queued: %v; got: %v", expected, *o.Queued)
 		}
 		return nil
 	})
@@ -156,8 +174,11 @@ func (w *WarehouseAssert) HasIsCurrent(expected bool) *WarehouseAssert {
 func (w *WarehouseAssert) HasAutoSuspend(expected int) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.AutoSuspend != expected {
-			return fmt.Errorf("expected auto suspend: %v; got: %v", expected, o.AutoSuspend)
+		if o.AutoSuspend == nil {
+			return fmt.Errorf("expected auto suspend to have value; got: nil")
+		}
+		if *o.AutoSuspend != expected {
+			return fmt.Errorf("expected auto suspend: %v; got: %v", expected, *o.AutoSuspend)
 		}
 		return nil
 	})
@@ -277,8 +298,11 @@ func (w *WarehouseAssert) HasComment(expected string) *WarehouseAssert {
 func (w *WarehouseAssert) HasEnableQueryAcceleration(expected bool) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.EnableQueryAcceleration != expected {
-			return fmt.Errorf("expected enable query acceleration: %v; got: %v", expected, o.EnableQueryAcceleration)
+		if o.EnableQueryAcceleration == nil {
+			return fmt.Errorf("expected enable query acceleration to have value; got: nil")
+		}
+		if *o.EnableQueryAcceleration != expected {
+			return fmt.Errorf("expected enable query acceleration: %v; got: %v", expected, *o.EnableQueryAcceleration)
 		}
 		return nil
 	})
@@ -288,8 +312,11 @@ func (w *WarehouseAssert) HasEnableQueryAcceleration(expected bool) *WarehouseAs
 func (w *WarehouseAssert) HasQueryAccelerationMaxScaleFactor(expected int) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.QueryAccelerationMaxScaleFactor != expected {
-			return fmt.Errorf("expected query acceleration max scale factor: %v; got: %v", expected, o.QueryAccelerationMaxScaleFactor)
+		if o.QueryAccelerationMaxScaleFactor == nil {
+			return fmt.Errorf("expected query acceleration max scale factor to have value; got: nil")
+		}
+		if *o.QueryAccelerationMaxScaleFactor != expected {
+			return fmt.Errorf("expected query acceleration max scale factor: %v; got: %v", expected, *o.QueryAccelerationMaxScaleFactor)
 		}
 		return nil
 	})
@@ -310,8 +337,11 @@ func (w *WarehouseAssert) HasResourceMonitor(expected sdk.AccountObjectIdentifie
 func (w *WarehouseAssert) HasScalingPolicy(expected sdk.ScalingPolicy) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
-		if o.ScalingPolicy != expected {
-			return fmt.Errorf("expected scaling policy: %v; got: %v", expected, o.ScalingPolicy)
+		if o.ScalingPolicy == nil {
+			return fmt.Errorf("expected scaling policy to have value; got: nil")
+		}
+		if *o.ScalingPolicy != expected {
+			return fmt.Errorf("expected scaling policy: %v; got: %v", expected, *o.ScalingPolicy)
 		}
 		return nil
 	})
@@ -351,6 +381,34 @@ func (w *WarehouseAssert) HasGeneration(expected sdk.WarehouseGeneration) *Wareh
 		}
 		if *o.Generation != expected {
 			return fmt.Errorf("expected generation: %v; got: %v", expected, *o.Generation)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasMaxStatementSize(expected sdk.MaxStatementSize) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxStatementSize == nil {
+			return fmt.Errorf("expected max statement size to have value; got: nil")
+		}
+		if *o.MaxStatementSize != expected {
+			return fmt.Errorf("expected max statement size: %v; got: %v", expected, *o.MaxStatementSize)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasMaxBurstRateCredits(expected int) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.MaxBurstRateCredits == nil {
+			return fmt.Errorf("expected max burst rate credits to have value; got: nil")
+		}
+		if *o.MaxBurstRateCredits != expected {
+			return fmt.Errorf("expected max burst rate credits: %v; got: %v", expected, *o.MaxBurstRateCredits)
 		}
 		return nil
 	})

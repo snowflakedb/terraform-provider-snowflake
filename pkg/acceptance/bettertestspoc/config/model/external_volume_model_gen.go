@@ -30,7 +30,7 @@ type ExternalVolumeModel struct {
 func ExternalVolume(
 	resourceName string,
 	name string,
-	storageLocation []sdk.ExternalVolumeStorageLocation,
+	storageLocation []sdk.ExternalVolumeStorageLocationRequest,
 ) *ExternalVolumeModel {
 	e := &ExternalVolumeModel{ResourceModelMeta: config.Meta(resourceName, resources.ExternalVolume)}
 	e.WithName(name)
@@ -40,7 +40,7 @@ func ExternalVolume(
 
 func ExternalVolumeWithDefaultMeta(
 	name string,
-	storageLocation []sdk.ExternalVolumeStorageLocation,
+	storageLocation []sdk.ExternalVolumeStorageLocationRequest,
 ) *ExternalVolumeModel {
 	e := &ExternalVolumeModel{ResourceModelMeta: config.DefaultMeta(resources.ExternalVolume)}
 	e.WithName(name)

@@ -224,6 +224,8 @@ Read-Only:
 - `rows_per_resultset` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--rows_per_resultset))
 - `s3_stage_vpce_dns_name` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--s3_stage_vpce_dns_name))
 - `search_path` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--search_path))
+- `serverless_task_max_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--serverless_task_max_statement_size))
+- `serverless_task_min_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--serverless_task_min_statement_size))
 - `statement_queued_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--statement_queued_timeout_in_seconds))
 - `statement_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--statement_timeout_in_seconds))
 - `strict_json_output` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--parameters--strict_json_output))
@@ -635,6 +637,30 @@ Read-Only:
 - `value` (String)
 
 
+<a id="nestedobjatt--tasks--parameters--serverless_task_max_statement_size"></a>
+### Nested Schema for `tasks.parameters.serverless_task_max_statement_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tasks--parameters--serverless_task_min_statement_size"></a>
+### Nested Schema for `tasks.parameters.serverless_task_min_statement_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
 <a id="nestedobjatt--tasks--parameters--statement_queued_timeout_in_seconds"></a>
 ### Nested Schema for `tasks.parameters.statement_queued_timeout_in_seconds`
 
@@ -973,8 +999,19 @@ Read-Only:
 - `schedule` (String)
 - `schema_name` (String)
 - `state` (String)
+- `target_completion_interval` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--show_output--target_completion_interval))
 - `task_relations` (List of Object) (see [below for nested schema](#nestedobjatt--tasks--show_output--task_relations))
 - `warehouse` (String)
+
+<a id="nestedobjatt--tasks--show_output--target_completion_interval"></a>
+### Nested Schema for `tasks.show_output.target_completion_interval`
+
+Read-Only:
+
+- `hours` (Number)
+- `minutes` (Number)
+- `seconds` (Number)
+
 
 <a id="nestedobjatt--tasks--show_output--task_relations"></a>
 ### Nested Schema for `tasks.show_output.task_relations`

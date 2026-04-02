@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	tfjson "github.com/hashicorp/terraform-json"
 
@@ -1004,6 +1005,7 @@ func TestAcc_Database_StringValueSetOnDifferentParameterLevelWithSameValue(t *te
 func TestAcc_Database_UpgradeWithDataRetentionSet(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1012,9 +1014,9 @@ func TestAcc_Database_UpgradeWithDataRetentionSet(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Database),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            databaseStateUpgraderDataRetentionSet(id, comment, 10),
+				Config:            providerConfig + databaseStateUpgraderDataRetentionSet(id, comment, 10),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
@@ -1025,7 +1027,7 @@ func TestAcc_Database_UpgradeWithDataRetentionSet(t *testing.T) {
 			},
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            databaseStateUpgraderDataRetentionSet(id, comment, 10),
+				Config:            providerConfig + databaseStateUpgraderDataRetentionSet(id, comment, 10),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -1060,6 +1062,7 @@ func TestAcc_Database_WithReplication(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	secondaryAccountLocator := secondaryTestClient().GetAccountLocator()
 	secondaryAccountIdentifier := secondaryTestClient().Account.GetAccountIdentifier(t).FullyQualifiedName()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1068,9 +1071,9 @@ func TestAcc_Database_WithReplication(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Database),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.92.0"),
-				Config:            databaseStateUpgraderWithReplicationOld(id, secondaryAccountLocator),
+				Config:            providerConfig + databaseStateUpgraderWithReplicationOld(id, secondaryAccountLocator),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
@@ -1222,6 +1225,7 @@ resource "snowflake_database" "test" {
 // We could try ignoring the changes to parameters too.
 func TestAcc_Database_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1230,9 +1234,9 @@ func TestAcc_Database_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *t
 		CheckDestroy: CheckDestroy(t, resources.Database),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:         func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:         func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
-				Config:            databaseConfigBasic(id.Name()),
+				Config:            providerConfig + databaseConfigBasic(id.Name()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name()),
 				),
@@ -1270,6 +1274,8 @@ func TestAcc_Database_IdentifierQuotingDiffSuppression(t *testing.T) {
 	t.Cleanup(catalogCleanup)
 	quotedCatalogId := fmt.Sprintf(`\"%s\"`, catalogId.Name())
 
+	providerConfig := providermodel.V097CompatibleProviderConfig(t)
+
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -1277,10 +1283,10 @@ func TestAcc_Database_IdentifierQuotingDiffSuppression(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Database),
 		Steps: []resource.TestStep{
 			{
-				PreConfig:          func() { SetV097CompatibleConfigPathEnv(t) },
+				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             databaseConfigBasicWithExternalVolumeAndCatalog(quotedId, quotedExternalVolumeId, quotedCatalogId),
+				Config:             providerConfig + databaseConfigBasicWithExternalVolumeAndCatalog(quotedId, quotedExternalVolumeId, quotedCatalogId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_database.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
