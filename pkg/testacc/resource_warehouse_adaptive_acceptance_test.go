@@ -136,7 +136,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// update non-recreating fields
+			// update fields
 			{
 				Config: accconfig.FromModels(t, warehouseModelUpdated),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -235,6 +235,38 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 				ResourceName:      warehouseModelComplete.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcc_WarehouseAdaptive_Import_WrongWarehouseType(t *testing.T) {
+	adaptiveId := testClient().Ids.RandomAccountObjectIdentifier()
+	regularId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	// Create a regular (non-adaptive) warehouse outside of Terraform to use as the import target.
+	_, regularCleanup := testClient().Warehouse.CreateWarehouseWithOptions(t, regularId, &sdk.CreateWarehouseOptions{})
+	t.Cleanup(regularCleanup)
+
+	adaptiveModel := model.WarehouseAdaptiveWithId(adaptiveId)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseAdaptive),
+		Steps: []resource.TestStep{
+			// Create an adaptive warehouse to have a resource in state.
+			{
+				Config: accconfig.FromModels(t, adaptiveModel),
+			},
+			// Attempt to import a regular warehouse via the adaptive resource — expects a type mismatch error.
+			{
+				ResourceName:  adaptiveModel.ResourceReference(),
+				ImportState:   true,
+				ImportStateId: regularId.Name(),
+				ExpectError:   regexp.MustCompile("is not of type ADAPTIVE"),
 			},
 		},
 	})

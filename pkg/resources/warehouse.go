@@ -503,7 +503,7 @@ func GetReadWarehouseFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			return diags
 		}
 
-		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseToSchema(w)}); err != nil {
+		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.RegularWarehouseToSchema(w)}); err != nil {
 			return diag.FromErr(err)
 		}
 
