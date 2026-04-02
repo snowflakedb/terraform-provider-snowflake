@@ -3,12 +3,12 @@
 package testacc
 
 import (
-	"fmt"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -17,6 +17,15 @@ func TestAcc_Sequence(t *testing.T) {
 	oldId := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
+
+	sequenceModelBasic := model.SequenceWithId("test_sequence", oldId)
+
+	sequenceModelWithComment := model.SequenceWithId("test_sequence", newId).
+		WithComment(comment)
+
+	sequenceModelWithIncrement := model.SequenceWithId("test_sequence", oldId).
+		WithIncrement(32).
+		WithOrdering("NOORDER")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -27,7 +36,7 @@ func TestAcc_Sequence(t *testing.T) {
 		Steps: []resource.TestStep{
 			// CREATE
 			{
-				Config: sequenceConfig(oldId),
+				Config: accconfig.FromModels(t, sequenceModelBasic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_sequence.test_sequence", "name", oldId.Name()),
 					resource.TestCheckResourceAttr("snowflake_sequence.test_sequence", "database", TestDatabaseName),
@@ -39,7 +48,7 @@ func TestAcc_Sequence(t *testing.T) {
 			},
 			// Set comment and rename
 			{
-				Config: sequenceConfigWithComment(newId, comment),
+				Config: accconfig.FromModels(t, sequenceModelWithComment),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_sequence.test_sequence", "name", newId.Name()),
 					resource.TestCheckResourceAttr("snowflake_sequence.test_sequence", "database", TestDatabaseName),
@@ -51,7 +60,7 @@ func TestAcc_Sequence(t *testing.T) {
 			},
 			// Unset comment and set increment
 			{
-				Config: sequenceConfigWithIncrement(oldId),
+				Config: accconfig.FromModels(t, sequenceModelWithIncrement),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_sequence.test_sequence", "name", oldId.Name()),
 					resource.TestCheckResourceAttr("snowflake_sequence.test_sequence", "database", TestDatabaseName),
@@ -71,37 +80,4 @@ func TestAcc_Sequence(t *testing.T) {
 			},
 		},
 	})
-}
-
-func sequenceConfig(sequenceId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_sequence" "test_sequence" {
-	database   = "%[1]s"
-	schema     = "%[2]s"
-	name       = "%[3]s"
-}
-`, sequenceId.DatabaseName(), sequenceId.SchemaName(), sequenceId.Name())
-}
-
-func sequenceConfigWithComment(sequenceId sdk.SchemaObjectIdentifier, comment string) string {
-	return fmt.Sprintf(`
-resource "snowflake_sequence" "test_sequence" {
-	database   = "%[1]s"
-	schema     = "%[2]s"
-	name       = "%[3]s"
-    comment    = "%[4]s"
-}
-`, sequenceId.DatabaseName(), sequenceId.SchemaName(), sequenceId.Name(), comment)
-}
-
-func sequenceConfigWithIncrement(sequenceId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_sequence" "test_sequence" {
-	database   = "%[1]s"
-	schema     = "%[2]s"
-	name       = "%[3]s"
-    increment  = 32
-	ordering   = "NOORDER"
-}
-`, sequenceId.DatabaseName(), sequenceId.SchemaName(), sequenceId.Name())
 }
