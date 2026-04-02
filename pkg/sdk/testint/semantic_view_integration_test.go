@@ -167,7 +167,7 @@ func TestInt_SemanticView(t *testing.T) {
 		).WithRelationshipAlias(*relAliasRequest).WithRelationshipRefColumnNames([]sdk.SemanticViewColumnRequest{*relRefCol})
 
 		// facts
-		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F1"}})
+		factSynonymRequest := sdk.NewSynonymsRequest().WithWithSynonyms([]sdk.Synonym{{Synonym: "F1"}, {Synonym: "FA"}})
 		factSemanticExpression := sdk.NewSemanticExpressionRequest(&sdk.QualifiedExpressionNameRequest{QualifiedExpressionName: `"table1"."fact1"`}, &sdk.SemanticSqlExpressionRequest{SqlExpression: `"first_c"`}).
 			WithSynonyms(*factSynonymRequest).
 			WithComment("fact comment")
@@ -221,103 +221,99 @@ func TestInt_SemanticView(t *testing.T) {
 
 		t1Alias, t2Alias, dimensionName, factName, factName2, metricName, metric2Name, relationshipName := "table1", "table2", "d1", "fact1", "fact2", "metric1", "metric2", "rel1"
 
-		// TODO [SNOW-2852837]: group expected assertions per type (e.g. logical table, metric, etc.)
-		// semantic view related details
-		commentDetails := objectassert.NewSemanticViewDetails(nil, nil, nil, "COMMENT", "comment")
+		expectedTable1 := sdk.SemanticViewTableDetails{
+			TableNameOrAlias: t1Alias,
+			BaseTable:        sdk.NewSchemaObjectIdentifier(table1Id.DatabaseName(), table1Id.SchemaName(), table1Id.Name()),
+			PrimaryKeys:      []string{"first_c"},
+		}
 
-		// logical table 1 related details
-		table1DatabaseName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1Id.DatabaseName())
-		table1SchemaName := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1Id.SchemaName())
-		table1Name := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1Id.Name())
-		table1PrimaryKey := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", "[\"first_c\"]")
+		expectedTable2 := sdk.SemanticViewTableDetails{
+			TableNameOrAlias: t2Alias,
+			BaseTable:        sdk.NewSchemaObjectIdentifier(table2Id.DatabaseName(), table2Id.SchemaName(), table2Id.Name()),
+		}
 
-		// dimension related details
-		dimensionTable := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "TABLE", t1Alias)
-		dimensionExpression := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "EXPRESSION", dimensionExpressionRaw)
-		// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
-		// dimensionDataType := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
-		dimensionSynonyms := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "SYNONYMS", `["D1"]`)
-		dimensionComment := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "COMMENT", "dimension comment")
-		dimensionAccessModifier := objectassert.NewSemanticViewDetailsDimension(dimensionName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+		expectedDimension := sdk.SemanticViewDimensionDetails{
+			DimensionAlias: dimensionName,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       dimensionExpressionRaw,
+				// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
+				DataType:       "VARCHAR(16777216)",
+				AccessModifier: "PUBLIC",
+			},
+			Synonyms:     []string{"D1"},
+			Comment:      "dimension comment",
+			ParentEntity: t1Alias,
+		}
 
-		// fact related details
-		factTable := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "TABLE", t1Alias)
-		factExpression := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "EXPRESSION", `"first_c"`)
-		// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
-		// factDataType := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "DATA_TYPE", "VARCHAR(134217728)")
-		factSynonyms := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "SYNONYMS", `["F1"]`)
-		factComment := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "COMMENT", "fact comment")
-		factAccessModifier := objectassert.NewSemanticViewDetailsFact(factName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+		expectedFact1 := sdk.SemanticViewFactDetails{
+			FactAlias: factName,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `"first_c"`,
+				// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), update when generally available
+				DataType:       "VARCHAR(16777216)",
+				AccessModifier: "PUBLIC",
+			},
+			Synonyms:     []string{"F1", "FA"},
+			Comment:      "fact comment",
+			ParentEntity: t1Alias,
+		}
 
-		factTable2 := objectassert.NewSemanticViewDetailsFact(factName2, t1Alias, "TABLE", t1Alias)
-		factExpression2 := objectassert.NewSemanticViewDetailsFact(factName2, t1Alias, "EXPRESSION", `"first_b"`)
-		factDataType2 := objectassert.NewSemanticViewDetailsFact(factName2, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-		factSynonyms2 := objectassert.NewSemanticViewDetailsFact(factName2, t1Alias, "SYNONYMS", `["F2"]`)
-		factAccessModifier2 := objectassert.NewSemanticViewDetailsFact(factName2, t1Alias, "ACCESS_MODIFIER", "PRIVATE")
+		expectedFact2 := sdk.SemanticViewFactDetails{
+			FactAlias: factName2,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `"first_b"`,
+				DataType:         "NUMBER(38,0)",
+				AccessModifier:   "PRIVATE",
+			},
+			Synonyms:     []string{"F2"},
+			ParentEntity: t1Alias,
+		}
 
-		// metric related details
-		metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", t1Alias)
-		metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("table1"."first_a")`)
-		metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-		metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
+		expectedMetric1 := sdk.SemanticViewMetricDetails{
+			MetricAlias: metricName,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `SUM("table1"."first_a")`,
+				DataType:         "NUMBER(38,0)",
+				AccessModifier:   "PUBLIC",
+			},
+			ParentEntity: t1Alias,
+		}
 
-		metric2Table := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "TABLE", t1Alias)
-		metric2Expression := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "EXPRESSION", `SUM("table1"."metric1") OVER (PARTITION BY "table1"."d1")`)
-		metric2DataType := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-		metric2AccessModifier := objectassert.NewSemanticViewDetailsMetric(metric2Name, t1Alias, "ACCESS_MODIFIER", "PRIVATE")
+		expectedMetric2 := sdk.SemanticViewMetricDetails{
+			MetricAlias: metric2Name,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `SUM("table1"."metric1") OVER (PARTITION BY "table1"."d1")`,
+				DataType:         "NUMBER(38,0)",
+				AccessModifier:   "PRIVATE",
+			},
+			ParentEntity: t1Alias,
+		}
 
-		// logical table 2 related details
-		table2DatabaseName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2Id.DatabaseName())
-		table2SchemaName := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2Id.SchemaName())
-		table2Name := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2Id.Name())
-
-		// relationship related details
-		relationshipTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "TABLE", t2Alias)
-		relationshipRefTable := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "REF_TABLE", t1Alias)
-		relationshipForeignKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "FOREIGN_KEY", `["second_c"]`)
-		relationshipRefKey := objectassert.NewSemanticViewDetailsRelationship(relationshipName, t2Alias, "REF_KEY", `["first_c"]`)
+		expectedRelationship := sdk.SemanticViewRelationshipDetails{
+			RelationshipAlias:   relationshipName,
+			TableNameOrAlias:    t2Alias,
+			ForeignKeys:         []string{"second_c"},
+			RefTableNameOrAlias: t1Alias,
+			RefKeys:             []string{"first_c"},
+			ParentEntity:        t2Alias,
+		}
 
 		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
 			HasDetailsCount(37).
-			ContainsDetail(commentDetails).
-			ContainsDetail(table1DatabaseName).
-			ContainsDetail(table1SchemaName).
-			ContainsDetail(table1Name).
-			ContainsDetail(table1PrimaryKey).
-			ContainsDetail(dimensionTable).
-			ContainsDetail(dimensionExpression).
-			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
-			// ContainsDetail(dimensionDataType).
-			ContainsDetail(dimensionSynonyms).
-			ContainsDetail(dimensionComment).
-			ContainsDetail(dimensionAccessModifier).
-			ContainsDetail(factTable).
-			ContainsDetail(factExpression).
-			// TODO [SNOW-2852837]: there is a currently open BCR changing the VARCHAR default size (VARCHAR(16777216) vs VARCHAR(134217728)), uncomment when generally available
-			// ContainsDetail(factDataType).
-			ContainsDetail(factSynonyms).
-			ContainsDetail(factComment).
-			ContainsDetail(factAccessModifier).
-			ContainsDetail(factTable2).
-			ContainsDetail(factExpression2).
-			ContainsDetail(factDataType2).
-			ContainsDetail(factSynonyms2).
-			ContainsDetail(factAccessModifier2).
-			ContainsDetail(metricTable).
-			ContainsDetail(metricExpression).
-			ContainsDetail(metricDataType).
-			ContainsDetail(metricAccessModifier).
-			ContainsDetail(metric2Table).
-			ContainsDetail(metric2Expression).
-			ContainsDetail(metric2DataType).
-			ContainsDetail(metric2AccessModifier).
-			ContainsDetail(table2DatabaseName).
-			ContainsDetail(table2SchemaName).
-			ContainsDetail(table2Name).
-			ContainsDetail(relationshipTable).
-			ContainsDetail(relationshipRefTable).
-			ContainsDetail(relationshipForeignKey).
-			ContainsDetail(relationshipRefKey),
+			HasComment("comment").
+			ContainsTable(expectedTable1).
+			ContainsTable(expectedTable2).
+			ContainsDimension(expectedDimension).
+			ContainsFact(expectedFact1).
+			ContainsFact(expectedFact2).
+			ContainsMetric(expectedMetric1).
+			ContainsMetric(expectedMetric2).
+			ContainsRelationship(expectedRelationship),
 		)
 	})
 
@@ -340,32 +336,34 @@ func TestInt_SemanticView(t *testing.T) {
 
 		t1Alias, t2Alias, metricName := "table1", "table2", "metric1"
 
-		tableDatabaseName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_DATABASE_NAME", table1Id.DatabaseName())
-		tableSchemaName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_SCHEMA_NAME", table1Id.SchemaName())
-		tableName1 := objectassert.NewSemanticViewDetailsTable(t1Alias, "BASE_TABLE_NAME", table1Id.Name())
-		pk := objectassert.NewSemanticViewDetailsTable(t1Alias, "PRIMARY_KEY", "[\"first_c\"]")
-		metricTable := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "TABLE", "table1")
-		metricExpression := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "EXPRESSION", `SUM("table1"."first_a")`)
-		metricDataType := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "DATA_TYPE", "NUMBER(38,0)")
-		metricAccessModifier := objectassert.NewSemanticViewDetailsMetric(metricName, t1Alias, "ACCESS_MODIFIER", "PUBLIC")
-		tableDatabaseName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_DATABASE_NAME", table2Id.DatabaseName())
-		tableSchemaName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_SCHEMA_NAME", table2Id.SchemaName())
-		tableName2 := objectassert.NewSemanticViewDetailsTable(t2Alias, "BASE_TABLE_NAME", table2Id.Name())
+		expectedTable1 := sdk.SemanticViewTableDetails{
+			TableNameOrAlias: t1Alias,
+			BaseTable:        sdk.NewSchemaObjectIdentifier(table1Id.DatabaseName(), table1Id.SchemaName(), table1Id.Name()),
+			PrimaryKeys:      []string{"first_c"},
+		}
+
+		expectedMetric := sdk.SemanticViewMetricDetails{
+			MetricAlias: metricName,
+			Properties: sdk.CommonProperties{
+				TableNameOrAlias: t1Alias,
+				Expression:       `SUM("table1"."first_a")`,
+				DataType:         "NUMBER(38,0)",
+				AccessModifier:   "PUBLIC",
+			},
+			ParentEntity: t1Alias,
+		}
+
+		expectedTable2 := sdk.SemanticViewTableDetails{
+			TableNameOrAlias: t2Alias,
+			BaseTable:        sdk.NewSchemaObjectIdentifier(table2Id.DatabaseName(), table2Id.SchemaName(), table2Id.Name()),
+		}
 
 		// confirm the semantic view details are correct
 		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
 			HasDetailsCount(11).
-			ContainsDetail(tableDatabaseName1).
-			ContainsDetail(tableSchemaName1).
-			ContainsDetail(tableName1).
-			ContainsDetail(pk).
-			ContainsDetail(metricTable).
-			ContainsDetail(metricExpression).
-			ContainsDetail(metricDataType).
-			ContainsDetail(metricAccessModifier).
-			ContainsDetail(tableDatabaseName2).
-			ContainsDetail(tableSchemaName2).
-			ContainsDetail(tableName2),
+			ContainsTable(expectedTable1).
+			ContainsTable(expectedTable2).
+			ContainsMetric(expectedMetric),
 		)
 	})
 
