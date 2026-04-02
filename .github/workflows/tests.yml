@@ -156,7 +156,8 @@ jobs:
         # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
         run: set -o pipefail && make test-functional | make save-test-results
         if: ${{ !cancelled() && steps.setup_terraform.conclusion == 'success' }}
-
+        env:
+          TEST_SF_TF_TEST_TYPE: "functional"
 
       - name: Run acceptance tests
         # pipefail needs to be set to ensure that the exit code of make test command is captured even when piped (otherwise it would take the exit code of make save-test-results)
