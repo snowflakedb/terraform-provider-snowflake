@@ -67,6 +67,33 @@ func Test_ColumnOutput(t *testing.T) {
 	}
 }
 
+func Test_SnakeCaseToCamel(t *testing.T) {
+	type test struct {
+		input    string
+		expected string
+	}
+
+	testCases := []test{
+		{input: "", expected: ""},
+		{input: "hello", expected: "Hello"},
+		{input: "hello_world", expected: "HelloWorld"},
+		{input: "hello_world_foo", expected: "HelloWorldFoo"},
+		{input: "HELLO_WORLD", expected: "HelloWorld"},
+		{input: "mixed_CASE_input", expected: "MixedCaseInput"},
+		{input: "a_b_c", expected: "ABC"},
+		{input: "hello_", expected: "Hello_"},
+		{input: "_hello", expected: "Hello"},
+		{input: "hello__world", expected: "HelloWorld"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s=>%s", tc.input, tc.expected), func(t *testing.T) {
+			result := SnakeCaseToCamel(tc.input)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func Test_SanitizeAttributeName(t *testing.T) {
 	type test struct {
 		input    string
