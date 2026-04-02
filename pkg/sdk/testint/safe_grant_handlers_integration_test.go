@@ -211,6 +211,72 @@ func TestInt_SafeRevokeOnFutureGrantsInNonExistingObjectInHierarchy(t *testing.T
 	}
 }
 
+func TestInt_SafeRevokeOnAllPipesWithMissingRole(t *testing.T) {
+	client := testClient(t)
+
+	table, tableCleanup := testClientHelper().Table.Create(t)
+	t.Cleanup(tableCleanup)
+
+	stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	copyStatement := createPipeCopyStatement(t, table, stage)
+
+	_, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+	t.Cleanup(pipeCleanup)
+
+	_, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+	t.Cleanup(secondPipeCleanup)
+
+	role, roleCleanup := testClientHelper().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	ctx := context.Background()
+
+	// Grant MONITOR on all pipes in schema to the role.
+	err := client.Grants.GrantPrivilegesToAccountRole(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
+		},
+		&sdk.AccountRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				All: &sdk.GrantOnSchemaObjectIn{
+					PluralObjectType: sdk.PluralObjectTypePipes,
+					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
+				},
+			},
+		},
+		role.ID(),
+		&sdk.GrantPrivilegesToAccountRoleOptions{},
+	)
+	require.NoError(t, err)
+
+	// Drop the role — pipes still exist, so Pipes.Show succeeds,
+	// but each per-pipe REVOKE will fail with ErrObjectNotExistOrAuthorized.
+	roleCleanup()
+
+	// RevokePrivilegesFromAccountRoleSafely must suppress the per-pipe errors individually,
+	// rather than swallowing a joined error that may also contain unexpected errors.
+	err = client.Grants.RevokePrivilegesFromAccountRoleSafely(
+		ctx,
+		&sdk.AccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
+		},
+		&sdk.AccountRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				All: &sdk.GrantOnSchemaObjectIn{
+					PluralObjectType: sdk.PluralObjectTypePipes,
+					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
+				},
+			},
+		},
+		role.ID(),
+		nil,
+	)
+	assert.NoError(t, err)
+}
+
 func TestInt_ShowGrantsOnNonExistingSchemaObject(t *testing.T) {
 	client := testClient(t)
 	ctx := context.Background()
