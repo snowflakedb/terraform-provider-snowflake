@@ -192,15 +192,6 @@ func (c *WarehouseClient) CreateAdaptive(t *testing.T) (*sdk.Warehouse, func()) 
 	return c.CreateAdaptiveWithOptions(t, c.ids.RandomAccountObjectIdentifier(), &sdk.CreateAdaptiveWarehouseOptions{})
 }
 
-func (c *WarehouseClient) UpdateQueryThroughputMultiplier(t *testing.T, id sdk.AccountObjectIdentifier, newValue int) {
-	t.Helper()
-
-	ctx := context.Background()
-
-	err := c.client().Alter(ctx, id, &sdk.AlterWarehouseOptions{Set: &sdk.WarehouseSet{QueryThroughputMultiplier: sdk.Int(newValue)}})
-	require.NoError(t, err)
-}
-
 func (c *WarehouseClient) CreateAdaptiveWithOptions(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.CreateAdaptiveWarehouseOptions) (*sdk.Warehouse, func()) {
 	t.Helper()
 	ctx := context.Background()

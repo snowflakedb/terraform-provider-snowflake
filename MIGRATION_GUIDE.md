@@ -327,15 +327,6 @@ No changes in configuration are required.
 
 Reference: [#4514](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4514)
 
-### *(new feature)* New adaptive warehouse resource
-
-We have added a new preview resource for managing adaptive warehouses:
-- [snowflake_warehouse_adaptive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive)
-
-Adaptive warehouses are a new Snowflake warehouse type that automatically scales compute resources based on workload demands.
-
-This feature will be marked as stable in a future release. To use it, add `snowflake_warehouse_adaptive_resource` to the `preview_features_enabled` field in the provider configuration.
-
 ## v2.14.0 ➞ v2.14.1
 
 ### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
