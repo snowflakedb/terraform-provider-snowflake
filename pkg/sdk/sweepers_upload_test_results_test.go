@@ -6,10 +6,15 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 func SendTestResults(t *testing.T) {
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeProdEnvironment {
+		t.Skip("Skipping for non-prod Snowflake environments")
+	}
+
 	testResultsTableId := sdk.NewSchemaObjectIdentifier("TEST_RESULTS_DATABASE", "TEST_RESULTS_SCHEMA", "TEST_RESULTS_TABLE")
 
 	client := fourthTestClient(t)
@@ -20,7 +25,11 @@ func SendTestResults(t *testing.T) {
 		context.Background(),
 		sdk.NewCreateInternalStageRequest(testResultsStageId).
 			WithTemporary(true).
-			WithFileFormat(*sdk.NewStageFileFormatRequest().WithFileFormatType(sdk.FileFormatTypeCSV)),
+			WithFileFormat(
+				*sdk.NewStageFileFormatRequest().WithFileFormatOptions(sdk.FileFormatOptions{
+					CsvOptions: &sdk.FileFormatCsvOptions{},
+				}),
+			),
 	); err != nil {
 		t.Fatal("Failed to create test results stage:", err)
 	}
