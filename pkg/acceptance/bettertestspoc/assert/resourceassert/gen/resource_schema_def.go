@@ -330,6 +330,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Warehouse().Schema,
 	},
 	{
+		name:   "WarehouseAdaptive",
+		schema: resources.WarehouseAdaptive().Schema,
+	},
+	{
 		name:   "GrantPrivilegesToAccountRole",
 		schema: resources.GrantPrivilegesToAccountRole().Schema,
 	},

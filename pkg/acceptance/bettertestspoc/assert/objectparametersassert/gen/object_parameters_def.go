@@ -106,6 +106,15 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		},
 	},
 	{
+		Name:   "WarehouseAdaptive",
+		IdType: "sdk.AccountObjectIdentifier",
+		Level:  sdk.ParameterTypeWarehouse,
+		Parameters: []SnowflakeParameter{
+			{ParameterName: string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.WarehouseParameterStatementTimeoutInSeconds), ParameterType: "int", DefaultValue: "172800", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+		},
+	},
+	{
 		Name:   "Database",
 		IdType: "sdk.AccountObjectIdentifier",
 		Level:  sdk.ParameterTypeDatabase,
