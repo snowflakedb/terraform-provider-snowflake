@@ -1,10 +1,9 @@
 package resources
 
 import (
-	"fmt"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -13,17 +12,23 @@ func readFunctionOrProcedureArguments(d *schema.ResourceData, args []sdk.Normali
 		// TODO [before V1]: handle empty list
 		return nil
 	}
-	// We do it the unusual way because the default values are not returned by SF.
-	// We update what we have - leaving the defaults unchanged.
-	if currentArgs, ok := d.Get("arguments").([]map[string]any); !ok {
-		return fmt.Errorf("arguments must be a list")
-	} else {
-		for i, arg := range args {
-			currentArgs[i]["arg_name"] = arg.Name
-			currentArgs[i]["arg_data_type"] = arg.DataType.ToSql()
-		}
-		return d.Set("arguments", currentArgs)
-	}
+	currentArgsList := d.Get("arguments").([]any)
+	i := 0
+	return HandleNestedDataTypeSet(d, "arguments", "arg_data_type", args,
+		func(arg sdk.NormalizedArgument) datatypes.DataType { return arg.DataType },
+		func(arg sdk.NormalizedArgument, item map[string]any) {
+			item["arg_name"] = arg.Name
+			item["arg_default_value"] = ""
+			if i < len(currentArgsList) {
+				if currentArg, ok := currentArgsList[i].(map[string]any); ok {
+					if v, ok := currentArg["arg_default_value"]; ok {
+						item["arg_default_value"] = v
+					}
+				}
+			}
+			i++
+		},
+	)
 }
 
 func importFunctionOrProcedureArguments(d *schema.ResourceData, args []sdk.NormalizedArgument) error {

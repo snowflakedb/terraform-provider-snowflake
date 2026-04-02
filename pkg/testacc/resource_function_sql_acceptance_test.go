@@ -287,7 +287,9 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
 	})
 }
 
-// TODO [this PR]: make this test pass
+// In v2.14.1 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
+// time because the comma inside NUMBER(x,y) is incorrectly treated as a column separator.
+// This test uses non-default precision/scale to verify state preserves config values.
 func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
 
@@ -316,7 +318,8 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *te
 					resourceassert.FunctionSqlResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFunctionLanguageString("SQL").
-						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"),
+						// State preserves config value (normalized via StateFunc).
+						HasReturnTypeString("TABLE(O_ERR_CODE NUMBER(24, 2), O_ERR_SEVERITY VARCHAR)"),
 				),
 			},
 		},

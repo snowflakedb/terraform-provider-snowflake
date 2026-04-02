@@ -223,6 +223,7 @@ func procedureBaseSchema() map[string]schema.Schema {
 						Required:         true,
 						ValidateDiagFunc: IsDataTypeValid,
 						DiffSuppressFunc: DiffSuppressDataTypes,
+						StateFunc:        DataTypeStateFunc,
 						Description:      "The argument type.",
 					},
 					"arg_default_value": {
@@ -242,6 +243,7 @@ func procedureBaseSchema() map[string]schema.Schema {
 			ForceNew:         true,
 			ValidateDiagFunc: IsDataTypeValid,
 			DiffSuppressFunc: DiffSuppressDataTypes,
+			StateFunc:        DataTypeStateFunc,
 		},
 		"null_input_behavior": {
 			Type:             schema.TypeString,

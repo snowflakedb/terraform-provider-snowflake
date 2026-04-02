@@ -219,3 +219,42 @@ func TestAcc_ProcedureSql_DecfloatUnsupported(t *testing.T) {
 		},
 	})
 }
+
+// proves SNOW-2054316 fix: non-default numeric return type is preserved in state
+// without false drift detection
+func TestAcc_ProcedureSql_dataTypeWithNonDefaultParametrizedReturnType(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+
+	returnType := "NUMBER(24,2)"
+	definition := testClient().Procedure.SampleSqlDefinition(t)
+
+	procedureModel := model.ProcedureSql("test", id.DatabaseName(), id.SchemaName(), id.Name(), definition, returnType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
+		Steps: []resource.TestStep{
+			// Create: verify state stores the normalized config value, not the Snowflake-returned form.
+			{
+				Config: config.FromModels(t, procedureModel),
+				Check: assertThat(t,
+					resourceassert.ProcedureSqlResource(t, procedureModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasReturnTypeString("NUMBER(24, 2)"),
+				),
+			},
+			// Re-apply: verify no false drift is detected.
+			{
+				Config: config.FromModels(t, procedureModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
