@@ -9,7 +9,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -92,11 +91,11 @@ func WarehouseAdaptive() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingCreateWrapper(resources.WarehouseAdaptive, CreateAdaptiveWarehouse)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingReadWrapper(resources.WarehouseAdaptive, ReadAdaptiveWarehouseFunc(true))),
+		CreateContext: TrackingCreateWrapper(resources.WarehouseAdaptive, CreateAdaptiveWarehouse),
+		ReadContext:   TrackingReadWrapper(resources.WarehouseAdaptive, ReadAdaptiveWarehouseFunc(true)),
 		// TODO: uncomment after ALTER is cleared.
-		// UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateAdaptiveWarehouse)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingDeleteWrapper(resources.WarehouseAdaptive, deleteFunc)),
+		// UpdateContext: TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateAdaptiveWarehouse),
+		DeleteContext: TrackingDeleteWrapper(resources.WarehouseAdaptive, deleteFunc),
 		Description:   "Resource used to manage adaptive warehouse objects. Adaptive warehouses automatically scale compute resources based on workload. For more information, check [adaptive warehouse documentation](https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses).",
 
 		Schema: warehouseAdaptiveSchema,
