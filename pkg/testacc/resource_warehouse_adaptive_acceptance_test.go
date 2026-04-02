@@ -50,7 +50,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 	basicAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.WarehouseAdaptiveResource(t, ref).
 			HasNameString(warehouseId.Name()).
-			HasCommentString("").
+			HasCommentEmpty().
 			HasNoMaxQueryPerformanceLevel().
 			HasNoQueryThroughputMultiplier().
 			HasStatementQueuedTimeoutInSeconds(0).
@@ -97,7 +97,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 	unsetAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.WarehouseAdaptiveResource(t, ref).
 			HasNameString(warehouseId.Name()).
-			HasCommentString("").
+			HasCommentEmpty().
 			HasNoQueryThroughputMultiplier().
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800),
