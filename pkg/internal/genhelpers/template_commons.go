@@ -8,7 +8,6 @@ import (
 
 	_ "embed"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/stringhelpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -56,8 +55,22 @@ func CamelToWords(camel string) string {
 	return strings.ReplaceAll(ToSnakeCase(camel), "_", " ")
 }
 
+// SnakeCaseToCamel converts a snake_case string to a camelCase string.
 func SnakeCaseToCamel(snake string) string {
-	return stringhelpers.SnakeCaseToCamel(snake)
+	var suffix string
+	if strings.HasSuffix(snake, "_") {
+		suffix = "_"
+		snake = strings.TrimSuffix(snake, "_")
+	}
+	snake = strings.ToLower(snake)
+	parts := strings.Split(snake, "_")
+	for idx, p := range parts {
+		if p == "" {
+			continue
+		}
+		parts[idx] = strings.ToUpper(p[:1]) + p[1:]
+	}
+	return strings.Join(parts, "") + suffix
 }
 
 func RemoveForbiddenAttributeNameSuffix(input string) string {

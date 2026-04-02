@@ -6,30 +6,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEnum_AllValuesSliceName(t *testing.T) {
-	tests := []struct {
-		name              string
-		enumName          string
-		plural            string
-		expectedSliceName string
-	}{
-		{
-			name:              "custom plural",
-			enumName:          "Policy",
-			plural:            "Policies",
-			expectedSliceName: "AllPolicies",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			enum := NewEnum(tt.enumName, tt.plural)
-			result := enum.AllValuesSliceName()
-			require.Equal(t, tt.expectedSliceName, result)
-		})
-	}
-}
-
 func TestEnum_ValueRepresentations(t *testing.T) {
 	tests := []struct {
 		name                         string

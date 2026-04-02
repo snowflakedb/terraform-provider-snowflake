@@ -1,6 +1,6 @@
 package gen
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/stringhelpers"
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 
 // Enum defines an enum type with its name and values. For now, only string values are supported.
 // Limitations (also added to the README.md):
@@ -23,17 +23,7 @@ func NewEnum(name, namePlural string, values ...string) *Enum {
 // valueName returns the constant name for a given enum value.
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
 func (e *Enum) valueName(value string) string {
-	return e.Name + stringhelpers.SnakeCaseToCamel(value)
-}
-
-// AllValuesSliceName returns the name of the slice containing all enum values
-func (e *Enum) AllValuesSliceName() string {
-	return "All" + e.NamePlural
-}
-
-// ConverterFunctionName returns the name of the converter function
-func (e *Enum) ConverterFunctionName() string {
-	return "To" + e.Name
+	return e.Name + genhelpers.SnakeCaseToCamel(value)
 }
 
 // ValueRepresentations returns all enum values with their Go names and values used in the template.
