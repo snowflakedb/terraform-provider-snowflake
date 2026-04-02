@@ -3,9 +3,11 @@
 package testacc
 
 import (
-	"fmt"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -17,6 +19,19 @@ func TestAcc_Pipe(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 	stageId := testClient().Ids.RandomSchemaObjectIdentifier()
 
+	tableModel := model.TableWithId("test", tableId, []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+		{Name: "data", Type: testdatatypes.DataTypeVarchar},
+	})
+
+	stageModel := model.Stage("test", stageId.DatabaseName(), stageId.SchemaName(), stageId.Name()).
+		WithComment("Terraform acceptance test")
+
+	pipeModel := model.PipeWithId("test", pipeId, "").
+		WithComment("Terraform acceptance test").
+		WithAutoIngest(false).
+		WithCopyStatementCopyFromStageIntoTable(tableModel.ResourceReference(), stageModel.ResourceReference())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -25,7 +40,7 @@ func TestAcc_Pipe(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Pipe),
 		Steps: []resource.TestStep{
 			{
-				Config: pipeConfig(pipeId, tableId, stageId),
+				Config: accconfig.FromModels(t, tableModel, stageModel, pipeModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_pipe.test", "name", pipeId.Name()),
 					resource.TestCheckResourceAttr("snowflake_pipe.test", "fully_qualified_name", pipeId.FullyQualifiedName()),
@@ -38,45 +53,4 @@ func TestAcc_Pipe(t *testing.T) {
 			},
 		},
 	})
-}
-
-// whitespace in copy_statement matters for the tests, change with caution!
-func pipeConfig(pipeId sdk.SchemaObjectIdentifier, tableId sdk.SchemaObjectIdentifier, stageId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test" {
-	database = "%[1]s"
-  	schema   = "%[2]s"
-	name     = "%[4]s"
-
-	column {
-		name = "id"
-		type = "NUMBER(5,0)"
-	}
-
-	column {
-		name = "data"
-		type = "VARCHAR(16)"
-	}
-}
-
-resource "snowflake_stage" "test" {
-	database = "%[1]s"
-	schema = "%[2]s"
-	name = "%[5]s"
-	comment = "Terraform acceptance test"
-}
-
-resource "snowflake_pipe" "test" {
-  database       = "%[1]s"
-  schema         = "%[2]s"
-  name           = "%[3]s"
-  comment        = "Terraform acceptance test"
-  copy_statement = <<CMD
-  	COPY INTO ${snowflake_table.test.fully_qualified_name}
-  FROM @${snowflake_stage.test.fully_qualified_name}
-  FILE_FORMAT = (TYPE = CSV)
-CMD
-  auto_ingest    = false
-}
-`, pipeId.DatabaseName(), pipeId.SchemaName(), pipeId.Name(), tableId.Name(), stageId.Name())
 }
