@@ -1,8 +1,6 @@
 package gen
 
 import (
-	"slices"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -11,11 +9,6 @@ type SdkObjectDef struct {
 	IdType             string
 	ObjectStruct       any
 	IsDataSourceOutput bool
-	// NameOverride, when non-empty, replaces the struct type name used for code generation.
-	// Useful when multiple resources share the same SDK struct (e.g. WarehouseAdaptive reuses sdk.Warehouse).
-	NameOverride string
-	// FieldsToInclude, when non-empty, restricts code generation to only these struct field names.
-	FieldsToInclude []string
 }
 
 var allStructs = []SdkObjectDef{
@@ -54,17 +47,6 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.Warehouse{},
-	},
-	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.Warehouse{},
-		NameOverride: "sdk.WarehouseAdaptive",
-		FieldsToInclude: []string{
-			"Name", "State", "Type", "Running", "Queued", "IsDefault", "IsCurrent",
-			"AutoResume", "Available", "Provisioning", "Quiescing", "Other",
-			"CreatedOn", "ResumedOn", "UpdatedOn", "Owner", "Comment",
-			"ResourceMonitor", "OwnerRoleType", "MaxQueryPerformanceLevel", "QueryThroughputMultiplier",
-		},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -273,18 +255,6 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 	allSdkObjectsDetails := make([]genhelpers.SdkObjectDetails, len(allStructs))
 	for idx, d := range allStructs {
 		structDetails := genhelpers.ExtractStructDetails(d.ObjectStruct)
-		if d.NameOverride != "" {
-			structDetails.Name = d.NameOverride
-		}
-		if len(d.FieldsToInclude) > 0 {
-			filtered := make([]genhelpers.Field, 0, len(d.FieldsToInclude))
-			for _, f := range structDetails.Fields {
-				if slices.Contains(d.FieldsToInclude, f.Name) {
-					filtered = append(filtered, f)
-				}
-			}
-			structDetails.Fields = filtered
-		}
 		allSdkObjectsDetails[idx] = genhelpers.SdkObjectDetails{
 			IdType:             d.IdType,
 			StructDetails:      structDetails,
