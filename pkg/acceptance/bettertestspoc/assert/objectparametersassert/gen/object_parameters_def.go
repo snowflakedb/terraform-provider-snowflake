@@ -364,6 +364,15 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.ProcedureParameterTraceLevel), ParameterType: "sdk.TraceLevel", DefaultValue: "sdk.TraceLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},
 	},
+	{
+		Name:   "HybridTable",
+		IdType: "sdk.SchemaObjectIdentifier",
+		Level:  sdk.ParameterTypeObject,
+		Parameters: []SnowflakeParameter{
+			{ParameterName: string(sdk.ObjectParameterDataRetentionTimeInDays), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterMaxDataExtensionTimeInDays), ParameterType: "int", DefaultValue: "14", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+		},
+	},
 	// TODO [SNOW-1501905]: update this definition and use results in tests
 	{
 		Name:   "Schema",
