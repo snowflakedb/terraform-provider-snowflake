@@ -139,6 +139,25 @@ var ShowRegularWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon
 
 var _ = ShowRegularWarehouseSchema
 
+// showWarehouseSchemaAdaptive contains fields only present for adaptive warehouses.
+// Adjusted manually.
+var showWarehouseSchemaAdaptive = map[string]*schema.Schema{
+	"max_query_performance_level": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"query_throughput_multiplier": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+}
+
+// ShowAdaptiveWarehouseSchema contains common and adaptive fields (used by the adaptive warehouse resource).
+// Adjusted manually.
+var ShowAdaptiveWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaAdaptive)
+
+var _ = ShowAdaptiveWarehouseSchema
+
 func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := make(map[string]any)
 	warehouseSchema["name"] = warehouse.Name
@@ -193,6 +212,14 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	}
 	if warehouse.Generation != nil {
 		warehouseSchema["generation"] = string((*warehouse.Generation))
+	}
+	// Adjusted manually.
+	if warehouse.MaxQueryPerformanceLevel != nil {
+		warehouseSchema["max_query_performance_level"] = string(*warehouse.MaxQueryPerformanceLevel)
+	}
+	// Adjusted manually.
+	if warehouse.QueryThroughputMultiplier != nil {
+		warehouseSchema["query_throughput_multiplier"] = *warehouse.QueryThroughputMultiplier
 	}
 	return warehouseSchema
 }

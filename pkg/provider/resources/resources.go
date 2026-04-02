@@ -118,6 +118,7 @@ const (
 	UserProgrammaticAccessToken                            resource = "snowflake_user_programmatic_access_token"
 	View                                                   resource = "snowflake_view"
 	Warehouse                                              resource = "snowflake_warehouse"
+	WarehouseAdaptive                                      resource = "snowflake_warehouse_adaptive"
 )
 
 type Resource interface {
