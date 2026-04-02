@@ -3,6 +3,9 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"slices"
+	"strings"
 	"time"
 )
 
@@ -47,6 +50,7 @@ type createTagOptions struct {
 	IfNotExists   *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name          SchemaObjectIdentifier `ddl:"identifier"`
 	AllowedValues *AllowedValues         `ddl:"keyword" sql:"ALLOWED_VALUES"`
+	Propagate     *TagPropagate          `ddl:"keyword"`
 	Comment       *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -56,6 +60,40 @@ type AllowedValues struct {
 
 type AllowedValue struct {
 	Value string `ddl:"keyword,single_quotes"`
+}
+
+type TagPropagation string
+
+const (
+	TagPropagationNone                        TagPropagation = "NONE"
+	TagPropagationOnDependency                TagPropagation = "ON_DEPENDENCY"
+	TagPropagationOnDataMovement              TagPropagation = "ON_DATA_MOVEMENT"
+	TagPropagationOnDependencyAndDataMovement TagPropagation = "ON_DEPENDENCY_AND_DATA_MOVEMENT"
+)
+
+var AllTagPropagationValues = []TagPropagation{
+	TagPropagationNone,
+	TagPropagationOnDependency,
+	TagPropagationOnDataMovement,
+	TagPropagationOnDependencyAndDataMovement,
+}
+
+func ToTagPropagation(s string) (TagPropagation, error) {
+	tp := TagPropagation(strings.ToUpper(s))
+	if !slices.Contains(AllTagPropagationValues, tp) {
+		return "", fmt.Errorf("invalid tag propagation value: %s", tp)
+	}
+	return tp, nil
+}
+
+type TagPropagate struct {
+	PropagationMethod *TagPropagation `ddl:"parameter" sql:"PROPAGATE"`
+	OnConflict        *TagOnConflict  `ddl:"keyword"`
+}
+
+type TagOnConflict struct {
+	CustomValue           *string `ddl:"parameter,single_quotes" sql:"ON_CONFLICT"`
+	AllowedValuesSequence *bool   `ddl:"keyword" sql:"ON_CONFLICT = ALLOWED_VALUES_SEQUENCE"`
 }
 
 // showTagOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-tags
@@ -75,6 +113,7 @@ type Tag struct {
 	Comment       string
 	AllowedValues []string
 	OwnerRoleType string
+	Propagate     TagPropagation
 }
 
 func (v *Tag) ID() SchemaObjectIdentifier {
@@ -90,6 +129,7 @@ type tagRow struct {
 	Comment       string         `db:"comment"`
 	AllowedValues sql.NullString `db:"allowed_values"`
 	OwnerRoleType string         `db:"owner_role_type"`
+	Propagate     string         `db:"propagate"`
 }
 
 func (tr tagRow) convert() (*Tag, error) {
@@ -105,6 +145,7 @@ func (tr tagRow) convert() (*Tag, error) {
 	if tr.AllowedValues.Valid {
 		t.AllowedValues = ParseCommaSeparatedStringArray(tr.AllowedValues.String, true)
 	}
+	mapStringWithMapping(&t.Propagate, tr.Propagate, ToTagPropagation)
 	return t, nil
 }
 
@@ -123,12 +164,16 @@ type TagMaskingPolicy struct {
 
 type TagSet struct {
 	MaskingPolicies *TagSetMaskingPolicies `ddl:"keyword"`
+	AllowedValues   *AllowedValues         `ddl:"keyword" sql:"ALLOWED_VALUES"`
+	Propagate       *TagPropagate          `ddl:"keyword"`
 	Comment         *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type TagUnset struct {
 	MaskingPolicies *TagUnsetMaskingPolicies `ddl:"keyword"`
 	AllowedValues   *bool                    `ddl:"keyword" sql:"ALLOWED_VALUES"`
+	Propagate       *bool                    `ddl:"keyword" sql:"PROPAGATE"`
+	OnConflict      *bool                    `ddl:"keyword" sql:"ON_CONFLICT"`
 	Comment         *bool                    `ddl:"keyword" sql:"COMMENT"`
 }
 

@@ -40,9 +40,9 @@ type CreateTagRequest struct {
 
 	name SchemaObjectIdentifier // required
 
-	// One of
 	comment       *string
-	allowedValues *AllowedValues
+	allowedValues []string
+	propagate     *TagPropagate
 }
 
 func (r *CreateTagRequest) GetName() SchemaObjectIdentifier {
@@ -54,22 +54,26 @@ type AlterTagRequest struct {
 	name     SchemaObjectIdentifier // required
 
 	// One of
-	add    *TagAdd
-	drop   *TagDrop
-	set    *TagSet
-	unset  *TagUnset
-	rename *TagRename
+	add    []string
+	drop   []string
+	set    *TagSetRequest
+	unset  *TagUnsetRequest
+	rename *SchemaObjectIdentifier
 }
 
 type TagSetRequest struct {
 	maskingPolicies []SchemaObjectIdentifier
 	force           *bool
+	allowedValues   []string
+	propagate       *TagPropagate
 	comment         *string
 }
 
 type TagUnsetRequest struct {
 	maskingPolicies []SchemaObjectIdentifier
 	allowedValues   *bool
+	propagate       *bool
+	onConflict      *bool
 	comment         *bool
 }
 
