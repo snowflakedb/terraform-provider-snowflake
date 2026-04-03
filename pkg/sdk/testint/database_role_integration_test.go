@@ -5,6 +5,7 @@ package testint
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -15,17 +16,6 @@ import (
 func TestInt_DatabaseRoles(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
-
-	assertDatabaseRole := func(t *testing.T, databaseRole *sdk.DatabaseRole, expectedId sdk.DatabaseObjectIdentifier, expectedComment string) {
-		t.Helper()
-		assert.NotEmpty(t, databaseRole.CreatedOn)
-		assert.Equal(t, expectedId.Name(), databaseRole.Name)
-		assert.Equal(t, "ACCOUNTADMIN", databaseRole.Owner)
-		assert.Equal(t, expectedComment, databaseRole.Comment)
-		assert.Equal(t, 0, databaseRole.GrantedToRoles)
-		assert.Equal(t, 0, databaseRole.GrantedToDatabaseRoles)
-		assert.Equal(t, 0, databaseRole.GrantedDatabaseRoles)
-	}
 
 	cleanupDatabaseRoleProvider := func(id sdk.DatabaseObjectIdentifier) func() {
 		return func() {
@@ -57,10 +47,14 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupDatabaseRoleProvider(id))
 
-		databaseRole, err := client.DatabaseRoles.ShowByID(ctx, id)
-
-		require.NoError(t, err)
-		assertDatabaseRole(t, databaseRole, id, comment)
+		assertThatObject(t, objectassert.DatabaseRole(t, id).
+			HasNotEmptyCreatedOn().
+			HasName(id.Name()).
+			HasOwner("ACCOUNTADMIN").
+			HasComment(comment).
+			HasGrantedToRoles(0).
+			HasGrantedToDatabaseRoles(0).
+			HasGrantedDatabaseRoles(0))
 	})
 
 	t.Run("create database_role: no optionals", func(t *testing.T) {
@@ -70,10 +64,14 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupDatabaseRoleProvider(id))
 
-		databaseRole, err := client.DatabaseRoles.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assertDatabaseRole(t, databaseRole, id, "")
+		assertThatObject(t, objectassert.DatabaseRole(t, id).
+			HasNotEmptyCreatedOn().
+			HasName(id.Name()).
+			HasOwner("ACCOUNTADMIN").
+			HasComment("").
+			HasGrantedToRoles(0).
+			HasGrantedToDatabaseRoles(0).
+			HasGrantedDatabaseRoles(0))
 	})
 
 	t.Run("drop database_role: existing", func(t *testing.T) {
@@ -107,19 +105,15 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		err = client.DatabaseRoles.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
-		alteredDatabaseRole, err := client.DatabaseRoles.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assert.Equal(t, "new comment", alteredDatabaseRole.Comment)
+		assertThatObject(t, objectassert.DatabaseRole(t, id).
+			HasComment("new comment"))
 
 		alterRequest = sdk.NewAlterDatabaseRoleRequest(id).WithUnset(*sdk.NewDatabaseRoleUnsetRequest())
 		err = client.DatabaseRoles.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 
-		alteredDatabaseRole, err = client.DatabaseRoles.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assert.Equal(t, "", alteredDatabaseRole.Comment)
+		assertThatObject(t, objectassert.DatabaseRole(t, id).
+			HasComment(""))
 	})
 
 	t.Run("alter database_role: rename", func(t *testing.T) {
@@ -142,10 +136,14 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		_, err = client.DatabaseRoles.ShowByID(ctx, id)
 		assert.ErrorIs(t, err, collections.ErrObjectNotFound)
 
-		databaseRole, err := client.DatabaseRoles.ShowByID(ctx, newId)
-		require.NoError(t, err)
-
-		assertDatabaseRole(t, databaseRole, newId, "")
+		assertThatObject(t, objectassert.DatabaseRole(t, newId).
+			HasNotEmptyCreatedOn().
+			HasName(newId.Name()).
+			HasOwner("ACCOUNTADMIN").
+			HasComment("").
+			HasGrantedToRoles(0).
+			HasGrantedToDatabaseRoles(0).
+			HasGrantedDatabaseRoles(0))
 	})
 
 	t.Run("alter database_role: rename to other database", func(t *testing.T) {
@@ -236,17 +234,15 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		err := client.DatabaseRoles.Grant(ctx, grantRequest)
 		require.NoError(t, err)
 
-		extractedRole, err := client.DatabaseRoles.ShowByID(ctx, id1)
-		require.NoError(t, err)
-		assert.Equal(t, 0, extractedRole.GrantedToRoles)
-		assert.Equal(t, 1, extractedRole.GrantedToDatabaseRoles)
-		assert.Equal(t, 0, extractedRole.GrantedDatabaseRoles)
+		assertThatObject(t, objectassert.DatabaseRole(t, id1).
+			HasGrantedToRoles(0).
+			HasGrantedToDatabaseRoles(1).
+			HasGrantedDatabaseRoles(0))
 
-		extractedRole, err = client.DatabaseRoles.ShowByID(ctx, id2)
-		require.NoError(t, err)
-		assert.Equal(t, 0, extractedRole.GrantedToRoles)
-		assert.Equal(t, 0, extractedRole.GrantedToDatabaseRoles)
-		assert.Equal(t, 1, extractedRole.GrantedDatabaseRoles)
+		assertThatObject(t, objectassert.DatabaseRole(t, id2).
+			HasGrantedToRoles(0).
+			HasGrantedToDatabaseRoles(0).
+			HasGrantedDatabaseRoles(1))
 
 		revokeRequest := sdk.NewRevokeDatabaseRoleRequest(id1).WithDatabaseRole(id2)
 		err = client.DatabaseRoles.Revoke(ctx, revokeRequest)
@@ -264,11 +260,10 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		err := client.DatabaseRoles.Grant(ctx, grantRequest)
 		require.NoError(t, err)
 
-		extractedRole, err := client.DatabaseRoles.ShowByID(ctx, roleId)
-		require.NoError(t, err)
-		assert.Equal(t, 1, extractedRole.GrantedToRoles)
-		assert.Equal(t, 0, extractedRole.GrantedToDatabaseRoles)
-		assert.Equal(t, 0, extractedRole.GrantedDatabaseRoles)
+		assertThatObject(t, objectassert.DatabaseRole(t, roleId).
+			HasGrantedToRoles(1).
+			HasGrantedToDatabaseRoles(0).
+			HasGrantedDatabaseRoles(0))
 
 		revokeRequest := sdk.NewRevokeDatabaseRoleRequest(roleId).WithAccountRole(accountRole.ID())
 		err = client.DatabaseRoles.Revoke(ctx, revokeRequest)

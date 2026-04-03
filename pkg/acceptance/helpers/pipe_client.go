@@ -44,6 +44,12 @@ func (c *PipeClient) CreatePipeInSchema(t *testing.T, schemaId sdk.DatabaseObjec
 	return pipe, c.DropPipeFunc(t, id)
 }
 
+func (c *PipeClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Pipe, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
+}
+
 func (c *PipeClient) DropPipeFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
