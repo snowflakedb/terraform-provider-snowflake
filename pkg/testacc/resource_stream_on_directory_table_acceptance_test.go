@@ -36,15 +36,13 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 	complete := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName()).
 		WithComment(comment)
 
-	expectedStageId := fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())
-
 	assertBasic := []assert.TestCheckFuncProvider{
 		resourceassert.StreamOnDirectoryTableResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
-			HasStageString(expectedStageId).
+			HasStageString(stage.ID().FullyQualifiedName()).
 			HasCommentString(""),
 
 		resourceshowoutputassert.StreamShowOutput(t, basic.ResourceReference()).
@@ -52,12 +50,12 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasTableName(expectedStageId).
+			HasTableName(stage.ID().FullyQualifiedName()).
 			HasMode(sdk.StreamModeDefault).
 			HasComment("").
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasSourceType(sdk.StreamSourceTypeStage).
-			HasBaseTablesPartiallyQualified(expectedStageId).
+			HasBaseTables(stage.ID()).
 			HasType("DELTA").
 			HasStale(false).
 			HasStaleAfterNotEmpty().
@@ -70,10 +68,10 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.owner", testClient().Context.CurrentRole(t).Name())),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.comment", "")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.table_name", expectedStageId)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.table_name", stage.ID().FullyQualifiedName())),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.source_type", string(sdk.StreamSourceTypeStage))),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.base_tables.#", "1")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.base_tables.0", expectedStageId)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.base_tables.0", stage.ID().FullyQualifiedName())),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.type", "DELTA")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.stale", "false")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.mode", string(sdk.StreamModeDefault))),
@@ -87,7 +85,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
-			HasStageString(expectedStageId).
+			HasStageString(stage.ID().FullyQualifiedName()).
 			HasCommentString(comment),
 
 		resourceshowoutputassert.StreamShowOutput(t, complete.ResourceReference()).
@@ -95,12 +93,12 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasTableName(expectedStageId).
+			HasTableName(stage.ID().FullyQualifiedName()).
 			HasMode(sdk.StreamModeDefault).
 			HasComment(comment).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
 			HasSourceType(sdk.StreamSourceTypeStage).
-			HasBaseTablesPartiallyQualified(expectedStageId).
+			HasBaseTables(stage.ID()).
 			HasType("DELTA").
 			HasStale(false).
 			HasStaleAfterNotEmpty().
@@ -113,10 +111,10 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.owner", testClient().Context.CurrentRole(t).Name())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment", comment)),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.table_name", expectedStageId)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.table_name", stage.ID().FullyQualifiedName())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.source_type", string(sdk.StreamSourceTypeStage))),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.base_tables.#", "1")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.base_tables.0", expectedStageId)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.base_tables.0", stage.ID().FullyQualifiedName())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.type", "DELTA")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.stale", "false")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.mode", string(sdk.StreamModeDefault))),
@@ -446,6 +444,152 @@ func TestAcc_StreamOnDirectoryTable_ExternalStreamTypeChange(t *testing.T) {
 							HasSourceType(sdk.StreamSourceTypeStage),
 					),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0(t *testing.T) {
+	stage, stageCleanup := testClient().Stage.CreateStageWithDirectory(t)
+	t.Cleanup(stageCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StreamOnDirectoryTable),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				Config:            config.FromModels(t, streamModel),
+				Check: assertThat(t,
+					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasStageString(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasStageString(stage.ID().FullyQualifiedName()),
+				),
+			},
+		},
+	})
+}
+
+// TODO: REMOVE ONCE BCR BUNDLE 2026_01 IS ENABLED BY DEFAULT (AND CANNOT BE DISABLED)
+func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0_WithBCRBundle_2026_01_Disabled(t *testing.T) {
+	stage, stageCleanup := testClient().Stage.CreateStageWithDirectory(t)
+	t.Cleanup(stageCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
+
+	// Will be automatically enabled at the end of the test
+	testClient().BcrBundles.DisableBcrBundle(t, "2026_01")
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StreamOnDirectoryTable),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				Config:            config.FromModels(t, streamModel),
+				Check: assertThat(t,
+					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasStageString(fmt.Sprintf(`"%s"."%s".%s`, stage.ID().DatabaseName(), stage.ID().SchemaName(), stage.ID().Name())),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.StreamOnDirectoryTableResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasStageString(stage.ID().FullyQualifiedName()),
+				),
+			},
+		},
+	})
+}
+
+// TODO: REMOVE ONCE BCR BUNDLE 2026_01 IS ENABLED BY DEFAULT (AND CANNOT BE DISABLED)
+func TestAcc_StreamOnDirectoryTable_migrateFromV2_14_0_CrossSchemaStage(t *testing.T) {
+	schema, cleanupSchema := testClient().Schema.CreateSchema(t)
+	t.Cleanup(cleanupSchema)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
+
+	stage, cleanupStage := testClient().Stage.CreateStageWithDirectory(t)
+	t.Cleanup(cleanupStage)
+
+	streamModel := model.StreamOnDirectoryTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), stage.ID().FullyQualifiedName())
+
+	// Will be automatically enabled at the end of the test
+	testClient().BcrBundles.DisableBcrBundle(t, "2026_01")
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StreamOnDirectoryTable),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.0"),
+				Config:            config.FromModels(t, streamModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+			},
+			{
+				PreConfig: func() {
+					testClient().Stream.DropFunc(t, id)()
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, streamModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(streamModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
 			},
 		},
 	})
