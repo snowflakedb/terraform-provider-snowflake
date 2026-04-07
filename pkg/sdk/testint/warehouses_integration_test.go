@@ -490,6 +490,58 @@ func TestInt_Warehouses(t *testing.T) {
 		)
 	})
 
+	t.Run("alter adaptive: set and unset all adaptive params", func(t *testing.T) {
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateAdaptive(t)
+		t.Cleanup(warehouseCleanup)
+
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+			HasQueryThroughputMultiplier(0),
+		)
+		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+			HasStatementQueuedTimeoutInSeconds(0).
+			HasStatementTimeoutInSeconds(172800),
+		)
+
+		err := client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{
+				MaxQueryPerformanceLevel:        sdk.Pointer(sdk.MaxQueryPerformanceLevelXSmall),
+				QueryThroughputMultiplier:       sdk.Int(5),
+				StatementQueuedTimeoutInSeconds: sdk.Int(100),
+				StatementTimeoutInSeconds:       sdk.Int(200),
+			},
+		})
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
+			HasQueryThroughputMultiplier(5),
+		)
+		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+			HasStatementQueuedTimeoutInSeconds(100).
+			HasStatementTimeoutInSeconds(200),
+		)
+
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{
+				MaxQueryPerformanceLevel:        sdk.Bool(true),
+				QueryThroughputMultiplier:       sdk.Bool(true),
+				StatementQueuedTimeoutInSeconds: sdk.Bool(true),
+				StatementTimeoutInSeconds:       sdk.Bool(true),
+			},
+		})
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+			HasQueryThroughputMultiplier(2),
+		)
+		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+			HasStatementQueuedTimeoutInSeconds(0).
+			HasStatementTimeoutInSeconds(172800),
+		)
+	})
+
 	t.Run("alter: set and unset parameters", func(t *testing.T) {
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)

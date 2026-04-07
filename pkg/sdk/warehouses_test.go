@@ -304,6 +304,34 @@ func TestWarehouseAlter(t *testing.T) {
 	})
 }
 
+func TestWarehouseAlterAdaptive(t *testing.T) {
+	t.Run("alter adaptive: set all adaptive params", func(t *testing.T) {
+		opts := &AlterWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+			Set: &WarehouseSet{
+				MaxQueryPerformanceLevel:        Pointer(MaxQueryPerformanceLevelXSmall),
+				QueryThroughputMultiplier:       Int(5),
+				StatementQueuedTimeoutInSeconds: Int(100),
+				StatementTimeoutInSeconds:       Int(200),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET QUERY_THROUGHPUT_MULTIPLIER = 5 MAX_QUERY_PERFORMANCE_LEVEL = 'XSMALL' STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 100 STATEMENT_TIMEOUT_IN_SECONDS = 200`)
+	})
+
+	t.Run("alter adaptive: unset all adaptive params", func(t *testing.T) {
+		opts := &AlterWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+			Unset: &WarehouseUnset{
+				MaxQueryPerformanceLevel:        Bool(true),
+				QueryThroughputMultiplier:       Bool(true),
+				StatementQueuedTimeoutInSeconds: Bool(true),
+				StatementTimeoutInSeconds:       Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" UNSET STATEMENT_QUEUED_TIMEOUT_IN_SECONDS, STATEMENT_TIMEOUT_IN_SECONDS, QUERY_THROUGHPUT_MULTIPLIER, MAX_QUERY_PERFORMANCE_LEVEL`)
+	})
+}
+
 func TestWarehouseDrop(t *testing.T) {
 	t.Run("only name", func(t *testing.T) {
 		opts := &DropWarehouseOptions{
