@@ -44,6 +44,7 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		Type:             schema.TypeInt,
 		Optional:         true,
 		ForceNew:         true,
+		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 		Description:      "Specifies the query throughput multiplier for the adaptive warehouse.",
 	},
@@ -168,11 +169,11 @@ func CreateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 			}
 			return &s, nil
 		}),
+		intAttributeWithSpecialDefaultCreate(d, "query_throughput_multiplier", &opts.QueryThroughputMultiplier),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
-	opts.QueryThroughputMultiplier = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "query_throughput_multiplier")
 
 	opts.StatementQueuedTimeoutInSeconds = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_queued_timeout_in_seconds")
 	opts.StatementTimeoutInSeconds = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_timeout_in_seconds")
@@ -218,10 +219,7 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) schema.ReadConte
 			if w.MaxQueryPerformanceLevel != nil {
 				maxQueryPerformanceLevel = string(*w.MaxQueryPerformanceLevel)
 			}
-			var queryThroughputMultiplier int
-			if w.QueryThroughputMultiplier != nil {
-				queryThroughputMultiplier = *w.QueryThroughputMultiplier
-			}
+			queryThroughputMultiplier := optionalIntOutputMappingIntDefault(w.QueryThroughputMultiplier)
 			if err = handleExternalChangesToObjectInShow(d,
 				outputMapping{"max_query_performance_level", "max_query_performance_level", maxQueryPerformanceLevel, maxQueryPerformanceLevel, nil},
 				outputMapping{"query_throughput_multiplier", "query_throughput_multiplier", queryThroughputMultiplier, queryThroughputMultiplier, nil},
@@ -280,11 +278,10 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 	set := sdk.WarehouseSet{}
 	unset := sdk.WarehouseUnset{}
 
-	if err := stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := intAttributeUpdate(d, "query_throughput_multiplier", &set.QueryThroughputMultiplier, &unset.QueryThroughputMultiplier); err != nil {
+	if err := errors.Join(
+		intAttributeWithSpecialDefaultUpdate(d, "query_throughput_multiplier", &set.QueryThroughputMultiplier, &unset.QueryThroughputMultiplier),
+		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 

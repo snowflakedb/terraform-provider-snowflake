@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -52,7 +53,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasNameString(warehouseId.Name()).
 			HasCommentEmpty().
 			HasNoMaxQueryPerformanceLevel().
-			HasNoQueryThroughputMultiplier().
+			HasQueryThroughputMultiplierString(r.IntDefaultString).
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800).
 			HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
@@ -98,7 +99,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 		resourceassert.WarehouseAdaptiveResource(t, ref).
 			HasNameString(warehouseId.Name()).
 			HasCommentEmpty().
-			HasNoQueryThroughputMultiplier().
+			HasQueryThroughputMultiplierString(r.IntDefaultString).
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800),
 		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
@@ -177,7 +178,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.ExpectChangeDeleteCreate(ref, "comment", sdk.String(newComment), nil),
-						planchecks.ExpectChangeDeleteCreate(ref, "query_throughput_multiplier", sdk.String("4"), nil),
+						planchecks.ExpectChangeDeleteCreate(ref, "query_throughput_multiplier", sdk.String("4"), sdk.String(r.IntDefaultString)),
 						planchecks.ExpectChangeDeleteCreate(ref, "statement_queued_timeout_in_seconds", sdk.String("600"), nil),
 						planchecks.ExpectChangeDeleteCreate(ref, "statement_timeout_in_seconds", sdk.String("43200"), nil),
 						planchecks.ExpectChangeDeleteCreate(ref, "max_query_performance_level", sdk.String(string(sdk.MaxQueryPerformanceLevelSmall)), nil),
