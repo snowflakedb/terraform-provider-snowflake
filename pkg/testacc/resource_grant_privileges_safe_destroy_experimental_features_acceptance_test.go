@@ -32,7 +32,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWareho
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingWarehouse")
+	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantPrivileges_SafeDestroy")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -79,7 +79,7 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole(t
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole")
+	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantPrivileges_SafeDestroy")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -95,6 +95,98 @@ func TestAcc_Experimental_GrantPrivilegesToAccountRole_SafeDestroy_MissingRole(t
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig:                testClient().Role.DropRoleFunc(t, role.ID()),
+				Config:                   config.FromModels(t, grantModel),
+				Destroy:                  true,
+				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
+			},
+			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
+			{
+				ProtoV6ProviderFactories: experimentFactory,
+				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
+				Destroy:                  true,
+			},
+		},
+	})
+}
+
+// TestAcc_Experimental_GrantPrivilegesToDatabaseRole_SafeDestroy_MissingDatabase verifies that destroying
+// a database role grant resource fails when the target database is deleted externally (default behavior),
+// and succeeds when the GRANTS_SAFE_DESTROY experiment is enabled.
+// Uses all_privileges = true so that Read skips existence checks and Delete is actually called.
+func TestAcc_Experimental_GrantPrivilegesToDatabaseRole_SafeDestroy_MissingDatabase(t *testing.T) {
+	// Create a separate database to grant on so we can drop it independently of the role.
+	db, dbCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(dbCleanup)
+
+	dbRole, dbRoleCleanup := testClient().DatabaseRole.CreateDatabaseRoleInDatabase(t, db.ID())
+	t.Cleanup(dbRoleCleanup)
+
+	grantModel := model.GrantPrivilegesToDatabaseRole("test", dbRole.ID().FullyQualifiedName()).
+		WithAllPrivileges(true).
+		WithOnDatabase(db.ID().Name())
+
+	experimentProviderModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantPrivileges_SafeDestroy")
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Create the grant with default provider.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
+			},
+			// Drop the target database externally, then try to destroy without experiment — expect failure.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				PreConfig:                testClient().Database.DropDatabaseFunc(t, db.ID()),
+				Config:                   config.FromModels(t, grantModel),
+				Destroy:                  true,
+				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
+			},
+			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
+			{
+				ProtoV6ProviderFactories: experimentFactory,
+				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
+				Destroy:                  true,
+			},
+		},
+	})
+}
+
+// TestAcc_Experimental_GrantPrivilegesToDatabaseRole_SafeDestroy_MissingDatabaseRole verifies that destroying
+// a database role grant resource fails when the grantee database role is deleted externally (default behavior),
+// and succeeds when the GRANTS_SAFE_DESTROY experiment is enabled.
+// Uses all_privileges = true so that Read skips existence checks and Delete is actually called.
+func TestAcc_Experimental_GrantPrivilegesToDatabaseRole_SafeDestroy_MissingDatabaseRole(t *testing.T) {
+	dbRole, dbRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(dbRoleCleanup)
+
+	grantModel := model.GrantPrivilegesToDatabaseRole("test", dbRole.ID().FullyQualifiedName()).
+		WithAllPrivileges(true).
+		WithOnDatabase(testClient().Ids.DatabaseId().Name())
+
+	experimentProviderModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
+	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantPrivileges_SafeDestroy")
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Create the grant with default provider.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
+			},
+			// Drop the database role externally, then try to destroy without experiment — expect failure.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				PreConfig:                testClient().DatabaseRole.CleanupDatabaseRoleFunc(t, dbRole.ID()),
 				Config:                   config.FromModels(t, grantModel),
 				Destroy:                  true,
 				ExpectError:              regexp.MustCompile("does not exist or not authorized"),
