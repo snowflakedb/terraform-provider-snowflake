@@ -26,6 +26,13 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* Support for future grants on `IMAGE REPOSITORIES`
+
+Both, `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources,
+now support the `IMAGE REPOSITORY` for future grants (in `on_schema_object.future.object_type_plural`).
+
+No changes to existing configurations are required.
+
 ### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
 
 #### Resource `snowflake_authentication_policy`
@@ -68,7 +75,7 @@ No changes are required for existing configurations.
 
 ### *(new feature)* New catalog integration resources and data source
 
-#### Resources 
+#### Resources
 
 We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
@@ -76,7 +83,7 @@ We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_open_catalog](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
 - [snowflake_catalog_integration_iceberg_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
 
-These features will be marked as stable in future releases. To use them, add 
+These features will be marked as stable in future releases. To use them, add
 - `snowflake_catalog_integration_aws_glue_resource`,
 - `snowflake_catalog_integration_object_storage_resource`,
 - `snowflake_catalog_integration_open_catalog_resource`, or
@@ -308,12 +315,12 @@ The errors may look similar to the following:
 ```
 ╷
 │ Error: object does not exist
-│ 
-│ 
+│
+│
 │   with snowflake_authentication_policy.test,
 │   on test.tf line 3, in resource "snowflake_authentication_policy" "test":
 │    3: resource "snowflake_authentication_policy" "test" {
-│ 
+│
 ```
 
 What changed on the Snowflake side:
