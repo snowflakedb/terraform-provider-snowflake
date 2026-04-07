@@ -213,7 +213,7 @@ This has been fixed: grant resources can now be used with the `AGENT` and `MCP S
 
 No changes in the configuration are required.
 
-Reference: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524)
+References: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524), [#4593](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4593).
 
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 
