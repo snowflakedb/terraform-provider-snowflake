@@ -495,7 +495,7 @@ func TestInt_SafeRevokeAccountRole(t *testing.T) {
 	})
 
 	t.Run("revoke role that was never granted", func(t *testing.T) {
-		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(role.ID(), sdk.RevokeRole{Role: sdk.Pointer(parentRole.ID())}))
+		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(NonExistingAccountObjectIdentifier, sdk.RevokeRole{Role: sdk.Pointer(NonExistingAccountObjectIdentifier)}))
 		assert.NoError(t, err)
 	})
 }
@@ -521,7 +521,7 @@ func TestInt_SafeRevokeDatabaseRole(t *testing.T) {
 	})
 
 	t.Run("revoke database role that was never granted", func(t *testing.T) {
-		err := client.DatabaseRoles.RevokeSafely(ctx, sdk.NewRevokeDatabaseRoleRequest(databaseRole.ID()).WithAccountRole(accountRole.ID()))
+		err := client.DatabaseRoles.RevokeSafely(ctx, sdk.NewRevokeDatabaseRoleRequest(NonExistingDatabaseObjectIdentifier).WithAccountRole(NonExistingAccountObjectIdentifier))
 		assert.NoError(t, err)
 	})
 }
