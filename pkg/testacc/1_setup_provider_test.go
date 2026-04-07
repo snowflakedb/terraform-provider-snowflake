@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -63,7 +62,6 @@ func acceptanceTestsProvider() *schema.Provider {
 	p := provider.Provider()
 	// add resources and data sources that are not ready here like:
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
-	p.ResourcesMap["snowflake_warehouse_adaptive"] = resources.WarehouseAdaptive()
 	return p
 }
 
