@@ -74,6 +74,11 @@ func (t *TagResourceAssert) HasNoAllowedValues(expected bool) *TagResourceAssert
 
 // typed assert for "on_conflict" (type: List, subtype: Map) is not currently supported
 
+func (t *TagResourceAssert) HasOrderedAllowedValues(expected ...string) *TagResourceAssert {
+	t.ListContainsExactlyStringValuesInOrder("ordered_allowed_values", expected...)
+	return t
+}
+
 func (t *TagResourceAssert) HasPropagate(expected string) *TagResourceAssert {
 	t.StringValueSet("propagate", expected)
 	return t
@@ -188,6 +193,11 @@ func (t *TagResourceAssert) HasNoAllowedValuesEmpty() *TagResourceAssert {
 
 func (t *TagResourceAssert) HasOnConflictEmpty() *TagResourceAssert {
 	t.AddAssertion(assert.ValueSet("on_conflict.#", "0"))
+	return t
+}
+
+func (t *TagResourceAssert) HasOrderedAllowedValuesEmpty() *TagResourceAssert {
+	t.AddAssertion(assert.ValueSet("ordered_allowed_values.#", "0"))
 	return t
 }
 

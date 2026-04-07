@@ -143,7 +143,7 @@ func TestAcc_Tag_BasicUseCase(t *testing.T) {
 				ResourceName:            complete.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"on_conflict"},
+				ImportStateVerifyIgnore: []string{"on_conflict", "ordered_allowed_values", "allowed_values"},
 			},
 			// Update - unset optionals
 			{
@@ -1004,30 +1004,28 @@ func TestAcc_Tag_NoAllowedValues_DisableExperimentFlag(t *testing.T) {
 }
 
 func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
-	t.Skip("Skipped: allowed_values is a Set type which does not preserve ordering; allowed_values_sequence depends on order; this will be addressed in the follow-up PR where this test will be unskipped")
-
 	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	var viewId sdk.SchemaObjectIdentifier
 
 	withSeqInitial := model.TagBase("test", tagId).
 		WithPropagateEnum(sdk.TagPropagationOnDependency).
-		WithAllowedValues("confidential", "internal", "public").
+		WithOrderedAllowedValues("confidential", "internal", "public").
 		WithOnConflictAllowedValuesSequence()
 
 	withSeqReordered := model.TagBase("test", tagId).
 		WithPropagateEnum(sdk.TagPropagationOnDependency).
-		WithAllowedValues("public", "internal", "confidential").
+		WithOrderedAllowedValues("public", "internal", "confidential").
 		WithOnConflictAllowedValuesSequence()
 
 	withCustomConflict := model.TagBase("test", tagId).
 		WithPropagateEnum(sdk.TagPropagationOnDependency).
-		WithAllowedValues("public", "internal", "confidential").
+		WithOrderedAllowedValues("public", "internal", "confidential").
 		WithOnConflictCustomValue("confidential")
 
 	withSeqAgain := model.TagBase("test", tagId).
 		WithPropagateEnum(sdk.TagPropagationOnDependency).
-		WithAllowedValues("public", "internal", "confidential").
+		WithOrderedAllowedValues("public", "internal", "confidential").
 		WithOnConflictAllowedValuesSequence()
 
 	basic := model.TagBase("test", tagId).
@@ -1048,7 +1046,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 						HasPropagateEnum(sdk.TagPropagationOnDependency).
 						HasAllowedValuesUnordered("confidential", "internal", "public"),
 					resourceassert.TagResource(t, withSeqInitial.ResourceReference()).
-						HasOnConflictAllowedValuesSequence(),
+						HasOnConflictAllowedValuesSequence().
+						HasOrderedAllowedValues("confidential", "internal", "public"),
 				),
 			},
 			// Set up conflicting dependency (tag must exist first) and verify propagated value
@@ -1059,6 +1058,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				},
 				Config: config.FromModels(t, withSeqInitial),
 				Check: assertThat(t,
+					// "confidential" is first in sequence but not assigned to either table;
+					// "internal" is second and assigned to table1 → first match → propagated value
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "internal"),
 				),
 			},
@@ -1068,15 +1069,15 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				ResourceName:            withSeqInitial.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"on_conflict"},
+				ImportStateVerifyIgnore: []string{"on_conflict", "ordered_allowed_values", "allowed_values"},
 			},
 			// Update allowed_values order ONLY → "public" is now first match → view should get "public"
-			// TODO(follow-up PR): this step will fail until allowed_values is changed from Set to List
 			{
 				Config: config.FromModels(t, withSeqReordered),
 				Check: assertThat(t,
 					resourceassert.TagResource(t, withSeqReordered.ResourceReference()).
-						HasOnConflictAllowedValuesSequence(),
+						HasOnConflictAllowedValuesSequence().
+						HasOrderedAllowedValues("public", "internal", "confidential"),
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "public"),
 				),
 			},
@@ -1094,7 +1095,8 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				Config: config.FromModels(t, withSeqAgain),
 				Check: assertThat(t,
 					resourceassert.TagResource(t, withSeqAgain.ResourceReference()).
-						HasOnConflictAllowedValuesSequence(),
+						HasOnConflictAllowedValuesSequence().
+						HasOrderedAllowedValues("public", "internal", "confidential"),
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "public"),
 				),
 			},
@@ -1109,6 +1111,132 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 						HasOnConflictEmpty(),
 					// Snowflake does not remove already-propagated tags when UNSET PROPAGATE is issued
 					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "public"),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_Tag_AllowedValuesSequence_AllOperations exercises all allowed_values mutation operations
+// (add, remove, reorder, and combinations) while on_conflict=allowed_values_sequence is active,
+// asserting that the propagated conflict value on a dependent view updates correctly after each change.
+func TestAcc_Tag_AllowedValuesSequence_AllOperations(t *testing.T) {
+	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	var viewId sdk.SchemaObjectIdentifier
+
+	// Step 1: Create with initial order [alpha, beta, gamma] → conflict tables have "beta" and "gamma"
+	// → "beta" appears first in sequence among conflicting values → propagated value = "beta"
+	step1 := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOrderedAllowedValues("alpha", "beta", "gamma").
+		WithOnConflictAllowedValuesSequence()
+
+	// Step 2: Reorder to [gamma, beta, alpha] → "gamma" is now first match → propagated = "gamma"
+	step2Reorder := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOrderedAllowedValues("gamma", "beta", "alpha").
+		WithOnConflictAllowedValuesSequence()
+
+	// Step 3: Add new value "delta" at the front [delta, gamma, beta, alpha]
+	// → "gamma" still first match among conflicting values ("beta","gamma") → propagated = "gamma"
+	step3AddValue := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOrderedAllowedValues("delta", "gamma", "beta", "alpha").
+		WithOnConflictAllowedValuesSequence()
+
+	// Step 4: Remove "gamma" → [delta, beta, alpha]
+	// → only "beta" remains among conflicting values → propagated = "beta"
+	step4RemoveValue := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOrderedAllowedValues("delta", "beta", "alpha").
+		WithOnConflictAllowedValuesSequence()
+
+	// Step 5: Combined: remove "delta", add "gamma" back, reorder → [alpha, gamma, beta]
+	// → "gamma" appears before "beta" → propagated = "gamma"
+	step5Combined := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOrderedAllowedValues("alpha", "gamma", "beta").
+		WithOnConflictAllowedValuesSequence()
+
+	// Step 6: Reorder so "beta" comes first → [beta, gamma, alpha]
+	// → "beta" appears before "gamma" → propagated = "beta"
+	step6ReorderAgain := model.TagBase("test", tagId).
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOrderedAllowedValues("beta", "gamma", "alpha").
+		WithOnConflictAllowedValuesSequence()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Step 1: Create tag, set up conflict, verify initial propagation
+			{
+				Config: config.FromModels(t, step1),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, step1.ResourceReference()).
+						HasOrderedAllowedValues("alpha", "beta", "gamma").
+						HasOnConflictAllowedValuesSequence(),
+				),
+			},
+			{
+				PreConfig: func() {
+					view := testClient().Tag.SetupTagPropagationConflictOnView(t, tagId, "beta", "gamma")
+					viewId = view.ID()
+				},
+				Config: config.FromModels(t, step1),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, step1.ResourceReference()).
+						HasOrderedAllowedValues("alpha", "beta", "gamma"),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "beta"),
+				),
+			},
+			// Step 2: Reorder only → "gamma" becomes first match
+			{
+				Config: config.FromModels(t, step2Reorder),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, step2Reorder.ResourceReference()).
+						HasOrderedAllowedValues("gamma", "beta", "alpha"),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "gamma"),
+				),
+			},
+			// Step 3: Add new value → "gamma" still first match among conflicting values
+			{
+				Config: config.FromModels(t, step3AddValue),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, step3AddValue.ResourceReference()).
+						HasOrderedAllowedValues("delta", "gamma", "beta", "alpha"),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "gamma"),
+				),
+			},
+			// Step 4: Remove "gamma" → only "beta" left among conflicting
+			{
+				Config: config.FromModels(t, step4RemoveValue),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, step4RemoveValue.ResourceReference()).
+						HasOrderedAllowedValues("delta", "beta", "alpha"),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "beta"),
+				),
+			},
+			// Step 5: Combined remove+add+reorder → "gamma" before "beta"
+			{
+				Config: config.FromModels(t, step5Combined),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, step5Combined.ResourceReference()).
+						HasOrderedAllowedValues("alpha", "gamma", "beta"),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "gamma"),
+				),
+			},
+			// Step 6: Reorder again → "beta" before "gamma"
+			{
+				Config: config.FromModels(t, step6ReorderAgain),
+				Check: assertThat(t,
+					resourceassert.TagResource(t, step6ReorderAgain.ResourceReference()).
+						HasOrderedAllowedValues("beta", "gamma", "alpha"),
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "beta"),
 				),
 			},
 		},
@@ -1204,6 +1332,19 @@ func TestAcc_Tag_Validations(t *testing.T) {
 	onConflictWithoutPropagate := model.TagBase("test", id).
 		WithOnConflictCustomValue("FAIL")
 
+	allowedValuesWithOrderedAllowedValues := model.TagBase("test", id).
+		WithAllowedValues("a", "b").
+		WithOrderedAllowedValues("a", "b")
+
+	orderedAllowedValuesWithNoAllowedValues := model.TagBase("test", id).
+		WithOrderedAllowedValues("a", "b").
+		WithNoAllowedValues(true)
+
+	allowedValuesSequenceWithAllowedValues := model.TagBase("test", id).
+		WithAllowedValues("a", "b").
+		WithPropagateEnum(sdk.TagPropagationOnDependency).
+		WithOnConflictAllowedValuesSequence()
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tagsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1220,6 +1361,23 @@ func TestAcc_Tag_Validations(t *testing.T) {
 				Config:      config.FromModels(t, onConflictWithoutPropagate),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("\"on_conflict\": all of `on_conflict,propagate` must be specified"),
+			},
+			// allowed_values conflicts with ordered_allowed_values
+			{
+				Config:      config.FromModels(t, allowedValuesWithOrderedAllowedValues),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"allowed_values": conflicts with ordered_allowed_values`),
+			},
+			// ordered_allowed_values conflicts with no_allowed_values
+			{
+				Config:      config.FromModels(t, orderedAllowedValuesWithNoAllowedValues),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"ordered_allowed_values": conflicts with no_allowed_values`),
+			},
+			// allowed_values_sequence requires ordered_allowed_values, not allowed_values
+			{
+				Config:      config.FromModels(t, allowedValuesSequenceWithAllowedValues),
+				ExpectError: regexp.MustCompile(`on_conflict.allowed_values_sequence requires ordered_allowed_values to be set`),
 			},
 		},
 	})

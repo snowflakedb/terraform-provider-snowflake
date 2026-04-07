@@ -14,8 +14,9 @@ type TagModel struct {
 	Database           tfconfig.Variable `json:"database,omitempty"`
 	Schema             tfconfig.Variable `json:"schema,omitempty"`
 	Name               tfconfig.Variable `json:"name,omitempty"`
-	AllowedValues      tfconfig.Variable `json:"allowed_values,omitempty"`
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
+	AllowedValues        tfconfig.Variable `json:"allowed_values,omitempty"`
+	OrderedAllowedValues tfconfig.Variable `json:"ordered_allowed_values,omitempty"`
+	Comment              tfconfig.Variable `json:"comment,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MaskingPolicies    tfconfig.Variable `json:"masking_policies,omitempty"`
 	NoAllowedValues    tfconfig.Variable `json:"no_allowed_values,omitempty"`
