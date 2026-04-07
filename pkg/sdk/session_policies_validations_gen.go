@@ -18,8 +18,24 @@ func (opts *CreateSessionPolicyOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if err := opts.AllowedSecondaryRoles.validate(); err != nil {
+		errs = append(errs, err)
+	}
+	if err := opts.BlockedSecondaryRoles.validate(); err != nil {
+		errs = append(errs, err)
+	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateSessionPolicyOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.AllowedSecondaryRoles) {
+		if everyValueSet(opts.AllowedSecondaryRoles.All, opts.AllowedSecondaryRoles.Roles) {
+			errs = append(errs, errOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "Roles"))
+		}
+	}
+	if valueSet(opts.BlockedSecondaryRoles) {
+		if everyValueSet(opts.BlockedSecondaryRoles.All, opts.BlockedSecondaryRoles.Roles) {
+			errs = append(errs, errOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "Roles"))
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -36,13 +52,29 @@ func (opts *AlterSessionPolicyOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterSessionPolicyOptions", "RenameTo", "Set", "SetTags", "UnsetTags", "Unset"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.SessionIdleTimeoutMins, opts.Set.SessionUiIdleTimeoutMins, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterSessionPolicyOptions.Set", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "Comment"))
+		if !anyValueSet(opts.Set.SessionIdleTimeoutMins, opts.Set.SessionUiIdleTimeoutMins, opts.Set.AllowedSecondaryRoles, opts.Set.BlockedSecondaryRoles, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterSessionPolicyOptions.Set", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"))
+		}
+		if err := opts.Set.AllowedSecondaryRoles.validate(); err != nil {
+			errs = append(errs, err)
+		}
+		if err := opts.Set.BlockedSecondaryRoles.validate(); err != nil {
+			errs = append(errs, err)
+		}
+		if valueSet(opts.Set.AllowedSecondaryRoles) {
+			if everyValueSet(opts.Set.AllowedSecondaryRoles.All, opts.Set.AllowedSecondaryRoles.Roles) {
+				errs = append(errs, errOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "Roles"))
+			}
+		}
+		if valueSet(opts.Set.BlockedSecondaryRoles) {
+			if everyValueSet(opts.Set.BlockedSecondaryRoles.All, opts.Set.BlockedSecondaryRoles.Roles) {
+				errs = append(errs, errOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "Roles"))
+			}
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.SessionIdleTimeoutMins, opts.Unset.SessionUiIdleTimeoutMins, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterSessionPolicyOptions.Unset", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "Comment"))
+		if !anyValueSet(opts.Unset.SessionIdleTimeoutMins, opts.Unset.SessionUiIdleTimeoutMins, opts.Unset.AllowedSecondaryRoles, opts.Unset.BlockedSecondaryRoles, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterSessionPolicyOptions.Unset", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

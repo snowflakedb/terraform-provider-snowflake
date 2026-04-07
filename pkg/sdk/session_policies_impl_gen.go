@@ -11,8 +11,8 @@ import (
 var _ SessionPolicies = (*sessionPolicies)(nil)
 
 var (
-	_ convertibleRow[SessionPolicy]            = new(showSessionPolicyDBRow)
-	_ convertibleRow[SessionPolicyDescription] = new(describeSessionPolicyDBRow)
+	_ convertibleRow[SessionPolicy]         = new(showSessionPolicyDBRow)
+	_ convertibleRow[SessionPolicyProperty] = new(describeSessionPolicyDBRow)
 )
 
 type sessionPolicies struct {
@@ -48,7 +48,9 @@ func (v *sessionPolicies) Show(ctx context.Context, request *ShowSessionPolicyRe
 }
 
 func (v *sessionPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error) {
-	request := NewShowSessionPolicyRequest()
+	request := NewShowSessionPolicyRequest().
+		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithLike(Like{Pattern: String(id.Name())})
 	sessionPolicies, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
@@ -60,15 +62,15 @@ func (v *sessionPolicies) ShowByIDSafely(ctx context.Context, id SchemaObjectIde
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *sessionPolicies) Describe(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicyDescription, error) {
+func (v *sessionPolicies) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SessionPolicyProperty, error) {
 	opts := &DescribeSessionPolicyOptions{
 		name: id,
 	}
-	result, err := validateAndQueryOne[describeSessionPolicyDBRow](v.client, ctx, opts)
+	rows, err := validateAndQuery[describeSessionPolicyDBRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return conversionErrorWrapped(result.convert())
+	return convertRows[describeSessionPolicyDBRow, SessionPolicyProperty](rows)
 }
 
 func (r *CreateSessionPolicyRequest) toOpts() *CreateSessionPolicyOptions {
@@ -79,6 +81,18 @@ func (r *CreateSessionPolicyRequest) toOpts() *CreateSessionPolicyOptions {
 		SessionIdleTimeoutMins:   r.SessionIdleTimeoutMins,
 		SessionUiIdleTimeoutMins: r.SessionUiIdleTimeoutMins,
 		Comment:                  r.Comment,
+	}
+	if r.AllowedSecondaryRoles != nil {
+		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{
+			All:   r.AllowedSecondaryRoles.All,
+			Roles: r.AllowedSecondaryRoles.Roles,
+		}
+	}
+	if r.BlockedSecondaryRoles != nil {
+		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{
+			All:   r.BlockedSecondaryRoles.All,
+			Roles: r.BlockedSecondaryRoles.Roles,
+		}
 	}
 	return opts
 }
@@ -97,11 +111,25 @@ func (r *AlterSessionPolicyRequest) toOpts() *AlterSessionPolicyOptions {
 			SessionUiIdleTimeoutMins: r.Set.SessionUiIdleTimeoutMins,
 			Comment:                  r.Set.Comment,
 		}
+		if r.Set.AllowedSecondaryRoles != nil {
+			opts.Set.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{
+				All:   r.Set.AllowedSecondaryRoles.All,
+				Roles: r.Set.AllowedSecondaryRoles.Roles,
+			}
+		}
+		if r.Set.BlockedSecondaryRoles != nil {
+			opts.Set.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{
+				All:   r.Set.BlockedSecondaryRoles.All,
+				Roles: r.Set.BlockedSecondaryRoles.Roles,
+			}
+		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &SessionPolicyUnset{
 			SessionIdleTimeoutMins:   r.Unset.SessionIdleTimeoutMins,
 			SessionUiIdleTimeoutMins: r.Unset.SessionUiIdleTimeoutMins,
+			AllowedSecondaryRoles:    r.Unset.AllowedSecondaryRoles,
+			BlockedSecondaryRoles:    r.Unset.BlockedSecondaryRoles,
 			Comment:                  r.Unset.Comment,
 		}
 	}
@@ -117,7 +145,13 @@ func (r *DropSessionPolicyRequest) toOpts() *DropSessionPolicyOptions {
 }
 
 func (r *ShowSessionPolicyRequest) toOpts() *ShowSessionPolicyOptions {
-	opts := &ShowSessionPolicyOptions{}
+	opts := &ShowSessionPolicyOptions{
+		Like:       r.Like,
+		In:         r.In,
+		On:         r.On,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
+	}
 	return opts
 }
 
@@ -131,8 +165,8 @@ func (r showSessionPolicyDBRow) convert() (*SessionPolicy, error) {
 		Kind:          r.Kind,
 		Owner:         r.Owner,
 		Comment:       r.Comment,
-		Options:       r.Options,
 		OwnerRoleType: r.OwnerRoleType,
+		Options:       r.Options,
 	}, nil
 }
 
@@ -143,16 +177,12 @@ func (r *DescribeSessionPolicyRequest) toOpts() *DescribeSessionPolicyOptions {
 	return opts
 }
 
-func (r describeSessionPolicyDBRow) convert() (*SessionPolicyDescription, error) {
+func (r describeSessionPolicyDBRow) convert() (*SessionPolicyProperty, error) {
 	// adjusted manually
-	sessionPolicyDescription := SessionPolicyDescription{
-		CreatedOn:                r.CreatedOn,
-		Name:                     r.Name,
-		SessionIdleTimeoutMins:   r.SessionIdleTimeoutMins,
-		SessionUIIdleTimeoutMins: r.SessionUiIdleTimeoutMins,
-	}
-	if r.Comment.Valid {
-		sessionPolicyDescription.Comment = r.Comment.String
-	}
-	return &sessionPolicyDescription, nil
+	return &SessionPolicyProperty{
+		Property:    r.Property,
+		Value:       r.Value,
+		Default:     r.Default,
+		Description: r.Description,
+	}, nil
 }
