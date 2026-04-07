@@ -27,10 +27,9 @@ func TestAcc_Pipe(t *testing.T) {
 	stageModel := model.Stage("test", stageId.DatabaseName(), stageId.SchemaName(), stageId.Name()).
 		WithComment("Terraform acceptance test")
 
-	pipeModel := model.PipeWithId("test", pipeId, "").
+	pipeModel := model.PipeWithIdCopyFromStageIntoTable("test", pipeId, tableModel.ResourceReference(), stageModel.ResourceReference()).
 		WithComment("Terraform acceptance test").
-		WithAutoIngest(false).
-		WithCopyStatementCopyFromStageIntoTable(tableModel.ResourceReference(), stageModel.ResourceReference())
+		WithAutoIngest(false)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
