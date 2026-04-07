@@ -25,6 +25,7 @@ import (
 
 func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	newWarehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	newComment := random.Comment()
 
@@ -35,12 +36,13 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 		WithMaxQueryPerformanceLevel(string(sdk.MaxQueryPerformanceLevelLarge)).
 		WithStatementQueuedTimeoutInSeconds(300).
 		WithStatementTimeoutInSeconds(86400)
-	warehouseModelUpdated := model.WarehouseAdaptiveWithId(warehouseId).
+	warehouseModelUpdated := model.WarehouseAdaptiveWithId(newWarehouseId).
 		WithComment(newComment).
 		WithQueryThroughputMultiplier(4).
 		WithMaxQueryPerformanceLevel(string(sdk.MaxQueryPerformanceLevelSmall)).
 		WithStatementQueuedTimeoutInSeconds(600).
 		WithStatementTimeoutInSeconds(43200)
+	warehouseModelRenamedMinimal := model.WarehouseAdaptiveWithId(newWarehouseId)
 
 	ref := warehouseModel.ResourceReference()
 	externalQueryThroughputMultiplier := 10
@@ -84,13 +86,14 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 
 	updatedAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.WarehouseAdaptiveResource(t, ref).
-			HasNameString(warehouseId.Name()).
+			HasNameString(newWarehouseId.Name()).
 			HasCommentString(newComment).
 			HasQueryThroughputMultiplier(4).
 			HasStatementQueuedTimeoutInSeconds(600).
-			HasStatementTimeoutInSeconds(43200),
+			HasStatementTimeoutInSeconds(43200).
+			HasFullyQualifiedNameString(newWarehouseId.FullyQualifiedName()),
 		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
-			HasName(warehouseId.Name()).
+			HasName(newWarehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasComment(newComment).
 			HasQueryThroughputMultiplier(4),
@@ -98,12 +101,14 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 
 	unsetAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.WarehouseAdaptiveResource(t, ref).
-			HasNameString(warehouseId.Name()).
+			HasNameString(newWarehouseId.Name()).
 			HasCommentEmpty().
 			HasQueryThroughputMultiplierString(r.IntDefaultString).
 			HasStatementQueuedTimeoutInSeconds(0).
-			HasStatementTimeoutInSeconds(172800),
+			HasStatementTimeoutInSeconds(172800).
+			HasFullyQualifiedNameString(newWarehouseId.FullyQualifiedName()),
 		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+			HasName(newWarehouseId.Name()).
 			HasCommentEmpty().
 			HasQueryThroughputMultiplier(2),
 	}
@@ -138,12 +143,13 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// update fields
+			// rename and update fields
 			{
 				Config: accconfig.FromModels(t, warehouseModelUpdated),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "name", tfjson.ActionUpdate, sdk.String(warehouseId.Name()), sdk.String(newWarehouseId.Name())),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(comment), sdk.String(newComment)),
 						planchecks.ExpectChange(ref, "query_throughput_multiplier", tfjson.ActionUpdate, sdk.String("2"), sdk.String("4")),
 						planchecks.ExpectChange(ref, "max_query_performance_level", tfjson.ActionUpdate, sdk.String(string(sdk.MaxQueryPerformanceLevelLarge)), sdk.String(string(sdk.MaxQueryPerformanceLevelSmall))),
@@ -157,8 +163,8 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, warehouseModelUpdated),
 				PreConfig: func() {
-					testClient().Warehouse.DropWarehouseFunc(t, warehouseId)()
-					testClient().Warehouse.CreateAdaptiveWithOptions(t, warehouseId, &sdk.CreateAdaptiveWarehouseOptions{
+					testClient().Warehouse.DropWarehouseFunc(t, newWarehouseId)()
+					testClient().Warehouse.CreateAdaptiveWithOptions(t, newWarehouseId, &sdk.CreateAdaptiveWarehouseOptions{
 						Comment:                         sdk.String(externalComment),
 						QueryThroughputMultiplier:       sdk.Int(externalQueryThroughputMultiplier),
 						StatementTimeoutInSeconds:       sdk.Int(externalStatementTimeout),
@@ -180,7 +186,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			},
 			// unset optional fields back to defaults
 			{
-				Config: accconfig.FromModels(t, warehouseModel),
+				Config: accconfig.FromModels(t, warehouseModelRenamedMinimal),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
