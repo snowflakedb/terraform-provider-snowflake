@@ -23,28 +23,24 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("Identifier for the adaptive warehouse; must be unique for your account."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
-		ForceNew:    true,
 		Description: "Specifies a comment for the adaptive warehouse.",
 	},
 	"max_query_performance_level": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		ForceNew:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToMaxQueryPerformanceLevel),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToMaxQueryPerformanceLevel),
-		Description:      fmt.Sprintf("Specifies the maximum query performance level for the adaptive warehouse. Determines the initial compute capacity. Can only be set at creation time. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllMaxQueryPerformanceLevels)),
+		Description:      fmt.Sprintf("Specifies the maximum query performance level for the adaptive warehouse. Determines the initial compute capacity. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllMaxQueryPerformanceLevels)),
 	},
 	"query_throughput_multiplier": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		ForceNew:         true,
 		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 		Description:      "Specifies the query throughput multiplier for the adaptive warehouse.",
@@ -53,7 +49,6 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		Type:             schema.TypeInt,
 		Optional:         true,
 		Computed:         true,
-		ForceNew:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 		Description:      "Object parameter that specifies the time, in seconds, a SQL statement (query, DDL, DML, etc.) can be queued on a warehouse before it is canceled by the system.",
 	},
@@ -61,7 +56,6 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		Type:             schema.TypeInt,
 		Optional:         true,
 		Computed:         true,
-		ForceNew:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(0, 604800)),
 		Description:      "Specifies the time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system.",
 	},
@@ -95,8 +89,7 @@ func WarehouseAdaptive() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingCreateWrapper(resources.WarehouseAdaptive, CreateWarehouseAdaptive)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingReadWrapper(resources.WarehouseAdaptive, ReadWarehouseAdaptiveFunc(true))),
-		// TODO: uncomment after ALTER is cleared.
-		// UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateAdaptiveWarehouse)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateWarehouseAdaptive)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingDeleteWrapper(resources.WarehouseAdaptive, deleteFunc)),
 		Description:   "Resource used to manage adaptive warehouse objects. Adaptive warehouses automatically scale compute resources based on workload. For more information, check [adaptive warehouse documentation](https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses).",
 
@@ -106,13 +99,12 @@ func WarehouseAdaptive() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseAdaptive, customdiff.All(
-			// TODO(SNOW-3174066): uncomment after ALTER is cleared.
-			// ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier"),
-			// ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ParametersAttributeName,
-			// 	strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
-			// 	strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
-			// ),
-			// ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier"),
+			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ParametersAttributeName,
+				strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
+				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
+			),
+			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, FullyQualifiedNameAttributeName, "name"),
 			ParametersCustomDiff(
 				warehouseParametersProvider,
 				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementQueuedTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
@@ -282,6 +274,7 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 	if err := errors.Join(
 		intAttributeWithSpecialDefaultUpdate(d, "query_throughput_multiplier", &set.QueryThroughputMultiplier, &unset.QueryThroughputMultiplier),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+		attributeMappedValueUpdate(d, "max_query_performance_level", &set.MaxQueryPerformanceLevel, &unset.MaxQueryPerformanceLevel, sdk.ToMaxQueryPerformanceLevel),
 	); err != nil {
 		return diag.FromErr(err)
 	}

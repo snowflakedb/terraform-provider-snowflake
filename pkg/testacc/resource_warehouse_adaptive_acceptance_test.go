@@ -17,6 +17,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -104,7 +105,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasStatementTimeoutInSeconds(172800),
 		resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
 			HasCommentEmpty().
-			HasQueryThroughputMultiplier(0),
+			HasQueryThroughputMultiplier(2),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -142,8 +143,12 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, warehouseModelUpdated),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChangeDeleteCreate(ref, "comment", sdk.String(comment), sdk.String(newComment)),
-						planchecks.ExpectChangeDeleteCreate(ref, "query_throughput_multiplier", sdk.String("2"), sdk.String("4")),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(comment), sdk.String(newComment)),
+						planchecks.ExpectChange(ref, "query_throughput_multiplier", tfjson.ActionUpdate, sdk.String("2"), sdk.String("4")),
+						planchecks.ExpectChange(ref, "max_query_performance_level", tfjson.ActionUpdate, sdk.String(string(sdk.MaxQueryPerformanceLevelLarge)), sdk.String(string(sdk.MaxQueryPerformanceLevelSmall))),
+						planchecks.ExpectChange(ref, "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("300"), sdk.String("600")),
+						planchecks.ExpectChange(ref, "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("86400"), sdk.String("43200")),
 					},
 				},
 				Check: assertThat(t, updatedAssertions...),
@@ -163,11 +168,12 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChangeDeleteCreate(ref, "query_throughput_multiplier", sdk.String("10"), sdk.String("4")),
-						planchecks.ExpectChangeDeleteCreate(ref, "statement_timeout_in_seconds", sdk.String("99999"), sdk.String("43200")),
-						planchecks.ExpectChangeDeleteCreate(ref, "statement_queued_timeout_in_seconds", sdk.String("1200"), sdk.String("600")),
-						planchecks.ExpectChangeDeleteCreate(ref, "max_query_performance_level", sdk.String(string(sdk.MaxQueryPerformanceLevelMedium)), sdk.String(string(sdk.MaxQueryPerformanceLevelSmall))),
-						planchecks.ExpectChangeDeleteCreate(ref, "comment", sdk.String(externalComment), sdk.String(newComment)),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "query_throughput_multiplier", tfjson.ActionUpdate, sdk.String("10"), sdk.String("4")),
+						planchecks.ExpectChange(ref, "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("99999"), sdk.String("43200")),
+						planchecks.ExpectChange(ref, "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("1200"), sdk.String("600")),
+						planchecks.ExpectChange(ref, "max_query_performance_level", tfjson.ActionUpdate, sdk.String(string(sdk.MaxQueryPerformanceLevelMedium)), sdk.String(string(sdk.MaxQueryPerformanceLevelSmall))),
+						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(externalComment), sdk.String(newComment)),
 					},
 				},
 				Check: assertThat(t, updatedAssertions...),
@@ -177,11 +183,12 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, warehouseModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						planchecks.ExpectChangeDeleteCreate(ref, "comment", sdk.String(newComment), nil),
-						planchecks.ExpectChangeDeleteCreate(ref, "query_throughput_multiplier", sdk.String("4"), sdk.String(r.IntDefaultString)),
-						planchecks.ExpectChangeDeleteCreate(ref, "statement_queued_timeout_in_seconds", sdk.String("600"), nil),
-						planchecks.ExpectChangeDeleteCreate(ref, "statement_timeout_in_seconds", sdk.String("43200"), nil),
-						planchecks.ExpectChangeDeleteCreate(ref, "max_query_performance_level", sdk.String(string(sdk.MaxQueryPerformanceLevelSmall)), nil),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(newComment), nil),
+						planchecks.ExpectChange(ref, "query_throughput_multiplier", tfjson.ActionUpdate, sdk.String("4"), sdk.String(r.IntDefaultString)),
+						planchecks.ExpectChange(ref, "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("600"), nil),
+						planchecks.ExpectChange(ref, "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("43200"), nil),
+						planchecks.ExpectChange(ref, "max_query_performance_level", tfjson.ActionUpdate, sdk.String(string(sdk.MaxQueryPerformanceLevelSmall)), nil),
 					},
 				},
 				Check: assertThat(t, unsetAssertions...),
