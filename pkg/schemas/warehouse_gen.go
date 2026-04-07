@@ -158,6 +158,13 @@ var ShowAdaptiveWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommo
 
 var _ = ShowAdaptiveWarehouseSchema
 
+// ShowAllWarehousesSchema merges common, regular, and adaptive fields.
+// Used in the warehouses data source to cover all warehouse types in a single schema.
+// Adjusted manually.
+var ShowAllWarehousesSchema = collections.MergeMaps(ShowRegularWarehouseSchema, showWarehouseSchemaAdaptive)
+
+var _ = ShowAllWarehousesSchema
+
 // commonWarehouseToSchema maps fields present in all warehouse types (showWarehouseSchemaCommon).
 // Adjusted manually.
 func commonWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
@@ -188,7 +195,7 @@ func commonWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	return warehouseSchema
 }
 
-func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+func RegularWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := commonWarehouseToSchema(warehouse)
 	if warehouse.Size != nil {
 		warehouseSchema["size"] = string((*warehouse.Size))
@@ -220,18 +227,20 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	if warehouse.Generation != nil {
 		warehouseSchema["generation"] = string((*warehouse.Generation))
 	}
-	// Adjusted manually.
-	if warehouse.MaxQueryPerformanceLevel != nil {
-		warehouseSchema["max_query_performance_level"] = string(*warehouse.MaxQueryPerformanceLevel)
-	}
-	// Adjusted manually.
-	if warehouse.QueryThroughputMultiplier != nil {
-		warehouseSchema["query_throughput_multiplier"] = *warehouse.QueryThroughputMultiplier
-	}
 	return warehouseSchema
 }
 
-var _ = WarehouseToSchema
+var _ = RegularWarehouseToSchema
+
+// WarehouseToSchema maps a Warehouse to ShowAllWarehousesSchema fields.
+// Dispatches to the adaptive or regular mapper based on warehouse type.
+// Adjusted manually.
+func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+	if warehouse.Type == sdk.WarehouseTypeAdaptive {
+		return WarehouseAdaptiveToSchema(warehouse)
+	}
+	return RegularWarehouseToSchema(warehouse)
+}
 
 // WarehouseAdaptiveToSchema maps fields in the show output of an adaptive warehouse (showWarehouseSchemaAdaptive).
 // Adjusted manually.
