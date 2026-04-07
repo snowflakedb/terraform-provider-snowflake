@@ -178,13 +178,19 @@ jobs:
           body: |
             Integration tests ${{ job.status }} for [${{ github.event.client_payload.slash_command.args.named.sha || github.event.pull_request.head.sha }}](https://github.com/snowflakedb/terraform-provider-snowflake/actions/runs/${{ github.run_id }})
 
+      # For fork PRs, tests run via repository_dispatch (triggered by /ok-to-test),
+      # but the resulting check runs are tied to the default branch, not the fork PR.
+      # This step updates the (skipped) check run on the fork PR's head SHA so the
+      # PR status reflects the actual test outcome. It resolves the job's display name
+      # via job.check_run_id (since github.job returns the job_id, not the display name)
+      # and uses it to find the matching check run on the fork PR's commit.
       - name: Set fork job status
         uses: actions/github-script@v6
         if: ${{ always() }}
         id: update_check_run
         env:
           number: ${{ github.event.client_payload.pull_request.number }}
-          job: ${{ github.job }}
+          check_run_id: ${{ job.check_run_id }}
           # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
           conclusion: ${{ job.status }}
           sha: ${{ github.event.client_payload.slash_command.args.named.sha }}
@@ -196,12 +202,18 @@ jobs:
               console.log("Not repository_dispatch... nothing to do!");
               return process.env.event_name;
             }
+            const { data: currentCheck } = await github.rest.checks.get({
+              ...context.repo,
+              check_run_id: parseInt(process.env.check_run_id)
+            });
+            const jobName = currentCheck.name;
+            console.log(`Current job check run name: ${jobName}`);
             const ref = process.env.sha;
             const { data: checks } = await github.rest.checks.listForRef({
               ...context.repo,
               ref
             });
-            const check = checks.check_runs.filter(c => c.name === process.env.job);
+            const check = checks.check_runs.filter(c => c.name === jobName);
             console.log(check);
             const { data: result } = await github.rest.checks.update({
               ...context.repo,
