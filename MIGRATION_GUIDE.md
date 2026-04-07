@@ -30,7 +30,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 We added support for [tag propagation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation) to the `snowflake_tag` resource. The following new fields are now available:
 
-- `propagate` - Specifies the propagation method for the tag. Valid values are: `ON_DEPENDENCY`, `ON_DATA_MOVEMENT`, `ON_DEPENDENCY_AND_DATA_MOVEMENT`.
+- `propagate` - Controls how the tag propagates. Valid values are `ON_DEPENDENCY`, `ON_DATA_MOVEMENT`, `ON_DEPENDENCY_AND_DATA_MOVEMENT`, and `NONE`. Omitting this attribute is equivalent to `NONE`.
 - `on_conflict` - Configures how conflicting tag values from multiple source objects are resolved during propagation. Requires `propagate` to be set. Supports two mutually exclusive options:
   - `on_conflict.0.allowed_values_sequence` - Resolves conflicts using the order defined in the tag's `allowed_values`.
   - `on_conflict.0.custom_value` - Resolves conflicts by using a custom string value.

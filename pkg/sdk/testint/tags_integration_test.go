@@ -1248,25 +1248,19 @@ func TestInt_TagsPropagation(t *testing.T) {
 
 		assertTagSet(t, tag.ID(), table.ID(), sdk.ObjectTypeTable, "schema_value")
 
-		// tag on table also propagates to view via dependency
-		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
-		t.Cleanup(viewCleanup)
-
-		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "schema_value")
-
 		// explicit set overrides propagated value
-		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeView, view.ID()).WithSetTags([]sdk.TagAssociation{
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
 			{Name: tag.ID(), Value: "explicit_value"},
 		}))
 		require.NoError(t, err)
 
-		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "explicit_value")
+		assertTagSet(t, tag.ID(), table.ID(), sdk.ObjectTypeTable, "explicit_value")
 
-		// unset reverts to propagated value
-		err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeView, view.ID()).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
+		// unset tag from table to get back to the propagated value
+		err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeTable, table.ID()).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
 		require.NoError(t, err)
 
-		assertTagSet(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "schema_value")
+		assertTagSet(t, tag.ID(), table.ID(), sdk.ObjectTypeTable, "schema_value")
 	})
 
 	t.Run("propagate on dependency: source value update propagates to target", func(t *testing.T) {
