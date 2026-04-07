@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -471,4 +472,83 @@ func TestInt_SafeRevokeFromShareOnNonExistingSchemaLevelObjects(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	}
+}
+
+func TestInt_SafeRevokeAccountRole(t *testing.T) {
+	client := testClient(t)
+	ctx := context.Background()
+
+	role, roleCleanup := testClientHelper().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	parentRole, parentRoleCleanup := testClientHelper().Role.CreateRole(t)
+	t.Cleanup(parentRoleCleanup)
+
+	t.Run("revoke non-existing role", func(t *testing.T) {
+		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(NonExistingAccountObjectIdentifier, sdk.RevokeRole{Role: sdk.Pointer(parentRole.ID())}))
+		assert.NoError(t, err)
+	})
+
+	t.Run("revoke from non-existing grantee role", func(t *testing.T) {
+		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(role.ID(), sdk.RevokeRole{Role: &NonExistingAccountObjectIdentifier}))
+		assert.NoError(t, err)
+	})
+
+	t.Run("revoke role that was never granted", func(t *testing.T) {
+		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(role.ID(), sdk.RevokeRole{Role: sdk.Pointer(parentRole.ID())}))
+		assert.NoError(t, err)
+	})
+}
+
+func TestInt_SafeRevokeDatabaseRole(t *testing.T) {
+	client := testClient(t)
+	ctx := context.Background()
+
+	databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	accountRole, accountRoleCleanup := testClientHelper().Role.CreateRole(t)
+	t.Cleanup(accountRoleCleanup)
+
+	t.Run("revoke non-existing database role from account role", func(t *testing.T) {
+		err := client.DatabaseRoles.RevokeSafely(ctx, sdk.NewRevokeDatabaseRoleRequest(NonExistingDatabaseObjectIdentifier).WithAccountRole(accountRole.ID()))
+		assert.NoError(t, err)
+	})
+
+	t.Run("revoke database role from non-existing account role", func(t *testing.T) {
+		err := client.DatabaseRoles.RevokeSafely(ctx, sdk.NewRevokeDatabaseRoleRequest(databaseRole.ID()).WithAccountRole(NonExistingAccountObjectIdentifier))
+		assert.NoError(t, err)
+	})
+
+	t.Run("revoke database role that was never granted", func(t *testing.T) {
+		err := client.DatabaseRoles.RevokeSafely(ctx, sdk.NewRevokeDatabaseRoleRequest(databaseRole.ID()).WithAccountRole(accountRole.ID()))
+		assert.NoError(t, err)
+	})
+}
+
+func TestInt_SafeRevokeApplicationRole(t *testing.T) {
+	client := testClient(t)
+	ctx := context.Background()
+
+	app := createApp(t)
+	applicationRoleName := testvars.ApplicationRole1
+	applicationRoleId := sdk.NewDatabaseObjectIdentifier(app.Name, applicationRoleName)
+
+	accountRole, accountRoleCleanup := testClientHelper().Role.CreateRole(t)
+	t.Cleanup(accountRoleCleanup)
+
+	t.Run("revoke non-existing application role from account role", func(t *testing.T) {
+		err := client.ApplicationRoles.RevokeSafely(ctx, sdk.NewRevokeApplicationRoleRequest(NonExistingDatabaseObjectIdentifier).WithFrom(*sdk.NewKindOfRoleRequest().WithRoleName(accountRole.ID())))
+		assert.NoError(t, err)
+	})
+
+	t.Run("revoke application role from non-existing account role", func(t *testing.T) {
+		err := client.ApplicationRoles.RevokeSafely(ctx, sdk.NewRevokeApplicationRoleRequest(applicationRoleId).WithFrom(*sdk.NewKindOfRoleRequest().WithRoleName(accountRole.ID())))
+		assert.NoError(t, err)
+	})
+
+	t.Run("revoke application role that was never granted", func(t *testing.T) {
+		err := client.ApplicationRoles.RevokeSafely(ctx, sdk.NewRevokeApplicationRoleRequest(NonExistingDatabaseObjectIdentifier).WithFrom(*sdk.NewKindOfRoleRequest().WithRoleName(NonExistingAccountObjectIdentifier)))
+		assert.NoError(t, err)
+	})
 }
