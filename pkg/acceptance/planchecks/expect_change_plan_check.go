@@ -91,8 +91,14 @@ func (e expectChangePlanCheck) CheckPlan(_ context.Context, req plancheck.CheckP
 			}
 		}
 
-		if !slices.Equal(change.Change.Actions, e.actions) {
-			result = append(result, fmt.Errorf("expect change: expected actions %v for %s, got: %v", e.actions, e.resourceAddress, change.Change.Actions))
+		if len(e.actions) > 1 {
+			if !slices.Equal(change.Change.Actions, e.actions) {
+				result = append(result, fmt.Errorf("expect change: expected actions %v for %s, got: %v", e.actions, e.resourceAddress, change.Change.Actions))
+			}
+		} else {
+			if !slices.Contains(change.Change.Actions, e.actions[0]) {
+				result = append(result, fmt.Errorf("expect change: expected action %s for %s, got: %v", e.actions[0], e.resourceAddress, change.Change.Actions))
+			}
 		}
 	}
 
