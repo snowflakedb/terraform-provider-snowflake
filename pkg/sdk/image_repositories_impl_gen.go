@@ -108,7 +108,7 @@ func (r *ShowImageRepositoryRequest) toOpts() *ShowImageRepositoryOptions {
 
 func (r imageRepositoriesRow) convert() (*ImageRepository, error) {
 	// added manually
-	return &ImageRepository{
+	imageRepository := &ImageRepository{
 		CreatedOn:                r.CreatedOn,
 		Name:                     r.Name,
 		DatabaseName:             r.DatabaseName,
@@ -117,7 +117,12 @@ func (r imageRepositoriesRow) convert() (*ImageRepository, error) {
 		Owner:                    r.Owner,
 		OwnerRoleType:            r.OwnerRoleType,
 		Comment:                  r.Comment,
-		Encryption:               ImageRepositoryEncryptionType(r.Encryption),
 		PrivatelinkRepositoryUrl: r.PrivatelinkRepositoryUrl,
-	}, nil
+	}
+	if encryption, err := ToImageRepositoryEncryptionType(r.Encryption); err != nil {
+		return nil, err
+	} else {
+		imageRepository.Encryption = encryption
+	}
+	return imageRepository, nil
 }
