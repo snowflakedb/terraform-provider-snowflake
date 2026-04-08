@@ -21,8 +21,8 @@ const (
 	ParametersReducedOutput     ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
 	TagsAllowEmptyAllowedValues ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
 	ImportBooleanDefault        ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
-	GrantsSafeDestroy              ExperimentalFeature = "GRANTS_SAFE_DESTROY"
-	TagAssociationSafeDestroy      ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
+	GrantsSafeDestroy           ExperimentalFeature = "GRANTS_SAFE_DESTROY"
+	TagAssociationSafeDestroy   ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
 )
 
 type experimentalFeatureState string
