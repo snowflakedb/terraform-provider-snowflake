@@ -72,7 +72,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 		ValidateDiagFunc: sdkValidation(sdk.ToMfaEnrollmentOption),
 		DiffSuppressFunc: SuppressIfAny(
 			NormalizeAndCompare(sdk.ToMfaEnrollmentOption),
-			// We need a custom diff because when this field is set to OPTIONAL, the value is returned as REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY.
+			// We need a custom diff because when this field is set to OPTIONAL, the value is returned as REQUIRED_PASSWORD_ONLY.
 			func(_, oldRaw, newRaw string, _ *schema.ResourceData) bool {
 				old, err := sdk.ToMfaEnrollmentReadOption(oldRaw)
 				if err != nil {
@@ -82,7 +82,7 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 				if err != nil {
 					return false
 				}
-				return old == sdk.MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly && new == sdk.MfaEnrollmentOptional
+				return old == sdk.MfaEnrollmentReadRequiredPasswordOnly && new == sdk.MfaEnrollmentOptional
 			}),
 	},
 	"client_types": {
