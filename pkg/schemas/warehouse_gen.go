@@ -188,7 +188,7 @@ func commonWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	return warehouseSchema
 }
 
-func RegularWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := commonWarehouseToSchema(warehouse)
 	if warehouse.Size != nil {
 		warehouseSchema["size"] = string((*warehouse.Size))
@@ -223,7 +223,7 @@ func RegularWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	return warehouseSchema
 }
 
-var _ = RegularWarehouseToSchema
+var _ = WarehouseToSchema
 
 // WarehouseAdaptiveToSchema maps fields in the show output of an adaptive warehouse (showWarehouseSchemaAdaptive).
 // Adjusted manually.

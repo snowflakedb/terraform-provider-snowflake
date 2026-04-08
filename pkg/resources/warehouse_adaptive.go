@@ -91,7 +91,7 @@ func WarehouseAdaptive() *schema.Resource {
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingReadWrapper(resources.WarehouseAdaptive, ReadWarehouseAdaptiveFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateWarehouseAdaptive)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingDeleteWrapper(resources.WarehouseAdaptive, deleteFunc)),
-		Description:   "Resource used to manage adaptive warehouse objects. Adaptive warehouses automatically scale compute resources based on workload. For more information, check [adaptive warehouse documentation](https://docs.snowflake.com/en/LIMITEDACCESS/adaptive-warehouses).",
+		Description:   "Resource used to manage adaptive warehouse objects. Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning.",
 
 		Schema: warehouseAdaptiveSchema,
 		Importer: &schema.ResourceImporter{

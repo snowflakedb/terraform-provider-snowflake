@@ -114,7 +114,7 @@ func ReadWarehouses(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 
 		flattenedWarehouses[i] = map[string]any{
-			resources.ShowOutputAttributeName:     []map[string]any{schemas.RegularWarehouseToSchema(&warehouse)},
+			resources.ShowOutputAttributeName:     []map[string]any{schemas.WarehouseToSchema(&warehouse)},
 			resources.DescribeOutputAttributeName: warehouseDescription,
 			resources.ParametersAttributeName:     warehouseParameters,
 		}

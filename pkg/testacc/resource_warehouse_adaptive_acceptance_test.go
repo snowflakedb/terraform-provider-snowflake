@@ -36,6 +36,8 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 		WithMaxQueryPerformanceLevel(string(sdk.MaxQueryPerformanceLevelLarge)).
 		WithStatementQueuedTimeoutInSeconds(300).
 		WithStatementTimeoutInSeconds(86400)
+	warehouseModelWithZeroMultiplier := model.WarehouseAdaptiveWithId(warehouseId).
+		WithQueryThroughputMultiplier(0)
 	warehouseModelUpdated := model.WarehouseAdaptiveWithId(newWarehouseId).
 		WithComment(newComment).
 		WithQueryThroughputMultiplier(4).
@@ -131,6 +133,16 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"max_query_performance_level", "query_throughput_multiplier"},
+			},
+			// set query_throughput_multiplier to 0 (explicit value, distinct from IntDefault sentinel -1)
+			{
+				Config: accconfig.FromModels(t, warehouseModelWithZeroMultiplier),
+				Check: assertThat(t,
+					resourceassert.WarehouseAdaptiveResource(t, ref).
+						HasQueryThroughputMultiplier(0),
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+						HasQueryThroughputMultiplier(0),
+				),
 			},
 			// set all optional fields
 			{

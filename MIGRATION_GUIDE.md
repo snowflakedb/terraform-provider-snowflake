@@ -28,9 +28,9 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(new feature)* New adaptive warehouse resource
 
-We have added a new preview resource for managing adaptive warehouses [snowflake_warehouse_adaptive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive). Please note that at the time of this release, this resource may be not available publicly. It will be available in Public Preview soon. Reach out to your Account Manager for more details.
+We have added a new preview resource for managing adaptive warehouses [snowflake_warehouse_adaptive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive).
 
-Adaptive warehouses are a new Snowflake warehouse type that automatically scales compute resources based on workload demands.
+Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning.
 
 This feature will be marked as stable in a future release. To use it, add `snowflake_warehouse_adaptive_resource` to the `preview_features_enabled` field in the provider configuration.
 
