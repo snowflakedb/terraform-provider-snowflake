@@ -2287,7 +2287,7 @@ func TestAcc_GrantPrivileges_OnObject_HybridTable_ToAccountRole_Fails(t *testing
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnSchemaObject_OnObject_HybridTable"),
 				ConfigVariables: configVariables(sdk.ObjectTypeHybridTable),
-				ExpectError:     regexp.MustCompile("syntax error line 1 at position 28 unexpected 'TABLE"),
+				ExpectError:     regexp.MustCompile("Unsupported feature"),
 			},
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_GrantPrivilegesToAccountRole/OnSchemaObject_OnObject_HybridTable"),
