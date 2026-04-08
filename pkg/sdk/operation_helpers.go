@@ -192,3 +192,14 @@ func SafeShowProgrammaticAccessTokenByName(
 	}
 	return result, nil
 }
+
+// SafeGetTag is a helper function that wraps a GetTag function and handles the case where the target
+// object no longer exists. When the referenced object (e.g. a table, view, schema, database, warehouse)
+// does not exist, Snowflake returns ErrObjectNotExistOrAuthorized or ErrDoesNotExistOrOperationCannotBePerformed.
+func SafeGetTag(_ *Client, getTag func(context.Context, ObjectIdentifier, ObjectIdentifier, ObjectType) (*string, error), ctx context.Context, tagID ObjectIdentifier, objectID ObjectIdentifier, objectType ObjectType) (*string, error) {
+	result, err := getTag(ctx, tagID, objectID, objectType)
+	if errors.Is(err, ErrObjectNotExistOrAuthorized) || errors.Is(err, ErrDoesNotExistOrOperationCannotBePerformed) {
+		return nil, nil
+	}
+	return result, err
+}

@@ -215,3 +215,51 @@ func TestInt_SafeUnsetTagOnNonExistingDatabaseObject(t *testing.T) {
 		})
 	}
 }
+
+func TestInt_GetTagSafely(t *testing.T) {
+	client := testClient(t)
+	ctx := context.Background()
+
+	tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
+	t.Cleanup(tagCleanup)
+
+	table, tableCleanup := testClientHelper().Table.Create(t)
+	t.Cleanup(tableCleanup)
+
+	tagValue := "abc"
+	err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{{Name: tag.ID(), Value: tagValue}}))
+	require.NoError(t, err)
+
+	t.Run("existing tag on existing object", func(t *testing.T) {
+		result, err := client.SystemFunctions.GetTagSafely(ctx, tag.ID(), table.ID(), sdk.ObjectTypeTable)
+		assert.NoError(t, err)
+		assert.Equal(t, &tagValue, result)
+	})
+
+	t.Run("tag not set on existing object", func(t *testing.T) {
+		otherTag, otherTagCleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(otherTagCleanup)
+
+		result, err := client.SystemFunctions.GetTagSafely(ctx, otherTag.ID(), table.ID(), sdk.ObjectTypeTable)
+		assert.NoError(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("non-existing object (non-existing database and schema)", func(t *testing.T) {
+		result, err := client.SystemFunctions.GetTagSafely(ctx, tag.ID(), NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema, sdk.ObjectTypeTable)
+		assert.NoError(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("non-existing object (existing database, non-existing schema)", func(t *testing.T) {
+		result, err := client.SystemFunctions.GetTagSafely(ctx, tag.ID(), NonExistingSchemaObjectIdentifierWithNonExistingSchema, sdk.ObjectTypeTable)
+		assert.NoError(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("non-existing object (existing database and schema)", func(t *testing.T) {
+		result, err := client.SystemFunctions.GetTagSafely(ctx, tag.ID(), NonExistingSchemaObjectIdentifier, sdk.ObjectTypeTable)
+		assert.NoError(t, err)
+		assert.Nil(t, result)
+	})
+}
