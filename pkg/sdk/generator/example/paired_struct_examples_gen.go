@@ -4,14 +4,11 @@ package example
 
 import (
 	"context"
-	"database/sql"
 	"time"
 )
 
 type PairedStructExamples interface {
 	Show(ctx context.Context, request *ShowPairedStructExampleRequest) ([]PairedStructExample, error)
-	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error)
-	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExampleDetail, error)
 }
 
@@ -23,49 +20,45 @@ type ShowPairedStructExampleOptions struct {
 }
 
 type pairedStructExampleRow struct {
-	SnowflakeRegion           string         `db:"snowflake_region"`
-	AccountName               string         `db:"account_name"`
-	StorageType               string         `db:"type"`
-	Name                      string         `db:"name"`
-	RegionGroup               sql.NullString `db:"region_group"`
-	OrganizationName          sql.NullString `db:"organization_name"`
-	IsPrimary                 bool           `db:"is_primary"`
-	IsDefault                 sql.NullBool   `db:"is_default"`
-	Enabled                   sql.NullBool   `db:"enabled"`
-	NextValue                 int            `db:"next_value"`
-	Port                      sql.NullInt64  `db:"port"`
-	RetryLimit                sql.NullInt64  `db:"retry_limit"`
-	CreatedOn                 time.Time      `db:"created_on"`
-	UpdatedAt                 sql.NullTime   `db:"updated_at"`
-	Primary                   string         `db:"primary"`
-	FailoverAllowedToAccounts string         `db:"failover_allowed_to_accounts"`
-	Tags                      string         `db:"tags"`
-	AccountId                 string         `db:"account_id"`
+	ObjectName                string                   `db:"object_name"`
+	BothNonNullableStrings    string                   `db:"both_non_nullable_strings"`
+	StorageTypeDb             string                   `db:"type"`
+	BothNullableStrings       *string                  `db:"both_nullable_strings"`
+	OrganizationName          string                   `db:"organization_name"`
+	IsPrimary                 bool                     `db:"is_primary"`
+	IsDefault                 *bool                    `db:"is_default"`
+	Enabled                   bool                     `db:"enabled"`
+	NextValue                 int                      `db:"next_value"`
+	Port                      *int                     `db:"port"`
+	RetryLimit                int                      `db:"retry_limit"`
+	CreatedOn                 time.Time                `db:"created_on"`
+	UpdatedAt                 *time.Time               `db:"updated_at"`
+	Primary                   ExternalObjectIdentifier `db:"primary"`
+	FailoverAllowedToAccounts []AccountIdentifier      `db:"failover_allowed_to_accounts"`
+	Tags                      []string                 `db:"tags"`
+	AccountId                 AccountObjectIdentifier  `db:"account_id"`
+	SecondAccountId           AccountObjectIdentifier  `db:"second_account_id"`
 }
 
 type PairedStructExample struct {
-	SnowflakeRegion           string
-	AccountName               string
-	StorageType               string
-	Name                      string
-	RegionGroup               *string
-	OrganizationName          string
-	IsPrimary                 bool
-	IsDefault                 *bool
-	Enabled                   bool
-	NextValue                 int
-	Port                      *int
-	RetryLimit                int
-	CreatedOn                 time.Time
-	UpdatedAt                 *time.Time
-	Primary                   ExternalObjectIdentifier
-	FailoverAllowedToAccounts []AccountIdentifier
-	Tags                      []string
-	Id                        AccountObjectIdentifier
-}
-
-func (v *PairedStructExample) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.Name)
+	ObjectName                           string
+	OverriddenNonNullableStringPlainName string
+	StorageTypePlain                     string
+	BothNullableStrings                  *string
+	OrganizationName                     string
+	IsPrimary                            bool
+	IsDefault                            *bool
+	Enabled                              bool
+	NextValue                            int
+	Port                                 *int
+	RetryLimit                           int
+	CreatedOn                            time.Time
+	UpdatedAt                            *time.Time
+	Primary                              ExternalObjectIdentifier
+	FailoverAllowedToAccounts            []AccountIdentifier
+	Tags                                 []string
+	Id                                   AccountObjectIdentifier
+	OverriddenSecondAccountId            AccountObjectIdentifier
 }
 
 func (v *PairedStructExample) ObjectType() ObjectType {
@@ -80,15 +73,43 @@ type DescribePairedStructExampleOptions struct {
 }
 
 type pairedStructExampleDetailRow struct {
-	Name            string         `db:"name"`
-	SnowflakeRegion string         `db:"snowflake_region"`
-	IsPrimary       sql.NullBool   `db:"is_primary"`
-	Comment         sql.NullString `db:"comment"`
+	ObjectName                string                   `db:"object_name"`
+	BothNonNullableStrings    string                   `db:"both_non_nullable_strings"`
+	StorageTypeDb             string                   `db:"type"`
+	BothNullableStrings       *string                  `db:"both_nullable_strings"`
+	OrganizationName          string                   `db:"organization_name"`
+	IsPrimary                 bool                     `db:"is_primary"`
+	IsDefault                 *bool                    `db:"is_default"`
+	Enabled                   bool                     `db:"enabled"`
+	NextValue                 int                      `db:"next_value"`
+	Port                      *int                     `db:"port"`
+	RetryLimit                int                      `db:"retry_limit"`
+	CreatedOn                 time.Time                `db:"created_on"`
+	UpdatedAt                 *time.Time               `db:"updated_at"`
+	Primary                   ExternalObjectIdentifier `db:"primary"`
+	FailoverAllowedToAccounts []AccountIdentifier      `db:"failover_allowed_to_accounts"`
+	Tags                      []string                 `db:"tags"`
+	AccountId                 AccountObjectIdentifier  `db:"account_id"`
+	SecondAccountId           AccountObjectIdentifier  `db:"second_account_id"`
 }
 
 type PairedStructExampleDetail struct {
-	Name            string
-	SnowflakeRegion string
-	IsPrimary       bool
-	Comment         *string
+	ObjectName                           string
+	OverriddenNonNullableStringPlainName string
+	StorageTypePlain                     string
+	BothNullableStrings                  *string
+	OrganizationName                     string
+	IsPrimary                            bool
+	IsDefault                            *bool
+	Enabled                              bool
+	NextValue                            int
+	Port                                 *int
+	RetryLimit                           int
+	CreatedOn                            time.Time
+	UpdatedAt                            *time.Time
+	Primary                              ExternalObjectIdentifier
+	FailoverAllowedToAccounts            []AccountIdentifier
+	Tags                                 []string
+	Id                                   AccountObjectIdentifier
+	OverriddenSecondAccountId            AccountObjectIdentifier
 }

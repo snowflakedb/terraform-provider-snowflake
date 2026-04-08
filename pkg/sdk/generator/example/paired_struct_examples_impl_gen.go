@@ -4,8 +4,6 @@ package example
 
 import (
 	"context"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
@@ -25,20 +23,6 @@ func (v *pairedStructExamples) Show(ctx context.Context, request *ShowPairedStru
 		return nil, err
 	}
 	return convertRows[pairedStructExampleRow, PairedStructExample](dbRows)
-}
-
-func (v *pairedStructExamples) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error) {
-	request := NewShowPairedStructExampleRequest().
-		WithLike(Like{Pattern: String(id.Name())})
-	pairedStructExamples, err := v.Show(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return collections.FindFirst(pairedStructExamples, func(r PairedStructExample) bool { return r.Name == id.Name() })
-}
-
-func (v *pairedStructExamples) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExample, error) {
-	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
 func (v *pairedStructExamples) Describe(ctx context.Context, id AccountObjectIdentifier) (*PairedStructExampleDetail, error) {
