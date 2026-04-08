@@ -18,6 +18,14 @@ var imageRepositoriesDef = g.NewInterface(
 		SQL("IMAGE REPOSITORY").
 		IfNotExists().
 		Name().
+		OptionalQueryStructField(
+			"Encryption",
+			g.NewQueryStruct("ImageRepositoryEncryption").
+				OptionalSQLWithCustomFieldName("SnowflakeFull", "TYPE = 'SNOWFLAKE_FULL'").
+				OptionalSQLWithCustomFieldName("SnowflakeSse", "TYPE = 'SNOWFLAKE_SSE'").
+				WithValidation(g.ExactlyOneValueSet, "SnowflakeFull", "SnowflakeSse"),
+			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
+		).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").

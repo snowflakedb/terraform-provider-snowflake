@@ -67,6 +67,12 @@ func (r *CreateImageRepositoryRequest) toOpts() *CreateImageRepositoryOptions {
 		Comment:     r.Comment,
 		Tag:         r.Tag,
 	}
+	if r.Encryption != nil {
+		opts.Encryption = &ImageRepositoryEncryption{
+			SnowflakeFull: r.Encryption.SnowflakeFull,
+			SnowflakeSse:  r.Encryption.SnowflakeSse,
+		}
+	}
 	return opts
 }
 

@@ -19,13 +19,19 @@ type ImageRepositories interface {
 
 // CreateImageRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-image-repository.
 type CreateImageRepositoryOptions struct {
-	create          bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace       *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	imageRepository bool                   `ddl:"static" sql:"IMAGE REPOSITORY"`
-	IfNotExists     *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name            SchemaObjectIdentifier `ddl:"identifier"`
-	Comment         *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Tag             []TagAssociation       `ddl:"keyword,parentheses" sql:"TAG"`
+	create          bool                       `ddl:"static" sql:"CREATE"`
+	OrReplace       *bool                      `ddl:"keyword" sql:"OR REPLACE"`
+	imageRepository bool                       `ddl:"static" sql:"IMAGE REPOSITORY"`
+	IfNotExists     *bool                      `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name            SchemaObjectIdentifier     `ddl:"identifier"`
+	Encryption      *ImageRepositoryEncryption `ddl:"list,parentheses,no_comma" sql:"ENCRYPTION ="`
+	Comment         *string                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag             []TagAssociation           `ddl:"keyword,parentheses" sql:"TAG"`
+}
+
+type ImageRepositoryEncryption struct {
+	SnowflakeFull *bool `ddl:"keyword" sql:"TYPE = 'SNOWFLAKE_FULL'"`
+	SnowflakeSse  *bool `ddl:"keyword" sql:"TYPE = 'SNOWFLAKE_SSE'"`
 }
 
 // AlterImageRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-image-repository.

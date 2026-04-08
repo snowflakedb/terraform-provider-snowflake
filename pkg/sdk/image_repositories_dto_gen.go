@@ -13,8 +13,14 @@ type CreateImageRepositoryRequest struct {
 	OrReplace   *bool
 	IfNotExists *bool
 	name        SchemaObjectIdentifier // required
+	Encryption  *ImageRepositoryEncryptionRequest
 	Comment     *string
 	Tag         []TagAssociation
+}
+
+type ImageRepositoryEncryptionRequest struct {
+	SnowflakeFull *bool
+	SnowflakeSse  *bool
 }
 
 type AlterImageRepositoryRequest struct {
