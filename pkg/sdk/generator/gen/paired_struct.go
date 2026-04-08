@@ -212,7 +212,7 @@ func (p *PairedStructs) AccountObjectIdentifier(dbColumnName string, opts ...Pai
 	return p.addField(dbColumnName, "string", "AccountObjectIdentifier", allOpts)
 }
 
-// asDbStruct materialises the definition as a *dbStruct following the old implementation.
+// asDbStruct materializes the definition as a *dbStruct following the old implementation.
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
 	for _, f := range p.fields {
@@ -221,7 +221,7 @@ func (p *PairedStructs) asDbStruct() *dbStruct {
 	return s
 }
 
-// asPlainStruct materialises the definition as a *plainStruct following the old implementation.
+// asPlainStruct materializes the definition as a *plainStruct following the old implementation.
 func (p *PairedStructs) asPlainStruct() *plainStruct {
 	s := PlainStruct(p.plainName)
 	for _, f := range p.fields {
@@ -232,14 +232,14 @@ func (p *PairedStructs) asPlainStruct() *plainStruct {
 
 // ShowOperationWithPairedStructs is equivalent to ShowOperation but accepts a single PairedStructs
 // definition instead of separate DbStruct and PlainStruct arguments. The PairedStructs is
-// materialised into both structs and forwarded to the existing ShowOperation unchanged.
+// materialized into both structs and forwarded to the existing ShowOperation unchanged.
 func (i *Interface) ShowOperationWithPairedStructs(doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct) *Interface {
 	return i.ShowOperation(doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct)
 }
 
 // DescribeOperationWithPairedStructs is equivalent to DescribeOperation but accepts a single
 // PairedStructs definition instead of separate DbStruct and PlainStruct arguments. The
-// PairedStructs is materialised into both structs and forwarded to the existing DescribeOperation.
+// PairedStructs is materialized into both structs and forwarded to the existing DescribeOperation.
 func (i *Interface) DescribeOperationWithPairedStructs(describeKind DescriptionMappingKind, doc string, pairedStructs *PairedStructs, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
 	return i.DescribeOperation(describeKind, doc, pairedStructs.asDbStruct(), pairedStructs.asPlainStruct(), queryStruct, helperStructs...)
 }
