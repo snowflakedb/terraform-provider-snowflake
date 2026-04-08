@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -256,7 +257,8 @@ func ReadContextGrantApplicationRole(ctx context.Context, d *schema.ResourceData
 }
 
 func DeleteContextGrantApplicationRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	parts := helpers.ParseResourceIdentifier(d.Id())
 	id, err := sdk.ParseDatabaseObjectIdentifier(parts[0])
@@ -265,26 +267,28 @@ func DeleteContextGrantApplicationRole(ctx context.Context, d *schema.ResourceDa
 	}
 	objectType := parts[1]
 	granteeName := parts[2]
+	revokeFunc := client.ApplicationRoles.Revoke
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		revokeFunc = client.ApplicationRoles.RevokeSafely
+	}
 	switch objectType {
 	case "ACCOUNT_ROLE":
 		applicationRoleName, err := sdk.ParseAccountObjectIdentifier(granteeName)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.ApplicationRoles.Revoke(ctx, sdk.NewRevokeApplicationRoleRequest(id).WithFrom(*sdk.NewKindOfRoleRequest().WithRoleName(applicationRoleName))); err != nil {
-			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
-				return diag.FromErr(err)
-			}
+		err = revokeFunc(ctx, sdk.NewRevokeApplicationRoleRequest(id).WithFrom(*sdk.NewKindOfRoleRequest().WithRoleName(applicationRoleName)))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	case "APPLICATION":
 		applicationName, err := sdk.ParseAccountObjectIdentifier(granteeName)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.ApplicationRoles.Revoke(ctx, sdk.NewRevokeApplicationRoleRequest(id).WithFrom(*sdk.NewKindOfRoleRequest().WithApplicationName(applicationName))); err != nil {
-			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
-				return diag.FromErr(err)
-			}
+		err = revokeFunc(ctx, sdk.NewRevokeApplicationRoleRequest(id).WithFrom(*sdk.NewKindOfRoleRequest().WithApplicationName(applicationName)))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 	d.SetId("")

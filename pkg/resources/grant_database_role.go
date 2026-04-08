@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -208,7 +209,8 @@ func ReadGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta int
 
 // DeleteGrantDatabaseRole implements schema.DeleteFunc.
 func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	parts := helpers.ParseResourceIdentifier(d.Id())
 	id, err := sdk.ParseDatabaseObjectIdentifier(parts[0])
@@ -217,13 +219,21 @@ func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	objectType := parts[1]
 	granteeName := parts[2]
+	revokeFunc := client.DatabaseRoles.Revoke
+	revokeFromShareFunc := client.DatabaseRoles.RevokeFromShare
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		revokeFunc = client.DatabaseRoles.RevokeSafely
+		revokeFromShareFunc = func(ctx context.Context, req *sdk.RevokeDatabaseRoleFromShareRequest) error {
+			return sdk.SafeRevokePrivileges(func() error { return client.DatabaseRoles.RevokeFromShare(ctx, req) })
+		}
+	}
 	switch objectType {
 	case "ROLE":
 		accountRoleId, err := sdk.ParseAccountObjectIdentifier(granteeName)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.DatabaseRoles.Revoke(ctx, sdk.NewRevokeDatabaseRoleRequest(id).WithAccountRole(accountRoleId)); err != nil {
+		if err = revokeFunc(ctx, sdk.NewRevokeDatabaseRoleRequest(id).WithAccountRole(accountRoleId)); err != nil {
 			return diag.FromErr(err)
 		}
 	case "DATABASE ROLE":
@@ -231,7 +241,7 @@ func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta i
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.DatabaseRoles.Revoke(ctx, sdk.NewRevokeDatabaseRoleRequest(id).WithDatabaseRole(databaseRoleId)); err != nil {
+		if err = revokeFunc(ctx, sdk.NewRevokeDatabaseRoleRequest(id).WithDatabaseRole(databaseRoleId)); err != nil {
 			return diag.FromErr(err)
 		}
 	case "SHARE":
@@ -239,7 +249,7 @@ func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta i
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := client.DatabaseRoles.RevokeFromShare(ctx, sdk.NewRevokeDatabaseRoleFromShareRequest(id, sharedId)); err != nil {
+		if err = revokeFromShareFunc(ctx, sdk.NewRevokeDatabaseRoleFromShareRequest(id, sharedId)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
