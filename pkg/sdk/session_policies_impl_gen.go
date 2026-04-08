@@ -85,12 +85,14 @@ func (r *CreateSessionPolicyRequest) toOpts() *CreateSessionPolicyOptions {
 	if r.AllowedSecondaryRoles != nil {
 		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{
 			All:   r.AllowedSecondaryRoles.All,
+			None:  r.AllowedSecondaryRoles.None,
 			Roles: r.AllowedSecondaryRoles.Roles,
 		}
 	}
 	if r.BlockedSecondaryRoles != nil {
 		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{
 			All:   r.BlockedSecondaryRoles.All,
+			None:  r.BlockedSecondaryRoles.None,
 			Roles: r.BlockedSecondaryRoles.Roles,
 		}
 	}
@@ -114,12 +116,14 @@ func (r *AlterSessionPolicyRequest) toOpts() *AlterSessionPolicyOptions {
 		if r.Set.AllowedSecondaryRoles != nil {
 			opts.Set.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{
 				All:   r.Set.AllowedSecondaryRoles.All,
+				None:  r.Set.AllowedSecondaryRoles.None,
 				Roles: r.Set.AllowedSecondaryRoles.Roles,
 			}
 		}
 		if r.Set.BlockedSecondaryRoles != nil {
 			opts.Set.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{
 				All:   r.Set.BlockedSecondaryRoles.All,
+				None:  r.Set.BlockedSecondaryRoles.None,
 				Roles: r.Set.BlockedSecondaryRoles.Roles,
 			}
 		}
