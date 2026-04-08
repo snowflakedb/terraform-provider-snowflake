@@ -36,7 +36,7 @@ func TestImageRepositories_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateImageRepositoryOptions", "IfNotExists", "OrReplace"))
 	})
 
-	t.Run("validation: encryption type not set", func(t *testing.T) {
+	t.Run("validation: [opts.Encryption.EncryptionType] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Encryption = &ImageRepositoryEncryption{}
 		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateImageRepositoryOptions.Encryption", "EncryptionType"))
