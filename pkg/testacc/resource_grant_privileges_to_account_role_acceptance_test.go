@@ -3587,3 +3587,34 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_McpServers_InD
 		},
 	})
 }
+
+func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFuture_ImageRepositories_InDatabase(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	accountRoleName := role.ID().Name()
+	databaseName := testClient().Ids.DatabaseId().Name()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				Config:            grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"READ"}, sdk.PluralObjectTypeImageRepositories, databaseName),
+				ExpectError:       regexp.MustCompile("expected .* to be one of .* got IMAGE REPOSITORIES"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   grantPrivilegesToAccountRoleOnFutureInDatabaseConfig(accountRoleName, []string{"READ"}, sdk.PluralObjectTypeImageRepositories, databaseName),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}
