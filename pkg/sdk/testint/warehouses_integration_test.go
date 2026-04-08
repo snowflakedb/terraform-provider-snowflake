@@ -107,7 +107,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.Equal(t, precreatedWarehouseId.Name(), warehouses[0].Name)
 	})
 
-	t.Run("create: with resource constraint & generation", func(t *testing.T) {
+	t.Run("create: with resource constraint", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
 			ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintMemory1X),
