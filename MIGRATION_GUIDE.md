@@ -32,7 +32,7 @@ A new `GRANTS_SAFE_DESTROY` experiment has been added. When enabled, resource de
 
 This is useful when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
 
-Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`.
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`.
 
 To enable, add `GRANTS_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
 ```hcl

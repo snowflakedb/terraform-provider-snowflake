@@ -122,7 +122,7 @@ var allExperiments = []Experiment{
 		ExperimentalFeatureStateActive,
 		joinWithDoubleNewline(
 			"When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.",
-			"Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`.",
+			"Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`. This experiment is designed to be extended to other grant resources in the future.",
 			"This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.",
 			"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
 		),
