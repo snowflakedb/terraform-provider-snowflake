@@ -578,9 +578,6 @@ type sqlListClause struct {
 
 func (v sqlListClause) String() string {
 	if len(v.clauses) == 0 {
-		if v.pm == MustParentheses {
-			return "()"
-		}
 		return ""
 	}
 	clauseStrings := make([]string, len(v.clauses))

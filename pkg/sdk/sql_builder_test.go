@@ -489,20 +489,6 @@ func TestBuilder_parseStruct(t *testing.T) {
 		assert.Equal(t, "A, B, C", clauses[0].String())
 	})
 
-	t.Run("struct with a struct list using ddl: list,must_parentheses empty inner yields ()", func(t *testing.T) {
-		type inner struct {
-			Roles []AccountObjectIdentifier `ddl:"list"`
-		}
-		s := &struct {
-			L *inner `ddl:"list,must_parentheses" sql:"FOO ="`
-		}{
-			L: &inner{Roles: []AccountObjectIdentifier{}},
-		}
-		sql, err := structToSQL(s)
-		require.NoError(t, err)
-		assert.Equal(t, "FOO = ()", sql)
-	})
-
 	t.Run("struct with a struct list using ddl: list,no_comma", func(t *testing.T) {
 		type testListElement struct {
 			A bool `ddl:"static" sql:"A"`

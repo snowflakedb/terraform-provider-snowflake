@@ -30,12 +30,20 @@ func TestSessionPolicies_Create(t *testing.T) {
 		opts := defaultOpts()
 		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{All: Bool(false)}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "All", "false"))
+
+		opts = defaultOpts()
+		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{None: Bool(false)}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "None", "false"))
 	})
 
 	t.Run("validation: opts.BlockedSecondaryRoles should be valid", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{All: Bool(false)}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "All", "false"))
+
+		opts = defaultOpts()
+		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{None: Bool(false)}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "None", "false"))
 	})
 
 	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
@@ -45,22 +53,34 @@ func TestSessionPolicies_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSessionPolicyOptions", "OrReplace", "IfNotExists"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.AllowedSecondaryRoles.All opts.AllowedSecondaryRoles.Roles]", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.AllowedSecondaryRoles.All opts.AllowedSecondaryRoles.None opts.AllowedSecondaryRoles.Roles] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "None", "Roles"))
+	})
+
+	t.Run("validation: exactly one field from [opts.AllowedSecondaryRoles.All opts.AllowedSecondaryRoles.None opts.AllowedSecondaryRoles.Roles] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{
 			All:   Bool(true),
 			Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("R1")},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "Roles"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "None", "Roles"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.BlockedSecondaryRoles.All opts.BlockedSecondaryRoles.Roles]", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.BlockedSecondaryRoles.All opts.BlockedSecondaryRoles.None opts.BlockedSecondaryRoles.Roles] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "None", "Roles"))
+	})
+
+	t.Run("validation: exactly one field from [opts.BlockedSecondaryRoles.All opts.BlockedSecondaryRoles.None opts.BlockedSecondaryRoles.Roles] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{
-			All:   Bool(true),
+			None:  Bool(true),
 			Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("R1")},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "Roles"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "None", "Roles"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -77,13 +97,6 @@ func TestSessionPolicies_Create(t *testing.T) {
 		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{All: Bool(true)}
 		opts.Comment = String("some comment")
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SESSION POLICY %s SESSION_IDLE_TIMEOUT_MINS = 5 SESSION_UI_IDLE_TIMEOUT_MINS = 34 ALLOWED_SECONDARY_ROLES = (\"ROLE1\", \"ROLE2\") BLOCKED_SECONDARY_ROLES = ('ALL') COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
-
-	// variant added manually
-	t.Run("empty list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{Roles: []AccountObjectIdentifier{}}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SESSION POLICY %s ALLOWED_SECONDARY_ROLES = ()", id.FullyQualifiedName())
 	})
 }
 
@@ -137,19 +150,43 @@ func TestSessionPolicies_Alter(t *testing.T) {
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "All", "false"))
+
+		opts = defaultOpts()
+		opts.Set = &SessionPolicySet{
+			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{
+				None: Bool(false),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "None", "false"))
 	})
 
 	t.Run("validation: opts.Set.BlockedSecondaryRoles should be valid", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &SessionPolicySet{
-			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{
+			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{
 				All: Bool(false),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "All", "false"))
+
+		opts = defaultOpts()
+		opts.Set = &SessionPolicySet{
+			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{
+				None: Bool(false),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "None", "false"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.Set.AllowedSecondaryRoles.All opts.Set.AllowedSecondaryRoles.Roles]", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set.AllowedSecondaryRoles.All opts.Set.AllowedSecondaryRoles.None opts.Set.AllowedSecondaryRoles.Roles] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &SessionPolicySet{
+			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "None", "Roles"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.AllowedSecondaryRoles.All opts.Set.AllowedSecondaryRoles.None opts.Set.AllowedSecondaryRoles.Roles] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &SessionPolicySet{
 			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{
@@ -157,21 +194,29 @@ func TestSessionPolicies_Alter(t *testing.T) {
 				Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("R1")},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "Roles"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "None", "Roles"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.Set.BlockedSecondaryRoles.All opts.Set.BlockedSecondaryRoles.Roles]", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set.BlockedSecondaryRoles.All opts.Set.BlockedSecondaryRoles.None opts.Set.BlockedSecondaryRoles.Roles] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &SessionPolicySet{
+			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "None", "Roles"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.BlockedSecondaryRoles.All opts.Set.BlockedSecondaryRoles.None opts.Set.BlockedSecondaryRoles.Roles] should be present - more present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &SessionPolicySet{
 			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{
-				All:   Bool(true),
-				Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("R1")},
+				All:  Bool(true),
+				None: Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "Roles"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "None", "Roles"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.SessionIdleTimeoutMins opts.Unset.SessionUiIdleTimeoutMins opts.Set.AllowedSecondaryRoles opts.Set.BlockedSecondaryRoles opts.Unset.Comment] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Unset.SessionIdleTimeoutMins opts.Unset.SessionUiIdleTimeoutMins opts.Unset.AllowedSecondaryRoles opts.Unset.BlockedSecondaryRoles opts.Unset.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &SessionPolicyUnset{}
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterSessionPolicyOptions.Unset", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"))
@@ -189,7 +234,7 @@ func TestSessionPolicies_Alter(t *testing.T) {
 	t.Run("alter set secondary roles", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &SessionPolicySet{
-			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{Roles: []AccountObjectIdentifier{}},
+			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{None: Bool(true)},
 			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("ROLE1"), NewAccountObjectIdentifier("ROLE2")}},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER SESSION POLICY %s SET ALLOWED_SECONDARY_ROLES = () BLOCKED_SECONDARY_ROLES = (\"ROLE1\", \"ROLE2\")", id.FullyQualifiedName())

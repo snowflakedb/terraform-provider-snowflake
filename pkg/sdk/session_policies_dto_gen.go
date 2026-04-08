@@ -23,6 +23,7 @@ type CreateSessionPolicyRequest struct {
 
 type SessionPolicySecondaryRolesRequest struct {
 	All   *bool
+	None  *bool
 	Roles []AccountObjectIdentifier
 }
 

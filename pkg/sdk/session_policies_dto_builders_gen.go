@@ -55,6 +55,11 @@ func (s *SessionPolicySecondaryRolesRequest) WithAll(all bool) *SessionPolicySec
 	return s
 }
 
+func (s *SessionPolicySecondaryRolesRequest) WithNone(none bool) *SessionPolicySecondaryRolesRequest {
+	s.None = &none
+	return s
+}
+
 func (s *SessionPolicySecondaryRolesRequest) WithRoles(roles []AccountObjectIdentifier) *SessionPolicySecondaryRolesRequest {
 	s.Roles = roles
 	return s

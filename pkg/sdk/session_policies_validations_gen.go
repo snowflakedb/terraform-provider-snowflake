@@ -28,13 +28,13 @@ func (opts *CreateSessionPolicyOptions) validate() error {
 		errs = append(errs, errOneOf("CreateSessionPolicyOptions", "OrReplace", "IfNotExists"))
 	}
 	if valueSet(opts.AllowedSecondaryRoles) {
-		if everyValueSet(opts.AllowedSecondaryRoles.All, opts.AllowedSecondaryRoles.Roles) {
-			errs = append(errs, errOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "Roles"))
+		if !exactlyOneValueSet(opts.AllowedSecondaryRoles.All, opts.AllowedSecondaryRoles.None, opts.AllowedSecondaryRoles.Roles) {
+			errs = append(errs, errExactlyOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "None", "Roles"))
 		}
 	}
 	if valueSet(opts.BlockedSecondaryRoles) {
-		if everyValueSet(opts.BlockedSecondaryRoles.All, opts.BlockedSecondaryRoles.Roles) {
-			errs = append(errs, errOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "Roles"))
+		if !exactlyOneValueSet(opts.BlockedSecondaryRoles.All, opts.BlockedSecondaryRoles.None, opts.BlockedSecondaryRoles.Roles) {
+			errs = append(errs, errExactlyOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "None", "Roles"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -62,13 +62,13 @@ func (opts *AlterSessionPolicyOptions) validate() error {
 			errs = append(errs, err)
 		}
 		if valueSet(opts.Set.AllowedSecondaryRoles) {
-			if everyValueSet(opts.Set.AllowedSecondaryRoles.All, opts.Set.AllowedSecondaryRoles.Roles) {
-				errs = append(errs, errOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "Roles"))
+			if !exactlyOneValueSet(opts.Set.AllowedSecondaryRoles.All, opts.Set.AllowedSecondaryRoles.None, opts.Set.AllowedSecondaryRoles.Roles) {
+				errs = append(errs, errExactlyOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "None", "Roles"))
 			}
 		}
 		if valueSet(opts.Set.BlockedSecondaryRoles) {
-			if everyValueSet(opts.Set.BlockedSecondaryRoles.All, opts.Set.BlockedSecondaryRoles.Roles) {
-				errs = append(errs, errOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "Roles"))
+			if !exactlyOneValueSet(opts.Set.BlockedSecondaryRoles.All, opts.Set.BlockedSecondaryRoles.None, opts.Set.BlockedSecondaryRoles.Roles) {
+				errs = append(errs, errExactlyOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "None", "Roles"))
 			}
 		}
 	}

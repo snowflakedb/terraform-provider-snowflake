@@ -7,9 +7,10 @@ import (
 )
 
 var sessionPolicySecondaryRoles = g.NewQueryStruct("SessionPolicySecondaryRoles").
-	OptionalSQLWithCustomFieldName("All", "'ALL'").
-	List("Roles", "AccountObjectIdentifier", g.ListOptions()).
-	WithValidation(g.ConflictingFields, "All", "Roles")
+	OptionalSQLWithCustomFieldName("All", "('ALL')").
+	OptionalSQLWithCustomFieldName("None", "()").
+	List("Roles", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ListOptions().Parentheses()).
+	WithValidation(g.ExactlyOneValueSet, "All", "None", "Roles")
 
 var sessionPoliciesDef = g.NewInterface(
 	"SessionPolicies",
@@ -26,8 +27,8 @@ var sessionPoliciesDef = g.NewInterface(
 			Name().
 			OptionalNumberAssignment("SESSION_IDLE_TIMEOUT_MINS", g.ParameterOptions().NoQuotes()).
 			OptionalNumberAssignment("SESSION_UI_IDLE_TIMEOUT_MINS", g.ParameterOptions().NoQuotes()).
-			OptionalQueryStructField("AllowedSecondaryRoles", sessionPolicySecondaryRoles, g.ListOptions().SQL("ALLOWED_SECONDARY_ROLES =").MustParentheses()).
-			OptionalQueryStructField("BlockedSecondaryRoles", sessionPolicySecondaryRoles, g.ListOptions().SQL("BLOCKED_SECONDARY_ROLES =").MustParentheses()).
+			OptionalQueryStructField("AllowedSecondaryRoles", sessionPolicySecondaryRoles, g.KeywordOptions().SQL("ALLOWED_SECONDARY_ROLES =")).
+			OptionalQueryStructField("BlockedSecondaryRoles", sessionPolicySecondaryRoles, g.KeywordOptions().SQL("BLOCKED_SECONDARY_ROLES =")).
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidateValue, "AllowedSecondaryRoles").
@@ -47,8 +48,8 @@ var sessionPoliciesDef = g.NewInterface(
 				g.NewQueryStruct("SessionPolicySet").
 					OptionalNumberAssignment("SESSION_IDLE_TIMEOUT_MINS", g.ParameterOptions().NoQuotes()).
 					OptionalNumberAssignment("SESSION_UI_IDLE_TIMEOUT_MINS", g.ParameterOptions().NoQuotes()).
-					OptionalQueryStructField("AllowedSecondaryRoles", sessionPolicySecondaryRoles, g.ListOptions().SQL("ALLOWED_SECONDARY_ROLES =").MustParentheses()).
-					OptionalQueryStructField("BlockedSecondaryRoles", sessionPolicySecondaryRoles, g.ListOptions().SQL("BLOCKED_SECONDARY_ROLES =").MustParentheses()).
+					OptionalQueryStructField("AllowedSecondaryRoles", sessionPolicySecondaryRoles, g.KeywordOptions().SQL("ALLOWED_SECONDARY_ROLES =")).
+					OptionalQueryStructField("BlockedSecondaryRoles", sessionPolicySecondaryRoles, g.KeywordOptions().SQL("BLOCKED_SECONDARY_ROLES =")).
 					OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 					WithValidation(g.AtLeastOneValueSet, "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment").
 					WithValidation(g.ValidateValue, "AllowedSecondaryRoles").

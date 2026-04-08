@@ -26,14 +26,15 @@ type CreateSessionPolicyOptions struct {
 	name                     SchemaObjectIdentifier       `ddl:"identifier"`
 	SessionIdleTimeoutMins   *int                         `ddl:"parameter,no_quotes" sql:"SESSION_IDLE_TIMEOUT_MINS"`
 	SessionUiIdleTimeoutMins *int                         `ddl:"parameter,no_quotes" sql:"SESSION_UI_IDLE_TIMEOUT_MINS"`
-	AllowedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"list,must_parentheses" sql:"ALLOWED_SECONDARY_ROLES ="`
-	BlockedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"list,must_parentheses" sql:"BLOCKED_SECONDARY_ROLES ="`
+	AllowedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"keyword" sql:"ALLOWED_SECONDARY_ROLES ="`
+	BlockedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"keyword" sql:"BLOCKED_SECONDARY_ROLES ="`
 	Comment                  *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type SessionPolicySecondaryRoles struct {
-	All   *bool                     `ddl:"keyword" sql:"'ALL'"`
-	Roles []AccountObjectIdentifier `ddl:"list"`
+	All   *bool                     `ddl:"keyword" sql:"('ALL')"`
+	None  *bool                     `ddl:"keyword" sql:"()"`
+	Roles []AccountObjectIdentifier `ddl:"list,parentheses"`
 }
 
 // AlterSessionPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-session-policy.
@@ -52,8 +53,8 @@ type AlterSessionPolicyOptions struct {
 type SessionPolicySet struct {
 	SessionIdleTimeoutMins   *int                         `ddl:"parameter,no_quotes" sql:"SESSION_IDLE_TIMEOUT_MINS"`
 	SessionUiIdleTimeoutMins *int                         `ddl:"parameter,no_quotes" sql:"SESSION_UI_IDLE_TIMEOUT_MINS"`
-	AllowedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"list,must_parentheses" sql:"ALLOWED_SECONDARY_ROLES ="`
-	BlockedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"list,must_parentheses" sql:"BLOCKED_SECONDARY_ROLES ="`
+	AllowedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"keyword" sql:"ALLOWED_SECONDARY_ROLES ="`
+	BlockedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"keyword" sql:"BLOCKED_SECONDARY_ROLES ="`
 	Comment                  *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
