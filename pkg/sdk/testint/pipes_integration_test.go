@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -137,7 +138,8 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 		pipe, err := itc.client.Pipes.Describe(itc.ctx, pipe1.ID())
 
 		require.NoError(t, err)
-		assert.Equal(t, pipe1.Name, pipe.Name)
+		assertThatObject(t, objectassert.PipeFromObject(t, pipe).
+			HasName(pipe1.Name))
 	})
 
 	t.Run("describe: non-existing pipe", func(t *testing.T) {
@@ -157,19 +159,20 @@ func TestInt_PipeCreate(t *testing.T) {
 
 	assertPipe := func(t *testing.T, pipeDetails *sdk.Pipe, expectedName string, expectedComment string) {
 		t.Helper()
-		assert.NotEmpty(t, pipeDetails.CreatedOn)
-		assert.Equal(t, expectedName, pipeDetails.Name)
-		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), pipeDetails.DatabaseName)
-		assert.Equal(t, testClientHelper().Ids.SchemaId().Name(), pipeDetails.SchemaName)
-		assert.Equal(t, copyStatement, pipeDetails.Definition)
-		assert.Equal(t, "ACCOUNTADMIN", pipeDetails.Owner)
-		assert.Empty(t, pipeDetails.NotificationChannel)
-		assert.Equal(t, expectedComment, pipeDetails.Comment)
-		assert.Empty(t, pipeDetails.Integration)
-		assert.Empty(t, pipeDetails.Pattern)
-		assert.Empty(t, pipeDetails.ErrorIntegration)
-		assert.Equal(t, "ROLE", pipeDetails.OwnerRoleType)
-		assert.Empty(t, pipeDetails.InvalidReason)
+		assertThatObject(t, objectassert.PipeFromObject(t, pipeDetails).
+			HasNotEmptyCreatedOn().
+			HasName(expectedName).
+			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
+			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
+			HasDefinition(copyStatement).
+			HasOwner("ACCOUNTADMIN").
+			HasNotificationChannel("").
+			HasComment(expectedComment).
+			HasIntegration("").
+			HasPattern("").
+			HasErrorIntegration("").
+			HasOwnerRoleType("ROLE").
+			HasInvalidReason(""))
 	}
 
 	// TODO: test error integration, aws sns topic and integration when we have them in project
@@ -262,10 +265,8 @@ func TestInt_PipeAlter(t *testing.T) {
 		err := itc.client.Pipes.Alter(itc.ctx, pipe.ID(), alterOptions)
 		require.NoError(t, err)
 
-		alteredPipe, err := itc.client.Pipes.ShowByID(itc.ctx, pipe.ID())
-		require.NoError(t, err)
-
-		assert.Equal(t, "new comment", alteredPipe.Comment)
+		assertThatObject(t, objectassert.Pipe(t, pipe.ID()).
+			HasComment("new comment"))
 
 		alterOptions = &sdk.AlterPipeOptions{
 			Unset: &sdk.PipeUnset{
@@ -277,10 +278,8 @@ func TestInt_PipeAlter(t *testing.T) {
 		err = itc.client.Pipes.Alter(itc.ctx, pipe.ID(), alterOptions)
 		require.NoError(t, err)
 
-		alteredPipe, err = itc.client.Pipes.ShowByID(itc.ctx, pipe.ID())
-		require.NoError(t, err)
-
-		assert.Equal(t, "", alteredPipe.Comment)
+		assertThatObject(t, objectassert.Pipe(t, pipe.ID()).
+			HasComment(""))
 	})
 
 	t.Run("refresh with all", func(t *testing.T) {

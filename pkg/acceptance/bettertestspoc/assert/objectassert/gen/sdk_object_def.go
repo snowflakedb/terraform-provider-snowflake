@@ -181,6 +181,10 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.NetworkRule{},
 	},
 	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.Pipe{},
+	},
+	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
 	},
