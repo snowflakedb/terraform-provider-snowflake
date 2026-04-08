@@ -552,3 +552,112 @@ func TestInt_SafeRevokeApplicationRole(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestInt_SafeRevokePrivilegesFromDatabaseRole(t *testing.T) {
+	client := testClient(t)
+
+	dbRole, dbRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(dbRoleCleanup)
+
+	table, tableCleanup := testClientHelper().Table.Create(t)
+	t.Cleanup(tableCleanup)
+
+	ctx := context.Background()
+
+	tablePrivileges := &sdk.DatabaseRoleGrantPrivileges{
+		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
+	}
+	tableOn := func(id sdk.SchemaObjectIdentifier) *sdk.DatabaseRoleGrantOn {
+		return &sdk.DatabaseRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				SchemaObject: &sdk.Object{
+					ObjectType: sdk.ObjectTypeTable,
+					Name:       id,
+				},
+			},
+		}
+	}
+
+	testCases := []struct {
+		Name string
+		On   *sdk.DatabaseRoleGrantOn
+		Role sdk.DatabaseObjectIdentifier
+	}{
+		{Name: "missing database role", On: tableOn(table.ID()), Role: NonExistingDatabaseObjectIdentifier},
+		{Name: "missing database", On: tableOn(NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema), Role: dbRole.ID()},
+		{Name: "missing schema", On: tableOn(NonExistingSchemaObjectIdentifierWithNonExistingSchema), Role: dbRole.ID()},
+		{Name: "missing schema object", On: tableOn(NonExistingSchemaObjectIdentifier), Role: dbRole.ID()},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.Name, func(t *testing.T) {
+			err := client.Grants.RevokePrivilegesFromDatabaseRoleSafely(ctx, tablePrivileges, tt.On, tt.Role, nil)
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestInt_SafeRevokePrivilegesFromDatabaseRole_AllPipesWithMissingRole(t *testing.T) {
+	client := testClient(t)
+
+	table, tableCleanup := testClientHelper().Table.Create(t)
+	t.Cleanup(tableCleanup)
+
+	stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	copyStatement := createPipeCopyStatement(t, table, stage)
+
+	_, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+	t.Cleanup(pipeCleanup)
+
+	_, secondPipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+	t.Cleanup(secondPipeCleanup)
+
+	dbRole, dbRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(dbRoleCleanup)
+
+	ctx := context.Background()
+
+	// Grant MONITOR on all pipes in schema to the database role.
+	err := client.Grants.GrantPrivilegesToDatabaseRole(
+		ctx,
+		&sdk.DatabaseRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
+		},
+		&sdk.DatabaseRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				All: &sdk.GrantOnSchemaObjectIn{
+					PluralObjectType: sdk.PluralObjectTypePipes,
+					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
+				},
+			},
+		},
+		dbRole.ID(),
+		&sdk.GrantPrivilegesToDatabaseRoleOptions{},
+	)
+	require.NoError(t, err)
+
+	// Drop the database role — pipes still exist, so Pipes.Show succeeds,
+	// but each per-pipe REVOKE will fail with ErrObjectNotExistOrAuthorized.
+	dbRoleCleanup()
+
+	// RevokePrivilegesFromDatabaseRoleSafely must suppress the per-pipe errors individually.
+	err = client.Grants.RevokePrivilegesFromDatabaseRoleSafely(
+		ctx,
+		&sdk.DatabaseRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeMonitor},
+		},
+		&sdk.DatabaseRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				All: &sdk.GrantOnSchemaObjectIn{
+					PluralObjectType: sdk.PluralObjectTypePipes,
+					InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
+				},
+			},
+		},
+		dbRole.ID(),
+		nil,
+	)
+	assert.NoError(t, err)
+}
