@@ -167,10 +167,6 @@ const (
 )
 
 func ToWarehouseResourceConstraint(s string) (WarehouseResourceConstraint, error) {
-	return ToWarehouseResourceConstraintWithoutGeneration(s)
-}
-
-func ToWarehouseResourceConstraintWithoutGeneration(s string) (WarehouseResourceConstraint, error) {
 	switch strings.ToUpper(s) {
 	case "MEMORY_1X":
 		return WarehouseResourceConstraintMemory1X, nil
@@ -224,7 +220,6 @@ var AllWarehouseGenerations = []string{
 	string(WarehouseGenerationStandardGen1),
 	string(WarehouseGenerationStandardGen2),
 }
-
 
 type MaxQueryPerformanceLevel string
 

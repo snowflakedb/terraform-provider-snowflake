@@ -112,7 +112,7 @@ func (row WarehouseCsvRow) convert() (*WarehouseRepresentation, error) {
 		warehouseRepresentation.Generation = &generation
 	}
 
-	resourceConstraint, err := sdk.ToWarehouseResourceConstraintWithoutGeneration(row.ResourceConstraint)
+	resourceConstraint, err := sdk.ToWarehouseResourceConstraint(row.ResourceConstraint)
 	if err == nil {
 		warehouseRepresentation.ResourceConstraint = &resourceConstraint
 	}
