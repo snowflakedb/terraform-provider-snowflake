@@ -203,14 +203,15 @@ func TestAcc_Experimental_GrantPrivilegesToDatabaseRole_SafeDestroy_MissingDatab
 // ReadGrantPrivilegesToShare itself: it always checks share existence via ShowByID first, removes
 // the resource from state, and returns before Delete is ever called — so no experiment is needed.
 func TestAcc_Experimental_GrantPrivilegesToShare_SafeDestroy_MissingShare(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
-	t.Cleanup(databaseCleanup)
-
 	share, shareCleanup := testClient().Share.CreateShare(t)
 	t.Cleanup(shareCleanup)
 
+	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(databaseCleanup)
+
+	testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, database.ID(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage})
 	grantModel := model.GrantPrivilegesToShare("test", []string{sdk.ObjectPrivilegeUsage.String()}, share.ID().Name()).
-		WithOnDatabase(database.ID().Name())
+		WithOnDatabase(database.ID().FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -219,15 +220,21 @@ func TestAcc_Experimental_GrantPrivilegesToShare_SafeDestroy_MissingShare(t *tes
 		Steps: []resource.TestStep{
 			// Create the grant with default provider.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, grantModel),
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				Config:            config.FromModels(t, grantModel),
 			},
-			// Drop the share externally, then destroy — succeeds without the experiment because
+			// Drop the share externally, then try to destroy without experiment — expect failure.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
+				PreConfig:         testClient().Share.DropShareFunc(t, share.ID()),
+				Config:            config.FromModels(t, grantModel),
+				Destroy:           true,
+				ExpectError:       regexp.MustCompile(`revokePrivilegeFromShareOptions fields`),
+			},
 			// Read detects the missing share via ShowByID and clears the resource from state
 			// before Delete is called.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				PreConfig:                testClient().Share.DropShareFunc(t, share.ID()),
 				Config:                   config.FromModels(t, grantModel),
 				Destroy:                  true,
 			},
@@ -251,14 +258,10 @@ func TestAcc_Experimental_GrantPrivilegesToShare_SafeDestroy_MissingSchema(t *te
 	t.Cleanup(shareCleanup)
 
 	// setup grants USAGE on database to share — required by Snowflake before granting schema objects.
-	// setupGrantModel := model.GrantPrivilegesToShare("setup", []string{sdk.ObjectPrivilegeUsage.String()}, share.ID().Name()).
-	// 	WithOnDatabase(database.ID().Name())
-	// testClient().Grant.GrantPriv
+	testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, database.ID(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage})
 
 	grantModel := model.GrantPrivilegesToShare("test", []string{sdk.ObjectPrivilegeSelect.String()}, share.ID().Name()).
-		WithOnAllTablesInSchema(schema.ID().FullyQualifiedName()).
-		WithDependsOn("snowflake_grant_privileges_to_share.setup")
-
+		WithOnAllTablesInSchema(schema.ID().FullyQualifiedName())
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
 

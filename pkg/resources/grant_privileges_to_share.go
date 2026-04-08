@@ -338,7 +338,7 @@ func ReadGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	client := meta.(*provider.Context).Client
-	if _, err := client.Shares.ShowByID(ctx, id.ShareName); err != nil && errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+	if _, err := client.Shares.ShowByID(ctx, id.ShareName); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
 		d.SetId("")
 		return diag.Diagnostics{
 			diag.Diagnostic{
