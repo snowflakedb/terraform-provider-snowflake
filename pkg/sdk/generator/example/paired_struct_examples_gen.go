@@ -25,29 +25,43 @@ type ShowPairedStructExampleOptions struct {
 type pairedStructExampleRow struct {
 	SnowflakeRegion           string         `db:"snowflake_region"`
 	AccountName               string         `db:"account_name"`
+	StorageType               string         `db:"type"`
 	Name                      string         `db:"name"`
 	RegionGroup               sql.NullString `db:"region_group"`
 	OrganizationName          sql.NullString `db:"organization_name"`
-	CreatedOn                 time.Time      `db:"created_on"`
 	IsPrimary                 bool           `db:"is_primary"`
+	IsDefault                 sql.NullBool   `db:"is_default"`
+	Enabled                   sql.NullBool   `db:"enabled"`
+	NextValue                 int            `db:"next_value"`
+	Port                      sql.NullInt64  `db:"port"`
+	RetryLimit                sql.NullInt64  `db:"retry_limit"`
+	CreatedOn                 time.Time      `db:"created_on"`
+	UpdatedAt                 sql.NullTime   `db:"updated_at"`
 	Primary                   string         `db:"primary"`
 	FailoverAllowedToAccounts string         `db:"failover_allowed_to_accounts"`
-	ConnectionUrl             string         `db:"connection_url"`
-	AccountLocator            string         `db:"account_locator"`
+	Tags                      string         `db:"tags"`
+	AccountId                 string         `db:"account_id"`
 }
 
 type PairedStructExample struct {
 	SnowflakeRegion           string
 	AccountName               string
+	StorageType               string
 	Name                      string
 	RegionGroup               *string
 	OrganizationName          string
-	CreatedOn                 time.Time
 	IsPrimary                 bool
+	IsDefault                 *bool
+	Enabled                   bool
+	NextValue                 int
+	Port                      *int
+	RetryLimit                int
+	CreatedOn                 time.Time
+	UpdatedAt                 *time.Time
 	Primary                   ExternalObjectIdentifier
 	FailoverAllowedToAccounts []AccountIdentifier
-	ConnectionUrl             string
-	AccountLocator            string
+	Tags                      []string
+	Id                        AccountObjectIdentifier
 }
 
 func (v *PairedStructExample) ID() AccountObjectIdentifier {

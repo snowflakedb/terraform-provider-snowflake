@@ -8,6 +8,8 @@ type dbStruct struct {
 type dbField struct {
 	name string
 	kind string
+	// goName is an optional Go field name override. When empty, sqlToFieldName(name, true) is used.
+	goName string
 }
 
 func DbStruct(name string) *dbStruct {
@@ -21,6 +23,18 @@ func (v *dbStruct) Field(dbName string, kind string) *dbStruct {
 	v.fields = append(v.fields, dbField{
 		name: dbName,
 		kind: kind,
+	})
+	return v
+}
+
+// FieldWithGoName adds a field where the Go identifier in the generated struct is explicitly
+// set to goName instead of being derived from dbName via sqlToFieldName. The db: tag still
+// uses dbName as the column name.
+func (v *dbStruct) FieldWithGoName(dbName string, goName string, kind string) *dbStruct {
+	v.fields = append(v.fields, dbField{
+		name:   dbName,
+		kind:   kind,
+		goName: goName,
 	})
 	return v
 }
@@ -60,7 +74,11 @@ func (v *dbStruct) OptionalNumber(dbName string) *dbStruct {
 func (v *dbStruct) IntoField() *Field {
 	f := NewField(v.name, v.name, nil, nil)
 	for _, field := range v.fields {
-		f.withField(NewField(sqlToFieldName(field.name, true), field.kind, Tags().DB(field.name), nil))
+		goFieldName := field.goName
+		if goFieldName == "" {
+			goFieldName = sqlToFieldName(field.name, true)
+		}
+		f.withField(NewField(goFieldName, field.kind, Tags().DB(field.name), nil))
 	}
 	return f
 }

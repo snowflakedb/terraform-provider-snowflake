@@ -6,6 +6,21 @@ import "strings"
 // It enables flexible and extensible field configuration without proliferating method variants.
 type PairedFieldOption func(*pairedField)
 
+// WithDbFieldName overrides the Go field name in the db row struct for this field.
+// By default the Go field name is derived from the db column name via sqlToFieldName.
+// The db: tag always uses the original dbColumnName regardless of this override.
+//
+// Example:
+//
+//	Text("type", WithDbFieldName("StorageType"), WithPlainFieldName("StorageType"))
+//	// db:    StorageType string `db:"type"`
+//	// plain: StorageType string
+func WithDbFieldName(name string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.dbFieldName = name
+	}
+}
+
 // WithPlainFieldName overrides the plain struct field name that would otherwise be
 // auto-derived from the db column name. Use this when the plain struct field name
 // should differ from the CamelCase conversion of the db column name.
@@ -44,6 +59,9 @@ func WithRequiredInPlain() PairedFieldOption {
 type pairedField struct {
 	// dbColumnName is the snake_case column name used for the db: tag and to auto-derive the plain field name.
 	dbColumnName string
+	// dbFieldName is an optional override for the Go field name in the db row struct.
+	// When empty, sqlToFieldName(dbColumnName, true) is used.
+	dbFieldName string
 	// plainFieldName is an optional override for the plain struct field name.
 	// When empty, sqlToFieldName(dbColumnName, true) is used.
 	plainFieldName string
@@ -188,13 +206,41 @@ func (p *PairedStructs) PlainField(dbColumnName, plainKind string, opts ...Paire
 	return p.addField(dbColumnName, "string", plainKind, opts)
 }
 
+// StringList adds a field where the db kind is string and the plain kind is []string.
+// Use this for fields that are stored as a single string in the db (e.g. comma-separated)
+// but represented as a string slice in the plain struct.
+//
+//	db:    <FieldName> string `db:"<dbColumnName>"`
+//	plain: <FieldName> []string
+func (p *PairedStructs) StringList(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	return p.addField(dbColumnName, "string", "[]string", opts)
+}
+
+// AccountObjectIdentifier adds an AccountObjectIdentifier field. The db kind is string and
+// the plain kind is AccountObjectIdentifier. The plain field name defaults to "Id" to match
+// the convention of plainStruct.AccountObjectIdentifier(), but can be overridden with
+// WithPlainFieldName.
+//
+//	db:    <GoFieldName> string `db:"<dbColumnName>"`
+//	plain: Id AccountObjectIdentifier
+func (p *PairedStructs) AccountObjectIdentifier(dbColumnName string, opts ...PairedFieldOption) *PairedStructs {
+	// Pre-apply the "Id" default; caller-supplied WithPlainFieldName will override it.
+	allOpts := append([]PairedFieldOption{WithPlainFieldName("Id")}, opts...)
+	return p.addField(dbColumnName, "string", "AccountObjectIdentifier", allOpts)
+}
+
 // asDbStruct materialises the definition as a *dbStruct compatible with ShowOperation and
-// DescribeOperation. Each field uses the original dbColumnName so that dbStruct.IntoField()
-// produces the correct db: tag and CamelCase Go field name.
+// DescribeOperation. When a field has a dbFieldName override, FieldWithGoName is used so
+// that the generated db row struct uses the explicit Go identifier while the db: tag still
+// holds the original column name.
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
 	for _, f := range p.fields {
-		s.Field(f.dbColumnName, f.dbKind)
+		if f.dbFieldName != "" {
+			s.FieldWithGoName(f.dbColumnName, f.dbFieldName, f.dbKind)
+		} else {
+			s.Field(f.dbColumnName, f.dbKind)
+		}
 	}
 	return s
 }
