@@ -41,6 +41,8 @@ func TestSweepAll(t *testing.T) {
 		err = SweepAfterAcceptanceTests(secondaryClient, acceptancetests.ObjectsSuffix)
 		assert.NoError(t, err)
 	})
+
+	t.Run("Send test results", SendTestResults)
 }
 
 func SweepAfterIntegrationTests(client *sdk.Client, suffix string) error {
