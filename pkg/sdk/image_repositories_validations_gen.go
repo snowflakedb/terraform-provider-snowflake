@@ -21,8 +21,8 @@ func (opts *CreateImageRepositoryOptions) validate() error {
 		errs = append(errs, errOneOf("CreateImageRepositoryOptions", "IfNotExists", "OrReplace"))
 	}
 	if valueSet(opts.Encryption) {
-		if !exactlyOneValueSet(opts.Encryption.SnowflakeFull, opts.Encryption.SnowflakeSse) {
-			errs = append(errs, errExactlyOneOf("CreateImageRepositoryOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
+		if !valueSet(opts.Encryption.EncryptionType) {
+			errs = append(errs, errNotSet("CreateImageRepositoryOptions.Encryption", "EncryptionType"))
 		}
 	}
 	return JoinErrors(errs...)

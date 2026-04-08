@@ -36,19 +36,10 @@ func TestImageRepositories_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateImageRepositoryOptions", "IfNotExists", "OrReplace"))
 	})
 
-	t.Run("validation: exactly one field from [opts.Encryption.SnowflakeFull opts.Encryption.SnowflakeSse] should be present", func(t *testing.T) {
+	t.Run("validation: encryption type not set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Encryption = &ImageRepositoryEncryption{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateImageRepositoryOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Encryption.SnowflakeFull opts.Encryption.SnowflakeSse] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Encryption = &ImageRepositoryEncryption{
-			SnowflakeFull: Bool(true),
-			SnowflakeSse:  Bool(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateImageRepositoryOptions.Encryption", "SnowflakeFull", "SnowflakeSse"))
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateImageRepositoryOptions.Encryption", "EncryptionType"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -62,7 +53,7 @@ func TestImageRepositories_Create(t *testing.T) {
 		tagId := NewAccountObjectIdentifier("tag1")
 		opts.IfNotExists = Bool(true)
 		opts.Encryption = &ImageRepositoryEncryption{
-			SnowflakeFull: Bool(true),
+			EncryptionType: ImageRepositoryEncryptionTypeSnowflakeFull,
 		}
 		opts.Comment = &comment
 		opts.Tag = []TagAssociation{

@@ -30,8 +30,7 @@ type CreateImageRepositoryOptions struct {
 }
 
 type ImageRepositoryEncryption struct {
-	SnowflakeFull *bool `ddl:"keyword" sql:"TYPE = 'SNOWFLAKE_FULL'"`
-	SnowflakeSse  *bool `ddl:"keyword" sql:"TYPE = 'SNOWFLAKE_SSE'"`
+	EncryptionType ImageRepositoryEncryptionType `ddl:"parameter,single_quotes" sql:"TYPE"`
 }
 
 // AlterImageRepositoryOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-image-repository.
@@ -74,6 +73,7 @@ type imageRepositoriesRow struct {
 	Owner                    string    `db:"owner"`
 	OwnerRoleType            string    `db:"owner_role_type"`
 	Comment                  string    `db:"comment"`
+	Encryption               string    `db:"encryption"`
 	PrivatelinkRepositoryUrl string    `db:"privatelink_repository_url"`
 }
 
@@ -86,6 +86,7 @@ type ImageRepository struct {
 	Owner                    string
 	OwnerRoleType            string
 	Comment                  string
+	Encryption               ImageRepositoryEncryptionType
 	PrivatelinkRepositoryUrl string
 }
 

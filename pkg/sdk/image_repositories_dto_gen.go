@@ -19,8 +19,7 @@ type CreateImageRepositoryRequest struct {
 }
 
 type ImageRepositoryEncryptionRequest struct {
-	SnowflakeFull *bool
-	SnowflakeSse  *bool
+	EncryptionType ImageRepositoryEncryptionType // required
 }
 
 type AlterImageRepositoryRequest struct {

@@ -69,8 +69,7 @@ func (r *CreateImageRepositoryRequest) toOpts() *CreateImageRepositoryOptions {
 	}
 	if r.Encryption != nil {
 		opts.Encryption = &ImageRepositoryEncryption{
-			SnowflakeFull: r.Encryption.SnowflakeFull,
-			SnowflakeSse:  r.Encryption.SnowflakeSse,
+			EncryptionType: r.Encryption.EncryptionType,
 		}
 	}
 	return opts
@@ -118,6 +117,7 @@ func (r imageRepositoriesRow) convert() (*ImageRepository, error) {
 		Owner:                    r.Owner,
 		OwnerRoleType:            r.OwnerRoleType,
 		Comment:                  r.Comment,
+		Encryption:               ImageRepositoryEncryptionType(r.Encryption),
 		PrivatelinkRepositoryUrl: r.PrivatelinkRepositoryUrl,
 	}, nil
 }

@@ -31,6 +31,7 @@ type (
 	FileFormatType                                                      string
 	FileFormatTypeOptions                                               string
 	GCSEncryptionType                                                   string
+	ImageRepositoryEncryptionType                                       string
 	InternalStageEncryptionOption                                       string
 	JsonCompression                                                     string
 	ListingState                                                        string

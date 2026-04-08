@@ -35,19 +35,12 @@ func (s *CreateImageRepositoryRequest) WithTag(tag []TagAssociation) *CreateImag
 	return s
 }
 
-func NewImageRepositoryEncryptionRequest() *ImageRepositoryEncryptionRequest {
+func NewImageRepositoryEncryptionRequest(
+	encryptionType ImageRepositoryEncryptionType,
+) *ImageRepositoryEncryptionRequest {
 	s := ImageRepositoryEncryptionRequest{}
+	s.EncryptionType = encryptionType
 	return &s
-}
-
-func (s *ImageRepositoryEncryptionRequest) WithSnowflakeFull(snowflakeFull bool) *ImageRepositoryEncryptionRequest {
-	s.SnowflakeFull = &snowflakeFull
-	return s
-}
-
-func (s *ImageRepositoryEncryptionRequest) WithSnowflakeSse(snowflakeSse bool) *ImageRepositoryEncryptionRequest {
-	s.SnowflakeSse = &snowflakeSse
-	return s
 }
 
 func NewAlterImageRepositoryRequest(

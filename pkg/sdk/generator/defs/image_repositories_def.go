@@ -21,9 +21,8 @@ var imageRepositoriesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"Encryption",
 			g.NewQueryStruct("ImageRepositoryEncryption").
-				OptionalSQLWithCustomFieldName("SnowflakeFull", "TYPE = 'SNOWFLAKE_FULL'").
-				OptionalSQLWithCustomFieldName("SnowflakeSse", "TYPE = 'SNOWFLAKE_SSE'").
-				WithValidation(g.ExactlyOneValueSet, "SnowflakeFull", "SnowflakeSse"),
+				AssignmentWithFieldName("TYPE", g.KindOfT[sdkcommons.ImageRepositoryEncryptionType](), g.ParameterOptions().SingleQuotes().Required(), "EncryptionType").
+				WithValidation(g.ValidateValueSet, "EncryptionType"),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
@@ -67,6 +66,7 @@ var imageRepositoriesDef = g.NewInterface(
 		Text("owner").
 		Text("owner_role_type").
 		Text("comment").
+		Text("encryption").
 		Text("privatelink_repository_url"),
 	g.PlainStruct("ImageRepository").
 		Time("CreatedOn").
@@ -77,6 +77,7 @@ var imageRepositoriesDef = g.NewInterface(
 		Text("Owner").
 		Text("OwnerRoleType").
 		Text("Comment").
+		Field("Encryption", g.KindOfT[sdkcommons.ImageRepositoryEncryptionType]()).
 		Text("PrivatelinkRepositoryUrl"),
 	g.NewQueryStruct("ShowImageRepositories").
 		Show().
