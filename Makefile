@@ -10,6 +10,9 @@ export CURRENT_ARCH := $(shell arch)
 UNIT_TESTS_EXCLUDE_PACKAGES=./pkg/testacc ./pkg/sdk/testint ./pkg/testfunctional ./pkg/manual_tests
 UNIT_TESTS_EXCLUDE_PATTERN=$(shell echo $(UNIT_TESTS_EXCLUDE_PACKAGES) | sed 's/ /|/g')
 
+# Usage: $(call GIT_DIFF_CHECK,path) — diff path against HEAD; on mismatch restore and exit with diff's status.
+GIT_DIFF_CHECK = git diff --exit-code -- $(1) || ( status=$$?; git restore -- $(1); exit "$$status" )
+
 default: help
 
 dev-setup: ## setup development dependencies
@@ -26,7 +29,7 @@ docs: generate-docs-additional-files ## generate docs
 	tools/bin/tfplugindocs generate --provider-name=terraform-provider-snowflake
 
 docs-check: docs ## check that docs have been generated
-	git diff --exit-code -- docs || ( status=$$?; git restore -- docs; exit "$$status" )
+	$(call GIT_DIFF_CHECK,docs)
 
 fmt: terraform-fmt ## Run terraform fmt and gofumpt
 	tools/bin/gofumpt -l -w .
@@ -39,6 +42,7 @@ terraform-fmt: ## Run terraform fmt
 	terraform fmt -recursive ./pkg/testacc/testdata/
 
 terraform-fmt-check: ## check if all Terraform configuration files are correctly formatted
+	# -check causes a non-zero exit status to be returned if the input is improperly formatted (source: https://developer.hashicorp.com/terraform/cli/commands/fmt#usage)
 	terraform fmt -check -diff -recursive ./examples/
 	terraform fmt -check -diff -recursive ./pkg/testacc/testdata/
 
@@ -58,6 +62,7 @@ mod: ## add missing and remove unused modules
 	go mod tidy -compat=1.25.7
 
 mod-check: ## check if there are any missing/unused modules
+	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
 	go mod tidy -compat=1.25.7 -diff
 
 pre-push: generate-all-config-model-builders mod fmt generate-docs-additional-files docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
@@ -154,7 +159,7 @@ generate-docs-additional-files: ## generate docs additional files
 	go run ./pkg/internal/tools/doc-gen-helper/ $$PWD
 
 generate-docs-additional-files-check: generate-docs-additional-files ## check that docs additional files have been generated
-	git diff --exit-code -- examples/additional || ( status=$$?; git restore -- examples/additional; exit "$$status" )
+	$(call GIT_DIFF_CHECK,examples/additional)
 
 generate-show-output-schemas: ## Generate show output schemas with mappers
 	go generate ./pkg/schemas/generate.go
@@ -218,9 +223,9 @@ clean-all-config-model-builders: clean-resource-model-builders clean-datasource-
 generate-all-config-model-builders: generate-resource-model-builders generate-datasource-model-builders generate-provider-model-builders ## generate all config model builders
 
 generate-all-config-model-builders-check: clean-all-config-model-builders generate-all-config-model-builders ## check that generated config model builders are up-to-date
-	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/model || ( status=$$?; git restore -- pkg/acceptance/bettertestspoc/config/model; exit "$$status" )
-	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/datasourcemodel || ( status=$$?; git restore -- pkg/acceptance/bettertestspoc/config/datasourcemodel; exit "$$status" )
-	git diff --exit-code -- pkg/acceptance/bettertestspoc/config/providermodel || ( status=$$?; git restore -- pkg/acceptance/bettertestspoc/config/providermodel; exit "$$status" )
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/config/model)
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/config/datasourcemodel)
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/config/providermodel)
 
 clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-snowflake-object-parameters-assertions clean-resource-assertions clean-resource-parameters-assertions clean-resource-show-output-assertions clean-resource-model-builders clean-provider-model-builders clean-datasource-model-builders ## clean all generated assertions and config models
 
