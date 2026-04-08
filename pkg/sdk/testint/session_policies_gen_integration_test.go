@@ -29,19 +29,6 @@ func TestInt_SessionPolicies(t *testing.T) {
 		assert.Equal(t, "ROLE", sessionPolicy.OwnerRoleType)
 	}
 
-	assertSessionPolicyDescription := func(
-		t *testing.T,
-		sessionPolicyDescription *sdk.SessionPolicyDescription,
-		id sdk.SchemaObjectIdentifier,
-	) {
-		t.Helper()
-		assert.NotEmpty(t, sessionPolicyDescription.CreatedOn)
-		assert.Equal(t, id.Name(), sessionPolicyDescription.Name)
-		assert.Equal(t, 240, sessionPolicyDescription.SessionIdleTimeoutMins)
-		assert.Equal(t, 240, sessionPolicyDescription.SessionUIIdleTimeoutMins)
-		assert.Equal(t, "", sessionPolicyDescription.Comment)
-	}
-
 	cleanupSessionPolicyProvider := func(id sdk.SchemaObjectIdentifier) func() {
 		return func() {
 			err := client.SessionPolicies.Drop(ctx, sdk.NewDropSessionPolicyRequest(id))
@@ -189,9 +176,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		t.Skip("Skipping session_policy describe test due to changes in the output format")
 		sessionPolicy := createSessionPolicy(t)
 
-		returnedSessionPolicy, err := client.SessionPolicies.Describe(ctx, sessionPolicy.ID())
+		_, err := client.SessionPolicies.Describe(ctx, sessionPolicy.ID())
 		require.NoError(t, err)
-
-		assertSessionPolicyDescription(t, returnedSessionPolicy, sessionPolicy.ID())
 	})
 }

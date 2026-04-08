@@ -4,7 +4,6 @@ package sdk
 
 import (
 	"context"
-	"database/sql"
 )
 
 type SessionPolicies interface {
@@ -15,19 +14,27 @@ type SessionPolicies interface {
 	Show(ctx context.Context, request *ShowSessionPolicyRequest) ([]SessionPolicy, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error)
-	Describe(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicyDescription, error)
+	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SessionPolicyProperty, error)
 }
 
 // CreateSessionPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-session-policy.
 type CreateSessionPolicyOptions struct {
-	create                   bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace                *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	sessionPolicy            bool                   `ddl:"static" sql:"SESSION POLICY"`
-	IfNotExists              *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                     SchemaObjectIdentifier `ddl:"identifier"`
-	SessionIdleTimeoutMins   *int                   `ddl:"parameter,no_quotes" sql:"SESSION_IDLE_TIMEOUT_MINS"`
-	SessionUiIdleTimeoutMins *int                   `ddl:"parameter,no_quotes" sql:"SESSION_UI_IDLE_TIMEOUT_MINS"`
-	Comment                  *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                   bool                         `ddl:"static" sql:"CREATE"`
+	OrReplace                *bool                        `ddl:"keyword" sql:"OR REPLACE"`
+	sessionPolicy            bool                         `ddl:"static" sql:"SESSION POLICY"`
+	IfNotExists              *bool                        `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                     SchemaObjectIdentifier       `ddl:"identifier"`
+	SessionIdleTimeoutMins   *int                         `ddl:"parameter,no_quotes" sql:"SESSION_IDLE_TIMEOUT_MINS"`
+	SessionUiIdleTimeoutMins *int                         `ddl:"parameter,no_quotes" sql:"SESSION_UI_IDLE_TIMEOUT_MINS"`
+	AllowedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"keyword" sql:"ALLOWED_SECONDARY_ROLES ="`
+	BlockedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"keyword" sql:"BLOCKED_SECONDARY_ROLES ="`
+	Comment                  *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type SessionPolicySecondaryRoles struct {
+	All   *bool                     `ddl:"keyword" sql:"('ALL')"`
+	None  *bool                     `ddl:"keyword" sql:"()"`
+	Roles []AccountObjectIdentifier `ddl:"list,parentheses"`
 }
 
 // AlterSessionPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-session-policy.
@@ -44,14 +51,18 @@ type AlterSessionPolicyOptions struct {
 }
 
 type SessionPolicySet struct {
-	SessionIdleTimeoutMins   *int    `ddl:"parameter,no_quotes" sql:"SESSION_IDLE_TIMEOUT_MINS"`
-	SessionUiIdleTimeoutMins *int    `ddl:"parameter,no_quotes" sql:"SESSION_UI_IDLE_TIMEOUT_MINS"`
-	Comment                  *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	SessionIdleTimeoutMins   *int                         `ddl:"parameter,no_quotes" sql:"SESSION_IDLE_TIMEOUT_MINS"`
+	SessionUiIdleTimeoutMins *int                         `ddl:"parameter,no_quotes" sql:"SESSION_UI_IDLE_TIMEOUT_MINS"`
+	AllowedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"keyword" sql:"ALLOWED_SECONDARY_ROLES ="`
+	BlockedSecondaryRoles    *SessionPolicySecondaryRoles `ddl:"keyword" sql:"BLOCKED_SECONDARY_ROLES ="`
+	Comment                  *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type SessionPolicyUnset struct {
 	SessionIdleTimeoutMins   *bool `ddl:"keyword" sql:"SESSION_IDLE_TIMEOUT_MINS"`
 	SessionUiIdleTimeoutMins *bool `ddl:"keyword" sql:"SESSION_UI_IDLE_TIMEOUT_MINS"`
+	AllowedSecondaryRoles    *bool `ddl:"keyword" sql:"ALLOWED_SECONDARY_ROLES"`
+	BlockedSecondaryRoles    *bool `ddl:"keyword" sql:"BLOCKED_SECONDARY_ROLES"`
 	Comment                  *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
@@ -65,8 +76,13 @@ type DropSessionPolicyOptions struct {
 
 // ShowSessionPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-session-policies.
 type ShowSessionPolicyOptions struct {
-	show            bool `ddl:"static" sql:"SHOW"`
-	sessionPolicies bool `ddl:"static" sql:"SESSION POLICIES"`
+	show            bool        `ddl:"static" sql:"SHOW"`
+	sessionPolicies bool        `ddl:"static" sql:"SESSION POLICIES"`
+	Like            *Like       `ddl:"keyword" sql:"LIKE"`
+	In              *ExtendedIn `ddl:"keyword" sql:"IN"`
+	On              *On         `ddl:"keyword" sql:"ON"`
+	StartsWith      *string     `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit           *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
 type showSessionPolicyDBRow struct {
@@ -77,8 +93,8 @@ type showSessionPolicyDBRow struct {
 	Kind          string `db:"kind"`
 	Owner         string `db:"owner"`
 	Comment       string `db:"comment"`
-	Options       string `db:"options"`
 	OwnerRoleType string `db:"owner_role_type"`
+	Options       string `db:"options"`
 }
 
 type SessionPolicy struct {
@@ -89,8 +105,8 @@ type SessionPolicy struct {
 	Kind          string
 	Owner         string
 	Comment       string
-	Options       string
 	OwnerRoleType string
+	Options       string
 }
 
 func (v *SessionPolicy) ID() SchemaObjectIdentifier {
@@ -109,17 +125,15 @@ type DescribeSessionPolicyOptions struct {
 }
 
 type describeSessionPolicyDBRow struct {
-	CreatedOn                string         `db:"created_on"`
-	Name                     string         `db:"name"`
-	SessionIdleTimeoutMins   int            `db:"session_idle_timeout_mins"`
-	SessionUiIdleTimeoutMins int            `db:"session_ui_idle_timeout_mins"`
-	Comment                  sql.NullString `db:"comment"`
+	Property    string `db:"property"`
+	Value       string `db:"value"`
+	Default     string `db:"default"`
+	Description string `db:"description"`
 }
 
-type SessionPolicyDescription struct {
-	CreatedOn                string
-	Name                     string
-	SessionIdleTimeoutMins   int
-	SessionUIIdleTimeoutMins int
-	Comment                  string
+type SessionPolicyProperty struct {
+	Property    string
+	Value       string
+	Default     string
+	Description string
 }
