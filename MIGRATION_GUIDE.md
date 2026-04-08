@@ -33,6 +33,21 @@ now support the `IMAGE REPOSITORY` for future grants (in `on_schema_object.futur
 
 No changes to existing configurations are required.
 
+### *(new feature)* GRANTS_SAFE_DESTROY experiment
+
+A new `GRANTS_SAFE_DESTROY` experiment has been added. When enabled, resource destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists, instead of failing with `does not exist or not authorized`.
+
+This is useful when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`.
+
+To enable, add `GRANTS_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["GRANTS_SAFE_DESTROY"]
+}
+```
+
 ### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
 
 #### Resource `snowflake_authentication_policy`
@@ -220,7 +235,7 @@ This has been fixed: grant resources can now be used with the `AGENT` and `MCP S
 
 No changes in the configuration are required.
 
-Reference: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524)
+References: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524), [#4593](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4593).
 
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 

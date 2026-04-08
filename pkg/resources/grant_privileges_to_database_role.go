@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -598,7 +599,8 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 }
 
 func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := ParseGrantPrivilegesToDatabaseRoleId(d.Id())
 	if err != nil {
 		return diag.Diagnostics{
@@ -614,13 +616,11 @@ func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = client.Grants.RevokePrivilegesFromDatabaseRole(
-		ctx,
-		getDatabaseRolePrivilegesFromSchema(d),
-		grantOn,
-		id.DatabaseRoleName,
-		&sdk.RevokePrivilegesFromDatabaseRoleOptions{},
-	)
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+		err = client.Grants.RevokePrivilegesFromDatabaseRoleSafely(ctx, getDatabaseRolePrivilegesFromSchema(d), grantOn, id.DatabaseRoleName, &sdk.RevokePrivilegesFromDatabaseRoleOptions{})
+	} else {
+		err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, getDatabaseRolePrivilegesFromSchema(d), grantOn, id.DatabaseRoleName, &sdk.RevokePrivilegesFromDatabaseRoleOptions{})
+	}
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{

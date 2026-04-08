@@ -62,6 +62,25 @@ func (v *grants) GrantPrivilegesToAccountRole(ctx context.Context, privileges *A
 }
 
 func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
+	return v.revokePrivilegesFromAccountRole(ctx, privileges, on, role, opts, noopExecWrapper)
+}
+
+func (v *grants) RevokePrivilegesFromAccountRoleSafely(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
+	return v.revokePrivilegesFromAccountRole(ctx, privileges, on, role, opts, SafeRevokePrivileges)
+}
+
+func noopExecWrapper(f func() error) error {
+	return f()
+}
+
+func (v *grants) revokePrivilegesFromAccountRole(
+	ctx context.Context,
+	privileges *AccountRoleGrantPrivileges,
+	on *AccountRoleGrantOn,
+	role AccountObjectIdentifier,
+	opts *RevokePrivilegesFromAccountRoleOptions,
+	execWrapper func(func() error) error,
+) error {
 	if opts == nil {
 		opts = &RevokePrivilegesFromAccountRoleOptions{}
 	}
@@ -81,7 +100,7 @@ func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges
 			on.SchemaObject.All.InDatabase,
 			on.SchemaObject.All.InSchema,
 			func(pipe Pipe) error {
-				return v.client.Grants.RevokePrivilegesFromAccountRole(
+				return v.revokePrivilegesFromAccountRole(
 					ctx,
 					privileges,
 					&AccountRoleGrantOn{
@@ -94,17 +113,14 @@ func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges
 					},
 					role,
 					opts,
+					execWrapper,
 				)
 			},
 		)
 	}
 
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *grants) RevokePrivilegesFromAccountRoleSafely(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
-	return SafeRevokePrivileges(func() error {
-		return v.RevokePrivilegesFromAccountRole(ctx, privileges, on, role, opts)
+	return execWrapper(func() error {
+		return validateAndExec(v.client, ctx, opts)
 	})
 }
 
@@ -150,6 +166,21 @@ func (v *grants) GrantPrivilegesToDatabaseRole(ctx context.Context, privileges *
 }
 
 func (v *grants) RevokePrivilegesFromDatabaseRole(ctx context.Context, privileges *DatabaseRoleGrantPrivileges, on *DatabaseRoleGrantOn, role DatabaseObjectIdentifier, opts *RevokePrivilegesFromDatabaseRoleOptions) error {
+	return v.revokePrivilegesFromDatabaseRole(ctx, privileges, on, role, opts, noopExecWrapper)
+}
+
+func (v *grants) RevokePrivilegesFromDatabaseRoleSafely(ctx context.Context, privileges *DatabaseRoleGrantPrivileges, on *DatabaseRoleGrantOn, role DatabaseObjectIdentifier, opts *RevokePrivilegesFromDatabaseRoleOptions) error {
+	return v.revokePrivilegesFromDatabaseRole(ctx, privileges, on, role, opts, SafeRevokePrivileges)
+}
+
+func (v *grants) revokePrivilegesFromDatabaseRole(
+	ctx context.Context,
+	privileges *DatabaseRoleGrantPrivileges,
+	on *DatabaseRoleGrantOn,
+	role DatabaseObjectIdentifier,
+	opts *RevokePrivilegesFromDatabaseRoleOptions,
+	execWrapper func(func() error) error,
+) error {
 	if opts == nil {
 		opts = &RevokePrivilegesFromDatabaseRoleOptions{}
 	}
@@ -169,7 +200,7 @@ func (v *grants) RevokePrivilegesFromDatabaseRole(ctx context.Context, privilege
 			on.SchemaObject.All.InDatabase,
 			on.SchemaObject.All.InSchema,
 			func(pipe Pipe) error {
-				return v.client.Grants.RevokePrivilegesFromDatabaseRole(
+				return v.revokePrivilegesFromDatabaseRole(
 					ctx,
 					privileges,
 					&DatabaseRoleGrantOn{
@@ -182,12 +213,15 @@ func (v *grants) RevokePrivilegesFromDatabaseRole(ctx context.Context, privilege
 					},
 					role,
 					opts,
+					execWrapper,
 				)
 			},
 		)
 	}
 
-	return validateAndExec(v.client, ctx, opts)
+	return execWrapper(func() error {
+		return validateAndExec(v.client, ctx, opts)
+	})
 }
 
 func (v *grants) GrantPrivilegeToShare(ctx context.Context, privileges []ObjectPrivilege, on *ShareGrantOn, to AccountObjectIdentifier) error {
