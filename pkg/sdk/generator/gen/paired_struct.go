@@ -216,7 +216,7 @@ func (p *PairedStructs) AccountObjectIdentifier(dbColumnName string, opts ...Pai
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
 	for _, f := range p.fields {
-		s.FieldWithName(f.dbColumnName, f.plainKind, f.resolvedDbFieldName())
+		s.FieldWithName(f.dbColumnName, f.dbKind, f.resolvedDbFieldName())
 	}
 	return s
 }
