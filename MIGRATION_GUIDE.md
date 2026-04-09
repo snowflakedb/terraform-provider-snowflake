@@ -40,7 +40,7 @@ We added support for [tag propagation](https://docs.snowflake.com/en/user-guide/
 #### New `ordered_allowed_values` field
 
 A new `ordered_allowed_values` field (TypeList) has been added to the `snowflake_tag` resource.
-It replaces the existing `allowed_values` field (TypeSet) and preserves the order you specify — which is required when using `on_conflict.allowed_values_sequence` for tag propagation conflict resolution,
+It is preferred over the existing `allowed_values` field (TypeSet) because it preserves the order you specify — which is required when using `on_conflict.allowed_values_sequence` for tag propagation conflict resolution,
 where the first matching value in the sequence wins. For more details, see [tag propagation conflicts](https://docs.snowflake.com/en/user-guide/object-tagging/propagation#tag-propagation-conflicts) documentation.
 
 The `allowed_values` field is now **deprecated** and will be removed in the next major version. The two fields are mutually exclusive (`ConflictsWith`), so you can migrate at your own pace.
@@ -64,8 +64,8 @@ resource "snowflake_tag" "example" {
 After switching, run `terraform plan` — Terraform will show an update moving the values from `allowed_values` to `ordered_allowed_values`.
 The tag's allowed values in Snowflake remain unchanged (what only may be altered is the order of the values).
 
-**Import behavior:** When importing a `snowflake_tag` resource, values are always populated into the `allowed_values` field (because during import there is no configuration to indicate which field to use).
-If your configuration uses `ordered_allowed_values`, the first `terraform apply` after import will reconcile the state by moving values to the correct field.
+**Import behavior:** When importing a `snowflake_tag` resource, values are always populated into the `ordered_allowed_values` field.
+If your configuration uses the deprecated `allowed_values` field, the first `terraform plan` after import will show an update moving the values to the correct field.
 
 #### New `propagate` field in `show_output`
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -160,6 +161,21 @@ func assertTagSet(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.O
 	returnedTagValue, err := testClientHelper().Tag.GetForObject(t, tagId, objectId, objectType)
 	require.NoError(t, err)
 	assert.Equal(t, tagValue, *returnedTagValue)
+}
+
+func assertTagSetWithReference(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.ObjectIdentifier, objectDomain sdk.TagReferenceObjectDomain, tagValue string, expectedLevel sdk.TagReferenceObjectDomain, expectedApplyMethod sdk.TagReferenceApplyMethod) {
+	t.Helper()
+
+	refs, err := testClientHelper().Tag.GetReferencesForObject(t, objectId, objectDomain)
+	require.NoError(t, err)
+
+	ref, err := collections.FindFirst(refs, func(ref sdk.TagReference) bool {
+		return ref.TagDatabase == tagId.DatabaseName() && ref.TagSchema == tagId.SchemaName() && ref.TagName == tagId.Name()
+	})
+	require.NoError(t, err)
+	assert.Equal(t, tagValue, ref.TagValue, "unexpected tag value")
+	assert.Equal(t, expectedLevel, ref.Level, "unexpected tag reference level")
+	assert.Equal(t, expectedApplyMethod, ref.ApplyMethod, "unexpected tag reference apply method")
 }
 
 func assertTagUnset(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.ObjectIdentifier, objectType sdk.ObjectType) {
