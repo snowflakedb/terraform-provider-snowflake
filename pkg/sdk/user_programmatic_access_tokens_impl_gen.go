@@ -175,7 +175,7 @@ func (r programmaticAccessTokenResultDBRow) convert() (*ProgrammaticAccessToken,
 		}
 		token.RoleRestriction = &roleRestriction
 	}
-	status, err := toProgrammaticAccessTokenStatus(r.Status)
+	status, err := ToProgrammaticAccessTokenStatus(r.Status)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing programmatic access token status: %w", err)
 	} else {
