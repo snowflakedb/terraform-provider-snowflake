@@ -14,6 +14,7 @@ func init() {
 		ToOptsOptionalExample,
 		SequencesDef,
 		PartialGenerationExample,
+		PairedStructExample,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {
