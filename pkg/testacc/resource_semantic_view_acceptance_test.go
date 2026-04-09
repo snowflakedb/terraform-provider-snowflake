@@ -212,7 +212,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	// logical table 1 related details
 	expectedTable1 := sdk.SemanticViewTableDetails{
 		TableNameOrAlias: t1Alias,
-		BaseTable:        sdk.NewSchemaObjectIdentifier(table1.ID().DatabaseName(), table1.ID().SchemaName(), table1.ID().Name()),
+		BaseTable:        table1.ID(),
 		PrimaryKeys:      []string{"a1"},
 		UniqueKeys:       [][]string{{"a2"}, {"a3", "a4"}},
 		Synonyms:         []string{"sales", "orders"},
@@ -222,7 +222,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	// logical table 2 related details
 	expectedTable2 := sdk.SemanticViewTableDetails{
 		TableNameOrAlias: t2Alias,
-		BaseTable:        sdk.NewSchemaObjectIdentifier(table2.ID().DatabaseName(), table2.ID().SchemaName(), table2.ID().Name()),
+		BaseTable:        table2.ID(),
 		PrimaryKeys:      []string{"a1"},
 	}
 

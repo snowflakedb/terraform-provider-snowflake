@@ -223,13 +223,13 @@ func TestInt_SemanticView(t *testing.T) {
 
 		expectedTable1 := sdk.SemanticViewTableDetails{
 			TableNameOrAlias: t1Alias,
-			BaseTable:        sdk.NewSchemaObjectIdentifier(table1Id.DatabaseName(), table1Id.SchemaName(), table1Id.Name()),
+			BaseTable:        table1Id,
 			PrimaryKeys:      []string{"first_c"},
 		}
 
 		expectedTable2 := sdk.SemanticViewTableDetails{
 			TableNameOrAlias: t2Alias,
-			BaseTable:        sdk.NewSchemaObjectIdentifier(table2Id.DatabaseName(), table2Id.SchemaName(), table2Id.Name()),
+			BaseTable:        table2Id,
 		}
 
 		expectedDimension := sdk.SemanticViewDimensionDetails{
@@ -338,7 +338,7 @@ func TestInt_SemanticView(t *testing.T) {
 
 		expectedTable1 := sdk.SemanticViewTableDetails{
 			TableNameOrAlias: t1Alias,
-			BaseTable:        sdk.NewSchemaObjectIdentifier(table1Id.DatabaseName(), table1Id.SchemaName(), table1Id.Name()),
+			BaseTable:        table1Id,
 			PrimaryKeys:      []string{"first_c"},
 		}
 
@@ -355,7 +355,7 @@ func TestInt_SemanticView(t *testing.T) {
 
 		expectedTable2 := sdk.SemanticViewTableDetails{
 			TableNameOrAlias: t2Alias,
-			BaseTable:        sdk.NewSchemaObjectIdentifier(table2Id.DatabaseName(), table2Id.SchemaName(), table2Id.Name()),
+			BaseTable:        table2Id,
 		}
 
 		// confirm the semantic view details are correct
