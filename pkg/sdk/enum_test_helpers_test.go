@@ -53,6 +53,7 @@ func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 
 func Test_AllEnumConversions(t *testing.T) {
 	all := []enumTestProvider{
+		typedEnumTestProvider[NetworkRuleMode]{"NetworkRuleMode", AllNetworkRuleModes, ToNetworkRuleMode},
 		typedEnumTestProvider[ProgrammaticAccessTokenStatus]{"ProgrammaticAccessTokenStatus", AllProgrammaticAccessTokenStatuses, ToProgrammaticAccessTokenStatus},
 	}
 
