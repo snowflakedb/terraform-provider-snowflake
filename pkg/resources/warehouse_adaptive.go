@@ -64,7 +64,7 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `SHOW WAREHOUSES` for the given adaptive warehouse.",
 		Elem: &schema.Resource{
-			Schema: schemas.ShowAdaptiveWarehouseSchema,
+			Schema: schemas.ShowWarehouseSchemaAdaptive,
 		},
 	},
 	ParametersAttributeName: {

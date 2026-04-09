@@ -212,8 +212,8 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasType(sdk.WarehouseTypeAdaptive),
-					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.show_output.0.query_throughput_multiplier", "2")),
-					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.show_output.0.max_query_performance_level", string(sdk.MaxQueryPerformanceLevelMedium))),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.query_throughput_multiplier", "2")),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.max_query_performance_level", string(sdk.MaxQueryPerformanceLevelMedium))),
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.created_on")),

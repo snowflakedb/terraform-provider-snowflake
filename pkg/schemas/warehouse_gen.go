@@ -90,8 +90,8 @@ var showWarehouseSchemaCommon = map[string]*schema.Schema{
 	},
 }
 
-// showWarehouseSchemaRegular contains fields only present for standard and snowpark-optimized warehouses.
-var showWarehouseSchemaRegular = map[string]*schema.Schema{
+// showWarehouseSchema contains fields only present for standard and snowpark-optimized warehouses.
+var showWarehouseSchema = map[string]*schema.Schema{
 	"size": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -134,10 +134,8 @@ var showWarehouseSchemaRegular = map[string]*schema.Schema{
 	},
 }
 
-// ShowRegularWarehouseSchema contains common and regular fields (used by the warehouse resource and data source).
-var ShowRegularWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaRegular)
-
-var _ = ShowRegularWarehouseSchema
+// ShowWarehouseSchema contains common and regular fields (used by the warehouse resource and data source).
+var ShowWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchema)
 
 // showWarehouseSchemaAdaptive contains fields only present for adaptive warehouses.
 // Adjusted manually.
@@ -152,16 +150,16 @@ var showWarehouseSchemaAdaptive = map[string]*schema.Schema{
 	},
 }
 
-// ShowAdaptiveWarehouseSchema contains common and adaptive fields (used by the adaptive warehouse resource).
+// ShowWarehouseSchemaAdaptive contains common and adaptive fields (used by the adaptive warehouse resource).
 // Adjusted manually.
-var ShowAdaptiveWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaAdaptive)
+var ShowWarehouseSchemaAdaptive = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaAdaptive)
 
-var _ = ShowAdaptiveWarehouseSchema
+var _ = ShowWarehouseSchemaAdaptive
 
 // ShowAllWarehousesSchema merges common, regular, and adaptive fields.
 // Used in the warehouses data source to cover all warehouse types in a single schema.
 // Adjusted manually.
-var ShowAllWarehousesSchema = collections.MergeMaps(ShowRegularWarehouseSchema, showWarehouseSchemaAdaptive)
+var ShowAllWarehousesSchema = collections.MergeMaps(ShowWarehouseSchema, showWarehouseSchemaAdaptive)
 
 var _ = ShowAllWarehousesSchema
 
@@ -195,7 +193,7 @@ func commonWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	return warehouseSchema
 }
 
-func RegularWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := commonWarehouseToSchema(warehouse)
 	if warehouse.Size != nil {
 		warehouseSchema["size"] = string((*warehouse.Size))
@@ -230,16 +228,16 @@ func RegularWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	return warehouseSchema
 }
 
-var _ = RegularWarehouseToSchema
+var _ = WarehouseToSchema
 
-// WarehouseToSchema maps a Warehouse to ShowAllWarehousesSchema fields.
+// AnyWarehouseToSchema maps a Warehouse to ShowAllWarehousesSchema fields.
 // Dispatches to the adaptive or regular mapper based on warehouse type.
 // Adjusted manually.
-func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+func AnyWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	if warehouse.Type == sdk.WarehouseTypeAdaptive {
 		return WarehouseAdaptiveToSchema(warehouse)
 	}
-	return RegularWarehouseToSchema(warehouse)
+	return WarehouseToSchema(warehouse)
 }
 
 // WarehouseAdaptiveToSchema maps fields in the show output of an adaptive warehouse (showWarehouseSchemaAdaptive).
