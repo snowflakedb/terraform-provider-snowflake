@@ -3,15 +3,18 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -42,11 +45,31 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingParentRole(t *test
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, grantModel),
 			},
-			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
+			// Drop the parent role externally and destroy WITHOUT experiment — must error.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
+					},
+				},
+				Destroy:     true,
+				ExpectError: regexp.MustCompile("does not exist or not authorized"),
+			},
+			// Recreate the parent role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
-				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
-				Destroy:                  true,
+				PreConfig: func() {
+					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
+					},
+				},
+				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Destroy: true,
 			},
 		},
 	})
@@ -79,11 +102,31 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingRole(t *testing.T)
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, grantModel),
 			},
-			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
+			// Drop the granted role externally WITHOUT experiment — must error.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Role.DropRoleFunc(t, role.ID())),
+					},
+				},
+				Destroy:     true,
+				ExpectError: regexp.MustCompile("does not exist or not authorized"),
+			},
+			// Recreate the granted role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
-				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
-				Destroy:                  true,
+				PreConfig: func() {
+					testClient().Role.CreateRoleWithIdentifier(t, role.ID())
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Role.DropRoleFunc(t, role.ID())),
+					},
+				},
+				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Destroy: true,
 			},
 		},
 	})
@@ -116,11 +159,31 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingParentRole(t *tes
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, grantModel),
 			},
-			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
+			// Drop the parent account role externally WITHOUT experiment — must error.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
+					},
+				},
+				Destroy:     true,
+				ExpectError: regexp.MustCompile("does not exist or not authorized"),
+			},
+			// Recreate the parent account role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
-				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
-				Destroy:                  true,
+				PreConfig: func() {
+					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
+					},
+				},
+				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Destroy: true,
 			},
 		},
 	})
@@ -153,11 +216,31 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingDatabaseRole(t *t
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, grantModel),
 			},
-			// Destroy with GRANTS_SAFE_DESTROY experiment — succeeds.
+			// Drop the database role externally WITHOUT experiment — must error.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().DatabaseRole.CleanupDatabaseRoleFunc(t, dbRole.ID())),
+					},
+				},
+				Destroy:     true,
+				ExpectError: regexp.MustCompile("does not exist or not authorized"),
+			},
+			// Recreate the database role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
-				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
-				Destroy:                  true,
+				PreConfig: func() {
+					testClient().DatabaseRole.CreateDatabaseRoleInDatabaseWithName(t, dbRole.ID().DatabaseId(), dbRole.ID().Name())
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().DatabaseRole.CleanupDatabaseRoleFunc(t, dbRole.ID())),
+					},
+				},
+				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Destroy: true,
 			},
 		},
 	})
@@ -169,7 +252,7 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingDatabaseRole(t *t
 //
 // Note: unlike grant_privileges_to_* resources, grant_application_role Read already handles missing
 // objects gracefully by clearing state. This test verifies the full lifecycle succeeds end-to-end
-// (either via Read clearing state or RevokeSafely handling the error in a race condition scenario).
+// via RevokeSafely handling the error in a race condition scenario.
 func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountRole(t *testing.T) {
 	app := createApp(t)
 	applicationRoleName := testvars.ApplicationRole1
@@ -197,10 +280,29 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 			},
 			// Drop the parent account role externally and destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: experimentFactory,
-				PreConfig:                testClient().Role.DropRoleFunc(t, parentRole.ID()),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
-				Destroy:                  true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
+					},
+				},
+				Destroy:     true,
+				ExpectError: regexp.MustCompile("does not exist or not authorized"),
+			},
+			// Recreate the parent account role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
+			{
+				ProtoV6ProviderFactories: experimentFactory,
+				PreConfig: func() {
+					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
+					},
+				},
+				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Destroy: true,
 			},
 		},
 	})
@@ -212,16 +314,18 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 //
 // Note: unlike grant_privileges_to_* resources, grant_application_role Read already handles missing
 // objects gracefully by clearing state. This test verifies the full lifecycle succeeds end-to-end
-// (either via Read clearing state or RevokeSafely handling the error in a race condition scenario).
+// via RevokeSafely handling the error in a race condition scenario.
 func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingApplication(t *testing.T) {
-	app := createApp(t)
-	granteeApp := createApp(t)
+	app, appPackage := createAppReturnApplicationPackage(t)
 
 	applicationRoleName := testvars.ApplicationRole1
 	appRoleFullName := sdk.NewDatabaseObjectIdentifier(app.ID().Name(), applicationRoleName).FullyQualifiedName()
 
+	parentRole, parentRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(parentRoleCleanup)
+
 	grantModel := model.GrantApplicationRole("test", appRoleFullName).
-		WithApplicationName(granteeApp.ID().Name())
+		WithParentAccountRoleName(parentRole.ID().Name())
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
@@ -237,12 +341,31 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingApplication(t 
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, grantModel),
 			},
-			// Drop the grantee application externally and destroy with GRANTS_SAFE_DESTROY — succeeds.
+			// Drop the grantee application externally WITHOUT experiment — must error.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Application.DropApplicationFunc(t, app.ID())),
+					},
+				},
+				Destroy:     true,
+				ExpectError: regexp.MustCompile("does not exist or not authorized"),
+			},
+			// Recreate the grantee application, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
 				ProtoV6ProviderFactories: experimentFactory,
-				PreConfig:                testClient().Application.DropApplicationFunc(t, granteeApp.ID()),
-				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
-				Destroy:                  true,
+				PreConfig: func() {
+					testClient().Application.CreateApplicationWithIdentifier(t, app.ID(), appPackage.ID(), "v1")
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.Execute(testClient().Application.DropApplicationFunc(t, app.ID())),
+					},
+				},
+				Config:  config.FromModels(t, experimentProviderModel, grantModel),
+				Destroy: true,
 			},
 		},
 	})
