@@ -7,9 +7,9 @@ description: |-
 
 ~> **Required warehouse** For this resource, the provider now uses [tag references](https://docs.snowflake.com/en/sql-reference/functions/tag_references) to get information about masking policies attached to tags. This function requires a warehouse in the connection. Please, make sure you have either set a `DEFAULT_WAREHOUSE` for the user, or specified a warehouse in the provider configuration.
 
-~> **Current limitations** Recently, the tags propagation was introduced (check [2025-05-14-tag-propagation](https://docs.snowflake.com/en/release-notes/2025/other/2025-05-14-tag-propagation)). This resource is not currently supporting the `ON_CONFLICT` attribute and the tag allowed values ordering. If needed, use the [`snowflake_execute`](./execute) for the time-being. This limitation will be addressed in the next versions of the provider.
+~> **Deprecation notice** The `allowed_values` field (unordered set) is deprecated and will be removed in the next major version. Use `ordered_allowed_values` (ordered list) instead. `ordered_allowed_values` preserves the order you specify, which is required when using `on_conflict.allowed_values_sequence` for [tag propagation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation) conflict resolution. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-ordered_allowed_values-field) for details.
 
-~> **Note** A new `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experimental feature is available for this resource. When enabled, it improves how `allowed_values` are handled — removing `allowed_values` from the configuration correctly reverts the tag to accepting any value, and a new `no_allowed_values` field allows you to explicitly block any value from being set on the tag (note that sometimes to enter this state, the provider may temporarily add and drop `SNOWFLAKE_TERRAFORM_TEMP_TAG_ALLOWED_VALUE` value). Without the flag, the behavior is unchanged from previous versions and the `no_allowed_values` field has no effect. To enable it, add `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-improved-allowed_values-handling-in-snowflake_tag) for more details.
+~> **Note** A new `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experimental feature is available for this resource. When enabled, it improves how `allowed_values` / `ordered_allowed_values` are handled — removing the field from the configuration correctly reverts the tag to accepting any value, and a new `no_allowed_values` field allows you to explicitly block any value from being set on the tag (note that sometimes to enter this state, the provider may temporarily add and drop `SNOWFLAKE_TERRAFORM_TEMP_TAG_ALLOWED_VALUE` value). Without the flag, the behavior is unchanged from previous versions and the `no_allowed_values` field has no effect. To enable it, add `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-improved-allowed_values-handling-in-snowflake_tag) for more details.
 
 # snowflake_tag (Resource)
 
@@ -27,12 +27,25 @@ resource "snowflake_tag" "tag" {
 
 # complete resource
 resource "snowflake_tag" "tag" {
-  name             = "tag"
-  database         = "database"
-  schema           = "schema"
-  comment          = "comment"
-  allowed_values   = ["finance", "engineering", ""]
-  masking_policies = [snowflake_masking_policy.example.fully_qualified_name]
+  name                   = "tag"
+  database               = "database"
+  schema                 = "schema"
+  comment                = "comment"
+  ordered_allowed_values = ["finance", "engineering", ""]
+  masking_policies       = [snowflake_masking_policy.example.fully_qualified_name]
+}
+
+# resource with propagation and conflict resolution
+resource "snowflake_tag" "tag" {
+  name                   = "tag"
+  database               = "database"
+  schema                 = "schema"
+  ordered_allowed_values = ["high", "medium", "low"]
+  propagate              = "ON_DEPENDENCY"
+
+  on_conflict {
+    allowed_values_sequence = true
+  }
 }
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
@@ -51,11 +64,12 @@ resource "snowflake_tag" "tag" {
 
 ### Optional
 
-- `allowed_values` (Set of String) Set of allowed values for the tag. When specified, only these values can be assigned. When the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values`.
+- `allowed_values` (Set of String, Deprecated) Set of allowed values for the tag (unordered). When specified, only these values can be assigned. When the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values` and `ordered_allowed_values`.
 - `comment` (String) Specifies a comment for the tag.
 - `masking_policies` (Set of String) Set of masking policies for the tag. A tag can support one masking policy for each data type. If masking policies are assigned to the tag, before dropping the tag, the provider automatically unassigns them. For more information about this resource, see [docs](./masking_policy).
-- `no_allowed_values` (Boolean) When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled. Conflicts with `allowed_values`.
+- `no_allowed_values` (Boolean) When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled. Conflicts with `allowed_values` and `ordered_allowed_values`.
 - `on_conflict` (Block List, Max: 1) Specifies what happens when there is a conflict between the values of [propagated tags](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint". (see [below for nested schema](#nestedblock--on_conflict))
+- `ordered_allowed_values` (List of String) Ordered list of allowed values for the tag. The order is preserved in Snowflake and is significant when `on_conflict.allowed_values_sequence` is used — the first matching value in the sequence wins. Use this instead of `allowed_values` when order matters. Conflicts with `allowed_values` and `no_allowed_values`.
 - `propagate` (String) Specifies that the tag will be automatically propagated from source objects to target objects. See more about tag propagation in the [official documentation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation). Valid options are: `NONE` | `ON_DEPENDENCY` | `ON_DATA_MOVEMENT` | `ON_DEPENDENCY_AND_DATA_MOVEMENT`
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 

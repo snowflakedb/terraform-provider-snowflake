@@ -52,14 +52,22 @@ var tagSchema = map[string]*schema.Schema{
 		Type:          schema.TypeSet,
 		Elem:          &schema.Schema{Type: schema.TypeString},
 		Optional:      true,
-		Description:   "Set of allowed values for the tag. When specified, only these values can be assigned. When the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values`.",
-		ConflictsWith: []string{"no_allowed_values"},
+		Description:   "Set of allowed values for the tag (unordered). When specified, only these values can be assigned. When the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values` and `ordered_allowed_values`.",
+		Deprecated:    "This field is deprecated and will be removed in the next major version. Use `ordered_allowed_values` instead.",
+		ConflictsWith: []string{"no_allowed_values", "ordered_allowed_values"},
+	},
+	"ordered_allowed_values": {
+		Type:          schema.TypeList,
+		Elem:          &schema.Schema{Type: schema.TypeString},
+		Optional:      true,
+		Description:   "Ordered list of allowed values for the tag. The order is preserved in Snowflake and is significant when `on_conflict.allowed_values_sequence` is used — the first matching value in the sequence wins. Use this instead of `allowed_values` when order matters. Conflicts with `allowed_values` and `no_allowed_values`.",
+		ConflictsWith: []string{"allowed_values", "no_allowed_values"},
 	},
 	"no_allowed_values": {
 		Type:          schema.TypeBool,
 		Optional:      true,
-		Description:   "When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled. Conflicts with `allowed_values`.",
-		ConflictsWith: []string{"allowed_values"},
+		Description:   "When set to true, the tag explicitly disallows any value from being assigned. This is different from omitting `allowed_values`, which means any value is accepted. Available only when the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled. Conflicts with `allowed_values` and `ordered_allowed_values`.",
+		ConflictsWith: []string{"allowed_values", "ordered_allowed_values"},
 	},
 	"propagate": {
 		Type:        schema.TypeString,
@@ -83,9 +91,10 @@ var tagSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"allowed_values_sequence": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Description: externalChangesNotDetectedFieldDescription("The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict."),
+					Type:         schema.TypeBool,
+					Optional:     true,
+					Description:  externalChangesNotDetectedFieldDescription("The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict."),
+					RequiredWith: []string{"ordered_allowed_values"},
 					ExactlyOneOf: []string{
 						"on_conflict.0.allowed_values_sequence",
 						"on_conflict.0.custom_value",
@@ -168,7 +177,7 @@ func Tag() *schema.Resource {
 		Description:   "Resource used to manage tags. For more information, check [tag documentation](https://docs.snowflake.com/en/sql-reference/sql/create-tag). For assigning tags to Snowflake objects, see [tag_association resource](./tag_association).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Tag, customdiff.All(
-			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values", "no_allowed_values"),
+			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values", "ordered_allowed_values", "no_allowed_values"),
 			ComputedIfAnyAttributeChanged(tagSchema, FullyQualifiedNameAttributeName, "name"),
 		)),
 
@@ -203,12 +212,17 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	id := sdk.NewSchemaObjectIdentifier(database, schemaName, name)
 
 	request := sdk.NewCreateTagRequest(id)
+
 	if v, ok := d.GetOk("comment"); ok {
 		request.WithComment(v.(string))
 	}
-	if v, ok := d.GetOk("allowed_values"); ok {
+
+	if v, ok := d.GetOk("ordered_allowed_values"); ok {
+		request.WithAllowedValues(expandStringListAllowEmpty(v.([]any)))
+	} else if v, ok := d.GetOk("allowed_values"); ok {
 		request.WithAllowedValues(expandStringListAllowEmpty(v.(*schema.Set).List()))
 	}
+
 	if v, ok := d.GetOk("propagate"); ok {
 		propagate, err := buildTagPropagateRequest(v.(string), d)
 		if err != nil {
@@ -304,7 +318,19 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
-		d.Set("allowed_values", tag.AllowedValues),
+		// Use ordered_allowed_values by default (including import where rawConfig is null).
+		// Fall back to allowed_values only when it is explicitly set in the config.
+		func() error {
+			useAllowedValues := false
+			if !d.GetRawConfig().IsNull() {
+				v, ok := d.GetRawConfig().AsValueMap()["allowed_values"]
+				useAllowedValues = ok && !v.IsNull() && v.LengthInt() > 0
+			}
+			if useAllowedValues {
+				return d.Set("allowed_values", tag.AllowedValues)
+			}
+			return d.Set("ordered_allowed_values", tag.AllowedValues)
+		}(),
 		d.Set("propagate", tag.Propagate),
 		func() error {
 			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTag))
@@ -370,84 +396,80 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
-		if d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
-			o, n := d.GetChange("allowed_values")
-			oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
-			newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
-			addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
-			noAllowedValues := d.Get("no_allowed_values").(bool)
+	experimentEnabled := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments)
+	noAllowedValues := d.Get("no_allowed_values").(bool)
+	if noAllowedValues && !experimentEnabled {
+		return diag.FromErr(fmt.Errorf("no_allowed_values is not supported when the %s experiment is disabled", experimentalfeatures.TagsAllowEmptyAllowedValues))
+	}
 
-			switch {
-			case d.HasChange("no_allowed_values") && noAllowedValues:
-				if len(oldAllowedValues) == 0 {
-					// If no values where previously set, add a new temporary one and drop it to block any value on the Snowflake side
-					if err := errors.Join(
-						client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})),
-						client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})),
-					); err != nil {
-						return diag.FromErr(err)
-					}
-				} else {
-					// Otherwise drop values that were previously set
-					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
-						return diag.FromErr(err)
-					}
+	allowedValuesSequenceActive := false
+	if v, ok := d.GetOk("on_conflict.0.allowed_values_sequence"); ok && v.(bool) {
+		allowedValuesSequenceActive = true
+	}
+
+	// Handle allowed values changes.
+	// The three fields (allowed_values, ordered_allowed_values, no_allowed_values) are mutually exclusive,
+	// so exactly one target state applies. Determine it from config and apply the matching Snowflake operation.
+	if d.HasChange("ordered_allowed_values") || d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
+		newOrdered := expandStringListAllowEmpty(d.Get("ordered_allowed_values").([]any))
+		newUnordered := expandStringListAllowEmpty(d.Get("allowed_values").(*schema.Set).List())
+
+		switch {
+		case len(newOrdered) > 0:
+			// Target: ordered values - SET atomically replaces in the specified order.
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newOrdered))); err != nil {
+				return diag.FromErr(err)
+			}
+
+		case len(newUnordered) > 0:
+			// Target: unordered values - SET atomically replaces.
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newUnordered))); err != nil {
+				return diag.FromErr(err)
+			}
+
+		case noAllowedValues:
+			// Target: block all values (empty allowed_values in Snowflake). Requires experiment flag (validated above).
+			oldUnorderedRaw, _ := d.GetChange("allowed_values")
+			oldValues := expandStringListAllowEmpty(oldUnorderedRaw.(*schema.Set).List())
+			if len(oldValues) == 0 {
+				oldOrderedRaw, _ := d.GetChange("ordered_allowed_values")
+				oldValues = expandStringListAllowEmpty(oldOrderedRaw.([]any))
+			}
+			if len(oldValues) > 0 {
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(oldValues)); err != nil {
+					return diag.FromErr(err)
 				}
-			case d.HasChange("no_allowed_values") && !noAllowedValues && len(newAllowedValues) == 0:
+			} else {
+				// No previous values - use ADD temp + DROP temp to enter blocking state.
+				if err := errors.Join(
+					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})),
+					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})),
+				); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
+		default:
+			// No allowed values field is set - values were removed from config.
+			if experimentEnabled {
+				// UNSET makes the tag accept any value (null state).
 				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {
 					return diag.FromErr(err)
 				}
-			default:
-				if len(addedItems) > 0 {
-					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(addedItems)); err != nil {
+			} else {
+				// Without experiment: removing values = blocking state (legacy behavior).
+				// DROP old values; if already blocking (no old values), do nothing.
+				oldUnorderedRaw, _ := d.GetChange("allowed_values")
+				oldValues := expandStringListAllowEmpty(oldUnorderedRaw.(*schema.Set).List())
+				if len(oldValues) == 0 {
+					oldOrderedRaw, _ := d.GetChange("ordered_allowed_values")
+					oldValues = expandStringListAllowEmpty(oldOrderedRaw.([]any))
+				}
+				if len(oldValues) > 0 {
+					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(oldValues)); err != nil {
 						return diag.FromErr(err)
 					}
 				}
-
-				if len(removedItems) > 0 {
-					if len(newAllowedValues) == 0 {
-						// No values left, use UNSET to allow any value to be set with the tag
-						if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {
-							return diag.FromErr(err)
-						}
-					} else {
-						// Some values are still in the config, use DROP to avoid disrupting other users who depend on the remaining allowed values
-						if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
-							return diag.FromErr(err)
-						}
-					}
-				}
-			}
-		}
-	} else {
-		if d.Get("no_allowed_values").(bool) {
-			return diag.FromErr(fmt.Errorf("no_allowed_values is not supported when the %s experiment is disabled", experimentalfeatures.TagsAllowEmptyAllowedValues))
-		}
-		if d.HasChange("allowed_values") {
-			o, n := d.GetChange("allowed_values")
-			oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
-			newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
-
-			addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
-
-			if len(addedItems) > 0 {
-				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd(addedItems)); err != nil {
-					return diag.FromErr(err)
-				}
-			}
-
-			if len(removedItems) > 0 {
-				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		} else if d.HasChange("no_allowed_values") && !d.Get("no_allowed_values").(bool) {
-			if err := errors.Join(
-				client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})),
-				client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})),
-			); err != nil {
-				return diag.FromErr(err)
 			}
 		}
 	}
@@ -456,12 +478,12 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	// Covers:
 	// - propagate changed
 	// - on_conflict changed (set or unset)
-	// - allowed_values changed while on_conflict is configured
+	// - allowed_values changed or reordered while on_conflict is configured
 	shouldPropagate := d.HasChange("propagate") || d.HasChange("on_conflict")
-	if !shouldPropagate && d.HasChange("allowed_values") {
-		// If on_conflict is configured with allowed_values_sequence and allowed_values changed,
-		// re-send propagation to re-evaluate conflict resolution on dependent objects.
-		if v, ok := d.GetOk("on_conflict.0.allowed_values_sequence"); ok && v.(bool) {
+	if !shouldPropagate && (d.HasChange("allowed_values") || d.HasChange("ordered_allowed_values")) {
+		// If on_conflict is configured, re-send propagation when values change
+		// to re-evaluate conflict resolution on dependent objects.
+		if allowedValuesSequenceActive {
 			shouldPropagate = true
 		}
 	}
@@ -491,8 +513,8 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	if d.HasChange("masking_policies") {
 		o, n := d.GetChange("masking_policies")
-		oldAllowedValues := expandStringList(o.(*schema.Set).List())
-		newAllowedValues := expandStringList(n.(*schema.Set).List())
+		oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
+		newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
 
 		addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
 

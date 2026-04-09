@@ -29,7 +29,6 @@ func (t *TagResourceAssert) HasOnConflictAllowedValuesSequence() *TagResourceAss
 	return t
 }
 
-// HasPropagateEnum
 func (t *TagResourceAssert) HasPropagateEnum(expected sdk.TagPropagation) *TagResourceAssert {
 	return t.HasPropagateString(string(expected))
 }

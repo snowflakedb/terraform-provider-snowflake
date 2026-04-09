@@ -20,7 +20,7 @@ func TestTagCreate(t *testing.T) {
 		opts.IfNotExists = Bool(true)
 		opts.Comment = String("comment")
 		opts.AllowedValues = &AllowedValues{
-			Values: []AllowedValue{
+			Values: []StringAllowEmpty{
 				{
 					Value: "value1",
 				},
@@ -65,7 +65,7 @@ func TestTagCreate(t *testing.T) {
 	t.Run("validation: allowed values count", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AllowedValues = &AllowedValues{
-			Values: []AllowedValue{},
+			Values: []StringAllowEmpty{},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errIntBetween("AllowedValues", "Values", 1, 300))
 	})
@@ -194,7 +194,7 @@ func TestTagAlter(t *testing.T) {
 	}
 	defaultAllowedValues := func() *AllowedValues {
 		return &AllowedValues{
-			Values: []AllowedValue{
+			Values: []StringAllowEmpty{
 				{
 					Value: "value1",
 				},
@@ -384,7 +384,7 @@ func TestTagAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Add = &TagAdd{
 			AllowedValues: &AllowedValues{
-				Values: []AllowedValue{},
+				Values: []StringAllowEmpty{},
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errIntBetween("AllowedValues", "Values", 1, 300))
@@ -394,7 +394,7 @@ func TestTagAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Drop = &TagDrop{
 			AllowedValues: &AllowedValues{
-				Values: []AllowedValue{},
+				Values: []StringAllowEmpty{},
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errIntBetween("AllowedValues", "Values", 1, 300))
