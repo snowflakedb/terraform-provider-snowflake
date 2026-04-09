@@ -26,6 +26,53 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* snowflake_tag resource changes
+
+#### Propagation and conflict resolution support
+
+We added support for [tag propagation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation) to the `snowflake_tag` resource. The following new fields are now available:
+
+- `propagate` - Controls how the tag propagates. Valid values are `ON_DEPENDENCY`, `ON_DATA_MOVEMENT`, `ON_DEPENDENCY_AND_DATA_MOVEMENT`, and `NONE`. Omitting this attribute is equivalent to `NONE`.
+- `on_conflict` - Configures how conflicting tag values from multiple source objects are resolved during propagation. Requires `propagate` to be set. Supports two mutually exclusive options:
+  - `on_conflict.0.allowed_values_sequence` - Resolves conflicts using the order defined in the tag's `ordered_allowed_values`. Requires `ordered_allowed_values` to be set.
+  - `on_conflict.0.custom_value` - Resolves conflicts by using a custom string value.
+
+#### New `ordered_allowed_values` field
+
+A new `ordered_allowed_values` field (TypeList) has been added to the `snowflake_tag` resource.
+It is preferred over the existing `allowed_values` field (TypeSet) because it preserves the order you specify — which is required when using `on_conflict.allowed_values_sequence` for tag propagation conflict resolution,
+where the first matching value in the sequence wins. For more details, see [tag propagation conflicts](https://docs.snowflake.com/en/user-guide/object-tagging/propagation#tag-propagation-conflicts) documentation.
+
+The `allowed_values` field is now **deprecated** and will be removed in the next major version. The two fields are mutually exclusive (`ConflictsWith`), so you can migrate at your own pace.
+
+**Migration:** Replace `allowed_values` with `ordered_allowed_values` in your configuration:
+
+```hcl
+# Before
+resource "snowflake_tag" "example" {
+  # ...
+  allowed_values = ["production", "staging", "development"]
+}
+
+# After
+resource "snowflake_tag" "example" {
+  # ...
+  ordered_allowed_values = ["production", "staging", "development"]
+}
+```
+
+After switching, run `terraform plan` — Terraform will show an update moving the values from `allowed_values` to `ordered_allowed_values`.
+The tag's allowed values in Snowflake remain unchanged (what only may be altered is the order of the values).
+
+**Import behavior:** When importing a `snowflake_tag` resource, values are always populated into the `ordered_allowed_values` field.
+If your configuration uses the deprecated `allowed_values` field, the first `terraform plan` after import will show an update moving the values to the correct field.
+
+#### New `propagate` field in `show_output`
+
+A new `propagate` field has been added to the `show_output` attribute on both the `snowflake_tag` resource and the `snowflake_tags` data source. It reflects the propagation method returned by `SHOW TAGS`.
+
+No configuration changes are required. If you reference `show_output` in your configuration, the new field will be available automatically.
+
 ### *(new feature)* Adaptive warehouses support
 
 #### New adaptive warehouse resource

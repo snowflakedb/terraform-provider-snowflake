@@ -21,7 +21,7 @@ type TagAssert struct {
 func Tag(t *testing.T, id sdk.SchemaObjectIdentifier) *TagAssert {
 	t.Helper()
 	return &TagAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeTag, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Tag, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("Tag"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Tag, sdk.SchemaObjectIdentifier] {
 			return testClient.Tag.Show
 		}),
 	}
@@ -118,6 +118,17 @@ func (t *TagAssert) HasOwnerRoleType(expected string) *TagAssert {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagAssert) HasPropagate(expected string) *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if string(o.Propagate) != expected {
+			return fmt.Errorf("expected propagate: %v; got: %v", expected, o.Propagate)
 		}
 		return nil
 	})
