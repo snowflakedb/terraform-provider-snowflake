@@ -198,9 +198,9 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 						HasStateNotEmpty().
 						HasComment(comment).
 						HasOwnerNotEmpty().
-						HasOwnerRoleTypeNotEmpty(),
-					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.show_output.0.query_throughput_multiplier", "2")),
-					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.show_output.0.max_query_performance_level", string(sdk.MaxQueryPerformanceLevelMedium))),
+						HasOwnerRoleTypeNotEmpty().
+						HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+						HasQueryThroughputMultiplier(2),
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
 					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.parameters.#", "0")),
@@ -211,9 +211,13 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 				Check: assertThat(t,
 					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModel.DatasourceReference()).
 						HasName(id.Name()).
-						HasType(sdk.WarehouseTypeAdaptive),
-					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.query_throughput_multiplier", "2")),
-					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.show_output.0.max_query_performance_level", string(sdk.MaxQueryPerformanceLevelMedium))),
+						HasType(sdk.WarehouseTypeAdaptive).
+						HasStateNotEmpty().
+						HasComment(comment).
+						HasOwnerNotEmpty().
+						HasOwnerRoleTypeNotEmpty().
+						HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+						HasQueryThroughputMultiplier(2),
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.created_on")),
