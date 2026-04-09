@@ -159,7 +159,7 @@ func assertTagSet(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.O
 	t.Helper()
 	returnedTagValue, err := testClientHelper().Tag.GetForObject(t, tagId, objectId, objectType)
 	require.NoError(t, err)
-	assert.Equal(t, tagValue, *returnedTagValue)
+	assert.Equal(t, sdk.Pointer(tagValue), returnedTagValue)
 }
 
 func assertTagUnset(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectId sdk.ObjectIdentifier, objectType sdk.ObjectType) {

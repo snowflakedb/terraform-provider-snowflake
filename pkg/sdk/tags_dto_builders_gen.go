@@ -57,6 +57,19 @@ func (s *UnsetTagOnCurrentAccountRequest) WithUnsetTags(UnsetTags []ObjectIdenti
 	return s
 }
 
+func NewTagPropagateRequest(
+	propagationMethod TagPropagation,
+) *TagPropagateRequest {
+	s := TagPropagateRequest{}
+	s.propagationMethod = propagationMethod
+	return &s
+}
+
+func (s *TagPropagateRequest) WithOnConflict(onConflict TagOnConflict) *TagPropagateRequest {
+	s.onConflict = &onConflict
+	return s
+}
+
 func NewCreateTagRequest(
 	name SchemaObjectIdentifier,
 ) *CreateTagRequest {
@@ -85,7 +98,7 @@ func (s *CreateTagRequest) WithAllowedValues(allowedValues []string) *CreateTagR
 	return s
 }
 
-func (s *CreateTagRequest) WithPropagate(propagate TagPropagate) *CreateTagRequest {
+func (s *CreateTagRequest) WithPropagate(propagate TagPropagateRequest) *CreateTagRequest {
 	s.propagate = &propagate
 	return s
 }
@@ -147,7 +160,7 @@ func (s *TagSetRequest) WithAllowedValues(allowedValues []string) *TagSetRequest
 	return s
 }
 
-func (s *TagSetRequest) WithPropagate(propagate TagPropagate) *TagSetRequest {
+func (s *TagSetRequest) WithPropagate(propagate TagPropagateRequest) *TagSetRequest {
 	s.propagate = &propagate
 	return s
 }

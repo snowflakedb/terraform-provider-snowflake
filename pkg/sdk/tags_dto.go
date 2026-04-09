@@ -34,6 +34,11 @@ type UnsetTagOnCurrentAccountRequest struct {
 	UnsetTags []ObjectIdentifier
 }
 
+type TagPropagateRequest struct {
+	propagationMethod TagPropagation // required
+	onConflict        *TagOnConflict
+}
+
 type CreateTagRequest struct {
 	orReplace   *bool
 	ifNotExists *bool
@@ -42,7 +47,7 @@ type CreateTagRequest struct {
 
 	comment       *string
 	allowedValues []string
-	propagate     *TagPropagate
+	propagate     *TagPropagateRequest
 }
 
 func (r *CreateTagRequest) GetName() SchemaObjectIdentifier {
@@ -65,7 +70,7 @@ type TagSetRequest struct {
 	maskingPolicies []SchemaObjectIdentifier
 	force           *bool
 	allowedValues   []string
-	propagate       *TagPropagate
+	propagate       *TagPropagateRequest
 	comment         *string
 }
 

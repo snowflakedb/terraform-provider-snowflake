@@ -107,7 +107,7 @@ func (s *CreateTagRequest) toOpts() *createTagOptions {
 		OrReplace:   s.orReplace,
 		IfNotExists: s.ifNotExists,
 		name:        s.name,
-		Propagate:   s.propagate,
+		Propagate:   s.propagate.toTagPropagate(),
 		Comment:     s.comment,
 	}
 	if len(s.allowedValues) > 0 {
@@ -129,7 +129,7 @@ func (s *AlterTagRequest) toOpts() *alterTagOptions {
 	}
 	if s.set != nil {
 		set := &TagSet{
-			Propagate: s.set.propagate,
+			Propagate: s.set.propagate.toTagPropagate(),
 			Comment:   s.set.comment,
 		}
 		if len(s.set.allowedValues) > 0 {
@@ -237,10 +237,20 @@ func (s *UnsetTagRequest) toOpts() *unsetTagOptions {
 	return o
 }
 
+func (r *TagPropagateRequest) toTagPropagate() *TagPropagate {
+	if r == nil {
+		return nil
+	}
+	return &TagPropagate{
+		PropagationMethod: &r.propagationMethod,
+		OnConflict:        r.onConflict,
+	}
+}
+
 func createAllowedValues(values []string) *AllowedValues {
-	items := make([]AllowedValue, 0, len(values))
+	items := make([]StringAllowEmpty, 0, len(values))
 	for _, value := range values {
-		items = append(items, AllowedValue{
+		items = append(items, StringAllowEmpty{
 			Value: value,
 		})
 	}
