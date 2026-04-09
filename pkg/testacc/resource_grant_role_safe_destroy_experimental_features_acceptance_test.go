@@ -18,6 +18,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// NOTE: In most cases, we call DROP inside PreApply check.
+// This is to force destroying the resource after the plan is computed.
+
 // TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingParentRole verifies that destroying
 // a grant_account_role resource fails when the grantee (parent) role is deleted externally (default behavior),
 // and succeeds when the GRANTS_SAFE_DESTROY experiment is enabled.

@@ -223,9 +223,7 @@ func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta i
 	revokeFromShareFunc := client.DatabaseRoles.RevokeFromShare
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
 		revokeFunc = client.DatabaseRoles.RevokeSafely
-		revokeFromShareFunc = func(ctx context.Context, req *sdk.RevokeDatabaseRoleFromShareRequest) error {
-			return sdk.SafeRevokePrivileges(func() error { return client.DatabaseRoles.RevokeFromShare(ctx, req) })
-		}
+		revokeFromShareFunc = client.DatabaseRoles.RevokeFromShareSafely
 	}
 	switch objectType {
 	case "ROLE":

@@ -91,6 +91,10 @@ func (v *databaseRoles) RevokeFromShare(ctx context.Context, request *RevokeData
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *databaseRoles) RevokeFromShareSafely(ctx context.Context, request *RevokeDatabaseRoleFromShareRequest) error {
+	return SafeRevokePrivileges(func() error { return v.RevokeFromShare(ctx, request) })
+}
+
 func (s *CreateDatabaseRoleRequest) toOpts() *createDatabaseRoleOptions {
 	return &createDatabaseRoleOptions{
 		OrReplace:   Bool(s.orReplace),
