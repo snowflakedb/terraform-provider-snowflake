@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* New adaptive warehouse resource
+
+We have added a new preview resource for managing adaptive warehouses [snowflake_warehouse_adaptive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive).
+
+Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning.
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_warehouse_adaptive_resource` to the `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* Support for future grants on `IMAGE REPOSITORIES`
 
 Both, `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources,

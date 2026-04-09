@@ -689,6 +689,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_user_public_keys":                                             resources.UserPublicKeys(),
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
+		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
 	}
 }
 

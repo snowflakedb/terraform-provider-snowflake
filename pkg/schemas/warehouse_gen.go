@@ -139,11 +139,57 @@ var ShowRegularWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon
 
 var _ = ShowRegularWarehouseSchema
 
-func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+// showWarehouseSchemaAdaptive contains fields only present for adaptive warehouses.
+// Adjusted manually.
+var showWarehouseSchemaAdaptive = map[string]*schema.Schema{
+	"max_query_performance_level": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"query_throughput_multiplier": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+}
+
+// ShowAdaptiveWarehouseSchema contains common and adaptive fields (used by the adaptive warehouse resource).
+// Adjusted manually.
+var ShowAdaptiveWarehouseSchema = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaAdaptive)
+
+var _ = ShowAdaptiveWarehouseSchema
+
+// commonWarehouseToSchema maps fields present in all warehouse types (showWarehouseSchemaCommon).
+// Adjusted manually.
+func commonWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := make(map[string]any)
 	warehouseSchema["name"] = warehouse.Name
 	warehouseSchema["state"] = string(warehouse.State)
 	warehouseSchema["type"] = string(warehouse.Type)
+	if warehouse.Running != nil {
+		warehouseSchema["running"] = (*warehouse.Running)
+	}
+	if warehouse.Queued != nil {
+		warehouseSchema["queued"] = (*warehouse.Queued)
+	}
+	warehouseSchema["is_default"] = warehouse.IsDefault
+	warehouseSchema["is_current"] = warehouse.IsCurrent
+	warehouseSchema["auto_resume"] = warehouse.AutoResume
+	warehouseSchema["available"] = warehouse.Available
+	warehouseSchema["provisioning"] = warehouse.Provisioning
+	warehouseSchema["quiescing"] = warehouse.Quiescing
+	warehouseSchema["other"] = warehouse.Other
+	warehouseSchema["created_on"] = warehouse.CreatedOn.String()
+	warehouseSchema["resumed_on"] = warehouse.ResumedOn.String()
+	warehouseSchema["updated_on"] = warehouse.UpdatedOn.String()
+	warehouseSchema["owner"] = warehouse.Owner
+	warehouseSchema["comment"] = warehouse.Comment
+	warehouseSchema["resource_monitor"] = warehouse.ResourceMonitor.Name()
+	warehouseSchema["owner_role_type"] = warehouse.OwnerRoleType
+	return warehouseSchema
+}
+
+func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+	warehouseSchema := commonWarehouseToSchema(warehouse)
 	if warehouse.Size != nil {
 		warehouseSchema["size"] = string((*warehouse.Size))
 	}
@@ -156,38 +202,18 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 	if warehouse.StartedClusters != nil {
 		warehouseSchema["started_clusters"] = (*warehouse.StartedClusters)
 	}
-	if warehouse.Running != nil {
-		warehouseSchema["running"] = (*warehouse.Running)
-	}
-	if warehouse.Queued != nil {
-		warehouseSchema["queued"] = (*warehouse.Queued)
-	}
-	warehouseSchema["is_default"] = warehouse.IsDefault
-	warehouseSchema["is_current"] = warehouse.IsCurrent
 	if warehouse.AutoSuspend != nil {
 		warehouseSchema["auto_suspend"] = (*warehouse.AutoSuspend)
 	}
-	warehouseSchema["auto_resume"] = warehouse.AutoResume
-	warehouseSchema["available"] = warehouse.Available
-	warehouseSchema["provisioning"] = warehouse.Provisioning
-	warehouseSchema["quiescing"] = warehouse.Quiescing
-	warehouseSchema["other"] = warehouse.Other
-	warehouseSchema["created_on"] = warehouse.CreatedOn.String()
-	warehouseSchema["resumed_on"] = warehouse.ResumedOn.String()
-	warehouseSchema["updated_on"] = warehouse.UpdatedOn.String()
-	warehouseSchema["owner"] = warehouse.Owner
-	warehouseSchema["comment"] = warehouse.Comment
 	if warehouse.EnableQueryAcceleration != nil {
 		warehouseSchema["enable_query_acceleration"] = (*warehouse.EnableQueryAcceleration)
 	}
 	if warehouse.QueryAccelerationMaxScaleFactor != nil {
 		warehouseSchema["query_acceleration_max_scale_factor"] = (*warehouse.QueryAccelerationMaxScaleFactor)
 	}
-	warehouseSchema["resource_monitor"] = warehouse.ResourceMonitor.Name()
 	if warehouse.ScalingPolicy != nil {
 		warehouseSchema["scaling_policy"] = string((*warehouse.ScalingPolicy))
 	}
-	warehouseSchema["owner_role_type"] = warehouse.OwnerRoleType
 	if warehouse.ResourceConstraint != nil {
 		warehouseSchema["resource_constraint"] = string((*warehouse.ResourceConstraint))
 	}
@@ -198,3 +224,16 @@ func WarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
 }
 
 var _ = WarehouseToSchema
+
+// WarehouseAdaptiveToSchema maps fields in the show output of an adaptive warehouse (showWarehouseSchemaAdaptive).
+// Adjusted manually.
+func WarehouseAdaptiveToSchema(warehouse *sdk.Warehouse) map[string]any {
+	warehouseSchema := commonWarehouseToSchema(warehouse)
+	if warehouse.MaxQueryPerformanceLevel != nil {
+		warehouseSchema["max_query_performance_level"] = string(*warehouse.MaxQueryPerformanceLevel)
+	}
+	if warehouse.QueryThroughputMultiplier != nil {
+		warehouseSchema["query_throughput_multiplier"] = *warehouse.QueryThroughputMultiplier
+	}
+	return warehouseSchema
+}
