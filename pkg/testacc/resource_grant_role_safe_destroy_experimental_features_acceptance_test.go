@@ -1,4 +1,4 @@
-//go:build account_level_tests
+//go:build non_account_level_tests
 
 package testacc
 
@@ -36,7 +36,6 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingParentRole(t *test
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantRole_SafeDestroy")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -62,7 +61,7 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingParentRole(t *test
 			},
 			// Recreate the parent role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: experimentFactory,
+				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
 				PreConfig: func() {
 					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
 				},
@@ -93,7 +92,6 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingRole(t *testing.T)
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantRole_SafeDestroy")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -119,7 +117,7 @@ func TestAcc_Experimental_GrantAccountRole_SafeDestroy_MissingRole(t *testing.T)
 			},
 			// Recreate the granted role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: experimentFactory,
+				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
 				PreConfig: func() {
 					testClient().Role.CreateRoleWithIdentifier(t, role.ID())
 				},
@@ -150,7 +148,6 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingParentRole(t *tes
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantRole_SafeDestroy")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -176,7 +173,7 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingParentRole(t *tes
 			},
 			// Recreate the parent account role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: experimentFactory,
+				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
 				PreConfig: func() {
 					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
 				},
@@ -207,7 +204,6 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingDatabaseRole(t *t
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantRole_SafeDestroy")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -233,7 +229,7 @@ func TestAcc_Experimental_GrantDatabaseRole_SafeDestroy_MissingDatabaseRole(t *t
 			},
 			// Recreate the database role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: experimentFactory,
+				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
 				PreConfig: func() {
 					testClient().DatabaseRole.CreateDatabaseRoleInDatabaseWithName(t, dbRole.ID().DatabaseId(), dbRole.ID().Name())
 				},
@@ -269,7 +265,6 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantApplicationRole_SafeDestroy")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -295,7 +290,7 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 			},
 			// Recreate the parent account role, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: experimentFactory,
+				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
 				PreConfig: func() {
 					testClient().Role.CreateRoleWithIdentifier(t, parentRole.ID())
 				},
@@ -332,7 +327,6 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingApplication(t 
 
 	experimentProviderModel := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.GrantsSafeDestroy)
-	experimentFactory := providerFactoryUsingCache("TestAcc_Experimental_GrantApplicationRole_SafeDestroy")
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -358,7 +352,7 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingApplication(t 
 			},
 			// Recreate the grantee application, drop it again in PreApply, then destroy with GRANTS_SAFE_DESTROY — succeeds.
 			{
-				ProtoV6ProviderFactories: experimentFactory,
+				ProtoV6ProviderFactories: grantsSafeDestroyProviderFactory,
 				PreConfig: func() {
 					testClient().Application.CreateApplicationWithIdentifier(t, app.ID(), appPackage.ID(), "v1")
 				},
