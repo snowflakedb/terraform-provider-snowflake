@@ -162,6 +162,79 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	warehouseModel := model.WarehouseAdaptive("test", id.Name()).
+		WithComment(comment).
+		WithMaxQueryPerformanceLevel(string(sdk.MaxQueryPerformanceLevelMedium)).
+		WithQueryThroughputMultiplier(2).
+		WithStatementQueuedTimeoutInSeconds(300).
+		WithStatementTimeoutInSeconds(86400)
+	warehousesModelWithoutOptionals := datasourcemodel.Warehouses("test").
+		WithLike(id.Name()).
+		WithWithDescribe(false).
+		WithWithParameters(false).
+		WithDependsOn(warehouseModel.ResourceReference())
+
+	warehousesModel := datasourcemodel.Warehouses("test").
+		WithLike(id.Name()).
+		WithDependsOn(warehouseModel.ResourceReference())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseAdaptive),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, warehouseModel, warehousesModelWithoutOptionals),
+				Check: assertThat(t,
+					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModelWithoutOptionals.DatasourceReference()).
+						HasName(id.Name()).
+						HasType(sdk.WarehouseTypeAdaptive).
+						HasStateNotEmpty().
+						HasComment(comment).
+						HasOwnerNotEmpty().
+						HasOwnerRoleTypeNotEmpty().
+						HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+						HasQueryThroughputMultiplier(2),
+
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.parameters.#", "0")),
+				),
+			},
+			{
+				Config: config.FromModels(t, warehouseModel, warehousesModel),
+				Check: assertThat(t,
+					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModel.DatasourceReference()).
+						HasName(id.Name()).
+						HasType(sdk.WarehouseTypeAdaptive).
+						HasStateNotEmpty().
+						HasComment(comment).
+						HasOwnerNotEmpty().
+						HasOwnerRoleTypeNotEmpty().
+						HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+						HasQueryThroughputMultiplier(2),
+
+					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.name")),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.kind", "WAREHOUSE")),
+
+					resourceparametersassert.WarehousesDatasourceParameters(t, warehousesModel.DatasourceReference()).
+						HasStatementQueuedTimeoutInSeconds(300).
+						HasStatementQueuedTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
+						HasStatementTimeoutInSeconds(86400).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Warehouses_WarehouseNotFound_WithPostConditions(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

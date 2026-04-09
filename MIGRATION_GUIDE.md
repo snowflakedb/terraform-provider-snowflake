@@ -26,7 +26,9 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
-### *(new feature)* New adaptive warehouse resource
+### *(new feature)* Adaptive warehouses support
+
+#### New adaptive warehouse resource
 
 We have added a new preview resource for managing adaptive warehouses [snowflake_warehouse_adaptive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive).
 
@@ -40,6 +42,15 @@ Both, `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileg
 now support the `IMAGE REPOSITORY` for future grants (in `on_schema_object.future.object_type_plural`).
 
 No changes to existing configurations are required.
+
+#### Adaptive warehouse columns in `snowflake_warehouses` data source
+
+The `show_output` field in the `snowflake_warehouses` data source now includes two additional computed attributes that surface adaptive warehouse details:
+
+- `max_query_performance_level` — the initial compute capacity level of an adaptive warehouse
+- `query_throughput_multiplier` — the query throughput multiplier of an adaptive warehouse
+
+These fields are populated only when the warehouse type is `ADAPTIVE`; for standard and Snowpark-Optimized warehouses they remain empty. No configuration changes are required.
 
 ### *(new feature)* GRANTS_SAFE_DESTROY experiment
 
