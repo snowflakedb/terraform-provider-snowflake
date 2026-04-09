@@ -21,9 +21,7 @@ var All{{ .NamePlural }} = []{{ .Name }}{
 	{{- end }}
 }
 
-{{ $hasAliases := false }}
-{{- range .ValueRepresentations }}{{- if .Aliases }}{{ $hasAliases = true }}{{ end }}{{ end }}
-{{- if $hasAliases }}
+{{- if .HasAliases }}
 var All{{ .NamePlural }}String = []string{
 	{{- range .ValueRepresentations }}
 	string({{ .Name }}),
@@ -41,7 +39,7 @@ func To{{ .Name }}(s string) ({{ .Name }}, error) {
 		return {{ .Name }}, nil
 	{{- end }}
 	default:
-		return "", fmt.Errorf("invalid {{ .Name }}: %s", s)
+		return "", fmt.Errorf("invalid {{ CamelToWords .Name }}: %s", s)
 	}
 }
 {{ end }}

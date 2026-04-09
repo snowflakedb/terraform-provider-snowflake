@@ -31,6 +31,6 @@ func ToProgrammaticAccessTokenStatus(s string) (ProgrammaticAccessTokenStatus, e
 	case string(ProgrammaticAccessTokenStatusDisabled):
 		return ProgrammaticAccessTokenStatusDisabled, nil
 	default:
-		return "", fmt.Errorf("invalid ProgrammaticAccessTokenStatus: %s", s)
+		return "", fmt.Errorf("invalid programmatic access token status: %s", s)
 	}
 }

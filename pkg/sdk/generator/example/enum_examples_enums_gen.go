@@ -31,7 +31,7 @@ func ToExampleStatus(s string) (ExampleStatus, error) {
 	case string(ExampleStatusExpired):
 		return ExampleStatusExpired, nil
 	default:
-		return "", fmt.Errorf("invalid ExampleStatus: %s", s)
+		return "", fmt.Errorf("invalid example status: %s", s)
 	}
 }
 
@@ -77,6 +77,6 @@ func ToExampleSize(s string) (ExampleSize, error) {
 	case string(ExampleSizeXlarge), "X-LARGE":
 		return ExampleSizeXlarge, nil
 	default:
-		return "", fmt.Errorf("invalid ExampleSize: %s", s)
+		return "", fmt.Errorf("invalid example size: %s", s)
 	}
 }

@@ -28,6 +28,16 @@ func (e *Enum) WithAliases(value string, aliases ...string) *Enum {
 	return e
 }
 
+// HasAliases returns true if any enum value has at least one alias.
+func (e *Enum) HasAliases() bool {
+	for _, aliases := range e.Aliases {
+		if len(aliases) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // valueName returns the constant name for a given enum value.
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
 func (e *Enum) valueName(value string) string {

@@ -51,6 +51,18 @@ func TestEnum_ValueRepresentations(t *testing.T) {
 	}
 }
 
+func TestEnum_HasAliases(t *testing.T) {
+	t.Run("no aliases", func(t *testing.T) {
+		enum := NewEnum("Status", "Statuses", "ACTIVE", "INACTIVE")
+		require.False(t, enum.HasAliases())
+	})
+
+	t.Run("with aliases", func(t *testing.T) {
+		enum := NewEnum("Size", "Sizes", "XSMALL").WithAliases("XSMALL", "X-SMALL")
+		require.True(t, enum.HasAliases())
+	})
+}
+
 func TestEnum_WithAliases(t *testing.T) {
 	t.Run("single alias", func(t *testing.T) {
 		enum := NewEnum("Size", "Sizes", "XSMALL", "SMALL").
