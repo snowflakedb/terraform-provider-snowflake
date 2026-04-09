@@ -61,7 +61,7 @@ Note: this is supported only on all stage resources (`snowflake_stage_external_s
 #### GRANTS_SAFE_DESTROY
 When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.
 
-Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`.
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`.
 
 This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
 
