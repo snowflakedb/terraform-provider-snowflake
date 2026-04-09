@@ -89,7 +89,6 @@ type AlterHybridTableOptions struct {
 	DropIndexAction   *HybridTableDropIndexAction    `ddl:"keyword"`
 	ClusteringAction  *HybridTableClusteringAction   `ddl:"keyword"`
 	Set               *HybridTableSetProperties      `ddl:"keyword" sql:"SET"`
-	Unset             *HybridTableUnsetProperties    `ddl:"keyword" sql:"UNSET"`
 }
 
 type HybridTableAddColumnAction struct {
@@ -104,15 +103,11 @@ type HybridTableAddColumnAction struct {
 	Comment          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
+// NOTE: Hybrid tables do not support ALTER TABLE ADD UNIQUE or ADD FOREIGN KEY constraints
+// (Snowflake returns: "Unique and foreign-key constraints can only be defined at table creation time").
 type HybridTableConstraintAction struct {
-	Add    *HybridTableConstraintActionAdd    `ddl:"keyword"`
 	Rename *HybridTableConstraintActionRename `ddl:"keyword"`
 	Drop   *HybridTableConstraintActionDrop   `ddl:"keyword"`
-}
-
-type HybridTableConstraintActionAdd struct {
-	add                 bool                           `ddl:"static" sql:"ADD"`
-	OutOfLineConstraint HybridTableOutOfLineConstraint `ddl:"keyword"`
 }
 
 type HybridTableConstraintActionRename struct {
@@ -121,10 +116,11 @@ type HybridTableConstraintActionRename struct {
 	NewName          string `ddl:"parameter,no_equals,double_quotes" sql:"TO"`
 }
 
+// NOTE: PrimaryKey omitted — DROP PRIMARY KEY is unsupported on hybrid tables (errors at runtime).
+// Removed per PR #4461 review. The def file (hybrid_tables_def.go) reflects this omission.
 type HybridTableConstraintActionDrop struct {
 	drop           bool     `ddl:"static" sql:"DROP"`
 	ConstraintName *string  `ddl:"parameter,no_equals,double_quotes" sql:"CONSTRAINT"`
-	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
 	Columns        []string `ddl:"keyword,parentheses"`
@@ -132,21 +128,17 @@ type HybridTableConstraintActionDrop struct {
 	Restrict       *bool    `ddl:"keyword" sql:"RESTRICT"`
 }
 
+// NOTE: Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL (discovered via integration testing against Snowflake).
+// Snowflake docs may suggest otherwise but the operation errors at runtime.
 type HybridTableAlterColumnAction struct {
-	alter             bool                                `ddl:"static" sql:"ALTER"`
-	column            bool                                `ddl:"static" sql:"COLUMN"`
-	ColumnName        string                              `ddl:"keyword,double_quotes"`
-	DropDefault       *bool                               `ddl:"keyword" sql:"DROP DEFAULT"`
-	SetDefault        *SequenceName                       `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
-	NotNullConstraint *HybridTableColumnNotNullConstraint `ddl:"keyword"`
-	Type              *DataType                           `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
-	Comment           *string                             `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-	UnsetComment      *bool                               `ddl:"keyword" sql:"UNSET COMMENT"`
-}
-
-type HybridTableColumnNotNullConstraint struct {
-	SetNotNull  *bool `ddl:"keyword" sql:"SET NOT NULL"`
-	DropNotNull *bool `ddl:"keyword" sql:"DROP NOT NULL"`
+	alter        bool          `ddl:"static" sql:"ALTER"`
+	column       bool          `ddl:"static" sql:"COLUMN"`
+	ColumnName   string        `ddl:"keyword,double_quotes"`
+	DropDefault  *bool         `ddl:"keyword" sql:"DROP DEFAULT"`
+	SetDefault   *SequenceName `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
+	Type         *DataType     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
+	Comment      *string       `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	UnsetComment *bool         `ddl:"keyword" sql:"UNSET COMMENT"`
 }
 
 type HybridTableDropColumnAction struct {
@@ -179,26 +171,16 @@ type HybridTableReclusterChangeState struct {
 	recluster bool            `ddl:"static" sql:"RECLUSTER"`
 }
 
+// NOTE: Hybrid tables do not support CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION,
+// CONTACT, or ROW_TIMESTAMP in ALTER TABLE SET (per Snowflake documentation and runtime behavior).
 type HybridTableSetProperties struct {
-	DataRetentionTimeInDays    *int           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int           `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool          `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *string        `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
-	EnableSchemaEvolution      *bool          `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	Contact                    []TableContact `ddl:"keyword" sql:"CONTACT"`
-	Comment                    *string        `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	RowTimestamp               *bool          `ddl:"parameter" sql:"ROW_TIMESTAMP"`
+	DataRetentionTimeInDays    *int    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	Comment                    *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-type HybridTableUnsetProperties struct {
-	DataRetentionTimeInDays    *bool   `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *bool   `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool   `ddl:"keyword" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *bool   `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
-	EnableSchemaEvolution      *bool   `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	ContactPurpose             *string `ddl:"parameter,no_equals" sql:"CONTACT"`
-	Comment                    *bool   `ddl:"keyword" sql:"COMMENT"`
-}
+// NOTE: Hybrid tables do not support UNSET (discovered via integration testing against Snowflake).
+// Snowflake docs may suggest otherwise but the operation errors at runtime.
 
 // DropHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.
 type DropHybridTableOptions struct {
@@ -264,7 +246,7 @@ type hybridTableDetailsRow struct {
 	Name                  string         `db:"name"`
 	Type                  string         `db:"type"`
 	Kind                  string         `db:"kind"`
-	Null                  string         `db:"null"`
+	Null                  string         `db:"null?"`
 	Default               sql.NullString `db:"default"`
 	PrimaryKey            string         `db:"primary key"`
 	UniqueKey             string         `db:"unique key"`
@@ -280,10 +262,10 @@ type HybridTableDetails struct {
 	Name                  string
 	Type                  string
 	Kind                  string
-	IsNullable            string
+	IsNullable            bool
 	Default               string
-	PrimaryKey            string
-	UniqueKey             string
+	PrimaryKey            bool
+	UniqueKey             bool
 	Check                 string
 	Expression            string
 	Comment               string
