@@ -2,7 +2,6 @@
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 )
 
@@ -22,11 +21,27 @@ var All{{ .NamePlural }} = []{{ .Name }}{
 	{{- end }}
 }
 
+{{ $hasAliases := false }}
+{{- range .ValueRepresentations }}{{- if .Aliases }}{{ $hasAliases = true }}{{ end }}{{ end }}
+{{- if $hasAliases }}
+var All{{ .NamePlural }}String = []string{
+	{{- range .ValueRepresentations }}
+	string({{ .Name }}),
+	{{- range .Aliases }}
+	"{{ . }}",
+	{{- end }}
+	{{- end }}
+}
+{{ end }}
 func To{{ .Name }}(s string) ({{ .Name }}, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(All{{ .NamePlural }}, {{ .Name }}(s)) {
+	switch s {
+	{{- range .ValueRepresentations }}
+	case string({{ .Name }}){{ range .Aliases }}, "{{ . }}"{{ end }}:
+		return {{ .Name }}, nil
+	{{- end }}
+	default:
 		return "", fmt.Errorf("invalid {{ .Name }}: %s", s)
 	}
-	return {{ .Name }}(s), nil
 }
 {{ end }}
