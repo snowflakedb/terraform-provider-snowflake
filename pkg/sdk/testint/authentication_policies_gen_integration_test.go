@@ -57,7 +57,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", "null")
-		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly))
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredPasswordOnly))
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
 		assertProperty(t, desc, "CLIENT_POLICY", "{}")
@@ -136,7 +136,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", comment)
-		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly))
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredPasswordOnly))
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", fmt.Sprintf("[%s]", samlIntegration.ID().Name()))
 		assertProperty(t, desc, "CLIENT_TYPES", "[DRIVERS, SNOWSQL]")
 		assertProperty(t, desc, "CLIENT_POLICY", "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}")
@@ -253,7 +253,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		require.NoError(t, err)
 
 		assertProperty(t, desc, "COMMENT", "null")
-		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredSnowflakeUiPasswordOnly))
+		assertProperty(t, desc, "MFA_ENROLLMENT", string(sdk.MfaEnrollmentReadRequiredPasswordOnly))
 		assertProperty(t, desc, "SECURITY_INTEGRATIONS", "[ALL]")
 		assertProperty(t, desc, "CLIENT_TYPES", "[ALL]")
 		assertProperty(t, desc, "CLIENT_POLICY", "{}")

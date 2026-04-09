@@ -13,6 +13,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [SNOW-1431726]: Move to helpers
+func createApp(t *testing.T) *sdk.Application {
+	t.Helper()
+
+	stage, cleanupStage := testClientHelper().Stage.CreateStage(t)
+	t.Cleanup(cleanupStage)
+
+	testClientHelper().Stage.PutOnStage(t, stage.ID(), "manifest.yml")
+	testClientHelper().Stage.PutOnStage(t, stage.ID(), "setup.sql")
+
+	applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
+	t.Cleanup(cleanupApplicationPackage)
+
+	testClientHelper().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), "v1")
+
+	application, cleanupApplication := testClientHelper().Application.CreateApplication(t, applicationPackage.ID(), "v1")
+	t.Cleanup(cleanupApplication)
+	return application
+}
+
 // TestInt_ApplicationRoles setup is a little bit different from usual integration test, because of how native apps work.
 // I will try to explain it in a short form, but check out this article for more detailed description (https://docs.snowflake.com/en/developer-guide/native-apps/tutorials/getting-started-tutorial#introduction)
 //   - create stage - it is where we will be keeping our application files
@@ -24,26 +44,6 @@ import (
 func TestInt_ApplicationRoles(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
-
-	// TODO [SNOW-1431726]: Move to helpers
-	createApp := func(t *testing.T) *sdk.Application {
-		t.Helper()
-
-		stage, cleanupStage := testClientHelper().Stage.CreateStage(t)
-		t.Cleanup(cleanupStage)
-
-		testClientHelper().Stage.PutOnStage(t, stage.ID(), "manifest.yml")
-		testClientHelper().Stage.PutOnStage(t, stage.ID(), "setup.sql")
-
-		applicationPackage, cleanupApplicationPackage := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
-		t.Cleanup(cleanupApplicationPackage)
-
-		testClientHelper().ApplicationPackage.RegisterVersion(t, applicationPackage.ID(), stage.ID(), "v1")
-
-		application, cleanupApplication := testClientHelper().Application.CreateApplication(t, applicationPackage.ID(), "v1")
-		t.Cleanup(cleanupApplication)
-		return application
-	}
 
 	application := createApp(t)
 

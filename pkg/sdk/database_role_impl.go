@@ -77,6 +77,10 @@ func (v *databaseRoles) Revoke(ctx context.Context, request *RevokeDatabaseRoleR
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *databaseRoles) RevokeSafely(ctx context.Context, request *RevokeDatabaseRoleRequest) error {
+	return SafeRevokePrivileges(func() error { return v.Revoke(ctx, request) })
+}
+
 func (v *databaseRoles) GrantToShare(ctx context.Context, request *GrantDatabaseRoleToShareRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)

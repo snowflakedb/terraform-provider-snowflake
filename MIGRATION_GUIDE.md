@@ -34,6 +34,12 @@ Adaptive Compute is a compute service focused on delivering strong performance w
 
 This feature will be marked as stable in a future release. To use it, add `snowflake_warehouse_adaptive_resource` to the `preview_features_enabled` field in the provider configuration.
 
+### *(new feature)* Support for future grants on `IMAGE REPOSITORIES`
+
+Both, `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources,
+now support the `IMAGE REPOSITORY` for future grants (in `on_schema_object.future.object_type_plural`).
+
+No changes to existing configurations are required.
 
 ### *(new feature)* GRANTS_SAFE_DESTROY experiment
 
@@ -41,7 +47,7 @@ A new `GRANTS_SAFE_DESTROY` experiment has been added. When enabled, resource de
 
 This is useful when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
 
-Currently supported by: `snowflake_grant_privileges_to_account_role`. This experiment is designed to be extended to other resources in the future.
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`.
 
 To enable, add `GRANTS_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
 ```hcl
@@ -92,7 +98,7 @@ No changes are required for existing configurations.
 
 ### *(new feature)* New catalog integration resources and data source
 
-#### Resources 
+#### Resources
 
 We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
@@ -100,7 +106,7 @@ We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_open_catalog](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
 - [snowflake_catalog_integration_iceberg_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
 
-These features will be marked as stable in future releases. To use them, add 
+These features will be marked as stable in future releases. To use them, add
 - `snowflake_catalog_integration_aws_glue_resource`,
 - `snowflake_catalog_integration_object_storage_resource`,
 - `snowflake_catalog_integration_open_catalog_resource`, or
@@ -237,7 +243,7 @@ This has been fixed: grant resources can now be used with the `AGENT` and `MCP S
 
 No changes in the configuration are required.
 
-Reference: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524)
+References: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524), [#4593](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4593).
 
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 
@@ -332,12 +338,12 @@ The errors may look similar to the following:
 ```
 ╷
 │ Error: object does not exist
-│ 
-│ 
+│
+│
 │   with snowflake_authentication_policy.test,
 │   on test.tf line 3, in resource "snowflake_authentication_policy" "test":
 │    3: resource "snowflake_authentication_policy" "test" {
-│ 
+│
 ```
 
 What changed on the Snowflake side:

@@ -154,8 +154,6 @@ This section aims mostly at reducing the manual labor when using the generator i
   - optional structs inside slices are not being checked for nil in the toOpts() methods in the implementation file
   - pointer fields are not being handled correctly in lists
 - add support for enums generation as for now, we add them and conversion methods manually (e.g. [`UserType`](https://github.com/snowflakedb/terraform-provider-snowflake/blob/5bdcd127d9288212b10ea7b138bebc0cb770c5b9/pkg/sdk/users.go#L746))
-  - Add new generator struct `EnumMapping` to generate mappings
-  - Add new template injected to interface.tmpl creating mappings functions
   - Generate unit tests for the enum type converters
   - Handle synonyms (e.g. [`ToWarehouseSize`](https://github.com/snowflakedb/terraform-provider-snowflake/blob/5bdcd127d9288212b10ea7b138bebc0cb770c5b9/pkg/sdk/warehouses.go#L77))
 - Refresh the example

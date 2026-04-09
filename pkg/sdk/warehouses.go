@@ -158,8 +158,6 @@ func (e ScalingPolicy) FromString(s string) (ScalingPolicy, error) {
 type WarehouseResourceConstraint string
 
 const (
-	WarehouseResourceConstraintStandardGen1 WarehouseResourceConstraint = "STANDARD_GEN_1"
-	WarehouseResourceConstraintStandardGen2 WarehouseResourceConstraint = "STANDARD_GEN_2"
 	WarehouseResourceConstraintMemory1X     WarehouseResourceConstraint = "MEMORY_1X"
 	WarehouseResourceConstraintMemory1Xx86  WarehouseResourceConstraint = "MEMORY_1X_x86"
 	WarehouseResourceConstraintMemory16X    WarehouseResourceConstraint = "MEMORY_16X"
@@ -169,31 +167,6 @@ const (
 )
 
 func ToWarehouseResourceConstraint(s string) (WarehouseResourceConstraint, error) {
-	// Handle case-insensitive comparison for resource constraints
-	// The x86 variants should keep x86 lowercase
-	switch strings.ToUpper(s) {
-	case "STANDARD_GEN_1":
-		return WarehouseResourceConstraintStandardGen1, nil
-	case "STANDARD_GEN_2":
-		return WarehouseResourceConstraintStandardGen2, nil
-	case "MEMORY_1X":
-		return WarehouseResourceConstraintMemory1X, nil
-	case "MEMORY_1X_X86":
-		return WarehouseResourceConstraintMemory1Xx86, nil
-	case "MEMORY_16X":
-		return WarehouseResourceConstraintMemory16X, nil
-	case "MEMORY_16X_X86":
-		return WarehouseResourceConstraintMemory16Xx86, nil
-	case "MEMORY_64X":
-		return WarehouseResourceConstraintMemory64X, nil
-	case "MEMORY_64X_X86":
-		return WarehouseResourceConstraintMemory64Xx86, nil
-	default:
-		return "", fmt.Errorf("invalid resource constraint: %s", s)
-	}
-}
-
-func ToWarehouseResourceConstraintWithoutGeneration(s string) (WarehouseResourceConstraint, error) {
 	switch strings.ToUpper(s) {
 	case "MEMORY_1X":
 		return WarehouseResourceConstraintMemory1X, nil
@@ -246,37 +219,6 @@ func ToWarehouseGeneration(s string) (WarehouseGeneration, error) {
 var AllWarehouseGenerations = []string{
 	string(WarehouseGenerationStandardGen1),
 	string(WarehouseGenerationStandardGen2),
-}
-
-var AllWarehouseResourceConstraintsForStandardWarehouses = []string{
-	string(WarehouseResourceConstraintStandardGen1),
-	string(WarehouseResourceConstraintStandardGen2),
-}
-
-func IsWarehouseResourceConstraintForStandard(s WarehouseResourceConstraint) bool {
-	return slices.Contains(AllWarehouseResourceConstraintsForStandardWarehouses, string(s))
-}
-
-func (s WarehouseResourceConstraint) ToWarehouseGeneration() (WarehouseGeneration, error) {
-	switch s {
-	case WarehouseResourceConstraintStandardGen1:
-		return WarehouseGenerationStandardGen1, nil
-	case WarehouseResourceConstraintStandardGen2:
-		return WarehouseGenerationStandardGen2, nil
-	default:
-		return "", fmt.Errorf("invalid resource constraint for generation: %s", s)
-	}
-}
-
-func (s WarehouseGeneration) ToWarehouseResourceConstraint() (WarehouseResourceConstraint, error) {
-	switch s {
-	case WarehouseGenerationStandardGen1:
-		return WarehouseResourceConstraintStandardGen1, nil
-	case WarehouseGenerationStandardGen2:
-		return WarehouseResourceConstraintStandardGen2, nil
-	default:
-		return "", fmt.Errorf("invalid generation for resource constraint: %s", s)
-	}
 }
 
 type MaxQueryPerformanceLevel string
@@ -855,21 +797,14 @@ func (row warehouseDBRow) convert() (*Warehouse, error) {
 		wh.Generation = &generation
 	}
 	if row.ResourceConstraint.Valid {
-		resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
-		if err != nil {
-			return nil, err
-		}
 		switch wh.Type {
 		case WarehouseTypeStandard:
-			// Before BCR 2025_07, the generation column was not present, so we converted the resource constraint to generation.
-			if wh.Generation == nil {
-				generation, err := resourceConstraint.ToWarehouseGeneration()
-				if err != nil {
-					return nil, err
-				}
-				wh.Generation = &generation
-			}
+			// After BCR 2026_02, resource_constraint is NULL for Standard warehouses; generation column is used instead.
 		case WarehouseTypeSnowparkOptimized:
+			resourceConstraint, err := ToWarehouseResourceConstraint(row.ResourceConstraint.String)
+			if err != nil {
+				return nil, err
+			}
 			wh.ResourceConstraint = &resourceConstraint
 		case WarehouseTypeAdaptive:
 			// Adaptive warehouses don't use resource constraints; ignore.

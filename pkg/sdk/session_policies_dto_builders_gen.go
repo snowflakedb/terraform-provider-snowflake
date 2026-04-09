@@ -30,8 +30,38 @@ func (s *CreateSessionPolicyRequest) WithSessionUiIdleTimeoutMins(sessionUiIdleT
 	return s
 }
 
+func (s *CreateSessionPolicyRequest) WithAllowedSecondaryRoles(allowedSecondaryRoles SessionPolicySecondaryRolesRequest) *CreateSessionPolicyRequest {
+	s.AllowedSecondaryRoles = &allowedSecondaryRoles
+	return s
+}
+
+func (s *CreateSessionPolicyRequest) WithBlockedSecondaryRoles(blockedSecondaryRoles SessionPolicySecondaryRolesRequest) *CreateSessionPolicyRequest {
+	s.BlockedSecondaryRoles = &blockedSecondaryRoles
+	return s
+}
+
 func (s *CreateSessionPolicyRequest) WithComment(comment string) *CreateSessionPolicyRequest {
 	s.Comment = &comment
+	return s
+}
+
+func NewSessionPolicySecondaryRolesRequest() *SessionPolicySecondaryRolesRequest {
+	s := SessionPolicySecondaryRolesRequest{}
+	return &s
+}
+
+func (s *SessionPolicySecondaryRolesRequest) WithAll(all bool) *SessionPolicySecondaryRolesRequest {
+	s.All = &all
+	return s
+}
+
+func (s *SessionPolicySecondaryRolesRequest) WithNone(none bool) *SessionPolicySecondaryRolesRequest {
+	s.None = &none
+	return s
+}
+
+func (s *SessionPolicySecondaryRolesRequest) WithRoles(roles []AccountObjectIdentifier) *SessionPolicySecondaryRolesRequest {
+	s.Roles = roles
 	return s
 }
 
@@ -88,6 +118,16 @@ func (s *SessionPolicySetRequest) WithSessionUiIdleTimeoutMins(sessionUiIdleTime
 	return s
 }
 
+func (s *SessionPolicySetRequest) WithAllowedSecondaryRoles(allowedSecondaryRoles SessionPolicySecondaryRolesRequest) *SessionPolicySetRequest {
+	s.AllowedSecondaryRoles = &allowedSecondaryRoles
+	return s
+}
+
+func (s *SessionPolicySetRequest) WithBlockedSecondaryRoles(blockedSecondaryRoles SessionPolicySecondaryRolesRequest) *SessionPolicySetRequest {
+	s.BlockedSecondaryRoles = &blockedSecondaryRoles
+	return s
+}
+
 func (s *SessionPolicySetRequest) WithComment(comment string) *SessionPolicySetRequest {
 	s.Comment = &comment
 	return s
@@ -105,6 +145,16 @@ func (s *SessionPolicyUnsetRequest) WithSessionIdleTimeoutMins(sessionIdleTimeou
 
 func (s *SessionPolicyUnsetRequest) WithSessionUiIdleTimeoutMins(sessionUiIdleTimeoutMins bool) *SessionPolicyUnsetRequest {
 	s.SessionUiIdleTimeoutMins = &sessionUiIdleTimeoutMins
+	return s
+}
+
+func (s *SessionPolicyUnsetRequest) WithAllowedSecondaryRoles(allowedSecondaryRoles bool) *SessionPolicyUnsetRequest {
+	s.AllowedSecondaryRoles = &allowedSecondaryRoles
+	return s
+}
+
+func (s *SessionPolicyUnsetRequest) WithBlockedSecondaryRoles(blockedSecondaryRoles bool) *SessionPolicyUnsetRequest {
+	s.BlockedSecondaryRoles = &blockedSecondaryRoles
 	return s
 }
 
@@ -129,6 +179,31 @@ func (s *DropSessionPolicyRequest) WithIfExists(ifExists bool) *DropSessionPolic
 func NewShowSessionPolicyRequest() *ShowSessionPolicyRequest {
 	s := ShowSessionPolicyRequest{}
 	return &s
+}
+
+func (s *ShowSessionPolicyRequest) WithLike(like Like) *ShowSessionPolicyRequest {
+	s.Like = &like
+	return s
+}
+
+func (s *ShowSessionPolicyRequest) WithIn(in ExtendedIn) *ShowSessionPolicyRequest {
+	s.In = &in
+	return s
+}
+
+func (s *ShowSessionPolicyRequest) WithOn(on On) *ShowSessionPolicyRequest {
+	s.On = &on
+	return s
+}
+
+func (s *ShowSessionPolicyRequest) WithStartsWith(startsWith string) *ShowSessionPolicyRequest {
+	s.StartsWith = &startsWith
+	return s
+}
+
+func (s *ShowSessionPolicyRequest) WithLimit(limit LimitFrom) *ShowSessionPolicyRequest {
+	s.Limit = &limit
+	return s
 }
 
 func NewDescribeSessionPolicyRequest(
