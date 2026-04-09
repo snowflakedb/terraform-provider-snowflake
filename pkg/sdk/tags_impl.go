@@ -35,11 +35,11 @@ func (v *tags) Show(ctx context.Context, request *ShowTagRequest) ([]Tag, error)
 }
 
 func (v *tags) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Tag, error) {
-	request := NewShowTagRequest().WithIn(&ExtendedIn{
+	request := NewShowTagRequest().WithIn(ExtendedIn{
 		In: In{
 			Schema: id.SchemaId(),
 		},
-	}).WithLike(id.Name())
+	}).WithLike(Like{Pattern: String(id.Name())})
 
 	tags, err := v.Show(ctx, request)
 	if err != nil {
@@ -90,6 +90,12 @@ func (v *tags) Unset(ctx context.Context, request *UnsetTagRequest) error {
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *tags) UnsetSafely(ctx context.Context, request *UnsetTagRequest) error {
+	return SafeUnsetTag(func() error {
+		return v.Unset(ctx, request.WithIfExists(true))
+	})
+}
+
 func (v *tags) SetOnCurrentAccount(ctx context.Context, request *SetTagOnCurrentAccountRequest) error {
 	return v.client.Accounts.Alter(ctx, &AlterAccountOptions{
 		SetTag: request.SetTags,
@@ -103,25 +109,64 @@ func (v *tags) UnsetOnCurrentAccount(ctx context.Context, request *UnsetTagOnCur
 }
 
 func (s *CreateTagRequest) toOpts() *createTagOptions {
-	return &createTagOptions{
-		OrReplace:     s.orReplace,
-		IfNotExists:   s.ifNotExists,
-		name:          s.name,
-		Comment:       s.comment,
-		AllowedValues: s.allowedValues,
+	opts := &createTagOptions{
+		OrReplace:   s.orReplace,
+		IfNotExists: s.ifNotExists,
+		name:        s.name,
+		Propagate:   s.propagate.toTagPropagate(),
+		Comment:     s.comment,
 	}
+	if len(s.allowedValues) > 0 {
+		opts.AllowedValues = createAllowedValues(s.allowedValues)
+	}
+	return opts
 }
 
 func (s *AlterTagRequest) toOpts() *alterTagOptions {
-	return &alterTagOptions{
+	opts := &alterTagOptions{
 		name:     s.name,
 		ifExists: s.ifExists,
-		Add:      s.add,
-		Drop:     s.drop,
-		Set:      s.set,
-		Unset:    s.unset,
-		Rename:   s.rename,
 	}
+	if len(s.add) > 0 {
+		opts.Add = &TagAdd{AllowedValues: createAllowedValues(s.add)}
+	}
+	if len(s.drop) > 0 {
+		opts.Drop = &TagDrop{AllowedValues: createAllowedValues(s.drop)}
+	}
+	if s.set != nil {
+		set := &TagSet{
+			Propagate: s.set.propagate.toTagPropagate(),
+			Comment:   s.set.comment,
+		}
+		if len(s.set.allowedValues) > 0 {
+			set.AllowedValues = createAllowedValues(s.set.allowedValues)
+		}
+		if len(s.set.maskingPolicies) > 0 {
+			set.MaskingPolicies = &TagSetMaskingPolicies{
+				MaskingPolicies: createTagMaskingPolicies(s.set.maskingPolicies),
+				Force:           s.set.force,
+			}
+		}
+		opts.Set = set
+	}
+	if s.unset != nil {
+		unset := &TagUnset{
+			AllowedValues: s.unset.allowedValues,
+			Propagate:     s.unset.propagate,
+			OnConflict:    s.unset.onConflict,
+			Comment:       s.unset.comment,
+		}
+		if len(s.unset.maskingPolicies) > 0 {
+			unset.MaskingPolicies = &TagUnsetMaskingPolicies{
+				MaskingPolicies: createTagMaskingPolicies(s.unset.maskingPolicies),
+			}
+		}
+		opts.Unset = unset
+	}
+	if s.rename != nil {
+		opts.Rename = &TagRename{Name: *s.rename}
+	}
+	return opts
 }
 
 func (s *ShowTagRequest) toOpts() *showTagOptions {
@@ -196,4 +241,36 @@ func (s *UnsetTagRequest) toOpts() *unsetTagOptions {
 	}
 
 	return o
+}
+
+func (r *TagPropagateRequest) toTagPropagate() *TagPropagate {
+	if r == nil {
+		return nil
+	}
+	return &TagPropagate{
+		PropagationMethod: &r.propagationMethod,
+		OnConflict:        r.onConflict,
+	}
+}
+
+func createAllowedValues(values []string) *AllowedValues {
+	items := make([]StringAllowEmpty, 0, len(values))
+	for _, value := range values {
+		items = append(items, StringAllowEmpty{
+			Value: value,
+		})
+	}
+	return &AllowedValues{
+		Values: items,
+	}
+}
+
+func createTagMaskingPolicies(maskingPolicies []SchemaObjectIdentifier) []TagMaskingPolicy {
+	items := make([]TagMaskingPolicy, 0, len(maskingPolicies))
+	for _, value := range maskingPolicies {
+		items = append(items, TagMaskingPolicy{
+			Name: value,
+		})
+	}
+	return items
 }

@@ -28,6 +28,7 @@ type Client = sdk.Client
 type (
 	ObjectIdentifier         = sdk.ObjectIdentifier
 	AccountObjectIdentifier  = sdk.AccountObjectIdentifier
+	AccountIdentifier        = sdk.AccountIdentifier
 	DatabaseObjectIdentifier = sdk.DatabaseObjectIdentifier
 	ExternalObjectIdentifier = sdk.ExternalObjectIdentifier
 	SchemaObjectIdentifier   = sdk.SchemaObjectIdentifier
@@ -44,12 +45,17 @@ type (
 )
 
 const (
-	ObjectTypeSequence  = sdk.ObjectTypeSequence
-	ObjectTypeStreamlit = sdk.ObjectTypeStreamlit
+	ObjectTypeSequence                       = sdk.ObjectTypeSequence
+	ObjectTypeStreamlit                      = sdk.ObjectTypeStreamlit
+	ObjectTypePairedStructExample ObjectType = "PAIRED_STRUCT_EXAMPLE"
 )
 
 func NewSchemaObjectIdentifier(_, _, _ string) SchemaObjectIdentifier {
 	return sdk.NewSchemaObjectIdentifier("", "", "")
+}
+
+func NewAccountObjectIdentifier(name string) AccountObjectIdentifier {
+	return sdk.NewAccountObjectIdentifier(name)
 }
 
 func randomDatabaseObjectIdentifier() DatabaseObjectIdentifier {

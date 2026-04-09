@@ -17,6 +17,8 @@ import (
 type ApplicationRoles interface {
 	Grant(ctx context.Context, request *GrantApplicationRoleRequest) error
 	Revoke(ctx context.Context, request *RevokeApplicationRoleRequest) error
+	// Adjusted manually
+	RevokeSafely(ctx context.Context, request *RevokeApplicationRoleRequest) error
 	Show(ctx context.Context, request *ShowApplicationRoleRequest) ([]ApplicationRole, error)
 	ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*ApplicationRole, error)
 	ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifier) (*ApplicationRole, error)

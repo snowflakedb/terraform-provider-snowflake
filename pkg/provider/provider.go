@@ -592,6 +592,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_catalog_integration_aws_glue":                                 resources.CatalogIntegrationAwsGlue(),
 		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
 		"snowflake_catalog_integration_open_catalog":                             resources.CatalogIntegrationOpenCatalog(),
+		"snowflake_catalog_integration_iceberg_rest":                             resources.CatalogIntegrationIcebergRest(),
 		"snowflake_compute_pool":                                                 resources.ComputePool(),
 		"snowflake_cortex_search_service":                                        resources.CortexSearchService(),
 		"snowflake_current_account":                                              resources.CurrentAccount(),
@@ -688,6 +689,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_user_public_keys":                                             resources.UserPublicKeys(),
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
+		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
 	}
 }
 
@@ -697,6 +699,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_account_roles":                      datasources.AccountRoles(),
 		"snowflake_alerts":                             datasources.Alerts(),
 		"snowflake_authentication_policies":            datasources.AuthenticationPolicies(),
+		"snowflake_catalog_integrations":               datasources.CatalogIntegrations(),
 		"snowflake_compute_pools":                      datasources.ComputePools(),
 		"snowflake_connections":                        datasources.Connections(),
 		"snowflake_cortex_search_services":             datasources.CortexSearchServices(),

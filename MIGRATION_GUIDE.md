@@ -26,6 +26,94 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.14.x ➞ v2.15.0
 
+### *(new feature)* snowflake_tag resource changes
+
+#### Propagation and conflict resolution support
+
+We added support for [tag propagation](https://docs.snowflake.com/en/user-guide/object-tagging/propagation) to the `snowflake_tag` resource. The following new fields are now available:
+
+- `propagate` - Controls how the tag propagates. Valid values are `ON_DEPENDENCY`, `ON_DATA_MOVEMENT`, `ON_DEPENDENCY_AND_DATA_MOVEMENT`, and `NONE`. Omitting this attribute is equivalent to `NONE`.
+- `on_conflict` - Configures how conflicting tag values from multiple source objects are resolved during propagation. Requires `propagate` to be set. Supports two mutually exclusive options:
+  - `on_conflict.0.allowed_values_sequence` - Resolves conflicts using the order defined in the tag's `ordered_allowed_values`. Requires `ordered_allowed_values` to be set.
+  - `on_conflict.0.custom_value` - Resolves conflicts by using a custom string value.
+
+#### New `ordered_allowed_values` field
+
+A new `ordered_allowed_values` field (TypeList) has been added to the `snowflake_tag` resource.
+It is preferred over the existing `allowed_values` field (TypeSet) because it preserves the order you specify — which is required when using `on_conflict.allowed_values_sequence` for tag propagation conflict resolution,
+where the first matching value in the sequence wins. For more details, see [tag propagation conflicts](https://docs.snowflake.com/en/user-guide/object-tagging/propagation#tag-propagation-conflicts) documentation.
+
+The `allowed_values` field is now **deprecated** and will be removed in the next major version. The two fields are mutually exclusive (`ConflictsWith`), so you can migrate at your own pace.
+
+**Migration:** Replace `allowed_values` with `ordered_allowed_values` in your configuration:
+
+```hcl
+# Before
+resource "snowflake_tag" "example" {
+  # ...
+  allowed_values = ["production", "staging", "development"]
+}
+
+# After
+resource "snowflake_tag" "example" {
+  # ...
+  ordered_allowed_values = ["production", "staging", "development"]
+}
+```
+
+After switching, run `terraform plan` — Terraform will show an update moving the values from `allowed_values` to `ordered_allowed_values`.
+The tag's allowed values in Snowflake remain unchanged (what only may be altered is the order of the values).
+
+**Import behavior:** When importing a `snowflake_tag` resource, values are always populated into the `ordered_allowed_values` field.
+If your configuration uses the deprecated `allowed_values` field, the first `terraform plan` after import will show an update moving the values to the correct field.
+
+#### New `propagate` field in `show_output`
+
+A new `propagate` field has been added to the `show_output` attribute on both the `snowflake_tag` resource and the `snowflake_tags` data source. It reflects the propagation method returned by `SHOW TAGS`.
+
+No configuration changes are required. If you reference `show_output` in your configuration, the new field will be available automatically.
+
+### *(new feature)* Adaptive warehouses support
+
+#### New adaptive warehouse resource
+
+We have added a new preview resource for managing adaptive warehouses [snowflake_warehouse_adaptive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive).
+
+Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning.
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_warehouse_adaptive_resource` to the `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Support for future grants on `IMAGE REPOSITORIES`
+
+Both, `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources,
+now support the `IMAGE REPOSITORY` for future grants (in `on_schema_object.future.object_type_plural`).
+
+No changes to existing configurations are required.
+
+#### Adaptive warehouse columns in `snowflake_warehouses` data source
+
+The `show_output` field in the `snowflake_warehouses` data source now includes two additional computed attributes that surface adaptive warehouse details:
+
+- `max_query_performance_level` — the initial compute capacity level of an adaptive warehouse
+- `query_throughput_multiplier` — the query throughput multiplier of an adaptive warehouse
+
+These fields are populated only when the warehouse type is `ADAPTIVE`; for standard and Snowpark-Optimized warehouses they remain empty. No configuration changes are required.
+
+### *(new feature)* GRANTS_SAFE_DESTROY experiment
+
+A new `GRANTS_SAFE_DESTROY` experiment has been added. When enabled, resource destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists, instead of failing with `does not exist or not authorized`.
+
+This is useful when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`.
+
+To enable, add `GRANTS_SAFE_DESTROY` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["GRANTS_SAFE_DESTROY"]
+}
+```
+
 ### *(improvements)* snowflake_authentication_policy and snowflake_authentication_policies
 
 #### Resource `snowflake_authentication_policy`
@@ -66,18 +154,28 @@ The `snowflake_account_parameter` resource now supports the following additional
 
 No changes are required for existing configurations.
 
-### *(new feature)* New catalog integration resources
+### *(new feature)* New catalog integration resources and data source
+
+#### Resources
 
 We have added new preview resources for managing catalog integrations:
 - [snowflake_catalog_integration_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
 - [snowflake_catalog_integration_object_storage](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
 - [snowflake_catalog_integration_open_catalog](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
+- [snowflake_catalog_integration_iceberg_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)
 
-These features will be marked as stable in future releases. To use them, add 
+These features will be marked as stable in future releases. To use them, add
 - `snowflake_catalog_integration_aws_glue_resource`,
-- `snowflake_catalog_integration_object_storage_resource`, or
-- `snowflake_catalog_integration_open_catalog_resource`
+- `snowflake_catalog_integration_object_storage_resource`,
+- `snowflake_catalog_integration_open_catalog_resource`, or
+- `snowflake_catalog_integration_iceberg_rest_resource`
 to the `preview_features_enabled` field in the provider configuration.
+
+#### Data source
+
+We have added a new preview data source for catalog integrations: [snowflake_catalog_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/catalog_integrations).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_catalog_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
 
 ### *(bug fix)* snowflake_account: fix nil pointer dereference panics
 
@@ -203,7 +301,7 @@ This has been fixed: grant resources can now be used with the `AGENT` and `MCP S
 
 No changes in the configuration are required.
 
-Reference: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524)
+References: [#4524](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4524), [#4593](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4593).
 
 ### *(new feature)* Improved `allowed_values` handling in `snowflake_tag`
 
@@ -277,6 +375,16 @@ This was caused by a missing early-exit check in the internal SQL parser used to
 
 No changes in configuration are required. If this error happened during object creation, the state of this resource may be empty. In this case, just reimport the object.
 
+### *(bug fix)* Fixed `describe_output` permadiff on stage resources
+
+The `describe_output` computed attribute on all stage resources (`snowflake_stage_external_s3`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3_compatible`, `snowflake_stage_internal`) was incorrectly tracking `file_format` as a trigger for recomputation. The provider normalizes selected file format subfields (e.g. resolves identifier quoting), but it's not applied in the recomputation logic, which could lead to permadiffs.
+
+Now, changes on `file_format` do not trigger marking `describe_output` as computed in all stage resources.
+
+No changes in configuration are required.
+
+Reference: [#4514](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4514)
+
 ## v2.14.0 ➞ v2.14.1
 
 ### *(breaking change)* Adjustments in `snowflake_authentication_policy` and `snowflake_authentication_policies` due to `DESC AUTHENTICATION POLICY` output change
@@ -288,12 +396,12 @@ The errors may look similar to the following:
 ```
 ╷
 │ Error: object does not exist
-│ 
-│ 
+│
+│
 │   with snowflake_authentication_policy.test,
 │   on test.tf line 3, in resource "snowflake_authentication_policy" "test":
 │    3: resource "snowflake_authentication_policy" "test" {
-│ 
+│
 ```
 
 What changed on the Snowflake side:

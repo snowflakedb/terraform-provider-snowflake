@@ -43,6 +43,10 @@ var ShowTagSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"propagate": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var _ = ShowTagSchema
@@ -57,6 +61,7 @@ func TagToSchema(tag *sdk.Tag) map[string]any {
 	tagSchema["comment"] = tag.Comment
 	tagSchema["allowed_values"] = tag.AllowedValues
 	tagSchema["owner_role_type"] = tag.OwnerRoleType
+	tagSchema["propagate"] = string(tag.Propagate)
 	return tagSchema
 }
 

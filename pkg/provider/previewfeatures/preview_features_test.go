@@ -28,6 +28,8 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_catalog_integration_aws_glue_resource", want: CatalogIntegrationAwsGlueResource},
 		{input: "snowflake_catalog_integration_object_storage_resource", want: CatalogIntegrationObjectStorageResource},
 		{input: "snowflake_catalog_integration_open_catalog_resource", want: CatalogIntegrationOpenCatalogResource},
+		{input: "snowflake_catalog_integration_iceberg_rest_resource", want: CatalogIntegrationIcebergRestResource},
+		{input: "snowflake_catalog_integrations_datasource", want: CatalogIntegrationsDatasource},
 		{input: "snowflake_compute_pool_resource", want: ComputePoolResource},
 		{input: "snowflake_compute_pools_datasource", want: ComputePoolsDatasource},
 		{input: "snowflake_cortex_search_service_resource", want: CortexSearchServiceResource},
@@ -117,6 +119,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_user_password_policy_attachment_resource", want: UserPasswordPolicyAttachmentResource},
 		{input: "snowflake_user_programmatic_access_token_resource", want: UserProgrammaticAccessTokenResource},
 		{input: "snowflake_user_programmatic_access_tokens_datasource", want: UserProgrammaticAccessTokensDatasource},
+		{input: "snowflake_warehouse_adaptive_resource", want: WarehouseAdaptiveResource},
 	}
 
 	invalid := []test{

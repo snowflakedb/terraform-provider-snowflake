@@ -2485,7 +2485,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 			// remove type from config but update warehouse externally to default (still expecting non-empty plan because we do not know the default)
 			{
 				PreConfig: func() {
-					testClient().Warehouse.UpdateResourceConstraint(t, id, sdk.WarehouseResourceConstraintStandardGen1)
+					testClient().Warehouse.UpdateGeneration(t, id, sdk.WarehouseGenerationStandardGen1)
 				},
 				Config: accconfig.FromModels(t, providerModel, warehouseModelStandard),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -2514,7 +2514,7 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 			{
 				PreConfig: func() {
 					// we change the type to the type different from default, expecting action
-					testClient().Warehouse.UpdateResourceConstraint(t, id, sdk.WarehouseResourceConstraintStandardGen2)
+					testClient().Warehouse.UpdateGeneration(t, id, sdk.WarehouseGenerationStandardGen2)
 				},
 				Config: accconfig.FromModels(t, providerModel, warehouseModelStandard),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -2809,7 +2809,7 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			// external change of the generation
 			{
 				PreConfig: func() {
-					testClient().Warehouse.UpdateWarehouseTypeAndResourceConstraint(t, id, sdk.WarehouseTypeStandard, sdk.WarehouseResourceConstraintStandardGen2)
+					testClient().Warehouse.UpdateWarehouseTypeAndGeneration(t, id, sdk.WarehouseTypeStandard, sdk.WarehouseGenerationStandardGen2)
 				},
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   accconfig.FromModels(t, providerModel, warehouseModelSnowparkOptimized),
@@ -3162,7 +3162,7 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 			},
 			{
 				PreConfig: func() {
-					testClient().Warehouse.UpdateResourceConstraint(t, id, sdk.WarehouseResourceConstraintStandardGen2)
+					testClient().Warehouse.UpdateGeneration(t, id, sdk.WarehouseGenerationStandardGen2)
 				},
 				Config:                   accconfig.FromModels(t, providerModel, warehouseModelStandard),
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -3180,6 +3180,49 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 						HasType(sdk.WarehouseTypeStandard).
 						HasGeneration(sdk.WarehouseGenerationStandardGen2).
 						HasResourceConstraintEmpty(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Warehouse_ExternalTypeChange(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	warehouseModel := model.Warehouse("test", id.Name()).
+		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
+	ref := warehouseModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, warehouseModel),
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, ref).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasType(sdk.WarehouseTypeStandard),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Warehouse.UpdateWarehouseType(t, id, sdk.WarehouseTypeAdaptive)
+				},
+				Config: accconfig.FromModels(t, warehouseModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.WarehouseResource(t, ref).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasType(sdk.WarehouseTypeStandard),
 				),
 			},
 		},

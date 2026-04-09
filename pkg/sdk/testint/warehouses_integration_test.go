@@ -107,7 +107,7 @@ func TestInt_Warehouses(t *testing.T) {
 		require.Equal(t, precreatedWarehouseId.Name(), warehouses[0].Name)
 	})
 
-	t.Run("create: with resource constraint & generation", func(t *testing.T) {
+	t.Run("create: with resource constraint", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.Create(ctx, id, &sdk.CreateWarehouseOptions{
 			ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintMemory1X),
@@ -146,7 +146,6 @@ func TestInt_Warehouses(t *testing.T) {
 			MaxConcurrencyLevel:             sdk.Int(10),
 			StatementQueuedTimeoutInSeconds: sdk.Int(2000),
 			StatementTimeoutInSeconds:       sdk.Int(3000),
-			ResourceConstraint:              sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen2),
 			Generation:                      sdk.Pointer(sdk.WarehouseGenerationStandardGen2),
 			Tag: []sdk.TagAssociation{
 				{
@@ -179,8 +178,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasQueryAccelerationMaxScaleFactor(90).
 			HasGeneration(sdk.WarehouseGenerationStandardGen2).
 			HasNoResourceConstraint().
-			HasNoMaxStatementSize().
-			HasNoMaxBurstRateCredits())
+			HasNoMaxQueryPerformanceLevel().
+			HasNoQueryThroughputMultiplier())
 
 		warehouse, err := client.Warehouses.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -200,8 +199,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouse.ResourceConstraint)
 		assert.NotNil(t, warehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen2, *warehouse.Generation)
-		assert.Nil(t, warehouse.MaxStatementSize)
-		assert.Nil(t, warehouse.MaxBurstRateCredits)
+		assert.Nil(t, warehouse.MaxQueryPerformanceLevel)
+		assert.Nil(t, warehouse.QueryThroughputMultiplier)
 
 		// we can also use the read object to initialize:
 		assertThatObject(t, objectassert.WarehouseFromObject(t, warehouse).
@@ -220,8 +219,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasQueryAccelerationMaxScaleFactor(90).
 			HasNoResourceConstraint().
 			HasGeneration(sdk.WarehouseGenerationStandardGen2).
-			HasNoMaxStatementSize().
-			HasNoMaxBurstRateCredits())
+			HasNoMaxQueryPerformanceLevel().
+			HasNoQueryThroughputMultiplier())
 
 		tag1Value, err := client.SystemFunctions.GetTag(ctx, tag.ID(), warehouse.ID(), sdk.ObjectTypeWarehouse)
 		require.NoError(t, err)
@@ -254,8 +253,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, result.ResourceConstraint)
 		assert.NotNil(t, result.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *result.Generation)
-		assert.Nil(t, result.MaxStatementSize)
-		assert.Nil(t, result.MaxBurstRateCredits)
+		assert.Nil(t, result.MaxQueryPerformanceLevel)
+		assert.Nil(t, result.QueryThroughputMultiplier)
 	})
 
 	t.Run("create: empty comment", func(t *testing.T) {
@@ -289,8 +288,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasNoEnableQueryAcceleration().
 			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxStatementSize(sdk.MaxStatementSizeLarge).
-			HasMaxBurstRateCredits(44),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+			HasQueryThroughputMultiplier(0),
 		)
 		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
 			HasStatementQueuedTimeoutInSeconds(0).
@@ -302,7 +301,8 @@ func TestInt_Warehouses(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateAdaptive(ctx, id, &sdk.CreateAdaptiveWarehouseOptions{
 			Comment:                         sdk.String("test adaptive warehouse"),
-			MaxStatementSize:                sdk.Pointer(sdk.MaxStatementSizeMedium),
+			MaxQueryPerformanceLevel:        sdk.Pointer(sdk.MaxQueryPerformanceLevelMedium),
+			QueryThroughputMultiplier:       sdk.Int(22),
 			StatementQueuedTimeoutInSeconds: sdk.Int(30),
 			StatementTimeoutInSeconds:       sdk.Int(60),
 		})
@@ -323,8 +323,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasNoEnableQueryAcceleration().
 			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxStatementSize(sdk.MaxStatementSizeMedium).
-			HasMaxBurstRateCredits(22),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+			HasQueryThroughputMultiplier(22),
 		)
 		assertThatObject(t, objectparametersassert.WarehouseParameters(t, id).
 			HasStatementQueuedTimeoutInSeconds(30).
@@ -350,8 +350,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouse.ResourceConstraint)
 		assert.NotNil(t, warehouse.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouse.Generation)
-		assert.Nil(t, warehouse.MaxStatementSize)
-		assert.Nil(t, warehouse.MaxBurstRateCredits)
+		assert.Nil(t, warehouse.MaxQueryPerformanceLevel)
+		assert.Nil(t, warehouse.QueryThroughputMultiplier)
 
 		alterOptions := &sdk.AlterWarehouseOptions{
 			// WarehouseType omitted on purpose - it requires suspending the warehouse (separate test cases)
@@ -388,8 +388,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Nil(t, warehouseAfterSet.ResourceConstraint)
 		assert.NotNil(t, warehouseAfterSet.Generation)
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *warehouseAfterSet.Generation)
-		assert.Nil(t, warehouseAfterSet.MaxStatementSize)
-		assert.Nil(t, warehouseAfterSet.MaxBurstRateCredits)
+		assert.Nil(t, warehouseAfterSet.MaxQueryPerformanceLevel)
+		assert.Nil(t, warehouseAfterSet.QueryThroughputMultiplier)
 
 		alterOptions = &sdk.AlterWarehouseOptions{
 			// WarehouseSize omitted on purpose - UNSET is not supported for warehouse size
@@ -424,8 +424,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeStandard, warehouseAfterUnset.Type)
 		assert.Equal(t, sdk.Pointer(sdk.ScalingPolicyStandard), warehouseAfterUnset.ScalingPolicy)
 		assert.True(t, warehouseAfterUnset.AutoResume)
-		assert.Nil(t, warehouseAfterUnset.MaxStatementSize)
-		assert.Nil(t, warehouseAfterUnset.MaxBurstRateCredits)
+		assert.Nil(t, warehouseAfterUnset.MaxQueryPerformanceLevel)
+		assert.Nil(t, warehouseAfterUnset.QueryThroughputMultiplier)
 	})
 
 	t.Run("alter adaptive: change warehouse type", func(t *testing.T) {
@@ -459,8 +459,8 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasNoEnableQueryAcceleration().
 			HasNoQueryAccelerationMaxScaleFactor().
-			HasMaxStatementSize(sdk.MaxStatementSizeMedium).
-			HasMaxBurstRateCredits(11),
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+			HasQueryThroughputMultiplier(0),
 		)
 
 		// Change warehouse type back from adaptive to standard
@@ -484,8 +484,60 @@ func TestInt_Warehouses(t *testing.T) {
 			HasAutoResume(true).
 			HasEnableQueryAcceleration(false).
 			HasQueryAccelerationMaxScaleFactor(8).
-			HasNoMaxStatementSize().
-			HasNoMaxBurstRateCredits(),
+			HasNoMaxQueryPerformanceLevel().
+			HasNoQueryThroughputMultiplier(),
+		)
+	})
+
+	t.Run("alter adaptive: set and unset all adaptive params", func(t *testing.T) {
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateAdaptive(t)
+		t.Cleanup(warehouseCleanup)
+
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+			HasQueryThroughputMultiplier(0),
+		)
+		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+			HasStatementQueuedTimeoutInSeconds(0).
+			HasStatementTimeoutInSeconds(172800),
+		)
+
+		err := client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
+			Set: &sdk.WarehouseSet{
+				MaxQueryPerformanceLevel:        sdk.Pointer(sdk.MaxQueryPerformanceLevelXSmall),
+				QueryThroughputMultiplier:       sdk.Int(5),
+				StatementQueuedTimeoutInSeconds: sdk.Int(100),
+				StatementTimeoutInSeconds:       sdk.Int(200),
+			},
+		})
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
+			HasQueryThroughputMultiplier(5),
+		)
+		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+			HasStatementQueuedTimeoutInSeconds(100).
+			HasStatementTimeoutInSeconds(200),
+		)
+
+		err = client.Warehouses.Alter(ctx, warehouse.ID(), &sdk.AlterWarehouseOptions{
+			Unset: &sdk.WarehouseUnset{
+				MaxQueryPerformanceLevel:        sdk.Bool(true),
+				QueryThroughputMultiplier:       sdk.Bool(true),
+				StatementQueuedTimeoutInSeconds: sdk.Bool(true),
+				StatementTimeoutInSeconds:       sdk.Bool(true),
+			},
+		})
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.Warehouse(t, warehouse.ID()).
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
+			HasQueryThroughputMultiplier(2),
+		)
+		assertThatObject(t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
+			HasStatementQueuedTimeoutInSeconds(0).
+			HasStatementTimeoutInSeconds(172800),
 		)
 	})
 
@@ -648,46 +700,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseResourceConstraintMemory16X, *returnedWarehouse.ResourceConstraint)
 	})
 
-	t.Run("alter: set and unset generation (old resource constraint syntax)", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		// new warehouse created on purpose
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
-		t.Cleanup(warehouseCleanup)
-
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
-		assert.Nil(t, returnedWarehouse.ResourceConstraint)
-		assert.NotNil(t, returnedWarehouse.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
-
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen2)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.NoError(t, err)
-
-		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
-			HasGeneration(sdk.WarehouseGenerationStandardGen2).
-			HasNoResourceConstraint().
-			HasType(sdk.WarehouseTypeStandard),
-		)
-
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{ResourceConstraint: sdk.Bool(true)},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.NoError(t, err)
-
-		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assert.NotNil(t, returnedWarehouse.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
-	})
-
-	t.Run("alter: set and unset generation (new generation syntax)", func(t *testing.T) {
+	t.Run("alter: set and unset generation", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
@@ -726,60 +739,6 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
 	})
 
-	t.Run("alter: set and unset generation (both at the same time)", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		// new warehouse created on purpose
-		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithOptions(t, id, &sdk.CreateWarehouseOptions{})
-		t.Cleanup(warehouseCleanup)
-
-		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
-		assert.Nil(t, returnedWarehouse.ResourceConstraint)
-		assert.NotNil(t, returnedWarehouse.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
-
-		alterOptions := &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{
-				Generation:         sdk.Pointer(sdk.WarehouseGenerationStandardGen2),
-				ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen2),
-			},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.NoError(t, err)
-
-		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.WarehouseFromObject(t, returnedWarehouse).
-			HasGeneration(sdk.WarehouseGenerationStandardGen2).
-			HasNoResourceConstraint().
-			HasType(sdk.WarehouseTypeStandard),
-		)
-
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Unset: &sdk.WarehouseUnset{
-				Generation:         sdk.Bool(true),
-				ResourceConstraint: sdk.Bool(true),
-			},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.NoError(t, err)
-
-		returnedWarehouse, err = client.Warehouses.ShowByID(ctx, warehouse.ID())
-		require.NoError(t, err)
-		assert.NotNil(t, returnedWarehouse.Generation)
-		assert.Equal(t, sdk.WarehouseGenerationStandardGen1, *returnedWarehouse.Generation)
-
-		// setting incompatible values should fail
-		alterOptions = &sdk.AlterWarehouseOptions{
-			Set: &sdk.WarehouseSet{
-				Generation:         sdk.Pointer(sdk.WarehouseGenerationStandardGen2),
-				ResourceConstraint: sdk.Pointer(sdk.WarehouseResourceConstraintStandardGen1),
-			},
-		}
-		err = client.Warehouses.Alter(ctx, warehouse.ID(), alterOptions)
-		require.ErrorContains(t, err, "invalid property combination 'RESOURCE_CONSTRAINT'='STANDARD_GEN_1' and 'GENERATION'='2'")
-	})
 	t.Run("alter: prove problems with unset auto suspend", func(t *testing.T) {
 		// new warehouse created on purpose
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)

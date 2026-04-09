@@ -258,6 +258,22 @@ var catalogIntegrationsDef = g.NewInterface(
 			Bool("Enabled").
 			Number("RefreshIntervalSeconds").
 			Text("Comment"),
+		g.PlainStruct("CatalogIntegrationAllDetails").
+			AccountObjectIdentifier().
+			Field("CatalogSource", g.KindOfT[sdkcommons.CatalogIntegrationCatalogSourceType]()).
+			Field("TableFormat", g.KindOfT[sdkcommons.CatalogIntegrationTableFormat]()).
+			Bool("Enabled").
+			Number("RefreshIntervalSeconds").
+			Text("Comment").
+			Text("GlueAwsRoleArn").
+			Text("GlueCatalogId").
+			Text("GlueRegion").
+			Text("CatalogNamespace").
+			// IcebergRestRestConfigDetails contains all properties of OpenCatalogRestConfigDetails
+			OptionalField("RestConfig", "IcebergRestRestConfigDetails").
+			OptionalField("OAuthRestAuthentication", "OAuthRestAuthenticationDetails").
+			OptionalField("BearerRestAuthentication", "BearerRestAuthenticationDetails").
+			OptionalField("SigV4RestAuthentication", "SigV4RestAuthenticationDetails"),
 		g.PlainStruct("OpenCatalogRestConfigDetails").
 			Text("CatalogUri").
 			Field("CatalogApiType", g.KindOfT[sdkcommons.CatalogIntegrationCatalogApiType]()).
@@ -278,5 +294,6 @@ var catalogIntegrationsDef = g.NewInterface(
 			Text("BearerToken"),
 		g.PlainStruct("SigV4RestAuthenticationDetails").
 			Text("Sigv4IamRole").
-			Text("Sigv4SigningRegion"),
+			Text("Sigv4SigningRegion").
+			Text("Sigv4ExternalId"),
 	)
