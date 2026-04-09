@@ -29,13 +29,6 @@ func (t *TagResourceAssert) HasOnConflictAllowedValuesSequence() *TagResourceAss
 	return t
 }
 
-// HasAllowedValuesOrder checks that the allowed_values_order field has the expected values in exact order.
-func (t *TagResourceAssert) HasAllowedValuesOrder(expected ...string) *TagResourceAssert {
-	t.ListContainsExactlyStringValuesInOrder("allowed_values_order", expected...)
-	return t
-}
-
-// HasPropagateEnum
 func (t *TagResourceAssert) HasPropagateEnum(expected sdk.TagPropagation) *TagResourceAssert {
 	return t.HasPropagateString(string(expected))
 }

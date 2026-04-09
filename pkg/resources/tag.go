@@ -54,6 +54,7 @@ var tagSchema = map[string]*schema.Schema{
 		Elem:          &schema.Schema{Type: schema.TypeString},
 		Optional:      true,
 		Description:   "Set of allowed values for the tag (unordered). When specified, only these values can be assigned. When the `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` experiment is enabled, removing this field from the configuration reverts the tag to accepting any value. Conflicts with `no_allowed_values` and `ordered_allowed_values`.",
+		Deprecated:    "This field is deprecated and will be removed in the next major version. Use `ordered_allowed_values` instead.",
 		ConflictsWith: []string{"no_allowed_values", "ordered_allowed_values"},
 	},
 	"ordered_allowed_values": {
@@ -91,9 +92,10 @@ var tagSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"allowed_values_sequence": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Description: externalChangesNotDetectedFieldDescription("The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict."),
+					Type:         schema.TypeBool,
+					Optional:     true,
+					Description:  externalChangesNotDetectedFieldDescription("The order of the values in the ALLOWED_VALUES property of the tag determines which value is used when there is a conflict."),
+					RequiredWith: []string{"ordered_allowed_values"},
 					ExactlyOneOf: []string{
 						"on_conflict.0.allowed_values_sequence",
 						"on_conflict.0.custom_value",
@@ -205,27 +207,23 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(fmt.Errorf("no_allowed_values is not supported when the %s experiment is disabled", experimentalfeatures.TagsAllowEmptyAllowedValues))
 	}
 
-	// Validate: allowed_values_sequence requires ordered_allowed_values
-	if v, ok := d.GetOk("on_conflict.0.allowed_values_sequence"); ok && v.(bool) {
-		if _, ok := d.GetOk("ordered_allowed_values"); !ok {
-			return diag.FromErr(fmt.Errorf("on_conflict.allowed_values_sequence requires ordered_allowed_values to be set (not allowed_values)"))
-		}
-	}
-
 	name := d.Get("name").(string)
 	schemaName := d.Get("schema").(string)
 	database := d.Get("database").(string)
 	id := sdk.NewSchemaObjectIdentifier(database, schemaName, name)
 
 	request := sdk.NewCreateTagRequest(id)
+
 	if v, ok := d.GetOk("comment"); ok {
 		request.WithComment(v.(string))
 	}
+
 	if v, ok := d.GetOk("ordered_allowed_values"); ok {
 		request.WithAllowedValues(expandStringList(v.([]any)))
 	} else if v, ok := d.GetOk("allowed_values"); ok {
 		request.WithAllowedValues(expandStringListAllowEmpty(v.(*schema.Set).List()))
 	}
+
 	if v, ok := d.GetOk("propagate"); ok {
 		tagPropagation, err := sdk.ToTagPropagation(v.(string))
 		if err != nil {
@@ -335,31 +333,16 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
-		// Populate the correct field and clear the other to handle switching between them.
-		// ordered_allowed_values preserves Snowflake order; allowed_values is TypeSet (unordered).
-		// During plan/apply we use raw config; during refresh we use state.
+		// We use the ordered_allowed_values field only if it's set in the config.
+		// The allowed_values field is deprecated, but it's preserved as default for backward compatibility.
 		func() error {
 			useOrdered := false
-			rawConfig := d.GetRawConfig()
-			if !rawConfig.IsNull() {
-				if vMap := rawConfig.AsValueMap(); vMap != nil {
-					if v, ok := vMap["ordered_allowed_values"]; ok && !v.IsNull() && v.LengthInt() > 0 {
-						useOrdered = true
-					}
-				}
-			} else {
-				if v := d.Get("ordered_allowed_values").([]any); len(v) > 0 {
-					useOrdered = true
-				}
+			if !d.GetRawConfig().IsNull() {
+				v, ok := d.GetRawConfig().AsValueMap()["ordered_allowed_values"]
+				useOrdered = ok && !v.IsNull() && v.LengthInt() > 0
 			}
 			if useOrdered {
-				if err := d.Set("allowed_values", nil); err != nil {
-					return err
-				}
 				return d.Set("ordered_allowed_values", tag.AllowedValues)
-			}
-			if err := d.Set("ordered_allowed_values", nil); err != nil {
-				return err
 			}
 			return d.Set("allowed_values", tag.AllowedValues)
 		}(),
@@ -428,108 +411,80 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 	}
 
-	// Check if allowed_values_sequence is active — order matters for conflict resolution.
+	// Validations.
+	experimentEnabled := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments)
+	noAllowedValues := d.Get("no_allowed_values").(bool)
+	if noAllowedValues && !experimentEnabled {
+		return diag.FromErr(fmt.Errorf("no_allowed_values is not supported when the %s experiment is disabled", experimentalfeatures.TagsAllowEmptyAllowedValues))
+	}
+
 	allowedValuesSequenceActive := false
 	if v, ok := d.GetOk("on_conflict.0.allowed_values_sequence"); ok && v.(bool) {
 		allowedValuesSequenceActive = true
-		// Validate: allowed_values_sequence requires ordered_allowed_values
-		if _, ok := d.GetOk("ordered_allowed_values"); !ok {
-			return diag.FromErr(fmt.Errorf("on_conflict.allowed_values_sequence requires ordered_allowed_values to be set (not allowed_values)"))
-		}
 	}
 
-	// Handle ordered_allowed_values (TypeList — preserves order).
-	// When this field changes, use SET to atomically replace all values in the correct order.
-	orderedAllowedValuesHandled := false
-	if d.HasChange("ordered_allowed_values") {
-		newValues := expandStringList(d.Get("ordered_allowed_values").([]any))
-		if len(newValues) > 0 {
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newValues))); err != nil {
+	// Handle allowed values changes.
+	// The three fields (allowed_values, ordered_allowed_values, no_allowed_values) are mutually exclusive,
+	// so exactly one target state applies. Determine it from config and apply the matching Snowflake operation.
+	if d.HasChange("ordered_allowed_values") || d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
+		newOrdered := expandStringList(d.Get("ordered_allowed_values").([]any))
+		newUnordered := expandStringListAllowEmpty(d.Get("allowed_values").(*schema.Set).List())
+
+		switch {
+		case len(newOrdered) > 0:
+			// Target: ordered values — SET atomically replaces in the specified order.
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newOrdered))); err != nil {
 				return diag.FromErr(err)
 			}
-			orderedAllowedValuesHandled = true
-		} else if _, hasAllowedValues := d.GetOk("allowed_values"); !hasAllowedValues {
-			// Only UNSET when ordered_allowed_values is truly removed (not switching to allowed_values).
-			// If allowed_values is now configured, let its handler take over.
-			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {
+
+		case len(newUnordered) > 0:
+			// Target: unordered values — SET atomically replaces.
+			if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newUnordered))); err != nil {
 				return diag.FromErr(err)
 			}
-			orderedAllowedValuesHandled = true
-		}
-	}
 
-	if !orderedAllowedValuesHandled {
-		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagsAllowEmptyAllowedValues, providerCtx.EnabledExperiments) {
-			if d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
-				o, n := d.GetChange("allowed_values")
-				oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
-				newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
-				_, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
-				noAllowedValues := d.Get("no_allowed_values").(bool)
-
-				switch {
-				case d.HasChange("no_allowed_values") && noAllowedValues:
-					if len(oldAllowedValues) == 0 {
-						// If no values where previously set, add a new temporary one and drop it to block any value on the Snowflake side
-						if err := errors.Join(
-							client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})),
-							client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})),
-						); err != nil {
-							return diag.FromErr(err)
-						}
-					} else {
-						// Otherwise drop values that were previously set
-						if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(removedItems)); err != nil {
-							return diag.FromErr(err)
-						}
-					}
-				case d.HasChange("no_allowed_values") && !noAllowedValues && len(newAllowedValues) == 0:
-					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {
-						return diag.FromErr(err)
-					}
-				default:
-					if len(newAllowedValues) > 0 {
-						// Target is "filled" — use SET to atomically replace all allowed values without a transient gap
-						if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newAllowedValues))); err != nil {
-							return diag.FromErr(err)
-						}
-					} else if len(removedItems) > 0 {
-						// No values left, use UNSET to allow any value to be set with the tag
-						if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {
-							return diag.FromErr(err)
-						}
-					}
-				}
+		case noAllowedValues:
+			// Target: block all values (empty allowed_values in Snowflake). Requires experiment flag (validated above).
+			oldUnorderedRaw, _ := d.GetChange("allowed_values")
+			oldValues := expandStringListAllowEmpty(oldUnorderedRaw.(*schema.Set).List())
+			if len(oldValues) == 0 {
+				oldOrderedRaw, _ := d.GetChange("ordered_allowed_values")
+				oldValues = expandStringList(oldOrderedRaw.([]any))
 			}
-		} else {
-			if d.Get("no_allowed_values").(bool) {
-				return diag.FromErr(fmt.Errorf("no_allowed_values is not supported when the %s experiment is disabled", experimentalfeatures.TagsAllowEmptyAllowedValues))
-			}
-			if d.HasChange("allowed_values") {
-				_, n := d.GetChange("allowed_values")
-				newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
-
-				if len(newAllowedValues) > 0 {
-					// Target is "filled" — use SET to atomically replace all allowed values
-					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithSet(*sdk.NewTagSetRequest().WithAllowedValues(newAllowedValues))); err != nil {
-						return diag.FromErr(err)
-					}
-				} else {
-					// All values removed — tag enters blocking state (old behavior: empty = blocking)
-					o, _ := d.GetChange("allowed_values")
-					oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
-					if len(oldAllowedValues) > 0 {
-						if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(oldAllowedValues)); err != nil {
-							return diag.FromErr(err)
-						}
-					}
+			if len(oldValues) > 0 {
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(oldValues)); err != nil {
+					return diag.FromErr(err)
 				}
-			} else if d.HasChange("no_allowed_values") && !d.Get("no_allowed_values").(bool) {
+			} else {
+				// No previous values — use ADD temp + DROP temp to enter blocking state.
 				if err := errors.Join(
 					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithAdd([]string{tempTagAllowedValue})),
 					client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop([]string{tempTagAllowedValue})),
 				); err != nil {
 					return diag.FromErr(err)
+				}
+			}
+
+		default:
+			// No allowed values field is set — values were removed from config.
+			if experimentEnabled {
+				// UNSET makes the tag accept any value (null state).
+				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithUnset(*sdk.NewTagUnsetRequest().WithAllowedValues(true))); err != nil {
+					return diag.FromErr(err)
+				}
+			} else {
+				// Without experiment: removing values = blocking state (legacy behavior).
+				// DROP old values; if already blocking (no old values), do nothing.
+				oldUnorderedRaw, _ := d.GetChange("allowed_values")
+				oldValues := expandStringListAllowEmpty(oldUnorderedRaw.(*schema.Set).List())
+				if len(oldValues) == 0 {
+					oldOrderedRaw, _ := d.GetChange("ordered_allowed_values")
+					oldValues = expandStringList(oldOrderedRaw.([]any))
+				}
+				if len(oldValues) > 0 {
+					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(oldValues)); err != nil {
+						return diag.FromErr(err)
+					}
 				}
 			}
 		}

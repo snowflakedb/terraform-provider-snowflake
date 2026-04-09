@@ -1323,6 +1323,185 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 	})
 }
 
+func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	withAllowedValues := model.TagBase("test", id).
+		WithAllowedValues("a", "b", "c")
+	withOrdered := model.TagBase("test", id).
+		WithOrderedAllowedValues("c", "b", "a")
+	withOrderedModified := model.TagBase("test", id).
+		WithOrderedAllowedValues("x", "b", "c")
+	withAllowedValuesModified := model.TagBase("test", id).
+		WithAllowedValues("x", "b", "c")
+
+	ref := withAllowedValues.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Step 1: Create with allowed_values (unordered).
+			{
+				Config: config.FromModels(t, withAllowedValues),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("a", "b", "c"),
+					resourceassert.TagResource(t, ref).
+						HasAllowedValues("a", "b", "c").
+						HasOrderedAllowedValuesEmpty(),
+				),
+			},
+			// Step 2: Switch to ordered_allowed_values — triggers Update.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withOrdered),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("a", "b", "c"),
+					resourceassert.TagResource(t, ref).
+						HasOrderedAllowedValues("c", "b", "a").
+						HasAllowedValuesEmpty(),
+				),
+			},
+			// Step 3: Modify ordered values.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withOrderedModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
+					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
+				),
+			},
+			// Step 4: Switch back to allowed_values — triggers Update.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withAllowedValuesModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
+					resourceassert.TagResource(t, ref).
+						HasAllowedValues("x", "b", "c").
+						HasOrderedAllowedValuesEmpty(),
+				),
+			},
+			// Step 5: Import with ordered_allowed_values config.
+			// During import rawConfig is null, so Read puts values into allowed_values.
+			// Both fields must be ignored since imported state and config-driven state differ.
+			{
+				Config:                  config.FromModels(t, withOrderedModified),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ordered_allowed_values", "allowed_values"},
+			},
+			// Step 6: Apply after import — reconciles state from allowed_values to ordered_allowed_values.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withOrderedModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
+					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
+				),
+			},
+			// Step 7: Import with allowed_values config — values land in allowed_values matching the config.
+			{
+				Config:                  config.FromModels(t, withAllowedValuesModified),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"allowed_values"},
+			},
+			// Step 8: External ADD while using ordered_allowed_values — drift detected and corrected.
+			{
+				Config: config.FromModels(t, withOrderedModified),
+			},
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithAdd([]string{"external"}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withOrderedModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
+					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
+				),
+			},
+			// Step 9: External DROP while using ordered_allowed_values — drift detected and corrected.
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithDrop([]string{"c"}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withOrderedModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
+					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
+				),
+			},
+			// Step 10: Switch to allowed_values + external ADD — drift detected and corrected.
+			{
+				Config: config.FromModels(t, withAllowedValuesModified),
+			},
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithAdd([]string{"external"}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withAllowedValuesModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
+					resourceassert.TagResource(t, ref).HasAllowedValues("x", "b", "c"),
+				),
+			},
+			// Step 11: External DROP while using allowed_values — drift detected and corrected.
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithDrop([]string{"c"}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withAllowedValuesModified),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
+					resourceassert.TagResource(t, ref).HasAllowedValues("x", "b", "c"),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Tag_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -1374,10 +1553,11 @@ func TestAcc_Tag_Validations(t *testing.T) {
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`"ordered_allowed_values": conflicts with no_allowed_values`),
 			},
-			// allowed_values_sequence requires ordered_allowed_values, not allowed_values
+			// allowed_values_sequence requires ordered_allowed_values
 			{
 				Config:      config.FromModels(t, allowedValuesSequenceWithAllowedValues),
-				ExpectError: regexp.MustCompile(`on_conflict.allowed_values_sequence requires ordered_allowed_values to be set`),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"on_conflict.0.allowed_values_sequence": all of .+must be specified`),
 			},
 		},
 	})
