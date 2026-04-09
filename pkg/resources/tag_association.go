@@ -188,12 +188,10 @@ func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta
 	safeDestroy := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.TagAssociationSafeDestroy, providerCtx.EnabledExperiments)
 	var correctObjectIds []string
 	for _, oid := range ids {
-		var objectTagValue *string
-		var err error
-		if safeDestroy {
-			objectTagValue, err = client.SystemFunctions.GetTagSafely(ctx, tagId, oid, objectType)
-		} else {
-			objectTagValue, err = client.SystemFunctions.GetTag(ctx, tagId, oid, objectType)
+
+		objectTagValue, err := client.SystemFunctions.GetTag(ctx, tagId, oid, objectType)
+		if safeDestroy && errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+			continue
 		}
 		if err != nil {
 			return diag.FromErr(err)
