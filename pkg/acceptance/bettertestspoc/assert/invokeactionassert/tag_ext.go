@@ -28,12 +28,12 @@ func TagDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.TestChe
 // that are set up after test step definitions (e.g., in PreConfig callbacks).
 // Optionally checks level and apply method via TAG_REFERENCES when set with WithLevel/WithApplyMethod.
 type tagValueOnObjectCheck struct {
-	tagId            sdk.SchemaObjectIdentifier
-	objectIdProvider func() sdk.ObjectIdentifier
-	objectType       sdk.ObjectType
-	expectedValue    string
-	expectedLevel    *sdk.TagReferenceObjectDomain
-	expectedApply    *sdk.TagReferenceApplyMethod
+	tagId               sdk.SchemaObjectIdentifier
+	objectIdProvider    func() sdk.ObjectIdentifier
+	objectDomain        sdk.TagReferenceObjectDomain
+	expectedValue       string
+	expectedLevel       *sdk.TagReferenceObjectDomain
+	expectedApplyMethod *sdk.TagReferenceApplyMethod
 }
 
 func (c *tagValueOnObjectCheck) WithLevel(level sdk.TagReferenceObjectDomain) *tagValueOnObjectCheck {
@@ -42,7 +42,7 @@ func (c *tagValueOnObjectCheck) WithLevel(level sdk.TagReferenceObjectDomain) *t
 }
 
 func (c *tagValueOnObjectCheck) WithApplyMethod(method sdk.TagReferenceApplyMethod) *tagValueOnObjectCheck {
-	c.expectedApply = &method
+	c.expectedApplyMethod = &method
 	return c
 }
 
@@ -54,28 +54,24 @@ func (c *tagValueOnObjectCheck) ToTerraformTestCheckFunc(t *testing.T, testClien
 		}
 		objectId := c.objectIdProvider()
 
-		val, err := testClient.Tag.GetForObject(t, c.tagId, objectId, c.objectType)
+		refs, err := testClient.Tag.GetReferencesForObject(t, objectId, c.objectDomain)
 		if err != nil {
-			return fmt.Errorf("error getting tag %s for %s %s: %w", c.tagId.FullyQualifiedName(), c.objectType, objectId.FullyQualifiedName(), err)
+			return fmt.Errorf("error getting tag references for %s %s: %w", c.objectDomain, objectId.FullyQualifiedName(), err)
 		}
-		if val == nil {
-			return fmt.Errorf("expected tag value %q on %s %s, got nil", c.expectedValue, c.objectType, objectId.FullyQualifiedName())
+		ref, err := collections.FindFirst(refs, func(ref sdk.TagReference) bool {
+			return ref.TagId().FullyQualifiedName() == c.tagId.FullyQualifiedName()
+		})
+		if err != nil {
+			return fmt.Errorf("tag reference %s not found on %s %s: %w", c.tagId.FullyQualifiedName(), c.objectDomain, objectId.FullyQualifiedName(), err)
 		}
-		if *val != c.expectedValue {
-			return fmt.Errorf("expected tag value %q on %s %s, got %q", c.expectedValue, c.objectType, objectId.FullyQualifiedName(), *val)
+		if ref.TagValue != c.expectedValue {
+			return fmt.Errorf("expected tag value %q on %s %s, got %q", c.expectedValue, c.objectDomain, objectId.FullyQualifiedName(), ref.TagValue)
 		}
-
-		if c.expectedLevel != nil || c.expectedApply != nil {
-			ref, err := findTagReference(t, testClient, c.tagId, objectId, c.objectType)
-			if err != nil {
-				return err
-			}
-			if c.expectedLevel != nil && ref.Level != *c.expectedLevel {
-				return fmt.Errorf("expected tag level %v on %s %s, got %v", *c.expectedLevel, c.objectType, objectId.FullyQualifiedName(), ref.Level)
-			}
-			if c.expectedApply != nil && ref.ApplyMethod != *c.expectedApply {
-				return fmt.Errorf("expected tag apply method %v on %s %s, got %v", *c.expectedApply, c.objectType, objectId.FullyQualifiedName(), ref.ApplyMethod)
-			}
+		if c.expectedLevel != nil && ref.Level != *c.expectedLevel {
+			return fmt.Errorf("expected tag level %v on %s %s, got %v", *c.expectedLevel, c.objectDomain, objectId.FullyQualifiedName(), ref.Level)
+		}
+		if c.expectedApplyMethod != nil && ref.ApplyMethod != *c.expectedApplyMethod {
+			return fmt.Errorf("expected tag apply method %v on %s %s, got %v", *c.expectedApplyMethod, c.objectDomain, objectId.FullyQualifiedName(), ref.ApplyMethod)
 		}
 
 		return nil
@@ -86,38 +82,13 @@ func (c *tagValueOnObjectCheck) ToTerraformTestCheckFunc(t *testing.T, testClien
 // The objectId is resolved lazily via a provider function, so it can reference variables
 // that are set up after test step definitions (e.g., in PreConfig callbacks).
 // Use WithLevel and WithApplyMethod to additionally verify how the tag was applied.
-func TagValueOnObject(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectIdProvider func() sdk.ObjectIdentifier, objectType sdk.ObjectType, expectedValue string) *tagValueOnObjectCheck {
+func TagValueOnObject(t *testing.T, tagId sdk.SchemaObjectIdentifier, objectIdProvider func() sdk.ObjectIdentifier, objectDomain sdk.TagReferenceObjectDomain, expectedValue string) *tagValueOnObjectCheck {
 	t.Helper()
+
 	return &tagValueOnObjectCheck{
 		tagId:            tagId,
 		objectIdProvider: objectIdProvider,
-		objectType:       objectType,
+		objectDomain:     objectDomain,
 		expectedValue:    expectedValue,
 	}
-}
-
-// objectTypeToTagReferenceDomain maps sdk.ObjectType to the TagReferenceObjectDomain
-// used by INFORMATION_SCHEMA.TAG_REFERENCES. Snowflake normalizes some types
-// (e.g., VIEW -> TABLE for tag references).
-func objectTypeToTagReferenceDomain(objectType sdk.ObjectType) sdk.TagReferenceObjectDomain {
-	switch objectType {
-	case sdk.ObjectTypeView, sdk.ObjectTypeMaterializedView:
-		return sdk.TagReferenceObjectDomainTable
-	default:
-		return sdk.TagReferenceObjectDomain(objectType)
-	}
-}
-
-func findTagReference(t *testing.T, testClient *helpers.TestClient, tagId sdk.SchemaObjectIdentifier, objectId sdk.ObjectIdentifier, objectType sdk.ObjectType) (*sdk.TagReference, error) {
-	t.Helper()
-	domain := objectTypeToTagReferenceDomain(objectType)
-	refs, err := testClient.Tag.GetReferencesForObject(t, objectId, domain)
-	if err != nil {
-		return nil, fmt.Errorf("error getting tag references for %s %s: %w", objectType, objectId.FullyQualifiedName(), err)
-	}
-	return collections.FindFirst(refs, func(ref sdk.TagReference) bool {
-		return ref.TagDatabase == tagId.DatabaseName() &&
-			ref.TagSchema == tagId.SchemaName() &&
-			ref.TagName == tagId.Name()
-	})
 }

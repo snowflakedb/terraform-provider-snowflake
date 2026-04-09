@@ -1246,13 +1246,13 @@ func TestInt_TagsPropagation(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.CreateInSchema(t, schema.ID())
 		t.Cleanup(tableCleanup)
 
-		assertTagSetWithReference(t, tag.ID(), table.ID(), sdk.ObjectTypeTable, "schema_value", sdk.TagReferenceObjectDomainSchema, sdk.TagReferenceApplyMethodInherited)
+		assertTagSetWithReference(t, tag.ID(), table.ID(), sdk.TagReferenceObjectDomainTable, "schema_value", sdk.TagReferenceObjectDomainSchema, sdk.TagReferenceApplyMethodInherited)
 
 		// tag on table also propagates to view via dependency
 		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
 		t.Cleanup(viewCleanup)
 
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "schema_value", sdk.TagReferenceObjectDomainSchema, sdk.TagReferenceApplyMethodInherited)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "schema_value", sdk.TagReferenceObjectDomainSchema, sdk.TagReferenceApplyMethodInherited)
 
 		// explicit set overrides propagated value
 		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeView, view.ID()).WithSetTags([]sdk.TagAssociation{
@@ -1260,13 +1260,13 @@ func TestInt_TagsPropagation(t *testing.T) {
 		}))
 		require.NoError(t, err)
 
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "explicit_value", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodManual)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "explicit_value", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodManual)
 
 		// unset reverts to propagated value
 		err = client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeView, view.ID()).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
 		require.NoError(t, err)
 
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "schema_value", sdk.TagReferenceObjectDomainSchema, sdk.TagReferenceApplyMethodInherited)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "schema_value", sdk.TagReferenceObjectDomainSchema, sdk.TagReferenceApplyMethodInherited)
 	})
 
 	t.Run("propagate on dependency: source value update propagates to target", func(t *testing.T) {
@@ -1288,7 +1288,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
 		t.Cleanup(viewCleanup)
 
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "v1", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "v1", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
 
 		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).
 			WithSetTags([]sdk.TagAssociation{
@@ -1296,7 +1296,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 			}))
 		require.NoError(t, err)
 
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "v2", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "v2", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
 	})
 
 	t.Run("propagate on dependency: removing tag from source removes from target", func(t *testing.T) {
@@ -1317,7 +1317,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
 		t.Cleanup(viewCleanup)
 
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "will_be_removed", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "will_be_removed", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
 
 		err := client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeTable, table.ID()).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
 		require.NoError(t, err)
@@ -1343,7 +1343,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		ctasTable, ctasTableCleanup := testClientHelper().Table.CreateAsSelectFrom(t, table.ID())
 		t.Cleanup(ctasTableCleanup)
 
-		assertTagSetWithReference(t, tag.ID(), ctasTable.ID(), sdk.ObjectTypeTable, "data_movement_value", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
+		assertTagSetWithReference(t, tag.ID(), ctasTable.ID(), sdk.TagReferenceObjectDomainTable, "data_movement_value", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
 	})
 
 	t.Run("conflict: default resolution produces CONFLICT string", func(t *testing.T) {
@@ -1354,7 +1354,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		t.Cleanup(tagCleanup)
 
 		view := testClientHelper().Tag.SetupTagPropagationConflictOnView(t, tag.ID(), "value_from_table1", "value_from_table2")
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "CONFLICT", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "CONFLICT", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
 
 		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).
 			WithSet(*sdk.NewTagSetRequest().WithPropagate(*sdk.NewTagPropagateRequest(sdk.TagPropagationOnDependency).
@@ -1363,7 +1363,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 				}))))
 		require.NoError(t, err)
 
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "HIGHLY CONFIDENTIAL", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "HIGHLY CONFIDENTIAL", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
 	})
 
 	t.Run("conflict: ALLOWED_VALUES_SEQUENCE resolves using order", func(t *testing.T) {
@@ -1378,7 +1378,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		t.Cleanup(tagCleanup)
 
 		view := testClientHelper().Tag.SetupTagPropagationConflictOnView(t, tag.ID(), "internal", "public")
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "internal", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "internal", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
 
 		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).
 			WithSet(*sdk.NewTagSetRequest().
@@ -1393,6 +1393,6 @@ func TestInt_TagsPropagation(t *testing.T) {
 			}))))
 		require.NoError(t, err)
 
-		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.ObjectTypeView, "public", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
+		assertTagSetWithReference(t, tag.ID(), view.ID(), sdk.TagReferenceObjectDomainTable, "public", sdk.TagReferenceObjectDomainTable, sdk.TagReferenceApplyMethodPropagated)
 	})
 }

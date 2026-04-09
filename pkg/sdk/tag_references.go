@@ -124,6 +124,10 @@ type TagReference struct {
 	ApplyMethod    TagReferenceApplyMethod
 }
 
+func (t *TagReference) TagId() ObjectIdentifier {
+	return NewSchemaObjectIdentifier(t.TagDatabase, t.TagSchema, t.TagName)
+}
+
 type tagReferenceDBRow struct {
 	TagDatabase    string         `db:"TAG_DATABASE"`
 	TagSchema      string         `db:"TAG_SCHEMA"`

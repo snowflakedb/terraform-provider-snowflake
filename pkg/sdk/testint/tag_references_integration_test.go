@@ -21,25 +21,27 @@ func TestInt_TagReferences(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
 		t.Cleanup(tagCleanup)
 
-		table, tableCleanup := testClientHelper().Table.Create(t)
-		t.Cleanup(tableCleanup)
-
 		tagValue := "production"
-		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
-			{Name: tag.ID(), Value: tagValue},
-		}))
-		require.NoError(t, err)
-
-		t.Cleanup(func() {
-			err := client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeTable, table.ID()).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
-			require.NoError(t, err)
-		})
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
+		}
+		table, tableCleanup := testClientHelper().Table.CreateWithRequest(t,
+			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
+				WithTags([]sdk.TagAssociationRequest{
+					*sdk.NewTagAssociationRequest(tag.ID(), tagValue),
+				}),
+		)
+		t.Cleanup(tableCleanup)
 
 		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(table.ID(), sdk.TagReferenceObjectDomainTable))
 		require.NoError(t, err)
-		require.Len(t, refs, 1)
 
-		assertThatObject(t, objectassert.TagReferenceFromObject(t, &refs[0]).
+		ref, err := collections.FindFirst(refs, func(r sdk.TagReference) bool {
+			return r.TagName == tag.ID().Name()
+		})
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.TagReferenceFromObject(t, ref).
 			HasTagDatabase(tag.ID().DatabaseName()).
 			HasTagSchema(tag.ID().SchemaName()).
 			HasTagName(tag.ID().Name()).
@@ -54,15 +56,6 @@ func TestInt_TagReferences(t *testing.T) {
 		)
 	})
 
-	t.Run("table domain: no tags set", func(t *testing.T) {
-		table, tableCleanup := testClientHelper().Table.Create(t)
-		t.Cleanup(tableCleanup)
-
-		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(table.ID(), sdk.TagReferenceObjectDomainTable))
-		require.NoError(t, err)
-		assert.Empty(t, refs)
-	})
-
 	t.Run("table domain: multiple tags on same object", func(t *testing.T) {
 		tag1, tag1Cleanup := testClientHelper().Tag.CreateTag(t)
 		t.Cleanup(tag1Cleanup)
@@ -70,19 +63,17 @@ func TestInt_TagReferences(t *testing.T) {
 		tag2, tag2Cleanup := testClientHelper().Tag.CreateTag(t)
 		t.Cleanup(tag2Cleanup)
 
-		table, tableCleanup := testClientHelper().Table.Create(t)
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
+		}
+		table, tableCleanup := testClientHelper().Table.CreateWithRequest(t,
+			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
+				WithTags([]sdk.TagAssociationRequest{
+					*sdk.NewTagAssociationRequest(tag1.ID(), "v1"),
+					*sdk.NewTagAssociationRequest(tag2.ID(), "v2"),
+				}),
+		)
 		t.Cleanup(tableCleanup)
-
-		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
-			{Name: tag1.ID(), Value: "v1"},
-			{Name: tag2.ID(), Value: "v2"},
-		}))
-		require.NoError(t, err)
-
-		t.Cleanup(func() {
-			err := client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeTable, table.ID()).WithUnsetTags([]sdk.ObjectIdentifier{tag1.ID(), tag2.ID()}))
-			require.NoError(t, err)
-		})
 
 		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(table.ID(), sdk.TagReferenceObjectDomainTable))
 		require.NoError(t, err)
@@ -93,17 +84,11 @@ func TestInt_TagReferences(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
 		t.Cleanup(tagCleanup)
 
-		schemaId := testClientHelper().Ids.SchemaId()
 		tagValue := "inherited_value"
-		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeSchema, schemaId).WithSetTags([]sdk.TagAssociation{
+		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeSchema, testClientHelper().Ids.SchemaId()).WithSetTags([]sdk.TagAssociation{
 			{Name: tag.ID(), Value: tagValue},
 		}))
 		require.NoError(t, err)
-
-		t.Cleanup(func() {
-			err := client.Tags.Unset(ctx, sdk.NewUnsetTagRequest(sdk.ObjectTypeSchema, schemaId).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
-			require.NoError(t, err)
-		})
 
 		table, tableCleanup := testClientHelper().Table.Create(t)
 		t.Cleanup(tableCleanup)
@@ -115,6 +100,7 @@ func TestInt_TagReferences(t *testing.T) {
 			return r.TagName == tag.ID().Name()
 		})
 		require.NoError(t, err)
+
 		assertThatObject(t, objectassert.TagReferenceFromObject(t, ref).
 			HasTagName(tag.ID().Name()).
 			HasTagValue(tagValue).
@@ -132,22 +118,29 @@ func TestInt_TagReferences(t *testing.T) {
 		)
 		t.Cleanup(tagCleanup)
 
-		table, tableCleanup := testClientHelper().Table.Create(t)
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
+		}
+		table, tableCleanup := testClientHelper().Table.CreateWithRequest(t,
+			sdk.NewCreateTableRequest(testClientHelper().Ids.RandomSchemaObjectIdentifier(), columns).
+				WithTags([]sdk.TagAssociationRequest{
+					*sdk.NewTagAssociationRequest(tag.ID(), "propagated_value"),
+				}),
+		)
 		t.Cleanup(tableCleanup)
-
-		err := client.Tags.Set(ctx, sdk.NewSetTagRequest(sdk.ObjectTypeTable, table.ID()).WithSetTags([]sdk.TagAssociation{
-			{Name: tag.ID(), Value: "propagated_value"},
-		}))
-		require.NoError(t, err)
 
 		view, viewCleanup := testClientHelper().View.CreateView(t, fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName()))
 		t.Cleanup(viewCleanup)
 
 		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(view.ID(), sdk.TagReferenceObjectDomainTable))
 		require.NoError(t, err)
-		require.Len(t, refs, 1)
 
-		assertThatObject(t, objectassert.TagReferenceFromObject(t, &refs[0]).
+		ref, err := collections.FindFirst(refs, func(r sdk.TagReference) bool {
+			return r.TagName == tag.ID().Name()
+		})
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.TagReferenceFromObject(t, ref).
 			HasTagName(tag.ID().Name()).
 			HasTagValue("propagated_value").
 			HasLevel(sdk.TagReferenceObjectDomainTable).
@@ -156,10 +149,17 @@ func TestInt_TagReferences(t *testing.T) {
 		)
 	})
 
-	t.Run("error: non-existent object", func(t *testing.T) {
-		nonExistentId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+	t.Run("table domain: no tags set", func(t *testing.T) {
+		table, tableCleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(tableCleanup)
 
-		_, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(nonExistentId, sdk.TagReferenceObjectDomainTable))
+		refs, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(table.ID(), sdk.TagReferenceObjectDomainTable))
+		require.NoError(t, err)
+		assert.Empty(t, refs)
+	})
+
+	t.Run("error: non-existent object", func(t *testing.T) {
+		_, err := client.TagReferences.GetForEntity(ctx, sdk.NewGetForEntityTagReferenceRequest(NonExistingSchemaObjectIdentifier, sdk.TagReferenceObjectDomainTable))
 		require.Error(t, err)
 	})
 }

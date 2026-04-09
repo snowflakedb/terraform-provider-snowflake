@@ -1070,7 +1070,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				Check: assertThat(t,
 					// "confidential" is first in sequence but not assigned to either table;
 					// "internal" is second and assigned to table1 -> first match -> propagated value
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "internal").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "internal").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1090,7 +1090,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 					resourceassert.TagResource(t, withSeqReordered.ResourceReference()).
 						HasOnConflictAllowedValuesSequence().
 						HasOrderedAllowedValues("public", "internal", "confidential"),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "public").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "public").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1101,7 +1101,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TagResource(t, withSeqAddedValue.ResourceReference()).
 						HasOrderedAllowedValues("restricted", "public", "internal", "confidential"),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "public").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "public").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1112,7 +1112,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TagResource(t, withSeqRemovedValue.ResourceReference()).
 						HasOrderedAllowedValues("restricted", "internal", "confidential"),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "internal").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "internal").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1123,7 +1123,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TagResource(t, withCustomConflict.ResourceReference()).
 						HasOnConflictCustomValue("confidential"),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "confidential").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "confidential").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1135,7 +1135,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 					resourceassert.TagResource(t, withSeqAgain.ResourceReference()).
 						HasOnConflictAllowedValuesSequence().
 						HasOrderedAllowedValues("restricted", "internal", "confidential"),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "internal").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "internal").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1150,7 +1150,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 						HasPropagateEnum(sdk.TagPropagationNone).
 						HasOnConflictEmpty(),
 					// Snowflake does not remove already-propagated tags when UNSET PROPAGATE is issued
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "internal").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "internal").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1205,7 +1205,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 					viewId = view.ID()
 				},
 				Config: config.FromModels(t, withCustomFail),
-				Check: assertThat(t, invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "FAIL").
+				Check: assertThat(t, invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "FAIL").
 					WithLevel(sdk.TagReferenceObjectDomainTable).
 					WithApplyMethod(sdk.TagReferenceApplyMethodPropagated)),
 			},
@@ -1216,7 +1216,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 					resourceassert.TagResource(t, withCustomFailAndAllowedValues.ResourceReference()).
 						HasOnConflictCustomValue("FAIL").
 						HasAllowedValues("FAIL", "alpha", "beta"),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "FAIL").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "FAIL").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1227,7 +1227,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TagResource(t, withCustomRestricted.ResourceReference()).
 						HasOnConflictCustomValue("RESTRICTED"),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "RESTRICTED").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "RESTRICTED").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
@@ -1238,7 +1238,7 @@ func TestAcc_Tag_Propagation_CustomOnConflictValue(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.TagResource(t, propagateOnly.ResourceReference()).
 						HasOnConflictEmpty(),
-					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.ObjectTypeView, "CONFLICT").
+					invokeactionassert.TagValueOnObject(t, tagId, func() sdk.ObjectIdentifier { return viewId }, sdk.TagReferenceObjectDomainTable, "CONFLICT").
 						WithLevel(sdk.TagReferenceObjectDomainTable).
 						WithApplyMethod(sdk.TagReferenceApplyMethodPropagated),
 				),
