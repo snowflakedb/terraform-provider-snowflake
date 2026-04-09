@@ -284,7 +284,7 @@ func TestAcc_Experimental_GrantApplicationRole_SafeDestroy_MissingParentAccountR
 			// Drop the parent account role externally WITHOUT experiment — must error.
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, experimentProviderModel, grantModel),
+				Config:                   config.FromModels(t, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.Execute(testClient().Role.DropRoleFunc(t, parentRole.ID())),
