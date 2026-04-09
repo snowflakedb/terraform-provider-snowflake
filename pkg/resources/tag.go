@@ -219,7 +219,7 @@ func CreateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	if v, ok := d.GetOk("ordered_allowed_values"); ok {
-		request.WithAllowedValues(expandStringList(v.([]any)))
+		request.WithAllowedValues(expandStringListAllowEmpty(v.([]any)))
 	} else if v, ok := d.GetOk("allowed_values"); ok {
 		request.WithAllowedValues(expandStringListAllowEmpty(v.(*schema.Set).List()))
 	}
@@ -333,18 +333,18 @@ func ReadContextTag(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.TagToSchema(tag)}),
 		d.Set("comment", tag.Comment),
-		// We use the ordered_allowed_values field only if it's set in the config.
-		// The allowed_values field is deprecated, but it's preserved as default for backward compatibility.
+		// Use ordered_allowed_values by default (including import where rawConfig is null).
+		// Fall back to allowed_values only when it is explicitly set in the config.
 		func() error {
-			useOrdered := false
+			useAllowedValues := false
 			if !d.GetRawConfig().IsNull() {
-				v, ok := d.GetRawConfig().AsValueMap()["ordered_allowed_values"]
-				useOrdered = ok && !v.IsNull() && v.LengthInt() > 0
+				v, ok := d.GetRawConfig().AsValueMap()["allowed_values"]
+				useAllowedValues = ok && !v.IsNull() && v.LengthInt() > 0
 			}
-			if useOrdered {
-				return d.Set("ordered_allowed_values", tag.AllowedValues)
+			if useAllowedValues {
+				return d.Set("allowed_values", tag.AllowedValues)
 			}
-			return d.Set("allowed_values", tag.AllowedValues)
+			return d.Set("ordered_allowed_values", tag.AllowedValues)
 		}(),
 		d.Set("propagate", tag.Propagate),
 		func() error {
@@ -426,7 +426,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	// The three fields (allowed_values, ordered_allowed_values, no_allowed_values) are mutually exclusive,
 	// so exactly one target state applies. Determine it from config and apply the matching Snowflake operation.
 	if d.HasChange("ordered_allowed_values") || d.HasChange("allowed_values") || d.HasChange("no_allowed_values") {
-		newOrdered := expandStringList(d.Get("ordered_allowed_values").([]any))
+		newOrdered := expandStringListAllowEmpty(d.Get("ordered_allowed_values").([]any))
 		newUnordered := expandStringListAllowEmpty(d.Get("allowed_values").(*schema.Set).List())
 
 		switch {
@@ -448,7 +448,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			oldValues := expandStringListAllowEmpty(oldUnorderedRaw.(*schema.Set).List())
 			if len(oldValues) == 0 {
 				oldOrderedRaw, _ := d.GetChange("ordered_allowed_values")
-				oldValues = expandStringList(oldOrderedRaw.([]any))
+				oldValues = expandStringListAllowEmpty(oldOrderedRaw.([]any))
 			}
 			if len(oldValues) > 0 {
 				if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(oldValues)); err != nil {
@@ -478,7 +478,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 				oldValues := expandStringListAllowEmpty(oldUnorderedRaw.(*schema.Set).List())
 				if len(oldValues) == 0 {
 					oldOrderedRaw, _ := d.GetChange("ordered_allowed_values")
-					oldValues = expandStringList(oldOrderedRaw.([]any))
+					oldValues = expandStringListAllowEmpty(oldOrderedRaw.([]any))
 				}
 				if len(oldValues) > 0 {
 					if err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithDrop(oldValues)); err != nil {
@@ -543,8 +543,8 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	if d.HasChange("masking_policies") {
 		o, n := d.GetChange("masking_policies")
-		oldAllowedValues := expandStringList(o.(*schema.Set).List())
-		newAllowedValues := expandStringList(n.(*schema.Set).List())
+		oldAllowedValues := expandStringListAllowEmpty(o.(*schema.Set).List())
+		newAllowedValues := expandStringListAllowEmpty(n.(*schema.Set).List())
 
 		addedItems, removedItems := ListDiff(oldAllowedValues, newAllowedValues)
 

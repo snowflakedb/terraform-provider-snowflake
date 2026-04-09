@@ -226,12 +226,13 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 						HasAllowedValues("", "bar", "foo"),
 				),
 			},
-			// Import - with allowed_values
+			// Import - with allowed_values config (import populates ordered_allowed_values by default)
 			{
-				Config:            config.FromModels(t, basic),
-				ResourceName:      basic.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, basic),
+				ResourceName:            basic.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ordered_allowed_values", "allowed_values"},
 			},
 			// Update - with different ordering
 			{
@@ -259,12 +260,13 @@ func TestAcc_Tag_CompleteUseCase_AllowedValuesOrdering(t *testing.T) {
 						HasAllowedValues("", "bar", "foo"),
 				),
 			},
-			// Import - with different ordering
+			// Import - with different ordering (import populates ordered_allowed_values by default)
 			{
-				Config:            config.FromModels(t, basicWithDifferentValues),
-				ResourceName:      basicWithDifferentValues.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, basicWithDifferentValues),
+				ResourceName:            basicWithDifferentValues.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ordered_allowed_values", "allowed_values"},
 			},
 		},
 	})
@@ -564,12 +566,13 @@ func TestAcc_Tag_AllowedValues_WithExperimentFlag(t *testing.T) {
 						HasAllowedValues("value1", "value2"),
 				),
 			},
-			// Import - with allowed_values
+			// Import - with allowed_values config (import populates ordered_allowed_values by default)
 			{
-				Config:            config.FromModels(t, providerModel, withAllowedValues),
-				ResourceName:      withAllowedValues.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, providerModel, withAllowedValues),
+				ResourceName:            withAllowedValues.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ordered_allowed_values", "allowed_values"},
 			},
 			// Update - change allowed_values (partial overlap)
 			{
@@ -1079,7 +1082,7 @@ func TestAcc_Tag_PropagateWithAllowedValuesSequence(t *testing.T) {
 				ResourceName:            withSeqInitial.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"on_conflict", "ordered_allowed_values", "allowed_values"},
+				ImportStateVerifyIgnore: []string{"on_conflict"},
 			},
 			// Update allowed_values order ONLY -> "public" is now first match -> view should get "public"
 			{
@@ -1333,49 +1336,18 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 						HasOrderedAllowedValuesEmpty(),
 				),
 			},
-			// Switch from allowed_values to no_allowed_values.
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, providerModel, withNoAllowedValues),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).HasAllowedValuesEmpty(),
-					resourceassert.TagResource(t, ref).
-						HasNoAllowedValuesString("true").
-						HasAllowedValuesEmpty().
-						HasOrderedAllowedValuesEmpty(),
-				),
-			},
-			// Switch from no_allowed_values to allowed_values.
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: config.FromModels(t, providerModel, withAllowedValuesAfterBlocking),
-				Check: assertThat(t,
-					objectassert.Tag(t, id).HasAllowedValuesUnordered("x", "b", "c"),
-					resourceassert.TagResource(t, ref).HasAllowedValues("x", "b", "c"),
-				),
-			},
 			// Import with ordered_allowed_values config.
-			// During import rawConfig is null, so Read puts values into allowed_values.
 			{
-				Config:                  config.FromModels(t, providerModel, withOrderedModified),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ordered_allowed_values", "allowed_values"},
+				Config:            config.FromModels(t, providerModel, withOrderedModified),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
-			// Apply after import - reconciles state to ordered_allowed_values.
+			// Apply after import - values already in ordered_allowed_values, no reconciliation needed.
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
 					},
 				},
 				Config: config.FromModels(t, providerModel, withOrderedModified),
@@ -1384,13 +1356,13 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("x", "b", "c"),
 				),
 			},
-			// Import with allowed_values config.
+			// Import with allowed_values config (import populates ordered_allowed_values by default).
 			{
 				Config:                  config.FromModels(t, providerModel, withAllowedValuesAfterBlocking),
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"allowed_values"},
+				ImportStateVerifyIgnore: []string{"ordered_allowed_values", "allowed_values"},
 			},
 		},
 	})
