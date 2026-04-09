@@ -45,6 +45,7 @@ func TestInt_ImageRepositories(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
 			HasComment("").
+			HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
 			HasPrivatelinkRepositoryUrl(""),
 		)
 	})
@@ -52,7 +53,7 @@ func TestInt_ImageRepositories(t *testing.T) {
 	t.Run("create - complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 		comment := random.Comment()
-		request := sdk.NewCreateImageRepositoryRequest(id).WithIfNotExists(true).WithComment(comment)
+		request := sdk.NewCreateImageRepositoryRequest(id).WithIfNotExists(true).WithEncryption(*sdk.NewImageRepositoryEncryptionRequest(sdk.ImageRepositoryEncryptionTypeSnowflakeSse)).WithComment(comment)
 
 		err := client.ImageRepositories.Create(ctx, request)
 		require.NoError(t, err)
@@ -70,6 +71,7 @@ func TestInt_ImageRepositories(t *testing.T) {
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
 			HasComment(comment).
+			HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeSse).
 			HasPrivatelinkRepositoryUrl(""),
 		)
 	})
