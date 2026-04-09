@@ -3,8 +3,6 @@ package gen
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 
 // Enum defines an enum type with its name and values. For now, only string values are supported.
-// Limitations (also added to the README.md):
-// Generate unit tests for the enum type converters
 type Enum struct {
 	Name       string
 	NamePlural string
