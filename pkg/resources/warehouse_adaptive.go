@@ -31,6 +31,11 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the adaptive warehouse.",
 	},
+	"warehouse_type": {
+		Type:        schema.TypeString,
+		Computed:    true,
+		Description: "Specifies the type for the adaptive warehouse. This field is used for checking external changes and recreating the resource if needed.",
+	},
 	"max_query_performance_level": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -110,6 +115,7 @@ func WarehouseAdaptive() *schema.Resource {
 				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementQueuedTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
 				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
 			),
+			HandleWarehouseExternalTypeChange(sdk.WarehouseTypeAdaptive),
 		)),
 		Timeouts: defaultTimeouts,
 	}
@@ -225,6 +231,7 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) schema.ReadConte
 		errs := errors.Join(
 			d.Set("name", w.Name),
 			d.Set("comment", w.Comment),
+			d.Set("warehouse_type", string(w.Type)),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseAdaptiveToSchema(w)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseAdaptiveParametersToSchema(warehouseParameters, providerCtx)}),
@@ -270,6 +277,10 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 
 	set := sdk.WarehouseSet{}
 	unset := sdk.WarehouseUnset{}
+
+	if d.HasChange("warehouse_type") {
+		set.WarehouseType = sdk.Pointer(sdk.WarehouseTypeAdaptive)
+	}
 
 	if err := errors.Join(
 		intAttributeWithSpecialDefaultUpdate(d, "query_throughput_multiplier", &set.QueryThroughputMultiplier, &unset.QueryThroughputMultiplier),

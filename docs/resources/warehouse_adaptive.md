@@ -7,8 +7,6 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
--> **Note** Detecting external changes to the warehouse type is not yet supported.
-
 # snowflake_warehouse_adaptive (Resource)
 
 Resource used to manage adaptive warehouse objects. Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning.
@@ -58,6 +56,7 @@ resource "snowflake_warehouse_adaptive" "complete" {
 - `id` (String) The ID of this resource.
 - `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN WAREHOUSE` for the given adaptive warehouse. (see [below for nested schema](#nestedatt--parameters))
 - `show_output` (List of Object) Outputs the result of `SHOW WAREHOUSES` for the given adaptive warehouse. (see [below for nested schema](#nestedatt--show_output))
+- `warehouse_type` (String) Specifies the type for the adaptive warehouse. This field is used for checking external changes and recreating the resource if needed.
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

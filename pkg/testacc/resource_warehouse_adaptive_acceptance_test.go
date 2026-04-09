@@ -325,3 +325,46 @@ func TestAcc_WarehouseAdaptive_Validations(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	warehouseModel := model.WarehouseAdaptiveWithId(id)
+	ref := warehouseModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseAdaptive),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, warehouseModel),
+				Check: assertThat(t,
+					resourceassert.WarehouseAdaptiveResource(t, ref).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)),
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+						HasType(sdk.WarehouseTypeAdaptive),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Warehouse.UpdateWarehouseType(t, id, sdk.WarehouseTypeStandard)
+				},
+				Config: accconfig.FromModels(t, warehouseModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeStandard)), sdk.String(string(sdk.WarehouseTypeAdaptive))),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.WarehouseAdaptiveResource(t, ref).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeAdaptive)),
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+						HasType(sdk.WarehouseTypeAdaptive),
+				),
+			},
+		},
+	})
+}
