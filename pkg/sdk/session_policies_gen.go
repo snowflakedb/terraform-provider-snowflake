@@ -15,6 +15,9 @@ type SessionPolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SessionPolicyProperty, error)
+
+	// DescribeDetails is added manually
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicyDetails, error)
 }
 
 // CreateSessionPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-session-policy.
@@ -47,7 +50,7 @@ type AlterSessionPolicyOptions struct {
 	Set           *SessionPolicySet       `ddl:"keyword" sql:"SET"`
 	SetTags       []TagAssociation        `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags     []ObjectIdentifier      `ddl:"keyword" sql:"UNSET TAG"`
-	Unset         *SessionPolicyUnset     `ddl:"keyword" sql:"UNSET"`
+	Unset         *SessionPolicyUnset     `ddl:"list,no_parentheses" sql:"UNSET"`
 }
 
 type SessionPolicySet struct {
@@ -136,4 +139,15 @@ type SessionPolicyProperty struct {
 	Value       string
 	Default     string
 	Description string
+}
+
+type SessionPolicyDetails struct {
+	Id                       SchemaObjectIdentifier
+	Owner                    string
+	OwnerRoleType            string
+	Comment                  string
+	SessionIdleTimeoutMins   int
+	SessionUiIdleTimeoutMins int
+	AllowedSecondaryRoles    []string
+	BlockedSecondaryRoles    []string
 }
